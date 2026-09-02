@@ -16,8 +16,8 @@ use utoipa::ToSchema;
 pub use self::delete::DeleteOperation;
 use crate::infra_cache::ObjectCache;
 use database::DbConnection;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use schemas::infra::InfraObject;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
@@ -235,7 +235,7 @@ pub enum OperationError {
     #[error("A Json Patch error occurred: '{error}'")]
     InvalidPatch { error: String },
     #[error(transparent)]
-    DatabaseError(#[from] editoast_models::Error),
+    DatabaseError(#[from] models::Error),
 }
 
 impl From<serde_json::Error> for OperationError {
@@ -256,6 +256,6 @@ impl From<json_patch::PatchError> for OperationError {
 
 impl From<diesel::result::Error> for OperationError {
     fn from(err: diesel::result::Error) -> Self {
-        OperationError::DatabaseError(editoast_models::Error::from(err))
+        OperationError::DatabaseError(models::Error::from(err))
     }
 }

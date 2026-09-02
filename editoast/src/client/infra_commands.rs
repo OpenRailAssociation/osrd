@@ -14,8 +14,8 @@ use crate::generated_data::InfraGeneratedData as _;
 use crate::infra_cache::InfraCache;
 use crate::map;
 use cache;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 
 use super::ValkeyConfig;
 

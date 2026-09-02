@@ -1,7 +1,6 @@
 import { type HTMLProps } from 'react';
 
-import type { PathLevel, SpaceTimeChartTheme } from '../spaceTimeChart';
-import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
+import type { DataToPoint } from '../spaceTimeChart/lib/types';
 import type { LAYERS, PICKING_LAYERS } from './consts';
 
 export type BaseChartContextType = {
@@ -15,6 +14,9 @@ export type Point = {
   y: number;
 };
 
+export type Axis = 'x' | 'y';
+
+export type RGBColor = [number, number, number];
 export type RGBAColor = [number, number, number, number];
 
 // CANVAS SPECIFIC TYPES:
@@ -49,10 +51,20 @@ export type CurveStyle = {
   thickness?: number;
   /** Border drawn around the TOD occupancy bar. */
   border?: { color: string; width: number };
+  /** Segments drawn on the curve stops. */
+  stop?: {
+    /** Thickness in px (defaults to 4). */
+    thickness?: number;
+    /** Opacity (defaults to 0.2). */
+    opacity?: number;
+    /** Halo color (defaults to the curve color). */
+    color?: string;
+  };
   label?: {
     background?: { color: string; opacity?: number; border?: string };
     color?: string;
     fontWeight?: number;
+    opacity?: number;
   };
 };
 
@@ -105,7 +117,7 @@ type BaseTimeChartContextType = BaseChartContextType & {
 
   // Full theme:
   // TODO: create a more generic ChartTheme
-  theme: SpaceTimeChartTheme;
+  theme: BaseChartStyles & TimeChartStyles & SpaceChartStyles;
 };
 
 export type ChartOptions = {
@@ -117,6 +129,14 @@ export type ChartOptions = {
   hideTimeCaptions?: boolean;
   showTicks?: boolean;
   swapAxis?: boolean;
+  /**
+   * When set, the time axis renders hours as signed integers relative to time
+   * origin 0 (…, -2, -1, 0, 1, 2, …) instead of localized clock times, and
+   * date captions are hidden. The value is the length (in ms) of one hourly
+   * timetable pattern iteration, so downstream layers (markers, pattern bars)
+   * can reuse it. Meant for repeating patterns (e.g. hourly timetables).
+   */
+  hourlyTimetableDuration?: number;
 };
 
 export type TimeChartContextType = BaseTimeChartContextType & ChartOptions;
@@ -205,3 +225,16 @@ export type TimeChartStyles = {
 export type SpaceChartStyles = {
   spaceGraduationsStyles: Record<number, LineStyle>;
 };
+
+export type PathLevel = 1 | 2 | 3 | 4 | 5;
+
+// BUSINESS SPECIFIC TYPES:
+export type DataPoint = {
+  time: number;
+  position: number;
+};
+
+export type Handler<P extends object> = (payload: P) => void;
+
+// DATA TRANSLATION TYPES:
+export type PointToData = (point: Point) => DataPoint;

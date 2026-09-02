@@ -18,7 +18,11 @@ import {
   isPointPickingElement,
   isInteractiveWaypoint,
   isOccupancyPickingElement,
+  isBrokenLinkingPickingElement,
+  isLinkingPickingElement,
   type Track,
+  DEFAULT_ZOOM_MS_PER_PX,
+  timeScaleToZoomValue,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -26,11 +30,13 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
+import repeatConflictsInRange from 'modules/simulationResult/helpers/repeatConflictsInRange';
 import type {
   CurveStyleExceptionType,
   CurveStyleInput,
@@ -52,7 +58,9 @@ import {
   getIsSimulationEnabled,
   getSelectedTrain,
 } from 'reducers/simulationResults/selectors';
+import type { SelectionSource } from 'reducers/simulationResults/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractExceptionIdFromOccurrenceId,
@@ -72,10 +80,12 @@ import CurveSelectionSidePanel, {
   PANEL_SELECTION_MODES,
   type PanelSelectionMode,
 } from './CurveSelectionSidePanel';
+import canDragHoveredTrain from './helpers/canDragHoveredTrain';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
-import getStdExceptionType from './helpers/getStdExceptionType';
+import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
+import type { ExistingLinking } from './helpers/linkings';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
 import { getOccupancyBlocks } from './helpers/utils';
 import {
@@ -88,6 +98,8 @@ import {
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
+import TimeRangeObserver from './TimeRangeObserver';
+import useLinkingMode from './useLinkingMode';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 
@@ -97,6 +109,9 @@ type SpaceTimeChartWrapperBaseProps = {
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
   trackOccupancyDiagramsData?: DeployedWaypoint[];
+  linkings?: ExistingLinking[];
+  onCreateLinking?: (source: TrainId, target: TrainId) => void;
+  onDeleteLinking?: (linkingId: number) => void;
   onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
@@ -125,6 +140,12 @@ type SpaceTimeChartWrapperBaseProps = {
   selectedProjectionId: TrainId;
   trainSchedulesWithDetails?: TrainScheduleWithDetails[];
   pathfindingHasFailed?: boolean;
+  /**
+   * Duration of the hourly timetable pattern; when set, the time axis renders
+   * in hourly pattern mode (signed integer hours around 0). `undefined` for
+   * calendar scenarios.
+   */
+  hourlyTimetableDuration?: Duration;
 };
 
 type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
@@ -145,26 +166,38 @@ export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 const NO_CONFLICTS: Conflict[] = [];
 
 /**
- * Builds the hover input for the curve-style helper. Chart hover wins over
- * timetable hover: when the user is over a curve in the STD, the train list
- * hover is ignored.
- *
- * TODO: add the TOD source (`from: 'tod'`) once the TOD emits hover events.
+ * Builds the hover input for the curve-style helper: the hovered train, the
+ * chart it is hovered from (STD wins over TOD, which wins over the train
+ * list hover) and its exception types.
  */
-const buildCurveHover = (
+const buildCurveStyleHover = (
   hoveredItem: HoveredItem | null,
-  hoveredTrainIdFromTimetable: TrainId | undefined
+  hoveredTrainIdFromTimetable: TrainId | undefined,
+  trainSchedulesWithDetailsById: Map<number, TrainScheduleWithDetails>
 ): CurveStyleInput['hover'] => {
+  let trainId: TrainId | undefined;
+  let from: SelectionSource | undefined;
+
   if (
     hoveredItem &&
     (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
   ) {
-    return { trainId: hoveredItem.element.pathId as TrainId, from: 'std' };
+    trainId = hoveredItem.element.pathId as TrainId;
+    from = 'std';
+  } else if (hoveredItem && isOccupancyPickingElement(hoveredItem.element)) {
+    ({ trainId } = parseOccupancyZonePathId(hoveredItem.element.pathId));
+    from = 'tod';
+  } else if (hoveredTrainIdFromTimetable) {
+    trainId = hoveredTrainIdFromTimetable;
+    from = 'timetable';
   }
-  if (hoveredTrainIdFromTimetable) {
-    return { trainId: hoveredTrainIdFromTimetable, from: 'timetable' };
-  }
-  return undefined;
+
+  if (!trainId || !from) return undefined;
+  return {
+    trainId,
+    from,
+    relevantExceptionTypes: getTrainExceptionTypes(trainSchedulesWithDetailsById, trainId),
+  };
 };
 function formatDragOffset(ms: number): string {
   const sign = ms >= 0 ? '+' : '-';
@@ -179,6 +212,9 @@ const SpaceTimeChartWrapper = ({
   conflicts = NO_CONFLICTS,
   workSchedules,
   trackOccupancyDiagramsData,
+  linkings,
+  onCreateLinking,
+  onDeleteLinking,
   onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -189,11 +225,13 @@ const SpaceTimeChartWrapper = ({
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
   pathfindingHasFailed = false,
+  hourlyTimetableDuration,
 }: SpaceTimeChartWrapperProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
+  const { scenario: { timetable_type: timetableType } = {} } = useScenario();
   const selection = useSelector(getSelectedTrain);
   const { id: selectedTrainId, by: selectedTrainBy } = selection ?? {};
 
@@ -208,6 +246,7 @@ const SpaceTimeChartWrapper = ({
   const [dragOverTrackId, setDragOverTrackId] = useState<string | undefined>();
   const [dragOffsetMs, setDragOffsetMs] = useState<number | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [chartTimeRange, setChartTimeRange] = useState<{ start: number; end: number }>();
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) =>
@@ -215,6 +254,13 @@ const SpaceTimeChartWrapper = ({
     document.addEventListener('mousemove', handleMouseMove);
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const hasDeployedWaypoint = !!trackOccupancyDiagramsData?.length;
+  const { linkingMode, toggleLinkingMode, handleLinkingClick } = useLinkingMode({
+    hasDeployedWaypoint,
+    onCreateLinking,
+    onDeleteLinking,
+  });
 
   const [panelSelectionMode, setPanelSelectionMode] = useState<PanelSelectionMode>('compliant');
   const [lastClickedOccurrenceId, setLastClickedOccurrenceId] = useState<OccurrenceId>();
@@ -262,15 +308,34 @@ const SpaceTimeChartWrapper = ({
     showSignalsStates: false,
   });
 
+  const repeatTimeRange = useMemo(
+    () =>
+      chartTimeRange && timetableType === 'HOURLY'
+        ? {
+            start: new Duration({ milliseconds: chartTimeRange.start }),
+            end: new Duration({ milliseconds: chartTimeRange.end }),
+          }
+        : undefined,
+    [chartTimeRange, timetableType]
+  );
+
   const projectedTrains = useMemo(
-    () => makeProjectedTrains(trainScheduleProjections),
-    [trainScheduleProjections]
+    () => makeProjectedTrains(trainScheduleProjections, repeatTimeRange),
+    [trainScheduleProjections, repeatTimeRange]
   );
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
-  const { cutProjectedTrains, cutConflicts } = useMemo(
+  const { cutProjectedTrains, cutConflicts: cutBaseConflicts } = useMemo(
     () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
     [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
+  );
+
+  const cutConflicts = useMemo(
+    () =>
+      repeatTimeRange && hourlyTimetableDuration
+        ? repeatConflictsInRange(cutBaseConflicts, hourlyTimetableDuration, repeatTimeRange)
+        : cutBaseConflicts,
+    [cutBaseConflicts, hourlyTimetableDuration, repeatTimeRange]
   );
 
   const trainSchedulesWithDetailsById = useMemo(
@@ -313,6 +378,13 @@ const SpaceTimeChartWrapper = ({
     return hoveredTrainId;
   }, [hoveredItem, hoveredTrainId]);
 
+  const curveHover = useMemo(
+    () => buildCurveStyleHover(hoveredItem, hoveredTrainId, trainSchedulesWithDetailsById),
+    [hoveredItem, hoveredTrainId, trainSchedulesWithDetailsById]
+  );
+
+  const hoveredLinking = linkingMode ? hoveredItem?.element : undefined;
+
   // If we're dealing a unique train or a path_and_schedule exception, use the
   // ID as-is so that only this single occupancy zone gets dragged. Otherwise,
   // we're dealing with a compliant occurrence: extract the paced train ID so
@@ -347,10 +419,7 @@ const SpaceTimeChartWrapper = ({
 
       // When dragging a paced train, mark all compliant occupancy zones as
       // being dragged
-      if (
-        isOccurrenceId(trainId) &&
-        extractTrainScheduleIdFromOccurrenceId(trainId) !== draggingOccupancyZoneBaseTrainId
-      ) {
+      if (extractTrainScheduleIdFromTrainId(trainId) !== draggingOccupancyZoneBaseTrainId) {
         return false;
       }
       const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
@@ -371,9 +440,15 @@ const SpaceTimeChartWrapper = ({
         handleWaypointClick,
         activeWaypointId,
         hoveredTrainIdForChart,
+        curveHover,
         isDraggingOccupancyZoneId,
         activeTrackId: dragOverTrackId,
         onTrackDragOver: setDragOverTrackId,
+        linkings: {
+          existing: linkings ?? [],
+          hovered: hoveredLinking,
+          showSuggestions: linkingMode,
+        },
       }),
     [
       trackOccupancyDiagramsData,
@@ -386,9 +461,13 @@ const SpaceTimeChartWrapper = ({
       handleWaypointClick,
       activeWaypointRef,
       hoveredTrainIdForChart,
+      curveHover,
       isDraggingOccupancyZoneId,
       dragOverTrackId,
       setDragOverTrackId,
+      linkings,
+      hoveredLinking,
+      linkingMode,
     ]
   );
 
@@ -435,6 +514,35 @@ const SpaceTimeChartWrapper = ({
   }, [selectedProjectionId, trainScheduleProjections.length]);
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
+
+  const isZoomAtDefault = xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX);
+  const handleResetClick = useCallback(() => {
+    let xPosition: number | undefined;
+
+    if (hourlyTimetableDuration) {
+      if (spaceTimeChartProps.xOffset) {
+        pan({ dx: -spaceTimeChartProps.xOffset });
+      }
+      setTimeOrigin(0);
+      xPosition = 0;
+    }
+
+    if (!isZoomAtDefault) {
+      handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX), xPosition);
+    }
+  }, [
+    hourlyTimetableDuration,
+    spaceTimeChartProps.xOffset,
+    pan,
+    setTimeOrigin,
+    isZoomAtDefault,
+    handleXZoom,
+  ]);
+
+  const isResetButtonDisabled =
+    isZoomAtDefault &&
+    (!hourlyTimetableDuration ||
+      (spaceTimeChartProps.timeOrigin === 0 && spaceTimeChartProps.xOffset === 0));
 
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
@@ -484,9 +592,23 @@ const SpaceTimeChartWrapper = ({
 
   const isDraggingOccupancyZone = Boolean(draggingOccupancyZoneRef);
 
+  // Whether the curve currently under the cursor can be dragged: it mirrors the
+  // drag-start gate so the cursor previews the "move" affordance (ew-resize)
+  // before the drag actually begins.
+  const canDragHovered = useMemo(() => {
+    if (selectedTrainBy !== 'std' || !hoveredItem) return false;
+    const { element } = hoveredItem;
+    if (!isSegmentPickingElement(element) && !isPointPickingElement(element)) return false;
+    const hoveredPathId = element.pathId;
+    if (!isTrainId(hoveredPathId)) return false;
+    const hoveredTrain = projectedTrains.find((train) => train.id === hoveredPathId);
+    if (!hoveredTrain) return false;
+    return canDragHoveredTrain({ panelSelectionMode, hoveredTrain, selectedTrainId });
+  }, [selectedTrainBy, hoveredItem, projectedTrains, panelSelectionMode, selectedTrainId]);
+
   const handlePan = useCallback(
     // TODO: fix this lint
-    // eslint-disable-next-line react-hooks-js/use-memo
+    // eslint-disable-next-line react/use-memo
     configureHandlePan({
       spaceTimeChartOnPan: spaceTimeChartProps.onPan,
       handleTrainDrag,
@@ -583,6 +705,8 @@ const SpaceTimeChartWrapper = ({
     if (draggingState) return;
 
     const element = hoveredItem?.element;
+
+    if (handleLinkingClick(element)) return;
 
     if (
       !element ||
@@ -698,15 +822,31 @@ const SpaceTimeChartWrapper = ({
           ref={spaceTimeChartRef}
           data-testid="space-time-chart-container"
           className="space-time-chart-container"
-          style={{ cursor: draggingState ? 'ew-resize' : undefined }}
+          style={{
+            cursor:
+              draggingState || canDragHovered
+                ? 'ew-resize'
+                : hoveredItem &&
+                    (isSegmentPickingElement(hoveredItem.element) ||
+                      isPointPickingElement(hoveredItem.element) ||
+                      isOccupancyPickingElement(hoveredItem.element) ||
+                      (linkingMode &&
+                        (isLinkingPickingElement(hoveredItem.element) ||
+                          isBrokenLinkingPickingElement(hoveredItem.element))))
+                  ? 'pointer'
+                  : undefined,
+          }}
         >
           <SpaceTimeChartToolbar
-            xZoom={xZoom}
-            handleXZoom={handleXZoom}
+            onResetClick={handleResetClick}
             zoomMode={zoomMode}
             disableZoom={!!waypointsPanelData?.deployedWaypoints?.size}
             toggleZoomMode={toggleZoomMode}
             setShowSettingsPanel={setShowSettingsPanel}
+            isResetButtonDisabled={isResetButtonDisabled}
+            linkingMode={linkingMode}
+            disableLinkingMode={!hasDeployedWaypoint}
+            toggleLinkingMode={toggleLinkingMode}
           />
           {showSettingsPanel && (
             <SettingsPanel
@@ -730,33 +870,47 @@ const SpaceTimeChartWrapper = ({
             spaceOrigin={
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
             }
+            hourlyTimetableDuration={hourlyTimetableDuration?.ms}
           >
             {paths.map((path) => {
-              const hover = buildCurveHover(hoveredItem, hoveredTrainId);
               const trainId = path.id as TrainId;
               const style = getPathStyleV2(
                 {
                   chart: 'std',
-                  train: {
-                    id: trainId,
-                    isDragging: draggingState?.draggedTrain.id === trainId,
-                    exceptionType: getStdExceptionType(trainSchedulesWithDetailsById, trainId),
-                  },
+                  train: isOccurrenceId(trainId)
+                    ? {
+                        id: trainId,
+                        relevantExceptionTypes: getTrainExceptionTypes(
+                          trainSchedulesWithDetailsById,
+                          trainId
+                        ),
+                      }
+                    : { id: trainId },
                   selection,
                   panelMode: panelSelectionMode,
-                  hover,
+                  hover: curveHover,
+                  dragging: draggingState
+                    ? {
+                        trainId: draggingState.draggedTrain.id,
+                        relevantExceptionTypes: getTrainExceptionTypes(
+                          trainSchedulesWithDetailsById,
+                          draggingState.draggedTrain.id
+                        ),
+                      }
+                    : undefined,
                 },
                 { colors: path.colors, isSimulated: path.isSimulated }
               );
               return (
                 <PathLayer
-                  key={`${path.id}-${path.points[0]?.position}`}
+                  key={path.key}
                   path={path}
                   color={style.color}
                   level={style.level}
                   opacity={style.opacity}
                   border={style.outline}
                   label={style.label}
+                  stop={style.stop}
                 />
               );
             })}
@@ -780,6 +934,7 @@ const SpaceTimeChartWrapper = ({
                 )}
               </>
             )}
+            <TimeRangeObserver onChange={setChartTimeRange} />
           </SpaceTimeChart>
           {showCurvePanel && (
             <CurveSelectionSidePanel
@@ -787,6 +942,7 @@ const SpaceTimeChartWrapper = ({
               panelSelectionMode={panelSelectionMode}
               onModeChange={handlePanelModeChange}
               counts={panelCounts}
+              isFaded={!!draggingState}
             />
           )}
         </div>

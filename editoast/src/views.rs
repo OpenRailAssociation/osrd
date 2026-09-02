@@ -37,16 +37,11 @@ mod test_app;
 
 use ::core::str;
 
-use ::authz::Authorization;
-use ::authz::Authorizer;
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
-use editoast_models::PgAuthDriver;
 use thiserror::Error;
 
 pub use server::OpenApiRoot;
-
-use crate::error::Result;
 
 #[cfg(test)]
 use test_app::test_app;
@@ -138,6 +133,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/", post!(infra::edition::edit))
                             .route("/", delete!(infra::delete))
                             .route("/", put!(infra::put))
+                            .route("/bbox", get!(infra::bbox))
                             .route("/auto_fixes", get!(infra::auto_fixes::list_auto_fixes))
                             .route("/clone", post!(infra::clone))
                             .route(
@@ -212,6 +208,9 @@ fn service_router() -> server::router::DocumentedRouter {
                             .nests("/path_steps", |path| {
                                 path.route("/local_track_names", post!(timetable::get_local_track_names))
                             })
+                            .nests("/train_schedule_linkings", |path| {
+                                path.route("/", post!(timetable::linkings::create))
+                            })
                     })
             })
             //
@@ -254,6 +253,10 @@ fn service_router() -> server::router::DocumentedRouter {
                         "/project_path_op",
                         post!(timetable::train_schedule::project_path_op),
                     )
+                    .nests("/linkings", |path| {
+                        path.route("/", post!(timetable::linkings::list))
+                        .route("/delete", post!(timetable::linkings::delete))
+                    })
                 .nests("/{id}", |path| {
                     path.route("/", get!(timetable::train_schedule::get_by_id))
                         .route(
@@ -447,52 +450,6 @@ fn service_router() -> server::router::DocumentedRouter {
     })
 }
 
-/// Represents the bundle of information about the issuer of a request
-/// that can be extracted form recognized headers.
-#[derive(Debug, Clone)]
-#[allow(clippy::large_enum_variant)]
-// TODO wrap the OpenFGA client contained of the `Authenticated` variant in an Arc
-//      and remove the clippy ignore.
-pub enum Authentication {
-    /// The issuer of the request did not provide any authentication information.
-    Unauthenticated,
-    /// The issuer of the request provided the 'x-remote-user-identity' header.
-    Authenticated(Authorizer<PgAuthDriver>),
-    /// The requests comes from a trusted service (like core). All requests are considered safe.
-    SkipAuthorization {
-        #[expect(unused)]
-        identity: Option<String>,
-        #[expect(unused)]
-        name: Option<String>,
-    },
-}
-
-impl Authentication {
-    /// Function wrapper that allows you to check if the issuer of the request has the good privilege, grant, role....
-    /// If the request is unauthenticated, it will return an Unauthorized error, and for the SkipAuthorization.
-    /// The provided function will be called with the authorizer and its result will be checked by the allowed() method.
-    /// In case of error, a Forbidden error will be returned.
-    /// How to use it: `auth.check_authorization(async |authorizer| authorizer.authorize_infra_delete(infra_id).await).await?;`
-    async fn check_authorization<E: Into<AuthorizationError>>(
-        self,
-        f: impl AsyncFnOnce(Authorizer<PgAuthDriver>) -> Result<Authorization<()>, E>,
-    ) -> Result<(), AuthorizationError> {
-        match self {
-            Authentication::SkipAuthorization { .. } => Ok(()),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthenticated),
-            Authentication::Authenticated(authorizer) => f(authorizer)
-                .await
-                .map_err(Into::into)?
-                .allowed()
-                .map_err(|_| AuthorizationError::Forbidden),
-        }
-    }
-}
-
-pub use server::middlewares::AuthenticationExt;
-
-pub type AuthorizerError = ::authz::Error<<PgAuthDriver as ::authz::StorageDriver>::Error>;
-
 #[derive(Debug, Error, derive_more::From, EditoastError)]
 #[editoast_error(base_id = "authorization")]
 pub enum AuthorizationError {
@@ -501,6 +458,7 @@ pub enum AuthorizationError {
     Unauthenticated,
     #[error("Forbidden (403) — user has insufficient privileges")]
     #[editoast_error(status = 403)]
+    #[from(::authz::v2::Check)]
     Forbidden,
     #[error("Forbidden (403) — user must be an admin to impersonate")]
     #[editoast_error(status = 403)]
@@ -509,12 +467,16 @@ pub enum AuthorizationError {
     #[editoast_error(status = 404)]
     ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]
-    #[editoast_error(forward)]
-    #[from(AuthorizerError, fga::client::Error)]
-    AuthError(AuthorizerError),
+    OpenFga(#[from] fga::client::Error),
     #[error(transparent)]
     #[editoast_error(status = 500)]
     DbError(#[from] database::db_connection_pool::DatabasePoolError),
+}
+
+impl From<crate::authorizers::Error> for AuthorizationError {
+    fn from(crate::authorizers::Error(fga_error): crate::authorizers::Error) -> Self {
+        Self::from(fga_error)
+    }
 }
 
 #[cfg(test)]

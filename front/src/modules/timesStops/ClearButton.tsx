@@ -6,10 +6,11 @@ import { createPortal } from 'react-dom';
 type ClearButtonProps = {
   isVisible: boolean;
   containerRef: React.RefObject<HTMLElement | null>;
+  title?: string;
   onClear: () => void;
 };
 
-const ClearButton = ({ isVisible, containerRef, onClear }: ClearButtonProps) => {
+const ClearButton = ({ isVisible, containerRef, title, onClear }: ClearButtonProps) => {
   const [btnPos, setBtnPos] = useState<{ top: number; left: number } | null>(null);
 
   useLayoutEffect(() => {
@@ -51,7 +52,7 @@ const ClearButton = ({ isVisible, containerRef, onClear }: ClearButtonProps) => 
         onClear();
       }}
     >
-      <Clear size="sm" />
+      <Clear size="sm" title={title} />
     </button>,
     document.body
   );

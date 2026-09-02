@@ -23,7 +23,6 @@ export const castNgeNode = (
   ngeId: node.id,
   trigram: node.betriebspunktName,
   full_name: node.fullName,
-  connection_time: node.connectionTime,
   position_x: Math.round(node.positionX),
   position_y: Math.round(node.positionY),
   is_collapsed: node.isCollapsed,
@@ -118,7 +117,7 @@ export const handleNodeOperation = async ({
         }
       } else {
         // It's an unknown node, we need to create it in the db
-        // We assume that `betriebspunktName` follows the `${country_code}-${main_code}/${secondary_code}` format
+        // We assume that `betriebspunktName` follows the `${main_code}/${secondary_code}#${country_code}` format
         const key = MacroEditorState.getPathKey({
           type: 'operational_point_part_reference',
           operational_point: MacroEditorState.decodeDomesticReference(node.betriebspunktName),

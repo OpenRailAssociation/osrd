@@ -1,3 +1,4 @@
+#![recursion_limit = "256"]
 mod envs;
 mod path_properties;
 
@@ -7,7 +8,7 @@ use std::sync::Arc;
 // Crate-level exports
 pub use envs::TrainSet;
 pub use envs::core::CoreEnv;
-pub use envs::pathfinding::PathItemAlternatives;
+pub use envs::pathfinding::PathItemConstraint;
 pub use envs::pathfinding::PathfindingConsist;
 pub use envs::pathfinding::PathfindingConstraints;
 pub use envs::pathfinding::PathfindingEnv;

@@ -1,0 +1,1 @@
+ALTER TABLE macro_node ADD COLUMN connection_time BIGINT NOT NULL DEFAULT 0;

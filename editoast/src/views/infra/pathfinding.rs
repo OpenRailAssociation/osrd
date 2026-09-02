@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -16,14 +17,15 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use schemas::infra::Direction;
 use schemas::infra::DirectionalTrackRange;
 use schemas::infra::Endpoint;
@@ -90,9 +92,10 @@ pub(in crate::views) async fn pathfinding_view(
         infra_caches,
         valkey_client,
         config,
+        openfga,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(params): Query<QueryParam>,
     Json(input): Json<InfraPathfindingInput>,
@@ -113,12 +116,11 @@ pub(in crate::views) async fn pathfinding_view(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     let infra_cache = InfraCache::get_or_load(

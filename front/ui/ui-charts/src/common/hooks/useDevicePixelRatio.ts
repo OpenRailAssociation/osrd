@@ -17,6 +17,7 @@ export function useDevicePixelRatio() {
     return () => {
       mediaQuery.removeEventListener('change', handleChange);
     };
+    /* eslint-disable-next-line react/exhaustive-effect-dependencies */
   }, [ratio]);
 
   return ratio;

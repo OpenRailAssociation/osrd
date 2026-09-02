@@ -3,11 +3,13 @@ import { chunk, noop, omit } from 'lodash';
 
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
-import type { OccurrenceId } from 'reducers/osrdconf/types';
-import { isOccurrenceId } from 'utils/trainId';
+import type { CurveStyleExceptionType } from 'modules/simulationResult/types';
+import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
+import type { SelectedTrain } from 'reducers/simulationResults/types';
+import { isOccurrenceId, extractTrainScheduleIdFromTrainId } from 'utils/trainId';
 
 import type { AspectLabel, IndividualTrainProjection } from '../../../types';
-import type { MovableOccupancyZone } from './zones';
+import type { PanelSelectionMode } from '../CurveSelectionSidePanel';
 
 export const getWaypointsLocalStorageKey = (
   timetableId: number | undefined,
@@ -20,12 +22,12 @@ export const getWaypointsLocalStorageKey = (
 };
 
 /**
- * Fetches track occupancy data for a large list of IDs in small sequential batches, to avoid
- * overwhelming the server or API.
+ * Fetches data for a large list of IDs in small sequential batches, to avoid overwhelming the
+ * server or API. Reports what has been gathered after each batch, and returns an abort function.
  */
-export function batchFetchTrackOccupancy(
+export function batchFetch<Value>(
   allIDs: number[],
-  fetchTrackOccupancy: (ids: number[]) => Promise<MovableOccupancyZone[]>,
+  fetchBatch: (ids: number[]) => Promise<Value[]>,
   {
     batchSize = 50,
     onProgress = noop,
@@ -33,37 +35,33 @@ export function batchFetchTrackOccupancy(
     onError = noop,
   }: {
     batchSize?: number;
-    onProgress?: (allValuesYet: MovableOccupancyZone[]) => void;
-    onComplete?: (allValues: MovableOccupancyZone[]) => void;
+    onProgress?: (allValuesYet: Value[]) => void;
+    onComplete?: (allValues: Value[]) => void;
     onError?: (err: Error) => void;
   }
 ) {
   let isAborted = false;
-  let allZones: MovableOccupancyZone[] = [];
+  let allValues: Value[] = [];
 
   const handleAbort = () => {
     isAborted = true;
-    allZones = [];
+    allValues = [];
   };
   const handleError = (reason: unknown) => {
     handleAbort();
-    onError(
-      reason instanceof Error
-        ? reason
-        : new Error(`batchFetchTrackOccupancy failed`, { cause: reason })
-    );
+    onError(reason instanceof Error ? reason : new Error('batchFetch failed', { cause: reason }));
   };
 
   const load = async () => {
     for (const batch of chunk(allIDs, batchSize)) {
-      const newValues = await fetchTrackOccupancy(batch);
+      const newValues = await fetchBatch(batch);
       if (isAborted) return;
 
-      allZones = allZones.concat(newValues);
-      onProgress(allZones);
+      allValues = allValues.concat(newValues);
+      onProgress(allValues);
     }
 
-    onComplete(allZones);
+    onComplete(allValues);
   };
 
   load().catch(handleError);
@@ -89,3 +87,28 @@ export const getOccupancyBlocks = (trains: IndividualTrainProjection[]): Occupan
       blinking: block.blinking,
     }));
   });
+
+export const isTrainSelected = (
+  trainId: TrainId,
+  chart: 'std' | 'tod',
+  exceptionTypes: CurveStyleExceptionType[],
+  selection: SelectedTrain,
+  selectionMode: PanelSelectionMode
+) => {
+  if (chart !== selection.by) {
+    return false;
+  }
+  const trainScheduleId = extractTrainScheduleIdFromTrainId(trainId);
+  const selectedTrainScheduleId = extractTrainScheduleIdFromTrainId(selection.id);
+  if (trainScheduleId !== selectedTrainScheduleId) {
+    return false;
+  }
+  switch (selectionMode) {
+    case 'all':
+      return true;
+    case 'single':
+      return trainId === selection.id;
+    case 'compliant':
+      return !exceptionTypes.includes(chart === 'std' ? 'start_time' : 'path_and_schedule');
+  }
+};

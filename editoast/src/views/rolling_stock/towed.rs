@@ -13,8 +13,8 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::TowedRollingStock;
-use editoast_models::prelude::*;
+use models::TowedRollingStock;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -36,7 +36,7 @@ pub enum TowedRollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 #[derive(Debug, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
@@ -234,7 +234,7 @@ mod tests {
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
     use common::units;
-    use editoast_models::TowedRollingStock;
+    use models::TowedRollingStock;
 
     use serde_json::json;
     use uuid::Uuid;

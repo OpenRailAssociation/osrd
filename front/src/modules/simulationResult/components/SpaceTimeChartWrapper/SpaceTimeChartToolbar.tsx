@@ -1,29 +1,34 @@
 import type { Dispatch, SetStateAction } from 'react';
 
-import { DEFAULT_ZOOM_MS_PER_PX, timeScaleToZoomValue } from '@osrd-project/ui-charts';
-import { Iterations, Link, Sliders, ZoomIn } from '@osrd-project/ui-icons';
+import { Iterations, Linking, Sliders, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
 
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 
 type SpaceTimeChartToolbarProps = {
-  xZoom: number;
-  handleXZoom: (newXZoom: number, xPosition?: number) => void;
+  onResetClick: () => void;
   zoomMode: boolean;
   disableZoom: boolean;
   toggleZoomMode: () => void;
   setShowSettingsPanel: Dispatch<SetStateAction<boolean>>;
+  linkingMode: boolean;
+  disableLinkingMode: boolean;
+  toggleLinkingMode: () => void;
   className?: string;
+  isResetButtonDisabled?: boolean;
 };
 
 const SpaceTimeChartToolbar = ({
-  xZoom,
-  handleXZoom,
+  onResetClick,
   zoomMode,
   disableZoom,
   toggleZoomMode,
   setShowSettingsPanel,
+  isResetButtonDisabled,
+  linkingMode,
+  disableLinkingMode,
+  toggleLinkingMode,
 }: SpaceTimeChartToolbarProps) => {
   const linkingsActivated = useSelector(getFeatureFlag('linkings'));
 
@@ -33,48 +38,49 @@ const SpaceTimeChartToolbar = ({
         <button
           data-testid="linking-mode-button"
           type="button"
-          className="linking-button linking-button-disabled"
-          disabled
+          className={cx('linking-button', {
+            'linking-button-clicked': linkingMode,
+            'linking-button-disabled': disableLinkingMode,
+          })}
+          onClick={toggleLinkingMode}
+          disabled={disableLinkingMode}
         >
-          {/* TODO: replace with the proper linking button (final icon + behavior)
-              https://github.com/OpenRailAssociation/osrd/issues/17580 */}
-          <Link />
+          <Linking variant={linkingMode ? 'fill' : 'base'} />
         </button>
       )}
-      <button
-        data-testid="zoom-reset-button"
-        type="button"
-        className={cx('reset-button', {
-          'reset-button-disabled': xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
-        })}
-        onClick={() => {
-          if (xZoom !== timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX)) {
-            handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX));
-          }
-        }}
-      >
-        <Iterations />
-      </button>
-      <button
-        data-testid="zoom-button"
-        type="button"
-        className={cx('zoom-button', {
-          'zoom-button-clicked': zoomMode,
-          'zoom-button-disabled': disableZoom,
-        })}
-        onClick={toggleZoomMode}
-        disabled={disableZoom}
-      >
-        <ZoomIn className="icon" />
-      </button>
-      <button
-        type="button"
-        data-testid="menu-button"
-        className="menu-button"
-        onClick={() => setShowSettingsPanel(true)}
-      >
-        <Sliders />
-      </button>
+      <div className="toolbar-group">
+        <button
+          data-testid="zoom-reset-button"
+          type="button"
+          className={cx('reset-button', {
+            'reset-button-disabled': isResetButtonDisabled,
+          })}
+          onClick={onResetClick}
+          disabled={isResetButtonDisabled}
+        >
+          <Iterations />
+        </button>
+        <button
+          data-testid="zoom-button"
+          type="button"
+          className={cx('zoom-button', {
+            'zoom-button-clicked': zoomMode,
+            'zoom-button-disabled': disableZoom,
+          })}
+          onClick={toggleZoomMode}
+          disabled={disableZoom}
+        >
+          <ZoomIn className="icon" />
+        </button>
+        <button
+          type="button"
+          data-testid="menu-button"
+          className="menu-button"
+          onClick={() => setShowSettingsPanel(true)}
+        >
+          <Sliders />
+        </button>
+      </div>
     </div>
   );
 };

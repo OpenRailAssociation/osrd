@@ -25,15 +25,14 @@ use axum::response::IntoResponse;
 use axum::response::Json;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::Group;
-use editoast_models::Infra;
-use editoast_models::RollingStock;
-use editoast_models::User;
-use editoast_models::authn::user::UserWithIdentities;
-use editoast_models::prelude::*;
-use futures::FutureExt as _;
 use futures::TryStreamExt;
 use itertools::Itertools;
+use models::Group;
+use models::Infra;
+use models::RollingStock;
+use models::User;
+use models::authn::user::UserWithIdentities;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -44,7 +43,6 @@ use utoipa::ToSchema;
 
 use super::AppState;
 use super::AuthorizationError;
-use super::AuthorizerError;
 
 mod resources;
 
@@ -67,9 +65,6 @@ pub(in crate::views) enum ResourceType {
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "authz")]
 enum AuthzError {
-    #[error("Internal error")]
-    #[editoast_error(status = 500, no_context)]
-    Authorizer(AuthorizerError),
     #[error("Unknown resource {resource_id}")]
     #[editoast_error(status = 404)]
     UnknownResource { resource_id: i64 },
@@ -82,27 +77,9 @@ enum AuthzError {
     #[error("Unknown user identities '{}'", identities.iter().format(", "))]
     #[editoast_error(status = 404)]
     UnknownIdentities { identities: HashSet<String> },
-    #[error("Authorization error")]
-    #[editoast_error(forward)]
-    Authz(#[from] AuthorizationError),
-
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
-}
-
-impl From<AuthorizerError> for AuthzError {
-    fn from(err: AuthorizerError) -> Self {
-        match err {
-            AuthorizerError::UnknownResource(resource_id) => {
-                AuthzError::UnknownResource { resource_id }
-            }
-            AuthorizerError::UnknownSubject(subject_id) => {
-                AuthzError::UnknownSubject { subject_id }
-            }
-            err => AuthzError::Authorizer(err),
-        }
-    }
+    Database(#[from] models::Error),
 }
 
 #[derive(Serialize, ToSchema)]
@@ -127,7 +104,7 @@ pub(in crate::views) struct WhoamiResponse {
 )]
 pub(in crate::views) async fn whoami(
     Extension(authn_state): Extension<crate::authentication::State>,
-    Extension(user): Extension<Option<editoast_models::User>>,
+    Extension(user): Extension<Option<models::User>>,
 ) -> Result<Json<WhoamiResponse>> {
     match authn_state {
         crate::authentication::State::Skip => Err(AuthorizationError::Unauthenticated)?,
@@ -157,13 +134,13 @@ pub(in crate::views) async fn whoami(
 pub(in crate::views) async fn user_groups(
     Extension(authn_state): Extension<crate::authentication::State>,
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Group>>> {
     let user = authn_state
-        .regular_user()
+        .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(regulator.openfga());
+    let authorizer = authn_state.authorizer(&openfga);
     let user_groups = authz::v2::user_groups(user)
         .authorize(&authorizer)
         .await?
@@ -173,7 +150,7 @@ pub(in crate::views) async fn user_groups(
 
     let groups_id = user_groups.into_iter().map(|authz::Group(id)| id);
     let (result, missing_ids) =
-        editoast_models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
+        models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
 
     if !missing_ids.is_empty() {
         tracing::warn!(
@@ -222,7 +199,7 @@ pub(in crate::views) struct UserInfo {
 )]
 pub(in crate::views) async fn users_info(
     State(AppState {
-        regulator, db_pool, ..
+        openfga, db_pool, ..
     }): State<AppState>,
     Json(UsersInfoRequest { ids, identities }): Json<UsersInfoRequest>,
 ) -> Result<Json<Vec<UserInfo>>> {
@@ -275,7 +252,7 @@ pub(in crate::views) async fn users_info(
         let user_groups = v2::user_groups(authz::User(user.user.id));
         v2::Protected::value(user).zip(user_groups)
     }));
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let system = SystemAuthorizer::new_infallible(&openfga);
     let Ok(user_groups) = system.authorize(groups_prots).await?.access().await?;
 
     // Find groups that really exist (OpenFGA can be out of sync sometimes)
@@ -298,27 +275,24 @@ pub(in crate::views) async fn users_info(
     let Ok(results) = v2::Protected::from_iter(user_groups.into_iter().map(
         |(
             UserWithIdentities {
-                user: editoast_models::User { id, name },
+                user: models::User { id, name },
                 identities,
             },
             groups,
         )| {
             let group_by_id = group_by_id.clone();
-            v2::subject_roles(authz::Subject::user(id)).map(move |_, roles| {
-                async move {
-                    Ok(UserInfo {
-                        id,
-                        name,
-                        identities,
-                        roles: HashSet::from_iter(roles),
-                        groups: groups
-                            .into_iter()
-                            // Skip group if it does not exist
-                            .filter_map(|g| group_by_id.get(&*g).cloned())
-                            .collect(),
-                    })
+            v2::subject_roles(authz::Subject::user(id)).map(async move |roles| {
+                UserInfo {
+                    id,
+                    name,
+                    identities,
+                    roles: HashSet::from_iter(roles),
+                    groups: groups
+                        .into_iter()
+                        // Skip group if it does not exist
+                        .filter_map(|g| group_by_id.get(&*g).cloned())
+                        .collect(),
                 }
-                .boxed()
             })
         },
     ))
@@ -356,7 +330,7 @@ pub(in crate::views) struct ResourcePrivileges {
 )]
 pub(in crate::views) async fn user_privileges(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
@@ -394,7 +368,7 @@ pub(in crate::views) async fn user_privileges(
                         .zip(v2::Protected::value(resource))
                 }
             });
-            let authorizer = authn_state.authorizer(regulator.openfga());
+            let authorizer = authn_state.authorizer(&openfga);
             let accesses = authorizer.authorize_all(protected_privileges).await?;
             for access in v2::Access::access_all(accesses).await? {
                 match access {
@@ -409,7 +383,7 @@ pub(in crate::views) async fn user_privileges(
                     }
                     Err(Check::HasInfraPrivilege(
                         Actor::Issuer,
-                        InfraPrivilege::CanRead,
+                        InfraPrivilege::CanRestrictedRead,
                         infra,
                     )) => {
                         result
@@ -438,6 +412,7 @@ pub(in crate::views) async fn user_privileges(
         }
         crate::authentication::State::Skip => {
             let privileges = HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -465,7 +440,7 @@ pub(in crate::views) async fn user_privileges(
 async fn retrieve_missing_resource_ids(
     mut conn: database::DbConnection,
     resources: impl IntoIterator<Item = (ResourceType, i64)>,
-) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, editoast_models::Error> {
+) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, models::Error> {
     let mut resources = resources
         .into_iter()
         .into_group_map()
@@ -513,15 +488,15 @@ pub(in crate::views) struct UserResourceGrant {
 )]
 pub(in crate::views) async fn user_grants(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
     let user = authn_state
-        .regular_user()
+        .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(regulator.openfga());
+    let authorizer = authn_state.authorizer(&openfga);
     let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
     let missing_resources = retrieve_missing_resource_ids(
         db_pool.get().await?,
@@ -612,13 +587,13 @@ pub(in crate::views) struct SubjectGrant {
 pub(in crate::views) async fn resource_granted_users(
     Extension(authn_state): Extension<crate::authentication::State>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
     let mut conn = db_pool.get().await?;
-    let openfga = regulator.openfga();
+    let openfga = &openfga;
     let authorizer = authn_state.authorizer(openfga);
     // Ask OpenFGA about grants on the resource
     let ((readers, writers), owners) = match resource_type {
@@ -791,7 +766,7 @@ pub(in crate::views) enum BodyUpdateGrants {
 )]
 pub(in crate::views) async fn update_grants(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(body): Json<BodyUpdateGrants>,
@@ -835,29 +810,31 @@ pub(in crate::views) async fn update_grants(
         let mut conn = db_pool.get().await?;
         let mut conn2 = conn.clone();
         let (users, groups) = tokio::try_join!(
-            editoast_models::User::list(
+            models::User::list(
                 &mut conn,
                 SelectionSettings::new().filter({
                     let ids = subjects_id.clone();
-                    move || editoast_models::User::ID.eq_any(ids.clone())
+                    move || models::User::ID.eq_any(ids.clone())
                 })
             ),
-            editoast_models::Group::list(
+            models::Group::list(
                 &mut conn2,
                 SelectionSettings::new()
-                    .filter(move || editoast_models::Group::ID.eq_any(subjects_id.clone()))
+                    .filter(move || models::Group::ID.eq_any(subjects_id.clone()))
             )
         )?;
         users
             .into_iter()
-            .map(|editoast_models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
-            .chain(groups.into_iter().map(|editoast_models::Group { id, .. }| {
-                (id, authz::Subject::Group(authz::Group(id)))
-            }))
+            .map(|models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
+            .chain(
+                groups
+                    .into_iter()
+                    .map(|models::Group { id, .. }| (id, authz::Subject::Group(authz::Group(id)))),
+            )
             .collect::<HashMap<_, _>>()
     };
 
-    let authorizer = authn_state.authorizer(regulator.openfga());
+    let authorizer = authn_state.authorizer(&openfga);
 
     match body {
         BodyUpdateGrants::Grant(grants) => {
@@ -1143,6 +1120,7 @@ mod tests {
         assert_eq!(
             privileges.remove(&infra).unwrap(),
             HashSet::from([
+                StandardPrivilege::CanRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -3117,7 +3095,7 @@ mod tests {
             .assert_status_forbidden();
 
         assert_eq!(
-            editoast_models::User::retrieve_by_identity(&identity, app.db_pool().get_ok()).await,
+            models::User::retrieve_by_identity(&identity, app.db_pool().get_ok()).await,
             Ok(None),
             "new user should not be registered"
         );

@@ -700,7 +700,6 @@
       "none": "Keiner"
     },
     "chooseRollingStock": "Wählen Sie ein Schienenfahrzeug aus, um dessen Informationen anzuzeigen",
-    "comfort": "Komfort",
     "comfortAcceleration": "Komfortbeschleunigung",
     "comfortLevels": "Komfortstufen",
     "comfortTypes": {
@@ -794,7 +793,6 @@
     "rollingResistanceB": "Geschwindigkeitsabhängiger Widerstand (b)",
     "rollingResistanceC": "Luftwiderstand (c)",
     "rollingResistanceFormula": "R(v) = a + bv + cv²",
-    "rollingstockChoice": "Schienenfahrzeug auswählen",
     "selectRollingStock": "Auswählen",
     "speed": "Geschwindigkeit (km/h)",
     "startupAcceleration": "Anfahrbeschleunigung",
@@ -820,6 +818,9 @@
     "calculatedArrivalTime": "berechnete Ankunft",
     "calculatedDepartureTime": "berechnete Abfahrt",
     "calculatedDepartureTimeFull": "berechnete Abfahrtszeit",
+    "clearRequestedArrivalTime": "Angeforderte Ankunft löschen",
+    "clearRequestedDepartureTime": "Angeforderte Abfahrt löschen",
+    "clearStopDuration": "Haltezeit löschen",
     "computedTheoreticalMargin": "berechnete theoretische Marge",
     "dayCounter": "T+{{count}}",
     "departureTime": "angeforderte Abfahrt",

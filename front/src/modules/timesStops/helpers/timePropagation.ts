@@ -1,73 +1,55 @@
-import type { PathItem, ScheduleItem } from 'common/api/osrdEditoastApi';
+import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
-import { addDurationToDate, Duration } from 'utils/duration';
+import {
+  Duration,
+  type StartTime,
+  addDurationToStartTime,
+  subtractStartTime,
+} from 'utils/duration';
 
-import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
-
-export const ONE_DAY = new Duration({ hours: 24 });
-
-export type PropagationResult = {
-  updatedPath: PathItem[];
-  updatedSchedule: ScheduleItem[];
-  updatedStartTime: Date;
-};
+import { ONE_DAY } from '../consts';
+import type { ArrivalUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
+import { propagateStopDuration } from './stopDurationPropagation';
+import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
 
 const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
   update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
-const toHmsDuration = (date: Date) =>
-  new Duration({
-    hours: date.getHours(),
-    minutes: date.getMinutes(),
-    seconds: date.getSeconds(),
-  });
+const toHmsDuration = (date: StartTime) =>
+  date instanceof Date
+    ? new Duration({
+        hours: date.getHours(),
+        minutes: date.getMinutes(),
+        seconds: date.getSeconds(),
+      })
+    : new Duration({ seconds: Math.floor(date.total('second')) });
 
 // Delta based on HH:mm:ss only. Ignores the calendar day.
-const computeDelta = (oldValue: Date | null, newValue: Date | null): Duration | null => {
+const computeDelta = (oldValue: StartTime | null, newValue: StartTime | null): Duration | null => {
   if (!oldValue || !newValue) return null;
   return toHmsDuration(newValue).sub(toHmsDuration(oldValue));
 };
 
-const truncateToSecond = (date: Date): Date => {
-  const truncated = new Date(date);
-  truncated.setMilliseconds(0);
-  return truncated;
-};
-
 const computeDeltaForPropagationMode = (
-  oldValue: Date | null,
-  newValue: Date | null,
+  oldValue: StartTime | null,
+  newValue: StartTime | null,
   mode: PropagationMode
 ): Duration | null =>
   mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
     ? computeDelta(oldValue, newValue)
     : oldValue && newValue
-      ? Duration.subtractDate(truncateToSecond(newValue), truncateToSecond(oldValue))
+      ? subtractStartTime(truncateStartTimeToSecond(newValue), truncateStartTimeToSecond(oldValue))
       : null;
-
-export const formatSignedDelta = (delta: Duration) => {
-  const sign = delta.ms >= 0 ? '+' : '-';
-  const absoluteDelta = delta.abs().round('second');
-  const hours = Math.floor(absoluteDelta.total('hour'));
-  const minutes = Math.floor(absoluteDelta.total('minute')) % 60;
-  const seconds = Math.floor(absoluteDelta.total('second')) % 60;
-
-  const hoursLabel = hours.toString().padStart(2, '0');
-  const minutesLabel = minutes.toString().padStart(2, '0');
-  const secondsLabel = seconds.toString().padStart(2, '0');
-
-  return `${sign}${hoursLabel}:${minutesLabel}:${secondsLabel}`;
-};
 
 export const formatPropagationDeltaLabelByMode = (
   oldValue: Date | null,
   newValue: Date | null,
   mode: PropagationMode,
-  isOrigin = false
+  isOriginArrival = false
 ): string => {
-  // At the origin, propagation always uses HH:mm:ss delta (start_time shift),
+  // At the origin arrival, propagation always uses HH:mm:ss delta (start_time shift),
   // regardless of mode, to keep the label consistent with the actual propagation.
-  const delta = isOrigin
+  const delta = isOriginArrival
     ? computeDelta(oldValue, newValue)
     : computeDeltaForPropagationMode(oldValue, newValue, mode);
   return formatSignedDelta(delta ?? Duration.zero);
@@ -85,7 +67,8 @@ const propagateFromEditedPoint = (
   delta: Duration,
   editedPathStepId: string,
   selectedTrain: Train,
-  direction: 'fromDeparture' | 'toDestination'
+  direction: 'fromDeparture' | 'toDestination',
+  timetableType: TimetableType
 ): PropagationResult | undefined => {
   // Delta strategy by direction:
   // - fromDeparture: compare time-of-day only
@@ -93,10 +76,15 @@ const propagateFromEditedPoint = (
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
-  const currentStartTime = new Date(selectedTrain.start_time);
+  const currentStartTime =
+    timetableType === 'CALENDAR'
+      ? new Date(selectedTrain.start_time)
+      : new Duration({ milliseconds: selectedTrain.start_time });
   // For fromDeparture: the train's start time shifts by delta. For toDestination: it stays the same.
   const newStartTime =
-    direction === 'fromDeparture' ? addDurationToDate(currentStartTime, delta) : currentStartTime;
+    direction === 'fromDeparture'
+      ? addDurationToStartTime(currentStartTime, delta)
+      : currentStartTime;
 
   // Compute shifted offsets for all affected items, sorted by path order.
   const affectedItems = Iterator.from(selectedTrain.schedule ?? [])
@@ -105,7 +93,7 @@ const propagateFromEditedPoint = (
       pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
     }))
     .filter(({ item, pathIndex }) => {
-      if (item.arrival === null) return false;
+      if (!item.arrival) return false;
       return direction === 'fromDeparture'
         ? pathIndex > editedPathIndex
         : pathIndex >= editedPathIndex;
@@ -148,13 +136,17 @@ const propagateFromEditedPoint = (
 
 const propagateShiftAll = (
   delta: Duration,
-  selectedTrain: Train
+  selectedTrain: Train,
+  timetableType: TimetableType
 ): PropagationResult | undefined => {
-  const currentStartTime = new Date(selectedTrain.start_time);
+  const currentStartTime =
+    timetableType === 'CALENDAR'
+      ? new Date(selectedTrain.start_time)
+      : new Duration({ milliseconds: selectedTrain.start_time });
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule: selectedTrain.schedule ?? [],
-    updatedStartTime: addDurationToDate(currentStartTime, delta),
+    updatedStartTime: addDurationToStartTime(currentStartTime, delta),
   };
 };
 
@@ -195,37 +187,58 @@ export const adjustFollowingWaypointsForMidnight = (
 
 export const propagateTime = (
   update: CellUpdate,
-  selectedTrain: Train
+  selectedTrain: Train,
+  timetableType: TimetableType
 ): PropagationResult | undefined => {
   if (update.field !== 'requestedArrival' && update.field !== 'requestedDeparture')
     return undefined;
 
   const oldValue = update.row[update.field];
   const newValue = update.value;
-  const isOriginUpdate = isOriginArrivalUpdate(update);
+  const isOriginArrival = isOriginArrivalUpdate(update);
   const isShiftAllPropagation = update.propagationMode === 'shiftAllWaypoints';
   // Origin and shiftAll use HH:mm:ss delta only. toDestination uses full datetime (can produce D+1).
   // fromDeparture uses HH:mm:ss only since start_time absorbs the shift.
   const delta =
-    isOriginUpdate || isShiftAllPropagation
+    isOriginArrival || isShiftAllPropagation
       ? computeDelta(oldValue, newValue)
       : computeDeltaForPropagationMode(oldValue, newValue, update.propagationMode);
   if (delta === null) return undefined;
 
-  if (isOriginUpdate || update.propagationMode === 'shiftAllWaypoints') {
-    if (!isOriginUpdate) return propagateShiftAll(delta, selectedTrain);
+  // A departure update propagated toDestination is the same delta applied to the stop duration.
+  if (update.field === 'requestedDeparture' && update.propagationMode === 'toDestination') {
+    return propagateStopDuration(
+      {
+        row: update.row,
+        field: 'stopDuration',
+        value: (update.row.stopDuration ?? Duration.zero).add(delta).total('second'),
+        propagationMode: 'toDestination',
+      },
+      selectedTrain,
+      timetableType
+    );
+  }
+
+  if (isOriginArrival || update.propagationMode === 'shiftAllWaypoints') {
+    if (!isOriginArrival) return propagateShiftAll(delta, selectedTrain, timetableType);
+    let result: PropagationResult | undefined;
     if (isShiftAllPropagation || update.propagationMode === 'toDestination')
-      return propagateShiftAll(delta, selectedTrain);
+      result = propagateShiftAll(delta, selectedTrain, timetableType);
     // atThisWaypoint at origin = only move start_time. Following offsets are compensated so
     // their absolute times stay the same — which is exactly what fromDeparture does.
-    if (update.propagationMode === 'atThisWaypoint')
-      return propagateFromEditedPoint(
+    else if (update.propagationMode === 'atThisWaypoint')
+      result = propagateFromEditedPoint(
         delta,
         update.row.pathStepId!,
         selectedTrain,
-        'fromDeparture'
+        'fromDeparture',
+        timetableType
       );
-    return undefined;
+    // Keep the computed start time: the typed value's day is only inferred from HH:mm:ss
+    // Truncate the sub-second part inherited from start_time.
+    return result
+      ? { ...result, updatedStartTime: truncateStartTimeToSecond(result.updatedStartTime) }
+      : result;
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
@@ -233,6 +246,7 @@ export const propagateTime = (
     delta,
     update.row.pathStepId,
     selectedTrain,
-    update.propagationMode
+    update.propagationMode,
+    timetableType
   );
 };

@@ -7,6 +7,7 @@ import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastAp
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { computeCoordinatesOnClick } from 'common/Map/utils';
+import { useInfraID } from 'common/osrdContext';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
@@ -19,6 +20,7 @@ type MapSearchOperationalPointProps = {
 };
 
 const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperationalPointProps) => {
+  const infraId = useInfraID();
   const {
     searchTerm,
     secondaryCodeFilter,
@@ -28,7 +30,7 @@ const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperational
     setSearchTerm,
     setSecondaryCodeFilter,
     setMainOperationalPointsOnly,
-  } = useSearchOperationalPoint({ pageSize: MAX_DISPLAYABLE_RESULTS + 1 });
+  } = useSearchOperationalPoint({ infraId, pageSize: MAX_DISPLAYABLE_RESULTS + 1 });
 
   const { t } = useTranslation();
   const { selectSearchResult } = useMapSettingsActions();

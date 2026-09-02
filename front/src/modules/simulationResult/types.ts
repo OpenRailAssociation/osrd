@@ -12,6 +12,7 @@ import type {
   PathItemLocation,
   PathProperties,
   RollingStockWithLiveries,
+  ScheduleItem,
   SimulationResponseSuccess,
   TrainSchedule,
   PathItem,
@@ -65,6 +66,8 @@ export type TrainSpaceTimeData = {
   departureTime: Date;
   originPathItem: PathItem;
   destinationPathItem: PathItem;
+  schedule?: ScheduleItem[];
+  initialSpeed?: number;
   paced?: TrainScheduleWithDetails['paced'] & {
     exceptionProjections: Map<number, BaseTrainProjection>;
   };
@@ -72,6 +75,7 @@ export type TrainSpaceTimeData = {
 
 /** Contains an individual projection, either of a unique train or an occurrence */
 export type IndividualTrainProjection = {
+  key: string;
   name: string;
   departureTime: Date;
 } & BaseTrainProjection &
@@ -176,16 +180,22 @@ export type CurveStyleExceptionType = keyof Pick<
  */
 export type CurveStyleInput = {
   chart: 'std' | 'tod';
-  train: {
-    id: TrainId;
-    exceptionType?: CurveStyleExceptionType;
-    isDragging?: boolean;
-  };
+  train:
+    | {
+        id: OccurrenceId;
+        /**
+         * The relevant exception types (start_time / path_and_schedule) this occurrence
+         * carries (it can cumulate several). Only occurrences can carry exceptions.
+         */
+        relevantExceptionTypes: CurveStyleExceptionType[];
+      }
+    | { id: TrainScheduleId };
   selection: SelectedTrain | undefined;
   panelMode?: 'compliant' | 'all' | 'single';
   hover?: {
     trainId: TrainId;
     from: SelectionSource;
-    exceptionType?: CurveStyleExceptionType;
+    relevantExceptionTypes?: CurveStyleExceptionType[];
   };
+  dragging?: { trainId: TrainId; relevantExceptionTypes?: CurveStyleExceptionType[] };
 };

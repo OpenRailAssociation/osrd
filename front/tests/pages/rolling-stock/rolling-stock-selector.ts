@@ -4,11 +4,9 @@ import { extractNumberFromString } from '../../utils/index';
 import CommonPage from '../common-page';
 
 class RollingStockSelector extends CommonPage {
-  private readonly rollingStockSelectorButton: Locator;
   private readonly emptyRollingStockSelector: Locator;
   readonly rollingStockSelectorModal: Locator;
   private readonly rollingStockModalSearch: Locator;
-  private readonly rollingStockMiniCards: Locator;
   private readonly electricRollingStockFilter: Locator;
   private readonly thermalRollingStockFilter: Locator;
   private readonly rollingStockSearchResult: Locator;
@@ -20,18 +18,15 @@ class RollingStockSelector extends CommonPage {
   readonly dualModeRollingStockIcons: Locator;
   readonly noRollingStockResult: Locator;
   readonly comfortACButton: Locator;
-  readonly selectedComfortType: Locator;
   readonly selectedRollingStockName: Locator;
   readonly rollingStockNameTab: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.rollingStockSelectorButton = page.getByTestId('rollingstock-selector');
     this.rollingStockSelectorModal = page.getByTestId('rollingstock-selector-modal');
     this.rollingStockList = page.getByTestId('rollingstock-title');
     this.emptyRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.rollingStockModalSearch = this.rollingStockSelectorModal.getByTestId('searchfilter-input');
-    this.rollingStockMiniCards = page.getByTestId('rollingstock-selector-minicard');
     this.electricRollingStockFilter = page.locator('label[for="elec"]');
     this.thermalRollingStockFilter = page.locator('label[for="thermal"]');
     this.rollingStockSearchResult = page.getByTestId('search-results-text');
@@ -45,17 +40,8 @@ class RollingStockSelector extends CommonPage {
     this.thermalRollingStockFirstIcon = this.thermalRollingStockIcons.first();
     this.noRollingStockResult = page.getByTestId('rollingstock-empty-result');
     this.comfortACButton = page.getByTestId('comfort-ac-button');
-    this.selectedComfortType = page.getByTestId('selected-comfort-type-info');
     this.selectedRollingStockName = page.getByTestId('selected-rolling-stock-info');
     this.rollingStockNameTab = page.getByTestId('rolling-stock-name-tab');
-  }
-
-  getRollingStockMiniCardInfo() {
-    return this.rollingStockMiniCards.getByTestId('selected-rolling-stock-info');
-  }
-
-  getRollingStockInfoComfort() {
-    return this.rollingStockMiniCards.getByTestId('rollingstock-info-comfort');
   }
 
   getRollingstockCardByName(rollingstockName: string) {
@@ -64,10 +50,6 @@ class RollingStockSelector extends CommonPage {
 
   private getRollingStockSearchButton(locator: Locator) {
     return locator.getByTestId('select-rolling-stock-button');
-  }
-
-  async openRollingstockModal() {
-    await this.rollingStockSelectorButton.click();
   }
 
   async searchRollingstock(rollingstockName: string) {
@@ -92,15 +74,6 @@ class RollingStockSelector extends CommonPage {
       await this.getRollingStockSearchButton(rollingstockCard).click();
       await expect(this.rollingStockSelectorModal).toBeHidden();
     }
-  }
-
-  async verifyRollingStockIsInactive(rollingstockName: string): Promise<void> {
-    const rollingstockCard = this.getRollingstockCardByName(rollingstockName);
-    await expect(rollingstockCard).toHaveClass(/inactive/);
-  }
-
-  async verifySelectedComfortMatches(expectedComfort: string): Promise<void> {
-    await expect(this.selectedComfortType).toHaveText(new RegExp(expectedComfort, 'i'));
   }
 
   async toggleThermalRollingStockFilter() {

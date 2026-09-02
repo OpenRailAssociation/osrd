@@ -1,10 +1,11 @@
-import type { ScheduleItem } from 'common/api/osrdEditoastApi';
+import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration, subtractDurationFromDate } from 'utils/duration';
+import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 
-import type { StopDurationUpdate } from '../types';
+import { ONE_DAY } from '../consts';
+import type { StopDurationUpdate, PropagationResult } from '../types';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { formatSignedDelta, ONE_DAY, type PropagationResult } from './timePropagation';
+import { formatSignedDelta } from './utils';
 
 export const formatStopDurationDeltaLabel = (
   oldValue: Duration | null,
@@ -22,7 +23,8 @@ export const formatStopDurationDeltaLabel = (
  */
 export const propagateStopDuration = (
   update: StopDurationUpdate,
-  selectedTrain: Train
+  selectedTrain: Train,
+  timetableType: TimetableType
 ): PropagationResult | undefined => {
   // Clearing the duration falls through to the generic single-row edit path, regardless of mode.
   if (
@@ -46,7 +48,10 @@ export const propagateStopDuration = (
   const currentSchedule = selectedTrain.schedule ?? [];
   const editedItem = currentSchedule.find((item) => item.at === pathStepId);
   const editedOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
-  const currentStartTime = new Date(selectedTrain.start_time);
+  const currentStartTime =
+    timetableType === 'CALENDAR'
+      ? new Date(selectedTrain.start_time)
+      : new Duration({ milliseconds: selectedTrain.start_time });
 
   // Shift every scheduled arrival after the edited point by +delta, in path order. Bump +24h
   // if a shifted arrival ends up before the previous one.
@@ -75,13 +80,13 @@ export const propagateStopDuration = (
       )
     : insertScheduleItemInOrder(
         shiftedSchedule,
-        { at: pathStepId, stop_for: newDuration.toISOString() },
+        { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
         selectedTrain.path
       );
 
   const updatedStartTime =
     update.propagationMode === 'fromDeparture'
-      ? subtractDurationFromDate(currentStartTime, delta)
+      ? subtractDurationFromStartTime(currentStartTime, delta)
       : currentStartTime;
 
   return {

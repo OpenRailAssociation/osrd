@@ -11,6 +11,15 @@ export const getSearchJourneyTimetableIds = makeSearchJourneySelector('timetable
 export const getSearchJourneyStartTime = makeSearchJourneySelector('startTime');
 export const getSearchJourneyOrigin = makeSearchJourneySelector('origin');
 export const getSearchJourneyDestination = makeSearchJourneySelector('destination');
+export const getSearchJourneyJourneys = makeSearchJourneySelector('journeys');
+export const getSearchJourneySelectedSolutionIndex =
+  makeSearchJourneySelector('selectedSolutionIndex');
+
+export const getSearchJourneySelectedSolution = (state: RootState) => {
+  const journeys = getSearchJourneyJourneys(state);
+  const selectedSolutionIndex = getSearchJourneySelectedSolutionIndex(state);
+  return selectedSolutionIndex !== undefined ? journeys?.[selectedSolutionIndex] : undefined;
+};
 
 const selectors = {
   getSearchJourneyConf,
@@ -19,6 +28,9 @@ const selectors = {
   getSearchJourneyStartTime,
   getSearchJourneyOrigin,
   getSearchJourneyDestination,
+  getSearchJourneyJourneys,
+  getSearchJourneySelectedSolutionIndex,
+  getSearchJourneySelectedSolution,
 };
 
 export type SearchJourneySelectors = typeof selectors;

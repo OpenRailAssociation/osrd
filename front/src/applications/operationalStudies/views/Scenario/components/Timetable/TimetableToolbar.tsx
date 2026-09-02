@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 import {
   Alert,
@@ -16,18 +16,23 @@ import {
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useScenarioTrainScheduleSet, {
+  type ImportTrainScheduleSetsPayload,
+} from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { resetItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
+import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import useImportTrainSchedules from '../ImportTrainSchedule';
+import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
@@ -36,6 +41,7 @@ import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils'
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
   filteredTrainSchedules: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
   showTrainDetails: boolean;
@@ -43,7 +49,6 @@ type TimetableToolbarProps = {
   setSelectedTrainScheduleIds: (selectedTrainScheduleIds: number[]) => void;
   setShowTrainDetails: (show: boolean) => void;
   setIsSelectMode: (show: boolean) => void;
-  setDisplayTrainScheduleManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTrainSchedules: () => void;
   handleMoveTrainSchedules: () => void;
@@ -53,6 +58,7 @@ type TimetableToolbarProps = {
 
 const TimetableToolbar = ({
   timetableFilters,
+  trainSchedulesWithDetails,
   filteredTrainSchedules,
   selectedTrainScheduleIds,
   showTrainDetails,
@@ -60,7 +66,6 @@ const TimetableToolbar = ({
   setShowTrainDetails,
   setIsSelectMode,
   setSelectedTrainScheduleIds,
-  setDisplayTrainScheduleManagement,
   refreshNge,
   handleDeleteTrainSchedules,
   handleMoveTrainSchedules,
@@ -83,6 +88,8 @@ const TimetableToolbar = ({
 
   const { openModal, closeModal } = useContext(ModalContext);
   const importFile = useImportTrainSchedules();
+
+  const { openItineraryModalToCreate } = useItineraryModalContext();
 
   const toggleisSelectMode = () => {
     setIsSelectMode(!isSelectMode);
@@ -128,6 +135,21 @@ const TimetableToolbar = ({
       />
     );
 
+  const { importTrainScheduleSets } = useScenarioTrainScheduleSet(trainSchedulesWithDetails);
+  const [trainScheduleSetsCatalogModalIsOpen, setTrainScheduleSetsCatalogModalIsOpen] =
+    useState<boolean>(false);
+
+  const handleImportTrainScheduleSets = async (data: ImportTrainScheduleSetsPayload) => {
+    try {
+      await importTrainScheduleSets(data);
+      setTrainScheduleSetsCatalogModalIsOpen(false);
+    } catch (error) {
+      dispatch(setFailure(castErrorToFailure(error)));
+    }
+  };
+
+  const trainSchedulesList = useMemo(() => [...trainSchedules.values()], [trainSchedules]);
+
   return (
     <>
       {areInvalidTrainSchedules && (
@@ -151,7 +173,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-select-options-button"
             title={t('timetable.selectOptions')}
             onClick={toggleisSelectMode}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <CheckBox />
@@ -163,7 +185,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-show-train-details-button"
             title={showTrainDetails ? t('lessDetails') : t('moreDetails')}
             onClick={toggleShowTrainDetails}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <Note />
@@ -173,7 +195,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-manage-round-trips-button"
             title={t('roundTripsModal.manageRoundTrips')}
             onClick={() => setRoundTripsModalIsOpen(true)}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <ArrowSwitch />
@@ -197,8 +219,7 @@ const TimetableToolbar = ({
                   icon: <Book />,
                   title: t('timetable.importTimetableNetworkGraphFromCatalog'),
                   dataTestID: 'scenarios-import-timetable-by-catalog',
-                  onClick: () =>
-                    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.catalog),
+                  onClick: () => setTrainScheduleSetsCatalogModalIsOpen(true),
                 },
               ],
             }}
@@ -208,8 +229,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-add-train-schedule-button"
             title={t('timetable.addTrainSchedule')}
             onClick={() => {
-              dispatch(resetItineraryForm());
-              setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
+              openItineraryModalToCreate();
             }}
             type="button"
           >
@@ -224,7 +244,7 @@ const TimetableToolbar = ({
             data-testid="timetable-filter-button"
             title={t('timetable.toggleFilters')}
             onClick={toggleFilterPanel}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <Filter />
@@ -232,11 +252,11 @@ const TimetableToolbar = ({
           <div className="timetable-sort-switch">
             <button
               className={cx('timetable-mode-button', {
-                active: timetableMode === 'calendar',
+                active: timetableMode === 'chronological',
               })}
-              data-testid="timetable-calendar-mode-button"
-              title={t('timetable.modeCalendar')}
-              onClick={() => setTimetableMode('calendar')}
+              data-testid="timetable-chronological-mode-button"
+              title={t('timetable.modeChronological')}
+              onClick={() => setTimetableMode('chronological')}
               type="button"
             >
               <Calendar />
@@ -283,8 +303,14 @@ const TimetableToolbar = ({
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
           timetableId={timetableId}
-          trainSchedules={trainSchedules}
+          trainSchedules={trainSchedulesList}
           refreshNge={refreshNge}
+        />
+      )}
+      {trainScheduleSetsCatalogModalIsOpen && (
+        <TrainScheduleSetCatalogDialog
+          onSubmit={handleImportTrainScheduleSets}
+          onCancel={() => setTrainScheduleSetsCatalogModalIsOpen(false)}
         />
       )}
     </>

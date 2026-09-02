@@ -1,7 +1,33 @@
 {
   "appName": "Capacity Need Announcement",
+  "consist": {
+    "title": "Consist",
+    "unavailable": "Unavailable"
+  },
+  "destination": {
+    "title": "Destination"
+  },
   "noConfigurationFound": {
     "text": "Unable to retrieve the search journey environment (infra, timetables). Please try again later.",
     "title": "No configuration found"
+  },
+  "origin": {
+    "title": "Origin"
+  },
+  "results": {
+    "noResult": "No result",
+    "solution": "Solution {{number}}",
+    "trainPathPrefix": "Train path no. "
+  },
+  "search": {
+    "button": "Search in ROP",
+    "cancel": "Cancel",
+    "error": "The search failed. Please try again.",
+    "pending": "Searching…"
+  },
+  "trainPath": {
+    "ch": "CH",
+    "ci": "CI",
+    "time": "Time"
   }
 }

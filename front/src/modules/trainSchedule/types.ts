@@ -19,7 +19,7 @@ export type SuggestedOP = {
   name: string | undefined;
   uic?: number | null;
   secondaryCode?: string | null;
-  countryCode?: string | null;
+  countryCode?: string;
   kp?: string;
   mainCode?: string;
   isPassengerStation?: boolean;
@@ -85,7 +85,8 @@ type TrainScheduleWithSummaries = Omit<
 export type InvalidReason =
   | Extract<SimulationSummaryResult['status'], 'pathfinding_failure' | 'simulation_failed'>
   | CorePathfindingNotFound['error_type']
-  | CorePathfindingInputError['error_type'];
+  | CorePathfindingInputError['error_type']
+  | 'unauthorized_rolling_stock';
 
 export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
 

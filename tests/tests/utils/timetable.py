@@ -47,6 +47,12 @@ def create_scenario(
         raise RuntimeError(err)
     train_schedule_set_id = r.json()["id"]
 
+    r = session.post(
+        editoast_url + f"/timetable/{timetable_id}/train_schedule_sets/",
+        json={"train_schedule_set_ids": [train_schedule_set_id]},
+    )
+    r.raise_for_status()
+
     # Create the scenario
     scenario_payload = {
         "name": "_@Test integration scenario",

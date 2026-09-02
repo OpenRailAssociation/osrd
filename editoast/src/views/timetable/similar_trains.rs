@@ -42,8 +42,8 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::views::timetable::similar_trains::graph::AdvancementError;
 use crate::views::timetable::similar_trains::graph::AdvancementErrorKind;
 use crate::views::timetable::similar_trains::past_train::PastTrain;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
 
 use super::AppState;
 
@@ -158,7 +158,7 @@ enum SimilarTrainsError {
     #[error("Database error")]
     #[editoast_error(status = 500)]
     #[from(forward)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
 #[editoast_derive::route(Role::Stdcm)]

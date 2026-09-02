@@ -13,7 +13,11 @@ import type {
 import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
+import {
+  DEFAULT_TIME_WINDOW,
+  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+  TRAINRUN_DIRECTIONS,
+} from '../consts';
 import type MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId, localStorageFilterSettingKey } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
@@ -265,7 +269,9 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
           category,
           ...pathAndSchedule,
         };
-        const paced = createPacedAttributesFromTrainrun(trainrun, dto);
+        // The JSON import has its own rules to adapt services to the target timetable, which are
+        // not handled here yet, so it keeps the historical default time window.
+        const paced = createPacedAttributesFromTrainrun(trainrun, dto, DEFAULT_TIME_WINDOW);
         trainSchedules.push({
           ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
           ...commonProps,

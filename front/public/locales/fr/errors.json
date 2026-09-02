@@ -29,11 +29,11 @@
       "TrackNotFound": "Section de voie {{track_id}} non trouvée"
     },
     "authorization": {
-      "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
       "Forbidden": "Accès refusé",
       "ForbiddenImpersonation": "Usurpation refusée",
       "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
+      "OpenFga": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "Unauthenticated": "Utilisateur non authentifié"
     },
     "authz": {
@@ -329,6 +329,14 @@
       "OccurrenceIndexAlreadyUsed": "L'index d'occurrence '{{occurrence_index}}' est déjà utilisé pour une autre exception de la même circulation",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "TrainScheduleNotFound": "La circulation '{{train_schedule_id}}' n’a pas été trouvée"
+    },
+    "train_schedule_linking": {
+      "BatchNotFound": "{{count}} enchaînements(s) n'a/ont pas pu être trouvé(s)",
+      "Database": "Erreur interne (base de données)",
+      "RequestIncompatibleWithTimetableType": "La grille horaire {{timetable_id}} est de type {{timetable_type}}, donc elle ne peut pas contenir d'occurrences avec un train_schedule_instance_index.",
+      "SourceAlreadyUsed": "L'occurrence {{occurrence}} est déjà utilisée comme source.",
+      "TargetAlreadyUsed": "L'occurrence ({{occurrence}} est déjà utilisée comme cible.",
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",

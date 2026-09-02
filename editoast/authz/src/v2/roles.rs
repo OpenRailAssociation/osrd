@@ -28,7 +28,7 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     subject_roles(subject)
-        .map(move |openfga, existing_roles| {
+        .then(move |openfga, existing_roles| {
             async move {
                 let existing_roles = HashSet::from_iter(existing_roles);
                 let new_roles = roles.difference(&existing_roles);
@@ -58,7 +58,7 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
     subject_roles(subject)
-        .map(move |openfga, existing_roles| {
+        .then(move |openfga, existing_roles| {
             async move {
                 let existing_roles = HashSet::from_iter(existing_roles);
                 let removed_roles = roles.intersection(&existing_roles);

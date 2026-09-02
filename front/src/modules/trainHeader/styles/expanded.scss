@@ -40,6 +40,10 @@
       margin-top: -8px;
     }
 
+    &:not(.calendar-timetable) .train-initial-velocity {
+      grid-row: span 2;
+    }
+
     label {
       margin-bottom: unset;
     }
@@ -153,6 +157,10 @@
       place-self: center start;
       padding: var(--non-field-spacing);
     }
+
+    #train-add-extra-occurrence-time.ui-duration-input {
+      width: 100%;
+    }
   }
 
   .train-extra-occurrences-list {
@@ -173,7 +181,6 @@
     .train-extra-occurrence-date {
       background-color: var(--white100);
       padding: 6px 7px;
-      margin-left: 16px;
     }
 
     .train-extra-occurrence-time {
@@ -209,6 +216,10 @@
       span {
         display: contents;
       }
+    }
+
+    .train-extra-occurrence-delete + div {
+      margin-left: 16px;
     }
   }
 

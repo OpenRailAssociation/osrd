@@ -18,7 +18,7 @@ import stdcmConfReducer, {
   stdcmConfInitialState,
   stdcmConfSlice,
 } from 'reducers/osrdconf/stdcmConf';
-import type { OperationalStudiesConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
+import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import referenceMapReducer, {
   referenceMapInitialState,
   referenceMapSlice,
@@ -111,7 +111,7 @@ export type RootState = {
   [editorSlice.name]: EditorState;
   [mainSlice.name]: MainState;
   [stdcmConfSlice.name]: OsrdStdcmConfState;
-  [operationalStudiesConfSlice.name]: OperationalStudiesConfState;
+  [operationalStudiesConfSlice.name]: OsrdConfState;
   [simulationResultsSlice.name]: SimulationResultsState;
   [searchJourneySlice.name]: SearchJourneyState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
@@ -139,7 +139,6 @@ export type AnyReducerState =
   | EditorState
   | MainState
   | OsrdStdcmConfState
-  | OperationalStudiesConfState
   | SimulationResultsState
   | SearchJourneyState;
 

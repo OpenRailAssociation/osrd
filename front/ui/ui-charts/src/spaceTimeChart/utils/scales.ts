@@ -1,17 +1,20 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { clamp, inRange } from 'lodash';
 
-import type { PixelToTime, Point, TimeToPixel } from '../../common/types';
+import type {
+  Axis,
+  DataPoint,
+  PixelToTime,
+  Point,
+  PointToData,
+  TimeToPixel,
+} from '../../common/types';
 import {
   type NormalizedScaleTree,
   type NormalizedScale,
   type SpaceScale,
   type SpaceToPixel,
   type PixelToSpace,
-  type PointToData,
   type DataToPoint,
-  type DataPoint,
-  type Axis,
   type PathData,
 } from '../lib/types';
 
@@ -266,6 +269,24 @@ export function getSpaceBreakpoints(from: number, to: number, tree: NormalizedSc
   return res;
 }
 
+export function sideOffset(
+  origin: number,
+  newScale: number,
+  rectStart: number | Date,
+  rectEnd: number | Date,
+  chartSideSizePx: number,
+  axisPadding: number = 0
+) {
+  const rectCenter = (Number(rectStart) + Number(rectEnd)) / 2;
+  const newChartSize = chartSideSizePx * newScale;
+  // newChartBorder is the x or y origin after zoom
+  // it’s normally the same as rectStart (the left or top most part of the rectangle)
+  // but if we reach max zoom we can’t use rectStart as the chart displayed origin
+  // because it doesn’t garentees that the zoom rectangle stays exactly at the center of the chart after the zoom
+  const newChartBorder = rectCenter - newChartSize / 2;
+  return (origin - newChartBorder) / newScale - axisPadding * 2;
+}
+
 /**
  * in most cases, after the rectangle zoom, the screen will be centered
  * on the center of the rectangle the user drew.
@@ -314,22 +335,4 @@ export function computeRectZoomOffsets({
   return !swapAxes
     ? { xOffset: timeOffset, yOffset: spaceOffset }
     : { xOffset: spaceOffset, yOffset: timeOffset };
-}
-
-export function sideOffset(
-  origin: number,
-  newScale: number,
-  rectStart: number | Date,
-  rectEnd: number | Date,
-  chartSideSizePx: number,
-  axisPadding: number = 0
-) {
-  const rectCenter = (Number(rectStart) + Number(rectEnd)) / 2;
-  const newChartSize = chartSideSizePx * newScale;
-  // newChartBorder is the x or y origin after zoom
-  // it’s normally the same as rectStart (the left or top most part of the rectangle)
-  // but if we reach max zoom we can’t use rectStart as the chart displayed origin
-  // because it doesn’t garentees that the zoom rectangle stays exactly at the center of the chart after the zoom
-  const newChartBorder = rectCenter - newChartSize / 2;
-  return (origin - newChartBorder) / newScale - axisPadding * 2;
 }

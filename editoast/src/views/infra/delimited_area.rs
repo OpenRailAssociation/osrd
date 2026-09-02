@@ -1,20 +1,22 @@
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use editoast_derive::EditoastError;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
 use itertools::Either;
 use itertools::Itertools;
+use models::Infra;
+use models::prelude::*;
 use schemas::infra::Direction;
 use schemas::infra::DirectionalTrackRange;
 use schemas::infra::Endpoint;
@@ -127,10 +129,11 @@ pub(in crate::views) async fn delimited_area(
         db_pool,
         valkey_client,
         config,
+        openfga,
         ..
     }): State<AppState>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Json(DelimitedAreaForm { entries, exits }): Json<DelimitedAreaForm>,
 ) -> Result<Json<DelimitedAreaResponse>> {
     // TODO in case of a missing exit, return an empty list of track ranges instead of returning all
@@ -142,12 +145,11 @@ pub(in crate::views) async fn delimited_area(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     let infra_cache = InfraCache::get_or_load(
@@ -515,7 +517,7 @@ mod tests {
     use crate::views::test_app::TestRequestExt as _;
     use authz::InfraGrant;
     use authz::Role;
-    use editoast_models::Infra;
+    use models::Infra;
 
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;

@@ -1,20 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { timeScaleToZoomValue, zoomX, getDistance } from '../../common/helpers/utils';
 import type { Point } from '../../common/types';
-import { timeScaleToZoomValue, zoomX } from '../../manchette/utils/helpers';
 import {
   CHRONOGRAM_HEADER_HEIGHT,
   CHRONOGRAM_BOTTOM_PADDING,
   LEVEL_CROSSING_ITEM_HEIGHT,
 } from '../lib/const';
-
-// TODO: manchette's existant utils => common ?
-function getDistance(a: Point, b: Point): Point {
-  return {
-    x: b.x - a.x,
-    y: b.y - a.y,
-  };
-}
 
 export type UseChronogramProps = {
   itemCount: number;
@@ -72,7 +64,7 @@ const useChronogram = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
+    /* eslint-disable-next-line react/set-state-in-effect */
     setHeight(chronogramHeight);
   }, [chronogramHeight, setHeight]);
 

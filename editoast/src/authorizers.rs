@@ -114,6 +114,14 @@ impl<'c> UserAuthorizer<'c> {
                         .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
+            Check::HasProjectPrivilege(actor, privilege, project) => {
+                let Ok(privileges) =
+                    authz::v2::project_privileges(*self.actor_user(actor), *project)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
+                (!privileges.contains(privilege)).then_some(check)
+            }
 
             Check::CanAlterSubjectInfraGrant(
                 subject @ authz::Subject::User(_),
@@ -305,7 +313,7 @@ mod tests {
 
     async fn create_user(pool: &DbConnectionPoolV2, name: &str) -> authz::User {
         authz::User(
-            editoast_models::User::register(pool.get_ok(), vec![name.to_owned()], name.to_owned())
+            models::User::register(pool.get_ok(), vec![name.to_owned()], name.to_owned())
                 .await
                 .expect("user should be created")
                 .id,
@@ -314,7 +322,7 @@ mod tests {
 
     async fn create_group(pool: &DbConnectionPoolV2, name: &str) -> authz::Group {
         authz::Group(
-            editoast_models::Group::upsert(pool.get_ok(), name.to_owned())
+            models::Group::upsert(pool.get_ok(), name.to_owned())
                 .await
                 .expect("group should be created")
                 .id,

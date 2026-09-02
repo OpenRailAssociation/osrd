@@ -15,8 +15,8 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use database::DbConnectionPoolV2;
-use editoast_models::Document;
-use editoast_models::prelude::*;
+use models::Document;
+use models::prelude::*;
 
 #[derive(Error, Debug, EditoastError)]
 #[editoast_error(base_id = "document")]
@@ -26,7 +26,7 @@ pub enum DocumentErrors {
     NotFound { document_key: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 /// Returns a document of any type

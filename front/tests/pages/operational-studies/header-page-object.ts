@@ -35,11 +35,16 @@ class HeaderPageObject extends CommonPage {
   private readonly electricalProfilesCheckbox: Locator;
   private readonly tagsInput: Locator;
   private readonly tagItems: Locator;
+  private readonly scheduleKindToggle: Locator;
+  private readonly itineraryButton: Locator;
   readonly serviceCadenceInput: Locator;
   readonly serviceWindowHourInput: Locator;
   readonly serviceWindowMinuteInput: Locator;
   private readonly extraOccurrencesToggle: Locator;
   private readonly extraOccurrenceRows: Locator;
+  private readonly extraOccurrenceDateInput: Locator;
+  private readonly extraOccurrenceTimeInput: Locator;
+  private readonly extraOccurrenceAddButton: Locator;
   private readonly serviceChangeHeader: Locator;
   private readonly serviceChangeCancelButton: Locator;
   private readonly serviceChangeConfirmButton: Locator;
@@ -81,6 +86,8 @@ class HeaderPageObject extends CommonPage {
     );
     this.tagsInput = this.expandedHeader.getByTestId('train-header-tags-input');
     this.tagItems = this.expandedHeader.getByTestId('train-header-tags-token');
+    this.scheduleKindToggle = this.expandedHeader.getByTestId('train-header-schedule-kind-toggle');
+    this.itineraryButton = this.expandedHeader.getByTestId('train-header-itinerary-button');
 
     this.serviceCadenceInput = this.expandedHeader.getByTestId('train-header-service-cadence-m');
     this.serviceWindowHourInput = this.expandedHeader.getByTestId('train-header-service-window-h');
@@ -91,6 +98,15 @@ class HeaderPageObject extends CommonPage {
       'train-header-extra-occurrences-toggle'
     );
     this.extraOccurrenceRows = this.expandedHeader.getByTestId('train-header-extra-occurrence-row');
+    this.extraOccurrenceDateInput = this.expandedHeader.getByTestId(
+      'train-header-extra-occurrence-date-input'
+    );
+    this.extraOccurrenceTimeInput = this.expandedHeader.getByTestId(
+      'train-header-extra-occurrence-time-input'
+    );
+    this.extraOccurrenceAddButton = this.expandedHeader.getByTestId(
+      'train-header-extra-occurrence-add-button'
+    );
 
     this.serviceChangeHeader = this.expandedHeader.getByTestId(
       'train-header-service-change-header'
@@ -191,6 +207,11 @@ class HeaderPageObject extends CommonPage {
     await this.nameInput.blur();
   }
 
+  async setDepartureDate(date: string) {
+    await this.departureDateInput.fill(date);
+    await this.departureDateInput.blur();
+  }
+
   async setInitialVelocity(value: string) {
     await this.initialVelocityInput.fill(value);
     await this.initialVelocityInput.blur();
@@ -221,6 +242,14 @@ class HeaderPageObject extends CommonPage {
     await this.electricalProfilesCheckbox.setChecked(checked, { force: true });
   }
 
+  async toggleScheduleKind(checked: boolean) {
+    await this.scheduleKindToggle.setChecked(checked, { force: true });
+  }
+
+  async openItinerary() {
+    await this.itineraryButton.click();
+  }
+
   async addTag(tag: string) {
     await this.tagsInput.fill(tag);
     await this.tagsInput.press('Enter');
@@ -241,6 +270,16 @@ class HeaderPageObject extends CommonPage {
     await this.serviceWindowMinuteInput.press('Enter');
   }
 
+  async verifyServiceCadenceAndWindow(
+    intervalMinutes: string,
+    windowHours: string,
+    windowMinutes: string
+  ) {
+    await expect(this.serviceCadenceInput).toHaveValue(intervalMinutes);
+    await expect(this.serviceWindowHourInput).toHaveValue(windowHours);
+    await expect(this.serviceWindowMinuteInput).toHaveValue(windowMinutes);
+  }
+
   async verifyServiceChangeDialogVisible() {
     await expect(this.serviceChangeHeader).toBeVisible();
     await expect(this.serviceChangeConfirmButton).toBeVisible();
@@ -257,6 +296,12 @@ class HeaderPageObject extends CommonPage {
 
   async toggleExtraOccurrences() {
     await this.extraOccurrencesToggle.click();
+  }
+
+  async createExtraOccurrence(date: string, time: string) {
+    await this.extraOccurrenceDateInput.fill(date);
+    await this.extraOccurrenceTimeInput.fill(time);
+    await this.extraOccurrenceAddButton.click();
   }
 
   async verifyExtraOccurrencesToggleLabel(expectedCount: number) {

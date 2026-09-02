@@ -4,7 +4,7 @@ import type { Dispatch } from 'redux';
 
 import type {
   ConsistSchedule,
-  PathfindingItem,
+  StdcmPathfindingItem,
   PostTimetableByIdStdcmApiArg,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
@@ -12,14 +12,14 @@ import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/ty
 import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
 
-import { stdcmPathStepToPathItemLocation } from '.';
+import { canPathStepBacktrack, stdcmPathStepToPathItemLocation } from '.';
 import { StdcmStopTypes } from '../types';
 import createMargin from './createMargin';
 
 type ValidStdcmConfig = {
   timetableId: number;
   infraId: number;
-  path: PathfindingItem[];
+  path: StdcmPathfindingItem[];
   margin?: StandardAllowance;
   gridMarginBefore?: Duration;
   gridMarginAfter?: Duration;
@@ -34,7 +34,8 @@ export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
   dateTimeLocale: Intl.Locale,
-  osrdconf: OsrdStdcmConfState
+  osrdconf: OsrdStdcmConfState,
+  backtrackEnabled: boolean
 ): ValidStdcmConfig | null => {
   const {
     stdcmPathSteps: pathSteps,
@@ -157,7 +158,7 @@ export const checkStdcmConf = (
   const path = compact(osrdconf.stdcmPathSteps).map((step) => {
     const formattedLocation = stdcmPathStepToPathItemLocation(step.operationalPoint);
 
-    let timingData: PathfindingItem['timing_data'] | undefined;
+    let timingData: StdcmPathfindingItem['timing_data'] | undefined;
     let duration: number | undefined;
     if (step.isVia) {
       const { stopFor } = step;
@@ -181,7 +182,10 @@ export const checkStdcmConf = (
 
     return {
       duration,
-      location: formattedLocation,
+      pathfinding_item: {
+        location: formattedLocation,
+        can_backtrack: backtrackEnabled && canPathStepBacktrack(step),
+      },
       timing_data: timingData,
     };
   });

@@ -33,7 +33,7 @@ export type Board =
   | 'macro'
   | 'std'
   | 'sdd'
-  | 'tables'
+  | 'table'
   | 'conflicts'
   | 'chronogram';
 

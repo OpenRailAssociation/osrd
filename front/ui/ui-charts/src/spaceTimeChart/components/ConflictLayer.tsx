@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 
 import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { drawAliasedRect } from '../../common/helpers/utils';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
-import { drawAliasedRect } from '../utils/canvas';
 
 export type Conflict = {
   timeStart: number;

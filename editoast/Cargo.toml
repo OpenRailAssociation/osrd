@@ -14,10 +14,10 @@ members = [
   "core_task",
   "database",
   "editoast_derive",
-  "editoast_models",
   "fga",
   "fga_derive",
   "fga_migrations",
+  "models",
   "osm_to_railjson",
   "profile_connection_scan",
   "schemas",
@@ -26,7 +26,6 @@ members = [
 
 [workspace.lints.rust]
 async_fn_in_trait = "allow" # all of our public traits are only used inside the project
-dependency_on_unit_never_type_fallback = "allow" # this is caused by tracing, we can't do anything about it
 
 [workspace.package]
 version = "0.1.0"
@@ -76,7 +75,6 @@ diesel-async = { version = "0.9", default-features = false, features = [
 ] }
 diesel_json = "0.3.0"
 editoast_derive = { path = "./editoast_derive" }
-editoast_models = { path = "./editoast_models" }
 educe = "0.7.4"
 enum-map = "3.1.0"
 fga = { path = "./fga", features = ["test_utilities"] }
@@ -91,7 +89,8 @@ indexmap = "2.13"
 itertools = "0.15.0"
 lapin = { version = "4.7.4", default-features = false, features = ["tokio"] }
 linkme = "0.3.36"
-mvt = "0.14.0"
+models = { path = "./models" }
+mvt = "0.15.0"
 object_store = { version = "0.14.0", features = ["aws"] }
 openssl = "0.10.80"
 opentelemetry = { version = "0.32.0", default-features = false, features = [
@@ -193,7 +192,6 @@ diesel.workspace = true
 diesel-async = { workspace = true }
 diesel_json.workspace = true
 editoast_derive.workspace = true
-editoast_models.workspace = true
 educe.workspace = true
 enum-map.workspace = true
 fga.workspace = true
@@ -217,6 +215,7 @@ json-patch = { version = "4.1.0", default-features = false, features = [
   "utoipa",
 ] }
 linkme.workspace = true
+models.workspace = true
 object_store.workspace = true
 opentelemetry-otlp.workspace = true
 opentelemetry_sdk.workspace = true
@@ -267,8 +266,8 @@ axum = { version = "0.8.4", default-features = false, features = [
 axum-test = { version = "21.0", default-features = false }
 core_client = { workspace = true }
 database = { workspace = true, features = ["testing"] }
-editoast_models = { workspace = true, features = ["testing"] }
 fga = { path = "./fga", features = ["test_utilities"] }
+models = { workspace = true, features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 schemas = { workspace = true, features = ["testing"] }

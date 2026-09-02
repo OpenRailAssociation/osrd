@@ -3,6 +3,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
+import {
+  useItineraryModalContext,
+  type TrainScheduleToEditData,
+} from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
   TrainSchedulesByTrainScheduleSet,
@@ -13,8 +17,7 @@ import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
+import type { OccurrenceId } from 'reducers/osrdconf/types';
 import {
   getSelectedTrain,
   getTrainIdUsedForProjection,
@@ -24,7 +27,6 @@ import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../consts';
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
 import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
@@ -32,10 +34,7 @@ import type { TimetableMode } from './types';
 import UniqueTrainItem from './UniqueTrainItem';
 
 type TrainListProps = {
-  setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
-  trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
@@ -55,10 +54,7 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
   d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 const TrainList = ({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
-  trainScheduleToEditData,
   trainSchedulesWithDetails,
   selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
@@ -73,6 +69,8 @@ const TrainList = ({
   expandedTrainScheduleSetIds,
   setShowTrainScheduleSetDialog,
 }: TrainListProps) => {
+  const { trainScheduleToEditData } = useItineraryModalContext();
+
   const dateTimeLocale = useDateTimeLocale();
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();
@@ -84,6 +82,8 @@ const TrainList = ({
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
+
+  const { openItineraryModalToEdit } = useItineraryModalContext();
 
   const handleSelectTrainSchedule = useCallback(
     (id: number) => {
@@ -133,7 +133,7 @@ const TrainList = ({
     return currentDepartureDates.map((date) => {
       const show = date !== previousDepartureDate;
       // TODO: fix this lint
-      // eslint-disable-next-line react-hooks-js/immutability
+      // eslint-disable-next-line react/immutability
       if (show) previousDepartureDate = date;
       return show;
     });
@@ -142,29 +142,25 @@ const TrainList = ({
   const selectTrainScheduleToEdit = useCallback(
     (
       trainScheduleToEdit: TrainScheduleWithDetails,
-      originalPacedTrain?: TrainScheduleWithDetails,
+      parentPacedTrain?: TrainScheduleWithDetails,
       occurrenceId?: OccurrenceId
     ) => {
-      dispatch(
-        selectTrainToEdit({ trainSchedule: trainScheduleToEdit, isOccurrence: !!occurrenceId })
-      );
       const editData: TrainScheduleToEditData = {
-        trainScheduleId: trainScheduleToEdit.id,
-        // param originalPacedTrain is defined only when editing an occurrence
-        originalTrainSchedule: originalPacedTrain ?? trainScheduleToEdit,
+        trainSchedule: trainScheduleToEdit,
+        // param parentPacedTrain is defined only when editing an occurrence
+        parentPacedTrain,
         occurrenceId,
       };
-      setTrainScheduleToEditData(editData);
-      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+      openItineraryModalToEdit(editData);
     },
-    []
+    [openItineraryModalToEdit, dispatch]
   );
 
   const trainsToItems = useMemo(
     () => (trainSchedules: TrainScheduleWithDetails[]) =>
       trainSchedules.map((trainSchedule, index) => (
         <div key={`timetable-train-card-${trainSchedule.id}`} data-train-id={trainSchedule.id}>
-          {timetableMode === 'calendar' && showDepartureDates[index] && (
+          {timetableMode === 'chronological' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
           {!isPacedTrainWithDetails(trainSchedule) ? (
@@ -176,7 +172,7 @@ const TrainList = ({
                 workerStatus === 'READY' &&
                 selectedTrainId === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
-              isModified={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
+              isModified={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
@@ -196,7 +192,7 @@ const TrainList = ({
               handleSelectPacedTrain={handleSelectTrainSchedule}
               isOccurrencesListOpen={expandedTrainScheduleIds.has(trainSchedule.id)}
               handleOpenOccurrencesList={handleExpandTrainSchedule}
-              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainScheduleId}
+              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectedTrainId={selectedTrainId}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
@@ -224,7 +220,7 @@ const TrainList = ({
       selectedTrainId,
       setSelectedTrainScheduleIds,
       subCategories,
-      trainScheduleToEditData?.trainScheduleId,
+      trainScheduleToEditData?.trainSchedule.id,
       timetableMode,
       trainIdUsedForProjection,
       workerStatus,
@@ -233,7 +229,7 @@ const TrainList = ({
 
   return (
     <Virtualizer>
-      {timetableMode === 'calendar' && trainsToItems(trainSchedulesWithDetails)}
+      {timetableMode === 'chronological' && trainsToItems(trainSchedulesWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
         (trainSchedulesByTrainScheduleSets ? (
           trainSchedulesByTrainScheduleSets

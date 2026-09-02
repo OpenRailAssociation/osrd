@@ -8,6 +8,7 @@ use crate::infra::TrackOffset;
 
 /// A location on the path of a train
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[schema(title = "PathItem")]
 pub struct PathItem {
     /// The unique identifier of the path item.
     /// This is used to reference path items in the train schedule.

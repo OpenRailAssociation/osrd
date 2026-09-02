@@ -201,6 +201,7 @@ export function useDurationInput({
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       const nextTarget = e.relatedTarget as Node | null;
+      /* eslint-disable-next-line react/memo-dependencies */
       if (nextTarget && containerRef.current?.contains(nextTarget)) {
         return;
       }
@@ -323,6 +324,7 @@ export const DurationInput = ({
     >
       <div
         ref={containerRef}
+        id={id}
         className={cx('ui-duration-input', { small })}
         role="group"
         aria-label="Duration Input"

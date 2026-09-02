@@ -13,6 +13,7 @@ import { computeIndexedOccurrenceStartTime } from 'modules/trainSchedule/helpers
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
+import type { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -25,9 +26,12 @@ import { mapBy } from 'utils/types';
 
 import { usePrevious } from '../../../../utils/hooks/state';
 import type { BaseTrainProjection, ProjectionWaypoint, TrainSpaceTimeData } from '../../types';
+import type { PanelSelectionMode } from './CurveSelectionSidePanel';
+import computePossibleLinkings from './helpers/computePossibleLinkings';
+import getLinkableOccupancyData from './helpers/getLinkableOccupancyData';
 import { EXCEPTION_SUFFIX } from './helpers/makeProjectedTrains';
 import { NO_TRACK_SPECIFIED_SYMBOL, sortTracks } from './helpers/sortTracks';
-import { batchFetchTrackOccupancy } from './helpers/utils';
+import { batchFetch, isTrainSelected } from './helpers/utils';
 import {
   getMovableOccupancyZone,
   type MovableOccupancyZone,
@@ -87,14 +91,10 @@ const useTrackOccupancy = ({
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
-  updateTrackOccupanciesOnDrag: ({
-    draggedTrainId,
-    newTrainData,
-    initialDepartureTime,
-    stopPanning,
-  }: {
+  updateTrackOccupanciesOnDrag: (options: {
     draggedTrainId: TrainId;
-    initialDepartureTime: Date;
+    selectionMode: PanelSelectionMode;
+    offset: Duration;
     newTrainData: TrainSpaceTimeData;
     stopPanning: boolean;
   }) => Promise<void>;
@@ -163,11 +163,11 @@ const useTrackOccupancy = ({
     async (
       opRef: OperationalPointReference | undefined | null,
       waypointId: string,
-      trainsCollection: Record<number, TrainSpaceTimeData>
+      trainsCollection: Map<number, TrainSpaceTimeData>
     ): Promise<MovableOccupancyZone[]> => {
       if (!opRef) return [];
 
-      const trainScheduleIds = Object.values(trainsCollection).map((train) => train.id);
+      const trainScheduleIds = [...trainsCollection.values()].map((train) => train.id);
 
       const trackOccupancyPayload =
         trainScheduleIds.length > 0
@@ -202,7 +202,7 @@ const useTrackOccupancy = ({
           for (const occupation of trains) {
             const itemId = occupation.train_schedule_id;
             const trainScheduleId = formatEditoastIdToTrainScheduleId(itemId);
-            const train = trainsCollection[itemId];
+            const train = trainsCollection.get(itemId);
 
             if (!train) throw new Error(`No train found for id ${itemId}`);
 
@@ -212,8 +212,8 @@ const useTrackOccupancy = ({
                   `Invalid occupation type ${occupation.type} for unique train ${train.id}`
                 );
               }
-              zones.push(
-                getMovableOccupancyZone(
+              zones.push({
+                ...getMovableOccupancyZone(
                   waypointId,
                   trackId,
                   trainScheduleId,
@@ -221,8 +221,10 @@ const useTrackOccupancy = ({
                   train.spaceTimeCurves,
                   train.name,
                   train.departureTime
-                )
-              );
+                ),
+                ...getLinkableOccupancyData(occupation.path_item_relative_location, train),
+                localTrackName,
+              });
               continue;
             }
 
@@ -268,8 +270,8 @@ const useTrackOccupancy = ({
                   );
             }
 
-            zones.push(
-              getMovableOccupancyZone(
+            zones.push({
+              ...getMovableOccupancyZone(
                 waypointId,
                 trackId,
                 trainId,
@@ -278,8 +280,10 @@ const useTrackOccupancy = ({
                 trainName,
                 startTime,
                 exception
-              )
-            );
+              ),
+              ...getLinkableOccupancyData(occupation.path_item_relative_location, train, exception),
+              localTrackName,
+            });
           }
         }
       }
@@ -337,6 +341,7 @@ const useTrackOccupancy = ({
           operationalPointPosition: op.position,
           operationalPointName: op.name,
           zones: resolvedZones,
+          possibleLinkings: computePossibleLinkings(resolvedZones ?? []),
           loading: opState.zones.type === 'loading',
           tracks: sortTracks(infraTracks, virtualTracks),
         });
@@ -359,13 +364,13 @@ const useTrackOccupancy = ({
 
       // Start fetching data:
       if (!currentState) {
-        const abort = batchFetchTrackOccupancy(
+        const abort = batchFetch(
           Array.from(trainScheduleProjectionsById.keys()),
           (ids) =>
             fetchTrackOccupancy(
               getTrackOccupancyOperationalPointReference(waypoint),
               waypointId,
-              Object.fromEntries(ids.map((id) => [id, trainScheduleProjectionsById.get(id)!]))
+              new Map(ids.map((id) => [id, trainScheduleProjectionsById.get(id)!]))
             ),
           {
             batchSize: 50,
@@ -416,9 +421,7 @@ const useTrackOccupancy = ({
           );
           if (!opRef) return;
 
-          const trains = Object.fromEntries(Array.from(trainScheduleProjectionsById.entries()));
-
-          fetchTrackOccupancy(opRef, waypointId, trains).then((newZones) => {
+          fetchTrackOccupancy(opRef, waypointId, trainScheduleProjectionsById).then((newZones) => {
             if (!newZones.length) return;
 
             updatePathOperationalPointState(waypointId, (state) =>
@@ -447,12 +450,14 @@ const useTrackOccupancy = ({
   const updateTrackOccupanciesOnDrag = useCallback(
     async ({
       draggedTrainId,
+      selectionMode,
       newTrainData,
-      initialDepartureTime,
+      offset,
       stopPanning,
     }: {
       draggedTrainId: TrainId;
-      initialDepartureTime: Date;
+      selectionMode: PanelSelectionMode;
+      offset: Duration;
       newTrainData: TrainSpaceTimeData;
       stopPanning: boolean;
     }) => {
@@ -461,21 +466,23 @@ const useTrackOccupancy = ({
       else draggedTrainScheduleIds.current.add(draggedEditoastId);
 
       // Update actual state:
-      const draggedTrainScheduleId = formatEditoastIdToTrainScheduleId(draggedEditoastId);
       const impactedPathOperationalPointIDs = new Set<string>();
       const newState = { ...pathOperationalPointsState };
       forEach(newState, (opState, waypointId) => {
         if (opState.selected) {
           forEach(opState.zones.data, (zone) => {
             if (
-              isOccurrenceId(zone.trainId) &&
-              extractTrainScheduleIdFromOccurrenceId(zone.trainId) === draggedTrainScheduleId &&
-              zone.exceptionType !== 'start_time'
+              isTrainSelected(
+                zone.trainId,
+                'std',
+                zone.exceptionTypes,
+                { id: draggedTrainId, by: 'std' },
+                selectionMode
+              )
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
-              const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();
-              zone.startTime = zone.dbStartTime + offset;
-              zone.endTime = zone.dbEndTime + offset;
+              zone.startTime = zone.dbStartTime + offset.ms;
+              zone.endTime = zone.dbEndTime + offset.ms;
             }
           });
         }
@@ -489,17 +496,16 @@ const useTrackOccupancy = ({
             const newZones = await fetchTrackOccupancy(
               getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
               waypointId,
-              {
-                [draggedTrainId]: newTrainData,
-              }
+              new Map([[draggedEditoastId, newTrainData]])
             );
 
             if (newZones.length)
               setPathOperationalPointsState((state) => {
                 const opState = state[waypointId];
-                opState.zones.data = opState.zones.data?.map((zone) =>
-                  zone.trainId === draggedTrainId ? newZones[0] : zone
-                );
+                opState.zones.data = opState.zones.data?.map((zone) => {
+                  const newZone = newZones.find(({ trainId }) => trainId === zone.trainId);
+                  return newZone ?? zone;
+                });
                 return state;
               });
           })
@@ -662,7 +668,7 @@ const useTrackOccupancy = ({
         const newZones = await fetchTrackOccupancy(
           getTrackOccupancyOperationalPointReference(pathOpsByWaypointId.get(waypointId)),
           waypointId,
-          Object.fromEntries(
+          new Map(
             [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
               id,
               trainScheduleProjectionsById.get(id)!,

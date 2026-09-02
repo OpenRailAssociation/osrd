@@ -40,7 +40,7 @@ pub(in crate::views) async fn health(
         valkey_client,
         health_check_timeout,
         core_client,
-        regulator,
+        openfga,
         ..
     }): State<AppState>,
 ) -> Result<&'static str> {
@@ -48,7 +48,7 @@ pub(in crate::views) async fn health(
         health_check_timeout
             .to_std()
             .expect("timeout should be valid at this point"),
-        check_health(db_pool, valkey_client, core_client, regulator.openfga()),
+        check_health(db_pool, valkey_client, core_client, &openfga),
     )
     .await
     .map_err(|_| AppHealthError::Timeout)??;

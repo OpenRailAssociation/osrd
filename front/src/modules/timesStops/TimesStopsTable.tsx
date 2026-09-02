@@ -15,18 +15,19 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
-import { formatLocalTime, useDateTimeLocale } from 'utils/date';
-import type { Duration } from 'utils/duration';
-import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
+import { useDateTimeLocale } from 'utils/date';
+import { type Duration, type StartTime, subtractStartTime } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
-import { onStopSignalToReceptionSignal } from './helpers/utils';
+import { onStopSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
-import TimeCell, { type TimeCellHandle } from './TimeCell';
+import StartTimeCell from './StartTimeCell';
+import type { TimeCellHandle } from './TimeCell';
 import type { MarginValue, PropagationMode, StopPropagationMode, TimesStopsRowNew } from './types';
 
 declare module '@tanstack/react-table' {
@@ -46,7 +47,7 @@ declare module '@tanstack/react-table' {
     powerRestrictionBlocks: Map<string, PowerRestrictionBlockInfo>;
     onArrivalChange: (
       row: TimesStopsRowNew,
-      arrival: Date | null,
+      arrival: StartTime | null,
       propagationMode: PropagationMode
     ) => void;
     onStopDurationChange: (
@@ -56,7 +57,7 @@ declare module '@tanstack/react-table' {
     ) => void;
     onDepartureChange: (
       row: TimesStopsRowNew,
-      departure: Date | null,
+      departure: StartTime | null,
       propagationMode: PropagationMode
     ) => void;
     onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
@@ -64,6 +65,15 @@ declare module '@tanstack/react-table' {
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
   }
 }
+
+const formatTime = (t: StartTime, locale: Intl.Locale) =>
+  t instanceof Date
+    ? t.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+    : t.toLocaleString(locale, { style: 'digital', hours: '2-digit' });
 
 /**
  * Get the reference date for arrival editing.
@@ -73,23 +83,38 @@ declare module '@tanstack/react-table' {
 const getArrivalReferenceDate = (
   row: TimesStopsRowNew,
   allRows: TimesStopsRowNew[],
-  startTime: Date
-): Date => {
+  startTime: StartTime
+): Date | undefined => {
+  if (!(startTime instanceof Date)) return undefined;
+
   const previousRow = allRows.findLast(
     (r) => r.opOnPathIndex < row.opOnPathIndex && (r.requestedDeparture || r.requestedArrival)
   );
 
-  if (!previousRow) return startTime;
+  if (!previousRow) return truncateStartTimeToDay(startTime) as Date;
 
-  return previousRow.requestedDeparture ?? previousRow.requestedArrival ?? startTime;
+  const refDate = previousRow.requestedDeparture ?? previousRow.requestedArrival ?? startTime;
+  if (!(refDate instanceof Date)) {
+    throw new Error('requestedDeparture and requestedArrival must be a Date');
+  }
+  return refDate;
 };
 
 /**
  * Get the reference date for departure editing.
  * Uses the current row's arrival time since departure must be after arrival.
  */
-const getDepartureReferenceDate = (row: TimesStopsRowNew, startTime: Date): Date =>
-  row.requestedArrival ?? row.computedArrival ?? startTime;
+const getDepartureReferenceDate = (
+  row: TimesStopsRowNew,
+  startTime: StartTime
+): Date | undefined => {
+  if (!(startTime instanceof Date)) return undefined;
+  const refDate = row.requestedArrival ?? row.computedArrival ?? startTime;
+  if (!(refDate instanceof Date)) {
+    throw new Error('requestedArrival and computedArrival must be a Date');
+  }
+  return refDate;
+};
 
 /**
  * Check if the OP is a scheduled OP.
@@ -100,7 +125,7 @@ const isScheduledOP = (row: TimesStopsRowNew): boolean =>
 
 type TimesStopsTableProps = {
   rows: TimesStopsRowNew[];
-  startTime: Date;
+  startTime: StartTime;
   isValid: boolean;
   isComputedDataPending?: boolean;
   availablePowerRestrictions: string[];
@@ -108,7 +133,7 @@ type TimesStopsTableProps = {
   powerRestrictionBlocks?: Map<string, PowerRestrictionBlockInfo>;
   onArrivalChange: (
     row: TimesStopsRowNew,
-    arrival: Date | null,
+    arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => void;
   onStopDurationChange: (
@@ -118,7 +143,7 @@ type TimesStopsTableProps = {
   ) => void;
   onDepartureChange: (
     row: TimesStopsRowNew,
-    departure: Date | null,
+    departure: StartTime | null,
     propagationMode: PropagationMode
   ) => void;
   onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
@@ -162,9 +187,12 @@ const TimesStopsTable = ({
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
+  const { scenario } = useScenarioContext();
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
   const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
+  const startTimeCellType: 'time' | 'duration' =
+    scenario.timetable_type === 'CALENDAR' ? 'time' : 'duration';
 
   const registerTimeCellRef = useCallback(
     (rowIndex: number, columnId: string) => (handle: TabbableCellHandle | null) => {
@@ -331,14 +359,16 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnDepartureTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+  const returnDepartureTimeCell = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
     const row = info.row.original;
     return (
-      <TimeCell
+      <StartTimeCell
+        type={startTimeCellType}
         ref={registerTimeCellRef(info.row.index, 'requestedDeparture')}
-        {...info}
+        cellContext={info}
         referenceDate={getDepartureReferenceDate(row, startTime)}
         prefillValue={row.computedDeparture}
+        clearButtonTitle={t('clearRequestedDepartureTime')}
         onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
         onTabKeyDown={(direction) =>
           focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
@@ -381,6 +411,7 @@ const TimesStopsTable = ({
   const returnStopDurationCell = (info: CellContext<TimesStopsRowNew, Duration | null>) => (
     <DurationCell
       ref={registerTimeCellRef(info.row.index, 'stopDuration')}
+      clearButtonTitle={t('clearStopDuration')}
       {...info}
       onCommit={(seconds, propagationMode) =>
         info.table.options.meta!.onStopDurationChange(info.row.original, seconds, propagationMode)
@@ -455,15 +486,17 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnArrivalTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+  const returnArrivalTimeCell = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
     const row = info.row.original;
     const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
     return (
-      <TimeCell
+      <StartTimeCell
+        type={startTimeCellType}
         ref={registerTimeCellRef(info.row.index, 'requestedArrival')}
-        {...info}
+        cellContext={info}
         referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
         prefillValue={row.computedArrival}
+        clearButtonTitle={t('clearRequestedArrivalTime')}
         onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
         onTabKeyDown={(direction) =>
           focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
@@ -474,15 +507,21 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnCalculatedArrivalTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+  const returnCalculatedArrivalTimeCell = (
+    info: CellContext<TimesStopsRowNew, StartTime | null>
+  ) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <SkeletonLoader className="cell-loading-placeholder" />;
     }
     const value = info.getValue();
-    return <span data-testid="computed-arrival">{value ? formatLocalTime(value) : ''}</span>;
+    return (
+      <span data-testid="computed-arrival">{value ? formatTime(value, dateTimeLocale) : ''}</span>
+    );
   };
 
-  const returnCalculatedDepartureTimeCell = (info: CellContext<TimesStopsRowNew, Date | null>) => {
+  const returnCalculatedDepartureTimeCell = (
+    info: CellContext<TimesStopsRowNew, StartTime | null>
+  ) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <SkeletonLoader className="cell-loading-placeholder" />;
     }
@@ -490,7 +529,7 @@ const TimesStopsTable = ({
     const isEmpty = !value;
     return (
       <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
-        {isEmpty ? '•' : formatLocalTime(value)}
+        {isEmpty ? '•' : formatTime(value, dateTimeLocale)}
       </span>
     );
   };
@@ -646,7 +685,7 @@ const TimesStopsTable = ({
     [startTime, focusCellBelow, focusRequestedCellOnTab, t]
   );
 
-  // eslint-disable-next-line react-hooks-js/incompatible-library
+  // eslint-disable-next-line react/incompatible-library
   const table = useReactTable({
     data: rows,
     columns,
@@ -688,7 +727,11 @@ const TimesStopsTable = ({
     if (!row.original.pathStepId) return null;
     const arrival = row.original.computedArrival ?? row.original.requestedArrival;
     if (!arrival) return null;
-    return calculateTimeDifferenceInDays(startTime, arrival);
+    const diff = subtractStartTime(
+      truncateStartTimeToDay(arrival),
+      truncateStartTimeToDay(startTime)
+    );
+    return diff.total('day');
   };
 
   const tableRows = table.getRowModel().rows;
@@ -791,6 +834,19 @@ const TimesStopsTable = ({
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
 
+            let dayChangeLabel = null;
+            if (hasDayChanged) {
+              if (rowArrivalDate instanceof Date) {
+                dayChangeLabel = rowArrivalDate.toLocaleDateString(dateTimeLocale, {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                });
+              } else {
+                dayChangeLabel = t('dayCounter', { count: dayOffset });
+              }
+            }
+
             const translateY = (virtualItems.at(0)?.start ?? 0) - virtualizer.options.scrollMargin;
 
             return (
@@ -808,13 +864,7 @@ const TimesStopsTable = ({
                     <td colSpan={row.getVisibleCells().length}>
                       <div className="day-change-banner-content">
                         <Moon />
-                        <span>
-                          {rowArrivalDate?.toLocaleDateString(dateTimeLocale, {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                          })}
-                        </span>
+                        <span>{dayChangeLabel}</span>
                       </div>
                     </td>
                   </tr>

@@ -13,10 +13,6 @@
   },
   "jsPlugins": [
     {
-      "name": "react-hooks-js",
-      "specifier": "eslint-plugin-react-hooks"
-    },
-    {
       "name": "import-js",
       "specifier": "eslint-plugin-import"
     }
@@ -429,18 +425,26 @@
         ]
       }
     ],
-    "react-hooks-js/component-hook-factories": "error",
-    "react-hooks-js/config": "error",
-    "react-hooks-js/error-boundaries": "error",
-    "react-hooks-js/gating": "error",
-    "react-hooks-js/globals": "error",
-    "react-hooks-js/immutability": "error",
-    "react-hooks-js/incompatible-library": "error",
-    "react-hooks-js/purity": "error",
-    "react-hooks-js/set-state-in-render": "error",
-    "react-hooks-js/static-components": "error",
-    "react-hooks-js/unsupported-syntax": "error",
-    "react-hooks-js/use-memo": "error"
+
+    "react/capitalized-calls": "off",
+    "react/exhaustive-effect-dependencies": "off",
+    "react/hooks": "off",
+    "react/memo-dependencies": "off",
+    "react/no-deriving-state-in-effects": "off",
+    "react/preserve-manual-memoization": "off",
+    "react/refs": "off",
+    "react/set-state-in-effect": "off",
+
+    "react/error-boundaries": "error",
+    "react/globals": "error",
+    "react/immutability": "error",
+    "react/incompatible-library": "error",
+    "react/purity": "error",
+    "react/set-state-in-render": "error",
+    "react/static-components": "error",
+    "react/unsupported-syntax": "error",
+    "react/use-memo": "error",
+    "react/void-use-memo": "error"
   },
   "settings": {
     "react": {
@@ -491,19 +495,27 @@
       "rules": {
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
-        "react/react-in-jsx-scope": "error",
+
+        "react/capitalized-calls": "error",
         "react/exhaustive-deps": "warn",
-        "react-hooks-js/preserve-manual-memoization": "error",
-        "react-hooks-js/refs": "error",
-        "react-hooks-js/set-state-in-effect": "error",
+        "react/exhaustive-effect-dependencies": "error",
+        "react/hooks": "error",
+        "react/memo-dependencies": "error",
+        "react/preserve-manual-memoization": "error",
+        "react/react-in-jsx-scope": "error",
+        "react/refs": "error",
+        "react/set-state-in-effect": "error",
+
         "jsx-a11y/no-noninteractive-element-interactions": "off",
         "jsx-a11y/no-noninteractive-tabindex": "off",
         "jsx-a11y/no-static-element-interactions": "off",
+
         "typescript/consistent-type-definitions": "off",
         "typescript/no-unnecessary-type-assertion": "off",
         "typescript/non-nullable-type-assertion-style": "off",
         "typescript/no-unsafe-call": "off",
         "typescript/no-unsafe-return": "off",
+
         "no-restricted-imports": [
           "error",
           {
@@ -551,6 +563,12 @@
             "packageDir": ["./base", "./ui/base"]
           }
         ]
+      }
+    },
+    {
+      "files": ["scripts/**/*", "tests/reporter/**/*"],
+      "rules": {
+        "import/extensions": ["error", "ignorePackages"]
       }
     }
   ]

@@ -96,10 +96,12 @@ export function getSpeedSectionsLineLayerProps({
 export function getSpeedSectionsPointLayerProps({
   colors,
   sourceTable,
+  interactionType = 'idle',
   layersSettings,
 }: {
   colors: Theme;
   sourceTable?: string;
+  interactionType?: string;
   layersSettings: LayersSettings;
 }): OmitLayer<SymbolLayerSpecification> {
   const res: OmitLayer<SymbolLayerSpecification> = {
@@ -115,7 +117,7 @@ export function getSpeedSectionsPointLayerProps({
       'icon-allow-overlap': getAllowOverlap(15),
       'icon-ignore-placement': false,
       'text-justify': 'left',
-      'text-allow-overlap': getAllowOverlap(15),
+      'text-allow-overlap': interactionType === 'moveRangeExtremity' || getAllowOverlap(15),
       'text-ignore-placement': false,
     },
     paint: {

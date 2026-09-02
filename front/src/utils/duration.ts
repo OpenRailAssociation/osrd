@@ -11,6 +11,7 @@ const MICROSECOND_IN_MS = 0.001;
 const SECOND_IN_MS = 1000;
 const MINUTE_IN_MS = 60 * SECOND_IN_MS;
 const HOUR_IN_MS = 60 * MINUTE_IN_MS;
+const DAY_IN_MS = 24 * HOUR_IN_MS;
 
 export const MAX_DURATION_MS = Number(I64_MAX) * MICROSECOND_IN_MS; // Database will not register anything above this value
 
@@ -18,14 +19,20 @@ const UNIT_IN_MS = {
   second: SECOND_IN_MS,
   minute: MINUTE_IN_MS,
   hour: HOUR_IN_MS,
+  day: DAY_IN_MS,
 };
 
 export class Duration {
   /** Number of milliseconds */
   readonly ms: number;
 
-  constructor({ hours = 0, minutes = 0, seconds = 0, milliseconds = 0 }) {
-    this.ms = hours * HOUR_IN_MS + minutes * MINUTE_IN_MS + seconds * SECOND_IN_MS + milliseconds;
+  constructor({ days = 0, hours = 0, minutes = 0, seconds = 0, milliseconds = 0 }) {
+    this.ms =
+      days * DAY_IN_MS +
+      hours * HOUR_IN_MS +
+      minutes * MINUTE_IN_MS +
+      seconds * SECOND_IN_MS +
+      milliseconds;
   }
 
   static zero = new Duration({});
@@ -84,7 +91,7 @@ export class Duration {
     return new Duration({ milliseconds: Math.abs(this.ms) });
   }
 
-  round(smallestUnit: 'second' | 'minute' | 'hour') {
+  round(smallestUnit: 'second' | 'minute' | 'hour' | 'day') {
     return new Duration({
       milliseconds: Math.round(this.total(smallestUnit)) * UNIT_IN_MS[smallestUnit],
     });
@@ -93,8 +100,29 @@ export class Duration {
   /**
    * Computes the number of units of time that a duration represents.
    */
-  total(unit: 'second' | 'minute' | 'hour'): number {
+  total(unit: 'second' | 'minute' | 'hour' | 'day'): number {
     return this.ms / UNIT_IN_MS[unit];
+  }
+
+  /**
+   * Format a string representing this duration for end-user display.
+   */
+  toLocaleString(
+    _locale: Intl.Locale | undefined,
+    {
+      secondsDisplay = 'always',
+    }: { style: 'digital'; hours: '2-digit'; secondsDisplay?: 'always' | 'auto' }
+  ) {
+    const hours = Math.floor(this.total('hour'));
+    const minutes = Math.floor(this.total('minute')) % 60;
+    const seconds = Math.floor(this.total('second')) % 60;
+
+    const parts = [hours, minutes];
+    if (secondsDisplay === 'always' || seconds !== 0) {
+      parts.push(seconds);
+    }
+
+    return parts.map((value) => value.toString().padStart(2, '0')).join(':');
   }
 }
 
@@ -141,6 +169,19 @@ export const addDurationToStartTime = (startTime: StartTime, dur: Duration): Sta
 
 export const subtractDurationFromDate = (date: Date, dur: Duration) =>
   new Date(date.getTime() - dur.ms);
+
+export const subtractDurationFromStartTime = (startTime: StartTime, dur: Duration) =>
+  startTime instanceof Duration ? startTime.sub(dur) : subtractDurationFromDate(startTime, dur);
+
+export const subtractStartTime = (a: StartTime, b: StartTime) => {
+  if (a instanceof Date && b instanceof Date) {
+    return Duration.subtractDate(a, b);
+  } else if (a instanceof Duration && b instanceof Duration) {
+    return a.sub(b);
+  } else {
+    throw new Error('Cannot subtract start times with different underlying type');
+  }
+};
 
 /** Compute the difference in minutes between two dates, truncated to the minute */
 export const minutesBetween = (a: Date, b: Date) =>

@@ -96,11 +96,13 @@ class Infra:
                 plc=models.Plc(op.plc) if op.plc is not None else None,
                 country_code=op.country_code,
                 main_code=op.main_code,
-                secondary_code=models.SecondaryCode(op.secondary_code)
+                secondary_code=models.NonBlankString(op.secondary_code)
                 if op.secondary_code is not None
                 else None,
                 is_passenger_station=op.is_passenger_station,
-                secondary_name=models.SecondaryName("0"),
+                secondary_name=models.SecondaryName(op.secondary_name)
+                if op.secondary_name is not None
+                else None,
             )
             ops.append(new_op)
         return ops

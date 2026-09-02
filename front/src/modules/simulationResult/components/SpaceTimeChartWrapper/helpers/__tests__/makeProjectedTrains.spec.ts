@@ -125,6 +125,7 @@ describe('makeProjectedTrains', () => {
 
       expect(result[0]).toEqual({
         id: 'indexedoccurrence_2562_0',
+        key: 'indexedoccurrence_2562_0-2025-07-09T05:30:00.000Z',
         name: `${pacedTrain.name} 1`,
         departureTime: pacedTrain.departureTime,
         type: 'occurrence',
@@ -133,6 +134,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2562_1',
+        key: 'indexedoccurrence_2562_1-2025-07-09T06:30:00.000Z',
         name: `${exception.train_name!.value}≠`,
         departureTime: new Date('2025-07-09T06:30:00.000Z'),
         type: 'exception',
@@ -256,6 +258,7 @@ describe('makeProjectedTrains', () => {
       expect(result.length).toBe(4);
       expect(result[0]).toEqual({
         id: 'indexedoccurrence_2564_0',
+        key: 'indexedoccurrence_2564_0-2025-07-09T05:30:00.000Z',
         name: 'auie 1',
         departureTime: pacedTrain.departureTime,
         type: 'occurrence',
@@ -264,6 +267,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2564_1',
+        key: 'indexedoccurrence_2564_1-2025-07-09T06:30:00.000Z',
         name: `${pacedTrain.name} 3`,
         departureTime: dayjs(pacedTrain.departureTime).add(1, 'hour').toDate(),
         type: 'occurrence',
@@ -272,6 +276,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[2]).toEqual({
         id: 'indexedoccurrence_2564_2',
+        key: 'indexedoccurrence_2564_2-2025-07-09T07:30:00.000Z',
         name: `${pacedTrain.name} 5`,
         departureTime: dayjs(pacedTrain.departureTime).add(2, 'hour').toDate(),
         type: 'occurrence',
@@ -280,6 +285,7 @@ describe('makeProjectedTrains', () => {
       });
       expect(result[3]).toEqual({
         id: 'exception_2564_2',
+        key: 'exception_2564_2-2025-07-30T14:00:00.000Z',
         name: `${exception.train_name!.value}≠`,
         departureTime: new Date(exception.start_time!.value),
         type: 'exception',
@@ -311,6 +317,7 @@ describe('makeProjectedTrains', () => {
       expect(result.length).toBe(4);
       expect(result[3]).toEqual({
         id: 'exception_2564_2',
+        key: 'exception_2564_2-2025-07-30T14:00:00.000Z',
         name: 'auie/+≠',
         departureTime: exceptionStartTime,
         type: 'exception',
@@ -318,6 +325,40 @@ describe('makeProjectedTrains', () => {
         spaceTimeCurves: basePacedTrainProjection.spaceTimeCurves,
         signalUpdates: basePacedTrainProjection.signalUpdates,
       });
+    });
+
+    test('time range should repeat occurrences', () => {
+      const timeRange = {
+        start: new Duration({ minutes: -5 }),
+        end: new Duration({ minutes: 10 }),
+      };
+      const result = makeProjectedTrains([basePacedTrainProjection], timeRange);
+      expect(result.map(({ id, departureTime }) => ({ id, departureTime }))).toEqual([
+        {
+          id: 'indexedoccurrence_2564_0',
+          departureTime: new Date('2025-07-09T02:30:00.000Z'),
+        },
+        {
+          id: 'indexedoccurrence_2564_1',
+          departureTime: new Date('2025-07-09T03:30:00.000Z'),
+        },
+        {
+          id: 'indexedoccurrence_2564_2',
+          departureTime: new Date('2025-07-09T04:30:00.000Z'),
+        },
+        {
+          id: 'indexedoccurrence_2564_0',
+          departureTime: new Date('2025-07-09T05:30:00.000Z'),
+        },
+        {
+          id: 'indexedoccurrence_2564_1',
+          departureTime: new Date('2025-07-09T06:30:00.000Z'),
+        },
+        {
+          id: 'indexedoccurrence_2564_2',
+          departureTime: new Date('2025-07-09T07:30:00.000Z'),
+        },
+      ]);
     });
   });
 });

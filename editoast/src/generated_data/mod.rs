@@ -22,12 +22,12 @@ use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
-use editoast_models::pagination::load_for_pagination;
 use electrification::ElectrificationLayer;
 use error::ErrorLayer;
 pub use error::generate_infra_errors;
 pub use error::infra_error;
 use level_crossing::LevelCrossingLayer;
+use models::pagination::load_for_pagination;
 use neutral_section::NeutralSectionLayer;
 use neutral_sign::NeutralSignLayer;
 use operational_point::OperationalPointLayer;
@@ -49,8 +49,8 @@ use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {
@@ -115,7 +115,7 @@ pub trait InfraGeneratedData {
         infra_cache: &InfraCache,
     ) -> Result<bool, database::DatabasePoolError>;
 
-    async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error>;
+    async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, models::Error>;
 
     async fn get_paginated_errors(
         &self,
@@ -125,12 +125,12 @@ pub trait InfraGeneratedData {
         object_id: Option<Identifier>,
         page: u64,
         page_size: u64,
-    ) -> Result<(Vec<InfraError>, u64), editoast_models::Error>;
+    ) -> Result<(Vec<InfraError>, u64), models::Error>;
 
     async fn get_error_summary(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<HashMap<(String, String), u64>, editoast_models::Error>;
+    ) -> Result<HashMap<(String, String), u64>, models::Error>;
 }
 
 impl InfraGeneratedData for Infra {
@@ -162,7 +162,7 @@ impl InfraGeneratedData for Infra {
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` accordingly.
-    async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, editoast_models::Error> {
+    async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool, models::Error> {
         // TODO: lock self for update
         clear_all(conn, self.id).await?;
         self.generated_version = None;
@@ -178,7 +178,7 @@ impl InfraGeneratedData for Infra {
         object_id: Option<Identifier>,
         page: u64,
         page_size: u64,
-    ) -> Result<(Vec<InfraError>, u64), editoast_models::Error> {
+    ) -> Result<(Vec<InfraError>, u64), models::Error> {
         use database::tables::infra_layer_error::dsl;
         use database::tables::infra_layer_error::table;
         use diesel::dsl::sql;
@@ -233,7 +233,7 @@ impl InfraGeneratedData for Infra {
     async fn get_error_summary(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<HashMap<(String, String), u64>, editoast_models::Error> {
+    ) -> Result<HashMap<(String, String), u64>, models::Error> {
         use database::tables::infra_layer_error::dsl;
         use diesel::dsl::count_star;
         use diesel::dsl::sql;

@@ -1,11 +1,10 @@
-/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import {
   useReducer,
   useRef,
   useLayoutEffect,
   useEffect,
   useImperativeHandle,
+  Fragment,
   type Dispatch,
 } from 'react';
 
@@ -344,9 +343,17 @@ type UnitDisplayProps = {
   dispatch: Dispatch<DurationAction>;
   startEditing: (unit: ActiveUnit) => void;
   isEdited: boolean;
+  label?: string;
 };
 
-const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisplayProps) => {
+const UnitDisplay = ({
+  unit,
+  state,
+  dispatch,
+  startEditing,
+  isEdited,
+  label = unit,
+}: UnitDisplayProps) => {
   const u = state.units[unit];
   const focused = state.isEditing && state.activeUnit === unit;
   const baseClass = 'duration-cell-digit';
@@ -386,7 +393,7 @@ const UnitDisplay = ({ unit, state, dispatch, startEditing, isEdited }: UnitDisp
           </>
         )}
       </span>
-      {unit && <span className={letterClass}>{unit}</span>}
+      {label && <span className={letterClass}>{label}</span>}
     </span>
   );
 };
@@ -395,16 +402,31 @@ export type DurationCellHandle = {
   focus: () => void;
 };
 
-const DurationCell = ({
-  disabled,
-  ref,
-  ...props
-}: CellContext<TimesStopsRowNew, Duration | null> &
+type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
+    prefillValue?: Duration | null;
+    onEnterKeyDown?: () => void;
+    onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
     disabled?: boolean;
+    clearButtonTitle?: string;
+    disableClear?: boolean;
     ref?: React.Ref<DurationCellHandle>;
-  }) => {
+    /** Display the duration as a digital clock, e.g. "42:53:04" */
+    digital?: boolean;
+  };
+
+const DurationCell = ({
+  prefillValue,
+  disabled,
+  clearButtonTitle,
+  ref,
+  onEnterKeyDown,
+  onTabKeyDown,
+  disableClear,
+  digital,
+  ...props
+}: DurationCellProps) => {
   const { onCommit, getValue, row, table } = props || {};
   const controlledValue = getValue();
   const [state, dispatch] = useReducer(durationReducer, controlledValue, initialDurationState);
@@ -436,8 +458,9 @@ const DurationCell = ({
 
   const startEditing = (unit: ActiveUnit) => {
     if (disabled) return;
-    const isCreationMode = controlledValue === null;
-    const seconds = isCreationMode ? 0 : Math.round(controlledValue.total('second'));
+    const initialValue = controlledValue ?? prefillValue ?? Duration.zero;
+    const isCreationMode = controlledValue === null && prefillValue === null;
+    const seconds = Math.round(initialValue.total('second'));
     dispatch({
       type: 'START_EDITING',
       payload: { seconds, unit: isCreationMode ? 'm' : unit, isCreationMode },
@@ -467,7 +490,7 @@ const DurationCell = ({
     containerRef.current?.blur();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!state.isEditing) return;
 
     switch (e.key) {
@@ -475,6 +498,7 @@ const DurationCell = ({
         e.preventDefault();
         blurHandledRef.current = true;
         commit();
+        onEnterKeyDown?.();
         containerRef.current?.blur();
         break;
       case 'Escape':
@@ -482,6 +506,12 @@ const DurationCell = ({
         blurHandledRef.current = true;
         dispatch({ type: 'CANCEL_EDITING', payload: controlledValue });
         containerRef.current?.blur();
+        break;
+      case 'Tab':
+        if (onTabKeyDown?.(e.shiftKey ? 'backward' : 'forward')) {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
         break;
       case 'ArrowLeft':
         e.preventDefault();
@@ -520,8 +550,10 @@ const DurationCell = ({
 
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={containerRef}
+        /* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */
         tabIndex={0}
         className="duration-cell"
         data-testid="duration-cell"
@@ -545,15 +577,18 @@ const DurationCell = ({
           <CellPlaceholder onClick={() => {}} />
         ) : (
           <>
-            {UNITS.map((unit) => (
-              <UnitDisplay
-                key={unit}
-                unit={unit}
-                state={state}
-                dispatch={dispatch}
-                startEditing={startEditing}
-                isEdited={isEdited}
-              />
+            {UNITS.map((unit, index) => (
+              <Fragment key={unit}>
+                {digital && index > 0 ? ':' : null}
+                <UnitDisplay
+                  unit={unit}
+                  label={digital ? '' : unit}
+                  state={state}
+                  dispatch={dispatch}
+                  startEditing={startEditing}
+                  isEdited={isEdited}
+                />
+              </Fragment>
             ))}
           </>
         )}
@@ -567,7 +602,12 @@ const DurationCell = ({
           disableToDestination={isLastRow}
         />
       </div>
-      <ClearButton isVisible={state.isEditing} containerRef={containerRef} onClear={handleClear} />
+      <ClearButton
+        isVisible={state.isEditing && !disableClear}
+        title={clearButtonTitle}
+        containerRef={containerRef}
+        onClear={handleClear}
+      />
     </>
   );
 };

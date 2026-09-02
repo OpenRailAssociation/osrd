@@ -2,6 +2,7 @@ use std::collections::hash_map::Entry;
 use std::collections::hash_map::HashMap;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -14,6 +15,7 @@ use tracing::debug;
 use tracing::error;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::generated_data::generate_infra_errors;
 use crate::generated_data::infra_error::InfraError;
@@ -24,11 +26,11 @@ use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::operation::patch_infra_object;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use schemas::infra::InfraObject;
 use schemas::primitives::OSRDIdentified as _;
 use schemas::primitives::OSRDObject;
@@ -94,9 +96,10 @@ pub(in crate::views) async fn list_auto_fixes(
         db_pool,
         valkey_client,
         config,
+        openfga,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<Vec<Operation>>> {
     let mut conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
@@ -104,12 +107,11 @@ pub(in crate::views) async fn list_auto_fixes(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)

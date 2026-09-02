@@ -1,6 +1,10 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { expectFieldsToHaveValues, handleAndVerifyInput, selectAndCheckOption } from '../../utils';
+
 class ItineraryModalPage {
+  private readonly itineraryModal: Locator;
+  private readonly itineraryModalTab: Locator;
   private readonly itineraryModalFormHeader: Locator;
   private readonly itineraryModalFormBody: Locator;
   private readonly itineraryModalFormFooter: Locator;
@@ -9,7 +13,7 @@ class ItineraryModalPage {
   private readonly itineraryModalCancelButton: Locator;
   private readonly itineraryModalAddSingleTrainButton: Locator;
   private readonly itineraryModalAddServiceTrainButton: Locator;
-  private readonly createTimetableItemButton: Locator;
+  private readonly itineraryModalEditTrainButton: Locator;
   private readonly comboBox: Locator;
   private readonly pathStepWrapper: Locator;
   private readonly opSuggestion: Locator;
@@ -18,10 +22,10 @@ class ItineraryModalPage {
   private readonly pathStepCounter: Locator;
   private readonly trailingPlaceholder: Locator;
   private readonly trailingPlaceholderCombobox: Locator;
-  private readonly rollingStockSelector: Locator;
-  private readonly categorySelector: Locator;
-  private readonly compositionCodeInput: Locator;
-  private readonly trainNameInput: Locator;
+  readonly rollingStockSelector: Locator;
+  readonly categorySelector: Locator;
+  readonly compositionCodeInput: Locator;
+  readonly trainNameInput: Locator;
   private readonly launchRocketSearchButton: Locator;
   private readonly rollingStockFirstSuggestion: Locator;
   private readonly pathStepMarker: Locator;
@@ -31,8 +35,16 @@ class ItineraryModalPage {
   private readonly segmentedControlInputStop: Locator;
   private readonly timetableItem: Locator;
   private readonly timetableItemName: Locator;
+  private readonly collapsedTrainHeader: Locator;
+  private readonly timestopsTrainCategory: Locator;
+  private readonly timestopsTrainRollingStockName: Locator;
+  private readonly timestopsTrainCompositionCode: Locator;
+  private readonly waypointName: Locator;
+  private readonly editTrainButton: Locator;
 
   constructor(page: Page) {
+    this.itineraryModal = page.getByTestId('itinerary-modal');
+    this.itineraryModalTab = page.getByTestId('itinerary-modal-form');
     this.itineraryModalFormHeader = page.getByTestId('itinerary-modal-form-header');
     this.itineraryModalFormBody = page.getByTestId('itinerary-modal-form-body');
     this.itineraryModalFormFooter = page.getByTestId('itinerary-modal-form-footer');
@@ -45,7 +57,7 @@ class ItineraryModalPage {
     this.itineraryModalAddServiceTrainButton = page.getByTestId(
       'itinerary-modal-add-service-train-button'
     );
-    this.createTimetableItemButton = page.getByTestId('create-train-schedule-button');
+    this.itineraryModalEditTrainButton = page.getByTestId('itinerary-modal-edit-train-button');
     this.comboBox = page.getByTestId('path-step-combo-box');
     this.pathStepWrapper = page.getByTestId('path-step-wrapper');
     this.opSuggestion = page.getByTestId('op-suggestion');
@@ -66,7 +78,14 @@ class ItineraryModalPage {
     this.segmentedControlInputPass = page.getByTestId('segmented-control-pass');
     this.segmentedControlInputStop = page.getByTestId('segmented-control-stop');
     this.timetableItem = page.getByTestId('scenario-train-schedule');
-    this.timetableItemName = this.timetableItem.getByTestId('train-name');
+    // Unique trains use 'train-name', paced trains use 'paced-train-name'.
+    this.timetableItemName = this.timetableItem.getByTestId(/^(train-name|paced-train-name)$/);
+    this.collapsedTrainHeader = page.getByTestId('train-header-collapsed');
+    this.timestopsTrainCategory = page.getByTestId('train-category');
+    this.timestopsTrainRollingStockName = page.getByTestId('train-rolling-stock');
+    this.timestopsTrainCompositionCode = page.getByTestId('train-composition-code');
+    this.waypointName = page.getByTestId('waypoint-name');
+    this.editTrainButton = page.getByTestId('edit-train');
   }
 
   private getOpNameClearIcon(pathStepIndex: number): Locator {
@@ -76,25 +95,69 @@ class ItineraryModalPage {
       .getByTestId('clear-icon');
   }
 
-  async checkItineraryModalDefaultState() {
+  async checkCategory(value: string) {
+    await expectFieldsToHaveValues([[this.categorySelector, value]]);
+  }
+
+  async selectAndCheckCategory(value: string) {
+    await selectAndCheckOption(this.categorySelector, value);
+  }
+
+  async selectAndCheckCompositionCode(value: string) {
+    await selectAndCheckOption(this.compositionCodeInput, value);
+  }
+
+  async fillTrainName(value: string) {
+    await expect(this.trainNameInput).toBeVisible();
+    await this.trainNameInput.fill(value);
+  }
+
+  async fillAndCheckTrainName(value: string) {
+    await handleAndVerifyInput(this.trainNameInput, value);
+  }
+
+  async checkRollingStock(value: string) {
+    await expectFieldsToHaveValues([[this.rollingStockSelector, value]]);
+  }
+
+  async checkItineraryModalDefaultState(mode: 'create' | 'edit' = 'create') {
     await expect(this.itineraryModalFormHeader).toBeVisible();
     await expect(this.itineraryModalFormBody).toBeVisible();
     await expect(this.itineraryModalFormFooter).toBeVisible();
     await expect(this.itineraryModalMap).toBeVisible();
     await expect(this.itineraryModalCancelButton).toBeVisible();
-    await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
-    await expect(this.itineraryModalAddServiceTrainButton).toBeVisible();
+    if (mode === 'create') {
+      await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
+      await expect(this.itineraryModalAddServiceTrainButton).toBeVisible();
+      await expect(this.itineraryModalEditTrainButton).not.toBeVisible();
+    } else {
+      await expect(this.itineraryModalEditTrainButton).toBeVisible();
+      await expect(this.itineraryModalAddSingleTrainButton).not.toBeVisible();
+      await expect(this.itineraryModalAddServiceTrainButton).not.toBeVisible();
+    }
   }
 
-  async checkItineraryModalHeader(expectedText: string) {
-    await expect(this.categorySelector).toBeVisible();
-    await expect(this.categorySelector).toHaveValue(expectedText);
-    await expect(this.rollingStockSelector).toBeVisible();
-    await expect(this.rollingStockSelector).toHaveValue('');
-    await expect(this.compositionCodeInput).toBeVisible();
-    await expect(this.compositionCodeInput).toHaveValue(expectedText);
-    await expect(this.trainNameInput).toBeVisible();
-    await expect(this.trainNameInput).toHaveValue('');
+  async checkItineraryModalEmptyHeader(expectedText: string) {
+    await expectFieldsToHaveValues([
+      [this.categorySelector, expectedText],
+      [this.rollingStockSelector, ''],
+      [this.compositionCodeInput, expectedText],
+      [this.trainNameInput, ''],
+    ]);
+  }
+
+  async checkItineraryModalHeader(
+    category: string,
+    rollingStock: string,
+    compositionCode: string,
+    trainName: string
+  ) {
+    await expectFieldsToHaveValues([
+      [this.categorySelector, category],
+      [this.rollingStockSelector, rollingStock],
+      [this.compositionCodeInput, compositionCode],
+      [this.trainNameInput, trainName],
+    ]);
   }
 
   async checkItineraryModalEmptyRocket() {
@@ -156,31 +219,15 @@ class ItineraryModalPage {
     await expect(this.pathStepCounter.nth(index)).toHaveText(expectedText);
   }
 
-  async selectRollingStock(
-    rollingStockQuery: string,
-    expectedRollingStockName: string,
-    expectedCategoryValue: string
-  ) {
+  async checkNumberedRowsCount(count: number) {
+    await expect(this.comboBox).toHaveCount(count);
+  }
+
+  async fillRollingStock(rollingStockQuery: string) {
     await this.rollingStockSelector.click();
     await this.rollingStockSelector.fill(rollingStockQuery);
     await expect(this.rollingStockFirstSuggestion).toBeVisible();
     await this.rollingStockFirstSuggestion.click();
-    await expect(this.rollingStockSelector).toHaveValue(expectedRollingStockName);
-    await expect(this.categorySelector).toHaveValue(expectedCategoryValue);
-  }
-
-  async selectCompositionCode(compositionCode: string) {
-    await expect(this.compositionCodeInput).toBeVisible();
-    await this.compositionCodeInput.click();
-    await this.compositionCodeInput.selectOption(compositionCode);
-    await expect(this.compositionCodeInput).toHaveValue(compositionCode);
-  }
-
-  async fillTrainName(trainName: string) {
-    await expect(this.trainNameInput).toBeVisible();
-    await this.trainNameInput.click();
-    await this.trainNameInput.fill(trainName);
-    await expect(this.trainNameInput).toHaveValue(trainName);
   }
 
   async launchRocketSearch(mainCode: string) {
@@ -199,14 +246,22 @@ class ItineraryModalPage {
     await expect(this.pathStepCounter.nth(2)).toHaveText('');
   }
 
-  async checkMapUpdate(count: number) {
+  async checkPathStepMarkers(markers: { name: string; index: number }[]) {
     await expect(this.itineraryModalMap).toBeVisible();
-    await expect(this.pathStepMarker).toHaveCount(count);
+    await expect(this.pathStepMarker).toHaveCount(markers.length);
+    for (const marker of markers) {
+      const expectedText = `${marker.index}${marker.name}`;
+      await expect(this.pathStepMarker.filter({ hasText: expectedText })).toHaveCount(1);
+    }
+  }
+
+  async reverseItinerary() {
+    await expect(this.itineraryReverseButton).toBeVisible();
+    await this.itineraryReverseButton.click();
   }
 
   async checkItineraryReverse(expectedFirstValue: string, expectedSecondValue: string) {
-    await expect(this.itineraryReverseButton).toBeVisible();
-    await this.itineraryReverseButton.click();
+    await this.reverseItinerary();
     await expect(this.comboBox.first()).toHaveValue(expectedFirstValue);
     await expect(this.comboBox.nth(1)).toHaveValue(expectedSecondValue);
     await expect(this.pathStepCounter.nth(2)).toHaveText('');
@@ -245,14 +300,42 @@ class ItineraryModalPage {
   async createTrain() {
     await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
     await this.itineraryModalAddSingleTrainButton.click();
-    await expect(this.createTimetableItemButton).toBeVisible();
-    await this.createTimetableItemButton.click();
+    await expect(this.itineraryModal).not.toBeVisible();
+  }
+
+  async createServiceTrain() {
+    await expect(this.itineraryModalAddServiceTrainButton).toBeVisible();
+    await this.itineraryModalAddServiceTrainButton.click();
+    await expect(this.itineraryModal).not.toBeVisible();
+  }
+
+  async submitEdit() {
+    await expect(this.itineraryModalEditTrainButton).toBeVisible();
+    await this.itineraryModalEditTrainButton.click();
+    await expect(this.itineraryModal).not.toBeVisible();
   }
 
   async checkTrainPresenceInTimetable(name: string) {
     await expect(this.timetableItem).toBeVisible();
     await expect(this.timetableItemName).toBeVisible();
     await expect(this.timetableItemName).toHaveText(name);
+  }
+
+  async verifyTrainColorInTimetable(color: string) {
+    await expect(this.timetableItemName).toHaveCSS('color', color);
+  }
+  async checkTrainHeaderDetails(category: string, rollingStock: string, compositionCode: string) {
+    await expect(this.collapsedTrainHeader).toBeVisible();
+    await expect(this.timestopsTrainCategory).toHaveText(category);
+    await expect(this.timestopsTrainRollingStockName).toHaveText(rollingStock);
+    await expect(this.timestopsTrainCompositionCode).toHaveText(compositionCode);
+  }
+
+  async checkManchetteOriginAndDestination(origin: string, destination: string) {
+    await expect(this.waypointName.first()).toBeVisible();
+    await expect(this.waypointName.first()).toHaveText(origin);
+    await expect(this.waypointName.last()).toBeVisible();
+    await expect(this.waypointName.last()).toHaveText(destination);
   }
 
   async fillPathStepByName(index: number, searchValue: string, expectedSuggestionText: string) {
@@ -282,6 +365,41 @@ class ItineraryModalPage {
     await this.comboBox.nth(comboboxIndex).fill(searchValue);
     await expect(this.opSuggestion.first()).toBeVisible();
     await this.opSuggestion.first().click();
+  }
+
+  async removePathStepAt(position: number) {
+    await expect(this.pathStepCounter.nth(position)).toBeVisible();
+    await this.pathStepCounter.nth(position).click();
+  }
+
+  async launchEditTrain() {
+    await expect(this.timetableItem).toBeVisible();
+    await this.timetableItem.hover();
+    await expect(this.editTrainButton).toBeVisible();
+    await this.editTrainButton.click();
+    await expect(this.itineraryModalTab).toBeVisible();
+  }
+
+  async checkItineraryModalPrefilledRows(origin: string, destination: string) {
+    await expect(this.comboBox.first()).toBeVisible();
+    await expect(this.comboBox).toHaveCount(3);
+    await expect(this.comboBox.first()).toHaveValue(origin);
+    await expect(this.comboBox.nth(1)).toHaveValue(destination);
+    await expect(this.comboBox.nth(2)).toHaveValue('');
+  }
+
+  async cancelItineraryEdition() {
+    await expect(this.itineraryModalCancelButton).toBeVisible();
+    await this.itineraryModalCancelButton.click();
+    await expect(this.itineraryModalTab).not.toBeVisible();
+  }
+
+  async updateItineraryRows(trigram: string, comboboxValue: string) {
+    await this.comboBox.first().click();
+    await this.comboBox.first().fill(trigram);
+    await expect(this.opSuggestion.first()).toBeVisible();
+    await this.opSuggestion.first().click();
+    await expect(this.comboBox.first()).toHaveValue(comboboxValue);
   }
 }
 export default ItineraryModalPage;

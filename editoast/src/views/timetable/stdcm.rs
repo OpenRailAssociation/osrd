@@ -1,6 +1,12 @@
 pub(crate) mod request;
 
 use authz;
+use authz::RollingStockPrivilege;
+use authz::v2;
+use authz::v2::Actor;
+use authz::v2::Authorizer as _;
+use authz::v2::Check;
+use authz::v2::Protected;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -53,19 +59,20 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
-use editoast_models::Infra;
-use editoast_models::WorkSchedule;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::timetable::Timetable;
+use models::Infra;
+use models::WorkSchedule;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
+use models::timetable::Timetable;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
@@ -142,9 +149,13 @@ enum StdcmError {
         expected_max: f64,
     },
     #[error(transparent)]
+    #[editoast_error(forward)]
+    #[serde(skip)]
+    Authorization(AuthorizationError),
+    #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
-    Database(editoast_models::Error),
+    Database(models::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -191,13 +202,33 @@ pub(in crate::views) async fn stdcm(
         db_pool,
         valkey_client,
         core_client,
+        openfga,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
 ) -> Result<Response> {
+    let consist_schedule_values = &request.consist_schedule.values;
+    if authn_state.user().is_some() {
+        let authorizer = authn_state.authorizer(&openfga);
+        let checks = consist_schedule_values
+            .iter()
+            .map(|consist| {
+                Check::HasRollingStockPrivilege(
+                    Actor::Issuer,
+                    RollingStockPrivilege::CanRead,
+                    authz::RollingStock(consist.rolling_stock_id),
+                )
+            })
+            .map(Protected::check);
+        let protected = Protected::from_iter(checks);
+        authz::v2::Access::access(authorizer.authorize(protected).await?)
+            .await?
+            .map_err(|_| StdcmError::Authorization(AuthorizationError::Forbidden))?;
+    }
+
     let mut conn = db_pool.get().await?;
 
     let timetable_id = id;
@@ -211,14 +242,12 @@ pub(in crate::views) async fn stdcm(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.clone()
-        .check_authorization(async |authorizer| {
-            authorizer
-                .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-                .await
-        })
-        .await?;
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     // 2. Get Timetable / Work schedules
     Timetable::exists_or_fail(&mut conn, timetable_id, || StdcmError::TimetableNotFound {
@@ -228,9 +257,7 @@ pub(in crate::views) async fn stdcm(
     let work_schedules = request.get_work_schedules(&mut conn).await?;
 
     // 3. Get RollingStock
-    let rolling_stock_ids: Vec<i64> = request
-        .consist_schedule
-        .values
+    let rolling_stock_ids: Vec<i64> = consist_schedule_values
         .iter()
         .map(|consist_config| consist_config.rolling_stock_id)
         .collect();
@@ -463,21 +490,33 @@ impl VirtualTrainRun {
         .zip(consists_parameters)
         .map(|((start, end), consist)| {
             let path = convert_steps(&stdcm_request.steps[start..=end]);
-            let last_step = path.last().expect("empty step list");
-
             let train_occurrence = TrainOccurrence {
                 train_name: "".to_string(),
                 labels: vec![],
                 rolling_stock_name: consist.traction_engine.name.clone(),
                 start_time: millisecond::i64::new(approx_start_time.timestamp_millis()),
-                schedule: vec![ScheduleItem {
-                    // Make the train stop at the end
-                    at: last_step.id.clone(),
-                    arrival: None,
-                    stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
-                    reception_signal: ReceptionSignal::Open,
-                    ..Default::default()
-                }],
+                schedule: stdcm_request.steps[start..=end]
+                    .iter()
+                    .zip(&path)
+                    .map(|(stdcm_step, path_item)| ScheduleItem {
+                        at: path_item.id.clone(),
+                        arrival: stdcm_step.timing_data.as_ref().map(|timing_data| {
+                            PositiveDuration::try_from(
+                                timing_data
+                                    .arrival_time
+                                    .signed_duration_since(approx_start_time),
+                            )
+                            .unwrap()
+                        }),
+                        stop_for: stdcm_step.duration.map(|duration| {
+                            PositiveDuration::try_from(Duration::milliseconds(duration as i64))
+                                .unwrap()
+                        }),
+                        reception_signal: ReceptionSignal::Stop,
+                        can_backtrack: stdcm_step.pathfinding_item.can_backtrack,
+                        ..Default::default()
+                    })
+                    .collect::<Vec<ScheduleItem>>(),
                 margins: build_single_margin(stdcm_request.margin),
                 initial_speed: 0.0,
                 comfort: stdcm_request.comfort,
@@ -567,6 +606,9 @@ pub fn as_core_work_schedule(
 
 #[cfg(test)]
 mod tests {
+    use authz::InfraGrant;
+    use authz::Role;
+    use authz::RollingStockGrant;
     use axum::http::StatusCode;
     use chrono::DateTime;
     use common::units;
@@ -603,12 +645,14 @@ mod tests {
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_towed_rolling_stock;
+    use crate::views::path::pathfinding::PathfindingItem;
     use crate::views::path::pathfinding::PathfindingResult;
+    use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::TestResponseExt as _;
     use crate::views::test_app::test_app;
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::ConsistSchedule;
-    use crate::views::timetable::stdcm::request::PathfindingItem;
+    use crate::views::timetable::stdcm::request::StdcmPathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
 
     use super::*;
@@ -622,18 +666,21 @@ mod tests {
                 DateTime::from_str("2024-01-01T10:00:00Z").expect("Failed to parse datetime"),
             ),
             steps: vec![
-                PathfindingItem {
+                StdcmPathfindingItem {
                     duration: Some(0),
-                    location: PathItemLocation::OperationalPointPartReference(
-                        OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Domestic {
-                                country_code: "FR".into(),
-                                main_code: "WS".into(),
-                                secondary_code: Some("BV".into()),
+                    pathfinding_item: PathfindingItem {
+                        location: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Domestic {
+                                    country_code: "FR".into(),
+                                    main_code: "WS".into(),
+                                    secondary_code: Some("BV".into()),
+                                },
+                                local_track_name: None,
                             },
-                            local_track_name: None,
-                        },
-                    ),
+                        ),
+                        can_backtrack: false,
+                    },
                     timing_data: Some(StepTimingData {
                         arrival_time: DateTime::from_str("2024-01-01T14:00:00Z")
                             .expect("Failed to parse datetime"),
@@ -641,18 +688,21 @@ mod tests {
                         arrival_time_tolerance_after: 0,
                     }),
                 },
-                PathfindingItem {
+                StdcmPathfindingItem {
                     duration: Some(0),
-                    location: PathItemLocation::OperationalPointPartReference(
-                        OperationalPointPartReference {
-                            operational_point: OperationalPointReference::Domestic {
-                                country_code: "FR".into(),
-                                main_code: "MWS".into(),
-                                secondary_code: Some("BV".into()),
+                    pathfinding_item: PathfindingItem {
+                        location: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
+                                operational_point: OperationalPointReference::Domestic {
+                                    country_code: "FR".into(),
+                                    main_code: "MWS".into(),
+                                    secondary_code: Some("BV".into()),
+                                },
+                                local_track_name: None,
                             },
-                            local_track_name: None,
-                        },
-                    ),
+                        ),
+                        can_backtrack: false,
+                    },
                     timing_data: None,
                 },
             ],
@@ -696,19 +746,22 @@ mod tests {
         }
     }
 
-    fn build_step(main_code: &str) -> PathfindingItem {
-        PathfindingItem {
+    fn build_step(main_code: &str) -> StdcmPathfindingItem {
+        StdcmPathfindingItem {
             duration: Some(0),
-            location: PathItemLocation::OperationalPointPartReference(
-                OperationalPointPartReference {
-                    operational_point: OperationalPointReference::Domestic {
-                        country_code: "FR".into(),
-                        main_code: main_code.into(),
-                        secondary_code: Some("BV".into()),
+            pathfinding_item: PathfindingItem {
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointReference::Domestic {
+                            country_code: "FR".into(),
+                            main_code: main_code.into(),
+                            secondary_code: Some("BV".into()),
+                        },
+                        local_track_name: None,
                     },
-                    local_track_name: None,
-                },
-            ),
+                ),
+                can_backtrack: false,
+            },
             timing_data: None,
         }
     }
@@ -976,12 +1029,19 @@ mod tests {
             core
         };
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
             Some(mass.get::<kilogram>()),
@@ -993,7 +1053,8 @@ mod tests {
 
         let stdcm_response: StdcmProgression = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(None, consist_schedule))
+            .by_user(user.as_ref())
+            .json(&get_stdcm_payload(None, consist_schedule.clone()))
             .await
             .assert_status_ok()
             .last_jsonl();
@@ -1058,12 +1119,19 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
             total_mass,
@@ -1075,6 +1143,7 @@ mod tests {
 
         let stdcm_response: InternalError = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&get_stdcm_payload(None, consist_schedule))
             .await
             .assert_status_bad_request()
@@ -1099,12 +1168,19 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
             None,
@@ -1116,6 +1192,7 @@ mod tests {
 
         let stdcm_response: StdcmProgression = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&get_stdcm_payload(None, consist_schedule))
             .await
             .assert_status_ok()
@@ -1150,12 +1227,17 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("admin", "identity")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
             None,
@@ -1167,6 +1249,7 @@ mod tests {
 
         let stdcm_response: Vec<StdcmProgression> = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&get_stdcm_payload(None, consist_schedule))
             .await
             .assert_status_ok()
@@ -1220,12 +1303,19 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
             None,
@@ -1237,6 +1327,7 @@ mod tests {
 
         let stdcm_response: Vec<StdcmProgression> = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&get_stdcm_payload(None, consist_schedule))
             .await
             .assert_status_ok()
@@ -1283,7 +1374,7 @@ mod tests {
     ) {
         // GIVEN
 
-        use editoast_models::WorkSchedule;
+        use models::WorkSchedule;
         let work_schedules = [WorkSchedule {
             id: rand::random::<i64>(),
             start_date_time: DateTime::parse_from_rfc3339(ws_start_time)
@@ -1406,7 +1497,7 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1452,9 +1543,19 @@ mod tests {
         // WS -> MWS
         // Consist change
         // MWS -> SS
+        //
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(first_rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(second_rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let stdcm_response: StdcmProgression = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&payload)
             .await
             .assert_status_ok()
@@ -1503,7 +1604,7 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1513,6 +1614,15 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let third_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(first_rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(second_rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(third_rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         let mut payload = get_stdcm_payload(
             None,
@@ -1538,6 +1648,7 @@ mod tests {
 
         let stdcm_response: StdcmProgression = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&payload)
             .await
             .assert_status_ok()
@@ -1627,7 +1738,7 @@ mod tests {
             })
             .finish();
 
-        let app = test_app!().skip_authz().core_client(core.into()).build();
+        let app = test_app!().core_client(core.into()).build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
@@ -1644,8 +1755,16 @@ mod tests {
             Some(towed_rolling_stock.id),
         ));
 
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
         let stdcm_response: StdcmProgression = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
             .json(&get_stdcm_payload(None, consist_schedule))
             .await
             .assert_status_ok()
@@ -1660,5 +1779,147 @@ mod tests {
                     .expect("Failed to parse datetime"),
             })
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_with_no_grant_is_forbidden() {
+        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
+        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
+        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            Some(mass.get::<kilogram>()),
+            Some(length.get::<meter>()),
+            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(LoadingGaugeType::Glott),
+            None,
+        ));
+
+        app.post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&get_stdcm_payload(None, consist_schedule))
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_without_stdcm_role_is_forbidden() {
+        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
+        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
+        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            Some(mass.get::<kilogram>()),
+            Some(length.get::<meter>()),
+            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(LoadingGaugeType::Glott),
+            None,
+        ));
+
+        app.post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&get_stdcm_payload(None, consist_schedule))
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn user_without_infra_grant_is_forbidden() {
+        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
+        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
+        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+        let consist_schedule = build_single_consist(build_consist_config(
+            rolling_stock.id,
+            Some(mass.get::<kilogram>()),
+            Some(length.get::<meter>()),
+            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(LoadingGaugeType::Glott),
+            None,
+        ));
+
+        app.post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&get_stdcm_payload(None, consist_schedule))
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn multiple_consist_one_missing_grant_makes_request_forbidden() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let first_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let second_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let third_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        // User missing the Reader privilege on one of the request rolling stocks
+        let user = app
+            .user("user", "identity")
+            .with_roles([Role::Stdcm])
+            .with_rolling_stock_grant(first_rolling_stock.id, RollingStockGrant::Reader)
+            .with_rolling_stock_grant(second_rolling_stock.id, RollingStockGrant::Reader)
+            .with_infra_grant(small_infra.id, InfraGrant::Reader)
+            .create()
+            .await;
+
+        let mut payload = get_stdcm_payload(
+            None,
+            ConsistSchedule {
+                boundaries: vec![1, 2],
+                values: vec![
+                    build_consist_config(first_rolling_stock.id, None, None, None, None, None),
+                    build_consist_config(second_rolling_stock.id, None, None, None, None, None),
+                    build_consist_config(third_rolling_stock.id, None, None, None, None, None),
+                ],
+            },
+        );
+
+        payload.steps.push(build_step("MES"));
+        payload.steps.push(build_step("SES"));
+
+        app.post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .by_user(user.as_ref())
+            .json(&payload)
+            .await
+            .assert_status_forbidden();
     }
 }

@@ -246,58 +246,6 @@ impl EditoastError for json_patch::PatchError {
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz_legacy:UnknownSubject", "UnknownSubject", "AuthzLegacyError", 404u16, r#"{}"#)
-}
-
-inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz_legacy:UnknownResource", "UnknownResource", "AuthzLegacyError", 404u16, r#"{}"#)
-}
-
-inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz_legacy:UnknownUser", "UnknownUser", "AuthzLegacyError", 401u16, r#"{"id": "i64"}"#)
-}
-
-inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz_legacy:Openfga", "Openfga", "AuthzLegacyError", 500u16, r#"{}"#)
-}
-
-inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:authz_legacy:Storage", "Storage", "AuthzLegacyError", 500u16, r#"{}"#)
-}
-impl<StorageError: std::error::Error + Send + Sync> EditoastError for authz::Error<StorageError> {
-    fn get_status(&self) -> StatusCode {
-        match self {
-            authz::Error::UnknownSubject(_) | authz::Error::UnknownResource(_) => {
-                StatusCode::NOT_FOUND
-            }
-            authz::Error::UnknownUser { .. } => StatusCode::UNAUTHORIZED,
-            authz::Error::OpenFga(_) | authz::Error::Storage(_) => {
-                StatusCode::INTERNAL_SERVER_ERROR
-            }
-        }
-    }
-
-    fn get_type(&self) -> &str {
-        match self {
-            authz::Error::UnknownSubject(_) => "editoast:authz_legacy:UnknownSubject",
-            authz::Error::UnknownResource(_) => "editoast:authz_legacy:UnknownResource",
-            authz::Error::UnknownUser { .. } => "editoast:authz_legacy:UnknownUser",
-            authz::Error::OpenFga(_) => "editoast:authz_legacy:Openfga",
-            authz::Error::Storage(_) => "editoast:authz_legacy:Storage",
-        }
-    }
-
-    fn context(&self) -> HashMap<String, Value> {
-        match self {
-            authz::Error::UnknownUser { identity } => {
-                HashMap::from([("id".to_string(), json!(identity))])
-            }
-            _ => HashMap::new(),
-        }
-    }
-}
-
-inventory::submit! {
     crate::error::ErrorDefinition::new("editoast:geometry:UnexpectedGeometry", "UnexpectedGeometry", "GeometryError", 404u16, r#"{"expected":"String","actual":"String"}"#)
 }
 impl EditoastError for schemas::errors::GeometryError {
@@ -324,7 +272,7 @@ impl EditoastError for schemas::errors::GeometryError {
 inventory::submit! {
     ErrorDefinition::new("editoast:model:ModelError", "", "ModelError", 500u16, r#"{}"#)
 }
-impl EditoastError for editoast_models::Error {
+impl EditoastError for models::Error {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }
@@ -382,13 +330,6 @@ impl EditoastError for core_client::Error {
             }
             _ => Default::default(),
         }
-    }
-}
-
-impl From<authz::Unauthorized> for InternalError {
-    fn from(authz::Unauthorized { reason }: authz::Unauthorized) -> Self {
-        tracing::error!(reason, "Unauthorized operation");
-        crate::views::AuthorizationError::Forbidden.into()
     }
 }
 

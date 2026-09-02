@@ -7,18 +7,24 @@ import { lineString } from '@turf/helpers';
 import cx from 'classnames';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
+import {
+  useItineraryModalContext,
+  type TrainScheduleToEditData,
+} from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type {
   CoreOperationalPointOnPath,
   OperationalPointReference,
   PathProperties,
   PathItemLocation,
   TrainCategory,
+  Distribution,
+  Comfort,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import Banner from 'common/Banner';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
@@ -27,45 +33,49 @@ import IncompatibleConstraints from 'modules/pathfinding/components/Incompatible
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import { updateItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
+import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import {
-  getCategory,
-  getEditingTrainType,
-  getName,
-  getOperationalStudiesRollingStockID,
-  getOperationalStudiesSpeedLimitByTag,
-  getPathSteps,
-  getRollingStockName,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+  DEFAULT_PACED_TRAIN_INTERVAL,
+  getDefaultPacedTrainTimeWindow,
+  isPacedTrainWithDetails,
+} from 'modules/trainSchedule/helpers/pacedTrain';
+import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type {
+  EditingTrainType,
+  PathStep,
+  PathStepMetadata,
+  PathStepV2,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import { msToKmh } from 'utils/physics';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../../../consts';
 import {
   createEmptyPathStep,
   ensureTrailingEmptyStep,
   isEmptyStep,
   deletePathStep,
 } from '../helpers/pathStepsActions';
+import { useCreateTrainSchedule } from '../hooks/useCreateTrainSchedule';
 import useMapTrackSelection from '../hooks/useMapTrackSelection';
+import useUpdateTrainSchedule from '../hooks/useUpdateTrainSchedule';
 import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
-import ItineraryModalFooter, { type FooterTrainType } from './ItineraryModalFooter';
+import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
-  itineraryModalIsOpen: boolean;
-  onClose: ({ withChanges }: { withChanges: boolean }) => void;
-  displayTrainScheduleManagement: string;
+  onTrainCreated: () => void;
+  trainScheduleToEditData?: TrainScheduleToEditData;
+  defaultStartTime?: StartTime;
 };
 
 export type ItineraryModalFormState = {
@@ -76,38 +86,174 @@ export type ItineraryModalFormState = {
   category?: TrainCategory;
 };
 
+export type ItineraryModalTrainState = {
+  name: string;
+  category: TrainCategory | null;
+  startTime: StartTime;
+  initialSpeed?: number;
+  labels: string[];
+  rollingStockId?: number;
+  rollingStockName: string;
+  rollingStockComfort: Comfort;
+  pathSteps: (PathStep | null)[];
+  constraintDistribution: Distribution;
+  usingElectricalProfiles: boolean;
+  usingSpeedLimits: boolean;
+  stopsAtEndOfBlock: boolean;
+  powerRestriction: PowerRestriction[];
+  timeWindow: Duration;
+  interval: Duration;
+  addedExceptions: {
+    startTime: StartTime;
+  }[];
+  editingTrainType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';
+  speedLimitByTag?: string;
+};
+
+export function blankNewTrainState(
+  startTime: StartTime | undefined,
+  timetableType: TimetableType
+): ItineraryModalTrainState {
+  startTime ??= timetableType === 'CALENDAR' ? new Date() : Duration.zero;
+
+  return {
+    name: '',
+    startTime,
+    initialSpeed: 0,
+    labels: [],
+    rollingStockId: undefined,
+    rollingStockName: '',
+    rollingStockComfort: 'STANDARD',
+    category: null,
+    // Corresponds to origin and destination not defined
+    pathSteps: [null, null],
+    constraintDistribution: 'STANDARD',
+    usingElectricalProfiles: true,
+    usingSpeedLimits: true,
+    stopsAtEndOfBlock: false,
+    powerRestriction: [],
+    timeWindow: getDefaultPacedTrainTimeWindow(timetableType),
+    interval: DEFAULT_PACED_TRAIN_INTERVAL,
+    addedExceptions: [],
+    // An hourly timetable only holds services, never unique trains
+    editingTrainType: timetableType === 'HOURLY' ? 'pacedTrain' : 'uniqueTrain',
+  };
+}
+
+export function setupStateWithTrainSchedule(
+  trainSchedule: TrainScheduleWithDetails,
+  timetableType: TimetableType,
+  isOccurrence?: boolean
+): ItineraryModalTrainState {
+  const state: ItineraryModalTrainState = {
+    rollingStockName: trainSchedule.rollingStockName,
+    rollingStockId: trainSchedule.rollingStock?.id,
+    rollingStockComfort: trainSchedule.comfort ?? 'STANDARD',
+    pathSteps: trainSchedule.path.map((_, index) => computeBasePathStep(trainSchedule, index)),
+    // TODO Hourly timetables: keep the Duration start time in the conf state instead of a fictive date
+    startTime: startTimeToDate(trainSchedule.startTime),
+    name: trainSchedule.name,
+    category: trainSchedule.category ?? null,
+    initialSpeed: trainSchedule.initial_speed
+      ? Math.floor(msToKmh(trainSchedule.initial_speed) * 10) / 10
+      : 0,
+    usingElectricalProfiles: trainSchedule.options?.use_electrical_profiles ?? true,
+    usingSpeedLimits: trainSchedule.options?.use_speed_limits_for_simulation ?? true,
+    stopsAtEndOfBlock: trainSchedule.options?.stops_at_end_of_block ?? false,
+    labels: trainSchedule.labels,
+    speedLimitByTag: trainSchedule.speedLimitTag || undefined,
+    powerRestriction: trainSchedule.power_restrictions || [],
+    constraintDistribution: trainSchedule.constraint_distribution || 'STANDARD',
+    editingTrainType: 'uniqueTrain',
+    timeWindow: getDefaultPacedTrainTimeWindow(timetableType),
+    interval: DEFAULT_PACED_TRAIN_INTERVAL,
+    addedExceptions: [],
+  };
+
+  if (isPacedTrainWithDetails(trainSchedule)) {
+    state.editingTrainType = isOccurrence ? 'occurrence' : 'pacedTrain';
+    state.timeWindow = trainSchedule.paced.timeWindow;
+    state.interval = trainSchedule.paced.interval;
+  }
+
+  return state;
+}
+
 const ItineraryModal = ({
-  itineraryModalIsOpen,
-  onClose,
-  displayTrainScheduleManagement,
+  onTrainCreated,
+  trainScheduleToEditData,
+  defaultStartTime,
 }: ItineraryModalProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
-  const storePathSteps = useSelector(getPathSteps);
-  const category = useSelector(getCategory);
-  const { workerStatus } = useScenarioContext();
-  const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
-  const rollingStockName = useSelector(getRollingStockName);
-  const name = useSelector(getName);
-  const speedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
+  const { workerStatus, scenario } = useScenarioContext();
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
-  const editingTrainType = useSelector(getEditingTrainType);
+
+  const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
+    blankNewTrainState(defaultStartTime, scenario.timetable_type)
+  );
+
+  const modalRef = useRef<HTMLDialogElement>(null);
+  const [wasInitialized, setWasInitialized] = useState<boolean>(false);
+  const { closeItineraryModal } = useItineraryModalContext();
+
+  const closeModal = useCallback(() => {
+    modalRef.current?.close();
+    closeItineraryModal();
+    setWasInitialized(false);
+  }, [closeItineraryModal, setWasInitialized]);
+
+  const [isWorking, setIsWorking] = useState(false);
+  const createTrain = useCreateTrainSchedule(trainState, setIsWorking, closeModal);
+  const updateTimetable = useUpdateTrainSchedule(trainState, setIsWorking, closeModal);
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
-    name,
-    rollingStockId,
-    rollingStockName: rollingStockName ?? '',
-    speedLimitTag,
-    category: category ?? undefined,
+    name: trainState.name,
+    rollingStockId: trainState.rollingStockId,
+    rollingStockName: trainState.rollingStockName ?? '',
+    speedLimitTag: trainState.speedLimitByTag,
+    category: trainState.category ?? undefined,
   });
+
+  useEffect(() => {
+    if (!wasInitialized) {
+      if (trainScheduleToEditData) {
+        const train = trainScheduleToEditData.trainSchedule;
+        setTrainState(
+          setupStateWithTrainSchedule(
+            train,
+            scenario.timetable_type,
+            !!trainScheduleToEditData.occurrenceId
+          )
+        );
+        setModalFormState({
+          name: train.name,
+          rollingStockName: train.rollingStockName,
+          rollingStockId: train.rollingStock?.id,
+          speedLimitTag: train.speedLimitTag || undefined,
+          category: train.category ?? undefined,
+        });
+      } else {
+        setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_type));
+        setModalFormState({
+          name: '',
+          rollingStockName: '',
+          rollingStockId: undefined,
+          speedLimitTag: undefined,
+          category: undefined,
+        });
+      }
+
+      setWasInitialized(true);
+    }
+  }, [wasInitialized, trainScheduleToEditData, scenario.timetable_type]);
 
   const { categoryColors, currentSubCategory } = useCategoryColors(modalFormState.category);
 
-  const modalRef = useRef<HTMLDialogElement>(null);
   const editingStepIdRef = useRef<string>('');
   const pendingStepIdRef = useRef<string>('');
   const confirmedStepIdRef = useRef<string>('');
@@ -130,11 +276,6 @@ const ItineraryModal = ({
       : 'intermediateWaypointsPanel.showLabel'
   );
 
-  const closeModal = ({ withChanges }: { withChanges: boolean }) => {
-    modalRef.current?.close();
-    onClose({ withChanges });
-  };
-
   const handleCancelMapSelection = useCallback(() => {
     setMapSelectionStepId(null);
   }, []);
@@ -143,7 +284,7 @@ const ItineraryModal = ({
     if (mapSelectionStepId !== null) {
       handleCancelMapSelection();
     } else {
-      closeModal({ withChanges: false });
+      closeModal();
     }
   }, [mapSelectionStepId, handleCancelMapSelection]);
 
@@ -161,8 +302,6 @@ const ItineraryModal = ({
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
   } = useOperationalPointSearch({});
-
-  const { launchPathfinding } = useManageTrainScheduleContext();
 
   const { pathStepsMetadataById, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
@@ -204,23 +343,13 @@ const ItineraryModal = ({
     if (!chosenSecondaryCode) return;
     pendingStepIdRef.current = stepId;
     confirmedStepIdRef.current = stepId;
-    let opRef: OperationalPointReference;
 
-    if (suggestion.uic) {
-      opRef = { type: 'uic', uic: suggestion.uic, secondary_code: chosenSecondaryCode };
-    } else if (suggestion.mainCode) {
-      opRef = {
-        type: 'domestic',
-        main_code: suggestion.mainCode,
-        secondary_code: chosenSecondaryCode,
-        country_code: suggestion.countryCode,
-      };
-    } else {
-      const chosenOpId = suggestion.secondaryCodeList.find(
-        (c) => c.code === chosenSecondaryCode
-      )?.opId;
-      opRef = { type: 'id', operational_point: chosenOpId! };
-    }
+    const opRef: OperationalPointReference = {
+      type: 'domestic',
+      main_code: suggestion.mainCode,
+      secondary_code: chosenSecondaryCode,
+      country_code: suggestion.countryCode,
+    };
     const newLocation: PathItemLocation = {
       type: 'operational_point_part_reference',
       operational_point: opRef,
@@ -323,25 +452,17 @@ const ItineraryModal = ({
     [pathSteps, pathProperties, initCustomTracksEntry, setPathStepMetadata]
   );
 
-  const isStepInvalidAndIsEditing = (step: PathStepV2, metadata?: PathStepMetadata) => {
-    if (!metadata?.isInvalid) return false;
-
+  /**Return true if the path step is invalid and is not a placeholder, not being fetched and not being edited */
+  const isStepInvalidAndFinal = (step: PathStepV2, metadata?: PathStepMetadata) => {
     const query = (getInputForStep(step.id) ?? '').trim();
-    const isEditing = editingStepIdRef.current === step.id;
+    const isEditing = editingStepIdRef.current === step.id || query.length > 0;
     const isPending = pendingStepIdRef.current === step.id;
-    // A step with no location is invalid only if the user typed something and isn't currently editing
-
-    if (!step.location) {
-      return query.length > 0 && !isEditing;
-    }
-
-    // A step with a location can still be invalid (OP not found in current infra).
-    // Show the error as long as the user is not actively editing it, or if the query is empty
-    return !isEditing && !isPending && query.length === 0;
+    // if not step.location, the step is a placeholder waiting for user input
+    return !isEditing && !isPending && !!step.location && !!metadata?.isInvalid;
   };
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
-    isStepInvalidAndIsEditing(step, pathStepsMetadataById.get(step.id))
+    isStepInvalidAndFinal(step, pathStepsMetadataById.get(step.id))
   );
 
   const locatedStepsCount = pathSteps.filter((step) => step.location !== null).length;
@@ -484,27 +605,21 @@ const ItineraryModal = ({
   }, [pathSteps]);
 
   useEffect(() => {
-    if (
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-      displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.itinerary
-    ) {
-      const formattedPathSteps = storePathSteps
-        .filter((pathStep): pathStep is PathStep => pathStep !== null)
-        .map<PathStepV2>((pathStep) => ({
-          id: pathStep.id,
-          location: pathStep.location,
-          arrival: pathStep.arrival ?? null,
-          stopFor: pathStep.stopFor ?? null,
-          theoreticalMargin: pathStep.theoreticalMargin ?? null,
-          receptionSignal: pathStep.receptionSignal ?? null,
-        }));
-      formattedPathSteps.forEach((step) => {
-        initCustomTracksEntry(step.location);
-      });
-      setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
-    }
-  }, [storePathSteps, displayTrainScheduleManagement]);
+    const formattedPathSteps = trainState.pathSteps
+      .filter((pathStep): pathStep is PathStep => pathStep !== null)
+      .map<PathStepV2>((pathStep) => ({
+        id: pathStep.id,
+        location: pathStep.location,
+        arrival: pathStep.arrival ?? null,
+        stopFor: pathStep.stopFor ?? null,
+        theoreticalMargin: pathStep.theoreticalMargin ?? null,
+        receptionSignal: pathStep.receptionSignal ?? null,
+      }));
+    formattedPathSteps.forEach((step) => {
+      initCustomTracksEntry(step.location);
+    });
+    setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
+  }, [trainState.pathSteps]);
 
   const pathfindingStepsWithLocations = useMemo(
     () =>
@@ -607,15 +722,23 @@ const ItineraryModal = ({
     );
   };
 
+  const setPathStepsWithTrailing = useCallback(
+    (newPathSteps: PathStepV2[]) => {
+      setPathSteps(ensureTrailingEmptyStep(newPathSteps));
+    },
+    [setPathSteps]
+  );
+
   const reverseItinerary = () => {
     const filledSteps = pathSteps.filter((step) => !isEmptyStep(step, getInputForStep(step.id)));
-    const updatedPathSteps = buildPathSteps(filledSteps, pathStepsMetadataById);
 
-    if (updatedPathSteps.length < 2) return;
+    if (filledSteps.length < 2) return;
 
-    launchPathfinding(reversePathSteps(updatedPathSteps), modalFormState.rollingStockId);
+    setPathStepsWithTrailing(reversePathSteps(filledSteps));
   };
-  const submitItinerary = (trainType?: FooterTrainType) => {
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitItinerary = (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
     if (isNameEmpty) return;
@@ -635,21 +758,34 @@ const ItineraryModal = ({
 
     if (pathStepsFromV2.length < 2) return;
 
-    dispatch(
-      updateItineraryForm({
-        name: modalFormState.name ?? '',
-        category: modalFormState.category ?? null,
-        rollingStockId: modalFormState.rollingStockId,
-        rollingStockName: modalFormState.rollingStockName,
-        speedLimitTag: modalFormState.speedLimitTag,
-        pathSteps: pathStepsFromV2,
-        trainType,
-      })
-    );
+    setTrainState((oldTrainState: ItineraryModalTrainState) => ({
+      ...oldTrainState,
+      name: modalFormState.name ?? '',
+      category: modalFormState.category ?? null,
+      rollingStockId: modalFormState.rollingStockId,
+      rollingStockName: modalFormState.rollingStockName,
+      speedLimitByTag: modalFormState.speedLimitTag,
+      pathSteps: pathStepsFromV2,
+      editingTrainType: trainType ?? oldTrainState.editingTrainType,
+    }));
 
-    launchPathfinding(pathStepsFromV2, modalFormState.rollingStockId, { isInitialization: true });
-    closeModal({ withChanges: true });
+    setIsSubmitting(true);
   };
+
+  useEffect(() => {
+    if (isSubmitting) {
+      try {
+        if (trainScheduleToEditData) {
+          updateTimetable();
+        } else {
+          createTrain();
+        }
+        onTrainCreated();
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  }, [isSubmitting]);
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 
@@ -663,10 +799,8 @@ const ItineraryModal = ({
   }, []);
 
   useEffect(() => {
-    if (itineraryModalIsOpen) {
-      openModal();
-    }
-  }, [itineraryModalIsOpen]);
+    openModal();
+  }, []);
 
   useEffect(() => {
     if (locatedStepsCount < 2 || pathStepsMetadataById.size < 2) return;
@@ -737,7 +871,7 @@ const ItineraryModal = ({
                 />
               </div>
             )}
-          <TypeAndPath isInNewModal />
+          <TypeAndPath onSubmit={setPathStepsWithTrailing} />
           <div
             className={cx('path-step-list', {
               'with-invalid-step': hasInvalidPathStepDisplay || invalidTrackSteps.length > 0,
@@ -764,7 +898,7 @@ const ItineraryModal = ({
             {pathSteps.map((pathStep, i) => {
               const opKey = getOpKey(pathStep.location);
               const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
-              const isInvalid = isStepInvalidAndIsEditing(pathStep, pathStepMetadata);
+              const isInvalidAndFinal = isStepInvalidAndFinal(pathStep, pathStepMetadata);
               const isMapSelecting = mapSelectionStepId === pathStep.id;
 
               const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
@@ -806,7 +940,7 @@ const ItineraryModal = ({
                     hidePathfindingLine={
                       i > 0 &&
                       !isTrailingPlaceholder &&
-                      (isInvalid || !!previousPathStepMetadata?.isInvalid)
+                      (isInvalidAndFinal || !!previousPathStepMetadata?.isInvalid)
                     }
                     onDelete={() => {
                       handleDeletePathStep(pathStep.id);
@@ -911,7 +1045,7 @@ const ItineraryModal = ({
                     connectorLong={hoveredGapIndex === i}
                     isTrailingPlaceHolder={isTrailingPlaceholder}
                     isOnlyStep={isOnlyStep}
-                    isInvalidAndIsEditing={isInvalid}
+                    isInvalidAndFinal={isInvalidAndFinal}
                     isMapSelectionMode={isMapSelecting}
                     isDestination={i === pathSteps.length - 2}
                     onStartMapSelection={() => handleStartMapSelection(pathStep.id)}
@@ -937,10 +1071,11 @@ const ItineraryModal = ({
           </div>
         </div>
         <ItineraryModalFooter
-          mode={displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ? 'new' : 'edit'}
-          trainType={editingTrainType}
-          onCancel={() => closeModal({ withChanges: false })}
+          mode={trainScheduleToEditData === undefined ? 'new' : 'edit'}
+          trainType={trainState.editingTrainType}
+          onCancel={() => closeModal()}
           onSubmit={submitItinerary}
+          isWorking={isWorking}
         />
       </div>
       {waypointsPanelOpen && (

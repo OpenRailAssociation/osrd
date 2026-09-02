@@ -8,11 +8,10 @@ __pycache__
 # Direnv
 .envrc
 .direnv
+.env
 
 # Helper script
 .osrd-compose-state
 
 # Deployment overrides
 /front/public/overrides/overrides.json
-config.bat
-node_modules

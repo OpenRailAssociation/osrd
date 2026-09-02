@@ -116,12 +116,12 @@ const meta: Meta<typeof Wrapper> = {
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
     enableSnapping: {
       name: 'Enable snapping to closest points?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
   },

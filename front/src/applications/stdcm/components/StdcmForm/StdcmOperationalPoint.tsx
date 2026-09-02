@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
+import { useInfraID } from 'common/osrdContext';
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -52,9 +53,11 @@ const StdcmOperationalPoint = ({
 }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
+  const infraId = useInfraID();
 
   const { searchTerm, setSearchTerm, searchResults, searchOperationalPointsByMainCode } =
     useSearchOperationalPoint({
+      infraId,
       initialSearchTerm: operationalPoint?.name,
       initialSecondaryCodeFilter: operationalPoint?.secondaryCode,
       isStdcm: true,

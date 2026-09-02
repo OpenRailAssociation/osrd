@@ -135,28 +135,28 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     xPan: {
       name: 'Enable panning on the X axis?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     yPan: {
       name: 'Enable panning on the Y axis?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     xZoom: {
       name: 'Enable zooming on the X axis?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     yZoom: {
       name: 'Enable zooming on the Y axis?',
-      defaultValue: true,
+      value: true,
       control: { type: 'boolean' },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },

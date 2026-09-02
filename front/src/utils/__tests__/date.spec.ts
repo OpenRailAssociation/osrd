@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseLocalDateTime,
   isArrivalDateInSearchTimeWindow,
+  timeToLocaleString,
   timeToLocaleStringRounded,
 } from 'utils/date';
 import { Duration } from 'utils/duration';
@@ -67,6 +68,29 @@ describe('isArrivalDateInSearchTimeWindow', () => {
       searchDatetimeWindow
     );
     expect(result).toBe(false);
+  });
+});
+
+describe('timeToLocaleString', () => {
+  const locale = new Intl.Locale('en-US');
+
+  it('should format a Duration as an elapsed hh:mm:ss time, independent of locale', () => {
+    expect(
+      timeToLocaleString(new Duration({ hours: 8, minutes: 37, seconds: 12 }), locale)
+    ).toEqual('08:37:12');
+  });
+
+  it('should truncate a Duration to the second', () => {
+    expect(
+      timeToLocaleString(
+        new Duration({ hours: 8, minutes: 37, seconds: 12, milliseconds: 600 }),
+        locale
+      )
+    ).toEqual('08:37:12');
+  });
+
+  it('should not wrap a Duration exceeding 24 hours', () => {
+    expect(timeToLocaleString(new Duration({ hours: 25, minutes: 7 }), locale)).toEqual('25:07:00');
   });
 });
 

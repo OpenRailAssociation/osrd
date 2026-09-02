@@ -6,7 +6,7 @@ use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
-use editoast_models::prelude::*;
+use models::prelude::*;
 
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -69,20 +69,19 @@ pub async fn create_group(
     CreateArgs { name }: CreateArgs,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let editoast_models::Group { id, .. } =
-        editoast_models::Group::upsert(pool.get().await?, name).await?;
+    let models::Group { id, .. } = models::Group::upsert(pool.get().await?, name).await?;
     println!("{id}");
     Ok(())
 }
 
 pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
     let mut conn = pool.get().await?;
-    let groups = editoast_models::Group::list(&mut conn, Default::default()).await?;
+    let groups = models::Group::list(&mut conn, Default::default()).await?;
     if groups.is_empty() {
         tracing::info!("No group found.");
         return Ok(());
     }
-    for editoast_models::Group { id, name } in groups {
+    for models::Group { id, name } in groups {
         println!("[{id}]: {name}");
     }
     Ok(())
@@ -96,15 +95,15 @@ pub async fn group_info(
     let openfga = openfga_config.into_client().await?;
     let conn = pool.get().await?;
     let system = SystemAuthorizer::new_infallible(&openfga);
-    let Some(editoast_models::Group {
+    let Some(models::Group {
         id: group_id,
         name: _,
-    }) = editoast_models::Group::retrieve(conn.clone(), name.clone()).await?
+    }) = models::Group::retrieve(conn.clone(), name.clone()).await?
     else {
         tracing::error!(name, "No such group");
         return Ok(());
     };
-    let Some(group) = editoast_models::Group::retrieve(conn.clone(), group_id).await? else {
+    let Some(group) = models::Group::retrieve(conn.clone(), group_id).await? else {
         tracing::error!(group.id = group_id, "No such group");
         return Ok(());
     };
@@ -118,7 +117,7 @@ pub async fn group_info(
     println!("name   : {}", group.name);
     println!("members:");
     for authz::User(user_id) in user_ids {
-        let Some(user) = editoast_models::User::retrieve(conn.clone(), user_id).await? else {
+        let Some(user) = models::User::retrieve(conn.clone(), user_id).await? else {
             tracing::error!(user.id = user_id, "user not found, skipping it!");
             continue;
         };
@@ -138,10 +137,10 @@ pub async fn exclude_group(
         bail!("No user specified");
     }
 
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(&openfga);
 
-    let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
+    let group_id = models::Group::retrieve(pool.get().await?, group_name.clone())
         .await?
         .ok_or_else(|| anyhow!("No such group: '{group_name}'"))?
         .id;
@@ -151,12 +150,12 @@ pub async fn exclude_group(
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
         } else {
-            editoast_models::User::retrieve_by_identity(user, pool.get().await?)
+            models::User::retrieve_by_identity(user, pool.get().await?)
                 .await?
                 .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
                 .id
         };
-        editoast_models::User::retrieve(pool.get().await?, uid)
+        models::User::retrieve(pool.get().await?, uid)
             .await?
             .ok_or_else(|| anyhow!("No such user {uid}"))?;
         authz_users.insert(authz::User(uid));
@@ -177,10 +176,10 @@ pub async fn include_group(
         bail!("No user specified");
     }
 
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
+    let openfga = openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(&openfga);
 
-    let group_id = editoast_models::Group::retrieve(pool.get().await?, group_name.clone())
+    let group_id = models::Group::retrieve(pool.get().await?, group_name.clone())
         .await?
         .ok_or_else(|| anyhow!("No such group: '{group_name}'"))?
         .id;
@@ -190,12 +189,12 @@ pub async fn include_group(
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
         } else {
-            editoast_models::User::retrieve_by_identity(user, pool.get().await?)
+            models::User::retrieve_by_identity(user, pool.get().await?)
                 .await?
                 .ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
                 .id
         };
-        editoast_models::User::retrieve(pool.get().await?, uid)
+        models::User::retrieve(pool.get().await?, uid)
             .await?
             .ok_or_else(|| anyhow!("No such user {uid}"))?;
         authz_users.insert(authz::User(uid));
@@ -211,10 +210,10 @@ pub async fn delete_group(
     openfga_config: OpenfgaConfig,
     pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let openfga = openfga_config.into_client().await?;
     let mut conn = pool.get().await?;
-    let system = SystemAuthorizer::new_infallible(regulator.openfga());
-    let group_id = editoast_models::Group::retrieve(pool.get().await?, name.clone())
+    let system = SystemAuthorizer::new_infallible(&openfga);
+    let group_id = models::Group::retrieve(pool.get().await?, name.clone())
         .await?
         .ok_or_else(|| anyhow!("group '{name}' could not be deleted (not found)"))?
         .id;
@@ -230,7 +229,7 @@ pub async fn delete_group(
     let remove_member = authz::v2::remove_members(group, users_in_group);
     let Ok(()) = system.authorize(remove_member).await?.access().await?;
 
-    let deleted = editoast_models::Group::delete_static(&mut conn, group_id).await?;
+    let deleted = models::Group::delete_static(&mut conn, group_id).await?;
     if deleted {
         tracing::info!("group '{name}' deleted");
     } else {

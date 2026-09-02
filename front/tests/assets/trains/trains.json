@@ -2348,5 +2348,57 @@
     "category": {
       "main_category": "FREIGHT_TRAIN"
     }
+  },
+  {
+    "train_name": "Test train",
+    "rolling_stock_name": "FAST_RS_E2E",
+    "start_time": 1728961200000,
+    "path": [
+      {
+        "id": "origin",
+        "location": {
+          "type": "operational_point_part_reference",
+          "operational_point": {
+            "type": "uic",
+            "uic": 8755,
+            "secondary_code": "BV"
+          }
+        }
+      },
+      {
+        "id": "destination",
+        "location": {
+          "type": "operational_point_part_reference",
+          "operational_point": {
+            "type": "uic",
+            "uic": 8766,
+            "secondary_code": "BV"
+          }
+        }
+      }
+    ],
+    "schedule": [
+      {
+        "at": "destination",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN"
+      }
+    ],
+    "margins": {
+      "boundaries": [],
+      "values": ["0%"]
+    },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": "AR120",
+    "power_restrictions": [],
+    "options": {
+      "use_electrical_profiles": true
+    },
+    "category": {
+      "main_category": "REGIONAL_TRAIN"
+    }
   }
 ]

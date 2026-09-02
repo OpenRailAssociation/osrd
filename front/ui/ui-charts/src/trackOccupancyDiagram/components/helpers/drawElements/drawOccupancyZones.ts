@@ -1,6 +1,12 @@
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
+import {
+  OCCUPANCY_ZONE_Y_START,
+  OCCUPANCY_ZONE_HEIGHT,
+  OCCUPANCY_SEPARATOR_WIDTH,
+  FONTS,
+  COLORS,
+} from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
@@ -22,6 +28,15 @@ const ARROW_OFFSET_Y = 1.5;
 const ARROW_WIDTH = 4.5;
 const ARROW_TOP_Y = 3.5;
 const ARROW_BOTTOM_Y = 6.5;
+
+/**
+ * Y coordinate of the top of the occupancy bars of a track. It is snapped to the device pixels, so
+ * that whatever is drawn along the bars stays as crisp as they are.
+ */
+export const getOccupancyZonesY = (
+  { getSpacePixel }: Pick<SpaceTimeChartContextType, 'getSpacePixel'>,
+  position: number
+): number => getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
 
 export const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   // Through trains are materialized by converging arrows like the following ones
@@ -101,7 +116,7 @@ export const drawOccupationZone = (
   ctx.font = MONO;
 
   const { getTimePixel, getSpacePixel } = stcContext;
-  const yStart = getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
+  const yStart = getOccupancyZonesY(stcContext, position);
   const y = yStart + yOffset;
   const yEnd = getSpacePixel(position, true);
   const arrivalTimePixel = getTimePixel(zone.startTime);
@@ -110,7 +125,7 @@ export const drawOccupationZone = (
   if (isThroughTrain) {
     ctx.fillStyle = curveColor;
     ctx.strokeStyle = WHITE_100;
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = OCCUPANCY_SEPARATOR_WIDTH;
     drawThroughTrain(ctx, arrivalTimePixel, y);
   } else {
     const zoneWidth = departureTimePixel - arrivalTimePixel;
@@ -149,7 +164,7 @@ export const drawOccupationZone = (
       ctx.stroke();
     } else if (!outline) {
       ctx.strokeStyle = WHITE_100;
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = OCCUPANCY_SEPARATOR_WIDTH;
       ctx.stroke();
     }
   }

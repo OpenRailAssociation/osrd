@@ -52,7 +52,7 @@ pub fn user_groups(user: User) -> Protected<Vec<Group>> {
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
     group_members(group)
-        .map(move |openfga, existing_members| {
+        .then(move |openfga, existing_members| {
             async move {
                 let existing_members = HashSet::from_iter(existing_members);
                 let new_members = members.difference(&existing_members);
@@ -74,7 +74,7 @@ pub fn add_members(group: Group, members: HashSet<User>) -> Protected<()> {
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
     group_members(group)
-        .map(move |openfga, existing_members| {
+        .then(move |openfga, existing_members| {
             async move {
                 let existing_members = HashSet::from_iter(existing_members);
                 let expelled = members.intersection(&existing_members);

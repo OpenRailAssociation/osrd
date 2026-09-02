@@ -1,13 +1,16 @@
 import { useCallback } from 'react';
 
+import { AMBIENT_COLORS } from '@osrd-project/ui-core';
+
 import { HOUR, MINUTE } from '../../common/consts';
 import { TimeChartCanvasContext } from '../../common/context';
-import { WHITE_ALPHA_75 } from '../../common/helpers/colors';
+import { BLACK_ALPHA_10 } from '../../common/helpers/colors';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, TimeChartContextType } from '../../common/types';
 
 const MARGIN = 100;
+const TOP_CAPTION_HEIGHT = 24;
 
 const MINUTE_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: '2-digit',
@@ -42,6 +45,10 @@ const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
     pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
   );
 
+// Signed integer hour count relative to time origin 0, used for the hourly
+// pattern mode (e.g. hourly timetables): …, -2, -1, 0, 1, 2, …
+const HOURLY_HOURS_FORMATTER = (t: number) => `${Math.round(t / HOUR)}`;
+
 const DATES_FORMATER = (t: number) => new Date(t).toLocaleDateString(undefined, DATE_OPTIONS);
 
 const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
@@ -57,6 +64,10 @@ const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
   HOURS_FORMATTER,
   HOURS_FORMATTER,
 ];
+
+const HOURLY_RANGES_FORMATER = RANGES_FORMATER.map((f) =>
+  f === HOURS_FORMATTER ? HOURLY_HOURS_FORMATTER : f
+);
 
 export const TimeCaptions = () => {
   const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
@@ -82,6 +93,7 @@ export const TimeCaptions = () => {
         swapAxis = false,
         hideTimeCaptions = false,
         hideDates = false,
+        hourlyTimetableDuration,
         showTicks = false,
       }
     ) => {
@@ -106,6 +118,8 @@ export const TimeCaptions = () => {
         return false;
       });
 
+      const rangesFormatter = hourlyTimetableDuration ? HOURLY_RANGES_FORMATER : RANGES_FORMATER;
+
       let labelMarks = computeVisibleTimeMarkers(
         minT,
         maxT,
@@ -114,7 +128,7 @@ export const TimeCaptions = () => {
         (level: number, i: number) => ({
           level,
           styles: timeCaptionsStyles[level],
-          formatter: RANGES_FORMATER[i],
+          formatter: rangesFormatter[i],
         })
       );
       if (!hideDates)
@@ -128,8 +142,8 @@ export const TimeCaptions = () => {
       // Render caption background:
       ctx.fillStyle = background;
       if (!swapAxis) {
-        ctx.fillStyle = WHITE_ALPHA_75;
-        ctx.fillRect(0, 0, width, 24);
+        ctx.fillStyle = AMBIENT_COLORS.ambientB5;
+        ctx.fillRect(0, 0, width, TOP_CAPTION_HEIGHT);
         ctx.fillStyle = background;
         ctx.fillRect(0, spaceAxisSize, timeAxisSize, captionSize);
       } else {
@@ -196,6 +210,14 @@ export const TimeCaptions = () => {
           ctx.lineTo(x, timeAxisSize);
         }
         ctx.stroke();
+        if (!swapAxis) {
+          ctx.strokeStyle = BLACK_ALPHA_10;
+          ctx.beginPath();
+          const yTop = getCrispLineCoordinate(TOP_CAPTION_HEIGHT, ctx.lineWidth);
+          ctx.moveTo(0, yTop);
+          ctx.lineTo(timeAxisSize, yTop);
+          ctx.stroke();
+        }
       }
     },
     []

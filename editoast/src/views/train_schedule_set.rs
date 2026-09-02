@@ -2,8 +2,8 @@ use axum::extract::Query;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
 use itertools::Itertools;
+use models::prelude::*;
 use schemas::paced_train::TrainSchedule;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -16,8 +16,8 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use editoast_models::TrainScheduleSet;
-use editoast_models::train_schedule::TrainScheduleChangeset;
+use models::TrainScheduleSet;
+use models::train_schedule::TrainScheduleChangeset;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -31,7 +31,7 @@ pub enum TrainScheduleSetError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, PartialEq)]
@@ -70,9 +70,7 @@ impl TrainScheduleSetForm {
             .name(self.name)
             .description(self.description)
             .published(self.published)
-            .timetable_type(editoast_models::timetable_type::TimetableType(
-                self.timetable_type,
-            ))
+            .timetable_type(models::timetable_type::TimetableType(self.timetable_type))
     }
 }
 
@@ -177,9 +175,8 @@ pub(in crate::views) async fn get(
 
     if let Some(timetable_type) = timetable_type {
         settings = settings.filter(move || {
-            TrainScheduleSet::TIMETABLE_TYPE.eq(editoast_models::timetable_type::TimetableType(
-                timetable_type,
-            ))
+            TrainScheduleSet::TIMETABLE_TYPE
+                .eq(models::timetable_type::TimetableType(timetable_type))
         });
     }
 
@@ -310,8 +307,7 @@ pub(in crate::views) async fn post_train_schedule(
         .collect::<Vec<_>>();
 
     // Create a batch of train schedules
-    let train_schedules: Vec<_> =
-        editoast_models::TrainSchedule::create_batch(conn, changesets).await?;
+    let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
     let response: Vec<TrainScheduleResponse> = train_schedules.into_iter().map_into().collect();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -344,11 +340,10 @@ pub(in crate::views) async fn get_train_schedules(
         .into());
     }
 
-    let settings = SelectionSettings::new().filter(move || {
-        editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id)
-    });
+    let settings = SelectionSettings::new()
+        .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
 
-    let train_schedules = editoast_models::TrainSchedule::list(conn, settings).await?;
+    let train_schedules = models::TrainSchedule::list(conn, settings).await?;
     Ok(Json(train_schedules.into_iter().map_into().collect()))
 }
 
@@ -367,9 +362,9 @@ mod tests {
     use chrono::Duration;
     use common::units::second;
     use database::DbConnection;
-    use editoast_models::CatalogEntry;
-    use editoast_models::TrainScheduleSet;
-    use editoast_models::prelude::*;
+    use models::CatalogEntry;
+    use models::TrainScheduleSet;
+    use models::prelude::*;
     use reqwest::StatusCode;
 
     async fn create_train_schedule_set_linked_to_catalog_entry(
@@ -416,13 +411,11 @@ mod tests {
         assert!(response.len() == 2);
 
         let settings = SelectionSettings::default()
-            .filter(move || {
-                editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id)
-            })
+            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
             .limit(25)
             .offset(0);
 
-        let list_result = editoast_models::TrainSchedule::list(&mut pool.get_ok(), settings)
+        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch train schedules");
 
@@ -436,7 +429,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::changeset()
             .name(Some("hourly_train_schedule_set".into()))
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut pool.get_ok())
@@ -480,7 +473,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::changeset()
             .name(Some("hourly_train_schedule_set".into()))
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut pool.get_ok())
@@ -521,7 +514,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::changeset()
             .name(Some("hourly_train_schedule_set".into()))
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut pool.get_ok())
@@ -654,7 +647,7 @@ mod tests {
             name: Some("test".to_string()),
             description: String::default(),
             published: false,
-            timetable_type: editoast_models::timetable_type::TimetableType(
+            timetable_type: models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Calendar,
             ),
         };
@@ -742,7 +735,7 @@ mod tests {
 
     async fn create_train_schedule_set_with_timetable_type(
         conn: &mut DbConnection,
-        timetable_type: editoast_models::timetable_type::TimetableType,
+        timetable_type: models::timetable_type::TimetableType,
     ) -> TrainScheduleSet {
         let catalog_entry = create_catalog_entry(conn).await;
         TrainScheduleSet::changeset()
@@ -763,9 +756,7 @@ mod tests {
             create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set_2 = create_train_schedule_set_with_timetable_type(
             &mut db_pool.get().await.unwrap(),
-            editoast_models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Hourly,
-            ),
+            models::timetable_type::TimetableType(schemas::timetable_type::TimetableType::Hourly),
         )
         .await;
         let response: Vec<TrainScheduleSetResponse> = app
@@ -895,7 +886,7 @@ mod tests {
                     name: Some("test_updated".to_string()),
                     description: "test description".to_string(),
                     published: false,
-                    timetable_type: editoast_models::timetable_type::TimetableType(
+                    timetable_type: models::timetable_type::TimetableType(
                         schemas::timetable_type::TimetableType::Calendar
                     ),
                 },

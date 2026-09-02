@@ -7,23 +7,19 @@ import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 
 export type TrainScheduleConfErrorCode =
   | 'noOrigin'
-  | 'noDepartureTime'
   | 'noDestination'
   | 'noRollingStock'
   | 'noName'
   | 'invalidInitialSpeed'
-  | 'intervalTooLow'
-  | 'timeWindowTooLow'
-  | 'timeWindowTooHigh';
+  | 'pacedTrainInterval.tooLow'
+  | 'pacedTrainTimeWindow.tooLow'
+  | 'pacedTrainTimeWindow.tooHigh';
 
 export function validateTrainSchedule(train: TrainSchedule): TrainScheduleConfErrorCode[] {
   const errors: TrainScheduleConfErrorCode[] = [];
 
   if (train.path[0] === null) {
     errors.push('noOrigin');
-  }
-  if (!train.start_time) {
-    errors.push('noDepartureTime');
   }
   if (train.path.at(-1) === null) {
     errors.push('noDestination');
@@ -41,13 +37,13 @@ export function validateTrainSchedule(train: TrainSchedule): TrainScheduleConfEr
     const timeWindowDuration = Duration.parse(train.paced.time_window);
 
     if (intervalDuration.total('minute') < 1) {
-      errors.push('intervalTooLow');
+      errors.push('pacedTrainInterval.tooLow');
     }
     if (timeWindowDuration.total('minute') < 1) {
-      errors.push('timeWindowTooLow');
+      errors.push('pacedTrainTimeWindow.tooLow');
     }
     if (timeWindowDuration.total('minute') >= MAX_TIMEWINDOW_MINUTES) {
-      errors.push('timeWindowTooHigh');
+      errors.push('pacedTrainTimeWindow.tooHigh');
     }
   }
 

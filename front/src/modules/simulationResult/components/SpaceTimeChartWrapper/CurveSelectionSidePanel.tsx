@@ -11,6 +11,7 @@ type CurveSelectionSidePanelProps = {
   panelSelectionMode: PanelSelectionMode;
   onModeChange: (mode: PanelSelectionMode) => void;
   counts: { compliant: number; all: number };
+  isFaded?: boolean;
 };
 
 const CurveSelectionSidePanel = ({
@@ -18,6 +19,7 @@ const CurveSelectionSidePanel = ({
   panelSelectionMode,
   onModeChange,
   counts,
+  isFaded = false,
 }: CurveSelectionSidePanelProps) => {
   const { t } = useTranslation('operational-studies');
 
@@ -48,19 +50,19 @@ const CurveSelectionSidePanel = ({
   ];
 
   return (
-    <div className="curve-selection-side-panel" style={{ top: position }}>
+    <div className={cx('curve-selection-side-panel', { faded: isFaded })} style={{ top: position }}>
       {formattedOccurrences.map(({ mode, value, icon, isActive }) => (
         <button
           key={mode}
           className={cx('numbered-icon', { 'selected-icon': isActive })}
-          title={t(`simulationResults.curveSelection.${mode}`, {
-            count: value,
-          })}
           onClick={() => onModeChange(mode)}
         >
           {icon}
           {value > 0 && <span className="occurrences-number">{value}</span>}
           {isActive && <div className="selection-marker" />}
+          <span className="mode-tooltip">
+            {t(`simulationResults.curveSelection.${mode}`, { count: value })}
+          </span>
         </button>
       ))}
     </div>

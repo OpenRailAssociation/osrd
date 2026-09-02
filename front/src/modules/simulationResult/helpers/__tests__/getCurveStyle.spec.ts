@@ -56,6 +56,11 @@ describe('getCurveStyle', () => {
       });
     });
 
+    it('should thicken the stops to 6px', () => {
+      const style = getCurveStyle('active', { colors, isSimulated: true });
+      expect(style.stop?.thickness).toBe(6);
+    });
+
     it('should label with the hovered color, bold, with a base-colored border', () => {
       const style = getCurveStyle('active', { colors, isSimulated: true });
       expect(style.label).toEqual({
@@ -127,10 +132,10 @@ describe('getCurveStyle', () => {
   });
 
   describe('drag', () => {
-    it('should return the dark navy color at level 1 with the yellow halo outline', () => {
+    it('should return the dark navy color at the default level with the yellow halo outline', () => {
       const style = getCurveStyle('drag', { colors, isSimulated: true });
       expect(style.color).toBe(DRAGGED_CURVE_COLOR);
-      expect(style.level).toBe(1);
+      expect(style.level).toBeUndefined();
       expect(style.opacity).toBe(1);
       expect(style.outline).toEqual({
         offset: 0,
@@ -150,7 +155,7 @@ describe('getCurveStyle', () => {
   });
 
   describe('out of selection', () => {
-    it('should keep the normal color and fade with a reduced opacity', () => {
+    it('should keep the normal color and fade curve and label with a reduced opacity', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfSelection: true });
       expect(style.color).toBe(colors.base);
       expect(style.opacity).toBeLessThan(1);
@@ -158,6 +163,7 @@ describe('getCurveStyle', () => {
         color: colors.base,
         fontWeight: 400,
         background: { color: REST_BACKGROUND_COLOR, opacity: 0.9 },
+        opacity: style.opacity,
       });
     });
 
@@ -191,6 +197,89 @@ describe('getCurveStyle', () => {
     });
   });
 
+  describe('out of drag', () => {
+    it('should soften the curve to 0.6 and keep the label at full opacity', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfDrag: true });
+      expect(style.color).toBe(colors.base);
+      expect(style.opacity).toBe(0.6);
+      expect(style.label?.opacity).toBeUndefined();
+    });
+
+    it('should leave the base style untouched when not out of drag', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: true }, { outOfDrag: false });
+      expect(style.opacity).toBe(1);
+      expect(style.label?.opacity).toBeUndefined();
+    });
+
+    it('should win over out of selection: a drag fades the curve to 0.6 with a full-opacity label', () => {
+      const style = getCurveStyle(
+        'none',
+        { colors, isSimulated: true },
+        { outOfDrag: true, outOfSelection: true }
+      );
+      expect(style.opacity).toBe(0.6);
+      expect(style.label?.opacity).toBeUndefined();
+    });
+  });
+
+  describe('hide stops modifier', () => {
+    it('should zero the stop thickness on a dragged curve', () => {
+      const style = getCurveStyle('drag', { colors, isSimulated: true }, { hideStops: true });
+      expect(style.stop?.thickness).toBe(0);
+    });
+
+    it('should zero the stop thickness on a curve pinned by its exception during the drag', () => {
+      const style = getCurveStyle(
+        'passiveSecondary',
+        { colors, isSimulated: true },
+        { hideStops: true }
+      );
+      expect(style.stop?.thickness).toBe(0);
+    });
+
+    it('should leave the stop thickness untouched when not set', () => {
+      const style = getCurveStyle('active', { colors, isSimulated: true });
+      expect(style.stop?.thickness).toBe(6);
+    });
+  });
+
+  describe('stop opacity', () => {
+    it('should leave a resting curve at the default (undefined) so ui-charts falls back to 0.2', () => {
+      const style = getCurveStyle('none', { colors, isSimulated: true });
+      expect(style.stop?.opacity).toBeUndefined();
+    });
+
+    it('should raise the stop opacity to 0.4 on an active curve', () => {
+      const style = getCurveStyle('active', { colors, isSimulated: true });
+      expect(style.stop?.opacity).toBe(0.4);
+    });
+
+    it.each(['passivePrimary', 'passiveSecondary'] as const)(
+      'should raise the stop opacity to 0.7 on a %s (passive) curve',
+      (state) => {
+        const style = getCurveStyle(state, { colors, isSimulated: true });
+        expect(style.stop?.opacity).toBe(0.7);
+      }
+    );
+
+    it.each(['none', 'passivePrimary', 'active'] as const)(
+      'should raise the stop opacity to 0.5 when hovering a %s curve',
+      (state) => {
+        const style = getCurveStyle(state, { colors, isSimulated: true }, { hovered: true });
+        expect(style.stop?.opacity).toBe(0.5);
+      }
+    );
+
+    it.each(['none', 'passivePrimary', 'passiveSecondary'] as const)(
+      'should keep the stop halo in the base color when hovering a %s curve (its line turns strong)',
+      (state) => {
+        const style = getCurveStyle(state, { colors, isSimulated: true }, { hovered: true });
+        expect(style.color).toBe(colors.strong);
+        expect(style.stop?.color).toBe(colors.base);
+      }
+    );
+  });
+
   describe('hover modifier', () => {
     it('should switch a none-state curve to the hovered tint at level 3', () => {
       const style = getCurveStyle('none', { colors, isSimulated: true }, { hovered: true });
@@ -210,12 +299,37 @@ describe('getCurveStyle', () => {
       expect(style.outline).toEqual(INVALID_OUTLINE);
     });
 
-    it.each(['active', 'passivePrimary', 'passiveSecondary', 'drag'] as const)(
-      'should not change anything when hovering a %s curve',
+    it('should not change anything when hovering a drag curve', () => {
+      const base = getCurveStyle('drag', { colors, isSimulated: true });
+      const hovered = getCurveStyle('drag', { colors, isSimulated: true }, { hovered: true });
+      expect(hovered).toEqual(base);
+    });
+
+    it('should switch the label and raise the stop opacity when hovering an active curve', () => {
+      const base = getCurveStyle('active', { colors, isSimulated: true });
+      const hovered = getCurveStyle('active', { colors, isSimulated: true }, { hovered: true });
+      expect(hovered).toEqual({
+        ...base,
+        stop: { thickness: 6, opacity: 0.5 },
+        label: {
+          color: colors.strong,
+          background: { color: colors.surface },
+          fontWeight: 400,
+        },
+      });
+    });
+
+    it.each(['passivePrimary', 'passiveSecondary'] as const)(
+      'should switch a %s curve to the hovered tint',
       (state) => {
-        const base = getCurveStyle(state, { colors, isSimulated: true });
-        const hovered = getCurveStyle(state, { colors, isSimulated: true }, { hovered: true });
-        expect(hovered).toEqual(base);
+        const style = getCurveStyle(state, { colors, isSimulated: true }, { hovered: true });
+        expect(style.color).toBe(colors.strong);
+        expect(style.level).toBe(3);
+        expect(style.label).toEqual({
+          color: colors.strong,
+          background: { color: colors.surface },
+          fontWeight: 400,
+        });
       }
     );
 

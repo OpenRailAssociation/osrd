@@ -227,7 +227,7 @@ const SpeedSpaceChart = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    // eslint-disable-next-line react-hooks-js/set-state-in-effect
+    // eslint-disable-next-line react/set-state-in-effect
     setStore((prev) => ({
       ...prev,
       etcsBrakingCurves: etcsBrakingCurves,
@@ -236,7 +236,7 @@ const SpeedSpaceChart = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    // eslint-disable-next-line react-hooks-js/set-state-in-effect
+    // eslint-disable-next-line react/set-state-in-effect
     setStore((prev) => ({
       ...prev,
       ...data,

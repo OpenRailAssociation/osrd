@@ -106,7 +106,7 @@ const TrainScheduleSetForm = ({
    * This function is debounce by lodash to avoid multiple calls
    */
   const checkNameCatalogUniqueness = useCallback(
-    // eslint-disable-next-line react-hooks-js/use-memo
+    // eslint-disable-next-line react/use-memo
     debounce(async (formName?: string, formCatalog?: TrainScheduleSetFormData['catalog']) => {
       if (checkNameInCatalogIsUniq && formName && formCatalog && 'id' in formCatalog) {
         const catalogId = formCatalog.id;
@@ -209,7 +209,6 @@ const TrainScheduleSetForm = ({
             description,
             catalog: catalogEntry!,
             published: false,
-            timetable_type: 'CALENDAR',
           });
         } else {
           onValidation(true);

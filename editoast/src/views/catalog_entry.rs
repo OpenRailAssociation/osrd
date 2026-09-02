@@ -13,8 +13,8 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use editoast_models::CatalogEntry;
-use editoast_models::prelude::*;
+use models::CatalogEntry;
+use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -29,7 +29,7 @@ pub enum CatalogEntryError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -158,7 +158,7 @@ mod tests {
     use crate::views::test_app;
 
     use super::*;
-    use editoast_models::catalog_entry::CatalogEntry;
+    use models::catalog_entry::CatalogEntry;
     use serde_json::json;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

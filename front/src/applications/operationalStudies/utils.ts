@@ -186,7 +186,8 @@ export const matchOpRefAndWaypoint = (
   }
   return (
     location.operational_point.main_code === waypoint.main_code &&
-    location.operational_point.secondary_code === waypoint.secondary_code
+    location.operational_point.secondary_code === waypoint.secondary_code &&
+    location.operational_point.country_code === waypoint.country_code
   );
 };
 

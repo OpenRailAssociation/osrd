@@ -3,14 +3,14 @@
 //! **Note**: Years and months are not supported.
 //!
 //! ```
-//! use chrono::Duration;
 //! use serde::{Serialize, Deserialize};
 //! use schemas::primitives::duration;
+//! use schemas::primitives::PositiveDuration;
 //!
 //! #[derive(Serialize, Deserialize)]
 //! struct MyStruct {
 //!     #[serde(with = "schemas::primitives::duration")] // <- Add this line
-//!     duration: Duration
+//!     duration: PositiveDuration
 //! }
 //!
 //! let s = r#"{"duration":"PT1H"}"#; // 1 hour
@@ -61,7 +61,7 @@ pub enum PositiveDurationError {
 /// let err_s = r#"{"duration":"P1M"}"#; // 1 month
 /// assert!(serde_json::from_str::<MyStruct>(err_s).is_err());
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PositiveDuration(ChronoDuration);
 
 #[cfg(feature = "testing")]
@@ -111,11 +111,10 @@ impl TryFrom<ChronoDuration> for PositiveDuration {
     /// This function errors when the given duration is negative
     /// The created PositiveDuration is limited to 1 millisecond
     fn try_from(duration: ChronoDuration) -> Result<Self, PositiveDurationError> {
-        let milli_sec = duration.num_milliseconds();
-        if milli_sec < 0 {
+        if duration.num_milliseconds() < 0 {
             return Err(PositiveDurationError::NegativeDuration);
         }
-        Ok(PositiveDuration(ChronoDuration::milliseconds(milli_sec)))
+        Ok(PositiveDuration(duration))
     }
 }
 
@@ -147,7 +146,7 @@ impl<'de> Deserialize<'de> for PositiveDuration {
     where
         D: serde::Deserializer<'de>,
     {
-        deserialize(deserializer).map(PositiveDuration)
+        deserialize(deserializer)
     }
 }
 
@@ -160,13 +159,13 @@ where
 }
 
 /// Deserialize a `chrono::Duration` from an ISO 8601 duration string.
-pub fn deserialize<'de, D>(deserializer: D) -> Result<ChronoDuration, D::Error>
+pub fn deserialize<'de, D>(deserializer: D) -> Result<PositiveDuration, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
     let iso_dur = IsoDuration::from_str(&s).map_err(serde::de::Error::custom)?;
-    Ok(match iso_dur {
+    Ok(PositiveDuration(match iso_dur {
         IsoDuration::YMDHMS {
             year,
             month,
@@ -194,7 +193,60 @@ where
         }
         IsoDuration::Weeks(weeks) => ChronoDuration::try_weeks(weeks as i64)
             .ok_or_else(|| serde::de::Error::custom("value for weeks is not valid"))?,
-    })
+    }))
+}
+
+/// Variant of [`PositiveDuration`] that also requires the duration to not be zero.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StrictlyPositiveDuration(ChronoDuration);
+
+impl utoipa::PartialSchema for StrictlyPositiveDuration {
+    fn schema() -> RefOr<Schema> {
+        PositiveDuration::schema()
+    }
+}
+
+impl ToSchema for StrictlyPositiveDuration {}
+
+impl Serialize for StrictlyPositiveDuration {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serialize(&self.0, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for StrictlyPositiveDuration {
+    fn deserialize<D>(deserializer: D) -> Result<StrictlyPositiveDuration, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let duration = deserialize(deserializer)?;
+        if duration.num_milliseconds() == 0 {
+            return Err(serde::de::Error::custom("duration cannot be zero"));
+        }
+        Ok(StrictlyPositiveDuration(duration.0))
+    }
+}
+
+impl TryFrom<ChronoDuration> for StrictlyPositiveDuration {
+    type Error = PositiveDurationError;
+    /// Create PositiveDuration from `chrono::Duration``
+    /// This function errors when the given duration is negative or null
+    /// The created StrictPositiveDuration is limited to 1 millisecond
+    fn try_from(duration: ChronoDuration) -> Result<Self, PositiveDurationError> {
+        if duration.num_milliseconds() <= 0 {
+            return Err(PositiveDurationError::NegativeDuration);
+        }
+        Ok(StrictlyPositiveDuration(duration))
+    }
+}
+
+impl From<StrictlyPositiveDuration> for ChronoDuration {
+    fn from(duration: StrictlyPositiveDuration) -> Self {
+        duration.0
+    }
 }
 
 #[cfg(test)]

@@ -8,9 +8,9 @@ import type {
   PacedTrainOptions,
   TimetableFilterTranslations,
 } from '../../utils/types';
-import CommonPage from '../common-page';
+import ScenarioTimetableSection from './scenario-timetable-section';
 
-class PacedTrainSection extends CommonPage {
+class PacedTrainSection extends ScenarioTimetableSection {
   private readonly pacedTrainItem: Locator;
   private readonly testedPacedTrain: Locator;
   private readonly testedPacedTrainShowOccurrencesButton: Locator;
@@ -21,9 +21,8 @@ class PacedTrainSection extends CommonPage {
   private readonly testedOccurrenceName: Locator;
   private readonly testedOccurrenceStartTime: Locator;
   private readonly testedOccurrenceArrivalTime: Locator;
+  private readonly testedOccurrenceArrivalTimeLoader: Locator;
   private readonly occurrencesCount: Locator;
-  private readonly manageTrainSchedulePage: Locator;
-  private readonly confirmationModalDeleteButton: Locator;
   private readonly confirmationModalButton: Locator;
   private readonly portalOccurrenceMenu: {
     disable: Locator;
@@ -42,15 +41,17 @@ class PacedTrainSection extends CommonPage {
     this.testedPacedTrainShowOccurrencesButton =
       this.testedPacedTrain.getByTestId('show-occurrences-button');
     this.testedPacedTrainName = this.testedPacedTrain.getByTestId('paced-train-name');
-    this.testedPacedTrainRollingStock = this.testedPacedTrain.locator('> .rolling-stock');
+    this.testedPacedTrainRollingStock = this.testedPacedTrain
+      .getByTestId('paced-train')
+      .getByTestId('rolling-stock');
     this.testedPacedTrainInterval = this.testedPacedTrain.getByTestId('paced-train-interval');
     this.testedPacedTrainOccurrences = this.testedPacedTrain.getByTestId('occurrence-item');
     this.testedOccurrenceName = this.testedPacedTrain.getByTestId('occurrence-item-name');
     this.testedOccurrenceStartTime = this.testedPacedTrain.getByTestId('departure-time');
     this.testedOccurrenceArrivalTime = this.testedPacedTrain.getByTestId('arrival-time');
+    this.testedOccurrenceArrivalTimeLoader =
+      this.testedPacedTrain.getByTestId('arrival-time-loader');
     this.occurrencesCount = page.getByTestId('occurrences-count');
-    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
-    this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.confirmationModalButton = page.getByTestId('confirmation-modal-button');
     this.portalOccurrenceMenu = {
       disable: page.getByTestId('occurrence-disable-button'),
@@ -187,8 +188,10 @@ class PacedTrainSection extends CommonPage {
   }
 
   private async verifyOccurrenceArrivalTime(occurrenceIndex: number, expectedArrivalTime: string) {
+    const occurrenceArrivalTimeLoader = this.testedOccurrenceArrivalTimeLoader.nth(occurrenceIndex);
     const occurrenceArrivalTimeLocator = this.testedOccurrenceArrivalTime.nth(occurrenceIndex);
-    await expect(occurrenceArrivalTimeLocator).toHaveText(expectedArrivalTime);
+    await expect(occurrenceArrivalTimeLoader).toBeHidden();
+    await expect(occurrenceArrivalTimeLocator).toHaveText(expectedArrivalTime, { timeout: 30_000 });
   }
 
   async verifyOccurrenceArrivalTimes(expectedArrivalTimes: string[]) {
@@ -289,8 +292,15 @@ class PacedTrainSection extends CommonPage {
 
   async selectPacedTrainModel(index = 0) {
     const nameArea = this.selectedPacedTrainArea(index);
+    const pacedTrain = this.pacedTrainItem.nth(index);
     await expect(nameArea).toBeVisible();
-    await nameArea.click();
+    const classAttribute = await pacedTrain.getAttribute('class');
+    const isAlreadySelected = classAttribute?.split(' ').includes('selected') ?? false;
+    if (isAlreadySelected) return;
+    await expect(async () => {
+      await nameArea.click();
+      await expect(pacedTrain).toHaveClass(/selected/);
+    }).toPass();
   }
 
   async duplicatePacedTrain(index = 0) {
@@ -301,19 +311,6 @@ class PacedTrainSection extends CommonPage {
     });
     await actionButtons.duplicateTrain.click();
     await this.collapsePacedTrainOccurrenceList(index);
-  }
-
-  async openPacedTrainEditor(index = 0) {
-    await this.expandPacedTrainOccurrenceList(index);
-    const actionButtons = await this.getActionButtonsLocators({
-      trainIndex: index,
-      trainType: 'paced-train',
-    });
-    await expect(actionButtons.editTrain).toBeVisible();
-    await actionButtons.editTrain.click();
-    // TODO: This function must be modified after we drop the old itinerary interface
-    await this.closeItineraryModalButton.click();
-    await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
   async projectPacedTrain(index = 0) {
@@ -373,11 +370,17 @@ class PacedTrainSection extends CommonPage {
     const expectedExceptionText = title + changeGroups.join('');
     await expect(occurrenceItem.tooltip).toBeVisible();
     await expect(occurrenceItem.tooltip).toHaveText(expectedExceptionText);
+
+    // Move away so it doesn't linger into the next check
+    await this.page.mouse.move(0, 0);
+    await expect(occurrenceItem.tooltip).not.toBeVisible();
   }
 
   async checkOccurrenceMenuIcon(occurrenceIndex: number) {
     const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
     await expect(occurrenceItem.root).toBeVisible();
+    // Force a fresh hover transition so the CSS `:hover` rule revealing the menu button reliably triggers
+    await this.page.mouse.move(0, 0);
     await occurrenceItem.root.hover();
     await expect(occurrenceItem.menuIcon).toBeVisible();
   }
@@ -443,6 +446,33 @@ class PacedTrainSection extends CommonPage {
   async expectOccurrencesListLength(length: number) {
     await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
     await expect(this.testedPacedTrainOccurrences).toHaveCount(length);
+  }
+
+  // Iterate over each paced train occurrences and verify the visibility of simulation results
+  async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
+    for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
+      const pacedTrain = this.trainSchedules.nth(pacedTrainIndex);
+      await expect(pacedTrain).toBeVisible();
+
+      await this.expandPacedTrainOccurrenceList(pacedTrainIndex);
+
+      const occurrences = this.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
+
+      const count = await occurrences.count();
+      for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
+        const occurrenceButton = occurrences.nth(occurrenceIndex);
+
+        const isSelected =
+          (await occurrenceButton.getAttribute('class'))?.includes('selected') ?? false;
+        if (!isSelected) {
+          await occurrenceButton.click();
+        }
+
+        await this.verifySimulationResultsVisibility();
+      }
+
+      await this.collapsePacedTrainOccurrenceList(pacedTrainIndex);
+    }
   }
 }
 

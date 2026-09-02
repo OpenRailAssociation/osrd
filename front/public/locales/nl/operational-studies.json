@@ -5,7 +5,7 @@
     "map": "Kaart",
     "sdd": "GEB",
     "std": "STB",
-    "tables": "Tabellen",
+    "table": "Tabellen",
     "trains": "Treinen"
   },
   "importTrainScheduleSet": {

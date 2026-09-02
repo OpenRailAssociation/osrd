@@ -8,7 +8,6 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -20,13 +19,10 @@ import type { TimetableMode } from './types';
 import useFilterTrainSchedules from './useFilterTrainSchedules';
 
 type TimetableProps = {
-  setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   handleDeleteTrainSchedules: () => void;
   isSelectMode: boolean;
   setIsSelectMode: (isSelectMode: boolean) => void;
-  trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   selectedTrainScheduleIds: number[];
@@ -34,13 +30,10 @@ type TimetableProps = {
 };
 
 const Timetable = ({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleToEditData,
   setSelectedTrainScheduleIds,
   handleDeleteTrainSchedules,
   isSelectMode,
   setIsSelectMode,
-  trainScheduleToEditData,
   trainSchedulesWithDetails,
   refreshNge,
   selectedTrainScheduleIds,
@@ -53,7 +46,7 @@ const Timetable = ({
   const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
-  const [timetableMode, setTimetableMode] = useState<TimetableMode>('calendar');
+  const [timetableMode, setTimetableMode] = useState<TimetableMode>('chronological');
   const [expandedTrainScheduleSetIds, setExpandedTrainScheduleSetIds] = useState<Set<number>>(
     new Set()
   );
@@ -122,8 +115,8 @@ const Timetable = ({
           },
         }).unwrap();
 
-        const trainsToUpsert = trainSchedules
-          .filter((train) => trainScheduleIdsToMove.includes(train.id))
+        const trainsToUpsert = trainScheduleIdsToMove
+          .map((id) => trainSchedules.get(id)!)
           .map((train) => ({
             ...train,
             train_schedule_set_id: trainScheduleSetId,
@@ -149,13 +142,13 @@ const Timetable = ({
         <TimetableToolbar
           filteredTrainSchedules={filteredTrainSchedules}
           timetableFilters={timetableFilters}
+          trainSchedulesWithDetails={trainSchedulesWithDetails}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           showTrainDetails={showTrainDetails}
           isSelectMode={isSelectMode}
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           setShowTrainDetails={setShowTrainDetails}
           setIsSelectMode={setIsSelectMode}
-          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
           refreshNge={refreshNge}
           handleDeleteTrainSchedules={handleDeleteTrainSchedules}
           handleMoveTrainSchedules={() => openMoveDialog(selectedTrainScheduleIds)}
@@ -163,10 +156,7 @@ const Timetable = ({
           setTimetableMode={setTimetableMode}
         />
         <TrainList
-          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-          setTrainScheduleToEditData={setTrainScheduleToEditData}
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
-          trainScheduleToEditData={trainScheduleToEditData}
           trainSchedulesWithDetails={filteredTrainSchedules}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}

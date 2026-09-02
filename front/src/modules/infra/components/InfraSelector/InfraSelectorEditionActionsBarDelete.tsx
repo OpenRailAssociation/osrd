@@ -85,7 +85,7 @@ const InfraSelectorEditionActionsBarDelete = ({
               {t('infraManagement.no')}
             </button>
             {/* TODO: fix this lint */}
-            {/* eslint-disable-next-line react-hooks-js/purity */}
+            {/* eslint-disable-next-line react/purity */}
             <Countdown date={Date.now() + 3000} renderer={countDownDelete} />
           </>
         )}

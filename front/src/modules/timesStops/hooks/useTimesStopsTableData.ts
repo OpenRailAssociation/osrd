@@ -18,11 +18,20 @@ import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
-import { Duration } from 'utils/duration';
+import {
+  Duration,
+  type StartTime,
+  addDurationToStartTime,
+  subtractStartTime,
+} from 'utils/duration';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
-import { getOperationalPointName, receptionSignalToSignalBooleans } from '../helpers/utils';
+import {
+  getOperationalPointName,
+  receptionSignalToSignalBooleans,
+  truncateStartTimeToSecond,
+} from '../helpers/utils';
 import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
 
 /**
@@ -50,7 +59,7 @@ type BuildTableRowParams = {
   secondaryCode?: string | null;
   trackName?: string;
   hasRequestedTrack?: boolean;
-  startDate: Date;
+  startDate: StartTime;
   schedule?: ScheduleItem;
   computedArrival?: Duration;
   invalidPathStep?: boolean;
@@ -83,18 +92,20 @@ const buildTableRow = ({
   closedSignal,
   margins,
 }: BuildTableRowParams): TimesStopsRowNew => {
+  // Truncate sub-second part: schedule.arrival is stored in whole seconds
+  // (via Math.floor in diffSeconds in scheduleStateToApiFields())
   const requestedArrival = schedule?.arrival
-    ? new Date(startDate.getTime() + Duration.parse(schedule.arrival).ms)
+    ? addDurationToStartTime(truncateStartTimeToSecond(startDate), Duration.parse(schedule.arrival))
     : null;
 
   // computedArrival is offset from startDate
   const rawComputedArrivalDate =
-    computedArrival !== undefined ? new Date(startDate.getTime() + computedArrival.ms) : null;
+    computedArrival !== undefined ? addDurationToStartTime(startDate, computedArrival) : null;
 
   // Snap to requested arrival when within tolerance.
   const isOnTime =
     requestedArrival && rawComputedArrivalDate
-      ? Duration.subtractDate(requestedArrival, rawComputedArrivalDate).abs() <=
+      ? subtractStartTime(requestedArrival, rawComputedArrivalDate).abs() <=
         ARRIVAL_TIME_ACCEPTABLE_ERROR
       : false;
   const computedArrivalDate = isOnTime ? requestedArrival : rawComputedArrivalDate;
@@ -105,13 +116,13 @@ const buildTableRow = ({
   // requestedDeparture = requestedArrival + stopDuration
   const requestedDeparture =
     requestedArrival && stopDuration !== null
-      ? new Date(requestedArrival.getTime() + stopDuration.ms)
+      ? addDurationToStartTime(requestedArrival, stopDuration)
       : null;
 
   // computedDeparture = computedArrival + stopDuration
   const computedDeparture =
     computedArrivalDate && stopDuration !== null
-      ? new Date(computedArrivalDate.getTime() + stopDuration.ms)
+      ? addDurationToStartTime(computedArrivalDate, stopDuration)
       : null;
 
   const {
@@ -174,7 +185,7 @@ const useTimesStopsTableData = (
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
 ): { allRows: TimesStopsRowNew[]; rows: TimesStopsRowNew[]; stableIsValid: boolean } => {
   const { t } = useTranslation('operational-studies');
-  const { getTrackSectionsByIds } = useScenarioContext();
+  const { scenario, getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
 
   // Stale-while-revalidate: keep the last known-good simulation props in a ref so the table
@@ -212,13 +223,13 @@ const useTimesStopsTableData = (
   }
 
   // Only use the snapshot while a fetch is in progress (transitional invalid state).
-  const snapshot = isSimulationDataLoading ? lastSimRef.current : undefined;
-  const stableIsValid = isValid || !!snapshot;
+  const activeBundle = isValid || isSimulationDataLoading ? lastSimRef.current : null;
+  const stableIsValid = !!activeBundle;
 
-  const stableTrain = simulatedTrain ?? snapshot?.simulatedTrain;
-  const stablePathItemTimes = simulatedPathItemTimes ?? snapshot?.simulatedPathItemTimes;
-  const stablePathItemRespect = simulatedPathItemRespect ?? snapshot?.simulatedPathItemRespect;
-  const stableOPs = operationalPointsOnPath ?? snapshot?.operationalPointsOnPath;
+  const stableTrain = activeBundle?.simulatedTrain;
+  const stablePathItemTimes = activeBundle?.simulatedPathItemTimes;
+  const stablePathItemRespect = activeBundle?.simulatedPathItemRespect;
+  const stableOPs = activeBundle?.operationalPointsOnPath;
 
   const pathStepOps = usePathOps(infraId, selectedTrain.path);
 
@@ -241,7 +252,10 @@ const useTimesStopsTableData = (
   }, [trackIds]);
 
   const allRows = useMemo(() => {
-    const startDate = new Date(selectedTrain.start_time);
+    const startDate =
+      scenario.timetable_type === 'CALENDAR'
+        ? new Date(selectedTrain.start_time)
+        : new Duration({ milliseconds: selectedTrain.start_time });
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
@@ -251,7 +265,7 @@ const useTimesStopsTableData = (
 
         const matchingOp =
           pathStepOp ??
-          ('operational_point' in pathStep.location && stableOPs
+          (pathStep.location.type === 'operational_point_part_reference' && stableOPs
             ? stableOPs.find((op) => op.pathItemId === pathStep.id)
             : undefined);
 
@@ -370,11 +384,6 @@ const useTimesStopsTableData = (
           const { shortSlipDistance, onStopSignal } =
             receptionSignalToSignalBooleans(receptionSignal);
 
-          // TODO: remove this error once we migrate the location to trigram/domestic
-          if (op.uic === undefined || op.uic === null) {
-            throw new Error('No valid UIC found to build operational_point_part_reference');
-          }
-
           formattedRows.push({
             ...buildTableRow({
               id: op.waypointId,
@@ -387,14 +396,13 @@ const useTimesStopsTableData = (
               computedArrival,
               shortSlipDistance,
               closedSignal: onStopSignal,
-              // Build location from OP data for creating a new PathItem if user edits this row
-              // OPs on path always have a UIC identifier
               location: {
                 type: 'operational_point_part_reference',
                 operational_point: {
-                  type: 'uic',
-                  uic: op.uic,
+                  type: 'domestic',
+                  main_code: op.main_code,
                   secondary_code: op.secondary_code ?? null,
+                  country_code: op.country_code,
                 },
               },
             }),
@@ -410,6 +418,7 @@ const useTimesStopsTableData = (
 
     return formattedRows;
   }, [
+    scenario.timetable_type,
     selectedTrain,
     stableIsValid,
     stableTrain,

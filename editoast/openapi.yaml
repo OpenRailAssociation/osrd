@@ -971,6 +971,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Operation'
+  /infra/{infra_id}/bbox:
+    get:
+      tags:
+      - infra
+      summary: Retrieve the bounding box of an infra.
+      parameters:
+      - name: infra_id
+        in: path
+        description: An existing infra ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The bbox of the infra if it contains tracks
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: 'null'
+                - $ref: '#/components/schemas/BoundingBox'
+        '404':
+          description: Infra ID not found
   /infra/{infra_id}/clone:
     post:
       tags:
@@ -2813,6 +2837,7 @@ paths:
       description: |-
         The trains are not simulated, meaning each stop needs to be dated in order
         to be taken into account.
+        Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
       requestBody:
         content:
           application/json:
@@ -3627,7 +3652,7 @@ paths:
                 steps:
                   type: array
                   items:
-                    $ref: '#/components/schemas/PathfindingItem'
+                    $ref: '#/components/schemas/StdcmPathfindingItem'
                 temporary_speed_limit_group_id:
                   type:
                   - integer
@@ -3729,6 +3754,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleException'
+  /timetable/{id}/train_schedule_linkings:
+    post:
+      tags:
+      - linkings
+      summary: Create linkings in batch
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LinkingCreateForm'
+        required: true
+      responses:
+        '201':
+          description: Linkings created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - source
+                  - target
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                    source:
+                      $ref: '#/components/schemas/LinkingOccurrenceId'
+                    target:
+                      $ref: '#/components/schemas/LinkingOccurrenceId'
   /timetable/{id}/train_schedule_sets:
     get:
       tags:
@@ -4240,6 +4307,70 @@ paths:
       responses:
         '204':
           description: All train schedules have been deleted
+  /train_schedules/linkings:
+    post:
+      tags:
+      - linkings
+      summary: List train schedule linkings whose target or source is part of the input train schedules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - timetable_id
+              - train_schedules
+              properties:
+                timetable_id:
+                  type: integer
+                  format: int64
+                train_schedules:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  maxItems: 200
+        required: true
+      responses:
+        '200':
+          description: The linkings for a given timetable and given train schedules.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - source
+                  - target
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                    source:
+                      $ref: '#/components/schemas/LinkingOccurrenceId'
+                    target:
+                      $ref: '#/components/schemas/LinkingOccurrenceId'
+        '404':
+          description: Timetable doesn't exist.
+  /train_schedules/linkings/delete:
+    post:
+      tags:
+      - linkings
+      summary: Delete linkings in batch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+                format: int64
+        required: true
+      responses:
+        '204':
+          description: Linkings deleted
   /train_schedules/move:
     patch:
       tags:
@@ -4630,41 +4761,7 @@ paths:
                           - path_item_relative_location
                           properties:
                             path_item_relative_location:
-                              oneOf:
-                              - type: object
-                                title: PathItemRelativeLocationExactPathItem
-                                required:
-                                - path_item_id
-                                - type
-                                properties:
-                                  path_item_id:
-                                    $ref: '#/components/schemas/NonBlankString'
-                                    description: Path item ID, when the operational point matches an item in the input path
-                                  type:
-                                    type: string
-                                    enum:
-                                    - exact_path_item
-                              - type: object
-                                title: PathItemRelativeLocationBetweenPathItems
-                                required:
-                                - previous_path_item_id
-                                - following_path_item_id
-                                - type
-                                properties:
-                                  following_path_item_id:
-                                    $ref: '#/components/schemas/NonBlankString'
-                                    description: Following path item ID, when the operational point is not one of the input path items
-                                  previous_path_item_id:
-                                    $ref: '#/components/schemas/NonBlankString'
-                                    description: Previous path item ID, when the operational point is not one of the input path items
-                                  type:
-                                    type: string
-                                    enum:
-                                    - between_path_items
-                              description: |-
-                                Position of an operational point on a path, relative to the input path items.
-                                If the OP matches an input path item, it is located using this path item's ID,
-                                else, if the path just passes by the OP, it is located using its previous and following path items IDs
+                              $ref: '#/components/schemas/PathItemRelativeLocation'
   /train_schedules/{id}:
     get:
       tags:
@@ -5648,8 +5745,7 @@ components:
         secondary_code:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
         secondary_name:
           oneOf:
           - type: 'null'
@@ -5703,6 +5799,19 @@ components:
             type: string
             enum:
             - not_enough_path_items
+      - type: object
+        title: PathfindingInputErrorUnauthorizedRollingStock
+        required:
+        - rolling_stock_id
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - unauthorized_rolling_stock
+          rolling_stock_id:
+            type: integer
+            format: int64
       - type: object
         title: PathfindingInputErrorRollingStockNotFound
         required:
@@ -6056,6 +6165,74 @@ components:
           minimum: 0
         zone:
           type: string
+    CoreSpeedLimitProperties:
+      type: object
+      description: A MRSP computation result (Most Restrictive Speed Profile)
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges (block path).
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreSpeedLimitProperty'
+          description: List of `n+1` values associated to the ranges
+    CoreSpeedLimitProperty:
+      type: object
+      required:
+      - speed
+      properties:
+        source:
+          oneOf:
+          - type: 'null'
+          - oneOf:
+            - type: object
+              title: SpeedLimitSourceGivenTrainTag
+              required:
+              - tag
+              - speed_limit_source_type
+              properties:
+                speed_limit_source_type:
+                  type: string
+                  enum:
+                  - given_train_tag
+                tag:
+                  type: string
+            - type: object
+              title: SpeedLimitSourceFallbackTag
+              required:
+              - tag
+              - speed_limit_source_type
+              properties:
+                speed_limit_source_type:
+                  type: string
+                  enum:
+                  - fallback_tag
+                tag:
+                  type: string
+            - type: object
+              title: SpeedLimitSourceUnknownTag
+              required:
+              - speed_limit_source_type
+              properties:
+                speed_limit_source_type:
+                  type: string
+                  enum:
+                  - unknown_tag
+          description: source of the speed-limit if relevant (tag used)
+        speed:
+          type: number
+          format: double
+          description: in meters per second
     CoreTrackRange:
       type: object
       description: |-
@@ -6467,6 +6644,26 @@ components:
           type: string
           enum:
           - editoast:authorization:ImpersonatedUserNotFound
+    EditoastAuthorizationErrorOpenFga:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthorizationErrorOpenFgaContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:authorization:OpenFga
     EditoastAuthorizationErrorUnauthenticated:
       type: object
       required:
@@ -6487,26 +6684,6 @@ components:
           type: string
           enum:
           - editoast:authorization:Unauthenticated
-    EditoastAuthzErrorAuthorizer:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzErrorAuthorizerContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:authz:Authorizer
     EditoastAuthzErrorDatabase:
       type: object
       required:
@@ -6627,111 +6804,6 @@ components:
           type: string
           enum:
           - editoast:authz:UnknownUser
-    EditoastAuthzLegacyErrorOpenfga:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzLegacyErrorOpenfgaContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:authz_legacy:Openfga
-    EditoastAuthzLegacyErrorStorage:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzLegacyErrorStorageContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:authz_legacy:Storage
-    EditoastAuthzLegacyErrorUnknownResource:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzLegacyErrorUnknownResourceContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:authz_legacy:UnknownResource
-    EditoastAuthzLegacyErrorUnknownSubject:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzLegacyErrorUnknownSubjectContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:authz_legacy:UnknownSubject
-    EditoastAuthzLegacyErrorUnknownUser:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastAuthzLegacyErrorUnknownUserContext
-          required:
-          - id
-          properties:
-            id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 401
-        type:
-          type: string
-          enum:
-          - editoast:authz_legacy:UnknownUser
     EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject:
       type: object
       required:
@@ -7210,18 +7282,13 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbidden'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbiddenImpersonation'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorImpersonatedUserNotFound'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorOpenFga'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
-      - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownUser'
-      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorOpenfga'
-      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorStorage'
-      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorUnknownResource'
-      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorUnknownSubject'
-      - $ref: '#/components/schemas/EditoastAuthzLegacyErrorUnknownUser'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMaximumIterationReached'
@@ -7261,6 +7328,12 @@ components:
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorTrainBatchNotFound'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorUnsupportedTimetableType'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
+      - $ref: '#/components/schemas/EditoastLinkingErrorBatchNotFound'
+      - $ref: '#/components/schemas/EditoastLinkingErrorDatabase'
+      - $ref: '#/components/schemas/EditoastLinkingErrorRequestIncompatibleWithTimetableType'
+      - $ref: '#/components/schemas/EditoastLinkingErrorSourceAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastLinkingErrorTargetAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastLinkingErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
@@ -7835,6 +7908,154 @@ components:
           type: string
           enum:
           - editoast:infra:lines:LineNotFound
+    EditoastLinkingErrorBatchNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorBatchNotFoundContext
+          required:
+          - count
+          properties:
+            count:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:BatchNotFound
+    EditoastLinkingErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorDatabaseContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:Database
+    EditoastLinkingErrorRequestIncompatibleWithTimetableType:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext
+          required:
+          - timetable_id
+          - timetable_type
+          properties:
+            timetable_id:
+              type: integer
+            timetable_type:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:RequestIncompatibleWithTimetableType
+    EditoastLinkingErrorSourceAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorSourceAlreadyUsedContext
+          required:
+          - occurrence
+          properties:
+            occurrence:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:SourceAlreadyUsed
+    EditoastLinkingErrorTargetAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorTargetAlreadyUsedContext
+          required:
+          - occurrence
+          properties:
+            occurrence:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:TargetAlreadyUsed
+    EditoastLinkingErrorTimetableNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastLinkingErrorTimetableNotFoundContext
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_linking:TimetableNotFound
     EditoastListErrorsErrorsWrongErrorTypeProvided:
       type: object
       required:
@@ -11431,7 +11652,7 @@ components:
           type: integer
           format: int32
           description: |-
-            Amount of milliseconds from midnight UTC to the center of the start window.
+            Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
 
             The start window is defined as the time between
             `start_sec - start_tolerance` and `start_sec + start_tolerance`.
@@ -11450,6 +11671,7 @@ components:
           items:
             type: integer
             format: int64
+          description: Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
           uniqueItems: true
         transfer_ms:
           type: integer
@@ -11636,6 +11858,80 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RollingStockLivery'
+    LinkingCreateForm:
+      type: object
+      required:
+      - source
+      - target
+      properties:
+        source:
+          $ref: '#/components/schemas/LinkingOccurrenceId'
+        target:
+          $ref: '#/components/schemas/LinkingOccurrenceId'
+    LinkingOccurrenceId:
+      oneOf:
+      - type: object
+        title: LinkingOccurrenceIdUnique
+        required:
+        - train_schedule_id
+        - type
+        properties:
+          train_schedule_id:
+            type: integer
+            format: int64
+          train_schedule_instance_index:
+            type:
+            - integer
+            - 'null'
+            format: int64
+          type:
+            type: string
+            enum:
+            - unique
+      - type: object
+        title: LinkingOccurrenceIdPacedOccurrence
+        required:
+        - train_schedule_id
+        - occurrence_index
+        - type
+        properties:
+          occurrence_index:
+            type: integer
+            format: int64
+          train_schedule_id:
+            type: integer
+            format: int64
+          train_schedule_instance_index:
+            type:
+            - integer
+            - 'null'
+            format: int64
+          type:
+            type: string
+            enum:
+            - paced_occurrence
+      - type: object
+        title: LinkingOccurrenceIdAddedException
+        required:
+        - train_schedule_id
+        - added_exception_id
+        - type
+        properties:
+          added_exception_id:
+            type: integer
+            format: int64
+          train_schedule_id:
+            type: integer
+            format: int64
+          train_schedule_instance_index:
+            type:
+            - integer
+            - 'null'
+            format: int64
+          type:
+            type: string
+            enum:
+            - added_exception
     LoadingGaugeLimit:
       type: object
       required:
@@ -11691,13 +11987,9 @@ components:
       required:
       - position_x
       - position_y
-      - connection_time
       - labels
       - path_item_key
       properties:
-        connection_time:
-          type: integer
-          format: int64
         full_name:
           type:
           - string
@@ -11735,14 +12027,10 @@ components:
       - id
       - position_x
       - position_y
-      - connection_time
       - labels
       - path_item_key
       - is_collapsed
       properties:
-        connection_time:
-          type: integer
-          format: int64
         full_name:
           type:
           - string
@@ -12144,8 +12432,7 @@ components:
         secondary_code:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
         secondary_name:
           oneOf:
           - type: 'null'
@@ -12510,6 +12797,7 @@ components:
             $ref: '#/components/schemas/ScheduleItem'
     PathItem:
       type: object
+      title: PathItem
       description: A location on the path of a train
       required:
       - id
@@ -12549,6 +12837,42 @@ components:
               - operational_point_part_reference
         title: PathItemLocationOperationalPointPartReference
       description: The location of a path waypoint
+    PathItemRelativeLocation:
+      oneOf:
+      - type: object
+        title: PathItemRelativeLocationExactPathItem
+        required:
+        - path_item_id
+        - type
+        properties:
+          path_item_id:
+            $ref: '#/components/schemas/NonBlankString'
+            description: Path item ID, when the operational point matches an item in the input path
+          type:
+            type: string
+            enum:
+            - exact_path_item
+      - type: object
+        title: PathItemRelativeLocationBetweenPathItems
+        required:
+        - previous_path_item_id
+        - following_path_item_id
+        - type
+        properties:
+          following_path_item_id:
+            $ref: '#/components/schemas/NonBlankString'
+            description: Following path item ID, when the operational point is not one of the input path items
+          previous_path_item_id:
+            $ref: '#/components/schemas/NonBlankString'
+            description: Previous path item ID, when the operational point is not one of the input path items
+          type:
+            type: string
+            enum:
+            - between_path_items
+      description: |-
+        Position of an operational point on a path, relative to the input path items.
+        If the OP matches an input path item, it is located using this path item's ID,
+        else, if the path just passes by the OP, it is located using its previous and following path items IDs
     PathProperties:
       type: object
       description: Properties along a path. Each property is optional since it depends on what the user requests.
@@ -12755,7 +13079,7 @@ components:
         path_items:
           type: array
           items:
-            $ref: '#/components/schemas/PathItemLocation'
+            $ref: '#/components/schemas/PathfindingItem'
           description: List of waypoints given to the pathfinding
         rolling_stock_is_thermal:
           type: boolean
@@ -12802,22 +13126,12 @@ components:
       type: object
       required:
       - location
+      - can_backtrack
       properties:
-        duration:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: The stop duration in milliseconds, None if the train does not stop.
-          minimum: 0
+        can_backtrack:
+          type: boolean
         location:
           $ref: '#/components/schemas/PathItemLocation'
-          description: The associated location
-        timing_data:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/StepTimingData'
-            description: Time at which the train should arrive at the location, if specified
     PathfindingOutput:
       type: object
       required:
@@ -12889,6 +13203,7 @@ components:
       - PT2H
     PowerRestrictionItem:
       type: object
+      title: PowerRestrictionItem
       required:
       - from
       - to
@@ -13262,8 +13577,7 @@ components:
         secondary_code:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
         secondary_name:
           oneOf:
           - type: 'null'
@@ -13981,6 +14295,7 @@ components:
             format: int64
     ScheduleItem:
       type: object
+      title: ScheduleItem
       required:
       - at
       properties:
@@ -13996,6 +14311,8 @@ components:
           - type: string
             minLength: 1
           description: Position on the path of the schedule item.
+        can_backtrack:
+          type: boolean
         reception_signal:
           $ref: '#/components/schemas/ReceptionSignal'
         reference_base_arrival:
@@ -14893,71 +15210,7 @@ components:
                     $ref: '#/components/schemas/CoreZoneUpdate'
           description: Simulation that takes into account the regularity margins and the schedule item times
         mrsp:
-          type: object
-          description: A MRSP computation result (Most Restrictive Speed Profile)
-          required:
-          - boundaries
-          - values
-          properties:
-            boundaries:
-              type: array
-              items:
-                type: integer
-                format: int64
-                minimum: 0
-              description: |-
-                List of `n` boundaries of the ranges (block path).
-                A boundary is a distance from the beginning of the path in mm.
-            values:
-              type: array
-              items:
-                type: object
-                required:
-                - speed
-                properties:
-                  source:
-                    oneOf:
-                    - type: 'null'
-                    - oneOf:
-                      - type: object
-                        title: SpeedLimitSourceGivenTrainTag
-                        required:
-                        - tag
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - given_train_tag
-                          tag:
-                            type: string
-                      - type: object
-                        title: SpeedLimitSourceFallbackTag
-                        required:
-                        - tag
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - fallback_tag
-                          tag:
-                            type: string
-                      - type: object
-                        title: SpeedLimitSourceUnknownTag
-                        required:
-                        - speed_limit_source_type
-                        properties:
-                          speed_limit_source_type:
-                            type: string
-                            enum:
-                            - unknown_tag
-                    description: source of the speed-limit if relevant (tag used)
-                  speed:
-                    type: number
-                    format: double
-                    description: in meters per second
-              description: List of `n+1` values associated to the ranges
+          $ref: '#/components/schemas/CoreSpeedLimitProperties'
         provisional:
           $ref: '#/components/schemas/CoreReportTrain'
           description: Simulation that takes into account the regularity margins
@@ -15177,8 +15430,7 @@ components:
         value:
           oneOf:
           - type: 'null'
-          - type: string
-            minLength: 1
+          - $ref: '#/components/schemas/NonBlankString'
     SpeedLimits:
       type: object
       required:
@@ -15289,6 +15541,26 @@ components:
           description: |-
             For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
             For hourly timetables: elapsed ms since the timetable start.
+    StdcmPathfindingItem:
+      type: object
+      required:
+      - pathfinding_item
+      properties:
+        duration:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: The stop duration in milliseconds, None if the train does not stop.
+          minimum: 0
+        pathfinding_item:
+          $ref: '#/components/schemas/PathfindingItem'
+          description: The associated location
+        timing_data:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/StepTimingData'
+            description: Time at which the train should arrive at the location, if specified
     StdcmProgressionEvent:
       type: object
       required:
@@ -15612,6 +15884,12 @@ components:
           format: int64
           description: The train may arrive up to this duration before the expected arrival time
           minimum: 0
+    StrictlyPositiveDuration:
+      type: string
+      format: duration
+      description: Duration in ISO 8601 format (e.g. PT2H for 2 hours)
+      examples:
+      - PT2H
     Study:
       type: object
       required:
@@ -16365,6 +16643,7 @@ components:
             type: array
             items:
               type: object
+              title: PowerRestrictionItem
               required:
               - from
               - to
@@ -16388,8 +16667,7 @@ components:
           speed_limit_tag:
             oneOf:
             - type: 'null'
-            - type: string
-              minLength: 1
+            - $ref: '#/components/schemas/NonBlankString'
           start_time:
             type: integer
             format: int64
@@ -16414,10 +16692,10 @@ components:
                   items:
                     $ref: '#/components/schemas/PacedTrainException'
                 interval:
-                  $ref: '#/components/schemas/PositiveDuration'
+                  $ref: '#/components/schemas/StrictlyPositiveDuration'
                   description: Time between two occurrences, an ISO 8601 format is expected
                 time_window:
-                  $ref: '#/components/schemas/PositiveDuration'
+                  $ref: '#/components/schemas/StrictlyPositiveDuration'
                   description: Duration of the paced train, an ISO 8601 format is expected
     TrainScheduleException:
       type: object
@@ -16517,7 +16795,7 @@ components:
         time_ms:
           type: integer
           format: int32
-          description: Scheduled time of the step in milliseconds from midnight UTC.
+          description: Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
           minimum: 0
     TrainScheduleResponse:
       allOf:

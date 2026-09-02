@@ -45,6 +45,7 @@ vi.mock('applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader'
   default: vi.fn(
     class {
       projectTrainSchedules = mockProjectTrainSchedules;
+      cancel = vi.fn();
     }
   ),
 }));
@@ -207,12 +208,9 @@ describe('useLazyProjectTrains', () => {
 
   describe('loader selection', () => {
     it('should use TrainTrackProjectionLazyLoader when projectionType is trackProjection', () => {
+      const path = { track_section_ranges: [], blocks: [], routes: [] };
       renderHookWithStore(
-        () =>
-          useLazyProjectTrains({
-            ...base,
-            path: { track_section_ranges: [], blocks: [], routes: [] },
-          }),
+        () => useLazyProjectTrains({ ...base, path }),
         {},
         {
           simulation: {

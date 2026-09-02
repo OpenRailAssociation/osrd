@@ -1,4 +1,5 @@
-import type { DataPoint, Direction, PathData, SpaceToPixel } from '../lib/types';
+import type { DataPoint } from '../../common/types';
+import type { Direction, PathData, SpaceToPixel } from '../lib/types';
 
 /**
  * This function takes a path, a point index and looks forward in the points order for the first
@@ -45,4 +46,30 @@ export function getSpacePixels(
   return spacePixelFromStart === spacePixelFromEnd
     ? [spacePixelFromStart]
     : [spacePixelFromStart, spacePixelFromEnd];
+}
+
+export type StopRange = { position: number; minTime: number; maxTime: number };
+
+/**
+ * Groups path points into stop time ranges: one range per maximal run at the
+ * same operational-point position. Separate visits to a position stay separate
+ * (their halos must not bridge the gap between them).
+ */
+export function computeStops(points: DataPoint[], stopPositions: Set<number>): StopRange[] {
+  const stops: StopRange[] = [];
+  let current: StopRange | null = null;
+  for (let i = 1; i < points.length; i++) {
+    const { position, time } = points[i];
+    const isStop = points[i - 1].position === position && stopPositions.has(position);
+    if (!isStop) {
+      if (current) stops.push(current);
+      current = null;
+    } else if (current) {
+      current.maxTime = time;
+    } else {
+      current = { position, minTime: points[i - 1].time, maxTime: time };
+    }
+  }
+  if (current) stops.push(current);
+  return stops;
 }

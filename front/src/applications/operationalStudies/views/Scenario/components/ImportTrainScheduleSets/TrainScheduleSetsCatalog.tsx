@@ -31,8 +31,8 @@ const TrainScheduleSetsCatalog = ({
    */
   const catalogEntries = useMemo(() => {
     const catalogData = Array.from(catalog.values()).map((catalogEntry) => {
-      const trainScheduleSetsData = catalogEntry.trainScheduleSetIds.map(
-        (tssId) => trainScheduleSets.get(tssId)!
+      const trainScheduleSetsData = catalogEntry.trainScheduleSetIds.map((tssId) =>
+        trainScheduleSets.get(tssId)!
       );
       return {
         ...catalogEntry,

@@ -1,4 +1,5 @@
 pub mod conflicts;
+pub mod linkings;
 mod occupancy_blocks;
 pub mod similar_trains;
 pub mod simulation;
@@ -13,6 +14,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -34,11 +36,11 @@ use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::TrainScheduleException;
-use editoast_models::prelude::*;
-use editoast_models::timetable::Timetable;
 use itertools::Itertools;
 use itertools::izip;
+use models::TrainScheduleException;
+use models::prelude::*;
+use models::timetable::Timetable;
 use schemas::RollingStock;
 use schemas::primitives::NonBlankString;
 use schemas::rolling_stock::EtcsBrakeParams;
@@ -64,14 +66,15 @@ use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 use super::path::pathfinding::PathfindingResult;
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
-use editoast_models::Infra;
-use editoast_models::TrainScheduleSet;
-use editoast_models::train_schedule::OccurrenceId;
-use editoast_models::train_schedule::train_schedule_schema_from_model;
+use models::Infra;
+use models::TrainScheduleSet;
+use models::train_schedule::OccurrenceId;
+use models::train_schedule::train_schedule_schema_from_model;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
@@ -85,7 +88,7 @@ enum TimetableError {
     #[error(transparent)]
     #[from(forward)]
     #[editoast_error(status = 500)]
-    Database(editoast_models::Error),
+    Database(models::Error),
     #[error("Failed to parse train_id '{train_id}'")]
     #[editoast_error(status = 500)]
     ParseError { train_id: String },
@@ -130,9 +133,8 @@ pub(in crate::views) struct TimetableForm {
 
 impl TimetableForm {
     pub fn into_changeset(self) -> Changeset<Timetable> {
-        Timetable::changeset().timetable_type(editoast_models::timetable_type::TimetableType(
-            self.timetable_type,
-        ))
+        Timetable::changeset()
+            .timetable_type(models::timetable_type::TimetableType(self.timetable_type))
     }
 }
 
@@ -219,23 +221,20 @@ pub(in crate::views) async fn get_train_schedules(
     let settings = pagination_params
         .into_selection_settings()
         .filter(move || {
-            editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID
-                .eq_any(train_schedule_set_ids.clone())
+            models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
         })
-        .order_by(move || editoast_models::TrainSchedule::ID.asc());
+        .order_by(move || models::TrainSchedule::ID.asc());
 
-    let (paced_trains, stats) =
-        editoast_models::TrainSchedule::list_paginated(conn, settings).await?;
+    let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
 
     let paced_trains_ids = paced_trains.iter().map(|t| t.id).collect::<Vec<_>>();
     let exceptions_settings = SelectionSettings::new()
-        .filter(move || editoast_models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
+        .filter(move || models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
         .filter(move || {
-            editoast_models::TrainScheduleException::TRAIN_SCHEDULE_ID
-                .eq_any(paced_trains_ids.clone())
+            models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(paced_trains_ids.clone())
         });
 
-    let mut exceptions = editoast_models::TrainScheduleException::list(conn, exceptions_settings)
+    let mut exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
         .await?
         .into_iter()
         .into_group_map_by(|e| e.train_schedule_id);
@@ -279,6 +278,7 @@ pub struct ElectricalProfileSetIdQueryParam {
         (status = 200, description = "The paginated list of timetable requirements", body = inline(TrainRequirementsPage)),
     ),
 )]
+// TODO test the endpoint
 pub(in crate::views) async fn requirements(
     State(AppState {
         db_pool,
@@ -287,7 +287,7 @@ pub(in crate::views) async fn requirements(
         config,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(page_settings): Query<PaginationQueryParams<200>>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
@@ -295,13 +295,9 @@ pub(in crate::views) async fn requirements(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<TrainRequirementsPage>> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    if !matches!(&authn_state, authentication::State::Skip) {
+        return Err(AuthorizationError::Forbidden.into());
+    }
 
     let conn = &mut db_pool.get().await?;
 
@@ -318,27 +314,25 @@ pub(in crate::views) async fn requirements(
         Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
     // List trains and paced trains
-    let (paced_trains, stats) = editoast_models::TrainSchedule::list_paginated(
+    let (paced_trains, stats) = models::TrainSchedule::list_paginated(
         conn,
         page_settings
             .into_selection_settings()
             .filter(move || {
-                editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID
-                    .eq_any(train_schedule_sets_ids.clone())
+                models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_sets_ids.clone())
             })
-            .order_by(move || editoast_models::TrainSchedule::ID.asc()),
+            .order_by(move || models::TrainSchedule::ID.asc()),
     )
     .await?;
 
-    let mut exceptions =
-        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            conn,
-            timetable_id,
-            &paced_trains.iter().map(|pt| pt.id).collect_vec(),
-        )
-        .await?
-        .into_iter()
-        .into_group_map_by(|e| e.train_schedule_id);
+    let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        conn,
+        timetable_id,
+        &paced_trains.iter().map(|pt| pt.id).collect_vec(),
+    )
+    .await?
+    .into_iter()
+    .into_group_map_by(|e| e.train_schedule_id);
 
     let (occurrence_ids, occurrences): (Vec<_>, Vec<_>) = paced_trains
         .iter()
@@ -471,20 +465,21 @@ pub(in crate::views) struct LocalTrackNamesForm {
     ),
 )]
 pub(in crate::views) async fn get_local_track_names(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(LocalTrackNamesForm {
         operational_point_references,
         infra_id,
     }): Json<LocalTrackNamesForm>,
 ) -> Result<Json<HashMap<NonBlankString, HashSet<NonBlankString>>>> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     timeout(std::time::Duration::from_secs(240), async move {
@@ -498,11 +493,10 @@ pub(in crate::views) async fn get_local_track_names(
         let train_schedule_set_ids =
             Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
-        let train_schedules = editoast_models::TrainSchedule::list(
+        let train_schedules = models::TrainSchedule::list(
             conn,
             SelectionSettings::new().filter(move || {
-                editoast_models::TrainSchedule::TRAIN_SCHEDULE_SET_ID
-                    .eq_any(train_schedule_set_ids.clone())
+                models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
             }),
         )
         .await?;
@@ -941,7 +935,7 @@ mod tests {
     use chrono::Duration;
     use common::units;
     use core_client::simulation::RoutingZoneRequirement;
-    use editoast_models::train_schedule::TrainScheduleChangeset;
+    use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
@@ -1035,12 +1029,10 @@ mod tests {
             .map(TrainScheduleChangeset::from)
             .map(|cs| cs.train_schedule_set_id(train_schedule_set1.id))
             .collect::<Vec<_>>();
-        let train_schedules_t1: Vec<_> = editoast_models::TrainSchedule::create_batch(
-            &mut pool.get_ok(),
-            train_schedules_changesets_t1,
-        )
-        .await
-        .expect("Failed to create train schedules");
+        let train_schedules_t1: Vec<_> =
+            models::TrainSchedule::create_batch(&mut pool.get_ok(), train_schedules_changesets_t1)
+                .await
+                .expect("Failed to create train schedules");
         let train_schedule_exception_t1_1 = create_train_schedule_exception(
             &mut pool.get_ok(),
             timetable1.id,
@@ -1076,12 +1068,10 @@ mod tests {
             .map(TrainScheduleChangeset::from)
             .map(|cs| cs.train_schedule_set_id(train_schedule_set2.id))
             .collect::<Vec<_>>();
-        let train_schedules_t2: Vec<_> = editoast_models::TrainSchedule::create_batch(
-            &mut pool.get_ok(),
-            train_schedules_changesets_t2,
-        )
-        .await
-        .expect("Failed to create train schedules");
+        let train_schedules_t2: Vec<_> =
+            models::TrainSchedule::create_batch(&mut pool.get_ok(), train_schedules_changesets_t2)
+                .await
+                .expect("Failed to create train schedules");
         let _train_schedule_exception_t2_1 = create_train_schedule_exception(
             &mut pool.get_ok(),
             timetable2.id,
@@ -1423,7 +1413,7 @@ mod tests {
             Duration::seconds(0),
         )];
 
-        Changeset::<editoast_models::TrainSchedule>::from(train_schedule_base_2)
+        Changeset::<models::TrainSchedule>::from(train_schedule_base_2)
             .train_schedule_set_id(train_schedule.train_schedule_set_id)
             .create(&mut db_pool.get().await.unwrap())
             .await
@@ -1484,7 +1474,7 @@ mod tests {
         let mut conn = db_pool.get().await.unwrap();
 
         let timetable = Timetable::changeset()
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut conn)
@@ -1493,7 +1483,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::changeset()
             .name(None)
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut conn)
@@ -1526,7 +1516,7 @@ mod tests {
         let mut conn = db_pool.get().await.unwrap();
 
         let hourly_timetable = Timetable::changeset()
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Hourly,
             ))
             .create(&mut conn)
@@ -1535,7 +1525,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::changeset()
             .name(None)
-            .timetable_type(editoast_models::timetable_type::TimetableType(
+            .timetable_type(models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Calendar,
             ))
             .create(&mut conn)

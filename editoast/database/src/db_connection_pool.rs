@@ -70,10 +70,10 @@ async fn template_creation(
     let template_name = format!("osrd_template_{last_migration_name}");
 
     let template_url_postgres: Url =
-        format!("postgresql://postgres:password@localhost/{template_name}")
+        format!("postgresql://postgres:password@127.0.0.1/{template_name}")
             .parse()
             .unwrap();
-    let template_url_osrd: Url = format!("postgresql://osrd:password@localhost/{template_name}")
+    let template_url_osrd: Url = format!("postgresql://osrd:password@127.0.0.1/{template_name}")
         .parse()
         .unwrap();
 

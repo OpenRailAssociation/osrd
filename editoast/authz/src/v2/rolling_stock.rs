@@ -14,6 +14,8 @@ use crate::RollingStockPrivilege;
 use crate::Subject;
 use crate::User;
 use crate::v2::Actor;
+use crate::v2::ResourcesList;
+use crate::v2::subject_roles;
 use crate::v2::validate_direct_grant;
 
 pub fn rolling_stock_privileges(
@@ -24,6 +26,7 @@ pub fn rolling_stock_privileges(
         async move {
             let (
                 admin,
+                can_restricted_read,
                 can_read,
                 can_share_read,
                 can_write,
@@ -34,6 +37,7 @@ pub fn rolling_stock_privileges(
             ) = openfga
                 .checks((
                     User::role().check(&Role::Admin, &user),
+                    RollingStock::can_restricted_read().check(&user, &rolling_stock),
                     RollingStock::can_read().check(&user, &rolling_stock),
                     RollingStock::can_share_read().check(&user, &rolling_stock),
                     RollingStock::can_write().check(&user, &rolling_stock),
@@ -44,6 +48,9 @@ pub fn rolling_stock_privileges(
                 ))
                 .await?;
             let mut privileges = HashSet::new();
+            privileges.extend(
+                (admin || can_restricted_read).then_some(RollingStockPrivilege::CanRestrictedRead),
+            );
             privileges.extend((admin || can_read).then_some(RollingStockPrivilege::CanRead));
             privileges
                 .extend((admin || can_share_read).then_some(RollingStockPrivilege::CanShareRead));
@@ -61,7 +68,7 @@ pub fn rolling_stock_privileges(
     })
     .with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
         rolling_stock,
     ))
 }
@@ -145,7 +152,7 @@ pub fn rolling_stock_set_grant(
     new_grant: RollingStockGrant,
 ) -> Protected<()> {
     let prot =
-        rolling_stock_revoke_grant(subject, rolling_stock).map(move |openfga, _has_revoked| {
+        rolling_stock_revoke_grant(subject, rolling_stock).then(move |openfga, _has_revoked| {
             async move {
                 let mut writes = openfga.prepare_writes();
                 match (subject, new_grant) {
@@ -315,15 +322,12 @@ pub fn rolling_stock_granted_subjects(
     }
     get_granted_users(rolling_stock, grant)
         .zip(get_granted_groups(rolling_stock, grant))
-        .map(move |_, (users, groups)| {
-            async move {
-                Ok(users
-                    .into_iter()
-                    .map(Subject::User)
-                    .chain(groups.into_iter().map(Subject::Group))
-                    .collect_vec())
-            }
-            .boxed()
+        .map(async move |(users, groups)| {
+            users
+                .into_iter()
+                .map(Subject::User)
+                .chain(groups.into_iter().map(Subject::Group))
+                .collect_vec()
         })
         .with_check(Check::HasRollingStockPrivilege(
             Actor::Issuer,
@@ -382,7 +386,7 @@ pub fn rolling_stock_revoke_grant(
     subject: Subject,
     rolling_stock: RollingStock,
 ) -> Protected<bool> {
-    let prot = rolling_stock_direct_grant(subject, rolling_stock).map(move |openfga, grant| {
+    let prot = rolling_stock_direct_grant(subject, rolling_stock).then(move |openfga, grant| {
         async move {
             let Some(grant) = grant else {
                 return Ok(false);
@@ -439,6 +443,74 @@ pub fn rolling_stock_revoke_grant(
     .with_check(Check::IsNotLastRollingStockOwner(subject, rolling_stock))
 }
 
+pub fn rolling_stock_list(
+    user: User,
+    privilege: RollingStockPrivilege,
+) -> Protected<ResourcesList<RollingStock>> {
+    subject_roles(Subject::user(user)).then(move |openfga, roles| {
+        async move {
+            if roles.contains(&Role::Admin) {
+                return Ok(ResourcesList::All);
+            }
+            let authorized_rolling_stocks = match privilege {
+                RollingStockPrivilege::CanRestrictedRead => {
+                    openfga
+                        .list_objects(RollingStock::can_restricted_read().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanRead => {
+                    openfga
+                        .list_objects(RollingStock::can_read().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanShareRead => {
+                    openfga
+                        .list_objects(RollingStock::can_share_read().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanWrite => {
+                    openfga
+                        .list_objects(RollingStock::can_write().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanShareWrite => {
+                    openfga
+                        .list_objects(RollingStock::can_share_write().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanDelete => {
+                    openfga
+                        .list_objects(RollingStock::can_delete().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanShareOwnership => {
+                    openfga
+                        .list_objects(RollingStock::can_share_ownership().query_objects(&user))
+                        .await?
+                }
+                RollingStockPrivilege::CanRevoke => {
+                    openfga
+                        .list_objects(RollingStock::can_revoke().query_objects(&user))
+                        .await?
+                }
+            };
+            Ok(ResourcesList::Privileged(authorized_rolling_stocks))
+        }
+        .boxed()
+    })
+}
+
+pub fn rolling_stock_privilege_check(
+    rolling_stock: RollingStock,
+    privilege: RollingStockPrivilege,
+) -> Protected<()> {
+    Protected::value(()).with_check(Check::HasRollingStockPrivilege(
+        Actor::Issuer,
+        privilege,
+        rolling_stock,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
@@ -463,6 +535,7 @@ mod tests {
                 .rolling_stock_privileges(User(1), RollingStock(1))
                 .await,
             HashSet::from_iter([
+                RollingStockPrivilege::CanRestrictedRead,
                 RollingStockPrivilege::CanRead,
                 RollingStockPrivilege::CanShareRead,
                 RollingStockPrivilege::CanWrite,
@@ -488,6 +561,7 @@ mod tests {
                 .rolling_stock_privileges(User(1), RollingStock(1))
                 .await,
             HashSet::from_iter([
+                RollingStockPrivilege::CanRestrictedRead,
                 RollingStockPrivilege::CanRead,
                 RollingStockPrivilege::CanShareRead,
                 RollingStockPrivilege::CanWrite,
@@ -777,7 +851,6 @@ mod tests {
             .execute()
             .await
             .unwrap();
-
         assert_eq!(
             openfga
                 .rolling_stock_direct_grant(Subject::user(1), RollingStock(1))
@@ -809,11 +882,84 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn check_rolling_stock_list_no_rights_and_admin() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(3)))
+            .write(&RollingStock::writer().tuple(&User(2), &RollingStock(2)))
+            .write(&User::role().tuple(&Role::Admin, &User(3)))
+            .execute()
+            .await
+            .unwrap();
+        let rolling_stocks_1 = openfga
+            .rolling_stock_list(User(1), RollingStockPrivilege::CanRead)
+            .await
+            .unwrap_privileged()
+            .into_iter();
+        let rolling_stocks_2 = openfga
+            .rolling_stock_list(User(2), RollingStockPrivilege::CanRead)
+            .await
+            .unwrap_privileged()
+            .into_iter();
+        let rolling_stocks_no_rights = openfga
+            .rolling_stock_list(User(4), RollingStockPrivilege::CanRead)
+            .await
+            .unwrap_privileged();
+        let rolling_stocks_admin = openfga
+            .rolling_stock_list(User(3), RollingStockPrivilege::CanRead)
+            .await;
+        assert_eq!(
+            rolling_stocks_1.sorted().collect_vec(),
+            vec![RollingStock(1), RollingStock(3)]
+        );
+        assert_eq!(
+            rolling_stocks_2.sorted().collect_vec(),
+            vec![RollingStock(2)]
+        );
+        assert_eq!(rolling_stocks_no_rights, vec![]);
+        assert!(matches!(rolling_stocks_admin, ResourcesList::All));
+    }
+
+    #[tokio::test]
+    async fn rolling_stock_list_only_returns_resources_with_the_queried_privilege() {
+        let openfga = crate::authz_client!();
+        openfga
+            .prepare_writes()
+            .write(&RollingStock::reader().tuple(&User(1), &RollingStock(1)))
+            .write(&RollingStock::writer().tuple(&User(2), &RollingStock(2)))
+            .execute()
+            .await
+            .unwrap();
+
+        // A reader grant grants read access and not write access
+        let reader_can_read = openfga
+            .rolling_stock_list(User(1), RollingStockPrivilege::CanRead)
+            .await
+            .unwrap_privileged();
+        assert_eq!(reader_can_read, vec![RollingStock(1)]);
+
+        let reader_can_write = openfga
+            .rolling_stock_list(User(1), RollingStockPrivilege::CanWrite)
+            .await
+            .unwrap_privileged();
+        assert_eq!(reader_can_write, vec![]);
+
+        // A writer grant grants both read and write access
+        let writer_can_write = openfga
+            .rolling_stock_list(User(2), RollingStockPrivilege::CanWrite)
+            .await
+            .unwrap_privileged();
+        assert_eq!(writer_can_write, vec![RollingStock(2)]);
+    }
+
     #[rstest]
     #[case::rolling_stock_privileges(
         rolling_stock_privileges(User(1), RollingStock(1)).checks,
         &[
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRestrictedRead, RollingStock(1))
         ]
     )]
     #[rstest]
@@ -829,6 +975,11 @@ mod tests {
         &[
            Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
         ]
+    )]
+    #[rstest]
+    #[case::rolling_stock_list(
+        rolling_stock_list(User(1), RollingStockPrivilege::CanRead).checks,
+        &[]
     )]
     fn protected_contains_expected_checks(
         #[case] protected_checks: HashSet<Check>,

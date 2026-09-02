@@ -11,7 +11,7 @@
     "map": "Carte",
     "sdd": "GEV",
     "std": "GET",
-    "tables": "Tableaux",
+    "table": "Tableau",
     "trains": "Trains"
   },
   "importTrainScheduleSet": {
@@ -235,10 +235,11 @@
         "pathfinding_not_found": "Chemin introuvable",
         "rolling_stock_not_found": "MR non trouvé",
         "simulation_failed": "Simulation impossible",
+        "unauthorized_rolling_stock": "MR interdit",
         "zero_length_path": "L'origine et la destination sont identiques"
       },
       "invalidTrains": "Certains trains sont invalides",
-      "modeCalendar": "Trier chronologiquement",
+      "modeChronological": "Trier chronologiquement",
       "modeTrainScheduleSet": "Trier par paquet",
       "noSpeedLimitTagsShort": "Aucun",
       "noTrainSchedule": "Aucune circulation",
@@ -348,31 +349,19 @@
     "uniqueTrain_zero": "0 train"
   },
   "manageTrainSchedule": {
-    "addPacedTrain": "Ajouter une mission",
-    "addUniqueTrain": "Ajouter un train",
-    "addVia": "Ajouter ce point de passage",
-    "addVias": "Ajout de points de passage",
     "allowances": {
       "distribution-linear": "Linéaire",
-      "distribution-mareco": "Mareco",
-      "standard-allowance": "Marge de régularité"
+      "distribution-mareco": "Mareco"
     },
     "anyTrack": "Toutes voies",
-    "category": "Catégorie",
     "categoryMismatch": "L’association du matériel roulant et de la catégorie est atypique",
-    "deleteRoute": "Supprimer l'itinéraire",
-    "deleteVias": "Supprimer les étapes",
-    "destination": "Destination",
     "errorMessages": {
       "error": "Une erreur est survenue",
       "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
-      "intervalTooHigh": "La cadence de la mission ne doit pas être trop grande",
-      "intervalTooLow": "La cadence de la mission doit être supérieure d'au moins une minute",
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
       "mandatoryField": "Champ obligatoire",
       "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
       "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute.",
-      "noDepartureTime": "Veuillez renseigner une heure de départ",
       "noDestination": "La destination n'est pas définie",
       "noName": "Veuillez choisir un nom pour le train",
       "noOrigin": "L'origine n'est pas définie",
@@ -384,15 +373,22 @@
       "noTrainCount": "La quantité de trains demandée doit être supérieure à zéro",
       "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
+      "pacedTrainInterval": {
+        "intervalOutsideWindow": "La cadence de la mission doit être inférieure à la durée de la plage de répétition",
+        "tooHigh": "La cadence de la mission ne doit pas être trop grande",
+        "tooLow": "La cadence de la mission doit être supérieure d'au moins une minute"
+      },
+      "pacedTrainTimeWindow": {
+        "intervalOutsideWindow": "La durée de la plage de répétition doit être supérieure à la cadence de la mission",
+        "tooHigh": "La durée de la plage de répétition ne doit pas être trop grande",
+        "tooLow": "La durée de la plage de répétition doit être d'au moins une minute"
+      },
       "requiredField": "Champ obligatoire.",
-      "timeWindowTooHigh": "La durée de la plage de répétition ne doit pas être trop grande",
-      "timeWindowTooLow": "La durée de la plage de répétition doit être d'au moins une minute",
       "tooHighInput": "Doit être < 43800",
       "tooLowInput": "Doit être > 0",
       "trainScheduleTitle": "Une erreur est survenue",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },
-    "hideTrainSettings": "Masquer",
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Afficher toutes les contraintes",
@@ -411,11 +407,7 @@
       "title": "{{total}} contraintes incompatibles",
       "title_on": "{{count}} sur {{total}} contraintes incompatibles"
     },
-    "infraLoading": "Infra en cours de chargement…",
-    "inputOPMainCodes": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
     "inputOPMainCodesExample": "Ex : LSN CIG CCS",
-    "invalidTrainScheduleStep": "Au moins un des points de passage n'a pas été reconnu",
-    "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
       "addPoint": "Ajouter",
@@ -447,7 +439,6 @@
       "opId": "Identifiant de point",
       "opName": "Nom du point remarquable",
       "opType": "Type",
-      "openItineraryModal": "Nouvelle interface d'édition d'itinéraire",
       "pass": "Passage",
       "requestedPoint": "Point sur la carte",
       "stop": "Arrêt",
@@ -464,29 +455,13 @@
       "unknownTrack": "Voie inconnue à {{names}}"
     },
     "launchPathFinding": "Lancer la recherche d'itinéraire",
-    "manageVias": "Gestion des étapes",
     "missingPathSteps": "Au moins un point de passage n'a pas été trouvé dans l'infrastructure",
-    "noDestinationChosen": "Arrivée non définie",
-    "noOriginChosen": "Départ non défini",
-    "noPlaceChosen": "Aucun point de passage/arrêt défini",
     "noRollingStock": "Pas de matériel roulant. Ce train sera en non calcul.",
     "noSpeedLimitByTag": "Aucun",
-    "origin": "Origine",
     "pacedTrainUpdated": "Mission modifiée",
     "pacedTrains": {
-      "add": "Ajouter",
-      "addExtraOccurrences": "Ajouter des occurrences hors cadence",
-      "added": "Mission ajoutée",
-      "defineService": "Définir une mission",
-      "departureDay": "Jour de départ",
-      "departureTime": "Heure de départ",
-      "interval": "Cadence de la mission",
-      "resetExceptionsConfirmation": "La modification de la cadence/durée de la mission réinitialisera les exceptions. Voulez-vous continuer ?",
-      "timeWindow": "Durée de la plage de répétition"
+      "added": "Mission ajoutée"
     },
-    "pathfinding": "Recherche d’itinéraire",
-    "pathfindingDone": "Recherche d'itinéraire terminée.",
-    "pathfindingError": "Erreur dans la recherche d’itinéraire : {{errorMessage}}.",
     "pathfindingErrors": {
       "incompatible_constraints": "Contraintes incompatibles",
       "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
@@ -495,30 +470,12 @@
       "not_found_in_tracks": "Voie manquante",
       "pathfinding_failure": "Aucun chemin trouvé",
       "rolling_stock_not_found": "Matériel roulant non trouvé",
+      "unauthorized_rolling_stock": "Vous n'êtes pas autorisé à utiliser ce matériel roulant",
       "zero_length_path": "L'origine et la destination sont identiques"
     },
-    "pathfindingInProgress": "Recherche d’itinéraire en cours…",
-    "pathfindingMissingParams": "Éléments manquants pour la recherche : {{missingElements}}.",
-    "pathfindingNoState": "Aucune recherche itinéraire.",
-    "powerRestriction": "Code de restriction de puissance",
-    "powerRestrictionEmptyExplanationText": "Le matériel roulant sélectionné ne possède pas de restrictions de puissance. Vous pouvez en créer dans l'éditeur de matériel roulant.",
-    "powerRestrictionExplanationText": "Si aucune restriction de puissance n'est renseignée sur un intervalle, le calcul de marche sera réalisé en utilisant la puissance nominale.",
     "refineSearchForMoreResults": "Affinez votre recherche pour plus de résultats",
-    "removeVia": "Retirer ce via",
-    "returnToSimulationResults": "Retourner aux résultats de simulation",
     "rollingstock": "Matériel",
-    "saving": "Enregistrement en cours… veuillez patienter",
-    "showTrainSettings": "Afficher",
     "speedLimitByTagAbbrev": "Code compo.",
-    "tabs": {
-      "pathFinding": "Itinéraire",
-      "rollingStock": "Matériel",
-      "simulationSettings": "Paramètres de simulation",
-      "timesStops": "Horaires et arrêts",
-      "unrecognizedRollingStock": "Matériel non reconnu : {{rollingStockName}}",
-      "unspecifiedRollingStock": "Matériel roulant non renseigné"
-    },
-    "toggleTrigramSearch": "Basculer l'affichage de la recherche par trigramme",
     "trainAdded": "Train ajouté",
     "trainHeader": {
       "allowances": {
@@ -553,6 +510,8 @@
       "serviceChangeWarning": {
         "cancel": "Annuler",
         "confirm": "Confirmer",
+        "explanationsWithLinkings_one": "Modifier la cadence ou la plage de répétition supprimera une exception et les enchaînements. Voulez-vous continuer ?",
+        "explanationsWithLinkings_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions et les enchaînements. Voulez-vous continuer ?",
         "explanations_one": "Modifier la cadence ou la plage de répétition supprimera une exception. Voulez-vous continuer ?",
         "explanations_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions. Voulez-vous continuer ?",
         "header": "Modèle de service modifié"
@@ -560,30 +519,8 @@
       "serviceModelTrain": "Train modèle de mission",
       "serviceOccurrence": "Occurrence de mission"
     },
-    "trainLabels": "Étiquettes",
-    "trainScheduleDepartureTime": "Heure de départ",
-    "trainScheduleInitialSpeed": "Vitesse initiale",
-    "trainScheduleName": "Numéro, nom",
-    "turnPacedTrainIntoUniqueTrain": "Transformer cette mission en train",
-    "turnUniqueTrainIntoPacedTrain": "Transformer ce train en mission",
-    "unavailableDistance": "Distance indisponible",
     "uniqueTrainUpdated": "Train unique modifié",
-    "unknownRollingStock": "Matériel roulant inconnu. Ce train sera en non calcul.",
-    "updateOccurrence": "Modifier cette occurrence",
-    "updatePacedTrain": "Modifier la mission",
-    "updateUniqueTrain": "Modifier le train",
-    "usingElectricalProfiles": "Utiliser les profils électriques",
-    "via": "Étape",
-    "viewItineraryOnMap": "Voir l'itinéraire sur la carte",
-    "warningMessages": {
-      "inconsistent_one": "Un intervalle comporte des incohérences. La courbe effort vitesse par défaut sera utilisée pour celui-ci.",
-      "inconsistent_other": "Plusieurs intervalles comportent des incohérences. Les courbes effort vitesse par défaut seront utilisées pour ceux-ci.",
-      "missingPowerRestriction": "- Restriction de puissance manquante entre {{begin}}m et {{end}}m.",
-      "modeNotHandled": "- Aucune restriction de puissance ne devrait être renseignée entre {{begin}}m and {{end}}m comme le matériel roulant ne supporte pas l'électrification {{electrification}}.",
-      "pathfindingChange": "Changement de chemin",
-      "powerRestrictionInvalidCombination": "- Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m.",
-      "powerRestrictionsReset": "Les restrictions de puissance ont été réinitialisées."
-    }
+    "unknownRollingStock": "Matériel roulant inconnu. Ce train sera en non calcul."
   },
   "operational-studies-management": {
     "delete": "Supprimer",
@@ -690,11 +627,7 @@
     "simulationSheet": "Fiche de tracé",
     "speedDistanceDiagram": "GEV",
     "speedDistanceSettings": {
-      "accelerating": "En accélération",
-      "coasting": "En roue libre",
       "context": "Contexte",
-      "decelerating": "En décélération",
-      "electric": "Électrique",
       "electricalProfiles": "Profils électrique",
       "energySource": "Source d'énergie",
       "etcs": {
@@ -709,7 +642,6 @@
         "title": "ETCS",
         "transition": "Trans."
       },
-      "incompatible": "Incompatible",
       "invalidSimulation": "Le train sélectionné ne peut pas être simulé",
       "noData": "La donnée est affichée lorsqu'un train est sélectionné",
       "powerRestrictions": "Restrictions de puissance",

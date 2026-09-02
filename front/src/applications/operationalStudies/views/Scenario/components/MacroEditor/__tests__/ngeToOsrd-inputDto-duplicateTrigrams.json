@@ -11,7 +11,7 @@
       "connections": [],
       "resourceId": 7,
       "perronkanten": 5,
-      "connectionTime": 6,
+      "connectionTime": null,
       "trainrunCategoryHaltezeiten": {
         "HaltezeitIPV": { "haltezeit": 3, "no_halt": false },
         "HaltezeitA": { "haltezeit": 2, "no_halt": false },
@@ -36,7 +36,7 @@
       "connections": [],
       "resourceId": 8,
       "perronkanten": 5,
-      "connectionTime": 5,
+      "connectionTime": null,
       "trainrunCategoryHaltezeiten": {
         "HaltezeitIPV": { "haltezeit": 3, "no_halt": false },
         "HaltezeitA": { "haltezeit": 2, "no_halt": false },
@@ -64,7 +64,7 @@
       "connections": [],
       "resourceId": 9,
       "perronkanten": 5,
-      "connectionTime": 5,
+      "connectionTime": null,
       "trainrunCategoryHaltezeiten": {
         "HaltezeitIPV": { "haltezeit": 3, "no_halt": false },
         "HaltezeitA": { "haltezeit": 2, "no_halt": false },

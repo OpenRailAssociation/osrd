@@ -25,12 +25,12 @@ use crate::error::Result;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::prelude::*;
-use editoast_models::project::Error as ProjectModelError;
-use editoast_models::project::Project;
-use editoast_models::study::Error as StudyModelError;
-use editoast_models::study::Study;
-use editoast_models::tags::Tags;
+use models::prelude::*;
+use models::project::Error as ProjectModelError;
+use models::project::Project;
+use models::study::Error as StudyModelError;
+use models::study::Study;
+use models::tags::Tags;
 
 fn validate_study_dates(
     start: Option<NaiveDate>,
@@ -61,8 +61,8 @@ pub enum StudyError {
     ProjectNotFound { project_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error, database::DatabaseError)]
-    Database(editoast_models::Error),
+    #[from(models::Error, database::DatabaseError)]
+    Database(models::Error),
 }
 
 impl From<StudyModelError> for StudyError {
@@ -453,7 +453,7 @@ pub mod tests {
     use crate::fixtures::create_project;
     use crate::fixtures::create_study;
     use crate::views::test_app;
-    use editoast_models::study::Study;
+    use models::study::Study;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_post() {

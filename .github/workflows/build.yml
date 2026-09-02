@@ -100,7 +100,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.12"
           enable-cache: true
@@ -136,7 +136,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.11"
           enable-cache: true
@@ -161,7 +161,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.11"
           enable-cache: true
@@ -255,7 +255,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.11"
           enable-cache: true
@@ -296,7 +296,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.11"
           enable-cache: true
@@ -766,7 +766,7 @@ jobs:
           docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.11"
           enable-cache: true
@@ -1085,7 +1085,7 @@ jobs:
             -v "$PWD/front/test-results:/app/test-results" \
             ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             sh -c "npx playwright merge-reports --reporter=./tests/reporter/generate-personalized-report.ts ./all-blob-reports \
-              && npx tsx ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
+              && node ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
           cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
   check_reuse_compliance:
@@ -1106,7 +1106,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: "3.11"
           enable-cache: true
@@ -1135,6 +1135,6 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@v0.6.1
+        uses: zizmorcore/zizmor-action@v0.6.2
         with:
           config: .github/zizmor.yml

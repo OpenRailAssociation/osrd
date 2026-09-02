@@ -904,6 +904,38 @@
         },
         {
             "country_code": "FR",
+            "id": "Mid_West_station_duplicate",
+            "is_passenger_station": true,
+            "main_code": "MWS",
+            "name": "Mid_West_station_duplicate",
+            "parts": [
+                {
+                    "local_track_name": "V1'",
+                    "position": 550.0,
+                    "track": "TC0"
+                },
+                {
+                    "local_track_name": "V2'",
+                    "position": 550.0,
+                    "track": "TC1"
+                },
+                {
+                    "local_track_name": "V3'",
+                    "position": 450.0,
+                    "track": "TC2"
+                },
+                {
+                    "local_track_name": "V4'",
+                    "position": 450.0,
+                    "track": "TC3"
+                }
+            ],
+            "secondary_code": "BV2",
+            "secondary_name": "Duplicate station",
+            "uic": 87332
+        },
+        {
+            "country_code": "FR",
             "id": "Mid_East_station",
             "is_passenger_station": true,
             "main_code": "MES",

@@ -65,7 +65,7 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
   /** *************** Test 1 **************** */
   test('Verify NGE train data', async ({ ngePage }) => {
     await test.step('Verify nodes displayed on NGE graph', async () => {
-      await ngePage.expectNodes(['FR-SWS/…', 'FR-MWS/…', 'FR-MES/…']);
+      await ngePage.expectNodes(['SWS/BV#…', 'MWS/BV…', 'MES/BV#…']);
     });
 
     await test.step('Verify train rows labels', async () => {
@@ -89,7 +89,7 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
 
       await test.step('Verify one-way tab shows SWS/BV (South_West_station) → MES/BV (Mid_East_station)', async () => {
         const oneWayRegex =
-          /SWS\/BV\s*\(South_West_station\)[\s\S]*?30[\s\S]*?MES\/BV\s*\(Mid_East_station\)/i;
+          /SWS\/BV#FR\s*\(South_West_station\)[\s\S]*?30[\s\S]*?MES\/BV#FR\s*\(Mid_East_station\)/i;
         await ngePage.openOneWayTabAndExpect(oneWayRegex);
       });
 

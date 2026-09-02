@@ -6,7 +6,7 @@ use axum::response::IntoResponse;
 use axum::response::Response;
 use database::DbConnectionPoolV2;
 
-use editoast_models::search_journey_environment::SearchJourneyEnvironmentWithTimetables;
+use models::search_journey_environment::SearchJourneyEnvironmentWithTimetables;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -57,9 +57,9 @@ pub(in crate::views) async fn retrieve_latest(
 pub mod tests {
     use super::*;
     use crate::views::test_app;
-    use editoast_models::SearchJourneyEnvironment;
-    use editoast_models::prelude::*;
-    use editoast_models::search_journey_environment::fixtures::search_journey_env_fixtures;
+    use models::SearchJourneyEnvironment;
+    use models::prelude::*;
+    use models::search_journey_environment::fixtures::search_journey_env_fixtures;
     use pretty_assertions::assert_eq;
     use std::collections::HashSet;
 

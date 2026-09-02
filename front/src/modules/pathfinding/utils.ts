@@ -8,6 +8,7 @@ import type {
   PathItemLocation,
   PathProperties,
   PathfindingInput,
+  PathfindingItem,
   PostInfraByInfraIdPathfindingBlocksApiArg,
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
@@ -83,7 +84,7 @@ export const getPathfindingQuery = ({
     LightRollingStock,
     'effort_curves' | 'loading_gauge' | 'max_speed' | 'length' | 'supported_signaling_systems'
   >;
-  pathSteps: (PathItemLocation | null)[];
+  pathSteps: (PathfindingItem | null)[];
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
   allowedTrackSections?: string[];

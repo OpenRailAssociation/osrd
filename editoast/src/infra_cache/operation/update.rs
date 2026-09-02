@@ -20,7 +20,7 @@ use serde_json::from_value;
 use serde_json::json;
 
 use super::OperationError;
-use editoast_models::infra_objects::get_table;
+use models::infra_objects::get_table;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -132,8 +132,8 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use database::DbConnection;
-    use editoast_models::Infra;
-    use editoast_models::prelude::*;
+    use models::Infra;
+    use models::prelude::*;
     use schemas::infra::InfraObject;
     use schemas::infra::Signal;
     use schemas::infra::SpeedSection;

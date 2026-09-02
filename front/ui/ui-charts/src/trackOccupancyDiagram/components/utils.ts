@@ -16,6 +16,31 @@ type DrawTextType = {
   };
 };
 
+const ELLIPSIS = '…';
+
+/**
+ * Cuts a text so that it fits a width, ending it with an ellipsis. The context must already be
+ * set to the font the text is drawn with.
+ */
+export const truncateTextToWidth = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number
+) => {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+
+  const characters = Array.from(text);
+  let fitting = 0;
+  let tooLong = characters.length;
+  while (tooLong - fitting > 1) {
+    const middle = Math.floor((fitting + tooLong) / 2);
+    const cut = characters.slice(0, middle).join('');
+    if (ctx.measureText(`${cut}${ELLIPSIS}`).width <= maxWidth) fitting = middle;
+    else tooLong = middle;
+  }
+  return `${characters.slice(0, fitting).join('')}${ELLIPSIS}`;
+};
+
 export const drawText = ({
   ctx,
   text,

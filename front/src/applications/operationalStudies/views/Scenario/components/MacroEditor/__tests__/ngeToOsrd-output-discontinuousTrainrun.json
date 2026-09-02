@@ -5,7 +5,6 @@
       "trigram": "SS",
       "full_name": "Sursee",
       "is_collapsed": false,
-      "connection_time": 6,
       "position_x": 672,
       "position_y": 800,
       "labels": [],
@@ -16,7 +15,6 @@
       "trigram": "RTR",
       "full_name": "Rothrist",
       "is_collapsed": false,
-      "connection_time": 5,
       "position_x": 320,
       "position_y": 32,
       "labels": [],
@@ -27,14 +25,12 @@
       "trigram": "LTH",
       "full_name": "Langenthal",
       "is_collapsed": false,
-      "connection_time": 5,
       "position_x": 320,
       "position_y": 192,
       "labels": [],
       "path_item_key": "domestic:LTH"
     },
     {
-      "connection_time": 4,
       "full_name": "Waldegg",
       "is_collapsed": false,
       "labels": [],
@@ -45,7 +41,6 @@
       "trigram": "WLD"
     },
     {
-      "connection_time": 4,
       "full_name": "Feldrain",
       "is_collapsed": false,
       "labels": [],

@@ -1,20 +1,18 @@
-/* eslint-disable jsx-a11y/no-autofocus */
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert, Rocket, TriangleRight } from '@osrd-project/ui-icons';
+import { Rocket } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidV4 } from 'uuid';
 
-import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type {
-  PathItem,
   PostSearchApiArg,
   SearchPayload,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
+import type { PathStepV2 } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import {
   isCursorSurroundedBySpace,
@@ -27,43 +25,11 @@ type SearchConstraintType = (string | number | string[])[];
 
 const monospaceOneCharREMWidth = 0.6225;
 
-function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) {
-  // Calculation of chars distance from left to put tooltip on center of op name
-  const calcLeftMargin = (charsFromLeft: number, length: number) =>
-    charsFromLeft * monospaceOneCharREMWidth + (length * monospaceOneCharREMWidth) / 2;
-  let charsFromLeft = 0;
-  return (
-    <div className="op-tooltips">
-      {opList.map((op, idx) => {
-        const leftMargin = calcLeftMargin(charsFromLeft, op.main_code.length);
-        // TODO: fix this lint
-        // eslint-disable-next-line react-hooks-js/immutability
-        charsFromLeft = charsFromLeft + op.main_code.length + 1;
-        return (
-          op.main_code !== '' && (
-            <div
-              className={cx('op', { wrong: !op.name })}
-              key={`typeandpath-op-${idx}-${op.main_code}`}
-              style={{ left: `${leftMargin}rem` }}
-              title={op.name}
-              data-testid={`typeandpath-op-${op.main_code}`}
-            >
-              {op.name ? op.name : <Alert />}
-            </div>
-          )
-        );
-      })}
-    </div>
-  );
-}
 type TypeAndPathProps = {
-  setDisplayTypeAndPath?: React.Dispatch<React.SetStateAction<boolean>>;
-  isInNewModal?: boolean;
+  onSubmit: (pathSteps: PathStepV2[]) => void;
 };
 
-const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPathProps) => {
-  const { launchPathfinding } = useManageTrainScheduleContext();
-
+const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraId = useInfraID();
@@ -163,7 +129,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
 
   const handleSubmit = async () => {
     if (infraId && opList.length > 0) {
-      const pathSteps: PathItem[] = opList
+      const pathSteps: PathStepV2[] = opList
         .filter((op) => op.main_code !== '')
         .map(({ main_code, secondary_code, country_code }) => ({
           id: uuidV4(),
@@ -176,10 +142,13 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
               type: 'domestic',
             },
           },
+          arrival: null,
+          stopFor: null,
+          theoreticalMargin: null,
+          receptionSignal: null,
         }));
 
-      setDisplayTypeAndPath?.(false);
-      launchPathfinding(pathSteps);
+      onSubmit(pathSteps);
       setInputText('');
       setSearch('');
     }
@@ -245,13 +214,11 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
 
   return (
     <div
-      className={cx('type-and-path mb-2', { 'quick-entry-visual': isInNewModal })}
+      className="type-and-path mb-2 quick-entry-visual"
       style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }}
       data-testid="type-and-path-container"
     >
-      {!isInNewModal && <div className="help">{opList.length === 0 && t('inputOPMainCodes')}</div>}
       <div className="input-wrapper">
-        {!isInNewModal && <OpTooltips opList={opList} />}
         <div className="d-flex align-items-center">
           <div
             className={cx('form-control-container', 'flex-grow-1', 'mr-2', {
@@ -260,18 +227,15 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
           >
             <input
               ref={inputRef}
-              className={cx('form-control', {
-                'form-control-sm text-zone': !isInNewModal,
-                'quick-entry-visual': isInNewModal,
-              })}
+              className="form-control quick-entry-visual"
               type="text"
               value={inputText}
               onChange={(e) => handleInput(e.target.value, e.target.selectionStart!)}
               placeholder={t('inputOPMainCodesExample')}
+              /* eslint-disable-next-line jsx-a11y/no-autofocus */
               autoFocus
               data-testid="type-and-path-input"
             />
-            {!isInNewModal && <span className="form-control-state" />}
           </div>
           <button
             className="btn btn-success"
@@ -282,48 +246,33 @@ const TypeAndPath = ({ setDisplayTypeAndPath, isInNewModal = false }: TypeAndPat
             disabled={isInvalid || opList.length < 2}
             data-testid="submit-search-by-main-code"
           >
-            {isInNewModal ? <Rocket /> : <TriangleRight />}
+            <Rocket />
           </button>
         </div>
       </div>
       {searchResults.length > 0 && isSortedSearchResultsDisplayed && (
-        <>
-          {!isInNewModal && <span className="arrow-img"> </span>}
-          <div className="results-container">
-            <div className={cx('station-results p-2', { 'quick-entry-visual': isInNewModal })}>
-              {sortedSearchResults.map((result) => (
-                <button
-                  id={`main-code-button-${result.name}`}
-                  type="button"
-                  onClick={() => onResultClick(result)}
-                  key={result.obj_id}
-                  className={cx({
-                    station: !isInNewModal,
-                    'op-suggestion': isInNewModal,
-                  })}
-                  title={`${result.name} ${result.secondary_code}`}
-                >
-                  {isInNewModal && (
-                    <span className="op-suggestion-main-code">{result.main_code}</span>
-                  )}
-                  <span
-                    className={cx({
-                      'station-text text-secondary': !isInNewModal,
-                      'op-suggestion-name': isInNewModal,
-                    })}
-                  >
-                    {result.name}
-                  </span>
-                </button>
-              ))}
-              {sortedSearchResults.length > 8 && (
-                <div className="ellipsis-placeholder" title={t('refineSearchForMoreResults')}>
-                  ...
-                </div>
-              )}
-            </div>
+        <div className="results-container">
+          <div className="station-results p-2 quick-entry-visual">
+            {sortedSearchResults.map((result) => (
+              <button
+                id={`main-code-button-${result.name}`}
+                type="button"
+                onClick={() => onResultClick(result)}
+                key={result.obj_id}
+                className="op-suggestion"
+                title={`${result.name} ${result.secondary_code}`}
+              >
+                <span className="op-suggestion-main-code">{result.main_code}</span>
+                <span className="op-suggestion-name">{result.name}</span>
+              </button>
+            ))}
+            {sortedSearchResults.length > 8 && (
+              <div className="ellipsis-placeholder" title={t('refineSearchForMoreResults')}>
+                ...
+              </div>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

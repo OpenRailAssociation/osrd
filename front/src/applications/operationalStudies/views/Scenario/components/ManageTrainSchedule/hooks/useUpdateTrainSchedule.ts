@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import type {
   PacedTrainException,
   TrainSchedule,
@@ -26,13 +27,6 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
-import {
-  getName,
-  getStartTime,
-  getOperationalStudiesConf,
-  getAddedExceptions,
-} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import {
   updateAlreadySelectedTrainId,
@@ -40,7 +34,8 @@ import {
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch, type AppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { useDateTimeLocale, timeToLocaleString } from 'utils/date';
+import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId, isOccurrenceId } from 'utils/trainId';
 
 import {
@@ -52,6 +47,7 @@ import {
   validateTrainSchedule,
   type TrainScheduleConfErrorCode,
 } from '../helpers/validateTrainSchedule';
+import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 
 type UpdateTrainScheduleParams = {
   timetableId: number;
@@ -59,7 +55,7 @@ type UpdateTrainScheduleParams = {
   originalTrainSchedule: TrainScheduleWithDetails;
   updatedTrainSchedule: TrainSchedule;
   occurrenceId?: OccurrenceId;
-  addedExceptions: { startTime: Date }[];
+  addedExceptions: { startTime: StartTime }[];
   deletedAddedExceptionId?: number;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   dispatch: AppDispatch;
@@ -143,7 +139,7 @@ export async function updateTrainSchedule({
   const newAddedExceptions: PacedTrainException[] = addedExceptions.map(
     ({ startTime: exStartTime }) => ({
       key: '', // TODO : remove this when the key will be removed from the model
-      start_time: { value: exStartTime.getTime() },
+      start_time: { value: startTimeToMs(exStartTime) },
     })
   );
 
@@ -279,24 +275,22 @@ export async function updateTrainSchedule({
 }
 
 const useUpdateTrainSchedule = (
+  trainState: ItineraryModalTrainState,
   setIsWorking: (isWorking: boolean) => void,
-  setDisplayTrainScheduleManagement: (type: string) => void,
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void,
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void,
-  trainScheduleToEditData?: TrainScheduleToEditData
+  onTrainUpdated: () => void
 ) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule',
   });
   const dispatch = useAppDispatch();
+  const dateTimeLocale = useDateTimeLocale();
 
   const { timetableId } = useScenarioContext();
 
-  const confName = useSelector(getName);
-  const simulationConf = useSelector(getOperationalStudiesConf);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-  const startTime = useSelector(getStartTime);
-  const addedExceptions = useSelector(getAddedExceptions);
+
+  const { trainScheduleToEditData } = useItineraryModalContext();
+  const { upsertTrainSchedules } = useTimetableContext();
 
   const onUpdateSuccess = (editData: TrainScheduleToEditData) => {
     const { trainScheduleId } = editData;
@@ -306,10 +300,10 @@ const useUpdateTrainSchedule = (
     dispatch(
       setSuccess({
         title:
-          simulationConf.editingTrainType === 'uniqueTrain'
+          trainState.editingTrainType === 'uniqueTrain'
             ? t('uniqueTrainUpdated')
             : t('pacedTrainUpdated'),
-        text: `${confName}: ${startTime.toLocaleString()}`,
+        text: `${trainState.name}: ${timeToLocaleString(trainState.startTime, dateTimeLocale)}`,
       })
     );
     dispatch(updateAlreadySelectedTrainId(editedTrainId));
@@ -325,9 +319,7 @@ const useUpdateTrainSchedule = (
       dispatch(updateTrainIdUsedForProjection(formatEditoastIdToTrainScheduleId(trainScheduleId)));
     }
 
-    dispatch(clearAddedExceptionsList());
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    setTrainScheduleToEditData(undefined);
+    onTrainUpdated();
   };
 
   return async () => {
@@ -338,13 +330,14 @@ const useUpdateTrainSchedule = (
     try {
       const result = await updateTrainSchedule({
         upsertTrainSchedules,
-        trainScheduleId: trainScheduleToEditData.trainScheduleId,
-        originalTrainSchedule: trainScheduleToEditData.originalTrainSchedule,
+        trainScheduleId: trainScheduleToEditData.trainSchedule.id,
+        originalTrainSchedule:
+          trainScheduleToEditData.parentPacedTrain ?? trainScheduleToEditData.trainSchedule,
         occurrenceId: trainScheduleToEditData.occurrenceId,
         dispatch,
         timetableId,
-        addedExceptions,
-        updatedTrainSchedule: formatTrainSchedulePayload(simulationConf),
+        addedExceptions: trainState.addedExceptions,
+        updatedTrainSchedule: formatTrainSchedulePayload(trainState),
       });
 
       if (result.success) {

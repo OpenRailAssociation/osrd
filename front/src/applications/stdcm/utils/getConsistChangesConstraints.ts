@@ -2,8 +2,8 @@ import type {
   LightRollingStock,
   LoadingGaugeType,
   osrdEditoastApi,
+  PathfindingItem,
   PathfindingResult,
-  PathItemLocation,
 } from 'common/api/osrdEditoastApi';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
@@ -32,7 +32,7 @@ type getSegmentConstraintsOptions = {
 
 type LaunchSegmentedPathfindingOptions = {
   pathSegmentsIndexes: number[];
-  stdcmPathSteps: PathItemLocation[];
+  stdcmPathSteps: PathfindingItem[];
   consistChanges: ConsistChange[];
   getLightRollingStockById: GetLightRollingStockById;
   postPathfindingBlocks: PostPathfindingBlocks;

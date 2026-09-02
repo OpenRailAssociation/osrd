@@ -3,10 +3,21 @@ pub(in crate::views) mod towed;
 
 type RollingStockForm = schemas::RollingStock<schemas::rolling_stock::RollingResistancePerWeight>;
 
+use authz::RollingStockGrant;
+use authz::RollingStockPrivilege;
+use authz::v2;
+use axum::Extension;
+use models::train_schedule::OccurrenceId;
+use schemas::TrainOccurrence;
+
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::io::Cursor;
 use std::sync::Arc;
 
 use authz::Role;
+use authz::v2::Authorizer as _;
+use authz::v2::ResourcesList;
 use axum::extract::Json;
 use axum::extract::Multipart;
 use axum::extract::Path;
@@ -17,18 +28,18 @@ use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::Document;
-use editoast_models::RollingStockImage;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::rolling_stock::ScenarioReference;
-use editoast_models::rolling_stock_livery::RollingStockLivery;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
 use image::ImageFormat;
 use image::ImageReader;
+use models::Document;
+use models::RollingStockImage;
+use models::prelude::*;
+use models::rolling_stock;
+use models::rolling_stock::RollingStock;
+use models::rolling_stock::ScenarioReference;
+use models::rolling_stock_livery::RollingStockLivery;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -36,8 +47,12 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -114,8 +129,8 @@ pub enum RollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::Error, database::DatabaseError)]
-    Database(editoast_models::Error),
+    #[from(models::Error, database::DatabaseError)]
+    Database(models::Error),
 }
 
 #[derive(Debug, Error)]
@@ -180,9 +195,19 @@ pub struct RollingStockNameParam {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
+
     let rolling_stock = retrieve_existing_rolling_stock(
         &mut db_pool.get().await?,
         RollingStockKey::Id(rolling_stock_id),
@@ -204,7 +229,10 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_by_name(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock = retrieve_existing_rolling_stock(
@@ -212,6 +240,14 @@ pub(in crate::views) async fn get_by_name(
         RollingStockKey::Name(rolling_stock_name),
     )
     .await?;
+
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock.id),
+        RollingStockPrivilege::CanRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
+
     let rolling_stock_with_liveries =
         RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(rolling_stock_with_liveries))
@@ -258,8 +294,11 @@ pub(in crate::views) struct PostRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
     Query(query_params): Query<PostRollingStockQueryParams>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStock>> {
     let conn = &mut db_pool.get().await?;
@@ -271,6 +310,18 @@ pub(in crate::views) async fn create(
         .create(conn)
         .await
         .map_err(RollingStockError::from)?;
+
+    if let authentication::State::Authenticated { user, .. } = &authn_state {
+        v2::rolling_stock_set_grant(
+            authz::Subject::User(*user),
+            authz::RollingStock(rolling_stock.id),
+            RollingStockGrant::Owner,
+        )
+        .authorize(&SystemAuthorizer::new_infallible(&openfga))
+        .await?
+        .access()
+        .await?;
+    }
 
     Ok(Json(rolling_stock))
 }
@@ -287,10 +338,19 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn update(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanWrite,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
     let new_rolling_stock = db_pool
         .get()
         .await?
@@ -350,10 +410,20 @@ pub(in crate::views) struct DeleteRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanDelete,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
+
     let conn = &mut db_pool.get().await?;
 
     let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
@@ -410,12 +480,20 @@ pub(in crate::views) struct RollingStockLockedUpdateForm {
     )
 )]
 pub(in crate::views) async fn update_locked(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanWrite,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
     RollingStock::changeset()
         .locked(locked)
         .update_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
@@ -426,6 +504,7 @@ pub(in crate::views) async fn update_locked(
     Ok(StatusCode::NO_CONTENT)
 }
 
+// TODO delete that struct: it is used to document the API and is wrong
 #[derive(ToSchema)]
 #[allow(unused)] // Schema only
 struct RollingStockLiveryCreateForm {
@@ -483,11 +562,22 @@ async fn parse_multipart_content(
         (status = 404, description = "The requested rolling stock was not found"),
     )
 )]
+// TODO update openapi: the request body description is wrong
 pub(in crate::views) async fn create_livery(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<schemas::rolling_stock::RollingStockLivery>> {
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanWrite,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
+
     let conn = &mut db_pool.get().await?;
 
     let (name, images) = parse_multipart_content(form)
@@ -544,20 +634,26 @@ pub(in crate::views) async fn create_livery(
     )
 )]
 pub(in crate::views) async fn get_usage(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<Vec<ScenarioReference>>> {
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rolling_stock_id),
+        RollingStockPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
     let mut conn = db_pool.get().await?;
-
     let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
     })
     .await?;
-
     let related_train_schedules = rolling_stock.get_usage(&mut conn).await?;
-
     Ok(Json(related_train_schedules))
 }
 
@@ -669,12 +765,63 @@ async fn create_compound_image(
     Ok(compound_image)
 }
 
+/// Discards the occurrences whose rolling stock the user isn't allowed to read
+pub(in crate::views) async fn filter_readable_occurrences(
+    train_occurrences: HashMap<String, Vec<(OccurrenceId, TrainOccurrence)>>,
+    rolling_stocks: &[RollingStock],
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+) -> Result<Vec<(OccurrenceId, TrainOccurrence)>> {
+    // The request bypasses authorization
+    let Some(user) = authn_state.user() else {
+        return Ok(train_occurrences.into_values().flatten().collect());
+    };
+
+    // Listing the readable rolling stocks cannot be rejected: the issuer is already authenticated
+    let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
+        .authorize(authz::v2::rolling_stock_list(
+            user,
+            RollingStockPrivilege::CanRead,
+        ))
+        .await?
+        .access()
+        .await?;
+
+    let authorized_rolling_stocks = match authorized_rolling_stocks {
+        ResourcesList::All => return Ok(train_occurrences.into_values().flatten().collect()),
+        ResourcesList::Privileged(authorized_rolling_stocks) => authorized_rolling_stocks,
+    };
+
+    let authorized_rolling_stock_ids = authorized_rolling_stocks
+        .into_iter()
+        .map(|rolling_stock| rolling_stock.0)
+        .collect::<HashSet<_>>();
+
+    // Occurrences are grouped by rolling stock name, the authorization by id
+
+    let authorized_rolling_stock_names = rolling_stocks
+        .iter()
+        .filter(|rs| authorized_rolling_stock_ids.contains(&rs.id))
+        .map(|rs| rs.name.clone())
+        .collect::<HashSet<_>>();
+
+    Ok(train_occurrences
+        .into_iter()
+        .filter(|(rolling_stock_name, _)| {
+            authorized_rolling_stock_names.contains(rolling_stock_name)
+        })
+        .flat_map(|(_, occurrences)| occurrences)
+        .collect())
+}
+
 #[cfg(test)]
 pub mod tests {
-    use editoast_models::rolling_stock::TrainMainCategory;
+    use authz::RollingStockGrant;
     use itertools::Itertools;
+    use models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
     use serde_json::json;
+    use strum::IntoEnumIterator as _;
     use uuid::Uuid;
 
     use super::*;
@@ -689,7 +836,8 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use editoast_models::rolling_stock::RollingStock;
+    use crate::views::test_app::TestRequestExt;
+    use models::rolling_stock::RollingStock;
 
     impl TestApp {
         fn rolling_stock_create_request(
@@ -720,8 +868,14 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_successfully() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
+
+        let user = app
+            .user(uuid::Uuid::new_v4().to_string(), "name")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
@@ -729,6 +883,7 @@ pub mod tests {
         // WHEN
         let raw_response = app
             .rolling_stock_create_request(&fast_rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -738,12 +893,15 @@ pub mod tests {
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
-
         assert_eq!(rolling_stock.name, rs_name);
         assert_eq!(
             fast_rolling_stock_form.startup_time,
             rolling_stock.startup_time
         );
+        // Check if the issuer was added as owner to the rolling stock
+        app.assert_rolling_stock_grant(rolling_stock.id, user.id, Some(RollingStockGrant::Owner))
+            .await;
+
         let rolling_stock: RollingStockForm = rolling_stock.into();
         assert_eq!(
             rolling_stock
@@ -801,139 +959,274 @@ pub mod tests {
         );
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
-        let app = test_app!().skip_authz().build();
-        let stock_name = Uuid::new_v4().to_string();
-        let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
-        let RollingStock { id, .. } = app
-            .rolling_stock_create_request(&rolling_stock)
-            .await
-            .assert_status_ok()
-            .json();
-        let related_schedules: Vec<ScenarioReference> = app
-            .get(&format!("/rolling_stock/{id}/usage"))
-            .await
-            .assert_status_ok()
-            .json();
-        assert!(related_schedules.is_empty());
-    }
+    mod get_rolling_stock_usage {
+        use super::*;
+        use authz::v2::TestClientExt as _;
+        use pretty_assertions::assert_eq;
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
+        mod authorization {
+            use std::iter::once;
 
-        let create_rolling_stock_request =
-            app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let rolling_stock: RollingStock = (create_rolling_stock_request)
-            .await
-            .assert_status_ok()
-            .json();
-        let create_other_rolling_stock_request =
-            app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
-        let other_rolling_stock: RollingStock = (create_other_rolling_stock_request)
-            .await
-            .assert_status_ok()
-            .json();
+            use super::*;
 
-        let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let study = create_study(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            project.id,
-        )
-        .await;
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn all_grant_levels_should_allow_usage() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock")
+                        .await
+                        .id;
+                for grant in RollingStockGrant::iter() {
+                    let user = app
+                        .user(uuid::Uuid::new_v4().to_string(), "name")
+                        .with_rolling_stock_grant(rolling_stock_id, grant)
+                        .create()
+                        .await;
+                    app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
+                        .by_user(user.as_ref())
+                        .await
+                        .assert_status_ok();
+                }
+            }
 
-        let (timetable_1, train_schedule_set_1) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn roles_should_not_authorize_user() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock")
+                        .await
+                        .id;
+                for role in authz::Role::iter().map(Option::Some).chain(once(None)) {
+                    let user_builder = app.user(uuid::Uuid::new_v4().to_string(), "name");
+                    match role {
+                        Some(Role::Admin) => continue, // admins should be authorized
+                        Some(role) => user_builder.with_roles(vec![role]),
+                        None => user_builder,
+                    }
+                    .create()
+                    .await;
+                    let user = app
+                        .user(uuid::Uuid::new_v4().to_string(), "name")
+                        .create()
+                        .await;
+                    app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
+                        .by_user(user.as_ref())
+                        .await
+                        .assert_status_forbidden();
+                }
+            }
 
-        let (timetable_2, train_schedule_set_2) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
-        let (timetable_3, train_schedule_set_3) =
-            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn skip_authz_should_succeed() {
+                let app = test_app!().skip_authz().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock")
+                        .await
+                        .id;
+                app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
+                    .skip_authz()
+                    .await
+                    .assert_status_ok();
+            }
+        }
 
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let scenario_1 = create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable_1.id,
-            infra.id,
-        )
-        .await;
-        let scenario_2 = create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable_2.id,
-            infra.id,
-        )
-        .await;
-        // scenario_3 will not use the required rolling stock and should thus not be queried
-        let _scenario_3 = create_scenario(
-            &mut db_pool.get_ok(),
-            &Uuid::new_v4().to_string(),
-            study.id,
-            timetable_3.id,
-            infra.id,
-        )
-        .await;
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
+            let app = test_app!().build();
+            let stock_name = Uuid::new_v4().to_string();
+            let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
+            let user = app
+                .user(uuid::Uuid::new_v4().to_string(), "name")
+                .with_roles([Role::OperationalStudies])
+                .create()
+                .await;
+            let RollingStock { id, .. } = app
+                .rolling_stock_create_request(&rolling_stock)
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
 
-        simple_paced_train_changeset(train_schedule_set_1.id)
-            .rolling_stock_name(rolling_stock.name.clone())
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        simple_paced_train_changeset(train_schedule_set_2.id)
-            .rolling_stock_name(rolling_stock.name)
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
-        simple_paced_train_changeset(train_schedule_set_3.id)
-            .rolling_stock_name(other_rolling_stock.name)
-            .create(&mut db_pool.get_ok())
-            .await
-            .unwrap();
+            // TODO remove me once `POST:/rolling_stock` setups the grants on the created rolling
+            // stock
+            app.openfga()
+                .rolling_stock_set_grant(
+                    authz::RollingStock(id),
+                    authz::Subject::user(user.clone()),
+                    RollingStockGrant::Reader,
+                )
+                .await;
 
-        let related_scenarios: Vec<ScenarioReference> = app
-            .get(&format!("/rolling_stock/{}/usage", rolling_stock.id))
-            .await
-            .assert_status_ok()
-            .json();
-        let expected_scenarios = [
-            ScenarioReference {
-                project_id: project.id,
-                project_name: project.name.clone(),
-                study_id: study.id,
-                study_name: study.name.clone(),
-                scenario_id: scenario_1.id,
-                scenario_name: scenario_1.name.clone(),
-            },
-            ScenarioReference {
-                project_id: project.id,
-                project_name: project.name.clone(),
-                study_id: study.id,
-                study_name: study.name.clone(),
-                scenario_id: scenario_2.id,
-                scenario_name: scenario_2.name.clone(),
-            },
-        ];
-        assert_eq!(
-            related_scenarios.iter().sorted().collect_vec(),
-            expected_scenarios.iter().sorted().collect_vec()
-        );
-    }
+            let related_schedules: Vec<ScenarioReference> = app
+                .get(&format!("/rolling_stock/{id}/usage"))
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            assert!(related_schedules.is_empty());
+        }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_invalid_rolling_stock_id_returns_404_not_found() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
-        let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let user = app
+                .user(uuid::Uuid::new_v4().to_string(), "name")
+                .with_roles([Role::OperationalStudies])
+                .create()
+                .await;
 
-        app.get("/rolling_stock/1/usage")
-            .await
-            .assert_status_not_found();
+            let create_rolling_stock_request = app.rolling_stock_create_request(
+                &fast_rolling_stock_form(&Uuid::new_v4().to_string()),
+            );
+            let rolling_stock: RollingStock = (create_rolling_stock_request)
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            let create_other_rolling_stock_request = app.rolling_stock_create_request(
+                &fast_rolling_stock_form(&Uuid::new_v4().to_string()),
+            );
+            let other_rolling_stock: RollingStock = (create_other_rolling_stock_request)
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+
+            // TODO remove me once `POST:/rolling_stock` setups the grants on the created rolling
+            // stock
+            app.openfga()
+                .rolling_stock_set_grant(
+                    authz::RollingStock(rolling_stock.id),
+                    authz::Subject::user(user.clone()),
+                    RollingStockGrant::Reader,
+                )
+                .await;
+            app.openfga()
+                .rolling_stock_set_grant(
+                    authz::RollingStock(other_rolling_stock.id),
+                    authz::Subject::user(user.clone()),
+                    RollingStockGrant::Reader,
+                )
+                .await;
+
+            let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+            let study = create_study(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                project.id,
+            )
+            .await;
+
+            let (timetable_1, train_schedule_set_1) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+            let (timetable_2, train_schedule_set_2) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+            let (timetable_3, train_schedule_set_3) =
+                create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+            let infra = create_small_infra(&mut db_pool.get_ok()).await;
+            let scenario_1 = create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable_1.id,
+                infra.id,
+            )
+            .await;
+            let scenario_2 = create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable_2.id,
+                infra.id,
+            )
+            .await;
+            // scenario_3 will not use the required rolling stock and should thus not be queried
+            let _scenario_3 = create_scenario(
+                &mut db_pool.get_ok(),
+                &Uuid::new_v4().to_string(),
+                study.id,
+                timetable_3.id,
+                infra.id,
+            )
+            .await;
+
+            simple_paced_train_changeset(train_schedule_set_1.id)
+                .rolling_stock_name(rolling_stock.name.clone())
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
+            simple_paced_train_changeset(train_schedule_set_2.id)
+                .rolling_stock_name(rolling_stock.name)
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
+            simple_paced_train_changeset(train_schedule_set_3.id)
+                .rolling_stock_name(other_rolling_stock.name)
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
+
+            let related_scenarios: Vec<ScenarioReference> = app
+                .get(&format!("/rolling_stock/{}/usage", rolling_stock.id))
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            let expected_scenarios = [
+                ScenarioReference {
+                    project_id: project.id,
+                    project_name: project.name.clone(),
+                    study_id: study.id,
+                    study_name: study.name.clone(),
+                    scenario_id: scenario_1.id,
+                    scenario_name: scenario_1.name.clone(),
+                },
+                ScenarioReference {
+                    project_id: project.id,
+                    project_name: project.name.clone(),
+                    study_id: study.id,
+                    study_name: study.name.clone(),
+                    scenario_id: scenario_2.id,
+                    scenario_name: scenario_2.name.clone(),
+                },
+            ];
+            assert_eq!(
+                related_scenarios.iter().sorted().collect_vec(),
+                expected_scenarios.iter().sorted().collect_vec()
+            );
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_invalid_rolling_stock_id_returns_404_not_found() {
+            // TODO: skipping authz here is not trivial because the checks execution order is
+            // undefined. It could indifferently return a 403 Forbidden or a 404 not found if the
+            // rolling stock does not exist.
+            // Not: in practice, it seems to always return 404 not found as that check future executes
+            // faster than the 403 one.
+            // => do we:
+            //   - keep skipping authz here for the time being ?
+            //   - update `Authorizer::authorize` implementations to define a check order ?
+            //      1. FuturesUnordered => FuturesOrdered in `authorize`
+            //      2. #[derive(PartialOrd, Ord)] on Check
+            //      3. use an ordered collection in `Protected.checks` that uses the PartialOrd
+            //         trait
+            //   - update the protected ops to insert the checks in the correct order
+            //      1. FuturesUnordered => FuturesOrdered in `authorize`
+            //      2. use an ordered collection in `Protected.checks` that keeps insertion order
+            //      3. make sure when we create protected ops that we insert the checks in the
+            //         correct order
+            //  github discussion ref: https://github.com/OpenRailAssociation/osrd/pull/17383#issuecomment-4868190929
+            let app = test_app!().skip_authz().build();
+            let db_pool = app.db_pool();
+            let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
+
+            app.get("/rolling_stock/1/usage")
+                .await
+                .assert_status_not_found();
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1012,21 +1305,72 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
+        // a user with the role to reach the endpoint and a read grant on the rolling stock
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
         // WHEN
         let raw_response = app
             .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
             .await;
 
         // THEN
         let response: RollingStock = raw_response.assert_status_ok().json();
 
         assert_eq!(response, fast_rolling_stock);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_with_privilege_and_no_roles() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
+
+        // a user that does not have the role to reach the endpoint but has a read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        app.rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_rolling_stock_by_id_without_permission() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
+
+        // a user that has the role to reach the endpoint but no read grant on the rolling stock
+        let user = app
+            .user("unauthorized", "Unauthorized")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.rolling_stock_get_by_id_request(fast_rolling_stock.id)
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1070,26 +1414,32 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_unlocked_rolling_stock() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
 
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let updated_rs_name = "updated_fast_rolling_stock_name";
         rolling_stock_form.name = updated_rs_name.to_string();
 
         // WHEN
-        let raw_response = app
-            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
             .json(&&rolling_stock_form)
-            .await;
+            .await
+            .assert_status_ok();
 
         // THEN
-        raw_response.assert_status_ok();
-
         let updated_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
@@ -1104,9 +1454,146 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn update_rolling_stock_with_new_categories() {
+    async fn update_rolling_stock_without_authorization() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unauthorized_rolling_stock").await;
+
+        // A user with the OperationalStudies role but only a read grant on the rolling stock
+        let user = app
+            .user("reader", "Reader")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        rolling_stock_form.name = "should_not_be_updated".to_string();
+
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_forbidden();
+
+        // The rolling stock should not have been modified
+        let rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+        assert_eq!(rolling_stock.name, fast_rolling_stock.name);
+        assert_eq!(rolling_stock.version, fast_rolling_stock.version);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_as_admin_without_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "admin_updated_rolling_stock").await;
+
+        // An admin holds no grant on the rolling stock but can still update it
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        let updated_rs_name = "updated_by_admin";
+        rolling_stock_form.name = updated_rs_name.to_string();
+
+        // WHEN
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(admin.as_ref())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_ok();
+
+        // THEN
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert_eq!(updated_rolling_stock.name, updated_rs_name);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_with_skip_authz_without_grant() {
         // GIVEN
         let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "skip_authz_updated_rolling_stock")
+                .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        let updated_rs_name = "updated_with_skip_authz";
+        rolling_stock_form.name = updated_rs_name.to_string();
+
+        // WHEN (no grant set up, authorization is skipped)
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_ok();
+
+        // THEN
+        let updated_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert_eq!(updated_rolling_stock.name, updated_rs_name);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_without_operational_studies_role() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "missing_role_rolling_stock").await;
+
+        // A user with the right write grant but lacking the OperationalStudies role
+        let user = app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        rolling_stock_form.name = "should_not_be_updated".to_string();
+
+        // WHEN
+        app.put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .json(&&rolling_stock_form)
+            .await
+            .assert_status_forbidden();
+
+        // THEN the rolling stock should not have been modified
+        let rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert_eq!(rolling_stock.name, fast_rolling_stock.name);
+        assert_eq!(rolling_stock.version, fast_rolling_stock.version);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_rolling_stock_with_new_categories() {
+        // GIVEN
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let fast_rolling_stock =
@@ -1126,10 +1613,18 @@ pub mod tests {
         let other_categories = vec![schemas::rolling_stock::TrainMainCategory::RegionalTrain];
         rolling_stock_form.other_categories = other_categories;
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
         // WHEN
         let raw_response = app
             .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1157,12 +1652,19 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_categories_should_fail_when_invalid() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let fast_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_with_categories")
                 .await;
+
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let primary_category =
@@ -1175,6 +1677,7 @@ pub mod tests {
         let raw_response = app
             .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1196,13 +1699,19 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_failure_name_already_used() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let first_rs_name = "first_fast_rolling_stock_name";
         let first_fast_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), first_rs_name).await;
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(first_fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
         let second_rs_name = "second_fast_rolling_stock_name";
         let second_fast_rolling_stock =
             create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), second_rs_name).await;
@@ -1213,6 +1722,7 @@ pub mod tests {
         let raw_response = app
             .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
             .json(&second_fast_rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1227,7 +1737,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_locked_rolling_stock_fails() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1241,6 +1751,13 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(locked_fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
         let mut second_fast_rolling_stock_form: RollingStockForm =
             schemas::fixtures::fast_rolling_stock();
         second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
@@ -1249,6 +1766,7 @@ pub mod tests {
         let raw_response = app
             .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
             .json(&second_fast_rolling_stock_form)
+            .by_user(user.as_ref())
             .await;
 
         // THEN
@@ -1269,16 +1787,23 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_lock_rolling_stock_successfully() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Owner)
+            .create()
+            .await;
         assert!(!fast_rolling_stock.locked);
 
         app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
             .json(&json!({ "locked": true }))
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
@@ -1293,7 +1818,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_unlock_rolling_stock_successfully() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1308,8 +1833,19 @@ pub mod tests {
             .expect("Failed to create rolling stock");
         assert!(locked_fast_rolling_stock.locked);
 
+        let user = app
+            .user("authorized", "Authorized")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(
+                locked_fast_rolling_stock.id,
+                authz::RollingStockGrant::Owner,
+            )
+            .create()
+            .await;
+
         app.patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
             .json(&json!({ "locked": false }))
+            .by_user(user.as_ref())
             .await
             .assert_status_no_content();
 
@@ -1319,6 +1855,132 @@ pub mod tests {
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
 
+        assert!(!fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_without_sufficient_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unauthorized_rolling_stock").await;
+        assert!(!fast_rolling_stock.locked);
+
+        // A user with the OperationalStudies role but only a read grant on the rolling stock
+        let user = app
+            .user("reader", "Reader")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .create()
+            .await;
+
+        // WHEN
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        // THEN the locked flag should not have changed
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert!(!fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_as_admin_without_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "admin_locked_rolling_stock").await;
+        assert!(!fast_rolling_stock.locked);
+
+        // An admin holds no grant on the rolling stock but can still lock it
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        // WHEN
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert!(fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_with_skip_authz_without_grant() {
+        // GIVEN
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "skip_authz_locked_rolling_stock")
+                .await;
+        assert!(!fast_rolling_stock.locked);
+
+        // WHEN (no grant set up, authorization is skipped)
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+        assert!(fast_rolling_stock.locked);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_locked_rolling_stock_without_operational_studies_role() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "missing_role_rolling_stock").await;
+        assert!(!fast_rolling_stock.locked);
+
+        // A user with a write grant but lacking the OperationalStudies role
+        let user = app
+            .user("writer", "Writer")
+            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Writer)
+            .create()
+            .await;
+
+        // WHEN
+        app.patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }))
+            .by_user(&user.info)
+            .await
+            .assert_status_forbidden();
+
+        // THEN the locked flag should not have changed
+        let fast_rolling_stock: RollingStock =
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
         assert!(!fast_rolling_stock.locked);
     }
 
@@ -1348,7 +2010,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
@@ -1362,9 +2024,16 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
+        let user = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(locked_fast_rolling_stock.id, RollingStockGrant::Owner)
+            .create()
+            .await;
         // WHEN
         let raw_response = app
             .delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+            .by_user(&user.info)
             .await;
 
         // THEN
@@ -1383,16 +2052,24 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unlocked_unused_rolling_stock_succeeds() {
         // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         assert!(!fast_rolling_stock.locked);
 
+        let user = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Owner)
+            .create()
+            .await;
+
         // WHEN
         let raw_response = app
             .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(&user.info)
             .await;
 
         // THEN
@@ -1403,6 +2080,124 @@ pub mod tests {
                 .await
                 .expect("Failed to check if rolling stock exists");
         assert!(!rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_without_authorization() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "unauthorized_rolling_stock").await;
+
+        // A user with the OperationalStudies role but only a write grant on the rolling stock
+        // (delete requires an owner/delete grant)
+        let user = app
+            .user("writer", "Writer")
+            .with_roles([Role::OperationalStudies])
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Writer)
+            .create()
+            .await;
+
+        // WHEN
+        let raw_response = app
+            .delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .await;
+
+        // THEN
+        raw_response.assert_status_forbidden();
+
+        // The rolling stock should still exist
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_as_admin_without_grant() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "admin_deleted_rolling_stock").await;
+
+        // An admin holds no grant on the rolling stock but can still delete it
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        // WHEN
+        app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(!rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_with_skip_authz_without_user() {
+        // GIVEN
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "skip_authz_deleted_rolling_stock")
+                .await;
+
+        // WHEN (no grant set up, authorization is skipped)
+        app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .await
+            .assert_status_no_content();
+
+        // THEN
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(!rolling_stock_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_rolling_stock_without_operational_studies_role() {
+        // GIVEN
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "missing_role_rolling_stock").await;
+
+        // A user with an owner grant but lacking the OperationalStudies role
+        let user = app
+            .user("owner", "Owner")
+            .with_rolling_stock_grant(fast_rolling_stock.id, RollingStockGrant::Owner)
+            .create()
+            .await;
+
+        // WHEN
+        app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        // THEN the rolling stock should still exist
+        let rolling_stock_exists =
+            RollingStock::exists(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to check if rolling stock exists");
+        assert!(rolling_stock_exists);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1470,5 +2265,168 @@ pub mod tests {
                 .expect("Failed to check if rolling stock exists");
 
         assert!(!rolling_stock_exists);
+    }
+
+    mod post_rolling_stock_livery {
+        use super::*;
+
+        const DATA: &[u8] = &[
+            // PNG Signature (8 bytes)
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // IHDR Chunk (Image Header)
+            0x00, 0x00, 0x00, 0x0D, // Chunk Length
+            0x49, 0x48, 0x44, 0x52, // "IHDR"
+            0x00, 0x00, 0x00, 0x02, // Width: 2 pixels
+            0x00, 0x00, 0x00, 0x02, // Height: 2 pixels
+            0x08, // Bit depth: 8
+            0x02, // Color type: Truecolor (RGB)
+            0x00, // Compression method: 0 (deflate)
+            0x00, // Filter method: 0
+            0x00, // Interlace method: 0 (no interlace)
+            0xFD, 0xD4, 0x9A, 0x73, // CRC
+            // IDAT Chunk (Image Data)
+            0x00, 0x00, 0x00, 0x13, // Chunk Length
+            0x49, 0x44, 0x41, 0x54, // "IDAT"
+            0x78, 0x01, // zlib compression header
+            0x63, 0x64, 0x60, 0xF8, 0xCF, 0xC0, 0xC0, 0xC0, 0x04, 0xC4, 0x40, 0x00, 0x00, 0x0B,
+            0x1F, 0x01, // Compressed image data
+            0x03, 0xD5, 0xA9, 0x3F, 0xA9, // CRC
+            // IEND Chunk (Image End)
+            0x00, 0x00, 0x00, 0x00, // Chunk Length
+            0x49, 0x45, 0x4E, 0x44, // "IEND"
+            0xAE, 0x42, 0x60, 0x82, // CRC
+        ];
+
+        mod authorization {
+            use axum_test::multipart::MultipartForm;
+            use axum_test::multipart::Part;
+            use pretty_assertions::assert_eq;
+            use rstest::rstest;
+
+            use super::*;
+
+            fn valid_request_body() -> MultipartForm {
+                let part_name = Part::text(Uuid::new_v4().to_string());
+                let part_images = Part::bytes(DATA)
+                    .file_name(Uuid::new_v4().to_string())
+                    .mime_type("image/bpm");
+                MultipartForm::new()
+                    .add_part("name", part_name)
+                    .add_part("images", part_images)
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn authorized_grant_level() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let grant = RollingStockGrant::Writer;
+                let user = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_rolling_stock_grant(rolling_stock_id, grant)
+                    .with_roles([Role::OperationalStudies])
+                    .create()
+                    .await;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user.as_ref())
+                    .await
+                    .assert_status_ok();
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn reader_and_no_grant_are_forbidden() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let user_no_grant = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([Role::OperationalStudies])
+                    .create()
+                    .await;
+                let user_reader = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([Role::OperationalStudies])
+                    .with_rolling_stock_grant(rolling_stock_id, RollingStockGrant::Reader)
+                    .create()
+                    .await;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user_no_grant.as_ref())
+                    .await
+                    .assert_status_forbidden();
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user_reader.as_ref())
+                    .await
+                    .assert_status_forbidden();
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn admin_is_authorized_without_grant() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let user = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([Role::Admin])
+                    .create()
+                    .await;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user.as_ref())
+                    .await
+                    .assert_status_ok();
+            }
+
+            #[rstest]
+            #[case::admin(Role::Admin, StatusCode::OK)]
+            #[case::operational_studies(Role::OperationalStudies, StatusCode::OK)]
+            #[case::stdcm(Role::Stdcm, StatusCode::FORBIDDEN)]
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn need_operational_studies_or_admin_role_and_grant(
+                #[case] role: Role,
+                #[case] expected_status_code: StatusCode,
+            ) {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                let user = app
+                    .user(Uuid::new_v4().to_string(), "name")
+                    .with_roles([role])
+                    .with_rolling_stock_grant(rolling_stock_id, RollingStockGrant::Writer)
+                    .create()
+                    .await;
+                let response = app
+                    .post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .by_user(user.as_ref())
+                    .await;
+                assert_eq!(response.status_code(), expected_status_code);
+            }
+
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn skip_authz_is_authorized() {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling stock")
+                        .await
+                        .id;
+                app.post(&format!("/rolling_stock/{rolling_stock_id}/livery"))
+                    .multipart(valid_request_body())
+                    .skip_authz()
+                    .await
+                    .assert_status_ok();
+            }
+        }
+
+        // TODO Add tests
     }
 }

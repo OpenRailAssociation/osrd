@@ -12,34 +12,46 @@
         "steps": [
             {
                 "duration": 216306,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TA3",
-                    "offset": 20806
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TA3",
+                        "offset": 20806
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": 234593,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TA3",
-                    "offset": 45018
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TA3",
+                        "offset": 45018
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": 644645,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TC0",
-                    "offset": 934429
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TC0",
+                        "offset": 934429
+                    },
+                    "can_backtrack": false
                 }
             },
             {
                 "duration": 1,
-                "location": {
-                    "type": "track_offset",
-                    "track": "TD0",
-                    "offset": 10766163
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TD0",
+                        "offset": 10766163
+                    },
+                    "can_backtrack": false
                 }
             }
         ],

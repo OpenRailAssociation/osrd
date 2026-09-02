@@ -64,14 +64,14 @@ const Editor = () => {
   const isLocked = useSelector(getInfraLockStatus);
   const editorState = useSelector(getEditorState);
   const { data: switchTypes } = useSwitchTypes(infraID);
-  /* eslint-disable @typescript-eslint/no-explicit-any */
+  /* eslint-disable-next-line typescript/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_NAMES.SELECTION],
     state: TOOLS[TOOL_NAMES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
   const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
   // TODO: fix this lint
-  // eslint-disable-next-line react-hooks-js/purity
+  // eslint-disable-next-line react/purity
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
     setRenderingFingerprint(Date.now());

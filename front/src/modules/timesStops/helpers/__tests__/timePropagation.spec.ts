@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { Train } from 'reducers/osrdconf/types';
-import { addDurationToDate, Duration } from 'utils/duration';
+import { addDurationToStartTime, Duration, type StartTime } from 'utils/duration';
 
 import type { PropagationMode, TimesStopsRowNew } from '../../types';
 import {
@@ -42,8 +42,8 @@ const makeTrain = (): Train =>
   }) as unknown as Train;
 
 /** Converts a start time and a duration offset (e.g. 'PT30M') into an absolute arrival Date. */
-const toComputedArrival = (startTime: Date, offsetIso: string): Date =>
-  addDurationToDate(startTime, Duration.parse(offsetIso));
+const toComputedArrival = (startTime: Date | Duration, offsetIso: string): StartTime =>
+  addDurationToStartTime(startTime, Duration.parse(offsetIso));
 
 // HH:mm:ss diff = 29s, but raw ms diff = 29 700ms → would round up to 30s without the fix
 it('formatPropagationDeltaLabelByMode: ignores sub-second precision', () => {
@@ -78,7 +78,8 @@ describe('Scenario 1 — +10 min at OP11', () => {
       expect(
         propagateTime(
           { field: 'requestedArrival', row, value: _18H40, propagationMode: 'atThisWaypoint' },
-          train
+          train,
+          'CALENDAR'
         )
       ).toBeUndefined();
     });
@@ -86,7 +87,8 @@ describe('Scenario 1 — +10 min at OP11', () => {
     it('toDestination — should leave start_time unchanged, OP11 → 18:40, OP17 → 19:00', () => {
       const result = propagateTime(
         { field: 'requestedArrival', row, value: _18H40, propagationMode: 'toDestination' },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -102,7 +104,8 @@ describe('Scenario 1 — +10 min at OP11', () => {
     it('fromDeparture — should shift start_time → 18:10, OP11 → 18:40, OP17 stays at 18:50', () => {
       const result = propagateTime(
         { field: 'requestedArrival', row, value: _18H40, propagationMode: 'fromDeparture' },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -118,7 +121,8 @@ describe('Scenario 1 — +10 min at OP11', () => {
     it('shiftAllWaypoints — should shift start_time → 18:10, all offsets unchanged, entire train +10min', () => {
       const result = propagateTime(
         { field: 'requestedArrival', row, value: _18H40, propagationMode: 'shiftAllWaypoints' },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -160,7 +164,8 @@ describe('Scenario 2 — +30 min at OP11', () => {
       expect(
         propagateTime(
           { field: 'requestedArrival', row, value: _19H00, propagationMode: 'atThisWaypoint' },
-          train
+          train,
+          'CALENDAR'
         )
       ).toBeUndefined();
     });
@@ -168,7 +173,8 @@ describe('Scenario 2 — +30 min at OP11', () => {
     it('toDestination — should leave start_time unchanged, OP11 → 19:00, OP17 → 19:20', () => {
       const result = propagateTime(
         { field: 'requestedArrival', row, value: _19H00, propagationMode: 'toDestination' },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -184,7 +190,8 @@ describe('Scenario 2 — +30 min at OP11', () => {
     it('fromDeparture — should shift start_time → 18:30, OP11 → 19:00, OP17 midnight crossing → next day 18:50', () => {
       const result = propagateTime(
         { field: 'requestedArrival', row, value: _19H00, propagationMode: 'fromDeparture' },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -202,7 +209,8 @@ describe('Scenario 2 — +30 min at OP11', () => {
     it('shiftAllWaypoints — should shift start_time → 18:30, all offsets unchanged, entire train +30min', () => {
       const result = propagateTime(
         { field: 'requestedArrival', row, value: _19H00, propagationMode: 'shiftAllWaypoints' },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -262,7 +270,8 @@ describe('Scenario 3 — -40 min at OP11', () => {
             value: _17H50_MIDNIGHT_CROSSING,
             propagationMode: 'atThisWaypoint',
           },
-          train
+          train,
+          'CALENDAR'
         )
       ).toBeUndefined();
     });
@@ -275,7 +284,8 @@ describe('Scenario 3 — -40 min at OP11', () => {
           value: _17H50_MIDNIGHT_CROSSING,
           propagationMode: 'toDestination',
         },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -300,7 +310,8 @@ describe('Scenario 3 — -40 min at OP11', () => {
           value: _17H50_MIDNIGHT_CROSSING,
           propagationMode: 'fromDeparture',
         },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -321,7 +332,8 @@ describe('Scenario 3 — -40 min at OP11', () => {
           value: _17H50_MIDNIGHT_CROSSING,
           propagationMode: 'shiftAllWaypoints',
         },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -361,7 +373,7 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
     requestedArrival: _18H00,
   } as unknown as TimesStopsRowNew;
 
-  // At origin, all modes use HH:mm delta regardless of mode (isOrigin = true).
+  // At origin, all modes use HH:mm delta regardless of mode (isOriginArrival = true).
   describe('formatPropagationDeltaLabelByMode', () => {
     it.each<PropagationMode>([
       'atThisWaypoint',
@@ -385,7 +397,8 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
           value: _18H40,
           propagationMode: 'atThisWaypoint',
         },
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedStartTime, updatedSchedule } = result!;
@@ -411,7 +424,8 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
             value: _18H40,
             propagationMode: 'fromDeparture',
           },
-          train
+          train,
+          'CALENDAR'
         )
       ).toBeUndefined();
     });
@@ -422,7 +436,8 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
       (mode) => {
         const result = propagateTime(
           { field: 'requestedArrival', row: originRow, value: _18H40, propagationMode: mode },
-          train
+          train,
+          'CALENDAR'
         );
         expect(result).toBeDefined();
         const { updatedStartTime, updatedSchedule } = result!;

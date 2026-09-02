@@ -15,15 +15,3 @@ export const calcTotalDistance = (ops: { position: number }[]) => {
   }
   return ops.at(-1)!.position - ops.at(0)!.position;
 };
-
-type Point = {
-  x: number;
-  y: number;
-};
-
-export function getDistance(a: Point, b: Point): Point {
-  return {
-    x: b.x - a.x,
-    y: b.y - a.y,
-  };
-}

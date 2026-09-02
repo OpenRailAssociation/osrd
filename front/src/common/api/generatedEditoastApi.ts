@@ -30,6 +30,7 @@ export const addTagTypes = [
   'temporary_speed_limits',
   'timetable',
   'train_schedule_exceptions',
+  'linkings',
   'train_schedule_set',
   'train_schedule',
   'etcs_braking_curves',
@@ -325,6 +326,13 @@ const injectedRtkApi = api
         GetInfraByInfraIdAutoFixesApiArg
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes` }),
+        providesTags: ['infra'],
+      }),
+      getInfraByInfraIdBbox: build.query<
+        GetInfraByInfraIdBboxApiResponse,
+        GetInfraByInfraIdBboxApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/bbox` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdClone: build.mutation<
@@ -1185,6 +1193,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedule_exceptions'],
       }),
+      postTimetableByIdTrainScheduleLinkings: build.mutation<
+        PostTimetableByIdTrainScheduleLinkingsApiResponse,
+        PostTimetableByIdTrainScheduleLinkingsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedule_linkings`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['linkings'],
+      }),
       getTimetableByIdTrainScheduleSets: build.query<
         GetTimetableByIdTrainScheduleSetsApiResponse,
         GetTimetableByIdTrainScheduleSetsApiArg
@@ -1381,6 +1400,28 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['timetable', 'train_schedule'],
+      }),
+      postTrainSchedulesLinkings: build.query<
+        PostTrainSchedulesLinkingsApiResponse,
+        PostTrainSchedulesLinkingsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/linkings`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['linkings'],
+      }),
+      postTrainSchedulesLinkingsDelete: build.mutation<
+        PostTrainSchedulesLinkingsDeleteApiResponse,
+        PostTrainSchedulesLinkingsDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedules/linkings/delete`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['linkings'],
       }),
       patchTrainSchedulesMove: build.mutation<
         PatchTrainSchedulesMoveApiResponse,
@@ -1608,18 +1649,16 @@ export type PostAuthzGrantsApiArg = {
         revoke: RevokeBody[];
       };
 };
-export type GetAuthzGroupsApiResponse =
-  /** status 200 List all the groups */ {
-    id: number;
-    name: string;
-  }[];
+export type GetAuthzGroupsApiResponse = /** status 200 List all the groups */ {
+  id: number;
+  name: string;
+}[];
 export type GetAuthzGroupsApiArg = void;
-export type GetAuthzMeApiResponse =
-  /** status 200 Get the info of the current user */ {
-    id: number;
-    name: string;
-    roles: Role[];
-  };
+export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
+  id: number;
+  name: string;
+  roles: Role[];
+};
 export type GetAuthzMeApiArg = void;
 export type PostAuthzMeGrantsApiResponse =
   /** status 200 Get grants info of the current user for the given resources in body */ {
@@ -1634,11 +1673,10 @@ export type PostAuthzMeGrantsApiArg = {
     [key: string]: number[];
   };
 };
-export type GetAuthzMeGroupsApiResponse =
-  /** status 200 Get the groups of the current user */ {
-    id: number;
-    name: string;
-  }[];
+export type GetAuthzMeGroupsApiResponse = /** status 200 Get the groups of the current user */ {
+  id: number;
+  name: string;
+}[];
 export type GetAuthzMeGroupsApiArg = void;
 export type PostAuthzMePrivilegesApiResponse =
   /** status 200 The privileges of the user sending the request over each requested resource. The resource is omitted if it does not exist. An empty privileges list is returned if the user has no privileges over it. */ {
@@ -1653,17 +1691,16 @@ export type PostAuthzMePrivilegesApiArg = {
     [key: string]: number[];
   };
 };
-export type PostAuthzUserInfoApiResponse =
-  /** status 200 Get information on a list of users */ {
-    groups: {
-      id: number;
-      name: string;
-    }[];
+export type PostAuthzUserInfoApiResponse = /** status 200 Get information on a list of users */ {
+  groups: {
     id: number;
-    identities: string[];
     name: string;
-    roles: Role[];
   }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+}[];
 export type PostAuthzUserInfoApiArg = {
   /** A list of user IDs and identities to get information on */
   body: {
@@ -1763,10 +1800,9 @@ export type GetIconsBySignalingSystemAndFileNameApiArg = {
   /** File name (svg) */
   fileName: string;
 };
-export type GetInfraApiResponse =
-  /** status 200 All infras, paginated */ PaginationStats & {
-    results: Infra[];
-  };
+export type GetInfraApiResponse = /** status 200 All infras, paginated */ PaginationStats & {
+  results: Infra[];
+};
 export type GetInfraApiArg = {
   page?: number;
   pageSize?: number;
@@ -1778,10 +1814,9 @@ export type PostInfraApiArg = {
     name: string;
   };
 };
-export type PostInfraRailjsonApiResponse =
-  /** status 201 The imported infra id */ {
-    infra: number;
-  };
+export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
+  infra: number;
+};
 export type PostInfraRailjsonApiArg = {
   /** The name of the infrastructure. */
   name: string;
@@ -1789,11 +1824,10 @@ export type PostInfraRailjsonApiArg = {
   generateData?: boolean;
   railJson: RailJson;
 };
-export type PostInfraRefreshApiResponse =
-  /** status 200  */ {
-    /** The list of infras that were refreshed successfully */
-    infra_refreshed: number[];
-  };
+export type PostInfraRefreshApiResponse = /** status 200  */ {
+  /** The list of infras that were refreshed successfully */
+  infra_refreshed: number[];
+};
 export type PostInfraRefreshApiArg = {
   force?: boolean;
   /** A comma-separated list of infra IDs to refresh
@@ -1842,6 +1876,12 @@ export type GetInfraByInfraIdAttachedAndTrackIdApiArg = {
 export type GetInfraByInfraIdAutoFixesApiResponse =
   /** status 200 The list of suggested operations */ Operation[];
 export type GetInfraByInfraIdAutoFixesApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+};
+export type GetInfraByInfraIdBboxApiResponse =
+  /** status 200 The bbox of the infra if it contains tracks */ null | BoundingBox;
+export type GetInfraByInfraIdBboxApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
@@ -1911,13 +1951,12 @@ export type PostInfraByInfraIdLockApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
-export type PostInfraByInfraIdMatchOperationalPointsApiResponse =
-  /** status 200
+export type PostInfraByInfraIdMatchOperationalPointsApiResponse = /** status 200
 Take a list of operational point references and return for each of them the
 operational point that it matches on a given infrastructure.
  */ {
-    related_operational_points: (null | RelatedOperationalPoint)[];
-  };
+  related_operational_points: (null | RelatedOperationalPoint)[];
+};
 export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -2110,10 +2149,9 @@ export type PostLevelCrossingOccupancyApiArg = {
     train_ids: number[];
   };
 };
-export type GetLightRollingStockApiResponse =
-  /** status 200  */ PaginationStats & {
-    results: LightRollingStockWithLiveries[];
-  };
+export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats & {
+  results: LightRollingStockWithLiveries[];
+};
 export type GetLightRollingStockApiArg = {
   page?: number;
   pageSize?: number;
@@ -2182,10 +2220,9 @@ export type DeleteMacroNotesByNoteIdApiResponse = unknown;
 export type DeleteMacroNotesByNoteIdApiArg = {
   noteId: number;
 };
-export type GetProjectsApiResponse =
-  /** status 200 The list of projects */ PaginationStats & {
-    results: ProjectWithStudies[];
-  };
+export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
+  results: ProjectWithStudies[];
+};
 export type GetProjectsApiArg = {
   page?: number;
   pageSize?: number;
@@ -2356,11 +2393,10 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   /** File name (json, png or svg) */
   fileName: string;
 };
-export type GetStdcmDebugDataByTraceIdApiResponse =
-  /** status 200  */ {
-    failure?: null | SimDebugFailureReport;
-    simulation_data?: null | SimDebugData;
-  };
+export type GetStdcmDebugDataByTraceIdApiResponse = /** status 200  */ {
+  failure?: null | SimDebugFailureReport;
+  simulation_data?: null | SimDebugData;
+};
 export type GetStdcmDebugDataByTraceIdApiArg = {
   /** OpenTelemetry trace ID of the STDCM request */
   traceId: string;
@@ -2385,10 +2421,9 @@ export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
   /** An stdcm search environment ID */
   envId: number;
 };
-export type GetStudiesApiResponse =
-  /** status 200 The list of studies */ PaginationStats & {
-    results: StudyWithScenarios[];
-  };
+export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
+  results: StudyWithScenarios[];
+};
 export type GetStudiesApiArg = {
   projectId: number;
   page?: number;
@@ -2536,7 +2571,7 @@ export type PostTimetableByIdStdcmApiArg = {
     maximum_run_time?: number | null;
     /** Deprecated, first step arrival time should be used instead */
     start_time?: string | null;
-    steps: PathfindingItem[];
+    steps: StdcmPathfindingItem[];
     temporary_speed_limit_group_id?: number | null;
     /** Margin after the train passage in milliseconds
         
@@ -2562,6 +2597,16 @@ export type PostTimetableByIdTrainScheduleExceptionApiArg = {
     occurrence_index?: number | null;
     train_schedule_id: number;
   };
+};
+export type PostTimetableByIdTrainScheduleLinkingsApiResponse = /** status 201 Linkings created */ {
+  id: number;
+  source: LinkingOccurrenceId;
+  target: LinkingOccurrenceId;
+}[];
+export type PostTimetableByIdTrainScheduleLinkingsApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: LinkingCreateForm[];
 };
 export type GetTimetableByIdTrainScheduleSetsApiResponse =
   /** status 200 list of train_schedule_sets linked to a timetable */ {
@@ -2594,10 +2639,9 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type GetTowedRollingStockApiResponse =
-  /** status 200  */ PaginationStats & {
-    results: TowedRollingStock[];
-  };
+export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
+  results: TowedRollingStock[];
+};
 export type GetTowedRollingStockApiArg = {
   page?: number;
   pageSize?: number;
@@ -2693,6 +2737,22 @@ export type DeleteTrainSchedulesApiArg = {
     ids: number[];
   };
 };
+export type PostTrainSchedulesLinkingsApiResponse =
+  /** status 200 The linkings for a given timetable and given train schedules. */ {
+    id: number;
+    source: LinkingOccurrenceId;
+    target: LinkingOccurrenceId;
+  }[];
+export type PostTrainSchedulesLinkingsApiArg = {
+  body: {
+    timetable_id: number;
+    train_schedules: number[];
+  };
+};
+export type PostTrainSchedulesLinkingsDeleteApiResponse = unknown;
+export type PostTrainSchedulesLinkingsDeleteApiArg = {
+  body: number[];
+};
 export type PatchTrainSchedulesMoveApiResponse = unknown;
 export type PatchTrainSchedulesMoveApiArg = {
   body: {
@@ -2700,17 +2760,15 @@ export type PatchTrainSchedulesMoveApiArg = {
     train_schedule_set_id: number;
   };
 };
-export type PostTrainSchedulesOccupancyBlocksApiResponse =
-  /** status 200  */ {
-    [key: string]: OccupancyBlocksTrainScheduleResult;
-  };
+export type PostTrainSchedulesOccupancyBlocksApiResponse = /** status 200  */ {
+  [key: string]: OccupancyBlocksTrainScheduleResult;
+};
 export type PostTrainSchedulesOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
 };
-export type PostTrainSchedulesProjectPathApiResponse =
-  /** status 200 Project Path Output */ {
-    [key: string]: ProjectPathTrainScheduleResult;
-  };
+export type PostTrainSchedulesProjectPathApiResponse = /** status 200 Project Path Output */ {
+  [key: string]: ProjectPathTrainScheduleResult;
+};
 export type PostTrainSchedulesProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
 };
@@ -2788,22 +2846,7 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
       duration: string;
       time_begin: number;
     } & {
-      /** Position of an operational point on a path, relative to the input path items.
-        If the OP matches an input path item, it is located using this path item's ID,
-        else, if the path just passes by the OP, it is located using its previous and following path items IDs */
-      path_item_relative_location:
-        | {
-            /** Path item ID, when the operational point matches an item in the input path */
-            path_item_id: NonBlankString;
-            type: 'exact_path_item';
-          }
-        | {
-            /** Following path item ID, when the operational point is not one of the input path items */
-            following_path_item_id: NonBlankString;
-            /** Previous path item ID, when the operational point is not one of the input path items */
-            previous_path_item_id: NonBlankString;
-            type: 'between_path_items';
-          };
+      path_item_relative_location: PathItemRelativeLocation;
     })[];
   }[];
 export type PostTrainSchedulesTrackOccupancyApiArg = {
@@ -3135,7 +3178,7 @@ export type OperationalPoint = {
   parts: OperationalPointPart[];
   /** Primary Location Code : https://rne.eu/it/products/ccs/crd/ */
   plc?: null | string;
-  secondary_code?: null | string;
+  secondary_code?: null | NonBlankString;
   secondary_name?: null | string;
   uic?: number | null;
   weight?: number | null;
@@ -3451,6 +3494,12 @@ export type Operation =
     } & {
       operation_type: 'DELETE';
     });
+export type BoundingBox = {
+  max_lat: number;
+  max_lon: number;
+  min_lat: number;
+  min_lon: number;
+};
 export type ObjectRef = {
   obj_id: string;
   type: ObjectType;
@@ -3528,12 +3577,6 @@ export type InfraError = {
   obj_type: ObjectType;
   sub_type: InfraErrorType;
 };
-export type BoundingBox = {
-  max_lat: number;
-  max_lon: number;
-  min_lat: number;
-  min_lon: number;
-};
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
@@ -3550,7 +3593,7 @@ export type RelatedOperationalPoint = {
   name: string;
   parts: RelatedOperationalPointPart[];
   plc?: null | string;
-  secondary_code?: null | string;
+  secondary_code?: null | NonBlankString;
   secondary_name?: null | string;
   uic?: number | null;
   weight?: number | null;
@@ -3621,7 +3664,7 @@ export type CoreOperationalPointOnPath = {
   plc?: null | string;
   /** Distance from the beginning of the path in mm */
   position: number;
-  secondary_code?: null | string;
+  secondary_code?: null | NonBlankString;
   secondary_name?: null | string;
   uic?: number | null;
   /** Importance of the operational point */
@@ -3763,6 +3806,10 @@ export type CorePathfindingInputError =
       error_type: 'not_enough_path_items';
     }
   | {
+      error_type: 'unauthorized_rolling_stock';
+      rolling_stock_id: number;
+    }
+  | {
       error_type: 'rolling_stock_not_found';
       rolling_stock_name: string;
     }
@@ -3818,11 +3865,15 @@ export type PathfindingResult =
   | (PathfindingFailure & {
       status: 'failure';
     });
+export type PathfindingItem = {
+  can_backtrack: boolean;
+  location: PathItemLocation;
+};
 export type PathfindingInput = {
   /** Set of authorized track section ids, empty means no restriction */
   allowed_track_sections?: string[];
   /** List of waypoints given to the pathfinding */
-  path_items: PathItemLocation[];
+  path_items: PathfindingItem[];
   /** Can the rolling stock run on non-electrified tracks */
   rolling_stock_is_thermal: boolean;
   /** Rolling stock length in millimeters */
@@ -3968,7 +4019,6 @@ export type LightRollingStockWithLiveries = LightRollingStock & {
 };
 export type Tags = string[];
 export type MacroNodeResponse = {
-  connection_time: number;
   full_name?: string | null;
   id: number;
   is_collapsed: boolean;
@@ -3985,7 +4035,6 @@ export type MacroNodeBatchResponse = {
   macro_nodes: MacroNodeResponse[];
 };
 export type MacroNodeForm = {
-  connection_time: number;
   full_name?: string | null;
   is_collapsed?: boolean;
   labels: Tags;
@@ -4392,6 +4441,7 @@ export type ScheduleItem = {
   arrival?: null | PositiveDuration;
   /** Position on the path of the schedule item. */
   at: string;
+  can_backtrack?: boolean;
   reception_signal?: ReceptionSignal;
   reference_base_arrival?: null | PositiveDuration;
   reference_position?: number | null;
@@ -4454,7 +4504,7 @@ export type TrainSchedulePartBound = {
   op_id: string;
   /** Index of the path step in the train schedule's path */
   path_step_index: number;
-  /** Scheduled time of the step in milliseconds from midnight UTC. */
+  /** Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC. */
   time_ms: number;
 };
 export type TrainSchedulePart = {
@@ -4472,7 +4522,7 @@ export type JourneySearchQuery = {
   destination: OperationalPointPartReference;
   infra_id: number;
   origin: OperationalPointPartReference;
-  /** Amount of milliseconds from midnight UTC to the center of the start window.
+  /** Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
     
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`. */
@@ -4482,6 +4532,7 @@ export type JourneySearchQuery = {
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`. */
   start_tolerance: number;
+  /** Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC. */
   timetable_ids: number[];
   /** Constant time for a transfer/footpath in the same stop in milliseconds.
     
@@ -4600,6 +4651,33 @@ export type CoreZoneUpdate = {
   time: number;
   zone: string;
 };
+export type CoreSpeedLimitProperty = {
+  /** source of the speed-limit if relevant (tag used) */
+  source?:
+    | null
+    | (
+        | {
+            speed_limit_source_type: 'given_train_tag';
+            tag: string;
+          }
+        | {
+            speed_limit_source_type: 'fallback_tag';
+            tag: string;
+          }
+        | {
+            speed_limit_source_type: 'unknown_tag';
+          }
+      );
+  /** in meters per second */
+  speed: number;
+};
+export type CoreSpeedLimitProperties = {
+  /** List of `n` boundaries of the ranges (block path).
+    A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: CoreSpeedLimitProperty[];
+};
 export type SimulationResponseSuccess = {
   /** Simulation without any regularity margins */
   base: CoreReportTrain;
@@ -4626,33 +4704,7 @@ export type SimulationResponseSuccess = {
     spacing_requirements: CoreSpacingRequirement[];
     zone_updates: CoreZoneUpdate[];
   };
-  /** A MRSP computation result (Most Restrictive Speed Profile) */
-  mrsp: {
-    /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: {
-      /** source of the speed-limit if relevant (tag used) */
-      source?:
-        | null
-        | (
-            | {
-                speed_limit_source_type: 'given_train_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'fallback_tag';
-                tag: string;
-              }
-            | {
-                speed_limit_source_type: 'unknown_tag';
-              }
-          );
-      /** in meters per second */
-      speed: number;
-    }[];
-  };
+  mrsp: CoreSpeedLimitProperties;
   /** Simulation that takes into account the regularity margins */
   provisional: CoreReportTrain;
 };
@@ -4937,11 +4989,11 @@ export type StepTimingData = {
   /** The train may arrive up to this duration before the expected arrival time */
   arrival_time_tolerance_before: number;
 };
-export type PathfindingItem = {
+export type StdcmPathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;
   /** The associated location */
-  location: PathItemLocation;
+  pathfinding_item: PathfindingItem;
   timing_data?: null | StepTimingData;
 };
 export type Distribution = 'STANDARD' | 'MARECO';
@@ -4978,7 +5030,7 @@ export type RollingStockCategoryChangeGroup = {
   value?: null | TrainCategory;
 };
 export type SpeedLimitTagChangeGroup = {
-  value?: null | string;
+  value?: null | NonBlankString;
 };
 export type StartTimeChangeGroup = {
   /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
@@ -5010,6 +5062,28 @@ export type TrainScheduleException = {
   timetable_id: number;
   train_schedule_id: number;
 };
+export type LinkingOccurrenceId =
+  | {
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'unique';
+    }
+  | {
+      occurrence_index: number;
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'paced_occurrence';
+    }
+  | {
+      added_exception_id: number;
+      train_schedule_id: number;
+      train_schedule_instance_index?: number | null;
+      type: 'added_exception';
+    };
+export type LinkingCreateForm = {
+  source: LinkingOccurrenceId;
+  target: LinkingOccurrenceId;
+};
 export type PacedTrainException = {
   occurrence_index?: number;
 } & {
@@ -5030,6 +5104,7 @@ export type PacedTrainException = {
   /** Unique key for the exception within the paced train, required and generated by the frontend. */
   key: string;
 };
+export type StrictlyPositiveDuration = string;
 export type TrainSchedule = {
   category?: null | TrainCategory;
   comfort?: Comfort;
@@ -5046,7 +5121,7 @@ export type TrainSchedule = {
   }[];
   rolling_stock_name: string;
   schedule?: ScheduleItem[];
-  speed_limit_tag?: null | string;
+  speed_limit_tag?: null | NonBlankString;
   /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start. */
   start_time: number;
@@ -5055,9 +5130,9 @@ export type TrainSchedule = {
   paced?: null | {
     exceptions: PacedTrainException[];
     /** Time between two occurrences, an ISO 8601 format is expected */
-    interval: PositiveDuration;
+    interval: StrictlyPositiveDuration;
     /** Duration of the paced train, an ISO 8601 format is expected */
-    time_window: PositiveDuration;
+    time_window: StrictlyPositiveDuration;
   };
 };
 export type TrainScheduleResponse = TrainSchedule & {
@@ -5249,6 +5324,19 @@ export type TrainScheduleSimulationSummaryResult = {
   };
   train_schedule: SimulationSummaryResult;
 };
+export type PathItemRelativeLocation =
+  | {
+      /** Path item ID, when the operational point matches an item in the input path */
+      path_item_id: NonBlankString;
+      type: 'exact_path_item';
+    }
+  | {
+      /** Following path item ID, when the operational point is not one of the input path items */
+      following_path_item_id: NonBlankString;
+      /** Previous path item ID, when the operational point is not one of the input path items */
+      previous_path_item_id: NonBlankString;
+      type: 'between_path_items';
+    };
 export type CoreSimpleEnvelope = {
   /** List of positions of a train
     Both positions (in mm) and times (in ms) must have the same length */

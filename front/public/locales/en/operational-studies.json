@@ -11,7 +11,7 @@
     "map": "Map",
     "sdd": "SDD",
     "std": "STD",
-    "tables": "Tables",
+    "table": "Table",
     "trains": "Trains"
   },
   "importTrainScheduleSet": {
@@ -235,10 +235,11 @@
         "pathfinding_not_found": "Pathfinding not found",
         "rolling_stock_not_found": "RS not found",
         "simulation_failed": "Simulation failed",
+        "unauthorized_rolling_stock": "Unauthorized RS",
         "zero_length_path": "Departure and arrival are identical"
       },
       "invalidTrains": "Some trains are invalid",
-      "modeCalendar": "Sort chronologically",
+      "modeChronological": "Sort chronologically",
       "modeTrainScheduleSet": "Sort by train schedule set",
       "noSpeedLimitTagsShort": "None",
       "noTrainSchedule": "No train schedule",
@@ -348,31 +349,19 @@
     "uniqueTrain_zero": "0 trains"
   },
   "manageTrainSchedule": {
-    "addPacedTrain": "Add a service",
-    "addUniqueTrain": "Add a train",
-    "addVia": "Add this waypoint",
-    "addVias": "Add waypoints",
     "allowances": {
       "distribution-linear": "Linear",
-      "distribution-mareco": "Mareco",
-      "standard-allowance": "Recovery margin"
+      "distribution-mareco": "Mareco"
     },
     "anyTrack": "Any track",
-    "category": "Category",
     "categoryMismatch": "The combination of the rolling stock and the category is unusual",
-    "deleteRoute": "Delete the route",
-    "deleteVias": "Delete steps",
-    "destination": "Destination",
     "errorMessages": {
       "error": "An error has occurred",
       "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
-      "intervalTooHigh": "The cadence of the service must not be too high",
-      "intervalTooLow": "The cadence of the service has to be at least one minute",
       "invalidInitialSpeed": "The initial speed must be rounded to the nearest tenth",
       "mandatoryField": "Required field",
       "nameLengthLimit": "The name must not exceed 128 characters",
       "noDelta": "The headway between two trains has to be at least one minute.",
-      "noDepartureTime": "Please enter a departure time",
       "noDestination": "The destination is not defined",
       "noName": "Please choose a name for the train",
       "noOrigin": "The origin is not defined",
@@ -384,15 +373,22 @@
       "noTrainCount": "The quantity of requested trains must be greater than zero",
       "noTrainStep": "The increment step of the train must be greater than zero",
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
+      "pacedTrainInterval": {
+        "intervalOutsideWindow": "Cadence must be lower than repeat window",
+        "tooHigh": "The cadence of the service must not be too high",
+        "tooLow": "The cadence of the service has to be at least one minute"
+      },
+      "pacedTrainTimeWindow": {
+        "intervalOutsideWindow": "Repeat window must be greater than cadence",
+        "tooHigh": "The duration of the repetition time range must not be too high",
+        "tooLow": "The duration of the repetition time range has to be at least one minute"
+      },
       "requiredField": "Required field.",
-      "timeWindowTooHigh": "The duration of the repetition time range must not be too high",
-      "timeWindowTooLow": "The duration of the repetition time range has to be at least one minute",
       "tooHighInput": "Must be < 43800",
       "tooLowInput": "Must be > 0",
       "trainScheduleTitle": "An error has occurred",
       "unableToRetrieveTags": "Impossible to get tags"
     },
-    "hideTrainSettings": "Hide",
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Display all constraints",
@@ -411,11 +407,7 @@
       "title": "{{total}} incompatible constraints",
       "title_on": "{{count}} on {{total}} incompatible constraints"
     },
-    "infraLoading": "Infrastructure is loading…",
-    "inputOPMainCodes": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
     "inputOPMainCodesExample": "E.g., LSN CIG CCS",
-    "invalidTrainScheduleStep": "At least one of the waypoints could not be recognized",
-    "inverseOD": "Reverse itinerary",
     "itineraryModal": {
       "addLocationOnMap": "Add a location on the map",
       "addPoint": "Add point",
@@ -447,7 +439,6 @@
       "opId": "Operational point identifier",
       "opName": "Operational point name",
       "opType": "Type",
-      "openItineraryModal": "New interface for itinerary edition",
       "pass": "Pass",
       "requestedPoint": "Point on map",
       "stop": "Stop",
@@ -464,29 +455,13 @@
       "unknownTrack": "Unknown track at {{names}}"
     },
     "launchPathFinding": "Launch pathfinding",
-    "manageVias": "Steps management",
     "missingPathSteps": "At least one pathstep wasn't found in the infrastructure",
-    "noDestinationChosen": "Arrival undefined",
-    "noOriginChosen": "Departure undefined",
-    "noPlaceChosen": "No stop/waypoint defined",
     "noRollingStock": "No rolling stock. There will be no computation for this train",
     "noSpeedLimitByTag": "None",
-    "origin": "Origin",
     "pacedTrainUpdated": "Service updated",
     "pacedTrains": {
-      "add": "Add",
-      "addExtraOccurrences": "Add extra occurrences",
-      "added": "Service added",
-      "defineService": "Define a service",
-      "departureDay": "Departure day",
-      "departureTime": "Departure time",
-      "interval": "Cadence of the service",
-      "resetExceptionsConfirmation": "Editing the cadence/duration of the service will reset the exceptions. Do you wish to continue ?",
-      "timeWindow": "Duration of the repetition time range"
+      "added": "Service added"
     },
-    "pathfinding": "Path search",
-    "pathfindingDone": "Pathfinding done.",
-    "pathfindingError": "An error occurred in pathfinding: {{errorMessage}}.",
     "pathfindingErrors": {
       "incompatible_constraints": "Incompatible constraints",
       "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
@@ -495,30 +470,12 @@
       "not_found_in_tracks": "Missing track",
       "pathfinding_failure": "No path found",
       "rolling_stock_not_found": "Rolling stock not found",
+      "unauthorized_rolling_stock": "You are not authorized to use this rolling stock",
       "zero_length_path": "Departure and arrival are identical"
     },
-    "pathfindingInProgress": "Pathfinding in progress…",
-    "pathfindingMissingParams": "Missing parameters for pathfinding: {{missingElements}}.",
-    "pathfindingNoState": "No route search.",
-    "powerRestriction": "Power restriction code",
-    "powerRestrictionEmptyExplanationText": "The selected rolling stock does not have any power restrictions. You can edit it in the rolling stock editor.",
-    "powerRestrictionExplanationText": "By default, the simulation will use the nominal power.",
     "refineSearchForMoreResults": "Refine your search for more results",
-    "removeVia": "Remove this waypoint",
-    "returnToSimulationResults": "Go back to simulation results",
     "rollingstock": "Rolling stock",
-    "saving": "Saving… please wait",
-    "showTrainSettings": "Show",
     "speedLimitByTagAbbrev": "Comp. code",
-    "tabs": {
-      "pathFinding": "Route",
-      "rollingStock": "Rolling stock",
-      "simulationSettings": "Simulation settings",
-      "timesStops": "Times and stops",
-      "unrecognizedRollingStock": "Unrecognized rolling stock : {{rollingStockName}}",
-      "unspecifiedRollingStock": "Rolling stock not specified"
-    },
-    "toggleTrigramSearch": "Toggle trigram search",
     "trainAdded": "Train added",
     "trainHeader": {
       "allowances": {
@@ -553,6 +510,8 @@
       "serviceChangeWarning": {
         "cancel": "Cancel",
         "confirm": "Confirm",
+        "explanationsWithLinkings_one": "Editing the cadence or the duration of the service will reset an exception and delete the linkings. Do you wish to continue?",
+        "explanationsWithLinkings_other": "Editing the cadence or the duration of the service will reset {{count}} exceptions and delete the linkings. Do you wish to continue?",
         "explanations_one": "Editing the cadence or the duration of the service will reset an exception. Do you wish to continue?",
         "explanations_other": "Editing the cadence or the duration of the service will reset {{count}} exceptions. Do you wish to continue?",
         "header": "Service model changed"
@@ -560,30 +519,8 @@
       "serviceModelTrain": "Service model train",
       "serviceOccurrence": "Service occurrence"
     },
-    "trainLabels": "Tags",
-    "trainScheduleDepartureTime": "Departure time",
-    "trainScheduleInitialSpeed": "Initial velocity",
-    "trainScheduleName": "Number, name",
-    "turnPacedTrainIntoUniqueTrain": "Turn this service into a unique train",
-    "turnUniqueTrainIntoPacedTrain": "Turn this unique train into a service",
-    "unavailableDistance": "Unavailable distance",
     "uniqueTrainUpdated": "Unique train updated",
-    "unknownRollingStock": "Unknown rolling stock. There will be no computation for this train",
-    "updateOccurrence": "Edit this occurrence",
-    "updatePacedTrain": "Edit this service",
-    "updateUniqueTrain": "Edit this train",
-    "usingElectricalProfiles": "Use electrical profiles",
-    "via": "Via",
-    "viewItineraryOnMap": "View the itinerary on the map",
-    "warningMessages": {
-      "inconsistent_one": "The interval below has inconsistencies. The default speed effort curve will be used for this.",
-      "inconsistent_other": "The intervals below contain inconsistencies. The default speed effort curves will be used for these.",
-      "missingPowerRestriction": "- Missing power restriction between {{begin}}m and {{end}}m.",
-      "modeNotHandled": "- No power restriction should be given between {{begin}}m and {{end}}m since the electrification mode {{electrification}} is not handled.",
-      "pathfindingChange": "Pathfinding changed",
-      "powerRestrictionInvalidCombination": "- {{powerRestrictionCode}} is incompatible with electrification {{electrification}} of the path between {{begin}}m and {{end}}m.",
-      "powerRestrictionsReset": "Power restrictions have been reset."
-    }
+    "unknownRollingStock": "Unknown rolling stock. There will be no computation for this train"
   },
   "operational-studies-management": {
     "delete": "Delete",
@@ -690,11 +627,7 @@
     "simulationSheet": "Train path sheet",
     "speedDistanceDiagram": "SDD",
     "speedDistanceSettings": {
-      "accelerating": "Accelerating",
-      "coasting": "Coasting",
       "context": "Context",
-      "decelerating": "Decelerating",
-      "electric": "Electric",
       "electricalProfiles": "Electrical profiles",
       "energySource": "Energy source",
       "etcs": {
@@ -709,7 +642,6 @@
         "title": "ETCS",
         "transition": "Trans."
       },
-      "incompatible": "Incompatible",
       "invalidSimulation": "The selected train can't be simulated",
       "noData": "Data is displayed when a train is selected",
       "powerRestrictions": "Power restrictions",

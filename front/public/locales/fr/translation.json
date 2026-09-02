@@ -464,8 +464,7 @@
       "edit": "écriture",
       "full": "accès total",
       "none": "pas d'accès",
-      "read": "lecture",
-      "restricted_read": "lecture limitée"
+      "read": "lecture"
     },
     "permission": "Permission",
     "permissionDenied": "Vous n'avez pas la permission de réaliser cette action",
@@ -674,7 +673,8 @@
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",
       "linkings": "Activer les enchaînements",
-      "projectGrants": "Activer la gestion des permissions projets"
+      "projectGrants": "Activer la gestion des permissions projets",
+      "stdcmBacktrack": "Activer le rebroussement STDCM"
     },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",
@@ -713,7 +713,6 @@
       "none": "Aucun"
     },
     "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations",
-    "comfort": "Confort",
     "comfortAcceleration": "Accélération « confort »",
     "comfortLevels": "Niveaux de confort",
     "comfortTypes": {
@@ -807,7 +806,6 @@
     "rollingResistanceB": "Frottements visqueux (b)",
     "rollingResistanceC": "Résistance aérodynamique (c)",
     "rollingResistanceFormula": "R(v) = a + bv + cv²",
-    "rollingstockChoice": "Choisissez un matériel roulant",
     "selectRollingStock": "Sélectionner",
     "shortCategoriesOptions": {
       "COMMUTER_TRAIN": "Banlieue",
@@ -845,6 +843,9 @@
     "calculatedArrivalTime": "arrivée calculée",
     "calculatedDepartureTime": "départ calculé",
     "calculatedDepartureTimeFull": "départ calculé",
+    "clearRequestedArrivalTime": "Effacer l'arrivée demandée",
+    "clearRequestedDepartureTime": "Effacer le départ demandé",
+    "clearStopDuration": "Effacer le temps d'arrêt",
     "computedTheoreticalMargin": "marge théorique calculée",
     "dayCounter": "J+{{count}}",
     "departureTime": "départ demandé",

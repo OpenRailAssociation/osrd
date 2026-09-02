@@ -36,6 +36,8 @@ const upsertNewProjectedTrains = (
       signalUpdates: trainData.signal_updates || [],
       originPathItem: matchingTrain.path.at(0)!,
       destinationPathItem: matchingTrain.path.at(-1)!,
+      schedule: matchingTrain.schedule,
+      initialSpeed: matchingTrain.initial_speed,
     };
 
     const projectedTrain: TrainSpaceTimeData = {

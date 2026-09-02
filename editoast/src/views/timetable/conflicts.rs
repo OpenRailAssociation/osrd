@@ -1,5 +1,8 @@
+use authz::v2;
+use schemas::paced_train::RollingStockChangeGroup;
 use std::collections::HashMap;
 
+use authz::RollingStockPrivilege;
 use axum::Extension;
 use axum::Json;
 use axum::extract::Path;
@@ -8,17 +11,19 @@ use axum::extract::State;
 use chrono::Duration;
 use common::units::millisecond;
 use common::units::quantities::Offset;
-use editoast_models::prelude::*;
 use itertools::Itertools as _;
 use itertools::izip;
+use models::prelude::*;
 use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
+use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::timetable::ElectricalProfileSetIdQueryParam;
 use crate::views::timetable::TimetableError;
@@ -33,9 +38,9 @@ use core_client::simulation::RoutingRequirement;
 use core_client::simulation::RoutingZoneRequirement;
 use core_client::simulation::SpacingRequirement;
 use database::DbConnection;
-use editoast_models::Infra;
-use editoast_models::timetable::TimetableWithTrains;
-use editoast_models::train_schedule::OccurrenceId;
+use models::Infra;
+use models::timetable::TimetableWithTrains;
+use models::train_schedule::OccurrenceId;
 use schemas::TrainOccurrence;
 use schemas::train_schedule::TrainScheduleLike as _;
 use uuid::Uuid;
@@ -109,13 +114,13 @@ type Interval = (u64, u64);
 pub(in crate::views) async fn retrieve_trains(
     mut conn: DbConnection,
     timetable_id: i64,
-) -> Result<(TimetableType, Vec<editoast_models::TrainSchedule>)> {
+) -> Result<(TimetableType, Vec<models::TrainSchedule>)> {
     let timetable_trains =
         TimetableWithTrains::retrieve_or_fail(conn.clone(), timetable_id, || {
             TimetableError::NotFound { timetable_id }
         })
         .await?;
-    let trains = editoast_models::TrainSchedule::retrieve_batch_unchecked(
+    let trains = models::TrainSchedule::retrieve_batch_unchecked(
         &mut conn,
         timetable_trains.paced_train_ids,
     )
@@ -152,7 +157,7 @@ pub(super) fn build_conflict_core_request(
 }
 
 pub(super) fn compute_hourly_pattern_period(
-    paced_trains: &[editoast_models::TrainSchedule],
+    paced_trains: &[models::TrainSchedule],
 ) -> Option<Duration> {
     let paced_train_lcm = paced_trains
         .iter()
@@ -302,9 +307,10 @@ pub(in crate::views) async fn conflicts(
         db_pool,
         valkey_client,
         core_client,
+        openfga,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ElectricalProfileSetIdQueryParam {
@@ -318,12 +324,11 @@ pub(in crate::views) async fn conflicts(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     let (timetable_type, trains) = retrieve_trains(conn.clone(), timetable_id).await?;
@@ -344,19 +349,18 @@ pub(in crate::views) async fn conflicts(
 
     let train_schedules_ids = trains.iter().map(|t| t.id).collect_vec();
 
-    let mut exceptions =
-        editoast_models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            &mut conn.clone(),
-            timetable_id,
-            &train_schedules_ids,
-        )
-        .await?
-        .into_iter()
-        .map_into::<schemas::TrainScheduleException>()
-        .into_group_map_by(|e| e.train_schedule_id);
+    let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
+        &mut conn.clone(),
+        timetable_id,
+        &train_schedules_ids,
+    )
+    .await?
+    .into_iter()
+    .map_into::<schemas::TrainScheduleException>()
+    .into_group_map_by(|e| e.train_schedule_id);
 
     let train_schedules_with_exceptions: Vec<(
-        editoast_models::TrainSchedule,
+        models::TrainSchedule,
         Vec<schemas::TrainScheduleException>,
     )> = trains
         .into_iter()
@@ -365,6 +369,14 @@ pub(in crate::views) async fn conflicts(
             (ts, ts_exceptions)
         })
         .collect();
+
+    let train_schedules_with_exceptions = filter_unauthorized_train_schedules_and_exceptions(
+        &openfga,
+        conn.clone(),
+        authn_state,
+        train_schedules_with_exceptions,
+    )
+    .await?;
 
     // Flatten paced trains occurrences
     let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
@@ -446,22 +458,97 @@ pub(in crate::views) async fn conflicts(
     Ok(Json(conflicts_response?))
 }
 
+/// Take a collection of train schedules and their associated exceptions and filter out those with
+/// an unauthorized rolling stock. When a train schedule is filtered out all its exceptions are
+/// skipped aswell, but when an exception is filtered its associated train schedule is kept if its
+/// rolling stock is authorized given the provided authentication state.
+pub async fn filter_unauthorized_train_schedules_and_exceptions(
+    openfga: &fga::Client,
+    conn: DbConnection,
+    authn_state: crate::authentication::State,
+    train_schedules_with_exceptions: Vec<(
+        models::TrainSchedule,
+        Vec<schemas::TrainScheduleException>,
+    )>,
+) -> crate::error::Result<Vec<(models::TrainSchedule, Vec<schemas::TrainScheduleException>)>> {
+    let Some(user) = authn_state.user() else {
+        return Ok(train_schedules_with_exceptions);
+    };
+    let system_authorizer = SystemAuthorizer::new_infallible(openfga);
+    let Ok(authorized_train_schedules) =
+        authz::v2::rolling_stock_list(user, RollingStockPrivilege::CanRead)
+            .authorize(&system_authorizer)
+            .await?
+            .access()
+            .await?;
+    match authorized_train_schedules {
+        authz::v2::ResourcesList::All => Ok(train_schedules_with_exceptions),
+        authz::v2::ResourcesList::Privileged(authorized_rs_list) => {
+            let authorized_rolling_stocks: Vec<models::RollingStock> =
+                models::RollingStock::retrieve_batch_unchecked(
+                    &mut conn.clone(),
+                    authorized_rs_list.iter().map(|rs| rs.0),
+                )
+                .await?;
+            let authorized_rolling_stock_names: Vec<String> = authorized_rolling_stocks
+                .into_iter()
+                .map(|rolling_stock| rolling_stock.name)
+                .collect();
+
+            Ok(train_schedules_with_exceptions
+                .into_iter()
+                .filter(|(train_schedule, _)| {
+                    authorized_rolling_stock_names.contains(&train_schedule.rolling_stock_name)
+                })
+                .map(|(train_schedule, exceptions)| {
+                    (
+                        train_schedule,
+                        exceptions
+                            .into_iter()
+                            .filter(|exception| {
+                                if let Some(RollingStockChangeGroup {
+                                    rolling_stock_name, ..
+                                }) = &exception.change_groups.rolling_stock
+                                {
+                                    authorized_rolling_stock_names.contains(rolling_stock_name)
+                                } else {
+                                    true
+                                }
+                            })
+                            .collect(),
+                    )
+                })
+                .collect_vec())
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::error::InternalError;
+    use crate::fixtures::create_fast_rolling_stock;
     use crate::fixtures::create_hourly_timetable_with_train_schedule_set;
     use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::fixtures::create_train_schedule_exception;
     use crate::fixtures::simple_paced_train_base;
+    use crate::fixtures::simple_paced_train_changeset;
+    use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
 
     use super::*;
+    use authz::InfraGrant;
+    use authz::RollingStockGrant;
     use common::units;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
-    use editoast_models::train_schedule::TrainScheduleChangeset;
+    use models::train_schedule::TrainScheduleChangeset;
     use reqwest::StatusCode;
     use rstest::rstest;
+    use schemas::TrainScheduleExceptionChangeGroups;
+    use schemas::paced_train::RollingStockChangeGroup;
+    use schemas::train_schedule::Comfort;
 
     fn spacing(zone: &str, begin_time: u64, end_time: u64) -> SpacingRequirement {
         SpacingRequirement {
@@ -660,12 +747,17 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn conflicts_hourly_rejects_period_over_24h() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let pool = app.db_pool();
 
         let infra = create_small_infra(&mut pool.get_ok()).await;
         let (timetable, train_schedule_set) =
             create_hourly_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+        let user = app
+            .user("user", "User")
+            .with_infra_grant(infra.id, InfraGrant::Reader)
+            .create()
+            .await;
 
         // Period = 5 * 7 = 35h.
         for time_window in [5, 7] {
@@ -689,9 +781,111 @@ mod tests {
                 )
                 .as_str(),
             )
+            .by_user(user.as_ref())
             .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .json();
         assert_eq!(response.error_type, "editoast:timetable:InvalidPeriod");
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn filter_unauthorized_train_schedules() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let rs_authorized = create_fast_rolling_stock(&mut pool.get_ok(), "authorized_rs").await;
+        let rs_no_grant = create_fast_rolling_stock(&mut pool.get_ok(), "forbidden_rs").await;
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+        let train_schedule_authorized = simple_paced_train_changeset(train_schedule_set.id)
+            .train_name("train_schedule_authorized".into())
+            .rolling_stock_name(rs_authorized.name.clone())
+            .create(&mut pool.get_ok())
+            .await
+            .expect("failed to create train schedule");
+        let train_schedule_unauthorized_exception =
+            simple_paced_train_changeset(train_schedule_set.id)
+                .train_name("train_schedule_forbidden_exception".into())
+                .rolling_stock_name(rs_authorized.name.clone())
+                .create(&mut pool.get_ok())
+                .await
+                .expect("failed to create train schedule");
+        let train_schedule_unauthorized = simple_paced_train_changeset(train_schedule_set.id)
+            .train_name("train_schedule_no_grant".into())
+            .rolling_stock_name(rs_no_grant.name.clone())
+            .create(&mut pool.get_ok())
+            .await
+            .expect("failed to create train schedule");
+        let change_group_authorized = TrainScheduleExceptionChangeGroups {
+            rolling_stock: Some(RollingStockChangeGroup {
+                rolling_stock_name: rs_authorized.name.clone(),
+                comfort: Comfort::AirConditioning,
+            }),
+            ..Default::default()
+        };
+        let change_group_no_grant = TrainScheduleExceptionChangeGroups {
+            rolling_stock: Some(RollingStockChangeGroup {
+                rolling_stock_name: rs_no_grant.name.clone(),
+                comfort: Comfort::AirConditioning,
+            }),
+            ..Default::default()
+        };
+        let exception_authorized: schemas::TrainScheduleException =
+            create_train_schedule_exception(
+                &mut pool.get_ok(),
+                timetable.id,
+                train_schedule_authorized.id,
+                None,
+                None,
+                Some(change_group_authorized),
+            )
+            .await
+            .into();
+        let exception_unauthorized: schemas::TrainScheduleException =
+            create_train_schedule_exception(
+                &mut pool.get_ok(),
+                timetable.id,
+                train_schedule_authorized.id,
+                None,
+                None,
+                Some(change_group_no_grant),
+            )
+            .await
+            .into();
+
+        let openfga = app.openfga();
+
+        let user = app
+            .user("user", "User")
+            .with_rolling_stock_grant(rs_authorized.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+        let authn_state = crate::authentication::State::Authenticated {
+            user: authz::User(user.id),
+            roles: vec![],
+        };
+        let train_schedules_with_exceptions = vec![
+            (
+                train_schedule_authorized.clone(),
+                vec![exception_authorized.clone()],
+            ),
+            (
+                train_schedule_unauthorized_exception.clone(),
+                vec![exception_unauthorized],
+            ),
+            (train_schedule_unauthorized, vec![]),
+        ];
+        let authorized_train_schedules = filter_unauthorized_train_schedules_and_exceptions(
+            openfga,
+            pool.get_ok(),
+            authn_state,
+            train_schedules_with_exceptions,
+        )
+        .await
+        .expect("the authorization filter method should succeed");
+        let expected_response = vec![
+            (train_schedule_authorized, vec![exception_authorized]),
+            (train_schedule_unauthorized_exception, vec![]),
+        ];
+        assert_eq!(expected_response, authorized_train_schedules);
     }
 }

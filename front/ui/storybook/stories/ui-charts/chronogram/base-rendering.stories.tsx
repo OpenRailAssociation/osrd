@@ -29,7 +29,7 @@ const meta: Meta<typeof Wrapper> = {
     height: {
       name: 'Height',
       description: 'Height of the Chronogram (in pixels)',
-      defaultValue: 450,
+      value: 450,
       control: { type: 'range', min: 400, max: 1000, step: 50 },
     },
   },

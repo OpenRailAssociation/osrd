@@ -7,17 +7,13 @@ import HeaderPageObject from './pages/operational-studies/header-page-object';
 import ImportExportPage from './pages/operational-studies/import-export-page';
 import ItineraryModalPage from './pages/operational-studies/itinerary-modal-page';
 import NGEPage from './pages/operational-studies/nge-page';
-import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ProjectPage from './pages/operational-studies/project-page';
 import RoundTripPage from './pages/operational-studies/round-trips-page';
-import RouteTab from './pages/operational-studies/route-tab';
 import ScenarioPage from './pages/operational-studies/scenario-page';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import OpSimulationResultPage from './pages/operational-studies/simulation-results-page';
-import SimulationSettingsTab from './pages/operational-studies/simulation-settings-tab';
 import StudyPage from './pages/operational-studies/study-page';
-import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import TimesStopsTablePage from './pages/operational-studies/times-stops-table-page';
 import TrainScheduleDetailSection from './pages/operational-studies/train-schedules-details-section';
 import RollingstockEditorPage from './pages/rolling-stock/rolling-stock-editor-page';
@@ -33,16 +29,12 @@ import ViaSection from './pages/stdcm/via-section';
 
 type Fixtures = {
   // Operational studies
-  operationalStudiesPage: OperationalStudiesPage;
   projectPage: ProjectPage;
   studyPage: StudyPage;
   scenarioPage: ScenarioPage;
   itineraryModalPage: ItineraryModalPage;
-  routeTab: RouteTab;
   pacedTrainSection: PacedTrainSection;
-  timesAndStopsTab: TimesAndStopsTab;
   timesStopsTablePage: TimesStopsTablePage;
-  simulationSettingsTab: SimulationSettingsTab;
   opSimulationResultPage: OpSimulationResultPage;
   scenarioTimetableSection: ScenarioTimetableSection;
   trainScheduleDetailSection: TrainScheduleDetailSection;
@@ -71,7 +63,7 @@ type Fixtures = {
 
   // Second page + only the POs needed for multi-tab tests
   secondPage: Page;
-  secondOperationalStudiesPage: OperationalStudiesPage;
+  secondTimesStopsTablePage: TimesStopsTablePage;
   secondScenarioTimetableSection: ScenarioTimetableSection;
 };
 
@@ -90,9 +82,6 @@ export function createStdcmTab(page: Page) {
 
 const test = testWithLogging.extend<Fixtures>({
   // Operational studies
-  operationalStudiesPage: async ({ page }, use) => {
-    await use(new OperationalStudiesPage(page));
-  },
   projectPage: async ({ page }, use) => {
     await use(new ProjectPage(page));
   },
@@ -105,20 +94,11 @@ const test = testWithLogging.extend<Fixtures>({
   itineraryModalPage: async ({ page }, use) => {
     await use(new ItineraryModalPage(page));
   },
-  routeTab: async ({ page }, use) => {
-    await use(new RouteTab(page));
-  },
   pacedTrainSection: async ({ page }, use) => {
     await use(new PacedTrainSection(page));
   },
-  timesAndStopsTab: async ({ page }, use) => {
-    await use(new TimesAndStopsTab(page));
-  },
   timesStopsTablePage: async ({ page }, use) => {
     await use(new TimesStopsTablePage(page));
-  },
-  simulationSettingsTab: async ({ page }, use) => {
-    await use(new SimulationSettingsTab(page));
   },
   opSimulationResultPage: async ({ page }, use) => {
     await use(new OpSimulationResultPage(page));
@@ -188,8 +168,8 @@ const test = testWithLogging.extend<Fixtures>({
     await use(secondPage);
     await secondPage.close();
   },
-  secondOperationalStudiesPage: async ({ secondPage }, use) => {
-    await use(new OperationalStudiesPage(secondPage));
+  secondTimesStopsTablePage: async ({ secondPage }, use) => {
+    await use(new TimesStopsTablePage(secondPage));
   },
   secondScenarioTimetableSection: async ({ secondPage }, use) => {
     await use(new ScenarioTimetableSection(secondPage));

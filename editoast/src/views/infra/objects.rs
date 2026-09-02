@@ -1,24 +1,25 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::sync::Arc;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use schemas::primitives::ObjectType;
 use thiserror::Error;
 
 use super::InfraApiError;
 use super::InfraIdParam;
+use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
-use editoast_models::Infra;
-use editoast_models::infra::ObjectQueryable;
-use editoast_models::prelude::*;
+use crate::views::AuthorizationError;
+use models::Infra;
+use models::infra::ObjectQueryable;
+use models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:objects")]
@@ -55,8 +56,10 @@ pub(in crate::views) struct ObjectTypeParam {
 pub(in crate::views) async fn get_objects(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(object_type_param): Path<ObjectTypeParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Json(obj_ids): Json<Vec<String>>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
     if !has_unique_ids(&obj_ids) {
@@ -68,12 +71,11 @@ pub(in crate::views) async fn get_objects(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     let objects = infra
@@ -128,20 +130,21 @@ pub(in crate::views) struct ListObjectsResponse {
 pub(in crate::views) async fn list_objects_ids(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(ObjectTypeParam { object_type }): Path<ObjectTypeParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<ListObjectsResponse>> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     let objects = infra

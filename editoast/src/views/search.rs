@@ -429,7 +429,7 @@ pub(in crate::views) async fn search(
 )]
 /// A search result item for a query with `object = "track"`
 ///
-// **IMPORTANT**: Please note that any modification to this struct should be reflected in [editoast_models::Infra::clone]
+// **IMPORTANT**: Please note that any modification to this struct should be reflected in [models::Infra::clone]
 pub(super) struct SearchResultItemTrack {
     #[search(sql = "search_track.infra_id")]
     infra_id: i64,
@@ -497,7 +497,7 @@ pub(super) struct SearchResultItemTrack {
 )]
 /// A search result item for a query with `object = "operationalpoint"`
 ///
-// **IMPORTANT**: Please note that any modification to this struct should be reflected in [editoast_models::Infra::clone]
+// **IMPORTANT**: Please note that any modification to this struct should be reflected in [models::Infra::clone]
 pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.obj_id")]
     obj_id: String,
@@ -584,7 +584,7 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
 )]
 /// A search result item for a query with `object = "signal"`
 ///
-// **IMPORTANT**: Please note that any modification to this struct should be reflected in [editoast_models::Infra::clone]
+// **IMPORTANT**: Please note that any modification to this struct should be reflected in [models::Infra::clone]
 pub(super) struct SearchResultItemSignal {
     #[search(sql = "sig.obj_id")]
     obj_id: String,
@@ -819,8 +819,8 @@ pub struct SearchConfigFinder;
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_models::infra_objects::SchemaModel as _;
-    use editoast_models::prelude::CreateBatch;
+    use models::infra_objects::SchemaModel as _;
+    use models::prelude::CreateBatch;
     use pretty_assertions::assert_eq;
 
     use schemas::infra::OperationalPoint;
@@ -968,7 +968,7 @@ pub mod tests {
             .assert_status_ok()
             .json();
 
-        assert_eq!(response.len(), 8);
+        assert_eq!(response.len(), 9);
         assert!(
             response
                 .iter()
@@ -1003,7 +1003,7 @@ pub mod tests {
             .assert_status_ok()
             .json();
 
-        assert_eq!(response.len(), 3);
+        assert_eq!(response.len(), 4);
         assert!(
             response
                 .iter()
@@ -1071,12 +1071,9 @@ pub mod tests {
         // clone to use it in the search request below
         let op_main_code = op_without_geo.main_code.clone();
         // Add the previous operational point to the infra
-        editoast_models::OperationalPointModel::create_batch::<_, Vec<_>>(
+        models::OperationalPointModel::create_batch::<_, Vec<_>>(
             &mut pool.get_ok(),
-            [
-                editoast_models::OperationalPointModel::new_from_schema(op_without_geo)
-                    .infra_id(infra.id),
-            ],
+            [models::OperationalPointModel::new_from_schema(op_without_geo).infra_id(infra.id)],
         )
         .await
         .unwrap();

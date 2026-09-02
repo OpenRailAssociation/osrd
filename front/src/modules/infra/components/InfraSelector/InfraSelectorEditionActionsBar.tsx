@@ -169,7 +169,12 @@ const ActionsBar = ({
         className="infraslist-item-action copy"
         type="button"
         aria-label={t('infraManagement.actions.copy')}
-        title={t('infraManagement.actions.copy')}
+        title={
+          userPrivileges.has('can_read')
+            ? t('infraManagement.actions.copy')
+            : t('authorization.permissionDenied')
+        }
+        disabled={!userPrivileges.has('can_read')}
         onClick={handleDuplicate}
       >
         <Duplicate />
@@ -178,7 +183,12 @@ const ActionsBar = ({
         className="infraslist-item-action export"
         type="button"
         aria-label={t('infraManagement.actions.export')}
-        title={t('infraManagement.actions.export')}
+        title={
+          userPrivileges.has('can_read')
+            ? t('infraManagement.actions.export')
+            : t('authorization.permissionDenied')
+        }
+        disabled={!userPrivileges.has('can_read')}
         onClick={handleExport}
       >
         <Download />

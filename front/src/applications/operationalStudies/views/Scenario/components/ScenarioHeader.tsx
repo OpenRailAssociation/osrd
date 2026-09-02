@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -17,7 +17,7 @@ import InfraLoadingState from './InfraLoadingState';
 const BOARDS: Board[] = [
   'trains',
   'std',
-  'tables',
+  'table',
   'sdd',
   'map',
   'macro',
@@ -35,6 +35,15 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const navigate = useNavigate();
   const { scenario, timetableId, infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
+
+  // The chronogram is not supported by hourly timetables yet.
+  const boards = useMemo(
+    () =>
+      scenario.timetable_type === 'HOURLY'
+        ? BOARDS.filter((board) => board !== 'chronogram')
+        : BOARDS,
+    [scenario.timetable_type]
+  );
 
   const { totalConflictsCount } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQueryState(
     { id: timetableId, infraId },
@@ -144,7 +153,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           <div className="spacer" />
 
           <div className="board-btns">
-            {BOARDS.map((board, index) => (
+            {boards.map((board, index) => (
               <Fragment key={board}>
                 <button
                   className={cx('board-btn', {
@@ -166,7 +175,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                     <span>·{totalConflictsCount}</span>
                   )}
                 </button>
-                {index < BOARDS.length - 1 && <div className="inactive-area" />}
+                {index < boards.length - 1 && <div className="inactive-area" />}
               </Fragment>
             ))}
           </div>

@@ -52,6 +52,7 @@
     "stripInternal": true,
     "typeRoots": ["node_modules/@types"],
     "target": "ESNext",
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "rewriteRelativeImportExtensions": true
   }
 }

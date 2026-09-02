@@ -75,8 +75,14 @@ def test_empty_timetable(
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 100, "location": _START},
-            {"duration": 100, "location": _STOP},
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
         ],
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
@@ -111,9 +117,18 @@ def test_empty_timetable_with_stop(
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 100, "location": _START},
-            {"duration": 42000, "location": _MIDDLE},
-            {"duration": 100, "location": _STOP},
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 42000,
+                "pathfinding_item": {"location": _MIDDLE, "can_backtrack": False},
+            },
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
         ],
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
@@ -154,9 +169,18 @@ def test_between_trains(
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 100, "location": _START},
-            {"duration": 42000, "location": _MIDDLE},
-            {"duration": 100, "location": _STOP},
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 42000,
+                "pathfinding_item": {"location": _MIDDLE, "can_backtrack": False},
+            },
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
         ],
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
@@ -213,8 +237,14 @@ def test_work_schedules(
         "time_gap_before": 0,
         "time_gap_after": 0,
         "steps": [
-            {"duration": None, "location": _START},
-            {"duration": 1, "location": _STOP},
+            {
+                "duration": None,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 1,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
         ],
         "comfort": "STANDARD",
         "margin": "0%",
@@ -257,10 +287,26 @@ def test_mrsp_sources(
         "maximum_departure_delay": 86400000,
         "maximum_run_time": 86400000,
         "steps": [
-            {"location": {"type": "track_offset", "track": "TH0", "offset": 820000}},
+            {
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TH0",
+                        "offset": 820000,
+                    },
+                    "can_backtrack": False,
+                }
+            },
             {
                 "duration": 1,
-                "location": {"type": "track_offset", "track": "TH1", "offset": 5000000},
+                "pathfinding_item": {
+                    "location": {
+                        "type": "track_offset",
+                        "track": "TH1",
+                        "offset": 5000000,
+                    },
+                    "can_backtrack": False,
+                },
             },
         ],
         "time_gap_before": 3600000,
@@ -368,8 +414,14 @@ def test_max_running_time(
         "time_gap_before": 0,
         "time_gap_after": 0,
         "steps": [
-            {"duration": None, "location": _START},
-            {"duration": 1, "location": _STOP},
+            {
+                "duration": None,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 1,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
         ],
         "comfort": "STANDARD",
         "margin": "0%",

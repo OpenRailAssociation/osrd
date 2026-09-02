@@ -21,6 +21,7 @@ use crate::Infra;
 use crate::InfraGrant;
 use crate::InfraPrivilege;
 use crate::Project;
+use crate::ProjectPrivilege;
 use crate::Role;
 use crate::RollingStock;
 use crate::RollingStockGrant;
@@ -69,6 +70,8 @@ pub enum Check {
     HasInfraPrivilege(Actor, InfraPrivilege, Infra),
     /// The actor needs a rolling stock privilege to perform the operation
     HasRollingStockPrivilege(Actor, RollingStockPrivilege, RollingStock),
+    /// The actor needs the project privilege to perform the operation
+    HasProjectPrivilege(Actor, ProjectPrivilege, Project),
     /// The issuer must be allowed to change the subject's infra grant
     ///
     /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.
@@ -166,6 +169,25 @@ impl<T> Protected<T> {
         authorizer.authorize(self).await
     }
 
+    /// Authorizes the protected operation and runs it if authorized, otherwise returns an error of the desired type.
+    ///
+    /// Chains [Authorizer::authorize] and [Access::access] and combines the potential errors into a single error type.
+    /// A rejection is considered an error here as well.
+    ///
+    /// Convenient to obtain one-liners and ease error handling.
+    pub async fn run<E, A>(self, authorizer: &A) -> Result<T, E>
+    where
+        E: From<A::Rejection> + From<A::Error> + From<OpenFgaError>,
+        A: Authorizer,
+    {
+        authorizer
+            .authorize(self)
+            .await?
+            .access()
+            .await?
+            .map_err(|rejection| E::from(rejection))
+    }
+
     /// Consumes the protection and produces an [Access::Authorized] without performing any check
     ///
     /// Only use this in trusted context or in an [Authorizer] implementation after performing the necessary checks.
@@ -188,13 +210,19 @@ impl<T> Protected<T> {
     }
 }
 
+impl Protected<()> {
+    pub fn check(check: Check) -> Self {
+        Protected::<()>::default().with_check_iter([check])
+    }
+}
+
 impl<T: Send + 'static> Protected<T> {
     /// A [Protected] value that always succeeds with the provided value
     pub fn value(t: T) -> Self {
         Self::new(move |_| async move { Ok(t) }.boxed())
     }
 
-    pub fn map<U: Send + 'static>(
+    pub fn then<U: Send + 'static>(
         self,
         f: impl for<'c> FnOnce(&'c fga::Client, T) -> BoxFuture<'c, Result<U, OpenFgaError>>
         + Send
@@ -211,6 +239,21 @@ impl<T: Send + 'static> Protected<T> {
             }),
             checks,
         }
+    }
+
+    pub fn map<U, F, Fut>(self, f: F) -> Protected<U>
+    where
+        U: Send + 'static,
+        F: FnOnce(T) -> Fut + Send + 'static,
+        Fut: Future<Output = U> + Send + 'static,
+    {
+        self.then(move |_, t| {
+            async move {
+                let u = f(t).await;
+                Ok(u)
+            }
+            .boxed()
+        })
     }
 
     pub fn zip<U: Send + 'static>(
@@ -237,7 +280,13 @@ impl<T: Send + 'static> Protected<Option<T>> {
         E: Send + 'static,
         T: Into<E>,
     {
-        self.map(move |_, val| async move { Ok(val.map(T::into)) }.boxed())
+        self.map(async move |val| val.map(T::into))
+    }
+}
+
+impl Protected<bool> {
+    pub fn ok_or<E: Send + 'static>(self, err: E) -> Protected<Result<(), E>> {
+        self.map(async |b| b.then_some(()).ok_or(err))
     }
 }
 
@@ -253,14 +302,10 @@ where
         C: FromIterator<<C as IntoIterator>::Item>,
         <T as IntoIterator>::Item: Into<<C as IntoIterator>::Item>,
     {
-        self.map(move |_, val| {
-            async move {
-                Ok(val
-                    .into_iter()
-                    .map(<T as IntoIterator>::Item::into)
-                    .collect::<C>())
-            }
-            .boxed()
+        self.map(async move |val| {
+            val.into_iter()
+                .map(<T as IntoIterator>::Item::into)
+                .collect::<C>()
         })
     }
 }

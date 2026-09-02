@@ -62,7 +62,8 @@ describe('propagateStopDuration', () => {
           value: 900,
           propagationMode: 'atThisWaypoint',
         },
-        train
+        train,
+        'CALENDAR'
       )
     ).toBeUndefined();
     expect(
@@ -73,7 +74,8 @@ describe('propagateStopDuration', () => {
           value: 900,
           propagationMode: 'toDestination',
         },
-        train
+        train,
+        'CALENDAR'
       )
     ).toBeUndefined();
   });
@@ -83,7 +85,8 @@ describe('propagateStopDuration', () => {
     const row = makeRow('PT5M');
     const result = propagateStopDuration(
       { row, field: 'stopDuration', value: 900, propagationMode: 'toDestination' }, // +10min
-      train
+      train,
+      'CALENDAR'
     );
     expect(result).toBeDefined();
     const { updatedSchedule, updatedStartTime } = result!;
@@ -102,7 +105,8 @@ describe('propagateStopDuration', () => {
       const row = makeRow('PT5M');
       const result = propagateStopDuration(
         { row, field: 'stopDuration', value: 600, propagationMode: 'fromDeparture' }, // +5min
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedSchedule, updatedStartTime } = result!;
@@ -120,7 +124,8 @@ describe('propagateStopDuration', () => {
       const row = makeRow(null);
       const result = propagateStopDuration(
         { row, field: 'stopDuration', value: 600, propagationMode: 'fromDeparture' }, // +10min
-        train
+        train,
+        'CALENDAR'
       );
       expect(result).toBeDefined();
       const { updatedSchedule, updatedStartTime } = result!;
@@ -128,7 +133,7 @@ describe('propagateStopDuration', () => {
 
       expect(updatedStartTime).toEqual(new Date('2026-01-01T17:50:00.000Z')); // 18:00 - 10min
       expect(scheduleByAt.op11?.stop_for).toBe('PT10M');
-      expect(scheduleByAt.op11?.arrival).toBeUndefined();
+      expect(scheduleByAt.op11?.arrival).toBeNull();
       expect(scheduleByAt.op17?.arrival).toBe('PT1H'); // 50min + 10min
     });
   });

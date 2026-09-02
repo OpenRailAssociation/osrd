@@ -24,10 +24,11 @@ use common::geometry::GeoJsonPoint;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::prelude::*;
 use geos::Geom;
 use itertools::Itertools;
+use models::prelude::*;
 use schemas::infra::SwitchType;
+use schemas::primitives::BoundingBox;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use serde::Deserialize;
@@ -37,7 +38,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::AuthenticationExt;
 use super::pagination::PaginationStats;
 use crate::AppState;
 use crate::Arc;
@@ -56,8 +56,8 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use authz::Role;
-use editoast_models::Infra;
-use editoast_models::SwitchTypeModel;
+use models::Infra;
+use models::SwitchTypeModel;
 use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointPart;
 use schemas::infra::builtin_node_types_list;
@@ -73,7 +73,7 @@ pub enum InfraApiError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -186,9 +186,9 @@ pub(in crate::views) struct InfraListResponse {
 )]
 pub(in crate::views) async fn list(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
-    Extension(authn): Extension<crate::authentication::State>,
+    Extension(authn): Extension<authentication::State>,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
     let conn = &mut db_pool.get().await?;
@@ -196,9 +196,12 @@ pub(in crate::views) async fn list(
     let settings = match authn {
         crate::authentication::State::Skip => default_settings,
         crate::authentication::State::Authenticated { user, roles } => {
-            let authorizer = UserAuthorizer::new(user, roles.clone(), regulator.openfga());
+            let authorizer = UserAuthorizer::new(user, roles.clone(), &openfga);
             let authorized_infras = authorizer
-                .authorize(authz::v2::infra_list(user, InfraPrivilege::CanRead))
+                .authorize(authz::v2::infra_list(
+                    user,
+                    InfraPrivilege::CanRestrictedRead,
+                ))
                 .await?
                 .access()
                 .await?
@@ -241,8 +244,10 @@ pub(in crate::views) struct InfraIdParam {
     ),
 )]
 pub(in crate::views) async fn get(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Infra>> {
     let infra_id = infra.infra_id;
@@ -251,13 +256,9 @@ pub(in crate::views) async fn get(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     Ok(Json(infra))
 }
@@ -291,7 +292,7 @@ impl InfraCreateForm {
 )]
 pub(in crate::views) async fn create(
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Json(infra_form): Json<InfraCreateForm>,
@@ -306,7 +307,7 @@ pub(in crate::views) async fn create(
             authz::Infra(infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
+        .authorize(&SystemAuthorizer::new_infallible(&openfga))
         .await?
         .access()
         .await?;
@@ -323,7 +324,7 @@ pub(in crate::views) struct CloneQuery {
 }
 
 /// Duplicate an infra
-#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -334,11 +335,10 @@ pub(in crate::views) struct CloneQuery {
     ),
 )]
 pub(in crate::views) async fn clone(
-    Extension(auth): AuthenticationExt,
     Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     State(AppState {
-        db_pool, regulator, ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
@@ -348,13 +348,8 @@ pub(in crate::views) async fn clone(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.clone()
-        .check_authorization(async |authorizer| {
-            authorizer
-                .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-                .await
-        })
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
         .await?;
 
     let cloned_infra = infra.clone(&mut conn, name).await?;
@@ -365,7 +360,7 @@ pub(in crate::views) async fn clone(
             authz::Infra(cloned_infra.id),
             InfraGrant::Owner,
         )
-        .authorize(&SystemAuthorizer::new_infallible(regulator.openfga()))
+        .authorize(&SystemAuthorizer::new_infallible(&openfga))
         .await?
         .access()
         .await?;
@@ -394,17 +389,15 @@ pub(in crate::views) async fn clone(
     ),
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanDelete)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanDelete)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     if Infra::fast_delete_static(db_pool.get().await?, infra_id).await? {
         Ok(StatusCode::NO_CONTENT)
@@ -451,6 +444,37 @@ pub(in crate::views) async fn put(
     Ok(Json(infra))
 }
 
+/// Retrieve the bounding box of an infra.
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "/",
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200, description = "The bbox of the infra if it contains tracks", body = Option<BoundingBox>),
+        (status = 404, description = "Infra ID not found"),
+    ),
+)]
+pub(in crate::views) async fn bbox(
+    Extension(authn_state): Extension<authentication::State>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+) -> Result<Json<Option<BoundingBox>>> {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
+
+    Ok(Json(infra.bbox(&mut db_pool.get().await?).await?))
+}
+
 /// Return the railjson list of switch types
 #[editoast_derive::route]
 #[utoipa::path(
@@ -463,8 +487,10 @@ pub(in crate::views) async fn put(
     )
 )]
 pub(in crate::views) async fn get_switch_types(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
     let mut conn = db_pool.get().await?;
@@ -474,13 +500,9 @@ pub(in crate::views) async fn get_switch_types(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let selection_settings =
         SelectionSettings::new().filter(move || SwitchTypeModel::INFRA_ID.eq(infra.id));
@@ -513,9 +535,11 @@ pub(in crate::views) async fn get_switch_types(
     )
 )]
 pub(in crate::views) async fn get_speed_limit_tags(
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
     State(builtin_tags): State<Arc<SpeedLimitTagIds>>,
 ) -> Result<Json<HashSet<String>>> {
     let mut conn = db_pool.get().await?;
@@ -525,13 +549,9 @@ pub(in crate::views) async fn get_speed_limit_tags(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let infra_tags = infra.get_speed_limit_tags(&mut conn).await?;
     let union_tags: HashSet<String> = infra_tags
@@ -562,10 +582,12 @@ pub(in crate::views) struct GetVoltagesQueryParams {
     )
 )]
 pub(in crate::views) async fn get_voltages(
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
 ) -> Result<Json<Vec<String>>> {
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
@@ -573,13 +595,9 @@ pub(in crate::views) async fn get_voltages(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let voltages = infra
         .get_voltages(&mut db_pool.get().await?, include_rolling_stock_modes)
@@ -627,17 +645,15 @@ async fn set_locked(mut conn: DbConnection, infra_id: i64, locked: bool) -> Resu
     )
 )]
 pub(in crate::views) async fn lock(
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
 ) -> Result<impl IntoResponse> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanWrite)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     set_locked(db_pool.get().await?, infra_id, true).await?;
     Ok(StatusCode::NO_CONTENT)
@@ -655,17 +671,15 @@ pub(in crate::views) async fn lock(
     )
 )]
 pub(in crate::views) async fn unlock(
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
 ) -> Result<impl IntoResponse> {
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanWrite)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     set_locked(db_pool.get().await?, infra_id, false).await?;
     Ok(StatusCode::NO_CONTENT)
@@ -705,7 +719,6 @@ struct RelatedOperationalPoint {
     pub country_code: NonBlankString,
     #[schema(inline)]
     pub main_code: NonBlankString,
-    #[schema(inline)]
     pub secondary_code: Option<NonBlankString>,
     pub is_passenger_station: bool,
     #[schema(inline)]
@@ -732,19 +745,18 @@ operational point that it matches on a given infrastructure.
     ),
 )]
 pub(in crate::views) async fn match_operational_points(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Json(MatchOperationalPointsForm {
         operational_point_references,
     }): Json<MatchOperationalPointsForm>,
 ) -> Result<Json<MatchOperationalPointsResponse>> {
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
     let mut conn = db_pool.get().await?;
     let op_cache = OperationalPointCache::load_from_operational_points(
         conn.clone(),
@@ -866,9 +878,9 @@ pub mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::views::test_app;
     use crate::views::test_app::TestRequestExt as _;
-    use editoast_models::infra::DEFAULT_INFRA_VERSION;
-    use editoast_models::infra_objects::get_geometry_layer_table;
-    use editoast_models::infra_objects::get_table;
+    use models::infra::DEFAULT_INFRA_VERSION;
+    use models::infra_objects::get_geometry_layer_table;
+    use models::infra_objects::get_table;
     use schemas::train_schedule::OperationalPointReference;
 
     mod post_clone {
@@ -882,7 +894,6 @@ pub mod tests {
             let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
             let user = app
                 .user("thomas", "Thomas")
-                .with_roles([Role::OperationalStudies])
                 .with_infra_grant(empty_infra.id, InfraGrant::Reader)
                 .create()
                 .await;
@@ -915,7 +926,6 @@ pub mod tests {
             let small_infra_id = small_infra.id;
             let user = app
                 .user("thomas", "Thomas")
-                .with_roles([Role::OperationalStudies])
                 .with_infra_grant(small_infra_id, InfraGrant::Reader)
                 .create()
                 .await;
@@ -986,6 +996,32 @@ pub mod tests {
                 assert_eq!(val[0], val[1]);
             }
         }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn cloning_requires_reader_grant() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+            let user_reader = app
+                .user("alice", "Alice")
+                .with_infra_grant(infra.id, InfraGrant::Reader)
+                .create()
+                .await;
+            let user_no_grant = app
+                .user("bob", "Bob")
+                .with_infra_grant(infra.id, InfraGrant::RestrictedReader)
+                .create()
+                .await;
+
+            app.post(format!("/infra/{}/clone/?name=cloned_infra", infra.id).as_str())
+                .by_user(user_reader.as_ref())
+                .await
+                .assert_status_ok();
+            app.post(format!("/infra/{}/clone/?name=cloned_infra", infra.id).as_str())
+                .by_user(user_no_grant.as_ref())
+                .await
+                .assert_status_forbidden();
+        }
     }
 
     mod delete_infra {
@@ -1050,30 +1086,39 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn list_filters_authorized_infras() {
+        async fn user_only_sees_its_related_infras() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
-            let infra = create_small_infra(&mut db_pool.get_ok()).await;
-            let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
-
-            // Regular user with the correct roles should see only the infra he is associated with:
+            let infra_1 = create_small_infra(&mut db_pool.get_ok()).await;
+            let infra_2 = create_small_infra(&mut db_pool.get_ok()).await;
+            let _infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
             let user = app
                 .user("user_identity", "user_name")
-                .with_infra_grant(infra.id, InfraGrant::Reader)
+                .with_infra_grant(infra_1.id, InfraGrant::Reader)
+                .with_infra_grant(infra_2.id, InfraGrant::Reader)
                 .create()
                 .await;
             let response: InfraListResponse = app
                 .get("/infra/")
                 .by_user(user.as_ref())
                 .await
-                .assert_status(StatusCode::OK)
+                .assert_status_ok()
                 .json();
             assert_eq!(
-                response.results.iter().map(|infra| infra.id).collect_vec(),
-                vec![infra.id]
+                response
+                    .results
+                    .iter()
+                    .map(|infra| infra.id)
+                    .collect::<Vec<_>>(),
+                vec![infra_1.id, infra_2.id]
             );
+        }
 
-            // An admin should see all the infras:
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn admin_can_see_unrelated_infras() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
             let admin = app
                 .user("admin", "admin")
                 .with_roles([Role::Admin])
@@ -1083,11 +1128,15 @@ pub mod tests {
                 .get("/infra/")
                 .by_user(admin.as_ref())
                 .await
-                .assert_status(StatusCode::OK)
+                .assert_status_ok()
                 .json();
             assert_eq!(
-                response.results.iter().map(|infra| infra.id).collect_vec(),
-                vec![infra.id, infra_no_grant.id]
+                response
+                    .results
+                    .iter()
+                    .map(|infra| infra.id)
+                    .collect::<Vec<_>>(),
+                vec![infra_no_grant.id]
             );
         }
 
@@ -1173,7 +1222,7 @@ pub mod tests {
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
             let user = app
                 .user("user", "User")
-                .with_infra_grant(infra_id, InfraGrant::Reader)
+                .with_infra_grant(infra_id, InfraGrant::RestrictedReader)
                 .create()
                 .await;
 
@@ -1190,6 +1239,29 @@ pub mod tests {
                 .by_user(user.as_ref())
                 .await
                 .assert_status_not_found();
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_requires_can_restricted_read() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;
+
+            let user_restricted_reader = app
+                .user("alice", "Alice")
+                .with_infra_grant(infra_id, InfraGrant::RestrictedReader)
+                .create()
+                .await;
+            let user_no_grant = app.user("bob", "Bob").create().await;
+
+            app.get(format!("/infra/{}", infra_id).as_str())
+                .by_user(user_restricted_reader.as_ref())
+                .await
+                .assert_status_ok();
+            app.get(format!("/infra/{}", infra_id).as_str())
+                .by_user(user_no_grant.as_ref())
+                .await
+                .assert_status_forbidden();
         }
     }
 
@@ -1344,6 +1416,63 @@ pub mod tests {
                 .by_user(user_reader.as_ref())
                 .await
                 .assert_status_ok();
+        }
+    }
+
+    mod bbox {
+        use super::*;
+        use approx::assert_relative_eq;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+        async fn get_bbox() {
+            let app = test_app!().build();
+            let db_pool = app.db_pool();
+            let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+            let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+            let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+                .await
+                .unwrap();
+            generated_data::refresh_all(db_pool.clone(), small_infra.id, &infra_cache)
+                .await
+                .unwrap();
+
+            let user = app
+                .user("user", "User")
+                .with_infra_grant(empty_infra.id, InfraGrant::RestrictedReader)
+                .with_infra_grant(small_infra.id, InfraGrant::RestrictedReader)
+                .create()
+                .await;
+
+            let res: Option<BoundingBox> = app
+                .get(format!("/infra/{}/bbox", empty_infra.id).as_str())
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            assert_eq!(res, None);
+
+            let res: Option<BoundingBox> = app
+                .get(format!("/infra/{}/bbox", small_infra.id).as_str())
+                .by_user(user.as_ref())
+                .await
+                .assert_status_ok()
+                .json();
+            let bbox = res.expect("Expected a bounding box for small_infra");
+
+            let bbox_ref: BoundingBox = infra_cache.track_sections().values().fold(
+                BoundingBox::default(),
+                |mut bbox, ts| {
+                    bbox.union(&ts.unwrap_track_section().bbox_geo);
+                    bbox
+                },
+            );
+
+            assert_relative_eq!(bbox.min_lat, bbox_ref.min_lat);
+            assert_relative_eq!(bbox.min_lon, bbox_ref.min_lon);
+            assert_relative_eq!(bbox.max_lat, bbox_ref.max_lat);
+            assert_relative_eq!(bbox.max_lon, bbox_ref.max_lon);
         }
     }
 

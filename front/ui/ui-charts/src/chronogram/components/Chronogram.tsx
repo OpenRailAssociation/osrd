@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 
-import { zoomValueToTimeScale } from '../../manchette/utils/helpers';
+import { zoomValueToTimeScale } from '../../common/helpers/utils';
 import useChronogram from '../hooks/useChronogram';
 import { CHRONOGRAM_SLIDER_WIDTH, INITIAL_CHRONOGRAM_HEIGHT } from '../lib/const';
 import type { ChronogramProps } from '../lib/types';
@@ -43,7 +43,7 @@ export const Chronogram = ({
 
   useEffect(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks-js/set-state-in-effect */
+    /* eslint-disable-next-line react/set-state-in-effect */
     setLevelCrossingsOccupancies(levelCrossingData);
   }, [levelCrossingData]);
 

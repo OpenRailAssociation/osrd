@@ -24,7 +24,8 @@
         "postTrainSchedulesOccupancyBlocks",
         "postWorkSchedulesProjectPath",
         "postSearch",
-        "postTimetableByIdPathStepsLocalTrackNames"
+        "postTimetableByIdPathStepsLocalTrackNames",
+        "postTrainSchedulesLinkings"
       ],
       "type": "query"
     }

@@ -126,7 +126,7 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
 ///
 /// No transaction is setup as OpenFGA does not support them.
 pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) -> Protected<()> {
-    let prot = infra_revoke_grant(subject, infra).map(move |openfga, _has_revoked| {
+    let prot = infra_revoke_grant(subject, infra).then(move |openfga, _has_revoked| {
         async move {
             let mut writes = openfga.prepare_writes();
             match (subject, new_grant) {
@@ -206,7 +206,7 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
 /// Returns `true` if a grant was revoked, `false` otherwise, making the operation idempotent.
 /// No transaction is setup as OpenFGA does not support them.
 pub fn infra_revoke_grant(subject: Subject, infra: Infra) -> Protected<bool> {
-    let prot = infra_direct_grant(subject, infra).map(move |openfga, grant| {
+    let prot = infra_direct_grant(subject, infra).then(move |openfga, grant| {
         async move {
             let Some(grant) = grant else {
                 return Ok(false);
@@ -307,9 +307,13 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
     })
     .with_check(Check::HasInfraPrivilege(
         Actor::Issuer,
-        InfraPrivilege::CanRead,
+        InfraPrivilege::CanRestrictedRead,
         infra,
     ))
+}
+
+pub fn infra_privilege_check(infra: Infra, privilege: InfraPrivilege) -> Protected<()> {
+    Protected::value(()).with_check(Check::HasInfraPrivilege(Actor::Issuer, privilege, infra))
 }
 
 /// Return an operation that checks the list of subjects which have the given grant on an infra.
@@ -375,15 +379,12 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
     }
     get_granted_users(infra, grant)
         .zip(get_granted_groups(infra, grant))
-        .map(move |_, (users, groups)| {
-            async move {
-                Ok(users
-                    .into_iter()
-                    .map(Subject::User)
-                    .chain(groups.into_iter().map(Subject::Group))
-                    .collect_vec())
-            }
-            .boxed()
+        .map(async move |(users, groups)| {
+            users
+                .into_iter()
+                .map(Subject::User)
+                .chain(groups.into_iter().map(Subject::Group))
+                .collect_vec()
         })
         .with_check(Check::HasInfraPrivilege(
             Actor::Issuer,
@@ -393,7 +394,7 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
 }
 
 pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesList<Infra>> {
-    subject_roles(Subject::user(user)).map(move |openfga, roles| {
+    subject_roles(Subject::user(user)).then(move |openfga, roles| {
         async move {
             if roles.contains(&Role::Admin) {
                 return Ok(ResourcesList::All);
@@ -902,7 +903,7 @@ mod tests {
     )]
     #[case::infra_privileges(
         infra_privileges(User(1), Infra(1)).checks,
-        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRestrictedRead, Infra(1))]
     )]
     #[case::infra_privileges(
         infra_granted_subjects(Infra(1), InfraGrant::Owner).checks,

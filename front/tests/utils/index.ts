@@ -99,6 +99,20 @@ export async function expectFieldsToHaveValues(
 }
 
 /**
+ * Selects an option from a dropdown field and verifies the selected value.
+ *
+ * @param {Locator} locator - The locator for the dropdown input field.
+ * @param {string} optionValue - The value to select from the dropdown.
+ * @returns {Promise<void>} A promise that resolves once the option is selected and verified.
+ */
+export async function selectAndCheckOption(locator: Locator, optionValue: string) {
+  await expect(locator).toBeVisible();
+  await locator.click();
+  await locator.selectOption(optionValue);
+  await expect(locator).toHaveValue(optionValue);
+}
+
+/**
  * Selects the first matching item from a dropdown field and verifies the selected value.
  *
  * @param {Locator} field - The locator for the dropdown input field.

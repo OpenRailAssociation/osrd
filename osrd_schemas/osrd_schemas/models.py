@@ -13,17 +13,13 @@ from typing_extensions import TypeAliasType
 from .overrides import OffsetInMs
 
 
-class PowerRestriction(BaseModel):
+class PowerRestrictionItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     from_: Annotated[str, Field(alias="from", min_length=1)]
     to: Annotated[str, Field(min_length=1)]
     value: str
-
-
-class SpeedLimitTag(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
 
 
 class AddOperation(BaseModel):
@@ -204,16 +200,17 @@ class Plc(RootModel[str]):
     """
 
 
-class SecondaryCode(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
 class SecondaryName(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
 class PathfindingInputErrorNotEnoughPathItems(BaseModel):
     error_type: Literal["not_enough_path_items"]
+
+
+class PathfindingInputErrorUnauthorizedRollingStock(BaseModel):
+    error_type: Literal["unauthorized_rolling_stock"]
+    rolling_stock_id: int
 
 
 class PathfindingInputErrorRollingStockNotFound(BaseModel):
@@ -384,6 +381,48 @@ class CoreSpacingRequirement(BaseModel):
     zone: str
 
 
+class SpeedLimitSourceGivenTrainTag(BaseModel):
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+
+    speed_limit_source_type: Literal["given_train_tag"]
+    tag: str
+
+
+class SpeedLimitSourceFallbackTag(BaseModel):
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+
+    speed_limit_source_type: Literal["fallback_tag"]
+    tag: str
+
+
+class SpeedLimitSourceUnknownTag(BaseModel):
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+
+    speed_limit_source_type: Literal["unknown_tag"]
+
+
+class CoreSpeedLimitProperty(BaseModel):
+    source: (
+        SpeedLimitSourceGivenTrainTag
+        | SpeedLimitSourceFallbackTag
+        | SpeedLimitSourceUnknownTag
+        | None
+    ) = None
+    """
+    source of the speed-limit if relevant (tag used)
+    """
+    speed: float
+    """
+    in meters per second
+    """
+
+
 class CoreZoneUpdate(BaseModel):
     is_entry: bool
     position: Annotated[int, Field(ge=0)]
@@ -537,6 +576,15 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
     type: Literal["editoast:authorization:ImpersonatedUserNotFound"]
 
 
+class EditoastAuthorizationErrorOpenFga(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAuthorizationErrorOpenFgaContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:authorization:OpenFga"]
+
+
 class EditoastAuthorizationErrorUnauthenticated(BaseModel):
     context: Annotated[
         dict[str, Any] | None,
@@ -545,15 +593,6 @@ class EditoastAuthorizationErrorUnauthenticated(BaseModel):
     message: str
     status: Literal[401]
     type: Literal["editoast:authorization:Unauthenticated"]
-
-
-class EditoastAuthzErrorAuthorizer(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastAuthzErrorAuthorizerContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:authz:Authorizer"]
 
 
 class EditoastAuthzErrorDatabase(BaseModel):
@@ -619,58 +658,6 @@ class EditoastAuthzErrorUnknownUser(BaseModel):
     message: str
     status: Literal[404]
     type: Literal["editoast:authz:UnknownUser"]
-
-
-class EditoastAuthzLegacyErrorOpenfga(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastAuthzLegacyErrorOpenfgaContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:authz_legacy:Openfga"]
-
-
-class EditoastAuthzLegacyErrorStorage(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastAuthzLegacyErrorStorageContext")
-    ] = None
-    message: str
-    status: Literal[500]
-    type: Literal["editoast:authz_legacy:Storage"]
-
-
-class EditoastAuthzLegacyErrorUnknownResource(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastAuthzLegacyErrorUnknownResourceContext"),
-    ] = None
-    message: str
-    status: Literal[404]
-    type: Literal["editoast:authz_legacy:UnknownResource"]
-
-
-class EditoastAuthzLegacyErrorUnknownSubject(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastAuthzLegacyErrorUnknownSubjectContext"),
-    ] = None
-    message: str
-    status: Literal[404]
-    type: Literal["editoast:authz_legacy:UnknownSubject"]
-
-
-class EditoastAuthzLegacyErrorUnknownUserContext(BaseModel):
-    id: int
-
-
-class EditoastAuthzLegacyErrorUnknownUser(BaseModel):
-    context: Annotated[
-        EditoastAuthzLegacyErrorUnknownUserContext | None,
-        Field(title="EditoastAuthzLegacyErrorUnknownUserContext"),
-    ] = None
-    message: str
-    status: Literal[401]
-    type: Literal["editoast:authz_legacy:UnknownUser"]
 
 
 class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObjectContext(BaseModel):
@@ -1160,6 +1147,88 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
     message: str
     status: Literal[400]
     type: Literal["editoast:infra:lines:LineNotFound"]
+
+
+class EditoastLinkingErrorBatchNotFoundContext(BaseModel):
+    count: int
+
+
+class EditoastLinkingErrorBatchNotFound(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorBatchNotFoundContext | None,
+        Field(title="EditoastLinkingErrorBatchNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:train_schedule_linking:BatchNotFound"]
+
+
+class EditoastLinkingErrorDatabase(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastLinkingErrorDatabaseContext")
+    ] = None
+    message: str
+    status: Literal[400]
+    type: Literal["editoast:train_schedule_linking:Database"]
+
+
+class EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext(BaseModel):
+    timetable_id: int
+    timetable_type: dict[str, Any]
+
+
+class EditoastLinkingErrorRequestIncompatibleWithTimetableType(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext | None,
+        Field(title="EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext"),
+    ] = None
+    message: str
+    status: Literal[409]
+    type: Literal[
+        "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
+    ]
+
+
+class EditoastLinkingErrorSourceAlreadyUsedContext(BaseModel):
+    occurrence: str
+
+
+class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorSourceAlreadyUsedContext | None,
+        Field(title="EditoastLinkingErrorSourceAlreadyUsedContext"),
+    ] = None
+    message: str
+    status: Literal[409]
+    type: Literal["editoast:train_schedule_linking:SourceAlreadyUsed"]
+
+
+class EditoastLinkingErrorTargetAlreadyUsedContext(BaseModel):
+    occurrence: str
+
+
+class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorTargetAlreadyUsedContext | None,
+        Field(title="EditoastLinkingErrorTargetAlreadyUsedContext"),
+    ] = None
+    message: str
+    status: Literal[409]
+    type: Literal["editoast:train_schedule_linking:TargetAlreadyUsed"]
+
+
+class EditoastLinkingErrorTimetableNotFoundContext(BaseModel):
+    timetable_id: int
+
+
+class EditoastLinkingErrorTimetableNotFound(BaseModel):
+    context: Annotated[
+        EditoastLinkingErrorTimetableNotFoundContext | None,
+        Field(title="EditoastLinkingErrorTimetableNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404]
+    type: Literal["editoast:train_schedule_linking:TimetableNotFound"]
 
 
 class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
@@ -2731,6 +2800,26 @@ class LightModeEffortCurves(BaseModel):
     is_electric: bool
 
 
+class LinkingOccurrenceIdUnique(BaseModel):
+    train_schedule_id: int
+    train_schedule_instance_index: int | None = None
+    type: Literal["unique"]
+
+
+class LinkingOccurrenceIdPacedOccurrence(BaseModel):
+    occurrence_index: int
+    train_schedule_id: int
+    train_schedule_instance_index: int | None = None
+    type: Literal["paced_occurrence"]
+
+
+class LinkingOccurrenceIdAddedException(BaseModel):
+    added_exception_id: int
+    train_schedule_id: int
+    train_schedule_instance_index: int | None = None
+    type: Literal["added_exception"]
+
+
 class LoadingGaugeType(Enum):
     G1 = "G1"
     G2 = "G2"
@@ -2831,7 +2920,7 @@ class OperationalPointReferenceId(BaseModel):
     type: Literal["id"]
 
 
-class SecondaryCode2(RootModel[str]):
+class SecondaryCode(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
     """
     An optional secondary code to identify a more specific location
@@ -2844,7 +2933,7 @@ class OperationalPointReferenceDomestic(BaseModel):
     """
     The operational point main code
     """
-    secondary_code: SecondaryCode2 | None = None
+    secondary_code: SecondaryCode | None = None
     """
     An optional secondary code to identify a more specific location
     """
@@ -2852,7 +2941,7 @@ class OperationalPointReferenceDomestic(BaseModel):
 
 
 class OperationalPointReferenceUic(BaseModel):
-    secondary_code: SecondaryCode2 | None = None
+    secondary_code: SecondaryCode | None = None
     """
     An optional secondary code to identify a more specific location
     """
@@ -2936,6 +3025,53 @@ class PatchOperationCopyOperation(CopyOperation):
     """
 
     op: Literal["copy"]
+
+
+class PathItemRelativeLocationExactPathItem(BaseModel):
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's ID,
+    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    """
+
+    path_item_id: Annotated[str, Field(min_length=1)]
+    """
+    Path item ID, when the operational point matches an item in the input path
+    """
+    type: Literal["exact_path_item"]
+
+
+class PathItemRelativeLocationBetweenPathItems(BaseModel):
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's ID,
+    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    """
+
+    following_path_item_id: Annotated[str, Field(min_length=1)]
+    """
+    Following path item ID, when the operational point is not one of the input path items
+    """
+    previous_path_item_id: Annotated[str, Field(min_length=1)]
+    """
+    Previous path item ID, when the operational point is not one of the input path items
+    """
+    type: Literal["between_path_items"]
+
+
+class PathItemRelativeLocation(
+    RootModel[
+        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
+    ]
+):
+    root: (
+        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
+    )
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's ID,
+    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    """
 
 
 class Curves(BaseModel):
@@ -3043,12 +3179,19 @@ class PathfindingFailurePathfindingInputError3(
 
 
 class PathfindingFailurePathfindingInputError4(
-    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError1
+    PathfindingInputErrorUnauthorizedRollingStock,
+    PathfindingFailurePathfindingInputError1,
 ):
     pass
 
 
 class PathfindingFailurePathfindingInputError5(
+    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError1
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError6(
     PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError1
 ):
     pass
@@ -3078,24 +3221,31 @@ class PathfindingOutput(BaseModel):
     track_ranges: list[DirectionalTrackRange]
 
 
-class PathfindingFailurePathfindingInputError7(BaseModel):
+class PathfindingFailurePathfindingInputError8(BaseModel):
     failed_status: Literal["pathfinding_input_error"]
 
 
-class PathfindingFailurePathfindingInputError9(
-    PathfindingInputErrorNotEnoughPathItems, PathfindingFailurePathfindingInputError7
-):
-    pass
-
-
 class PathfindingFailurePathfindingInputError10(
-    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError7
+    PathfindingInputErrorNotEnoughPathItems, PathfindingFailurePathfindingInputError8
 ):
     pass
 
 
 class PathfindingFailurePathfindingInputError11(
-    PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError7
+    PathfindingInputErrorUnauthorizedRollingStock,
+    PathfindingFailurePathfindingInputError8,
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError12(
+    PathfindingInputErrorRollingStockNotFound, PathfindingFailurePathfindingInputError8
+):
+    pass
+
+
+class PathfindingFailurePathfindingInputError13(
+    PathfindingInputErrorZeroLengthPath, PathfindingFailurePathfindingInputError8
 ):
     pass
 
@@ -3120,15 +3270,6 @@ class PathfindingTrackLocationInput(BaseModel):
     )
     position: float
     track: Annotated[str, Field(max_length=255, min_length=1)]
-
-
-class PowerRestrictionItem(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    from_: Annotated[str, Field(alias="from", min_length=1)]
-    to: Annotated[str, Field(min_length=1)]
-    value: str
 
 
 class TrackSectionRange(BaseModel):
@@ -3187,10 +3328,6 @@ class RefillLaw(BaseModel):
 
 
 class Plc2(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class SecondaryCode4(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
@@ -3381,6 +3518,7 @@ class ScheduleItem(BaseModel):
     """
     Position on the path of the schedule item.
     """
+    can_backtrack: bool | None = None
     reception_signal: ReceptionSignal | None = None
     reference_base_arrival: timedelta | None = None
     reference_position: Annotated[int | None, Field(ge=0)] = None
@@ -3582,64 +3720,6 @@ class ElectricalProfiles(BaseModel):
     """
 
 
-class SpeedLimitSourceGivenTrainTag(BaseModel):
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-
-    speed_limit_source_type: Literal["given_train_tag"]
-    tag: str
-
-
-class SpeedLimitSourceFallbackTag(BaseModel):
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-
-    speed_limit_source_type: Literal["fallback_tag"]
-    tag: str
-
-
-class SpeedLimitSourceUnknownTag(BaseModel):
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-
-    speed_limit_source_type: Literal["unknown_tag"]
-
-
-class Value(BaseModel):
-    source: (
-        SpeedLimitSourceGivenTrainTag
-        | SpeedLimitSourceFallbackTag
-        | SpeedLimitSourceUnknownTag
-        | None
-    ) = None
-    """
-    source of the speed-limit if relevant (tag used)
-    """
-    speed: float
-    """
-    in meters per second
-    """
-
-
-class Mrsp(BaseModel):
-    """
-    A MRSP computation result (Most Restrictive Speed Profile)
-    """
-
-    boundaries: list[Boundary]
-    """
-    List of `n` boundaries of the ranges (block path).
-    A boundary is a distance from the beginning of the path in mm.
-    """
-    values: list[Value]
-    """
-    List of `n+1` values associated to the ranges
-    """
-
-
 class PathItemTimesBaseItem(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
@@ -3744,7 +3824,7 @@ class SummaryResponsePathfindingInputError3(
 
 
 class SummaryResponsePathfindingInputError4(
-    PathfindingInputErrorRollingStockNotFound, SummaryResponsePathfindingInputError1
+    PathfindingInputErrorUnauthorizedRollingStock, SummaryResponsePathfindingInputError1
 ):
     """
     InputError
@@ -3752,6 +3832,14 @@ class SummaryResponsePathfindingInputError4(
 
 
 class SummaryResponsePathfindingInputError5(
+    PathfindingInputErrorRollingStockNotFound, SummaryResponsePathfindingInputError1
+):
+    """
+    InputError
+    """
+
+
+class SummaryResponsePathfindingInputError6(
     PathfindingInputErrorZeroLengthPath, SummaryResponsePathfindingInputError1
 ):
     """
@@ -3792,7 +3880,7 @@ class SpeedDependantPower(BaseModel):
     speeds: list[float]
 
 
-class Value1(RootModel[float]):
+class Value(RootModel[float]):
     root: Annotated[float, Field(ge=0.0)]
 
 
@@ -3805,19 +3893,15 @@ class SpeedIntervalValueCurve(BaseModel):
     Speed in m/s (sorted ascending)
     External bounds are implicit to [0, rolling_stock.max_speed]
     """
-    values: Annotated[list[Value1], Field(examples=[[0.5, 0.6, 0.5]], min_length=1)]
+    values: Annotated[list[Value], Field(examples=[[0.5, 0.6, 0.5]], min_length=1)]
     """
     Interval values, must be >= 0 (unit to be made explicit at use)
     There must be one more value than boundaries
     """
 
 
-class Value2(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
 class SpeedLimitTagChangeGroup(BaseModel):
-    value: Value2 | None = None
+    value: NonBlankString | None = None
 
 
 class SpeedLimits(BaseModel):
@@ -4203,7 +4287,7 @@ class TrainSchedulePartBound(BaseModel):
     """
     time_ms: Annotated[int, Field(ge=0)]
     """
-    Scheduled time of the step in milliseconds from midnight UTC.
+    Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
     """
 
 
@@ -4541,6 +4625,22 @@ class CoreRoutingRequirement(BaseModel):
     zones: list[CoreRoutingZoneRequirement]
 
 
+class CoreSpeedLimitProperties(BaseModel):
+    """
+    A MRSP computation result (Most Restrictive Speed Profile)
+    """
+
+    boundaries: list[Boundary]
+    """
+    List of `n` boundaries of the ranges (block path).
+    A boundary is a distance from the beginning of the path in mm.
+    """
+    values: list[CoreSpeedLimitProperty]
+    """
+    List of `n+1` values associated to the ranges
+    """
+
+
 class CoreTrackRange(BaseModel):
     """
     An oriented range on a track section.
@@ -4615,18 +4715,13 @@ class EditoastError(
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
         | EditoastAuthorizationErrorImpersonatedUserNotFound
+        | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
-        | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
         | EditoastAuthzErrorUnknownUser
-        | EditoastAuthzLegacyErrorOpenfga
-        | EditoastAuthzLegacyErrorStorage
-        | EditoastAuthzLegacyErrorUnknownResource
-        | EditoastAuthzLegacyErrorUnknownSubject
-        | EditoastAuthzLegacyErrorUnknownUser
         | EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject
         | EditoastAutoFixesEditoastErrorFixTrialFailure
         | EditoastAutoFixesEditoastErrorMaximumIterationReached
@@ -4666,6 +4761,12 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
+        | EditoastLinkingErrorBatchNotFound
+        | EditoastLinkingErrorDatabase
+        | EditoastLinkingErrorRequestIncompatibleWithTimetableType
+        | EditoastLinkingErrorSourceAlreadyUsed
+        | EditoastLinkingErrorTargetAlreadyUsed
+        | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
         | EditoastMacroNodeErrorNotFound
@@ -4792,18 +4893,13 @@ class EditoastError(
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
         | EditoastAuthorizationErrorImpersonatedUserNotFound
+        | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
-        | EditoastAuthzErrorAuthorizer
         | EditoastAuthzErrorDatabase
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
         | EditoastAuthzErrorUnknownSubject
         | EditoastAuthzErrorUnknownUser
-        | EditoastAuthzLegacyErrorOpenfga
-        | EditoastAuthzLegacyErrorStorage
-        | EditoastAuthzLegacyErrorUnknownResource
-        | EditoastAuthzLegacyErrorUnknownSubject
-        | EditoastAuthzLegacyErrorUnknownUser
         | EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject
         | EditoastAutoFixesEditoastErrorFixTrialFailure
         | EditoastAutoFixesEditoastErrorMaximumIterationReached
@@ -4843,6 +4939,12 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
+        | EditoastLinkingErrorBatchNotFound
+        | EditoastLinkingErrorDatabase
+        | EditoastLinkingErrorRequestIncompatibleWithTimetableType
+        | EditoastLinkingErrorSourceAlreadyUsed
+        | EditoastLinkingErrorTargetAlreadyUsed
+        | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
         | EditoastMacroNodeErrorNotFound
@@ -5108,6 +5210,19 @@ class LightEffortCurves(BaseModel):
     modes: dict[str, LightModeEffortCurves]
 
 
+class LinkingCreateForm(BaseModel):
+    source: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+    target: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+
+
 class LoadingGaugeLimit(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5118,7 +5233,6 @@ class LoadingGaugeLimit(BaseModel):
 
 
 class MacroNodeForm(BaseModel):
-    connection_time: int
     full_name: str | None = None
     is_collapsed: bool | None = None
     labels: list[str]
@@ -5129,7 +5243,6 @@ class MacroNodeForm(BaseModel):
 
 
 class MacroNodeResponse(BaseModel):
-    connection_time: int
     full_name: str | None = None
     id: int
     is_collapsed: bool
@@ -5340,70 +5453,14 @@ class PathfindingFailurePathfindingNotFound3(
     pass
 
 
-class PathfindingInput(BaseModel):
-    """
-    Path input is described by some rolling stock information
-    and a list of path waypoints
-    """
-
-    allowed_track_sections: list[str] | None = None
-    """
-    Set of authorized track section ids, empty means no restriction
-    """
-    path_items: list[
-        PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
-    ]
-    """
-    List of waypoints given to the pathfinding
-    """
-    rolling_stock_is_thermal: bool
-    """
-    Can the rolling stock run on non-electrified tracks
-    """
-    rolling_stock_length: Annotated[int, Field(ge=0)]
-    """
-    Rolling stock length in millimeters
-    """
-    rolling_stock_loading_gauge: LoadingGaugeType
-    """
-    The loading gauge of the rolling stock
-    """
-    rolling_stock_maximum_speed: float
-    """
-    Rolling stock maximum speed
-    """
-    rolling_stock_supported_electrifications: list[str]
-    """
-    List of supported electrification modes.
-    Empty if does not support any electrification
-    """
-    rolling_stock_supported_signaling_systems: list[str]
-    """
-    List of supported signaling systems
-    """
-    speed_limit_tag: str | None = None
-    """
-    Speed limit tag, used to estimate the travel time
-    """
-    stops_at_end_of_block: bool | None = None
-    """
-    Stop the train at the next block-delimiting signal,
-    staying in the same block and keeping the tail on the initial position
-    """
-
-
 class PathfindingItem(BaseModel):
-    duration: Annotated[int | None, Field(ge=0)] = None
-    """
-    The stop duration in milliseconds, None if the train does not stop.
-    """
+    can_backtrack: bool
     location: (
         PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
     )
     """
-    The associated location
+    The location of a path waypoint
     """
-    timing_data: StepTimingData | None = None
 
 
 class PathfindingInputErrorInvalidPathItems2(BaseModel):
@@ -5411,25 +5468,27 @@ class PathfindingInputErrorInvalidPathItems2(BaseModel):
     items: list[Item]
 
 
-class PathfindingFailurePathfindingInputError8(
-    PathfindingInputErrorInvalidPathItems2, PathfindingFailurePathfindingInputError7
+class PathfindingFailurePathfindingInputError9(
+    PathfindingInputErrorInvalidPathItems2, PathfindingFailurePathfindingInputError8
 ):
     pass
 
 
-class PathfindingFailurePathfindingInputError6(
+class PathfindingFailurePathfindingInputError7(
     RootModel[
-        PathfindingFailurePathfindingInputError8
-        | PathfindingFailurePathfindingInputError9
+        PathfindingFailurePathfindingInputError9
         | PathfindingFailurePathfindingInputError10
         | PathfindingFailurePathfindingInputError11
+        | PathfindingFailurePathfindingInputError12
+        | PathfindingFailurePathfindingInputError13
     ]
 ):
     root: Annotated[
-        PathfindingFailurePathfindingInputError8
-        | PathfindingFailurePathfindingInputError9
+        PathfindingFailurePathfindingInputError9
         | PathfindingFailurePathfindingInputError10
-        | PathfindingFailurePathfindingInputError11,
+        | PathfindingFailurePathfindingInputError11
+        | PathfindingFailurePathfindingInputError12
+        | PathfindingFailurePathfindingInputError13,
         Field(title="PathfindingFailurePathfindingInputError"),
     ]
 
@@ -5730,10 +5789,7 @@ class SimulationResponseSuccess(BaseModel):
     """
     Simulation that takes into account the regularity margins and the schedule item times
     """
-    mrsp: Mrsp
-    """
-    A MRSP computation result (Most Restrictive Speed Profile)
-    """
+    mrsp: CoreSpeedLimitProperties
     provisional: CoreReportTrain
     """
     Simulation that takes into account the regularity margins
@@ -5774,6 +5830,18 @@ class SpeedSectionExtensions(BaseModel):
         extra="forbid",
     )
     psl_sncf: SpeedSectionPslSncfExtension | None = None
+
+
+class StdcmPathfindingItem(BaseModel):
+    duration: Annotated[int | None, Field(ge=0)] = None
+    """
+    The stop duration in milliseconds, None if the train does not stop.
+    """
+    pathfinding_item: PathfindingItem
+    """
+    The associated location
+    """
+    timing_data: StepTimingData | None = None
 
 
 class StdcmProgressionEvent(BaseModel):
@@ -6032,6 +6100,7 @@ class CorePathfindingInputError(
     RootModel[
         PathfindingInputErrorInvalidPathItems
         | PathfindingInputErrorNotEnoughPathItems
+        | PathfindingInputErrorUnauthorizedRollingStock
         | PathfindingInputErrorRollingStockNotFound
         | PathfindingInputErrorZeroLengthPath
     ]
@@ -6039,6 +6108,7 @@ class CorePathfindingInputError(
     root: (
         PathfindingInputErrorInvalidPathItems
         | PathfindingInputErrorNotEnoughPathItems
+        | PathfindingInputErrorUnauthorizedRollingStock
         | PathfindingInputErrorRollingStockNotFound
         | PathfindingInputErrorZeroLengthPath
     )
@@ -6212,7 +6282,7 @@ class JourneySearchQuery(BaseModel):
     origin: OperationalPointPartReference
     start_ms: Annotated[int, Field(ge=0)]
     """
-    Amount of milliseconds from midnight UTC to the center of the start window.
+    Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
 
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`.
@@ -6225,6 +6295,9 @@ class JourneySearchQuery(BaseModel):
     `start_sec - start_tolerance` and `start_sec + start_tolerance`.
     """
     timetable_ids: list[int]
+    """
+    Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
+    """
     transfer_ms: Annotated[int, Field(ge=0)]
     """
     Constant time for a transfer/footpath in the same stop in milliseconds.
@@ -6403,6 +6476,56 @@ class PathfindingFailurePathfindingNotFound5(
     PathfindingNotFoundIncompatibleConstraints, PathfindingFailurePathfindingNotFound1
 ):
     pass
+
+
+class PathfindingInput(BaseModel):
+    """
+    Path input is described by some rolling stock information
+    and a list of path waypoints
+    """
+
+    allowed_track_sections: list[str] | None = None
+    """
+    Set of authorized track section ids, empty means no restriction
+    """
+    path_items: list[PathfindingItem]
+    """
+    List of waypoints given to the pathfinding
+    """
+    rolling_stock_is_thermal: bool
+    """
+    Can the rolling stock run on non-electrified tracks
+    """
+    rolling_stock_length: Annotated[int, Field(ge=0)]
+    """
+    Rolling stock length in millimeters
+    """
+    rolling_stock_loading_gauge: LoadingGaugeType
+    """
+    The loading gauge of the rolling stock
+    """
+    rolling_stock_maximum_speed: float
+    """
+    Rolling stock maximum speed
+    """
+    rolling_stock_supported_electrifications: list[str]
+    """
+    List of supported electrification modes.
+    Empty if does not support any electrification
+    """
+    rolling_stock_supported_signaling_systems: list[str]
+    """
+    List of supported signaling systems
+    """
+    speed_limit_tag: str | None = None
+    """
+    Speed limit tag, used to estimate the travel time
+    """
+    stops_at_end_of_block: bool | None = None
+    """
+    Stop the train at the next block-delimiting signal,
+    staying in the same block and keeping the tail on the initial position
+    """
 
 
 class PathfindingResultSuccess(CorePathfindingResultSuccess):
@@ -6678,6 +6801,7 @@ class ResponsePathfindingFailed(BaseModel):
         | PathfindingFailurePathfindingInputError3
         | PathfindingFailurePathfindingInputError4
         | PathfindingFailurePathfindingInputError5
+        | PathfindingFailurePathfindingInputError6
         | PathfindingFailurePathfindingNotFound2
         | PathfindingFailurePathfindingNotFound3
         | PathfindingFailurePathfindingNotFound4
@@ -6770,7 +6894,8 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
         | SummaryResponsePathfindingInputError2
         | SummaryResponsePathfindingInputError3
         | SummaryResponsePathfindingInputError4
-        | SummaryResponsePathfindingInputError5,
+        | SummaryResponsePathfindingInputError5
+        | SummaryResponsePathfindingInputError6,
     ]
     """
     The key is the `exception_id`
@@ -6786,6 +6911,7 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
         | SummaryResponsePathfindingInputError3
         | SummaryResponsePathfindingInputError4
         | SummaryResponsePathfindingInputError5
+        | SummaryResponsePathfindingInputError6
     )
 
 
@@ -6814,7 +6940,7 @@ class CoreOperationalPointOnPath(BaseModel):
     """
     Distance from the beginning of the path in mm
     """
-    secondary_code: SecondaryCode | None = None
+    secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0, le=100)]
@@ -6952,7 +7078,7 @@ class OperationalPoint(BaseModel):
     """
     Primary Location Code : https://rne.eu/it/products/ccs/crd/
     """
-    secondary_code: SecondaryCode | None = None
+    secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0)] = None
@@ -7067,7 +7193,7 @@ class RelatedOperationalPoint(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     parts: list[RelatedOperationalPointPart]
     plc: Plc2 | None = None
-    secondary_code: SecondaryCode4 | None = None
+    secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
     uic: Annotated[int | None, Field(ge=0)] = None
     weight: Annotated[int | None, Field(ge=0)] = None
@@ -7296,10 +7422,10 @@ class TrainSchedule(BaseModel):
     margins: Margins | None = None
     options: TrainScheduleOptions | None = None
     path: list[PathItem]
-    power_restrictions: list[PowerRestriction] | None = None
+    power_restrictions: list[PowerRestrictionItem] | None = None
     rolling_stock_name: str
     schedule: list[ScheduleItem] | None = None
-    speed_limit_tag: SpeedLimitTag | None = None
+    speed_limit_tag: NonBlankString | None = None
     start_time: OffsetInMs
     """
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.

@@ -1,7 +1,33 @@
 {
   "appName": "Expression de besoins",
+  "consist": {
+    "title": "Convoi",
+    "unavailable": "Indisponible"
+  },
+  "destination": {
+    "title": "Destination"
+  },
   "noConfigurationFound": {
     "text": "Impossible de récupérer l'environnement de recherche d'itinéraire (infrastructure, sillons). Veuillez réessayer plus tard.",
     "title": "Aucune configuration disponible"
+  },
+  "origin": {
+    "title": "Origine"
+  },
+  "results": {
+    "noResult": "Aucun résultat",
+    "solution": "Solution {{number}}",
+    "trainPathPrefix": "Sillon n° "
+  },
+  "search": {
+    "button": "Rechercher dans les PER",
+    "cancel": "Annuler",
+    "error": "La recherche a échoué. Veuillez réessayer.",
+    "pending": "Recherche en cours…"
+  },
+  "trainPath": {
+    "ch": "CH",
+    "ci": "CI",
+    "time": "Heure"
   }
 }

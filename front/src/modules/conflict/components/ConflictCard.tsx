@@ -2,10 +2,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import OSRDTooltip from 'common/OSRDTooltip';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { useDateTimeLocale } from 'utils/date';
+import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { timeToLocaleString, useDateTimeLocale } from 'utils/date';
 
 import type { ConflictWithTrainNames } from '../types';
 import { getTrainCategoryClassName } from './../../../applications/operationalStudies/views/Scenario/components/Timetable/utils';
@@ -42,11 +44,21 @@ const fitsWithinRows = (widths: number[], availableWidth: number, gap: number) =
 const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
-  const start_time = new Date(conflict.start_time).toLocaleTimeString(dateTimeLocale);
-  const end_time = new Date(conflict.start_time + conflict.duration).toLocaleTimeString(
+  const { scenario } = useScenarioContext();
+  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
+
+  const startTime = timeToLocaleString(
+    parseStartTime(conflict.start_time, scenario.timetable_type),
     dateTimeLocale
   );
-  const start_date = new Date(conflict.start_time).toLocaleDateString(dateTimeLocale);
+  const endTime = timeToLocaleString(
+    parseStartTime(conflict.start_time + conflict.duration, scenario.timetable_type),
+    dateTimeLocale
+  );
+  const startDate = isHourlyTimetable
+    ? null
+    : new Date(conflict.start_time).toLocaleDateString(dateTimeLocale);
+
   const totalTrains = conflict.trainsData.length;
 
   const [isOthersTooltipOpen, setIsOthersTooltipOpen] = useState(false);
@@ -131,16 +143,18 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
       <div className="conflict-info">
         <div className="conflict-type">{t(conflict.conflict_type)}</div>
         <div className="start-and-end-time">
-          <div className="start-time" title={start_time}>
-            {start_time}
+          <div className="start-time" title={startTime}>
+            {startTime}
           </div>
-          <div className="end-time" title={end_time}>
-            {end_time}
+          <div className="end-time" title={endTime}>
+            {endTime}
           </div>
         </div>
-        <div className="departure-date" title={start_date}>
-          {start_date}
-        </div>
+        {startDate && (
+          <div className="departure-date" title={startDate}>
+            {startDate}
+          </div>
+        )}
       </div>
 
       <div className="trains-name" ref={trainsContainerRef}>

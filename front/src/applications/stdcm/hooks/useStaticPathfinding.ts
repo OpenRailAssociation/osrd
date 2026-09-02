@@ -4,7 +4,7 @@ import { compact, isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { stdcmPathStepToPathItemLocation } from 'applications/stdcm/utils';
+import { canPathStepBacktrack, stdcmPathStepToPathItemLocation } from 'applications/stdcm/utils';
 import {
   osrdEditoastApi,
   type PathfindingResult,
@@ -18,6 +18,7 @@ import {
   getTrackSectionIdsByLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 
 import {
   getConsistChanges,
@@ -29,16 +30,29 @@ import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 /**
  * Compute the path items locations from the path steps
  */
-function pathStepsToLocations(
-  pathSteps: StdcmPathStep[]
-): Array<NonNullable<StdcmPathStep['operationalPoint']>> {
-  return compact(pathSteps.map((s) => s.operationalPoint));
+function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
+  NonNullable<StdcmPathStep['operationalPoint']> & {
+    canBacktrack: boolean;
+  }
+> {
+  return compact(
+    pathSteps.map((step) => {
+      if (!step.operationalPoint) {
+        return null;
+      }
+      return {
+        ...step.operationalPoint,
+        canBacktrack: canPathStepBacktrack(step),
+      };
+    })
+  );
 }
 
 const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
 
+  const backtrackEnabled = useSelector(getFeatureFlag('stdcmBacktrack'));
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
@@ -87,9 +101,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         return;
       }
 
-      const stdcmPathSteps = pathStepsLocations.map((step) =>
-        stdcmPathStepToPathItemLocation(step)
-      );
+      const stdcmPathSteps = pathStepsLocations.map((step) => ({
+        location: stdcmPathStepToPathItemLocation(step),
+        can_backtrack: backtrackEnabled && step.canBacktrack,
+      }));
 
       const pathSegmentsIndexes = getPathSegmentsIndexes(consistChanges, pathStepsLocations.length);
 
@@ -123,6 +138,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     launchPathfinding();
   }, [
     pathStepsLocations,
+    backtrackEnabled,
     rollingStock,
     speedLimitByTag,
     loadingGauge,

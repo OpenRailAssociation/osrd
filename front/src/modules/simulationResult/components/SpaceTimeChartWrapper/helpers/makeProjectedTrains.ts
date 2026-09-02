@@ -1,8 +1,15 @@
 import { pick } from 'lodash';
 
-import { generateBareOccurrences } from 'applications/operationalStudies/helpers/generateBareOccurrences';
+import {
+  generateBareOccurrences,
+  type BareOccurrence,
+} from 'applications/operationalStudies/helpers/generateBareOccurrences';
+import getTrainScheduleRepeatOffsets, {
+  type TimeRange,
+} from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
+import { addDurationToDate } from 'utils/duration';
 import {
   formatEditoastIdToTrainScheduleId,
   isIndexedOccurrenceId,
@@ -11,17 +18,42 @@ import {
 
 export const EXCEPTION_SUFFIX = '≠';
 
+function repeatOccurrencesInRange(
+  projectedTrain: TrainSpaceTimeData,
+  occurrences: BareOccurrence<Date>[],
+  timeRange: TimeRange
+): BareOccurrence<Date>[] {
+  const repeatOffsets = getTrainScheduleRepeatOffsets(projectedTrain, timeRange);
+
+  const repeatedOccurrences: BareOccurrence<Date>[] = [];
+  for (const offset of repeatOffsets) {
+    for (const occurrence of occurrences) {
+      repeatedOccurrences.push({
+        ...occurrence,
+        startTime: addDurationToDate(occurrence.startTime, offset),
+      });
+    }
+  }
+
+  return repeatedOccurrences;
+}
+
 /**
  * Turns trainSpaceTimeData (unique trains + pacedTrains) into individual train projection.
  * Extracts everything into one flat array.
  */
-const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
+const makeProjectedTrains = (
+  trainScheduleProjections: TrainSpaceTimeData[],
+  repeatTimeRange?: TimeRange
+) =>
   trainScheduleProjections.flatMap<IndividualTrainProjection>((projectedTrain) => {
     const { paced } = projectedTrain;
     if (!paced) {
+      const id = formatEditoastIdToTrainScheduleId(projectedTrain.id);
       return {
         ...projectedTrain,
-        id: formatEditoastIdToTrainScheduleId(projectedTrain.id),
+        id,
+        key: id,
         type: 'trainSchedule',
       };
     }
@@ -32,13 +64,18 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
       'isSimulated',
     ]);
 
-    return generateBareOccurrences({
+    let bareOccurrences = generateBareOccurrences({
       id: projectedTrain.id,
       startTime: projectedTrain.departureTime,
       paced,
-    })
-      .filter(({ exception }) => !exception?.disabled)
-      .map(({ id, startTime: departureTime, exception }): IndividualTrainProjection => {
+    }).filter(({ exception }) => !exception?.disabled);
+
+    if (repeatTimeRange) {
+      bareOccurrences = repeatOccurrencesInRange(projectedTrain, bareOccurrences, repeatTimeRange);
+    }
+
+    return bareOccurrences.map(
+      ({ id, startTime: departureTime, exception }): IndividualTrainProjection => {
         let name = exception?.train_name?.value;
         if (isIndexedOccurrenceId(id)) {
           name ??= computeOccurrenceName(
@@ -52,6 +89,8 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
           name += EXCEPTION_SUFFIX;
         }
 
+        const key = `${id}-${departureTime.toISOString()}`;
+
         if (exception) {
           // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
           const exceptionProjection = paced.exceptionProjections.get(exception.id!);
@@ -59,6 +98,7 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
           return {
             ...(exceptionProjection ?? pacedTrainCurves),
             id,
+            key,
             type: 'exception',
             name,
             departureTime,
@@ -71,12 +111,14 @@ const makeProjectedTrains = (trainScheduleProjections: TrainSpaceTimeData[]) =>
           return {
             ...pacedTrainCurves,
             id,
+            key,
             type: 'occurrence',
             name,
             departureTime,
           };
         }
-      });
+      }
+    );
   });
 
 export default makeProjectedTrains;

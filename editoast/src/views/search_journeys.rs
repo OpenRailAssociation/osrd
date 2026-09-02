@@ -1,15 +1,16 @@
+use authz::v2;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use common::units::quantities::Offset;
 use editoast_derive::EditoastError;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
 use itertools::Itertools;
+use models::Infra;
+use models::prelude::*;
 use profile_connection_scan::Connection;
+use schemas::timetable_type::TimetableType;
 use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
@@ -22,9 +23,10 @@ use tracing::Instrument as _;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::conflicts::retrieve_trains;
 
@@ -37,7 +39,7 @@ enum Error {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] models::Error),
 
     #[error("invalid input: {message}")]
     #[editoast_error(status = 400)]
@@ -48,9 +50,10 @@ enum Error {
 pub(in crate::views) struct JourneySearchQuery {
     infra_id: i64,
 
+    /// Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
     timetable_ids: HashSet<i64>,
 
-    /// Amount of milliseconds from midnight UTC to the center of the start window.
+    /// Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
     ///
     /// The start window is defined as the time between
     /// `start_sec - start_tolerance` and `start_sec + start_tolerance`.
@@ -81,7 +84,7 @@ struct TrainSchedulePartBound {
     /// Id of the operational point of the corresponding step in the train schedule's path.
     op_id: String,
 
-    /// Scheduled time of the step in milliseconds from midnight UTC.
+    /// Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
     time_ms: u32,
 }
 
@@ -135,6 +138,7 @@ struct PathIndexedConnection {
 ///
 /// The trains are not simulated, meaning each stop needs to be dated in order
 /// to be taken into account.
+/// Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -145,8 +149,10 @@ struct PathIndexedConnection {
     ),
 )]
 pub(in crate::views) async fn search_journeys(
-    State(AppState { db_pool, .. }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Json(JourneySearchQuery {
         infra_id,
         timetable_ids,
@@ -167,7 +173,13 @@ pub(in crate::views) async fn search_journeys(
         train_schedule_futs.spawn(
             async move {
                 let conn = db_pool.get().await?;
-                let train_schedules = retrieve_trains(conn, timetable_id).await?;
+                let (timetable_type, train_schedules) = retrieve_trains(conn, timetable_id).await?;
+
+                if timetable_type != TimetableType::Calendar {
+                    Err(Error::InvalidInput {
+                        message: "only calendar timetables are supported",
+                    })?;
+                }
 
                 Ok::<_, InternalError>(train_schedules)
             }
@@ -179,22 +191,24 @@ pub(in crate::views) async fn search_journeys(
 
     Infra::exists_or_fail(&mut conn, infra_id, || Error::InfraNotFound { infra_id }).await?;
 
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
+    v2::infra_privilege_check(
+        authz::Infra(infra_id),
+        authz::InfraPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
-    let timetables = JoinSetStream::new(train_schedule_futs)
+    let train_schedules: Vec<_> = JoinSetStream::new(train_schedule_futs)
         // Converts `Result<Result<_, InternalError>, JoinError>` into `Result<_, InternalError>`
         .map(|fut| fut?)
         .collect::<Result<Vec<_>>>()
-        .await?;
+        .await?
+        .into_iter()
+        .flatten()
+        .collect();
 
-    let op_references: Vec<&OperationalPointPartReference> = timetables
+    let op_references: Vec<&OperationalPointPartReference> = train_schedules
         .iter()
-        .flat_map(|(_, train_schedules)| train_schedules)
         .flat_map(|train_schedule| &train_schedule.path)
         .filter_map(|path_item| match &path_item.location {
             PathItemLocation::OperationalPointPartReference(op_ref) => Some(op_ref),
@@ -241,112 +255,92 @@ pub(in crate::views) async fn search_journeys(
     };
 
     let journeys = tokio::task::spawn_blocking(move || {
-        let mut train_schedule_ids = Vec::new();
-        let mut path_indexed_connections: Vec<PathIndexedConnection> = Vec::new();
-        for (timetable_type, train_schedules) in timetables {
-            let index_offset = train_schedule_ids.len();
+        let train_schedule_ids: Vec<i64> = train_schedules
+            .iter()
+            .map(|train_schedule| train_schedule.id)
+            .collect();
 
-            train_schedule_ids.extend(
-                train_schedules
-                    .iter()
-                    .map(|train_schedule| train_schedule.id),
-            );
+        let mut path_indexed_connections: Vec<PathIndexedConnection> = train_schedules
+            .into_iter()
+            .enumerate()
+            .flat_map(|(train_schedule_index, train_schedule)| {
+                // Timetables are only Calendar so we can use the raw start_time
+                let offset_ms = common::units::millisecond::i64::from(train_schedule.start_time);
 
-            path_indexed_connections.extend(
-                train_schedules.into_iter().zip(index_offset..).flat_map(
-                    |(train_schedule, train_schedule_index)| {
-                        let offset_ms = match timetable_type {
-                            schemas::timetable_type::TimetableType::Calendar => {
-                                // TODO this handles badly train schedules that span longer than a day
-                                datetime_millis_from_midnight(train_schedule.start_time)
-                            }
-                            schemas::timetable_type::TimetableType::Hourly => u32::try_from(
-                                common::units::millisecond::i64::from(train_schedule.start_time),
-                            )
-                            .unwrap(),
+                // avoid moving them into the filter_map closure
+                let op_index_by_id = &op_index_by_id;
+                let op_cache = &op_cache;
+
+                train_schedule
+                    .path
+                    .into_iter()
+                    .enumerate()
+                    .filter_map(move |(i, path_item)| {
+                        let arrival_ms: i64;
+                        let stop_for_ms: i64;
+
+                        if i == 0 {
+                            arrival_ms = offset_ms;
+                            stop_for_ms = 0;
+                        } else {
+                            let schedule_item = train_schedule
+                                .schedule
+                                .iter()
+                                .find(|schedule_item| schedule_item.at == path_item.id)?;
+
+                            arrival_ms = offset_ms + schedule_item.arrival?.num_milliseconds();
+                            stop_for_ms = schedule_item.stop_for?.num_milliseconds();
+                        }
+
+                        let PathItemLocation::OperationalPointPartReference(op_ref) =
+                            path_item.location
+                        else {
+                            return None;
                         };
 
-                        // avoid moving them into the filter_map closure
-                        let op_index_by_id = &op_index_by_id;
-                        let op_cache = &op_cache;
+                        let op_index =
+                            find_op_index(op_cache, op_index_by_id, &op_ref.operational_point)?;
 
-                        train_schedule
-                            .path
-                            .into_iter()
-                            .enumerate()
-                            .filter_map(move |(i, path_item)| {
-                                let arrival_ms: u32;
-                                let stop_for_ms: u32;
+                        // Timetables must be anchored on 1970-01-01 so arrival_ms and departure_ms
+                        // overflow u32 only for schedules absurdly far in the future.
+                        // We drop the step rather than failing the whole request.
+                        Some(ScheduleStep {
+                            path_index: i,
+                            op_index,
+                            arrival_ms: u32::try_from(arrival_ms).ok()?,
+                            departure_ms: u32::try_from(arrival_ms + stop_for_ms).ok()?,
+                        })
+                    })
+                    .tuple_windows()
+                    .map(move |(departure, arrival)| PathIndexedConnection {
+                        connection: Connection {
+                            trip: train_schedule_index,
+                            departure: departure.op_index,
+                            departure_ms: departure.departure_ms,
+                            arrival: arrival.op_index,
+                            arrival_ms: arrival.arrival_ms,
+                        },
+                        departure_path_index: departure.path_index,
+                        arrival_path_index: arrival.path_index,
+                    })
+                    .filter(|path_indexed_connection| {
+                        // Simple filters to reduce the size of the problem.
 
-                                if i == 0 {
-                                    arrival_ms = offset_ms;
-                                    stop_for_ms = 0;
-                                } else {
-                                    let schedule_item = train_schedule
-                                        .schedule
-                                        .iter()
-                                        .find(|schedule_item| schedule_item.at == path_item.id)?;
+                        // The connection isn't too early for the traveler to take it
+                        let departs_late_enough = (start_ms as i64 - start_tolerance as i64)
+                            <= path_indexed_connection.connection.departure_ms as i64;
 
-                                    arrival_ms = offset_ms
-                                        + u32::try_from(schedule_item.arrival?.num_milliseconds())
-                                            .unwrap();
-                                    stop_for_ms =
-                                        u32::try_from(schedule_item.stop_for?.num_milliseconds())
-                                            .unwrap();
-                                }
+                        // If the connection departs from the source OP, it
+                        // doesn't depart too late for the traveler to take it
+                        let departs_early_enough = path_indexed_connection.connection.departure
+                            != origin_index
+                            || path_indexed_connection.connection.departure_ms
+                                <= start_ms + start_tolerance;
 
-                                let PathItemLocation::OperationalPointPartReference(op_ref) =
-                                    path_item.location
-                                else {
-                                    return None;
-                                };
-
-                                let op_index = find_op_index(
-                                    op_cache,
-                                    op_index_by_id,
-                                    &op_ref.operational_point,
-                                )?;
-
-                                Some(ScheduleStep {
-                                    path_index: i,
-                                    op_index,
-                                    arrival_ms,
-                                    departure_ms: arrival_ms + stop_for_ms,
-                                })
-                            })
-                            .tuple_windows()
-                            .map(move |(departure, arrival)| PathIndexedConnection {
-                                connection: Connection {
-                                    trip: train_schedule_index,
-                                    departure: departure.op_index,
-                                    departure_ms: departure.departure_ms,
-                                    arrival: arrival.op_index,
-                                    arrival_ms: arrival.arrival_ms,
-                                },
-                                departure_path_index: departure.path_index,
-                                arrival_path_index: arrival.path_index,
-                            })
-                            .filter(|path_indexed_connection| {
-                                // Simple filters to reduce the size of the problem.
-
-                                // The connection isn't too early for the traveler to take it
-                                let departs_late_enough = (start_ms as i64
-                                    - start_tolerance as i64)
-                                    <= path_indexed_connection.connection.departure_ms as i64;
-
-                                // If the connection departs from the source OP, it
-                                // doesn't depart too late for the traveler to take it
-                                let departs_early_enough =
-                                    path_indexed_connection.connection.departure != origin_index
-                                        || path_indexed_connection.connection.departure_ms
-                                            <= start_ms + start_tolerance;
-
-                                departs_early_enough && departs_late_enough
-                            })
-                    },
-                ),
-            );
-        }
+                        departs_early_enough && departs_late_enough
+                    })
+            })
+            .collect();
 
         // Sort train connections by *decreasing* departure time.
         path_indexed_connections.sort_unstable_by(|a, b| {
@@ -373,24 +367,25 @@ pub(in crate::views) async fn search_journeys(
         journeys
             .into_iter()
             .map(|journey| {
-                let path_indexed_connections = journey
+                journey
                     .into_iter()
-                    .map(|connection_id| path_indexed_connections[connection_id]);
+                    .map(|leg| {
+                        let enter = path_indexed_connections[leg.enter_connection_id];
+                        let exit = path_indexed_connections[leg.exit_connection_id];
 
-                merge_connections(path_indexed_connections)
-                    .map(|path_indexed_connection| TrainSchedulePart {
-                        train_schedule_id: train_schedule_ids
-                            [path_indexed_connection.connection.trip],
-                        from: TrainSchedulePartBound {
-                            path_step_index: path_indexed_connection.departure_path_index,
-                            op_id: op_ids[path_indexed_connection.connection.departure].clone(),
-                            time_ms: path_indexed_connection.connection.departure_ms,
-                        },
-                        to: TrainSchedulePartBound {
-                            path_step_index: path_indexed_connection.arrival_path_index,
-                            op_id: op_ids[path_indexed_connection.connection.arrival].clone(),
-                            time_ms: path_indexed_connection.connection.arrival_ms,
-                        },
+                        TrainSchedulePart {
+                            train_schedule_id: train_schedule_ids[enter.connection.trip],
+                            from: TrainSchedulePartBound {
+                                path_step_index: enter.departure_path_index,
+                                op_id: op_ids[enter.connection.departure].clone(),
+                                time_ms: enter.connection.departure_ms,
+                            },
+                            to: TrainSchedulePartBound {
+                                path_step_index: exit.arrival_path_index,
+                                op_id: op_ids[exit.connection.arrival].clone(),
+                                time_ms: exit.connection.arrival_ms,
+                            },
+                        }
                     })
                     .collect()
             })
@@ -410,39 +405,4 @@ fn find_op_index(
 ) -> Option<usize> {
     let op_ref_id = op_cache.get_op_ref_id(op_ref)?;
     op_index_by_id.get(&op_ref_id).copied()
-}
-
-/// Merge connections of a same trip taken in a row into a single one.
-fn merge_connections<'a, I>(mut iter: I) -> impl Iterator<Item = PathIndexedConnection> + 'a
-where
-    I: Iterator<Item = PathIndexedConnection> + 'a,
-{
-    let mut prev_connection: Option<PathIndexedConnection> = None;
-
-    std::iter::from_fn(move || {
-        loop {
-            let next_connection = match iter.next() {
-                Some(conn) => conn,
-                None => return prev_connection.take(),
-            };
-
-            match &mut prev_connection {
-                Some(prev_conn) => {
-                    if prev_conn.connection.trip == next_connection.connection.trip {
-                        prev_conn.connection.arrival = next_connection.connection.arrival;
-                        prev_conn.connection.arrival_ms = next_connection.connection.arrival_ms;
-                        prev_conn.arrival_path_index = next_connection.arrival_path_index;
-                    } else {
-                        return prev_connection.replace(next_connection);
-                    }
-                }
-                None => prev_connection = Some(next_connection),
-            }
-        }
-    })
-}
-
-fn datetime_millis_from_midnight(t: Offset) -> u32 {
-    const MS_IN_DAY: i64 = 24 * 60 * 60 * 1000;
-    (common::units::millisecond::i64::from(t) % MS_IN_DAY) as u32
 }

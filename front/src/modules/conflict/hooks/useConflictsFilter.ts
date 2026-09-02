@@ -26,7 +26,7 @@ import addTrainNamesToConflicts, {
 } from '../utils';
 
 const useConflictsFilter = (
-  trainSchedules: TrainScheduleResponse[],
+  trainScheduleById: Map<number, TrainScheduleResponse>,
   conflicts: Conflict[],
   isConflictsLoading: boolean
 ) => {
@@ -37,11 +37,6 @@ const useConflictsFilter = (
   const handleToggleConflictsFilter = useCallback(() => {
     setShowOnlySelectedTrain(!showOnlySelectedTrain);
   }, [showOnlySelectedTrain]);
-
-  const trainScheduleById = useMemo<Map<number, TrainScheduleResponse>>(
-    () => new Map(trainSchedules.map((trainSchedule) => [trainSchedule.id, trainSchedule])),
-    [trainSchedules]
-  );
 
   const selectedTrainName = useMemo(() => {
     if (!selectedTrainId) return null;
@@ -73,15 +68,13 @@ const useConflictsFilter = (
     return `${selectedTrain.train_name}/+`;
   }, [selectedTrainId, trainScheduleById]);
 
-  const totalConflictsCount = useMemo(() => conflicts.length, [conflicts]);
+  const totalConflictsCount = conflicts.length;
 
   useEffect(() => {
     if (isConflictsLoading) return;
-    const sortedByStartTime = [...conflicts].sort(
-      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-    );
-    setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, trainSchedules));
-  }, [conflicts, isConflictsLoading, trainSchedules]);
+    const sortedByStartTime = [...conflicts].sort((a, b) => a.start_time - b.start_time);
+    setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, trainScheduleById));
+  }, [conflicts, isConflictsLoading, trainScheduleById]);
 
   const selectedEnrichedConflicts = useMemo(() => {
     if (!selectedTrainId) return [];

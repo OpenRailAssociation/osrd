@@ -2,6 +2,7 @@ import { Button } from '@osrd-project/ui-core';
 import { ChevronDown } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type { Train } from 'reducers/osrdconf/types';
@@ -31,6 +32,7 @@ const CollapsedTrainOverview = ({
   onItineraryOpened,
 }: CollapsedTrainOverviewProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const { scenario } = useScenarioContext();
   const dateTimeLocale = useDateTimeLocale();
 
   const pacedTrain = train.paced ? (train as PacedTrain) : null;
@@ -57,9 +59,11 @@ const CollapsedTrainOverview = ({
             {getServiceInterval(pacedTrain)}’ — {getServiceWindow(pacedTrain)}’
           </div>
         )}
-        <div className="train-departure-date" data-testid="train-departure-date">
-          {getShortDepartureDate(train, dateTimeLocale)}
-        </div>
+        {scenario.timetable_type === 'CALENDAR' && (
+          <div className="train-departure-date" data-testid="train-departure-date">
+            {getShortDepartureDate(train, dateTimeLocale)}
+          </div>
+        )}
         <div className="train-category" data-testid="train-category">
           {getShortCategoryName(train, t, subCategories)}
         </div>

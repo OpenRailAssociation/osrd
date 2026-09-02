@@ -7,9 +7,10 @@ import type {
   DrawingFunction,
   PickingDrawingFunction,
   Point,
+  DataPoint,
 } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
-import type { DataPoint, SpaceTimeChartContextType } from '../lib/types';
+import type { SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedQuadrilateral } from '../utils/canvas';
 
 export type QuadrilaterPickingElement = PickingElement & {
@@ -67,12 +68,10 @@ export const Quadrilateral = ({ id, vertices, style }: QuadrilateralProps) => {
 
   const drawPicking = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
-      const points = vertices.map(
-        (vertice): Point => ({
-          x: getTimePixel(vertice.time),
-          y: getSpacePixel(vertice.position),
-        })
-      ) as [Point, Point, Point, Point];
+      const points = vertices.map((vertice): Point => ({
+        x: getTimePixel(vertice.time),
+        y: getSpacePixel(vertice.position),
+      })) as [Point, Point, Point, Point];
 
       const pickingElement: QuadrilaterPickingElement = { type: 'quadrilateral', id };
       const index = registerPickingElement(pickingElement);

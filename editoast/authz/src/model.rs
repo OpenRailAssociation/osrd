@@ -140,6 +140,7 @@ pub enum InfraGrant {
     Eq,
     Hash,
 )]
+#[cfg_attr(test, derive(PartialOrd, Ord))]
 #[fga(name = "rolling_stock")]
 pub struct RollingStock(pub i64);
 
@@ -177,7 +178,18 @@ pub enum RollingStockPrivilege {
 }
 
 #[derive(
-    Debug, Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    EnumIter,
 )]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
@@ -220,6 +232,7 @@ impl fga::model::Type for Role {
 }
 
 #[derive(fga::Type, fga::Object, derive_more::FromStr, Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[cfg_attr(test, derive(Ord, PartialOrd))]
 pub struct Project(pub i64);
 
 #[derive(Clone, Copy, Debug, EnumString, Eq, Hash, PartialEq, Serialize)]
@@ -267,6 +280,7 @@ fga::relations! {
         writer: User,
         owner: User,
         // Computed
+        can_restricted_read: User,
         can_read: User,
         can_write: User,
         can_delete: User,

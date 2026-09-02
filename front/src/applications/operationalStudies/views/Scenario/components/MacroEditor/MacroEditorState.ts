@@ -6,6 +6,7 @@ import type {
   OperationalPoint,
   OperationalPointReference,
   PathItemLocation,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
@@ -24,6 +25,11 @@ export default class MacroEditorState {
    * Scenario id
    */
   scenarioId: number;
+
+  /**
+   * Type of the timetable the trainruns are created in.
+   */
+  timetableType: TimetableType;
 
   /**
    * Nodes storage
@@ -85,7 +91,7 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(infraId: number, scenarioId: number) {
+  constructor(infraId: number, scenarioId: number, timetableType: TimetableType) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
     this.noteLabels = new Set<string>([]);
@@ -95,6 +101,7 @@ export default class MacroEditorState {
     this.ngeNoteIdToDbId = new Map();
     this.infraId = infraId;
     this.scenarioId = scenarioId;
+    this.timetableType = timetableType;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: 0 };
@@ -257,14 +264,14 @@ export default class MacroEditorState {
 
   /**
    * Encode a domestic operational point reference in the form:
-   * ${country_code}-${main_code}/${secondary_code}
+   * ${main_code}/${secondary_code}#${country_code}
    */
   static encodeDomesticReference(
     opRef: Extract<OperationalPointReference, { type: 'domestic' }>
   ): string {
     const secondaryCode = opRef.secondary_code ? `/${opRef.secondary_code}` : '';
-    const countryCode = opRef.country_code === '??' ? '' : `${opRef.country_code}-`;
-    return `${countryCode}${opRef.main_code}${secondaryCode}`;
+    const countryCode = opRef.country_code === '??' ? '' : `#${opRef.country_code}`;
+    return `${opRef.main_code}${secondaryCode}${countryCode}`;
   }
 
   /**
@@ -325,21 +332,15 @@ export default class MacroEditorState {
 
   /**
    * Decode a domestic operational point reference in the form:
-   * ${country_code}-${main_code}/${secondary_code}
+   * ${main_code}/${secondary_code}#${country_code}
    */
   static decodeDomesticReference(
     pathKey: string
   ): Extract<OperationalPointReference, { type: 'domestic' }> {
-    const [country_code_main_code, secondary_code] = pathKey.split('/');
-    const country_code_main_code_split = country_code_main_code.split('-');
+    const [main_code_secondary_code, splitted_country_code] = pathKey.split('#');
+    const [main_code, secondary_code] = main_code_secondary_code.split('/');
 
-    let country_code, main_code;
-    if (country_code_main_code_split.length === 2) {
-      [country_code, main_code] = country_code_main_code_split;
-    } else {
-      main_code = country_code_main_code;
-      country_code = '??';
-    }
+    const country_code = splitted_country_code ? splitted_country_code : '??';
 
     return { main_code, secondary_code, country_code, type: 'domestic' };
   }

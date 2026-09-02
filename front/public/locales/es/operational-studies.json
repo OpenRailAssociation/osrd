@@ -9,7 +9,7 @@
     "map": "Mapa",
     "sdd": "DEV",
     "std": "DET",
-    "tables": "Cuadros",
+    "table": "Cuadro",
     "trains": "Trenes"
   },
   "importTrainScheduleSet": {
@@ -95,21 +95,11 @@
     }
   },
   "manageTrainSchedule": {
-    "deleteRoute": "Elimina la ruta",
     "errorMessages": {
       "error": "Ha ocurrido un error"
     },
-    "itineraryModal": {
-      "next": "Próximo"
-    },
-    "pacedTrains": {
-      "add": "Añadir"
-    },
     "pathfindingErrors": {
       "not_found_in_routes": "Ruta perdida"
-    },
-    "tabs": {
-      "pathFinding": "Recorrido"
     }
   },
   "operational-studies-management": {

@@ -19,7 +19,6 @@ use core_client::CoreClient;
 use core_client::mq_client;
 use dashmap::DashMap;
 use database::DbConnectionPoolV2;
-use editoast_models::PgAuthDriver;
 use fga::client::Limits;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
@@ -45,15 +44,11 @@ use crate::views::timetable;
 
 #[derive(Clone)]
 pub struct CoreConfig {
+    pub mq_url: Url,
     pub timeout: Duration,
     pub single_worker: bool,
     pub num_channels: usize,
     pub worker_pool_id: String,
-}
-
-pub struct OsrdyneConfig {
-    pub mq_url: Url,
-    pub core: CoreConfig,
 }
 
 #[derive(Clone)]
@@ -84,7 +79,7 @@ pub struct ServerConfig {
     pub health_check_timeout: Duration,
     pub map_layers_max_zoom: u8,
     pub postgres_config: PostgresConfig,
-    pub osrdyne_config: OsrdyneConfig,
+    pub core_config: CoreConfig,
     pub valkey_config: cache::Config,
     pub openfga_config: OpenfgaConfig,
     pub root_url: Url,
@@ -99,8 +94,6 @@ pub struct Server {
     router: NormalizePath<Router>,
 }
 
-pub type Regulator = ::authz::Regulator<PgAuthDriver>;
-
 /// The state of the whole Editoast service, available to all handlers
 ///
 /// If only the database is needed, use `State<database::DbConnectionPoolV2>`.
@@ -113,7 +106,7 @@ pub struct AppState {
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub core_client: Arc<CoreClient>,
     pub health_check_timeout: Duration,
-    pub regulator: Regulator,
+    pub openfga: fga::Client,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
     pub s3_client: Option<Arc<AmazonS3>>,
 }
@@ -159,8 +152,8 @@ impl AppState {
                 single_worker,
                 num_channels,
                 worker_pool_id,
+                mq_url,
             }: CoreConfig,
-            mq_url: Url,
         ) -> anyhow::Result<Arc<CoreClient>> {
             let options = mq_client::Options {
                 uri: mq_url,
@@ -172,13 +165,8 @@ impl AppState {
             let client = CoreClient::new_mq(options).await?;
             Ok(Arc::new(client))
         }
-        let core_client_fut = tokio::spawn(
-            connect_core_client(
-                config.osrdyne_config.core.clone(),
-                config.osrdyne_config.mq_url.clone(),
-            )
-            .in_current_span(),
-        );
+        let core_client_fut =
+            tokio::spawn(connect_core_client(config.core_config.clone()).in_current_span());
 
         #[tracing::instrument(skip_all, level = "info", err, name = "OpenFGA connection")]
         async fn connect_openfga(openfga_config: OpenfgaConfig) -> anyhow::Result<fga::Client> {
@@ -220,7 +208,7 @@ impl AppState {
         )?;
 
         Ok(Self {
-            regulator: Regulator::new(openfga, PgAuthDriver::new(db_pool.clone())),
+            openfga,
             valkey_client,
             db_pool,
             infra_caches,
@@ -295,10 +283,6 @@ impl Server {
         // Configure the axum router
         let router: Router<()> = axum::Router::<AppState>::new()
             .merge(router)
-            .route_layer(axum::middleware::from_fn_with_state(
-                app_state.clone(),
-                middlewares::authentication_middleware,
-            ))
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 middlewares::authentication_validation_middleware,

@@ -1,12 +1,9 @@
-use std::sync::Arc;
-
-use crate::views;
 use clap::Args;
-use database::DbConnectionPoolV2;
-use editoast_models::PgAuthDriver;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 use url::Url;
+
+use crate::views;
 
 #[derive(Args, Debug)]
 pub struct OpenfgaConfig {
@@ -49,14 +46,5 @@ impl OpenfgaConfig {
             }
             result => Ok(result?),
         }
-    }
-
-    pub async fn into_regulator(
-        self,
-        pool: Arc<DbConnectionPoolV2>,
-    ) -> anyhow::Result<views::Regulator> {
-        let openfga = self.into_client().await?;
-        let driver = PgAuthDriver::new(pool);
-        Ok(views::Regulator::new(openfga, driver))
     }
 }

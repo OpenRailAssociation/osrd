@@ -55,10 +55,10 @@ const Wrapper = ({
       id: `op-${i}`,
       label: `Operational point n°${i + 1}`,
       // TODO: fix this lint
-      /* eslint-disable-next-line react-hooks-js/immutability */
+      /* eslint-disable-next-line react/immutability */
       position: (position += random(50 * KILOMETER, 150 * KILOMETER)),
       // TODO: fix this lint
-      // eslint-disable-next-line react-hooks-js/purity
+      // eslint-disable-next-line react/purity
       importanceLevel: !i || i === operationalPointsCount - 1 || Math.random() > 0.8 ? 1 : 2,
     }));
   }, [operationalPointsCount]);
@@ -173,23 +173,23 @@ const meta: Meta<typeof Wrapper> = {
   argTypes: {
     operationalPointsCount: {
       name: 'Operational points',
-      defaultValue: 5,
+      value: 5,
       control: { type: 'number', step: 1, min: 2, max: 30 },
     },
     trainTypes: {
       name: 'Train types',
-      defaultValue: 4,
+      value: 4,
       control: { type: 'number', step: 1, min: 1, max: 20 },
     },
     pathsPerTrain: {
       name: 'Paths per train type',
-      defaultValue: 50,
+      value: 50,
       control: { type: 'number', step: 10, min: 0, max: 200 },
     },
     spaceScaleType: {
       name: 'Space scaling type',
       options: ['linear', 'proportional'],
-      defaultValue: 'linear',
+      value: 'linear',
       control: { type: 'radio' },
     },
   },

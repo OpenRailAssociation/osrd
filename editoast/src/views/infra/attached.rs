@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use authz;
+use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -10,12 +11,13 @@ use serde::Deserialize;
 use thiserror::Error;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
-use editoast_models::Infra;
-use editoast_models::prelude::*;
+use models::Infra;
+use models::prelude::*;
 use schemas::primitives::ObjectType;
 
 /// Objects types that can be attached to a track
@@ -67,9 +69,10 @@ pub(in crate::views) async fn attached(
         db_pool,
         valkey_client,
         config,
+        openfga,
         ..
     }): State<AppState>,
-    Extension(auth): AuthenticationExt,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
     // Check that infra exists
     let mut conn = db_pool.get().await?;
@@ -79,13 +82,9 @@ pub(in crate::views) async fn attached(
     })
     .await?;
 
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
+    v2::infra_privilege_check(authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     // Check track existence
     let infra_cache = InfraCache::get_or_load(
@@ -127,8 +126,8 @@ mod tests {
     use crate::views::test_app;
     use crate::views::test_app::TestRequestExt as _;
     use authz::InfraGrant;
-    use editoast_models::Infra;
-    use editoast_models::prelude::*;
+    use models::Infra;
+    use models::prelude::*;
     use schemas::infra::Detector;
     use schemas::infra::TrackSection;
     use schemas::primitives::OSRDIdentified;

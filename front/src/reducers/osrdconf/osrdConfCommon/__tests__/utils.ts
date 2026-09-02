@@ -1,35 +1,20 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
-import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
-import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
-import type { OsrdConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 
-function createStore(
-  slice: OperationalStudiesConfSlice | StdcmConfSlice,
-  initialStateExtra: Partial<OsrdConfState> = {}
-) {
-  return createStoreWithoutMiddleware({
-    [slice.name]: { ...defaultCommonConf, ...initialStateExtra },
-  });
-}
-
-const testSpeedLimitByTag = (
-  slice: OperationalStudiesConfSlice | StdcmConfSlice,
-  newTag: string | null
-) => {
-  const store = createStore(slice);
+const testSpeedLimitByTag = (slice: StdcmConfSlice, newTag: string | null) => {
+  const store = createStoreWithoutMiddleware({});
   store.dispatch(slice.actions.updateSpeedLimitByTag(newTag));
   return store.getState()[slice.name];
 };
 
-const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSlice) => {
-  let defaultStore: ReturnType<typeof createStore>;
+const testCommonConfReducers = (slice: StdcmConfSlice) => {
+  let defaultStore: ReturnType<typeof createStoreWithoutMiddleware>;
 
   beforeEach(() => {
-    defaultStore = createStore(slice);
+    defaultStore = createStoreWithoutMiddleware({});
   });
 
   it('should update infraID', () => {

@@ -114,6 +114,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
         ),
       },
     ];
+    /* eslint-disable-next-line react/memo-dependencies */
   }, [paths, selectedWaypoint, operationalPoints, selectedTrain]);
 
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({

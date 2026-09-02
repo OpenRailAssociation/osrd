@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import SpaceTimeChartWrapper, {
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChartWrapper/useGetProjectedTrainOperationalPoints';
 import useHandleInvalidProjections from 'modules/simulationResult/components/SpaceTimeChartWrapper/useHandleInvalidProjections';
+import useLinkings from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLinkings';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChartWrapper/useProjectedConflicts';
 import useTrackOccupancy from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
@@ -24,13 +25,13 @@ import TimeStopsTableWrapper from 'modules/timesStops/TimeStopsTableWrapper';
 import TrainHeader from 'modules/trainHeader/TrainHeader';
 import { findExceptionWithOccurrenceId } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { TrainScheduleToEditData } from 'reducers/osrdconf/types';
 import { toggleDisplayOnlyPathSteps } from 'reducers/simulationResults';
 import {
   getDisplayOnlyPathSteps,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import type { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -55,8 +56,10 @@ type SimulationResultsProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
-  setDisplayTrainScheduleManagement: (type: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
+  /**
+   * Duration of the hourly timetable pattern; `undefined` for calendar scenarios.
+   */
+  hourlyTimetableDuration?: Duration;
   isScrollingToTimeStopsTable: boolean;
   setIsScrollingToTimeStopsTable: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -67,8 +70,7 @@ const SimulationResults = ({
   trainSchedulesWithDetails,
   conflicts = NO_CONFLICTS,
   activeBoards,
-  setTrainScheduleToEditData,
-  setDisplayTrainScheduleManagement,
+  hourlyTimetableDuration,
   isScrollingToTimeStopsTable,
   setIsScrollingToTimeStopsTable,
 }: SimulationResultsProps) => {
@@ -146,6 +148,15 @@ const SimulationResults = ({
     timetableId,
     pathOperationalPoints: filteredOperationalPoints,
     trainScheduleProjections,
+  });
+
+  const displayedTrainScheduleIds = useMemo(
+    () => trainScheduleProjections.map(({ id }) => id),
+    [trainScheduleProjections]
+  );
+  const { linkings, createLinking, deleteLinking } = useLinkings({
+    timetableId,
+    trainScheduleIds: displayedTrainScheduleIds,
   });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
@@ -283,6 +294,9 @@ const SimulationResults = ({
                     timetableId,
                   }}
                   trackOccupancyDiagramsData={deployedWaypoints}
+                  linkings={linkings}
+                  onCreateLinking={createLinking}
+                  onDeleteLinking={deleteLinking}
                   onCloseOccupancyLayer={(waypointId: string) => toggleWaypoint(waypointId, false)}
                   conflicts={conflictZones}
                   projectionLoaderData={projectionData.projectionLoaderData}
@@ -293,6 +307,7 @@ const SimulationResults = ({
                   waypointsPanelIsOpen={waypointsPanelIsOpen}
                   setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
                   pathfindingHasFailed={projectionData?.pathfindingStatus === 'failed'}
+                  hourlyTimetableDuration={hourlyTimetableDuration}
                 />
               )}
             </div>
@@ -304,7 +319,7 @@ const SimulationResults = ({
       {simulationResults && (
         <BoardWrapper
           ref={timeStopsTableRef}
-          hidden={!activeBoards.has('tables')}
+          hidden={!activeBoards.has('table')}
           name={simulationResults.train.train_name}
           items={[
             {
@@ -322,8 +337,6 @@ const SimulationResults = ({
               train={simulationResults.train}
               path={simulationResults.path}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
-              setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-              setTrainScheduleToEditData={setTrainScheduleToEditData}
             />
           }
           customFooter={

@@ -8,7 +8,8 @@ import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from 
 import { DEFAULT_THEME, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import useEdgePan from '../hooks/useEdgePan';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
-import type { OccupancyZone, Track } from '../lib/types';
+import type { BrokenLinking, Linking, OccupancyZone, Track } from '../lib/types';
+import { isBrokenLinkingPickingElement } from './layers/BrokenLinkingLayer';
 import { isOccupancyPickingElement } from './layers/OccupancyZonesLayer';
 import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
@@ -17,6 +18,10 @@ const TrackOccupancyStandalone = ({
   tracks,
   occupancyZones,
   draggingOccupancyZones,
+  linkings,
+  brokenLinkings,
+  deleteIconUrl,
+  onDeleteBrokenLinking,
   selectedPathId,
   onSelectedPathIdChange,
   onHoveredChildUpdate,
@@ -26,6 +31,10 @@ const TrackOccupancyStandalone = ({
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
+  linkings?: Linking[];
+  brokenLinkings?: BrokenLinking[];
+  deleteIconUrl?: string;
+  onDeleteBrokenLinking?: (brokenLinkingId: string) => void;
   selectedPathId?: string;
   onSelectedPathIdChange?: (selectedPathId?: string) => void;
   onHoveredChildUpdate?: SpaceTimeChartProps['onHoveredChildUpdate'];
@@ -36,7 +45,7 @@ const TrackOccupancyStandalone = ({
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
   const defaultTimeOrigin = useMemo(() => {
     // TODO: fix this lint
-    /* eslint-disable-next-line react-hooks-js/purity */
+    /* eslint-disable-next-line react/purity */
     const minTime = Math.min(...(occupancyZones.map((zone) => zone.startTime) || Date.now()));
     // Take first round hour before minTime:
     return Math.floor(minTime / HOUR) * HOUR;
@@ -77,6 +86,9 @@ const TrackOccupancyStandalone = ({
             topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}
             draggingOccupancyZones={draggingOccupancyZones}
+            linkings={linkings}
+            brokenLinkings={brokenLinkings}
+            deleteIconUrl={deleteIconUrl}
             onDragOver={handleDragOver}
             hideBorders
           />
@@ -86,7 +98,17 @@ const TrackOccupancyStandalone = ({
         ),
       },
     ],
-    [height, tracks, occupancyZones, draggingOccupancyZones, highlightedTrackId, handleDragOver]
+    [
+      height,
+      tracks,
+      occupancyZones,
+      draggingOccupancyZones,
+      linkings,
+      brokenLinkings,
+      deleteIconUrl,
+      highlightedTrackId,
+      handleDragOver,
+    ]
   );
 
   /**
@@ -120,6 +142,24 @@ const TrackOccupancyStandalone = ({
     pan,
   });
 
+  const handleClick = useCallback<NonNullable<SpaceTimeChartProps['onClick']>>(
+    ({ hoveredItem }) => {
+      if (hoveredItem?.element && isBrokenLinkingPickingElement(hoveredItem.element)) {
+        onDeleteBrokenLinking?.(hoveredItem.element.brokenLinkingId);
+        return;
+      }
+      if (onSelectedPathIdChange) {
+        if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
+          const newId = hoveredItem.element.pathId;
+          onSelectedPathIdChange(newId === selectedPathId ? undefined : newId);
+        } else {
+          onSelectedPathIdChange(undefined);
+        }
+      }
+    },
+    [onDeleteBrokenLinking, onSelectedPathIdChange, selectedPathId]
+  );
+
   return (
     <div className="track-occupancy-standalone flex flex-col">
       <div className="bg-ambientB-5 flex flex-col justify-center main-container-header grow-0 shrink-0">
@@ -139,17 +179,7 @@ const TrackOccupancyStandalone = ({
               className="inset-0 absolute h-full"
               {...spaceTimeChartProps}
               hideGrid={true}
-              onClick={
-                onSelectedPathIdChange &&
-                (({ hoveredItem }) => {
-                  if (hoveredItem?.layer && isOccupancyPickingElement(hoveredItem.element)) {
-                    const newId = hoveredItem.element.pathId;
-                    onSelectedPathIdChange(newId === selectedPathId ? undefined : newId);
-                  } else {
-                    onSelectedPathIdChange(undefined);
-                  }
-                })
-              }
+              onClick={onSelectedPathIdChange || onDeleteBrokenLinking ? handleClick : undefined}
               onPan={isDragging ? undefined : spaceTimeChartProps.onPan}
               onMouseMove={onMouseMove}
               onHoveredChildUpdate={onHoveredChildUpdate}

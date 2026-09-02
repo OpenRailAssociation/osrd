@@ -13,6 +13,7 @@ import {
   type PathItemLocation,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
+import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createTrainSchedules,
   deleteTrainSchedules,
@@ -25,11 +26,7 @@ import { Duration } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
-import {
-  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-  DEFAULT_TIME_WINDOW,
-  TRAINRUN_DIRECTIONS,
-} from '../consts';
+import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import MacroEditorState from '../MacroEditorState';
 import {
   fetchStationSecondaryCodeCountryCode,
@@ -376,7 +373,8 @@ const populateSecondaryCodesInPath = async (
 
 export const createPacedAttributesFromTrainrun = (
   trainrun: TrainrunDto,
-  dto: NetzgrafikDto
+  dto: NetzgrafikDto,
+  defaultTimeWindow: Duration
 ): TrainSchedule['paced'] => {
   const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
   const interval = new Duration({ minutes: freq.frequency });
@@ -386,7 +384,7 @@ export const createPacedAttributesFromTrainrun = (
   }
   return {
     interval: interval.toISOString(),
-    time_window: DEFAULT_TIME_WINDOW.toISOString(),
+    time_window: defaultTimeWindow.toISOString(),
     exceptions: [],
   };
 };
@@ -434,7 +432,11 @@ const handleCreateTrainSchedule = async (
     trainrun.categoryId
   );
 
-  const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
+  const paced = createPacedAttributesFromTrainrun(
+    trainrun,
+    netzgrafikDto,
+    getDefaultPacedTrainTimeWindow(state.timetableType)
+  );
 
   const forwardTrip: TrainSchedule = {
     ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
@@ -547,14 +549,19 @@ export const handleUpdateTrainSchedule = async ({
     trainrun.categoryId
   );
 
-  const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
+  const paced = createPacedAttributesFromTrainrun(
+    trainrun,
+    netzgrafikDto,
+    getDefaultPacedTrainTimeWindow(state.timetableType)
+  );
 
   const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
     ...trainScheduleBase,
     train_name: trainrun.name,
     labels,
-    // Reset margins because they contain references to path items
+    // Reset margins and power restrictions because they contain references to path items
     margins: undefined,
+    power_restrictions: undefined,
     paced,
     category,
     ...forwardPathAndSchedule,
@@ -610,8 +617,9 @@ export const handleUpdateTrainSchedule = async ({
       ...oldReturnTrainBase,
       train_name: trainrun.name,
       labels,
-      // Reset margins because they contain references to path items
+      // Reset margins and power restrictions because they contain references to path items
       margins: undefined,
+      power_restrictions: undefined,
       paced: returnPaced,
       category,
       ...returnPathAndSchedule,

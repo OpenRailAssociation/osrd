@@ -172,30 +172,35 @@ pub struct PathfindingConsist {
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConstraints {
     /// An ordered list of waypoints the resulting path must pass through
-    pub path_items: Vec<PathItemAlternatives>,
+    pub path_items: Vec<PathItemConstraint>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: BTreeSet<String>,
 }
 
-/// A set of [TrackOffset]
+/// A waypoint the resulting path must pass through
 ///
-/// The resulting path can cross any of these.
+/// The waypoint is given as a set of [TrackOffset] alternatives: the resulting
+/// path can cross any of these.
 #[derive(Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(test, derive(Clone))]
-pub struct PathItemAlternatives(Vec<TrackOffset>);
-
-impl FromIterator<TrackOffset> for PathItemAlternatives {
-    fn from_iter<T: IntoIterator<Item = TrackOffset>>(iter: T) -> Self {
-        Self(iter.into_iter().collect())
-    }
+pub struct PathItemConstraint {
+    pub path_item_alternatives: Vec<TrackOffset>,
+    /// Whether the train is allowed to backtrack at this waypoint
+    pub can_backtrack: bool,
 }
 
-impl IntoIterator for PathItemAlternatives {
-    type Item = TrackOffset;
-    type IntoIter = <Vec<TrackOffset> as IntoIterator>::IntoIter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+#[cfg(test)]
+impl PathItemConstraint {
+    /// Reserved to tests: everywhere else, build the struct with named fields so that the origin
+    /// of `can_backtrack` stays explicit at the call site
+    pub(crate) fn new(
+        path_item_alternatives: impl IntoIterator<Item = TrackOffset>,
+        can_backtrack: bool,
+    ) -> Self {
+        Self {
+            path_item_alternatives: path_item_alternatives.into_iter().collect(),
+            can_backtrack,
+        }
     }
 }
 
@@ -383,9 +388,12 @@ pub fn pathfinding_request_from_consist_constraints(
             .path_items
             .iter()
             .map(
-                |PathItemAlternatives(track_alternatives)| core_client::pathfinding::PathItem {
-                    locations: track_alternatives.clone(),
-                    can_backtrack: Some(false),
+                |PathItemConstraint {
+                     path_item_alternatives: tracks,
+                     can_backtrack,
+                 }| core_client::pathfinding::PathItem {
+                    locations: tracks.clone(),
+                    can_backtrack: *can_backtrack,
                 },
             )
             .collect(),
@@ -458,12 +466,15 @@ pub(crate) mod test_data {
     pub(crate) fn constraints(id: usize) -> PathfindingConstraints {
         PathfindingConstraints {
             path_items: vec![
-                PathItemAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
-                PathItemAlternatives::from_iter([
-                    TrackOffset::new("tr1", 100),
-                    TrackOffset::new("tr1bis", 100),
-                ]),
-                PathItemAlternatives::from_iter([TrackOffset::new("tr2", 200)]),
+                PathItemConstraint::new([TrackOffset::new("id", id as u64)], false),
+                PathItemConstraint::new(
+                    [
+                        TrackOffset::new("tr1", 100),
+                        TrackOffset::new("tr1bis", 100),
+                    ],
+                    false,
+                ),
+                PathItemConstraint::new([TrackOffset::new("tr2", 200)], false),
             ],
             allowed_track_sections: BTreeSet::new(),
         }

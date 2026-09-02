@@ -12,7 +12,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TrainScheduleToEditData, TrainId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -25,9 +25,6 @@ import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
-  setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleToEditData: (trainScheduleToEditData?: TrainScheduleToEditData) => void;
-  trainScheduleToEditData?: TrainScheduleToEditData;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
@@ -36,9 +33,6 @@ type TimetableBoardWrapperProps = {
 };
 
 const TimetableBoardWrapper = ({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleToEditData,
-  trainScheduleToEditData,
   trainSchedulesWithDetails,
   refreshNge,
   projectingOnSimulatedPathException,
@@ -62,7 +56,7 @@ const TimetableBoardWrapper = ({
 
   const { totalPacedTrainCount, totalUniqueTrainCount } = useMemo(
     () =>
-      trainSchedules.reduce(
+      [...trainSchedules.values()].reduce(
         (acc, trainSchedule) => {
           if (!trainSchedule.paced) {
             acc.totalUniqueTrainCount += 1;
@@ -160,7 +154,7 @@ const TimetableBoardWrapper = ({
 
       removeTrainSchedules(selectedTrainScheduleIds);
 
-      if (trainSchedules.length - selectedTrainScheduleIds.length === 0) {
+      if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
         setIsSelectMode(false);
       }
 
@@ -289,10 +283,7 @@ const TimetableBoardWrapper = ({
         setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
         isSelectMode={isSelectMode}
         setIsSelectMode={setIsSelectMode}
-        setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-        setTrainScheduleToEditData={setTrainScheduleToEditData}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}
-        trainScheduleToEditData={trainScheduleToEditData}
         trainSchedulesWithDetails={trainSchedulesWithDetails}
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}

@@ -3,11 +3,12 @@ import { compact } from 'lodash';
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { OperationalStudiesConfState, OccurrenceId, PathStep } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PathStep } from 'reducers/osrdconf/types';
 import { startTimeToMs } from 'utils/duration';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
+import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 import { generatePacedTrainException } from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
@@ -34,22 +35,22 @@ function normalizeFirstWaypointTimes(
   return { pathSteps: shiftedPathSteps, startTime: startTime + firstArrival.ms };
 }
 
-export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState): TrainSchedule {
+export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState): TrainSchedule {
   const { pathSteps, startTime } = normalizeFirstWaypointTimes(
-    compact(osrdconf.pathSteps),
-    osrdconf.startTime.getTime()
+    compact(trainState.pathSteps),
+    startTimeToMs(trainState.startTime)
   );
 
   return {
-    category: osrdconf.category,
-    comfort: osrdconf.rollingStockComfort,
-    constraint_distribution: osrdconf.constraintDistribution,
-    initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
-    labels: osrdconf.labels,
+    category: trainState.category,
+    comfort: trainState.rollingStockComfort,
+    constraint_distribution: trainState.constraintDistribution,
+    initial_speed: trainState.initialSpeed ? kmhToMs(trainState.initialSpeed) : 0,
+    labels: trainState.labels,
     margins: formatMargin(pathSteps),
     options: {
-      use_electrical_profiles: osrdconf.usingElectricalProfiles,
-      use_speed_limits_for_simulation: osrdconf.usingSpeedLimits,
+      use_electrical_profiles: trainState.usingElectricalProfiles,
+      use_speed_limits_for_simulation: trainState.usingSpeedLimits,
       stops_at_end_of_block: false,
     },
     path: pathSteps.map((step) => ({
@@ -57,21 +58,21 @@ export function formatTrainSchedulePayload(osrdconf: OperationalStudiesConfState
       location: step.location,
     })),
     paced:
-      osrdconf.editingTrainType !== 'uniqueTrain'
+      trainState.editingTrainType !== 'uniqueTrain'
         ? {
-            time_window: osrdconf.timeWindow.toISOString(),
-            interval: osrdconf.interval.toISOString(),
+            time_window: trainState.timeWindow.toISOString(),
+            interval: trainState.interval.toISOString(),
             // This data is used as payload to create/update train schedule and shouldn't have exceptions inside
             // since exceptions have their own endpoints for that
             exceptions: [],
           }
         : undefined,
-    power_restrictions: osrdconf.powerRestriction,
-    rolling_stock_name: osrdconf.rollingStockName,
+    power_restrictions: trainState.powerRestriction,
+    rolling_stock_name: trainState.rollingStockName,
     schedule: formatSchedule(pathSteps),
-    speed_limit_tag: osrdconf.speedLimitByTag,
+    speed_limit_tag: trainState.speedLimitByTag,
     start_time: startTime,
-    train_name: osrdconf.name,
+    train_name: trainState.name,
   };
 }
 
