@@ -17,8 +17,8 @@
     "clean": "rimraf storybook-static",
     "start": "storybook dev -p 6006",
     "build": "storybook build",
-    "lint": "oxlint . --max-warnings 0 && oxfmt . --check",
-    "lint:fix": "oxlint . --fix && oxfmt . --write"
+    "lint": "stylelint 'stories/**/*.{css,scss}' && oxlint . --max-warnings 0 && oxfmt . --check",
+    "lint:fix": "stylelint 'stories/**/*.{css,scss}' --fix && oxlint . --fix && oxfmt . --write"
   },
   "dependencies": {
     "@osrd-project/ui-charts": "0.0.1-dev",
