@@ -3,21 +3,21 @@ import { StyleSheet, Font } from '@react-pdf/renderer';
 Font.register({
   family: 'IBM Plex Sans',
   fonts: [
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Regular.ttf', fontWeight: 'normal' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Medium.ttf', fontWeight: 'medium' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-SemiBold.ttf', fontWeight: 'semibold' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Bold.ttf', fontWeight: 'bold' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Italic.ttf', fontStyle: 'italic' },
+    { src: '/embeddedFonts/IBMPlexSans-Regular.ttf', fontWeight: 'normal' },
+    { src: '/embeddedFonts/IBMPlexSans-Medium.ttf', fontWeight: 'medium' },
+    { src: '/embeddedFonts/IBMPlexSans-SemiBold.ttf', fontWeight: 'semibold' },
+    { src: '/embeddedFonts/IBMPlexSans-Bold.ttf', fontWeight: 'bold' },
+    { src: '/embeddedFonts/IBMPlexSans-Italic.ttf', fontStyle: 'italic' },
   ],
 });
 
 Font.register({
   family: 'IBM Plex Mono',
   fonts: [
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-Regular.ttf', fontWeight: 'normal' },
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-Medium.ttf', fontWeight: 'medium' },
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-SemiBold.ttf', fontWeight: 'semibold' },
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-Bold.ttf', fontWeight: 'bold' },
+    { src: '/embeddedFonts/IBMPlexMono-Regular.ttf', fontWeight: 'normal' },
+    { src: '/embeddedFonts/IBMPlexMono-Medium.ttf', fontWeight: 'medium' },
+    { src: '/embeddedFonts/IBMPlexMono-SemiBold.ttf', fontWeight: 'semibold' },
+    { src: '/embeddedFonts/IBMPlexMono-Bold.ttf', fontWeight: 'bold' },
   ],
 });
 
