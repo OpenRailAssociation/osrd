@@ -1,4 +1,3 @@
-import type { TFunction } from 'i18next';
 import { compact } from 'lodash';
 
 import type {
@@ -13,8 +12,6 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
-import type { PathStep } from 'reducers/osrdconf/types';
-import { addElementAtIndex } from 'utils/array';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 
@@ -116,125 +113,3 @@ export const getPathfindingQuery = ({
   }
   return null;
 };
-
-export const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
-
-export const upsertPathStepsInOPs = (
-  ops: SuggestedOP[],
-  pathSteps: PathStep[],
-  t: TFunction<'operational-studies'>
-): SuggestedOP[] => {
-  let updatedOPs = [...ops];
-  pathSteps.forEach((step, stepIndex) => {
-    if (isPathStepInvalid(step)) return;
-    const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
-    // We check only for pathSteps added by map click
-    if (step.location.type === 'track_offset') {
-      let stepName = t('main.requestedPoint', { count: stepIndex });
-      if (stepIndex === 0) {
-        stepName = t('main.requestedOrigin');
-      } else if (stepIndex === pathSteps.length - 1) {
-        stepName = t('main.requestedDestination');
-      }
-      const formattedStep: SuggestedOP = {
-        pathStepId: step.id,
-        opId: undefined,
-        positionOnPath: step.positionOnPath!,
-        offsetOnTrack: step.location.offset,
-        track: step.location.track,
-        coordinates: step.coordinates,
-        stopFor,
-        arrival,
-        receptionSignal,
-        theoreticalMargin,
-        name: stepName,
-      };
-      // If it hasn't an uic, the step has been added by map click,
-      // we know we have its position on path so we can insert it
-      // at the good index in the existing operational points
-      const index = updatedOPs.findIndex(
-        (op) => step.positionOnPath !== undefined && op.positionOnPath >= step.positionOnPath
-      );
-
-      // if index === -1, it means that the position on path of the last step is bigger
-      // than the last operational point position.
-      // So we know this pathStep is the destination and we want to add it at the end of the array.
-      if (index !== -1) {
-        updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
-      } else {
-        updatedOPs.push(formattedStep);
-      }
-    } else {
-      const index = updatedOPs.findIndex(
-        (op) => matchPathStepAndOp(step.location, op) && step.positionOnPath === op.positionOnPath
-      );
-      if (index < 0) {
-        throw new Error(`Could not find path step "${step.id}" in OP list`);
-      }
-      updatedOPs[index] = {
-        ...updatedOPs[index],
-        pathStepId: step.id,
-        stopFor,
-        arrival,
-        receptionSignal,
-        theoreticalMargin,
-      };
-    }
-  });
-  return updatedOPs;
-};
-
-export const pathStepMatchesOp = (
-  pathStep: PathStep,
-  op: Pick<
-    SuggestedOP,
-    | 'pathStepId'
-    | 'opId'
-    | 'uic'
-    | 'secondaryCode'
-    | 'countryCode'
-    | 'mainCode'
-    | 'track'
-    | 'offsetOnTrack'
-    | 'name'
-    | 'kp'
-  >,
-  withKP = false
-) => {
-  if (!matchPathStepAndOp(pathStep.location, op)) {
-    return pathStep.id === op.pathStepId;
-  }
-  if (
-    pathStep.location.type === 'operational_point_part_reference' &&
-    pathStep.location.operational_point.type === 'uic'
-  ) {
-    return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;
-  }
-  return true;
-};
-
-/**
- * Check if a suggested operational point is a via.
- * Some OPs have same uic so we need to check also the secondary code (can be still not enough
- * probably because of imports problem).
- * If the vias has no uic, it has been added via map click and we know it has an id.
- * @param withKP - If true, we check the kp compatibility instead of the name.
- * It is used in the times and stops table to check if an operational point is a via.
- */
-export const isVia = (
-  vias: PathStep[],
-  op: Pick<
-    SuggestedOP,
-    | 'pathStepId'
-    | 'opId'
-    | 'uic'
-    | 'secondaryCode'
-    | 'countryCode'
-    | 'mainCode'
-    | 'track'
-    | 'offsetOnTrack'
-    | 'name'
-    | 'kp'
-  >,
-  { withKP = false } = {}
-) => vias.some((via) => pathStepMatchesOp(via, op, withKP));

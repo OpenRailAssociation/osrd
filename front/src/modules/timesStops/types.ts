@@ -1,6 +1,4 @@
 import type { PathItemLocation, ReceptionSignal } from 'common/api/osrdEditoastApi';
-import type { TimeString } from 'common/types';
-import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Duration, StartTime } from 'utils/duration';
 
 import type { MarginUnit } from './consts';
@@ -10,12 +8,6 @@ export type MarginUnitType = (typeof MarginUnit)[keyof typeof MarginUnit];
 export type MarginValue = {
   value: number;
   unit: MarginUnitType;
-};
-
-export type TimeExtraDays = {
-  time: TimeString;
-  daySinceDeparture?: number;
-  dayDisplayed?: boolean;
 };
 
 export type StepStatus =
@@ -73,41 +65,6 @@ export type TimesStopsRowNew = {
   timeFromPreviousOp: Duration | null;
   totalTravelTime: Duration | null;
 };
-
-export type TimesStopsRow = {
-  pathStepId: string | undefined;
-  opId: string | undefined;
-  name: string | undefined;
-  secondaryCode?: string | null;
-  trackName?: string;
-
-  arrival?: TimeExtraDays; // value asked by user
-  departure?: TimeExtraDays; // value asked by user
-  stopFor?: Duration | null; // value asked by user
-  onStopSignal?: boolean;
-  shortSlipDistance?: boolean;
-  theoreticalMargin?: string; // value asked by user
-  isTheoreticalMarginBoundary?: boolean; // tells whether the theoreticalMargin value was inputted for this line or if it is repeated from a previous line
-
-  theoreticalMarginSeconds?: string;
-  calculatedMargin?: string;
-  diffMargins?: string;
-  calculatedArrival?: Date | null;
-  calculatedDeparture?: Date | null;
-
-  isMarginValid?: boolean;
-};
-
-export type TimesStopsInputRow = Pick<
-  SuggestedOP,
-  'uic' | 'positionOnPath' | 'offsetOnTrack' | 'track'
-> &
-  TimesStopsRow;
-
-export enum TableType {
-  Input = 'Input',
-  Output = 'Output',
-}
 
 export type TheoreticalMarginsRecord = Record<
   string,

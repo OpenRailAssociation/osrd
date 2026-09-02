@@ -18,7 +18,6 @@ export const operationalStudiesConfSlice = createSlice({
   },
 });
 
-export const operationalStudiesConfSliceActions = operationalStudiesConfSlice.actions;
 export type OperationalStudiesConfSlice = typeof operationalStudiesConfSlice;
 
 export default operationalStudiesConfSlice.reducer;
