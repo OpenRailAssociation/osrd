@@ -45,9 +45,15 @@ const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
     pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
   );
 
-// Signed integer hour count relative to time origin 0, used for the hourly
-// pattern mode (e.g. hourly timetables): …, -2, -1, 0, 1, 2, …
-const HOURLY_HOURS_FORMATTER = (t: number) => `${Math.round(t / HOUR)}`;
+// Signed time relative to time origin 0, used for the hourly pattern mode
+// (e.g. hourly timetables): …, -02:00, -01:00, 00:00, 01:00, 02:00, …
+const HOURLY_HOURS_FORMATTER = (t: number) => {
+  const sign = t < 0 ? '-' : '';
+  const totalMinutes = Math.round(Math.abs(t) / MINUTE);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
 
 const DATES_FORMATER = (t: number) => new Date(t).toLocaleDateString(undefined, DATE_OPTIONS);
 
