@@ -11,6 +11,7 @@ import type {
   TrainScheduleSet,
   CatalogEntry,
   TrainScheduleResponse,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -122,6 +123,7 @@ function mapRoundTripsToIndexes(
 }
 
 type TimetableExportPayload = {
+  timetable_type: TimetableType;
   train_schedules: TrainSchedule[];
   round_trips?: RoundTripsFromJson;
 };
@@ -129,7 +131,8 @@ type TimetableExportPayload = {
 export const buildTimetableExportPayload = (
   trainSchedules: Map<number, TrainScheduleResponse>,
   selectedTimeTableIdsFromClick: number[],
-  roundTrips?: RoundTrips
+  roundTrips?: RoundTrips,
+  timetableType: TimetableType = 'CALENDAR'
 ): TimetableExportPayload => {
   const { formattedTrainSchedules, trainScheduleIndexByEditoastId } = formatTrainSchedulesForExport(
     trainSchedules,
@@ -142,6 +145,7 @@ export const buildTimetableExportPayload = (
   );
 
   return {
+    timetable_type: timetableType,
     train_schedules: formattedTrainSchedules,
     round_trips: (mappedRoundTrips?.length ?? 0) > 0 ? mappedRoundTrips : undefined,
   };
@@ -150,12 +154,14 @@ export const buildTimetableExportPayload = (
 export const exportTrainSchedules = (
   selectedTimeTableIdsFromClick: number[],
   trainSchedules: Map<number, TrainScheduleResponse>,
-  roundTrips?: RoundTrips
+  roundTrips?: RoundTrips,
+  timetableType: TimetableType = 'CALENDAR'
 ) => {
   const payload = buildTimetableExportPayload(
     trainSchedules,
     selectedTimeTableIdsFromClick,
-    roundTrips
+    roundTrips,
+    timetableType
   );
 
   const jsonString = JSON.stringify(payload);

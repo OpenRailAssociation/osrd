@@ -12,6 +12,7 @@ import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
+import { adaptPayloadForTargetTimetable } from './helpers/adaptJsonImport';
 import { processJsonFile } from './helpers/parseJson';
 import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
@@ -20,7 +21,7 @@ const useImportTrainSchedules = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
-  const { upsertTrainSchedules } = useTimetableContext();
+  const { upsertTrainSchedules, trainSchedules } = useTimetableContext();
 
   const subCategories = useSubCategoryContext();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
@@ -56,7 +57,12 @@ const useImportTrainSchedules = () => {
 
   const importFile = async (file: File) => {
     try {
-      const timetableJsonPayload = await processFile(file);
+      const rawPayload = await processFile(file);
+      const timetableJsonPayload = adaptPayloadForTargetTimetable(
+        rawPayload,
+        scenario.timetable_type,
+        [...trainSchedules.values()]
+      );
 
       const importedTrainSchedules = await postFullImportPayload(
         sandboxId,
