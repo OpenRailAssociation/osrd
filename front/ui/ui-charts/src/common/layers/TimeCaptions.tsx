@@ -155,6 +155,7 @@ export const TimeCaptions = () => {
       labelMarks.forEach(({ styles, formatter, time }) => {
         const text = formatter(time, pixelsPerMinute);
 
+        ctx.save();
         ctx.textAlign = styles.textAlign || 'center';
         ctx.textBaseline = 'top';
         ctx.fillStyle = styles.color;
@@ -166,7 +167,6 @@ export const TimeCaptions = () => {
 
         if (!swapAxis) {
           ctx.beginPath();
-          ctx.strokeStyle = timeCaptionsStyles[1].color;
           ctx.lineWidth = 1;
           let tickHeight = 4;
           const mod = time % (60 * 60 * 1000);
@@ -182,7 +182,6 @@ export const TimeCaptions = () => {
           ctx.lineTo(timePixel, tickHeight);
           ctx.stroke();
 
-          ctx.fillStyle = timeCaptionsStyles[1].color;
           ctx.fillText(text, timePixel, styles.topOffset || 0);
           ctx.fillText(text, timePixel, spaceAxisSize + (styles.topOffset || 0));
         } else {
@@ -193,6 +192,7 @@ export const TimeCaptions = () => {
           ctx.fillText(text, 0, 0);
           ctx.restore();
         }
+        ctx.restore();
       });
 
       // Render caption top border:
