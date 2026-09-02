@@ -6,6 +6,7 @@ import type {
   IndividualTrainProjection,
 } from 'modules/simulationResult/types';
 import type { OccurrenceId, TrainScheduleId, TrainId } from 'reducers/osrdconf/types';
+import type { SelectionSource } from 'reducers/simulationResults/types';
 
 import canDragHoveredTrain from '../canDragHoveredTrain';
 
@@ -39,6 +40,7 @@ describe('canDragHoveredTrain', () => {
   ])('for the $label', ({ relevantExceptionType }) => {
     const otherExceptionType: CurveStyleExceptionType =
       relevantExceptionType === 'start_time' ? 'path_and_schedule' : 'start_time';
+    const selectedTrainBy: SelectionSource = relevantExceptionType === 'start_time' ? 'std' : 'tod';
 
     describe("'compliant' mode", () => {
       it('should allow dragging the selected non-paced train', () => {
@@ -47,6 +49,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'compliant',
             hoveredTrain: train(TRAIN_SCHEDULE_1),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
@@ -58,6 +61,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'compliant',
             hoveredTrain: train(TRAIN_SCHEDULE_2),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(false);
@@ -69,6 +73,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'compliant',
             hoveredTrain: train(OCC_1_0),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
@@ -80,6 +85,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'compliant',
             hoveredTrain: train(OCC_2_0),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(false);
@@ -91,6 +97,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'compliant',
             hoveredTrain: train(OCC_1_0, { [otherExceptionType]: { value: 'foo' } as never }),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
@@ -102,6 +109,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'compliant',
             hoveredTrain: train(OCC_1_0, { [relevantExceptionType]: { value: 'foo' } as never }),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(false);
@@ -115,6 +123,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'single',
             hoveredTrain: train(OCC_1_0),
             selectedTrainId: OCC_1_0,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
@@ -126,6 +135,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'single',
             hoveredTrain: train(OCC_1_1),
             selectedTrainId: OCC_1_0,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(false);
@@ -139,6 +149,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'all',
             hoveredTrain: train(OCC_1_1),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
@@ -150,6 +161,7 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'all',
             hoveredTrain: train(OCC_1_1),
             selectedTrainId: OCC_1_0,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
@@ -161,20 +173,22 @@ describe('canDragHoveredTrain', () => {
             panelSelectionMode: 'all',
             hoveredTrain: train(OCC_2_0),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(false);
       });
 
-      it('should forbid dragging a non-occurrence hovered train', () => {
+      it('should allow dragging a unique train regardless of mode (no panel shown for it)', () => {
         expect(
           canDragHoveredTrain({
             panelSelectionMode: 'all',
             hoveredTrain: train(TRAIN_SCHEDULE_1),
             selectedTrainId: TRAIN_SCHEDULE_1,
+            selectedTrainBy,
             relevantExceptionType,
           })
-        ).toBe(false);
+        ).toBe(true);
       });
     });
   });

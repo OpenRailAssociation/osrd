@@ -619,6 +619,7 @@ const SpaceTimeChartWrapper = ({
       panelSelectionMode,
       hoveredTrain,
       selectedTrainId,
+      selectedTrainBy,
       relevantExceptionType: 'start_time',
     });
   }, [selectedTrainBy, hoveredItem, projectedTrains, panelSelectionMode, selectedTrainId]);

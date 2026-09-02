@@ -170,13 +170,12 @@ export function configureHandlePan({
         throw new Error(`No train found with id ${hoveredTrainId}`);
       }
 
-      // Gate: drag is only allowed when the selected train has blue curves (by === 'std')
       if (
-        selectedTrainBy === 'std' &&
         canDragHoveredTrain({
           panelSelectionMode,
           hoveredTrain: train,
           selectedTrainId,
+          selectedTrainBy,
           relevantExceptionType: 'start_time',
         })
       ) {
@@ -241,13 +240,12 @@ export function configureHandlePan({
           throw new Error(`No train found with id ${zoneRef.trainId}`);
         }
 
-        // Drag is only allowed when the selected train is shown active on the TOD.
         if (
-          selectedTrainBy === 'tod' &&
           canDragHoveredTrain({
             panelSelectionMode,
             hoveredTrain: hoveredZoneTrain,
             selectedTrainId,
+            selectedTrainBy,
             relevantExceptionType: 'path_and_schedule',
           })
         ) {
