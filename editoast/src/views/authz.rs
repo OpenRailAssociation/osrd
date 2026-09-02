@@ -7,16 +7,13 @@ use crate::error::Result;
 use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
 use crate::views::authz::resources::StandardPrivilege;
+use crate::views::authz::resources::ViewResource as _;
+use crate::views::authz::resources::fetch_resources;
 use ::authz;
 use ::authz::InfraGrant;
-use ::authz::InfraPrivilege;
 use ::authz::Role;
-use authz::RollingStockGrant;
-use authz::RollingStockPrivilege;
 use authz::v2;
-use authz::v2::Actor;
 use authz::v2::Authorizer;
-use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Path;
 use axum::extract::State;
@@ -28,8 +25,6 @@ use editoast_derive::EditoastError;
 use futures::TryStreamExt;
 use itertools::Itertools;
 use models::Group;
-use models::Infra;
-use models::RollingStock;
 use models::User;
 use models::authn::user::UserWithIdentities;
 use models::prelude::*;
@@ -53,7 +48,9 @@ enum SubjectType {
     Group,
 }
 
-#[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(
+    Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, ToSchema,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[cfg_attr(test, derive(Debug, EnumIter))]
@@ -335,73 +332,33 @@ pub(in crate::views) async fn user_privileges(
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<ResourcePrivileges>>>> {
-    let mut result = HashMap::<_, Vec<_>>::new();
-    let missing_resources = retrieve_missing_resource_ids(
-        db_pool.get().await?,
-        resources_ids.iter().flat_map(|(resource_type, ids)| {
-            std::iter::repeat(*resource_type).zip(ids.iter().copied())
-        }),
-    )
-    .await?;
+    // Missing resources are not an error under this API: omit them before authorization.
+    let (resources, _) = fetch_resources(db_pool.get().await?, resources_ids).await?;
 
+    let mut result = HashMap::<_, Vec<_>>::new();
     match &authn_state {
         crate::authentication::State::Authenticated { user, .. } => {
-            let resources = resources_ids.into_iter().flat_map(|(resource_type, ids)| {
-                let missing_ids = &missing_resources[&resource_type];
-                // Missing resources are not an error under this API: omit them before authorization.
-                ids.into_iter()
-                    .filter(|id| !missing_ids.contains(id))
-                    .map(move |id| match resource_type {
-                        ResourceType::Infra => Resource::Infra(authz::Infra(id)),
-                        ResourceType::RollingStock => {
-                            Resource::RollingStock(authz::RollingStock(id))
-                        }
-                    })
-            });
-            let protected_privileges = resources.into_iter().map(|resource| match resource {
-                resource @ Resource::Infra(infra) => v2::infra_privileges(*user, infra)
-                    .collect_into::<HashSet<StandardPrivilege>>()
-                    .zip(v2::Protected::value(resource)),
-                resource @ Resource::RollingStock(rolling_stock) => {
-                    v2::rolling_stock_privileges(*user, rolling_stock)
-                        .collect_into::<HashSet<StandardPrivilege>>()
-                        .zip(v2::Protected::value(resource))
-                }
+            let protected_privileges = resources.into_iter().map(|resource| {
+                resource
+                    .privileges(*user)
+                    .zip(v2::Protected::value(resource))
             });
             let authorizer = authn_state.authorizer(&openfga);
             let accesses = authorizer.authorize_all(protected_privileges).await?;
             for access in v2::Access::access_all(accesses).await? {
                 match access {
                     Ok((privileges, resource)) => {
-                        result
-                            .entry(resource.get_type())
-                            .or_default()
-                            .push(ResourcePrivileges {
+                        result.entry(resource.resource_type()).or_default().push(
+                            ResourcePrivileges {
                                 resource_id: resource.id(),
                                 privileges,
-                            });
+                            },
+                        );
                     }
-                    Err(Check::HasInfraPrivilege(
-                        Actor::Issuer,
-                        InfraPrivilege::CanRestrictedRead,
-                        infra,
-                    )) => {
-                        result
-                            .entry(ResourceType::Infra)
-                            .or_default()
-                            .push(ResourcePrivileges {
-                                resource_id: *infra,
-                                privileges: HashSet::new(),
-                            });
-                    }
-                    Err(Check::HasRollingStockPrivilege(
-                        Actor::Issuer,
-                        RollingStockPrivilege::CanRead,
-                        rolling_stock,
-                    )) => {
-                        result.entry(ResourceType::RollingStock).or_default().push(
+                    Err(check) if let Some(resource) = Resource::extract_from_check(check) => {
+                        result.entry(resource.resource_type()).or_default().push(
                             ResourcePrivileges {
-                                resource_id: *rolling_stock,
+                                resource_id: resource.id(),
                                 privileges: HashSet::new(),
                             },
                         );
@@ -411,57 +368,18 @@ pub(in crate::views) async fn user_privileges(
             }
         }
         crate::authentication::State::Skip => {
-            let privileges = HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
-                StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
-                StandardPrivilege::CanRevoke,
-            ]);
-            for (resource_type, ids) in resources_ids {
-                let missing_ids = &missing_resources[&resource_type];
-                result.entry(resource_type).or_default().extend(
-                    ids.into_iter()
-                        .filter(|id| !missing_ids.contains(id))
-                        .map(|resource_id| ResourcePrivileges {
-                            resource_id,
-                            privileges: privileges.clone(),
-                        }),
-                );
+            for resource in resources {
+                result
+                    .entry(resource.resource_type())
+                    .or_default()
+                    .push(ResourcePrivileges {
+                        resource_id: resource.id(),
+                        privileges: resource.all_privileges(),
+                    });
             }
         }
     }
     Ok(Json(result))
-}
-
-async fn retrieve_missing_resource_ids(
-    mut conn: database::DbConnection,
-    resources: impl IntoIterator<Item = (ResourceType, i64)>,
-) -> std::result::Result<HashMap<ResourceType, HashSet<i64>>, models::Error> {
-    let mut resources = resources
-        .into_iter()
-        .into_group_map()
-        .into_iter()
-        .map(|(resource_type, ids)| (resource_type, ids.into_iter().collect()))
-        .collect::<HashMap<ResourceType, HashSet<i64>>>();
-    let infra_ids = resources.remove(&ResourceType::Infra).unwrap_or_default();
-    let rolling_stock_ids = resources
-        .remove(&ResourceType::RollingStock)
-        .unwrap_or_default();
-
-    let mut infra_conn = conn.clone();
-    let ((_, missing_infras), (_, missing_rolling_stocks)) = tokio::try_join!(
-        Infra::retrieve_batch::<_, Vec<_>>(&mut infra_conn, infra_ids),
-        RollingStock::retrieve_batch::<_, Vec<_>>(&mut conn, rolling_stock_ids),
-    )?;
-
-    Ok(HashMap::from([
-        (ResourceType::Infra, missing_infras),
-        (ResourceType::RollingStock, missing_rolling_stocks),
-    ]))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -491,67 +409,40 @@ pub(in crate::views) async fn user_grants(
         db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
-    Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
+    Json(resources_ids): Json<HashMap<ResourceType, Vec<i64>>>,
 ) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
     let user = authn_state
         .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(&openfga);
-    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
-    let missing_resources = retrieve_missing_resource_ids(
-        db_pool.get().await?,
-        body.iter().flat_map(|(resource_type, ids)| {
-            std::iter::repeat(*resource_type).zip(ids.iter().copied())
-        }),
-    )
-    .await?;
     // Missing resources are not an error under this API: omit them before authorization.
-    // TODO build all protected at once, zip them and batch send them with `authorize_all`
-    for (resource_type, ids) in &body {
-        for id in ids {
-            if missing_resources[resource_type].contains(id) {
+    let (resources, _) = fetch_resources(db_pool.get().await?, resources_ids).await?;
+
+    let protected_privileges = resources.into_iter().map(|resource| {
+        resource
+            .effective_grant(authz::Subject::user(user))
+            .zip(v2::Protected::value(resource))
+    });
+    let authorizer = authn_state.authorizer(&openfga);
+    let accesses = authorizer.authorize_all(protected_privileges).await?;
+
+    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
+    for res in v2::Access::access_all(accesses).await? {
+        match res {
+            Ok((Some(grant), resource)) => response
+                .entry(resource.resource_type())
+                .or_default()
+                .push(UserResourceGrant {
+                    id: resource.id(),
+                    grant,
+                }),
+            Ok((None, _)) => continue,
+            Err(check) if let Some(resource) = Resource::extract_from_check(check) => {
+                tracing::warn!(type = %resource.resource_type(), id = resource.id(), "user cannot access resource — skipping");
                 continue;
             }
-            let grant_access = match resource_type {
-                ResourceType::Infra => {
-                    authz::v2::infra_effective_grant(authz::Subject::user(user), authz::Infra(*id))
-                        .map_some_into::<StandardGrant>()
-                }
-
-                ResourceType::RollingStock => authz::v2::rolling_stock_effective_grant(
-                    authz::Subject::user(user),
-                    authz::RollingStock(*id),
-                )
-                .map_some_into::<StandardGrant>(),
-            }
-            .authorize(&authorizer)
-            .await?
-            .access()
-            .await?;
-            let grant = match grant_access {
-                Ok(Some(grant)) => grant,
-                Ok(None) => continue,
-                Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
-                    tracing::warn!(%infra, "user cannot read infra — skipping");
-                    continue;
-                }
-                Err(Check::HasRollingStockPrivilege(
-                    Actor::Issuer,
-                    RollingStockPrivilege::CanRead,
-                    rolling_stock,
-                )) => {
-                    tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");
-                    continue;
-                }
-                Err(_) => return Err(AuthorizationError::Forbidden.into()),
-            };
-            response
-                .entry(*resource_type)
-                .or_default()
-                .push(UserResourceGrant { id: *id, grant });
-        }
+            Err(_) => return Err(AuthorizationError::Forbidden.into()),
+        };
     }
-
     Ok(Json(response))
 }
 
@@ -592,55 +483,26 @@ pub(in crate::views) async fn resource_granted_users(
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
-    let mut conn = db_pool.get().await?;
-    let openfga = &openfga;
-    let authorizer = authn_state.authorizer(openfga);
-    // Ask OpenFGA about grants on the resource
-    let ((readers, writers), owners) = match resource_type {
-        ResourceType::Infra => {
-            let infra = authz::Infra(resource_id);
-            Infra::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
-                resource_id,
-            })
-            .await?;
-            authorizer
-                .authorize(
-                    authz::v2::infra_granted_subjects(infra, InfraGrant::Reader)
-                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Writer))
-                        .zip(authz::v2::infra_granted_subjects(infra, InfraGrant::Owner)),
-                )
-                .await?
-                .access()
-                .await?
-                .map_err(|_| AuthorizationError::Forbidden)?
+    let conn = db_pool.get().await?;
+    let resource = {
+        let (mut resources, missing) = fetch_resources(
+            conn.clone(),
+            HashMap::from([(resource_type, vec![resource_id])]),
+        )
+        .await?;
+        if !missing.is_empty() {
+            return Err(AuthzError::UnknownResource { resource_id }.into());
         }
-        ResourceType::RollingStock => {
-            let rolling_stock = authz::RollingStock(resource_id);
-            RollingStock::exists_or_fail(&mut conn, resource_id, || AuthzError::UnknownResource {
-                resource_id,
-            })
-            .await?;
-            authorizer
-                .authorize(
-                    authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Reader,
-                    )
-                    .zip(authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Writer,
-                    ))
-                    .zip(authz::v2::rolling_stock_granted_subjects(
-                        rolling_stock,
-                        RollingStockGrant::Owner,
-                    )),
-                )
-                .await?
-                .access()
-                .await?
-                .map_err(|_| AuthorizationError::Forbidden)?
-        }
+        resources
+            .pop()
+            .expect("if none are missing, then we have some")
     };
+    let ((readers, writers), owners) = resource
+        .granted_subjects(StandardGrant::Reader)
+        .zip(resource.granted_subjects(StandardGrant::Writer))
+        .zip(resource.granted_subjects(StandardGrant::Owner))
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     // NOTE: the same subject can appear in multiple lists. This can happen
     // if a user inherits a grant from one of its groups and also has a direct grant.
@@ -773,30 +635,26 @@ pub(in crate::views) async fn update_grants(
 ) -> Result<impl IntoResponse> {
     {
         let conn = db_pool.get().await?;
-        let missing_resources = match &body {
-            BodyUpdateGrants::Grant(grants) => {
-                retrieve_missing_resource_ids(
-                    conn,
-                    grants
-                        .iter()
-                        .map(|grant| (grant.resource_type, grant.resource_id)),
-                )
-                .await?
-            }
-            BodyUpdateGrants::Revoke(revokes) => {
-                retrieve_missing_resource_ids(
-                    conn,
-                    revokes
-                        .iter()
-                        .map(|revoke| (revoke.resource_type, revoke.resource_id)),
-                )
-                .await?
-            }
-        };
-        let missing_resource_id = [ResourceType::Infra, ResourceType::RollingStock]
-            .into_iter()
-            .find_map(|resource_type| missing_resources[&resource_type].iter().min().copied());
-        if let Some(resource_id) = missing_resource_id {
+        // We don't need the resources, they're built back later.
+        let (_, missing) = fetch_resources(
+            conn,
+            match &body {
+                BodyUpdateGrants::Grant(grants) => grants
+                    .iter()
+                    .map(|grant| (grant.resource_type, grant.resource_id))
+                    .into_group_map(),
+                BodyUpdateGrants::Revoke(revokes) => revokes
+                    .iter()
+                    .map(|revoke| (revoke.resource_type, revoke.resource_id))
+                    .into_group_map(),
+            },
+        )
+        .await?;
+        if let Some(rtype) = missing.keys().min() {
+            let resource_id = *missing
+                .get(rtype)
+                .and_then(|ids| ids.iter().min())
+                .expect("");
             return Err(AuthzError::UnknownResource { resource_id }.into());
         }
     }
@@ -835,7 +693,6 @@ pub(in crate::views) async fn update_grants(
     };
 
     let authorizer = authn_state.authorizer(&openfga);
-
     match body {
         BodyUpdateGrants::Grant(grants) => {
             let prot = grants
@@ -876,14 +733,7 @@ impl GrantBody {
         let subject = subjects
             .get(&subject_id)
             .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
-        Ok(match resource_type {
-            ResourceType::Infra => {
-                authz::v2::infra_set_grant(*subject, resource_id.into(), grant.into())
-            }
-            ResourceType::RollingStock => {
-                authz::v2::rolling_stock_set_grant(*subject, resource_id.into(), grant.into())
-            }
-        })
+        Ok(Resource::new(resource_type, resource_id).set_grant(*subject, grant))
     }
 }
 
@@ -900,12 +750,7 @@ impl RevokeBody {
         let subject = subjects
             .get(&subject_id)
             .ok_or_else(|| AuthzError::UnknownSubject { subject_id })?;
-        Ok(match resource_type {
-            ResourceType::Infra => authz::v2::infra_revoke_grant(*subject, resource_id.into()),
-            ResourceType::RollingStock => {
-                authz::v2::rolling_stock_revoke_grant(*subject, resource_id.into())
-            }
-        })
+        Ok(Resource::new(resource_type, resource_id).revoke_grant(*subject))
     }
 }
 
@@ -935,6 +780,7 @@ mod tests {
     use authz::RollingStockGrant;
     use authz::v2::TestClientExt as _;
     use axum::http::StatusCode;
+    use models::Infra;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -1023,77 +869,6 @@ mod tests {
         assert!(!privileges.contains_key(&i64::MAX));
     }
 
-    // TODO: merge with the previous test once test deadlocks are fixed
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn me_privileges_bis() {
-        let app = test_app!().build();
-        let Infra { id: infra1, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
-        let Infra { id: infra2, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
-        let Infra { id: infra3, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
-        let Infra { id: infra4, .. } = create_empty_infra(&mut app.db_pool().get_ok()).await;
-        let Infra {
-            id: infra_unused, ..
-        } = create_empty_infra(&mut app.db_pool().get_ok()).await;
-        let tata = app
-            .user("tata", "Tata")
-            .with_infra_grant(infra1, InfraGrant::Reader)
-            .with_infra_grant(infra3, InfraGrant::Reader)
-            .with_infra_grant(infra4, InfraGrant::Owner)
-            .create()
-            .await;
-
-        let mut privileges = app
-            .post("/authz/me/privileges")
-            .by_user(tata.as_ref())
-            .json(&json!({
-               "infra": [infra1, infra2, infra3, infra4]
-            }))
-            .await
-            .assert_status_ok()
-            .json::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
-            .remove(&ResourceType::Infra)
-            .unwrap()
-            .into_iter()
-            .map(
-                |ResourcePrivileges {
-                     resource_id,
-                     privileges,
-                 }| (resource_id, privileges),
-            )
-            .collect::<HashMap<_, _>>();
-        assert_eq!(
-            privileges.remove(&infra1).unwrap(),
-            HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead
-            ])
-        );
-        assert_eq!(privileges.remove(&infra2).unwrap(), HashSet::from([]));
-        assert_eq!(
-            privileges.remove(&infra3).unwrap(),
-            HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-            ])
-        );
-        assert_eq!(
-            privileges.remove(&infra4).unwrap(),
-            HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
-                StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
-                StandardPrivilege::CanRevoke,
-            ])
-        );
-        assert!(!privileges.contains_key(&infra_unused));
-    }
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn me_privileges_skip_authz() {
         let app = test_app!().build();
@@ -1119,16 +894,7 @@ mod tests {
             .collect::<HashMap<_, _>>();
         assert_eq!(
             privileges.remove(&infra).unwrap(),
-            HashSet::from([
-                StandardPrivilege::CanRestrictedRead,
-                StandardPrivilege::CanRead,
-                StandardPrivilege::CanShareRead,
-                StandardPrivilege::CanWrite,
-                StandardPrivilege::CanShareWrite,
-                StandardPrivilege::CanDelete,
-                StandardPrivilege::CanShareOwnership,
-                StandardPrivilege::CanRevoke,
-            ])
+            Resource::new(ResourceType::Infra, infra).all_privileges(),
         );
     }
 

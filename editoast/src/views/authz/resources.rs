@@ -1,32 +1,261 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 use authz::InfraGrant;
 use authz::InfraPrivilege;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
+use authz::v2;
+use authz::v2::Protected;
+use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
+use strum::VariantArray as _;
+use tracing::Instrument as _;
 use utoipa::ToSchema;
 
 use crate::views::authz::ResourceType;
+
+pub(super) trait ViewResource {
+    // Privileges only exist in responses.
+    type Privilege: Into<StandardPrivilege> + std::hash::Hash + Eq;
+    // But grants are in both requests and responses.
+    type Grant: From<StandardGrant> + Into<StandardGrant>;
+
+    fn id(&self) -> i64;
+    fn resource_type(&self) -> ResourceType;
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege>;
+
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>>;
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>>;
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>>;
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()>;
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool>;
+}
+
+impl ViewResource for authz::Infra {
+    type Privilege = InfraPrivilege;
+    type Grant = InfraGrant;
+
+    fn id(&self) -> i64 {
+        **self
+    }
+
+    fn resource_type(&self) -> ResourceType {
+        ResourceType::Infra
+    }
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege> {
+        InfraPrivilege::VARIANTS.iter().cloned().collect()
+    }
+
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
+        v2::infra_privileges(user, *self)
+    }
+
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>> {
+        v2::infra_effective_grant(subject, *self)
+    }
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
+        v2::infra_granted_subjects(*self, grant)
+    }
+
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()> {
+        v2::infra_set_grant(subject, *self, grant)
+    }
+
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool> {
+        v2::infra_revoke_grant(subject, *self)
+    }
+}
+
+impl ViewResource for authz::RollingStock {
+    type Privilege = RollingStockPrivilege;
+    type Grant = RollingStockGrant;
+
+    fn id(&self) -> i64 {
+        **self
+    }
+
+    fn resource_type(&self) -> ResourceType {
+        ResourceType::RollingStock
+    }
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege> {
+        RollingStockPrivilege::VARIANTS.iter().cloned().collect()
+    }
+
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
+        v2::rolling_stock_privileges(user, *self)
+    }
+
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>> {
+        v2::rolling_stock_effective_grant(subject, *self)
+    }
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
+        v2::rolling_stock_granted_subjects(*self, grant)
+    }
+
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()> {
+        v2::rolling_stock_set_grant(subject, *self, grant)
+    }
+
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool> {
+        v2::rolling_stock_revoke_grant(subject, *self)
+    }
+}
 
 pub enum Resource {
     Infra(authz::Infra),
     RollingStock(authz::RollingStock),
 }
 
-impl Resource {
-    pub(super) fn id(&self) -> i64 {
+impl ViewResource for Resource {
+    type Privilege = StandardPrivilege;
+    type Grant = StandardGrant;
+
+    fn id(&self) -> i64 {
         match self {
             Resource::Infra(authz::Infra(id)) => *id,
             Resource::RollingStock(authz::RollingStock(id)) => *id,
         }
     }
-    pub(super) fn get_type(&self) -> ResourceType {
+
+    fn resource_type(&self) -> ResourceType {
         match self {
             Resource::Infra(_) => ResourceType::Infra,
             Resource::RollingStock(_) => ResourceType::RollingStock,
         }
     }
+
+    fn all_privileges(&self) -> HashSet<Self::Privilege> {
+        match self {
+            Resource::Infra(infra) => infra.all_privileges().into_iter().map_into().collect(),
+            Resource::RollingStock(rolling_stock) => rolling_stock
+                .all_privileges()
+                .into_iter()
+                .map_into()
+                .collect(),
+        }
+    }
+
+    fn privileges(&self, user: authz::User) -> Protected<HashSet<Self::Privilege>> {
+        match self {
+            Resource::Infra(infra) => infra
+                .privileges(user)
+                .map(async |p| p.into_iter().map_into().collect()),
+            Resource::RollingStock(rolling_stock) => rolling_stock
+                .privileges(user)
+                .map(async |p| p.into_iter().map_into().collect()),
+        }
+    }
+
+    fn effective_grant(&self, subject: authz::Subject) -> Protected<Option<Self::Grant>> {
+        match self {
+            Resource::Infra(infra) => infra
+                .effective_grant(subject)
+                .map(async |g| g.map(Self::Grant::from)),
+            Resource::RollingStock(rolling_stock) => rolling_stock
+                .effective_grant(subject)
+                .map(async |g| g.map(Self::Grant::from)),
+        }
+    }
+
+    fn granted_subjects(&self, grant: Self::Grant) -> Protected<Vec<authz::Subject>> {
+        match self {
+            Resource::Infra(infra) => infra.granted_subjects(grant.into()),
+            Resource::RollingStock(rolling_stock) => rolling_stock.granted_subjects(grant.into()),
+        }
+    }
+
+    fn set_grant(&self, subject: authz::Subject, grant: Self::Grant) -> Protected<()> {
+        match self {
+            Resource::Infra(infra) => infra.set_grant(subject, grant.into()),
+            Resource::RollingStock(rolling_stock) => rolling_stock.set_grant(subject, grant.into()),
+        }
+    }
+
+    fn revoke_grant(&self, subject: authz::Subject) -> Protected<bool> {
+        match self {
+            Resource::Infra(infra) => infra.revoke_grant(subject),
+            Resource::RollingStock(rolling_stock) => rolling_stock.revoke_grant(subject),
+        }
+    }
+}
+
+impl Resource {
+    pub(super) fn new(rtype: ResourceType, id: i64) -> Self {
+        match rtype {
+            ResourceType::Infra => Resource::Infra(authz::Infra(id)),
+            ResourceType::RollingStock => Resource::RollingStock(authz::RollingStock(id)),
+        }
+    }
+
+    pub(super) fn extract_from_check(check: v2::Check) -> Option<Self> {
+        match check {
+            v2::Check::HasInfraPrivilege(_, _, infra)
+            | v2::Check::CanAlterSubjectInfraGrant(_, infra, _)
+            | v2::Check::SubjectEffectiveInfraGrantIsNot(_, _, infra)
+            | v2::Check::IsNotLastInfraOwner(_, infra) => Some(Self::Infra(infra)),
+
+            v2::Check::HasRollingStockPrivilege(_, _, rolling_stock)
+            | v2::Check::CanAlterSubjectRollingStockGrant(_, rolling_stock, _)
+            | v2::Check::SubjectEffectiveRollingStockGrantIsNot(_, _, rolling_stock)
+            | v2::Check::IsNotLastRollingStockOwner(_, rolling_stock) => {
+                Some(Self::RollingStock(rolling_stock))
+            }
+
+            v2::Check::HasProjectPrivilege(_, _, _project)
+            | v2::Check::CanGiveSubjectProjectGrant(_, _project) => todo!(),
+            v2::Check::HasRole(_, _) => None,
+        }
+    }
+}
+
+pub(super) type MissingResources = HashMap<ResourceType, HashSet<i64>>;
+
+#[tracing::instrument(skip_all, err)]
+pub(super) async fn fetch_resources(
+    mut conn: database::DbConnection,
+    mut ids: HashMap<ResourceType, Vec<i64>>,
+) -> Result<(Vec<Resource>, MissingResources), models::Error> {
+    use models::prelude::*;
+
+    let mut rs_conn = conn.clone();
+    let ((infras, missing_infras), (rolling_stocks, missing_rolling_stocks)) = tokio::try_join!(
+        models::Infra::retrieve_batch::<_, Vec<_>>(
+            &mut conn,
+            ids.remove(&ResourceType::Infra).unwrap_or_default()
+        )
+        .in_current_span(),
+        models::RollingStock::retrieve_batch::<_, Vec<_>>(
+            &mut rs_conn,
+            ids.remove(&ResourceType::RollingStock).unwrap_or_default()
+        )
+        .in_current_span(),
+    )?;
+    debug_assert!(ids.is_empty(), "some resource type has been overlooked");
+
+    let found = infras
+        .into_iter()
+        .map(|res| Resource::new(ResourceType::Infra, res.id))
+        .chain(
+            rolling_stocks
+                .into_iter()
+                .map(|res| Resource::new(ResourceType::RollingStock, res.id)),
+        )
+        .collect::<Vec<_>>();
+    let mut missing = HashMap::new();
+    missing.extend((!missing_infras.is_empty()).then_some((ResourceType::Infra, missing_infras)));
+    missing.extend(
+        (!missing_rolling_stocks.is_empty())
+            .then_some((ResourceType::RollingStock, missing_rolling_stocks)),
+    );
+    Ok((found, missing))
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
