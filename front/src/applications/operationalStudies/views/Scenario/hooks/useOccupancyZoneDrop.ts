@@ -7,6 +7,7 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import type { PacedTrainResponse } from 'applications/operationalStudies/types';
 import {
   buildOccurrenceExceptionData,
+  checkChangeGroups,
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import type { PacedTrainException, PathItem, TrainSchedule } from 'common/api/osrdEditoastApi';
@@ -28,6 +29,7 @@ import {
   withPacedExceptions,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
+  deleteExceptions,
   storeTrainSchedule,
   syncOccurrenceException,
   updateExceptions,
@@ -225,68 +227,90 @@ export default function useOccupancyZoneDrop({
       } else {
         // Reassign the track on the model, every compliant occurrence follows it automatically.
         const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
-        const updatedModel = await storeTrainSchedule(
-          trainSchedule.id,
-          { ...rawTrainSchedule, path: newPath },
-          dispatch,
-          upsertTrainSchedules
-        );
+        const updatedModelTrainSchedule = { ...rawTrainSchedule, path: newPath };
+
+        if (!isPacedTrain(rawTrainSchedule)) {
+          await storeTrainSchedule(
+            trainSchedule.id,
+            updatedModelTrainSchedule,
+            dispatch,
+            upsertTrainSchedules
+          );
+          return;
+        }
+        if (!isPacedTrainWithDetails(trainSchedule)) {
+          throw new Error(`Train schedule ${trainSchedule.id} references a non-paced train`);
+        }
 
         // 'all' mode also forces every occurrence with its own path_and_schedule exception
         // onto the new track (only the ones whose own path contains this waypoint).
-        if (panelSelectionMode === 'all' && isPacedTrain(rawTrainSchedule)) {
-          if (!isPacedTrainWithDetails(trainSchedule)) {
-            throw new Error(`Train schedule ${trainSchedule.id} references a non-paced train`);
-          }
-          const waypointZones = deployedWaypoints.find((wp) => wp.waypointId === waypointId)?.zones;
+        const waypointZones = deployedWaypoints.find((wp) => wp.waypointId === waypointId)?.zones;
+        const movedExceptions: PacedTrainException[] =
+          panelSelectionMode === 'all'
+            ? rawTrainSchedule.paced.exceptions.map((pacedException) => {
+                if (!pacedException.path_and_schedule || pacedException.disabled) {
+                  return pacedException;
+                }
 
-          const updatedExceptions: PacedTrainException[] = rawTrainSchedule.paced.exceptions.map(
-            (pacedException) => {
-              if (!pacedException.path_and_schedule || pacedException.disabled) {
-                return pacedException;
-              }
+                const occurrenceId = formatTrainScheduleIdToOccurrenceId(trainId, pacedException);
+                const occurrenceZone = waypointZones?.find((zone) => zone.trainId === occurrenceId);
+                if (!occurrenceZone) {
+                  // We don't move this occurrence. Its own path doesn't contain the dragged waypoint.
+                  return pacedException;
+                }
 
-              const occurrenceId = formatTrainScheduleIdToOccurrenceId(trainId, pacedException);
-              const occurrenceZone = waypointZones?.find((zone) => zone.trainId === occurrenceId);
-              if (!occurrenceZone) {
-                // We don't move this occurrence. Its own path doesn't contain the dragged waypoint.
-                return pacedException;
-              }
+                const occurrenceOwnStartTime = getOccurrenceStartTime(
+                  rawTrainSchedule,
+                  pacedException.start_time,
+                  () => pacedException.occurrence_index!
+                );
+                const occurrenceOffset = Duration.subtractDate(
+                  new Date(occurrenceZone.startTime),
+                  occurrenceOwnStartTime
+                );
+                const occurrenceSummary =
+                  findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, occurrenceId)
+                    ?.summary ?? trainSchedule.summary;
 
-              const occurrenceOwnStartTime = getOccurrenceStartTime(
-                rawTrainSchedule,
-                pacedException.start_time,
-                () => pacedException.occurrence_index!
-              );
-              const occurrenceOffset = Duration.subtractDate(
-                new Date(occurrenceZone.startTime),
-                occurrenceOwnStartTime
-              );
-              const occurrenceSummary =
-                findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, occurrenceId)
-                  ?.summary ?? trainSchedule.summary;
+                return {
+                  ...pacedException,
+                  path_and_schedule: {
+                    ...pacedException.path_and_schedule,
+                    path: upsertPathStepTrack(
+                      pacedException.path_and_schedule.path,
+                      occurrenceSummary,
+                      operationalPoint,
+                      occurrenceOffset,
+                      track.name!
+                    ),
+                  },
+                };
+              })
+            : rawTrainSchedule.paced.exceptions;
 
-              return {
-                ...pacedException,
-                path_and_schedule: {
-                  ...pacedException.path_and_schedule,
-                  path: upsertPathStepTrack(
-                    pacedException.path_and_schedule.path,
-                    occurrenceSummary,
-                    operationalPoint,
-                    occurrenceOffset,
-                    track.name!
-                  ),
-                },
-              };
-            }
-          );
-          const exceptionsToPersist = updatedExceptions.filter((e) => e.path_and_schedule);
-          if (exceptionsToPersist.length) {
-            await updateExceptions(dispatch, exceptionsToPersist, rawTrainSchedule.id);
-            upsertTrainSchedules([withPacedExceptions(updatedModel, updatedExceptions)]);
-          }
+        // Clear exceptions that no longer differ from the updated model.
+        const {
+          exceptions: reconciledExceptions,
+          modifiedExceptions: exceptionsToUpdate,
+          exceptionsToDeleteIds,
+        } = checkChangeGroups(updatedModelTrainSchedule, rawTrainSchedule.paced, movedExceptions);
+
+        if (exceptionsToDeleteIds.length) {
+          await deleteExceptions(dispatch, exceptionsToDeleteIds);
         }
+        if (exceptionsToUpdate.length) {
+          await updateExceptions(dispatch, exceptionsToUpdate, rawTrainSchedule.id);
+        }
+
+        await storeTrainSchedule(
+          trainSchedule.id,
+          {
+            ...updatedModelTrainSchedule,
+            paced: { ...rawTrainSchedule.paced, exceptions: reconciledExceptions },
+          },
+          dispatch,
+          upsertTrainSchedules
+        );
       }
     },
     [
