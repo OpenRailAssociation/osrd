@@ -5,7 +5,6 @@ import type {
   GeoJsonLineString,
   LightRollingStock,
   LoadingGaugeType,
-  PathItemLocation,
   PathProperties,
   PathfindingInput,
   PathfindingItem,
@@ -44,32 +43,6 @@ export const formatSuggestedOperationalPoints = (
     coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position)!,
     metadata: op?.metadata,
   }));
-
-export const matchPathStepAndOp = (
-  step: PathItemLocation,
-  op: Pick<
-    SuggestedOP,
-    'opId' | 'uic' | 'secondaryCode' | 'mainCode' | 'track' | 'offsetOnTrack' | 'countryCode'
-  >
-) => {
-  if (step.type === 'track_offset') {
-    return step.track === op.track && step.offset === op.offsetOnTrack;
-  }
-  if (step.operational_point.type === 'id') {
-    return step.operational_point.operational_point === op.opId;
-  }
-  if (step.operational_point.type === 'uic') {
-    return (
-      step.operational_point.uic === op.uic &&
-      step.operational_point.secondary_code === op.secondaryCode
-    );
-  }
-  return (
-    step.operational_point.main_code === op.mainCode &&
-    step.operational_point.secondary_code === op.secondaryCode &&
-    step.operational_point.country_code === op.countryCode
-  );
-};
 
 export const getPathfindingQuery = ({
   infraId,
