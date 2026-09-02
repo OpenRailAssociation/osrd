@@ -4,12 +4,10 @@ import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { isEqual, omit } from 'lodash';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
-import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
   osrdEditoastApi,
@@ -75,7 +73,6 @@ type PacedTrainItemProps = {
   isOccurrencesListOpen: boolean;
   handleOpenOccurrencesList: (pacedTrainId: number) => void;
   pacedTrain: PacedTrainWithDetails;
-  isOnEdit: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (
     pacedTrainToEdit: PacedTrainWithDetails,
@@ -98,7 +95,6 @@ const PacedTrainItem = ({
   isOccurrencesListOpen,
   handleOpenOccurrencesList,
   pacedTrain,
-  isOnEdit,
   selectPacedTrainToEdit,
   selectedTrainId,
   setSelectedTrainScheduleIds,
@@ -110,7 +106,6 @@ const PacedTrainItem = ({
   showMovebutton,
   timetableId,
 }: PacedTrainItemProps) => {
-  const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
@@ -333,12 +328,11 @@ const PacedTrainItem = ({
     );
   }, [deletePacedTrain, openModal, t]);
 
-  const content = (
+  return (
     <div
       data-testid="scenario-train-schedule"
       data-train-id={pacedTrain.id}
       className={cx('scenario-timetable-train paced-train', {
-        modified: isOnEdit,
         'in-selection': isInSelection,
         closed: !isOccurrencesListOpen,
       })}
@@ -497,14 +491,6 @@ const PacedTrainItem = ({
       )}
     </div>
   );
-  if (!isOnEdit) {
-    return content;
-  }
-
-  if (!editedElementContainer) {
-    return null;
-  }
-  return createPortal(content, editedElementContainer);
 };
 
 export default PacedTrainItem;

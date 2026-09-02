@@ -69,8 +69,6 @@ const TrainList = ({
   expandedTrainScheduleSetIds,
   setShowTrainScheduleSetDialog,
 }: TrainListProps) => {
-  const { trainScheduleToEditData } = useItineraryModalContext();
-
   const dateTimeLocale = useDateTimeLocale();
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();
@@ -172,7 +170,6 @@ const TrainList = ({
                 workerStatus === 'READY' &&
                 selectedTrainId === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
-              isModified={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
@@ -192,7 +189,6 @@ const TrainList = ({
               handleSelectPacedTrain={handleSelectTrainSchedule}
               isOccurrencesListOpen={expandedTrainScheduleIds.has(trainSchedule.id)}
               handleOpenOccurrencesList={handleExpandTrainSchedule}
-              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectedTrainId={selectedTrainId}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
@@ -220,7 +216,6 @@ const TrainList = ({
       selectedTrainId,
       setSelectedTrainScheduleIds,
       subCategories,
-      trainScheduleToEditData?.trainSchedule.id,
       timetableMode,
       trainIdUsedForProjection,
       workerStatus,

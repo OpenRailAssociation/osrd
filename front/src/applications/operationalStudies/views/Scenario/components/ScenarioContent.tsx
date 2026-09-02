@@ -31,7 +31,6 @@ import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import BoardWrapper from './BoardWrapper';
-import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';
 import { handleOperation } from './MacroEditor/ngeToOsrd';
 import { loadNgeDto } from './MacroEditor/osrdToNge';
@@ -227,139 +226,137 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   return (
     <TimetableContext.Provider value={timetableContext}>
       <ItineraryModalContext.Provider value={itineraryModalContext}>
-        <EditedElementContainerProvider>
-          <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
-            {itineraryModalOpen && (
-              <ItineraryModal
-                onTrainCreated={openAndScrollToTableBoard}
-                trainScheduleToEditData={trainScheduleToEditData}
-                defaultStartTime={defaultStartTime}
+        <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
+          {itineraryModalOpen && (
+            <ItineraryModal
+              onTrainCreated={openAndScrollToTableBoard}
+              trainScheduleToEditData={trainScheduleToEditData}
+              defaultStartTime={defaultStartTime}
+            />
+          )}
+          <div
+            data-testid="scenario-left-column"
+            className="left-column"
+            style={{ display: activeBoards.has('trains') ? 'block' : 'none' }}
+          >
+            <div className="scenario-sidemenu">
+              <TimetableBoardWrapper
+                trainSchedulesWithDetails={trainSchedulesWithDetails}
+                refreshNge={refreshNge}
+                projectingOnSimulatedPathException={
+                  projectionData?.projectingOnSimulatedPathException
+                }
+                selectedTrainScheduleIds={selectedTrainScheduleIds}
+                setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               />
-            )}
-            <div
-              data-testid="scenario-left-column"
-              className="left-column"
-              style={{ display: activeBoards.has('trains') ? 'block' : 'none' }}
-            >
-              <div className="scenario-sidemenu">
-                <TimetableBoardWrapper
-                  trainSchedulesWithDetails={trainSchedulesWithDetails}
-                  refreshNge={refreshNge}
-                  projectingOnSimulatedPathException={
-                    projectionData?.projectingOnSimulatedPathException
-                  }
-                  selectedTrainScheduleIds={selectedTrainScheduleIds}
-                  setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
-                />
-              </div>
             </div>
-            <div className="center-column">
-              {!isInfraLoaded && !itineraryModalOpen && <ScenarioLoaderMessage />}
-              <div className="scenario-results">
-                {/* STD / TABLES / SDD / MAP */}
-                {isInfraLoaded && isBoardSimulationResultsActive && (
-                  <SimulationResults
-                    scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
-                    projectionData={projectionData}
-                    conflicts={conflicts}
-                    trainSchedulesWithDetails={trainSchedulesWithDetails}
-                    activeBoards={activeBoards}
-                    hourlyTimetableDuration={hourlyTimetableDuration}
-                    isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
-                    setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
-                  />
-                )}
-                {/* MACRO */}
-                {activeBoards.has('macro') && (
-                  <BoardWrapper
-                    name={t('boards.macro')}
-                    resizable={{
-                      height: macroBoardHeight,
-                      setHeight: setMacroBoardHeight,
-                      minHeight: MACRO_MIN_HEIGHT,
-                    }}
-                  >
-                    <div className="osrd-simulation-container">
-                      <div
-                        data-testid="macro-editor"
-                        className="chart-container"
-                        style={{
-                          height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
-                        }}
-                      >
-                        {(!ngeDto || ngeIsLoading) && (
-                          <Loader
-                            msg={t('main.loadingMacroEditor')}
-                            className="scenario-loader"
-                            childClass="scenario-loader-msg"
-                          />
-                        )}
-                        <NGE
-                          activeFilterSettingId={ngeDto?.filterData.filterSettings.at(0)?.id}
-                          dto={ngeDto}
-                          onOperation={handleNGEOperation}
-                          onLoad={handleNGELoad}
+          </div>
+          <div className="center-column">
+            {!isInfraLoaded && !itineraryModalOpen && <ScenarioLoaderMessage />}
+            <div className="scenario-results">
+              {/* STD / TABLES / SDD / MAP */}
+              {isInfraLoaded && isBoardSimulationResultsActive && (
+                <SimulationResults
+                  scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
+                  projectionData={projectionData}
+                  conflicts={conflicts}
+                  trainSchedulesWithDetails={trainSchedulesWithDetails}
+                  activeBoards={activeBoards}
+                  hourlyTimetableDuration={hourlyTimetableDuration}
+                  isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
+                  setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
+                />
+              )}
+              {/* MACRO */}
+              {activeBoards.has('macro') && (
+                <BoardWrapper
+                  name={t('boards.macro')}
+                  resizable={{
+                    height: macroBoardHeight,
+                    setHeight: setMacroBoardHeight,
+                    minHeight: MACRO_MIN_HEIGHT,
+                  }}
+                >
+                  <div className="osrd-simulation-container">
+                    <div
+                      data-testid="macro-editor"
+                      className="chart-container"
+                      style={{
+                        height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
+                      }}
+                    >
+                      {(!ngeDto || ngeIsLoading) && (
+                        <Loader
+                          msg={t('main.loadingMacroEditor')}
+                          className="scenario-loader"
+                          childClass="scenario-loader-msg"
                         />
-                      </div>
+                      )}
+                      <NGE
+                        activeFilterSettingId={ngeDto?.filterData.filterSettings.at(0)?.id}
+                        dto={ngeDto}
+                        onOperation={handleNGEOperation}
+                        onLoad={handleNGELoad}
+                      />
+                    </div>
+                  </div>
+                </BoardWrapper>
+              )}
+              {/* CHRONOGRAM */}
+              {scenario.timetable_type === 'CALENDAR' &&
+                isInfraLoaded &&
+                trainSchedulesWithDetails.length > 0 && (
+                  <BoardWrapper
+                    hidden={!activeBoards.has('chronogram')}
+                    name={t('boards.chronogram')}
+                    resizable={{
+                      height: chronogramHeight,
+                      setHeight: setChronogramHeight,
+                      minHeight: CHRONOGRAM_MIN_HEIGHT,
+                    }}
+                    withFooter
+                  >
+                    <div data-testid="chronogram" className="simulation-chronogram">
+                      <ChronogramWrapper
+                        timetableId={timetableId}
+                        trainSchedulesWithDetails={trainSchedulesWithDetails}
+                        chronogramHeight={chronogramHeight}
+                      />
                     </div>
                   </BoardWrapper>
                 )}
-                {/* CHRONOGRAM */}
-                {scenario.timetable_type === 'CALENDAR' &&
-                  isInfraLoaded &&
-                  trainSchedulesWithDetails.length > 0 && (
-                    <BoardWrapper
-                      hidden={!activeBoards.has('chronogram')}
-                      name={t('boards.chronogram')}
-                      resizable={{
-                        height: chronogramHeight,
-                        setHeight: setChronogramHeight,
-                        minHeight: CHRONOGRAM_MIN_HEIGHT,
-                      }}
-                      withFooter
-                    >
-                      <div data-testid="chronogram" className="simulation-chronogram">
-                        <ChronogramWrapper
-                          timetableId={timetableId}
-                          trainSchedulesWithDetails={trainSchedulesWithDetails}
-                          chronogramHeight={chronogramHeight}
-                        />
-                      </div>
-                    </BoardWrapper>
-                  )}
-              </div>
             </div>
-            {/* CONFLICTS */}
-            <div
-              className="right-column"
-              data-testid="conflicts-list"
-              style={{ display: activeBoards.has('conflicts') ? 'block' : 'none' }}
+          </div>
+          {/* CONFLICTS */}
+          <div
+            className="right-column"
+            data-testid="conflicts-list"
+            style={{ display: activeBoards.has('conflicts') ? 'block' : 'none' }}
+          >
+            <BoardWrapper
+              hidden={!activeBoards.has('conflicts')}
+              name={t('main.conflicts.conflictsCount', { count: totalConflictsCount })}
+              withFooter
             >
-              <BoardWrapper
-                hidden={!activeBoards.has('conflicts')}
-                name={t('main.conflicts.conflictsCount', { count: totalConflictsCount })}
-                withFooter
-              >
-                <div className="conflicts-wrapper">
-                  {isConflictsLoading && (
-                    <Loader
-                      msg={t('main.loadingConflicts')}
-                      className="scenario-loader"
-                      childClass="scenario-loader-msg"
-                    />
-                  )}
-                  <Conflicts
-                    showOnlySelectedTrain={showOnlySelectedTrain}
-                    onToggleFilter={handleToggleConflictsFilter}
-                    selectedTrainName={selectedTrainName}
-                    conflictsCount={selectedTrainConflictsCount}
-                    displayedConflicts={displayedConflicts}
+              <div className="conflicts-wrapper">
+                {isConflictsLoading && (
+                  <Loader
+                    msg={t('main.loadingConflicts')}
+                    className="scenario-loader"
+                    childClass="scenario-loader-msg"
                   />
-                </div>
-              </BoardWrapper>
-            </div>
-          </main>
-        </EditedElementContainerProvider>
+                )}
+                <Conflicts
+                  showOnlySelectedTrain={showOnlySelectedTrain}
+                  onToggleFilter={handleToggleConflictsFilter}
+                  selectedTrainName={selectedTrainName}
+                  conflictsCount={selectedTrainConflictsCount}
+                  displayedConflicts={displayedConflicts}
+                />
+              </div>
+            </BoardWrapper>
+          </div>
+        </main>
       </ItineraryModalContext.Provider>
     </TimetableContext.Provider>
   );
