@@ -45,11 +45,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.1.0",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "happy-dom": "^20.11.2",
+    "@types/react-dom": "^19.2.5",
+    "happy-dom": "^20.11.12",
     "tailwindcss": "^4.2.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }

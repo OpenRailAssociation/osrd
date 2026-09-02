@@ -11,11 +11,11 @@
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/lodash": "^4.17.25",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "autoprefixer": "^10.5.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-storybook": "^10.5.8",
+    "eslint-plugin-storybook": "^10.5.10",
     "oxfmt": "^0.63.0",
     "postcss": "^8.5.26",
     "postcss-assets": "^6.0.0",
@@ -28,6 +28,6 @@
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }
