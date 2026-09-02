@@ -83,6 +83,10 @@ export const searchJourneySlice = createSlice({
     selectSearchJourneySolution(state: Draft<SearchJourneyState>, action: PayloadAction<number>) {
       state.selectedSolutionIndex = action.payload;
     },
+    clearSearchJourneyResults(state: Draft<SearchJourneyState>) {
+      state.journeys = undefined;
+      state.selectedSolutionIndex = undefined;
+    },
     resetSearchJourneyConfig() {
       return searchJourneyInitialState;
     },
@@ -96,6 +100,7 @@ export const {
   updateSearchJourneyDestination,
   setSearchJourneyResults,
   selectSearchJourneySolution,
+  clearSearchJourneyResults,
   resetSearchJourneyConfig,
 } = searchJourneySlice.actions;
 
