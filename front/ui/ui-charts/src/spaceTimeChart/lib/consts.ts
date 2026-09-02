@@ -4,7 +4,7 @@ import { type SpaceTimeChartTheme } from './types';
 export const BLACK = '#000000';
 export const BLUE = '#2170B9';
 export const GREY_10 = '#EDEDED';
-export const GREY_30 = '#B6B3AF';
+export const GREY_30 = '#B6B2AF';
 export const GREY_50 = '#797671';
 export const WHITE = '#FFFFFF';
 export const WHITE_75 = '#FFFFFFC0';
