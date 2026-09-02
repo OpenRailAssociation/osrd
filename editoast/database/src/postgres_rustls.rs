@@ -178,3 +178,107 @@ where
         Ok(TlsConnector { server_name, inner })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use futures_util::FutureExt;
+    use rustls::pki_types::pem::PemObject;
+    use tokio::net::TcpStream;
+    use tokio_postgres::tls::TlsConnect;
+
+    use super::*;
+
+    impl TlsConnector {
+        fn for_tests() -> Self {
+            let mut root_certificates = rustls::RootCertStore::empty();
+            for cert in rustls::pki_types::CertificateDer::pem_file_iter("./ca.crt").unwrap() {
+                root_certificates.add(cert.unwrap()).unwrap();
+            }
+
+            let mut tls_config = rustls::ClientConfig::builder()
+                .with_root_certificates(Arc::new(root_certificates))
+                .with_no_client_auth();
+
+            // Needed for the "direct" test
+            tls_config.alpn_protocols = vec![b"postgresql".to_vec()];
+
+            let inner = tokio_rustls::TlsConnector::from(Arc::new(tls_config));
+
+            let server_name = ServerName::try_from("localhost").unwrap();
+
+            Self { server_name, inner }
+        }
+    }
+
+    async fn smoke_test<T>(s: &str, tls: T)
+    where
+        T: TlsConnect<TcpStream>,
+        T::Stream: 'static + Send,
+    {
+        let stream = TcpStream::connect("127.0.0.1:5433").await.unwrap();
+
+        let builder = s.parse::<tokio_postgres::Config>().unwrap();
+        let (client, connection) = builder.connect_raw(stream, tls).await.unwrap();
+
+        let connection = connection.map(|r| r.unwrap());
+        tokio::spawn(connection);
+
+        let stmt = client.prepare("SELECT $1::INT4").await.unwrap();
+        let rows = client.query(&stmt, &[&1i32]).await.unwrap();
+
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].get::<_, i32>(0), 1);
+    }
+
+    #[tokio::test]
+    async fn require() {
+        smoke_test(
+            "user=ssl_user dbname=postgres sslmode=require",
+            TlsConnector::for_tests(),
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn direct() {
+        smoke_test(
+            "user=ssl_user dbname=postgres sslmode=require sslnegotiation=direct",
+            TlsConnector::for_tests(),
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn prefer() {
+        smoke_test("user=ssl_user dbname=postgres", TlsConnector::for_tests()).await;
+    }
+
+    #[tokio::test]
+    async fn scram_user() {
+        smoke_test(
+            "user=scram_user password=password dbname=postgres sslmode=require",
+            TlsConnector::for_tests(),
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn require_channel_binding_err() {
+        let connector = TlsConnector::for_tests();
+
+        let stream = TcpStream::connect("127.0.0.1:5433").await.unwrap();
+        let builder = "user=pass_user password=password dbname=postgres channel_binding=require"
+            .parse::<tokio_postgres::Config>()
+            .unwrap();
+        builder.connect_raw(stream, connector).await.err().unwrap();
+    }
+
+    #[tokio::test]
+    async fn require_channel_binding_ok() {
+        smoke_test(
+            "user=scram_user password=password dbname=postgres channel_binding=require",
+            TlsConnector::for_tests(),
+        )
+        .await;
+    }
+}
