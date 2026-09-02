@@ -72,7 +72,7 @@ const ExtraOccurrenceForm = ({
             { key: 's', label: '' },
           ]}
           padChar="0"
-          onChange={(milliseconds) => {
+          onChange={(milliseconds: number) => {
             setAddedExceptionDate(new Duration({ milliseconds }));
           }}
           small
