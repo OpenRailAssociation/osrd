@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -52,6 +52,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
   const [operationalPointNames, setOperationalPointNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const dataSolutionRef = useRef<SearchJourneySolution | undefined>(undefined);
 
   useEffect(() => {
     if (!infraId || !solution || solution.length === 0) {
@@ -59,6 +60,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
       setMarkers([]);
       setTrainNames({});
       setOperationalPointNames({});
+      dataSolutionRef.current = solution;
       return undefined;
     }
 
@@ -165,6 +167,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
           setMarkers(newMarkers);
           setTrainNames(newTrainNames);
           setOperationalPointNames(newOperationalPointNames);
+          dataSolutionRef.current = solution;
         }
       } catch (e) {
         if (!cancelled) setError(e as Error);
@@ -178,5 +181,12 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
     };
   }, [infraId, solution, dispatch]);
 
-  return { geometry, markers, trainNames, operationalPointNames, loading, error };
+  return {
+    geometry,
+    markers,
+    trainNames,
+    operationalPointNames,
+    loading: loading || solution !== dataSolutionRef.current,
+    error,
+  };
 }
