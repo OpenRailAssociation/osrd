@@ -191,19 +191,15 @@ const createDefaultTrainName = (
         return `${location.track}+${Math.round(location.offset / 1000)}`;
       case 'operational_point_part_reference': {
         const op = location.operational_point;
+        const opMetadatas = pathStepsMetadataById.get(pathStep.id);
+        const hasMainCode = opMetadatas && !opMetadatas.isInvalid && opMetadatas.type === 'opRef';
         switch (op.type) {
           case 'domestic':
             return op.main_code;
           case 'id':
-            return `ID ${op.operational_point}`;
-          case 'uic': {
-            const opMetadatas = pathStepsMetadataById.get(pathStep.id);
-            const name =
-              opMetadatas && !opMetadatas.isInvalid && opMetadatas.type === 'opRef'
-                ? opMetadatas.mainCode
-                : `UIC ${op.uic}`;
-            return name;
-          }
+            return hasMainCode ? opMetadatas.mainCode : `ID ${op.operational_point}`;
+          case 'uic':
+            return hasMainCode ? opMetadatas.mainCode : `UIC ${op.uic}`;
         }
       }
     }
