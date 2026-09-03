@@ -1,4 +1,4 @@
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 /**
@@ -7,7 +7,7 @@ import { Duration } from 'utils/duration';
  * @param pathSteps - An array of path steps to be reversed.
  * @returns A new array of path steps with reversed order, shifted margins and stripped arrival times.
  */
-function reversePathSteps(pathSteps: PathStepV2[]): PathStepV2[] {
+function reversePathSteps(pathSteps: PathStep[]): PathStep[] {
   // Reverse start and end of margins, in prevision of reversing the list of path steps
   const newMargins: (string | null)[] = [];
   let prevMargin: string | null;
@@ -23,7 +23,7 @@ function reversePathSteps(pathSteps: PathStepV2[]): PathStepV2[] {
   });
 
   return pathSteps
-    .map((pathStep, index): PathStepV2 => {
+    .map((pathStep, index): PathStep => {
       const isFirstStepNullStop = index === 0 && pathStep.stopFor === null;
       const isLastStepZeroStop = index === pathSteps.length - 1 && pathStep.stopFor?.ms === 0;
       return {
