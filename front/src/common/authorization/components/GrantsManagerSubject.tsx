@@ -9,7 +9,7 @@ import { ThreeDots } from 'common/Loaders';
 import type { AsyncStatus } from 'common/types';
 import { getErrorMessage } from 'utils/error';
 
-import type { Grant, Privilege, Subject } from '../types';
+import type { Grant, Privilege, ResourceType, Subject } from '../types';
 import generateGrantSelectProps from '../utils/generateGrantSelectProps';
 
 type GrantsManagerSubjectProps = {
@@ -17,6 +17,7 @@ type GrantsManagerSubjectProps = {
   subjectGrant?: Grant;
   userId: number;
   userPrivileges: Set<Privilege>;
+  resourceType: ResourceType;
   onChange: (grant?: Grant) => Promise<void>;
 };
 
@@ -25,6 +26,7 @@ const GrantsManagerSubject = ({
   subjectGrant,
   userId,
   userPrivileges,
+  resourceType,
   onChange,
 }: GrantsManagerSubjectProps) => {
   const { t } = useTranslation();
@@ -49,9 +51,10 @@ const GrantsManagerSubject = ({
       generateGrantSelectProps({
         subjectGrant,
         userPrivileges,
+        resourceType,
         t,
       }),
-    [userPrivileges, subjectGrant, t]
+    [userPrivileges, subjectGrant, resourceType, t]
   );
 
   useEffect(() => {

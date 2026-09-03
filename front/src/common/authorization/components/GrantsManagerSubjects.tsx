@@ -36,6 +36,7 @@ const GrantsManagerSubjects = ({
     generateGrantSelectProps({
       subjectGrant: selectedUserGrant,
       userPrivileges,
+      resourceType,
       t,
     });
 
@@ -75,6 +76,7 @@ const GrantsManagerSubjects = ({
             subjectGrant={grant}
             userId={userId}
             userPrivileges={userPrivileges}
+            resourceType={resourceType}
             onChange={async (value?: Grant) => {
               await updateGrant(resourceType, resourceId, subject.id, value);
               onChangeSuccess?.(subject.id, value);

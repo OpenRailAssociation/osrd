@@ -1,8 +1,8 @@
 import type { TFunction } from 'i18next';
 
-import type { Grant, Privilege } from 'common/authorization/types';
+import type { Grant, Privilege, ResourceType } from 'common/authorization/types';
 
-import { GRANTS_LABEL } from '../consts';
+import { GRANTS_LABEL, RESOURCE_TYPE_ALLOWED_GRANTS } from '../consts';
 
 function getRequiredPrivilegesToAddGrant(grant: keyof typeof GRANTS_LABEL): Privilege[] {
   switch (grant) {
@@ -25,16 +25,23 @@ function getRequiredPrivilegesToAddGrant(grant: keyof typeof GRANTS_LABEL): Priv
 const generateGrantSelectProps = ({
   subjectGrant,
   userPrivileges,
+  resourceType,
   t,
 }: {
   subjectGrant?: Grant;
   userPrivileges: Set<Privilege>;
+  resourceType: ResourceType;
   t: TFunction;
 }) => {
+  // Some resource types (eg. project) only expose a subset of the grants
+  const grantsForResource = RESOURCE_TYPE_ALLOWED_GRANTS[resourceType];
+
   // List of options that the user is allowed to assign
   const allowedOptions = Object.keys(GRANTS_LABEL).reduce(
     (acc, grantKey) => {
       const grant = grantKey as keyof typeof GRANTS_LABEL;
+
+      if (grantsForResource && !grantsForResource.includes(grant)) return acc;
 
       const requiredPrivileges = getRequiredPrivilegesToAddGrant(grant);
       const isOptionShown = requiredPrivileges.every((privilege) => userPrivileges.has(privilege));
