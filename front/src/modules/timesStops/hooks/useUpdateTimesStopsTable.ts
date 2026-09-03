@@ -139,7 +139,17 @@ const useUpdateTimesStopsTable = (
         update.field === 'stopDuration'
           ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
           : propagateTime(update, selectedTrain, scenario.timetable_type);
-      if (propagatedResult) return { ...propagatedResult, updatedMargins: selectedTrain.margins };
+      if (propagatedResult)
+        return {
+          ...propagatedResult,
+          // The days must be right before saving
+          updatedSchedule: cascadeArrivals({
+            schedule: propagatedResult.updatedSchedule,
+            path: propagatedResult.updatedPath,
+            fromPathIndex: 1,
+          }),
+          updatedMargins: selectedTrain.margins,
+        };
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
@@ -218,17 +228,16 @@ const useUpdateTimesStopsTable = (
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
       }
 
-      // For atThisWaypoint: stops after the edited point that now fall before it in time
-      // must be bumped to the next day.
-      if (update.propagationMode === 'atThisWaypoint') {
-        updatedSchedule = cascadeArrivals({
+      return {
+        updatedPath,
+        // The days must be right before saving
+        updatedSchedule: cascadeArrivals({
           schedule: updatedSchedule,
           path: updatedPath,
-          fromPathIndex: updatedPath.findIndex((step) => step.id === pathStepId) + 1,
-        });
-      }
-
-      return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };
+          fromPathIndex: 1,
+        }),
+        updatedMargins: selectedTrain.margins,
+      };
     },
     [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
   );
