@@ -67,37 +67,6 @@ export type OsrdStdcmConfState = OsrdConfState & {
 
 export type PathStep = {
   id: string;
-  location: PathItemLocation;
-  arrival?: Duration | null;
-  stopFor?: Duration | null;
-  theoreticalMargin?: string;
-  receptionSignal?: ReceptionSignal;
-  kp?: string;
-  /** Distance from the beginning of the path in mm */
-  positionOnPath?: number;
-  coordinates?: Position;
-  // Metadatas given by the search endpoint in TypeAndPath (name)
-  name?: string;
-  // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
-  metadata?: {
-    lineCode: number;
-    lineName: string;
-    trackName: string;
-    trackNumber: number;
-  };
-  isInvalid?: boolean;
-  /** Flag specifying whether the pathStep was created from the power restriction selector or not
-   *
-   * If true, the pathStep might be cleaned if its power restriction is removed (except if it has time, stop or margin constraints)
-   *
-   * This flag will only work if the user has not saved their change. Once the change is saved, the flag will be removed and the pathStep
-   * will become permanent.
-   */
-  isFromPowerRestriction?: boolean;
-};
-
-export type PathStepV2 = {
-  id: string;
   location: PathItemLocation | null;
   arrival: Duration | null;
   stopFor: Duration | null;

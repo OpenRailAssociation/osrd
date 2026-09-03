@@ -3,11 +3,11 @@ import type {
   CoreOperationalPointOnPath,
   OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 
 import type { WaypointGroup } from './types';
 
-type LocatedStep = PathStepV2 & { location: NonNullable<PathStepV2['location']> };
+type LocatedStep = PathStep & { location: NonNullable<PathStep['location']> };
 
 // Canonical key for an OP reference, so two references to the same OP compare equal.
 const opRefKey = (ref: OperationalPointReference) => {
@@ -45,7 +45,7 @@ const isSameWaypoint = (a: LocatedStep, b: LocatedStep) => {
  */
 export function groupOperationalPoints(
   operationalPoints: CoreOperationalPointOnPath[],
-  pathSteps: PathStepV2[],
+  pathSteps: PathStep[],
   positionByStepId?: Map<string, number>
 ): WaypointGroup[] {
   const validSteps = pathSteps.filter((step): step is LocatedStep => step.location !== null);

@@ -105,7 +105,7 @@ const useUpdateTimesStopsTable = (
 
       if (!targetedStep) return selectedTrain.margins;
 
-      targetedStep.theoreticalMargin = formatRequestedMargin(requestedMargin) ?? undefined;
+      targetedStep.theoreticalMargin = formatRequestedMargin(requestedMargin) ?? null;
       return formatMargin(updatedPathSteps);
     },
     [selectedTrain]

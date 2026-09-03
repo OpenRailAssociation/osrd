@@ -22,7 +22,7 @@ import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { setFailure } from 'reducers/main';
-import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { getBarycenter, nearestPointOnLine } from 'utils/geometry';
@@ -43,7 +43,7 @@ const OPERATIONAL_POINT_LAYERS = [
 ];
 
 type ItineraryModalMapProps = {
-  pathSteps?: PathStepV2[];
+  pathSteps?: PathStep[];
   pathStepsMetadata?: Map<string, PathStepMetadata>;
   pathProperties?: PathProperties;
   selectedStepId?: string;

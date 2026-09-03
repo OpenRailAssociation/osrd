@@ -31,21 +31,6 @@ const computeBasePathStep = (
     reception_signal: receptionSignal,
   } = correspondingSchedule || {};
 
-  let name;
-  if (location.type === 'operational_point_part_reference') {
-    if (location.operational_point.type === 'domestic') {
-      name =
-        location.operational_point.main_code +
-        (location.operational_point.secondary_code
-          ? `/${location.operational_point.secondary_code}`
-          : '');
-    } else if (location.operational_point.type === 'uic') {
-      name = location.operational_point.uic.toString();
-    } else if (location.operational_point.type === 'id') {
-      name = location.operational_point.operational_point;
-    }
-  }
-
   let theoreticalMargin;
   if (trainSchedule.margins && pathItemIndex !== trainSchedule.path.length - 1) {
     theoreticalMargin = findCorrespondingMargin(id, pathItemIndex, trainSchedule.margins);
@@ -53,7 +38,6 @@ const computeBasePathStep = (
 
   return {
     id,
-    name,
     location,
     arrival: arrival ? Duration.parse(arrival) : null,
     stopFor: stopFor ? Duration.parse(stopFor) : null,
@@ -61,7 +45,7 @@ const computeBasePathStep = (
     // in order to avoid unwanted exceptions (when not provided, editoast returns it
     // with its default value)
     receptionSignal: receptionSignal ?? 'OPEN',
-    theoreticalMargin,
+    theoreticalMargin: theoreticalMargin ?? null,
   };
 };
 

@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 import type { ItineraryPathProperties } from 'applications/operationalStudies/types';
 import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 
 import { groupOperationalPoints } from './utils';
 import WaypointGroup from './WaypointGroup';
 
 type IntermediateWaypointsPanelProps = {
-  pathSteps: PathStepV2[];
+  pathSteps: PathStep[];
   pathProperties: ItineraryPathProperties | undefined;
   status: 'idle' | 'loading' | 'error' | 'success';
   onHide: () => void;
@@ -34,7 +34,7 @@ const IntermediateWaypointsPanel = ({
   // placeholder has no location and is skipped.
   const { t: tMain } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const lastLocatedStepId = pathSteps.filter((step) => step.location !== null).at(-1)?.id;
-  const getRequestedLabel = (step: PathStepV2) => {
+  const getRequestedLabel = (step: PathStep) => {
     const index = pathSteps.findIndex((s) => s.id === step.id);
     if (index === 0) return tMain('requestedOrigin');
     if (step.id === lastLocatedStepId) return tMain('requestedDestination');

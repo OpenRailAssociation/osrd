@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -30,8 +30,8 @@ import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
 
 type PathStepProps = {
-  pathStep: PathStepV2;
-  setPathSteps?: React.Dispatch<React.SetStateAction<PathStepV2[]>>;
+  pathStep: PathStep;
+  setPathSteps?: React.Dispatch<React.SetStateAction<PathStep[]>>;
   pathStepMetadata: PathStepMetadata | undefined;
   index: number;
   hidePathfindingLine: boolean;

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 import reversePathSteps from '../reversePathSteps';
 
 describe('reversePathSteps', () => {
-  const pathSteps: PathStepV2[] = [
+  const pathSteps: PathStep[] = [
     {
       arrival: null,
       theoreticalMargin: '0%',
@@ -97,7 +97,7 @@ describe('reversePathSteps', () => {
     },
   ];
 
-  const expectedReversedPathSteps: PathStepV2[] = [
+  const expectedReversedPathSteps: PathStep[] = [
     {
       id: 'id206',
       location: {
@@ -188,7 +188,7 @@ describe('reversePathSteps', () => {
     },
   ];
 
-  const expectedTwiceReversedPathSteps: PathStepV2[] = pathSteps.map((pathStep) => ({
+  const expectedTwiceReversedPathSteps: PathStep[] = pathSteps.map((pathStep) => ({
     ...pathStep,
     arrival: null,
   }));

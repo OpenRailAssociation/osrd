@@ -12,7 +12,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import {
   isCursorSurroundedBySpace,
@@ -26,7 +26,7 @@ type SearchConstraintType = (string | number | string[])[];
 const monospaceOneCharREMWidth = 0.6225;
 
 type TypeAndPathProps = {
-  onSubmit: (pathSteps: PathStepV2[]) => void;
+  onSubmit: (pathSteps: PathStep[]) => void;
 };
 
 const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
@@ -129,7 +129,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
 
   const handleSubmit = async () => {
     if (infraId && opList.length > 0) {
-      const pathSteps: PathStepV2[] = opList
+      const pathSteps: PathStep[] = opList
         .filter((op) => op.main_code !== '')
         .map(({ main_code, secondary_code, country_code }) => ({
           id: uuidV4(),

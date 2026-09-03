@@ -32,7 +32,7 @@ import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
-import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
+import usePathfinding from 'modules/pathfinding/hooks/usePathfinding';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import {
   DEFAULT_PACED_TRAIN_INTERVAL,
@@ -41,12 +41,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type {
-  EditingTrainType,
-  PathStep,
-  PathStepMetadata,
-  PathStepV2,
-} from 'reducers/osrdconf/types';
+import type { EditingTrainType, PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
@@ -95,7 +90,7 @@ export type ItineraryModalTrainState = {
   rollingStockId?: number;
   rollingStockName: string;
   rollingStockComfort: Comfort;
-  pathSteps: (PathStep | null)[];
+  pathSteps: PathStep[];
   constraintDistribution: Distribution;
   usingElectricalProfiles: boolean;
   usingSpeedLimits: boolean;
@@ -126,7 +121,7 @@ export function blankNewTrainState(
     rollingStockComfort: 'STANDARD',
     category: null,
     // Corresponds to origin and destination not defined
-    pathSteps: [null, null],
+    pathSteps: [],
     constraintDistribution: 'STANDARD',
     usingElectricalProfiles: true,
     usingSpeedLimits: true,
@@ -259,7 +254,7 @@ const ItineraryModal = ({
   const confirmedStepIdRef = useRef<string>('');
   const focusValueRef = useRef<Record<string, string | undefined>>({});
 
-  const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
+  const [pathSteps, setPathSteps] = useState<PathStep[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
   const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
   const [bannerWiggle, setBannerWiggle] = useState(0);
@@ -307,7 +302,7 @@ const ItineraryModal = ({
     pathSteps,
     pendingStepIdRef
   );
-  const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
+  const { launchPathfinding, pathProperties, pathfindingError } = usePathfinding();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
   // Fetch local track names from timetable train schedules is now handled inside usePathStepsMetadata
@@ -453,7 +448,7 @@ const ItineraryModal = ({
   );
 
   /**Return true if the path step is invalid and is not a placeholder, not being fetched and not being edited */
-  const isStepInvalidAndFinal = (step: PathStepV2, metadata?: PathStepMetadata) => {
+  const isStepInvalidAndFinal = (step: PathStep, metadata?: PathStepMetadata) => {
     const query = (getInputForStep(step.id) ?? '').trim();
     const isEditing = editingStepIdRef.current === step.id || query.length > 0;
     const isPending = pendingStepIdRef.current === step.id;
@@ -605,20 +600,10 @@ const ItineraryModal = ({
   }, [pathSteps]);
 
   useEffect(() => {
-    const formattedPathSteps = trainState.pathSteps
-      .filter((pathStep): pathStep is PathStep => pathStep !== null)
-      .map<PathStepV2>((pathStep) => ({
-        id: pathStep.id,
-        location: pathStep.location,
-        arrival: pathStep.arrival ?? null,
-        stopFor: pathStep.stopFor ?? null,
-        theoreticalMargin: pathStep.theoreticalMargin ?? null,
-        receptionSignal: pathStep.receptionSignal ?? null,
-      }));
-    formattedPathSteps.forEach((step) => {
+    trainState.pathSteps.forEach((step) => {
       initCustomTracksEntry(step.location);
     });
-    setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
+    setPathSteps(ensureTrailingEmptyStep(trainState.pathSteps));
   }, [trainState.pathSteps]);
 
   const pathfindingStepsWithLocations = useMemo(
@@ -630,7 +615,7 @@ const ItineraryModal = ({
       }),
     [pathSteps, pathStepsMetadataById]
   );
-  const pathfindingStepsRef = useRef<PathStepV2[]>([]);
+  const pathfindingStepsRef = useRef<PathStep[]>([]);
 
   const pathfindingSteps = useMemo(() => {
     const prev = pathfindingStepsRef.current;
@@ -655,7 +640,7 @@ const ItineraryModal = ({
       pathfindingSteps.map((s) => [s.id, pathStepsMetadataById.get(s.id)!])
     );
 
-    launchPathfindingV2({
+    launchPathfinding({
       pathSteps: pathfindingLocations,
       pathStepsMetadataById: metadataByPathStepId,
       rollingStockId: modalFormState.rollingStockId,
@@ -680,37 +665,6 @@ const ItineraryModal = ({
     modalRef.current?.showModal();
   };
 
-  const buildPathSteps = (steps: PathStepV2[], metadataById: Map<string, PathStepMetadata>) =>
-    steps
-      .filter((step) => step.location !== null)
-      .map<PathStep>((step) => {
-        const metadata = metadataById.get(step.id);
-
-        const baseStep = {
-          id: step.id,
-          location: step.location!,
-          arrival: step.arrival,
-          stopFor: step.stopFor,
-          theoreticalMargin: step.theoreticalMargin ?? undefined,
-          receptionSignal: step.receptionSignal ?? undefined,
-        };
-
-        if (!metadata || metadata.isInvalid) {
-          return { ...baseStep, isInvalid: true };
-        }
-
-        return {
-          ...baseStep,
-          name: metadata.type === 'opRef' ? metadata.name : undefined,
-          uic: metadata.type === 'opRef' ? metadata.uic : undefined,
-          secondary_code: metadata.type === 'opRef' ? metadata.secondaryCode : undefined,
-          coordinates:
-            metadata.type === 'trackOffset'
-              ? metadata.coordinates
-              : metadata.parts.find((p) => p.type === 'valid')?.coordinates,
-        };
-      });
-
   const clearStep = (stepId: string) => {
     setInputForStep(stepId, '');
     resetOpSuggestions();
@@ -723,7 +677,7 @@ const ItineraryModal = ({
   };
 
   const setPathStepsWithTrailing = useCallback(
-    (newPathSteps: PathStepV2[]) => {
+    (newPathSteps: PathStep[]) => {
       setPathSteps(ensureTrailingEmptyStep(newPathSteps));
     },
     [setPathSteps]
@@ -753,10 +707,9 @@ const ItineraryModal = ({
         ? { ...step, stopFor: new Duration({ minutes: 0 }) }
         : step
     );
-    //TODO this variable name should be changed when we no longer have to convert from v2 to v1 for path steps
-    const pathStepsFromV2 = buildPathSteps(stepsWithStopAtDestination, pathStepsMetadataById);
+    const finalPathSteps = stepsWithStopAtDestination.filter((step) => step.location !== null);
 
-    if (pathStepsFromV2.length < 2) return;
+    if (finalPathSteps.length < 2) return;
 
     setTrainState((oldTrainState: ItineraryModalTrainState) => ({
       ...oldTrainState,
@@ -765,7 +718,7 @@ const ItineraryModal = ({
       rollingStockId: modalFormState.rollingStockId,
       rollingStockName: modalFormState.rollingStockName,
       speedLimitByTag: modalFormState.speedLimitTag,
-      pathSteps: pathStepsFromV2,
+      pathSteps: finalPathSteps,
       editingTrainType: trainType ?? oldTrainState.editingTrainType,
     }));
 

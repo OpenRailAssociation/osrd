@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
 import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 
 import { groupOperationalPoints } from '../utils';
 
-const makeStep = (id: string, uic: number, ch = 'BV'): PathStepV2 => ({
+const makeStep = (id: string, uic: number, ch = 'BV'): PathStep => ({
   id,
   location: {
     type: 'operational_point_part_reference',
@@ -18,7 +18,7 @@ const makeStep = (id: string, uic: number, ch = 'BV'): PathStepV2 => ({
 });
 
 // A step matching no OP, as produced by a map-click waypoint
-const makeTrackOffsetStep = (id: string): PathStepV2 => ({
+const makeTrackOffsetStep = (id: string): PathStep => ({
   id,
   location: { type: 'track_offset', track: 'xxx', offset: 50 },
   arrival: null,
@@ -152,7 +152,7 @@ describe('groupOperationalPoints', () => {
     });
 
     it('with a pinned track, only the crossing on that track claims it', () => {
-      const pinnedStep: PathStepV2 = {
+      const pinnedStep: PathStep = {
         ...makeStep('sDup', 2),
         location: {
           type: 'operational_point_part_reference',
