@@ -1,10 +1,6 @@
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  electricRollingStockName,
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
+import { electricRollingStockName } from '../../assets/constants/project-const';
 import {
   ADDED_EXCEPTION_MENU_BUTTONS,
   ADDED_AND_MODIFIED_EXCEPTION_MENU_BUTTONS,
@@ -22,12 +18,8 @@ import {
   OCCURRENCE_EDITION_STOP_ROW_FILTER,
 } from '../../assets/paced-train/const';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   ChangeGroup,
   CommonTranslations,
@@ -60,42 +52,9 @@ test.describe(
     //TODO: remove ignorePageErrors when issue #13066 is resolved
     test.use({ ignorePageErrors: true });
 
-    let project: Project;
-    let study: Study;
-    let infra: Infra;
-
-    let scenarioItems: Scenario;
-
-    test.beforeAll(
-      'Setup project, study, infra and create scenario with paced trains',
-      async () => {
-        project = await getProject(trainScheduleProjectName);
-        study = await getStudy(project.id, trainScheduleStudyName);
-        infra = await getInfra();
-        const { scenario, trainScheduleSet } = await createScenario(
-          generateUniqueName('paced-trains-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        );
-        scenarioItems = scenario;
-        const trainsSubset = trains.slice(0, 6);
-        await sendTrains(trainScheduleSet.id, trainsSubset, scenarioItems.timetable_id);
-      }
-    );
-
-    test.beforeEach(
-      'Navigate to scenario page and wait for infrastructure to be loaded',
-      async ({ page }) => {
-        await page.goto(
-          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-        );
-        await waitForInfraStateToBeCached(infra.id);
-      }
-    );
-
-    test.afterAll('Delete the created scenario', async () => {
-      await deleteScenario(study.id, scenarioItems.name);
+    setupScenarioFixture({
+      scenarioNamePrefix: 'paced-trains-scenario',
+      trains: trains.slice(0, 6),
     });
 
     /** *************** Test 1 **************** */

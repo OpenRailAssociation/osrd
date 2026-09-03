@@ -1,13 +1,6 @@
 import { expect } from '@playwright/test';
 
-import type {
-  Infra,
-  TrainSchedule,
-  Project,
-  Scenario,
-  Study,
-  TrainScheduleSet,
-} from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
 import {
   ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
@@ -16,7 +9,11 @@ import {
   DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
   NEW_PACED_TRAIN_SETTINGS,
 } from '../../assets/constants/operational-studies-const';
-import { dualModeRollingStockName } from '../../assets/constants/project-const';
+import {
+  dualModeRollingStockName,
+  globalProjectName,
+  globalStudyName,
+} from '../../assets/constants/project-const';
 import { NO_COMPOSITION_CODE_VALUE } from '../../assets/constants/train-header-const';
 import {
   DUPLICATED_PACED_TRAIN_INDEX,
@@ -46,13 +43,10 @@ import {
 } from '../../assets/paced-train/const';
 import { pacedTrainOutputData } from '../../assets/paced-train/output-table-data';
 import test from '../../page-object-fixture';
-import { waitForInfraStateToBeCached } from '../../utils';
-import { getInfra } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { getTodayShortDate } from '../../utils/date-utils';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
 import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   CommonTranslations,
   FlatTranslations,
@@ -90,29 +84,12 @@ const frTranslations = {
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
 test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenario: Scenario;
-  let trainScheduleSet: TrainScheduleSet;
-  let infra: Infra;
-
-  test.beforeAll('Fetch infrastructure', async () => {
-    infra = await getInfra();
-  });
-
-  test.beforeEach(
-    'Navigate to scenario page and wait for infrastructure to be loaded',
-    async ({ page }) => {
-      ({ project, study, scenario, trainScheduleSet } = await createScenario());
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-    }
-  );
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenario.name);
+  const scenarioContext = setupScenarioFixture({
+    scenarioNamePrefix: 'paced-train-management-scenario',
+    trains: [],
+    scope: 'test',
+    projectName: globalProjectName,
+    studyName: globalStudyName,
   });
 
   /** *************** Test 1 **************** */
@@ -305,7 +282,7 @@ test.describe('Paced train management', { tag: ['@op', '@paced-trains'] }, () =>
     pacedTrainSection,
   }) => {
     await test.step('Set paced trains via API and reload to initialize list', async () => {
-      await sendTrains(trainScheduleSet.id, trains.slice(0, 7));
+      await sendTrains(scenarioContext.trainScheduleSet.id, trains.slice(0, 7));
       await page.reload();
     });
 

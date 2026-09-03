@@ -1,18 +1,10 @@
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import { invalidPacedTrainTimetableOutput } from '../../assets/operation-studies/invalid-trains/invalid-paced-train-timetable-output';
 import { invalidUniqueTrainTimetableOutput } from '../../assets/operation-studies/invalid-trains/invalid-unique-train-timetable-output';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
 
@@ -21,37 +13,11 @@ test.describe(
   { tag: ['@op', '@paced-trains', '@unique-trains', '@invalid-trains'] },
   () => {
     test.slow(); // TODO remove this once this PR is merged: #16969
-    let project: Project;
-    let study: Study;
-    let scenarioItems: Scenario;
-    let infra: Infra;
 
-    test.beforeAll('Fetch project, study and infrastructure', async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
-      infra = await getInfra();
-    });
-
-    test.beforeEach('Setup scenario with invalid trains', async ({ page }) => {
-      const { scenario, trainScheduleSet } = await createScenario(
-        generateUniqueName('invalid-train-scenario'),
-        project.id,
-        study.id,
-        infra.id
-      );
-      scenarioItems = scenario;
-
-      const selectedTrains = [...trains.slice(3, 4), ...trains.slice(17, 18)];
-      await sendTrains(trainScheduleSet.id, selectedTrains);
-
-      await page.goto(
-        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-      );
-      await waitForInfraStateToBeCached(infra.id);
-    });
-
-    test.afterAll('Delete the created scenario', async () => {
-      await deleteScenario(study.id, scenarioItems.name);
+    setupScenarioFixture({
+      scenarioNamePrefix: 'invalid-train-scenario',
+      trains: [...trains.slice(3, 4), ...trains.slice(17, 18)],
+      scope: 'test',
     });
 
     /** *************** Test 1 **************** */

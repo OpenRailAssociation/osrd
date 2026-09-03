@@ -1,11 +1,7 @@
 import { expect } from '@playwright/test';
 
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import {
   ADDED_EXCEPTION_MENU_BUTTONS,
   CONFORM_ACTIVE_OCCURRENCE_MENU_BUTTONS,
@@ -20,13 +16,9 @@ import {
   STD_MANCHETTE,
   WAYPOINT_CHECKBOX_STATE,
 } from '../../pages/operational-studies/std-manchette';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
 import { verifyWaypointsData } from '../../utils/manchette';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   CommonTranslations,
   ManageTrainScheduleTranslations,
@@ -62,36 +54,9 @@ test.skip(
 );
 
 test.describe('Space Time Diagram / Manchette', { tag: ['@op', '@manchette', '@std'] }, () => {
-  let project: Project;
-  let study: Study;
-  let scenarioItems: Scenario;
-  let infra: Infra;
-
-  test.beforeAll('Fetch project, study and infrastructure', async () => {
-    project = await getProject(trainScheduleProjectName);
-    study = await getStudy(project.id, trainScheduleStudyName);
-    infra = await getInfra();
-    const { scenario, trainScheduleSet } = await createScenario(
-      generateUniqueName('std-manchette-scenario'),
-      project.id,
-      study.id,
-      infra.id
-    );
-    scenarioItems = scenario;
-
-    const selectedTrains = [...trains.slice(6, 7), ...trains.slice(27, 28)];
-    await sendTrains(trainScheduleSet.id, selectedTrains);
-  });
-
-  test.beforeEach('Open scenario and wait for infra to be loaded', async ({ page }) => {
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-    );
-    await waitForInfraStateToBeCached(infra.id);
-  });
-
-  test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenarioItems.name);
+  setupScenarioFixture({
+    scenarioNamePrefix: 'std-manchette-scenario',
+    trains: [...trains.slice(6, 7), ...trains.slice(27, 28)],
   });
 
   /** *************** Test 1 **************** */
