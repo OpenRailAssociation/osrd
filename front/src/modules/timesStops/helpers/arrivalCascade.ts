@@ -5,7 +5,8 @@ import { ONE_DAY } from '../consts';
 
 /**
  * Shift the scheduled arrivals from fromPathIndex on.
- * Cascade midnight crossings for any arrival that ends up before the previous departure.
+ * Whole days are then added or removed,
+ * so each arrival is consistent with the previous departure.
  */
 export const cascadeArrivals = ({
   schedule,
@@ -45,7 +46,8 @@ export const cascadeArrivals = ({
     }
 
     const shifted = shift(arrival);
-    const adjusted = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
+    const daysShift = Math.ceil((lastOffset.ms - shifted.ms) / ONE_DAY.ms);
+    const adjusted = shifted.add(new Duration({ days: daysShift }));
     adjustments.set(item.at, adjusted.toISOString());
     lastOffset = adjusted.add(stop);
   }
