@@ -96,9 +96,14 @@ pub(in crate::views) async fn list(
     Extension(authn_state): Extension<crate::authentication::State>,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
+    // Services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     let conn = &mut db_pool.get().await?;
     let default_settings = page_settings.into_selection_settings();
-    let settings = if let Some(user) = authn_state.user() {
+    let settings = {
         let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
         let Ok(authorized_rolling_stocks) = system_authorizer
             .authorize(authz::v2::rolling_stock_list(
@@ -120,8 +125,6 @@ pub(in crate::views) async fn list(
                     )
                 }),
         }
-    } else {
-        default_settings
     };
 
     let (rolling_stocks, stats) =
@@ -353,8 +356,21 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock() {
+        let app = test_app!().build();
+        let user = app.user("user", "User").create().await;
+        app.get("/light_rolling_stock")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    /// The services do not list rolling stocks: authorization cannot be skipped
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_light_rolling_stock_requires_a_user() {
         let app = test_app!().skip_authz().build();
-        app.get("/light_rolling_stock").await.assert_status_ok();
+        app.get("/light_rolling_stock")
+            .await
+            .assert_status_unauthorized();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -522,8 +538,14 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock_increasing_ids() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
+        // An admin reads every rolling stock, including those created by the other tests
+        let admin = app
+            .user("admin", "admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
 
         let generated_rolling_stock = (0..10)
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
@@ -555,13 +577,18 @@ mod tests {
 
         let response: LightRollingStockWithLiveriesCountList = app
             .get("/light_rolling_stock/")
+            .by_user(admin.as_ref())
             .await
             .assert_status_ok()
             .json();
         let count = response.stats.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
-        let response: LightRollingStockWithLiveriesCountList =
-            app.get(&uri).await.assert_status_ok().json();
+        let response: LightRollingStockWithLiveriesCountList = app
+            .get(&uri)
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
 
         // Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
@@ -578,9 +605,11 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn light_rolling_stock_max_page_size() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
+        let user = app.user("user", "User").create().await;
 
         app.get("/light_rolling_stock/?page_size=1010")
+            .by_user(user.as_ref())
             .await
             .assert_status_bad_request();
     }

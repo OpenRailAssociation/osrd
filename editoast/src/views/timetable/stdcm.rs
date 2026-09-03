@@ -210,8 +210,13 @@ pub(in crate::views) async fn stdcm(
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
 ) -> Result<Response> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    if authn_state.user().is_none() {
+        return Err(StdcmError::Authorization(AuthorizationError::Unauthenticated).into());
+    }
+
     let consist_schedule_values = &request.consist_schedule.values;
-    if authn_state.user().is_some() {
+    {
         let authorizer = authn_state.authorizer(&openfga);
         let checks = consist_schedule_values
             .iter()

@@ -67,7 +67,12 @@ def session_no_fixture() -> Session:
     session = Session()
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-    session.headers.update({"x-osrd-skip-authz": "true"})
+    session.headers.update(
+        {
+            "x-remote-user-identity": "mock/mocked",
+            "x-remote-user-name": "Example User",
+        }
+    )
     return session
 
 

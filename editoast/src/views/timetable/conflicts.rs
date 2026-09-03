@@ -317,6 +317,11 @@ pub(in crate::views) async fn conflicts(
         electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
+    // The services do not call this endpoint: authorization cannot be skipped
+    let Some(user) = authn_state.user() else {
+        return Err(AuthorizationError::Unauthenticated.into());
+    };
+
     let conn = db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || TimetableError::InfraNotFound {
@@ -373,7 +378,7 @@ pub(in crate::views) async fn conflicts(
     let train_schedules_with_exceptions = filter_unauthorized_train_schedules_and_exceptions(
         &openfga,
         conn.clone(),
-        authn_state,
+        user,
         train_schedules_with_exceptions,
     )
     .await?;
@@ -461,19 +466,16 @@ pub(in crate::views) async fn conflicts(
 /// Take a collection of train schedules and their associated exceptions and filter out those with
 /// an unauthorized rolling stock. When a train schedule is filtered out all its exceptions are
 /// skipped aswell, but when an exception is filtered its associated train schedule is kept if its
-/// rolling stock is authorized given the provided authentication state.
+/// rolling stock is authorized for the provided user.
 pub async fn filter_unauthorized_train_schedules_and_exceptions(
     openfga: &fga::Client,
     conn: DbConnection,
-    authn_state: crate::authentication::State,
+    user: authz::User,
     train_schedules_with_exceptions: Vec<(
         models::TrainSchedule,
         Vec<schemas::TrainScheduleException>,
     )>,
 ) -> crate::error::Result<Vec<(models::TrainSchedule, Vec<schemas::TrainScheduleException>)>> {
-    let Some(user) = authn_state.user() else {
-        return Ok(train_schedules_with_exceptions);
-    };
     let system_authorizer = SystemAuthorizer::new_infallible(openfga);
     let Ok(authorized_train_schedules) =
         authz::v2::rolling_stock_list(user, RollingStockPrivilege::CanRead)
@@ -745,6 +747,16 @@ mod tests {
         assert_requirements(&paced_occurrence_1, &paced_occurrence_1_requirements);
     }
 
+    /// The services do not call this endpoint: authorization cannot be skipped
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn conflicts_requires_a_user() {
+        let app = test_app!().skip_authz().build();
+
+        app.get("/timetable/1/conflicts?infra_id=1")
+            .await
+            .assert_status_unauthorized();
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn conflicts_hourly_rejects_period_over_24h() {
         let app = test_app!().build();
@@ -859,10 +871,6 @@ mod tests {
             .with_rolling_stock_grant(rs_authorized.id, RollingStockGrant::Reader)
             .create()
             .await;
-        let authn_state = crate::authentication::State::Authenticated {
-            user: authz::User(user.id),
-            roles: vec![],
-        };
         let train_schedules_with_exceptions = vec![
             (
                 train_schedule_authorized.clone(),
@@ -877,7 +885,7 @@ mod tests {
         let authorized_train_schedules = filter_unauthorized_train_schedules_and_exceptions(
             openfga,
             pool.get_ok(),
-            authn_state,
+            authz::User(user.id),
             train_schedules_with_exceptions,
         )
         .await
