@@ -223,8 +223,8 @@ const useUpdateTimesStopsTable = (
       if (update.propagationMode === 'atThisWaypoint') {
         updatedSchedule = cascadeArrivals({
           schedule: updatedSchedule,
-          path: selectedTrain.path,
-          fromPathIndex: selectedTrain.path.findIndex((step) => step.id === pathStepId) + 1,
+          path: updatedPath,
+          fromPathIndex: updatedPath.findIndex((step) => step.id === pathStepId) + 1,
         });
       }
 
