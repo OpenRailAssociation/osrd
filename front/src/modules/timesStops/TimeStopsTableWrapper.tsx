@@ -47,22 +47,22 @@ type TimeStopsTableWrapperProps = {
 };
 
 const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => {
-  let lastArrival: StartTime | null = null;
+  let lastDeparture: StartTime | null = null;
   return rows.map((row) => {
     if (row.requestedArrival === null) return row;
-    if (lastArrival !== null && row.requestedArrival < lastArrival) {
-      const bumped = addDurationToStartTime(row.requestedArrival, ONE_DAY);
-      lastArrival = bumped;
-      return {
+    if (lastDeparture !== null && row.requestedArrival < lastDeparture) {
+      const bumpedRow = {
         ...row,
-        requestedArrival: bumped,
+        requestedArrival: addDurationToStartTime(row.requestedArrival, ONE_DAY),
         requestedDeparture:
           row.requestedDeparture !== null
             ? addDurationToStartTime(row.requestedDeparture, ONE_DAY)
             : null,
       };
+      lastDeparture = bumpedRow.requestedDeparture ?? bumpedRow.requestedArrival;
+      return bumpedRow;
     }
-    lastArrival = row.requestedArrival;
+    lastDeparture = row.requestedDeparture ?? row.requestedArrival;
     return row;
   });
 };

@@ -51,25 +51,25 @@ export const propagateStopDuration = (
       ? new Date(selectedTrain.start_time)
       : new Duration({ milliseconds: selectedTrain.start_time });
 
+  // Set the edited point's new duration (its arrival stays the same)
+  const updatedScheduleStop: ScheduleItem[] = editedItem
+    ? currentSchedule.map((item) =>
+        item.at === pathStepId ? { ...item, stop_for: newDuration.toISOString() } : item
+      )
+    : insertScheduleItemInOrder(
+        currentSchedule,
+        { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
+        selectedTrain.path
+      );
+
   // Shift every scheduled arrival after the edited point by +delta, in path order. Bump +24h
-  // if a shifted arrival ends up before the previous one.
-  // Then set the edited point's new duration (its arrival stays the same).
-  const shiftedSchedule = cascadeArrivals({
-    schedule: currentSchedule,
+  // if a shifted arrival ends up before the previous departure.
+  const updatedSchedule = cascadeArrivals({
+    schedule: updatedScheduleStop,
     path: selectedTrain.path,
     fromPathIndex: editedPathIndex + 1,
     shift: (arrival) => arrival.add(delta),
   });
-
-  const updatedSchedule: ScheduleItem[] = editedItem
-    ? shiftedSchedule.map((item) =>
-        item.at === pathStepId ? { ...item, stop_for: newDuration.toISOString() } : item
-      )
-    : insertScheduleItemInOrder(
-        shiftedSchedule,
-        { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
-        selectedTrain.path
-      );
 
   const updatedStartTime =
     update.propagationMode === 'fromDeparture'

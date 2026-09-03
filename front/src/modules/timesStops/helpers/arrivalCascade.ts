@@ -5,7 +5,7 @@ import { ONE_DAY } from '../consts';
 
 /**
  * Shift the scheduled arrivals from fromPathIndex on.
- * Cascade midnight crossings for any arrival that ends up before the previous one.
+ * Cascade midnight crossings for any arrival that ends up before the previous departure.
  */
 export const cascadeArrivals = ({
   schedule,
@@ -31,19 +31,23 @@ export const cascadeArrivals = ({
   const adjustments = new Map<string, string>();
 
   for (const { item, pathIndex } of scheduledItems) {
-    if (!item.arrival) continue;
+    const stop = item.stop_for ? Duration.parse(item.stop_for) : Duration.zero;
+    if (!item.arrival) {
+      lastOffset = lastOffset.add(stop);
+      continue;
+    }
     const arrival = Duration.parse(item.arrival);
 
     // Points before fromPathIndex are only used to find the lastOffset to use.
     if (pathIndex < fromPathIndex) {
-      lastOffset = arrival;
+      lastOffset = arrival.add(stop);
       continue;
     }
 
     const shifted = shift(arrival);
     const adjusted = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
     adjustments.set(item.at, adjusted.toISOString());
-    lastOffset = adjusted;
+    lastOffset = adjusted.add(stop);
   }
 
   return schedule.map((item) =>
