@@ -19,7 +19,7 @@ export const getTimesInfoFromDate = (date?: Date | null) =>
       }
     : undefined;
 
-type ExtractedMarkerInfo = Required<Omit<MarkerInformation, 'metadata'>>;
+type ExtractedMarkerInfo = Required<MarkerInformation>;
 export const extractMarkersInfo = (
   pathSteps: StdcmPathStep[],
   backtrackPathItemIndexes: number[] = []
