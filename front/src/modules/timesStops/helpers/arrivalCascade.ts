@@ -11,27 +11,36 @@ export const cascadeArrivals = ({
   schedule,
   path,
   fromPathIndex,
-  baseline,
   shift = (arrival: Duration) => arrival,
 }: {
   schedule: ScheduleItem[];
   path: PathItem[];
   fromPathIndex: number;
-  baseline: Duration;
   shift?: (arrival: Duration) => Duration;
 }): ScheduleItem[] => {
   const pathIndexById = new Map(path.map((step, index) => [step.id, index]));
 
-  const affectedItems = schedule
-    .map((item) => ({ item, pathIndex: pathIndexById.get(item.at) ?? -1 }))
-    .filter(({ item, pathIndex }) => !!item.arrival && pathIndex >= fromPathIndex)
+  const scheduledItems = schedule
+    .flatMap((item) => {
+      const pathIndex = pathIndexById.get(item.at);
+      return pathIndex === undefined ? [] : [{ item, pathIndex }];
+    })
     .sort((a, b) => a.pathIndex - b.pathIndex);
 
-  let lastOffset = baseline;
+  let lastOffset = Duration.zero;
   const adjustments = new Map<string, string>();
 
-  for (const { item } of affectedItems) {
-    const shifted = shift(Duration.parse(item.arrival!));
+  for (const { item, pathIndex } of scheduledItems) {
+    if (!item.arrival) continue;
+    const arrival = Duration.parse(item.arrival);
+
+    // Points before fromPathIndex are only used to find the lastOffset to use.
+    if (pathIndex < fromPathIndex) {
+      lastOffset = arrival;
+      continue;
+    }
+
+    const shifted = shift(arrival);
     const adjusted = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
     adjustments.set(item.at, adjusted.toISOString());
     lastOffset = adjusted;
