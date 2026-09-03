@@ -15,8 +15,8 @@ use crate::Subject;
 use crate::User;
 use crate::v2::Actor;
 use crate::v2::ResourcesList;
+use crate::v2::grant_from_exclusive_bools;
 use crate::v2::subject_roles;
-use crate::v2::validate_direct_grant;
 
 pub fn rolling_stock_privileges(
     user: User,
@@ -369,10 +369,16 @@ pub fn rolling_stock_direct_grant(
                     ),
                 )?,
             };
-            Ok(
-                validate_direct_grant(is_reader, is_writer, is_owner, *rolling_stock, subject)
-                    .map(Into::into),
-            )
+            let grant = grant_from_exclusive_bools(
+                subject,
+                rolling_stock,
+                &[
+                    (is_reader, RollingStockGrant::Reader),
+                    (is_writer, RollingStockGrant::Writer),
+                    (is_owner, RollingStockGrant::Owner),
+                ],
+            );
+            Ok(grant)
         }
         .boxed()
     })
