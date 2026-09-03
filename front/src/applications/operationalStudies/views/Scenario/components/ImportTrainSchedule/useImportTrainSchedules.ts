@@ -7,7 +7,6 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
@@ -22,7 +21,7 @@ const useImportTrainSchedules = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
-  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
+  const { hourlyTimetableDuration, upsertTrainSchedules } = useTimetableContext();
 
   const subCategories = useSubCategoryContext();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
@@ -35,12 +34,12 @@ const useImportTrainSchedules = () => {
    */
   const processXmlFile = async (file: File, fileContent: string): Promise<TimetableJsonPayload> => {
     const adaptToTimetable = (payload: TimetableJsonPayload): TimetableJsonPayload => {
-      if (scenario.timetable_type !== 'HOURLY') return payload;
-      const hourlyPatternDuration = computeHourlyTimetableDuration([...trainSchedules.values()]);
+      if (!hourlyTimetableDuration) return payload;
+
       return {
         ...payload,
         train_schedules: payload.train_schedules.map((train) =>
-          toHourlyPattern(train, hourlyPatternDuration)
+          toHourlyPattern(train, hourlyTimetableDuration)
         ),
       };
     };
