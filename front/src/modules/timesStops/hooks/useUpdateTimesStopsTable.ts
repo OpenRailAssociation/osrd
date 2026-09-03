@@ -155,7 +155,7 @@ const useUpdateTimesStopsTable = (
 
       if (!targetedStep) return { patch: { path: updatedPath }, edits };
 
-      targetedStep.theoreticalMargin = formatRequestedMargin(update.value) ?? undefined;
+      targetedStep.theoreticalMargin = formatRequestedMargin(update.value) ?? null;
       return { patch: { path: updatedPath, margins: formatMargin(updatedPathSteps) }, edits };
     },
     [selectedTrain, allRows]
