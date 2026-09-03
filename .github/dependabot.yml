@@ -86,6 +86,10 @@ updates:
         patterns:
           - "oxlint"
           - "oxlint-*"
+      oxc:
+        patterns:
+          - "tsdown"
+          - "@tsdown/css"
       patch:
         update-types:
           - "patch"
