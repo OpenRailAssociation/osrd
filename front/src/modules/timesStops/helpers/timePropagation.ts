@@ -86,17 +86,12 @@ const propagateFromEditedPoint = (
     ? addDurationToStartTime(currentStartTime, delta)
     : currentStartTime;
 
-  // For fromDeparture: the edited item is excluded from the cascade, but its offset is the baseline —
-  // any shifted offset that falls before it gets +24h.
-  // For toDestination: the edited item is part of the cascade, so the baseline is 0.
-  const editedItem = selectedTrain.schedule?.find((item) => item.at === editedPathStepId);
-  const editedOldOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
-
+  // For fromDeparture: the edited item is excluded from the cascade.
+  // For toDestination: the edited item is part of the cascade.
   const updatedSchedule = cascadeArrivals({
     schedule: selectedTrain.schedule ?? [],
     path: selectedTrain.path,
     fromPathIndex: isFromDeparture ? editedPathIndex + 1 : editedPathIndex,
-    baseline: (isFromDeparture ? editedOldOffset : null) ?? Duration.zero,
     shift: (arrival) => (isFromDeparture ? arrival.sub(delta) : arrival.add(delta)),
   });
 

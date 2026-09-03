@@ -46,7 +46,6 @@ export const propagateStopDuration = (
   // The edited point's current schedule state, if it already has one.
   const currentSchedule = selectedTrain.schedule ?? [];
   const editedItem = currentSchedule.find((item) => item.at === pathStepId);
-  const editedOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
   const currentStartTime =
     timetableType === 'CALENDAR'
       ? new Date(selectedTrain.start_time)
@@ -59,7 +58,6 @@ export const propagateStopDuration = (
     schedule: currentSchedule,
     path: selectedTrain.path,
     fromPathIndex: editedPathIndex + 1,
-    baseline: editedOffset ?? Duration.zero,
     shift: (arrival) => arrival.add(delta),
   });
 

@@ -220,34 +220,11 @@ const useUpdateTimesStopsTable = (
 
       // For atThisWaypoint: stops after the edited point that now fall before it in time
       // must be bumped to the next day.
-      if (
-        (update.field === 'requestedArrival' || update.field === 'requestedDeparture') &&
-        update.propagationMode === 'atThisWaypoint' &&
-        update.value !== null &&
-        update.value instanceof Date &&
-        !isOrigin
-      ) {
+      if (update.propagationMode === 'atThisWaypoint') {
         updatedSchedule = cascadeArrivals({
           schedule: updatedSchedule,
           path: selectedTrain.path,
           fromPathIndex: selectedTrain.path.findIndex((step) => step.id === pathStepId) + 1,
-          baseline: Duration.subtractDate(update.value, new Date(selectedTrain.start_time)),
-        });
-      }
-
-      // Same idea for stop duration: a longer stop can push the departure past the next stop's
-      // arrival, so following stops get bumped too — including at the origin, unlike above.
-      if (
-        update.field === 'stopDuration' &&
-        update.propagationMode === 'atThisWaypoint' &&
-        newState.departure !== null &&
-        newState.departure instanceof Date
-      ) {
-        updatedSchedule = cascadeArrivals({
-          schedule: updatedSchedule,
-          path: selectedTrain.path,
-          fromPathIndex: selectedTrain.path.findIndex((step) => step.id === pathStepId) + 1,
-          baseline: Duration.subtractDate(newState.departure, new Date(selectedTrain.start_time)),
         });
       }
 
