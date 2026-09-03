@@ -179,26 +179,22 @@ export function setupStateWithTrainSchedule(
   return state;
 }
 
-const createDefaultTrainName = (stepsWithLocationOrInput: PathStepV2[]): string => {
+const createDefaultTrainName = (
+  stepsWithLocationOrInput: PathStepV2[],
+  pathStepsMetadataById: Map<string, PathStepMetadata>
+): string => {
   const createDefaultStepName = (pathStep: PathStepV2): string => {
     const location = pathStep.location;
     if (!location) return '';
-    switch (location.type) {
-      case 'track_offset':
-        return `${location.track}+${Math.round(location.offset / 1000)}`;
-      case 'operational_point_part_reference': {
-        const op = location.operational_point;
-        switch (op.type) {
-          case 'domestic':
-            return op.main_code;
-          case 'uic':
-            return `UIC ${op.uic}`;
-          case 'id':
-            return `ID ${op.operational_point}`;
-        }
-      }
-    }
+    if (location.type === 'track_offset')
+      return `${location.track}+${Math.round(location.offset / 1000)}`;
+    const op = location.operational_point;
+    if (op.type === 'domestic') return op.main_code;
+    const metadata = pathStepsMetadataById.get(pathStep.id);
+    if (isOpRefMetadata(metadata)) return metadata.mainCode;
+    return op.type === 'id' ? `ID ${op.operational_point}` : `UIC ${op.uic}`;
   };
+
   const origin = stepsWithLocationOrInput[0];
   const destination = stepsWithLocationOrInput[stepsWithLocationOrInput.length - 1];
   return `${createDefaultStepName(origin)} → ${createDefaultStepName(destination)}`;
@@ -456,6 +452,7 @@ const ItineraryModal = ({
         type: 'opRef',
         isInvalid: false,
         name: op.name,
+        mainCode: op.main_code,
         uic: op.uic,
         secondaryCode: op.secondary_code,
         parts: coordinates
@@ -773,7 +770,7 @@ const ItineraryModal = ({
     if (stepsWithLocationOrInput.length < 2) return;
 
     const name = isNameEmpty
-      ? createDefaultTrainName(stepsWithLocationOrInput)
+      ? createDefaultTrainName(stepsWithLocationOrInput, pathStepsMetadataById)
       : modalFormState.name;
 
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>

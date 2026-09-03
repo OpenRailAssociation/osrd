@@ -128,6 +128,7 @@ export type PathStepMetadata =
       type: 'opRef';
       isInvalid: false;
       name: string;
+      mainCode: string;
       /** Store the UIC for cases where we modify a step that was defined by an op id / trigram */
       uic?: number | null;
       /** Required when the corresponding path step is an operational_point since it won't
