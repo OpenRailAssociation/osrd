@@ -20,7 +20,7 @@
     "postcss": "^8.5.26",
     "postcss-assets": "^6.0.0",
     "postcss-import": "^17.0.0",
-    "postcss-preset-env": "^11.4.0",
+    "postcss-preset-env": "^11.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "rimraf": "^6.1.3",
