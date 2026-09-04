@@ -54,7 +54,7 @@ export default function useScenarioTrainScheduleSet(
   });
 
   const { timetableId, scenario } = useScenarioContext();
-  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
+  const { trainSchedules, upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
 
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({ id: timetableId });
@@ -137,8 +137,22 @@ export default function useScenarioTrainScheduleSet(
             trainScheduleSets?.map((tss) => tss.id).filter((tssId) => tssId !== id) ?? [],
         },
       }).unwrap();
+
+      // The train schedules are kept in a local state, so the ones of the unlinked set must be
+      // dropped explicitly, otherwise they stay displayed until the page is reloaded.
+      removeTrainSchedules(
+        [...trainSchedules.values()]
+          .filter((trainSchedule) => trainSchedule.train_schedule_set_id === id)
+          .map((trainSchedule) => trainSchedule.id)
+      );
     },
-    [timetableId, trainScheduleSets, linkTrainScheduleSetToTimetable]
+    [
+      timetableId,
+      trainScheduleSets,
+      linkTrainScheduleSetToTimetable,
+      trainSchedules,
+      removeTrainSchedules,
+    ]
   );
 
   const updateTrainScheduleSet = useCallback(
