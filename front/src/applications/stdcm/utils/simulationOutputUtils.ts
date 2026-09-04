@@ -90,6 +90,7 @@ export const formatStdcmDataForSimulationTable = (
     return {
       name: !isPathStep && op.name === previousOp.name ? '=' : op.name || t('reportSheet.unknown'),
       secondaryCode: op.secondaryCode,
+      secondaryCodeLabel: op.secondaryCodeLabel,
       trackName,
       endTime,
       passageStop,

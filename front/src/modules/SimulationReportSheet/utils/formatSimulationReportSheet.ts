@@ -271,14 +271,19 @@ function consolidateOvertakesToSingleSteps(
         stopDuration: Duration.subtractDate(nextStep.time, step.time),
         stopEndTime: nextStep.time,
         stopType: StdcmStopTypes.OVERTAKE,
+        secondaryCodeLabel: 'O', // indicating an overtake
       };
       consolidatedSteps.push(consolidatedStep);
       i += 1; // to skip the next step, as we consolidated two overtake steps in one
     } else {
-      consolidatedSteps.push(step);
+      consolidatedSteps.push({
+        ...step,
+        secondaryCodeLabel: step.secondaryCode,
+      });
     }
   }
-  consolidatedSteps.push(steps[steps.length - 1]);
+  const lastStep = steps[steps.length - 1];
+  consolidatedSteps.push({ ...lastStep, secondaryCodeLabel: lastStep.secondaryCode });
   return consolidatedSteps;
 }
 

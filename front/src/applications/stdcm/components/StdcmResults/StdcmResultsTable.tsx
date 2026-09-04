@@ -113,7 +113,7 @@ const StdcmResultsTable = ({
                 <div className="backtrack-label">{t('simulation.results.backtrack')}</div>
               )}
             </td>
-            <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCode}</td>
+            <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCodeLabel}</td>
             <td className="stop">
               {isLastStep || step.stopDuration !== null ? dateToHHMM(step.time) : ''}
             </td>
