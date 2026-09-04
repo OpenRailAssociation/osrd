@@ -70,7 +70,9 @@ const TRACK_SECTIONS_LAYER: Layer = Layer {
     attribution: None,
     geo: View {
         on_field: "geographic",
-        data_expr: "track_section.data",
+        // The `db` extension is free-form operator data that no map style reads, and it can be
+        // large (alignment geometry). Strip it so it does not bloat every vector tile.
+        data_expr: "(track_section.data #- '{extensions,db}')",
         exclude_fields: &["curves", "loading_gauge_limits", "slopes", "geo"],
         joins: &[
             "inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id",

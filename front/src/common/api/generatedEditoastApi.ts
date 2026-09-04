@@ -3285,6 +3285,8 @@ export type TrackSectionSncfExtension = {
   track_number: number;
 };
 export type TrackSectionExtensions = {
+  /** Free-form, infrastructure-manager-specific data. OSRD does not interpret it: it is stored and returned as-is, so that RailJSON carrying data OSRD has no schema for can be imported without loss. */
+  db?: object;
   sncf?: null | TrackSectionSncfExtension;
   source?: null | {
     id: string;
