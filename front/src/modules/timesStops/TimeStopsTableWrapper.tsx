@@ -11,6 +11,7 @@ import type {
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, type StartTime, addDurationToStartTime, startTimeToMs } from 'utils/duration';
+import { isTrainScheduleId } from 'utils/trainId';
 
 import { ONE_DAY } from './consts';
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
@@ -313,6 +314,15 @@ const TimeStopsTableWrapper = ({
     arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => {
+    if (isTrainScheduleId(selectedTrain.id) && arrival instanceof Duration) {
+      const isOrigin = row.pathStepId === selectedTrain.path[0].id;
+      const interval = Duration.parse(selectedTrain.paced!.interval);
+      if (isOrigin && arrival >= interval) {
+        // TODO: display warning
+        arrival = new Duration({ milliseconds: arrival.ms % interval.ms });
+      }
+    }
+
     const singleEdit: PendingEdit = { rowId: row.id, field: 'requestedArrival', value: arrival };
     commitEdit(
       buildEditsForUpdate(singleEdit, {
