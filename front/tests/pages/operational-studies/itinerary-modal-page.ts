@@ -40,6 +40,12 @@ class ItineraryModalPage {
   private readonly timestopsTrainRollingStockName: Locator;
   private readonly timestopsTrainCompositionCode: Locator;
   private readonly waypointName: Locator;
+  private readonly infoBannerText: Locator;
+  private readonly errorBannerText: Locator;
+  private readonly warningBannerText: Locator;
+  private readonly trainNameRequiredField: Locator;
+  private readonly invalidReason: Locator;
+  private readonly invalidPathStepMessage: Locator;
   private readonly editTrainButton: Locator;
 
   constructor(page: Page) {
@@ -86,6 +92,13 @@ class ItineraryModalPage {
     this.timestopsTrainCompositionCode = page.getByTestId('train-composition-code');
     this.waypointName = page.getByTestId('waypoint-name');
     this.editTrainButton = page.getByTestId('edit-train');
+    this.warningBannerText = page.getByTestId('banner-text-warning');
+    this.infoBannerText = page.getByTestId('banner-text-info');
+    this.errorBannerText = page.getByTestId('banner-text-error');
+    this.trainNameRequiredField = page.getByTestId('status-message-error');
+    this.invalidReason = page.getByTestId('invalid-reason');
+    this.pathStepWrapper = page.getByTestId('path-step-wrapper');
+    this.invalidPathStepMessage = page.getByTestId('invalid-step-message');
   }
 
   private getOpNameClearIcon(pathStepIndex: number): Locator {
@@ -183,10 +196,15 @@ class ItineraryModalPage {
     await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
   }
 
-  async fillLastPathStep(searchValue: string, expectedComboBoxCount: number) {
+  async fillLastPathStep(
+    searchValue: string,
+    expectedComboBoxCount: number,
+    expectedSuggestion: string
+  ) {
     await this.comboBox.last().click();
     await this.comboBox.last().fill(searchValue);
     await expect(this.opSuggestion.first()).toBeVisible();
+    await expect(this.opSuggestion.first()).toHaveText(expectedSuggestion);
     await this.comboBox.last().press('Enter');
     await expect(this.comboBox).toHaveCount(expectedComboBoxCount);
   }
@@ -373,10 +391,10 @@ class ItineraryModalPage {
   }
 
   async launchEditTrain() {
-    await expect(this.timetableItem).toBeVisible();
-    await this.timetableItem.hover();
-    await expect(this.editTrainButton).toBeVisible();
-    await this.editTrainButton.click();
+    await expect(this.timetableItem.first()).toBeVisible();
+    await this.timetableItem.first().hover();
+    await expect(this.editTrainButton.first()).toBeVisible();
+    await this.editTrainButton.first().click();
     await expect(this.itineraryModalTab).toBeVisible();
   }
 
@@ -400,6 +418,91 @@ class ItineraryModalPage {
     await expect(this.opSuggestion.first()).toBeVisible();
     await this.opSuggestion.first().click();
     await expect(this.comboBox.first()).toHaveValue(comboboxValue);
+  }
+
+  // Error handling
+
+  async clickNextButton() {
+    await expect(this.itineraryModalAddSingleTrainButton).toBeVisible();
+    await this.itineraryModalAddSingleTrainButton.click();
+  }
+
+  async checkFormIsOpen() {
+    await expect(this.itineraryModalFormHeader).toBeVisible();
+    await expect(this.itineraryModalFormBody).toBeVisible();
+  }
+
+  async checkTrainNameRequiredError() {
+    await expect(this.trainNameRequiredField).toBeVisible();
+  }
+
+  async checkMissingStepError(error: string) {
+    await expect(this.errorBannerText).toBeVisible();
+    await expect(this.errorBannerText).toBeVisible();
+    await expect(this.errorBannerText).toHaveText(error);
+  }
+
+  async replacePathStepValueWithSuggestion(index: number, value: string) {
+    await this.comboBox.nth(index).click();
+    await this.comboBox.nth(index).fill('');
+    await this.comboBox.nth(index).fill(value);
+    await expect(this.opSuggestion.first()).toBeVisible();
+    await this.comboBox.nth(index).press('Enter');
+  }
+
+  async replacePathStepValue(index: number, value: string) {
+    await this.comboBox.nth(index).click();
+    await this.comboBox.nth(index).fill('');
+    await this.comboBox.nth(index).fill(value);
+    await this.comboBox.nth(index).press('Enter');
+  }
+
+  async checkInvalidPathStep(index: number) {
+    await expect(this.comboBox.nth(index)).toBeVisible();
+    await expect(this.pathStepWrapper.nth(index)).toBeVisible();
+    await expect(this.pathStepWrapper.nth(index)).toHaveClass(/is-invalid/);
+  }
+
+  async checkInvalidPathStepMessage(index: number, expectedMessage: string) {
+    await expect(this.pathStepWrapper.nth(index)).toBeVisible();
+    await expect(this.invalidPathStepMessage.nth(index)).toBeVisible();
+    await expect(this.invalidPathStepMessage.nth(index)).toHaveText(expectedMessage);
+  }
+
+  async checkIncompatibleCategoryWarning(expectedMessage: string) {
+    await expect(this.warningBannerText).toBeVisible();
+    await expect(this.warningBannerText).toBeVisible();
+    await expect(this.warningBannerText).toHaveText(expectedMessage);
+  }
+
+  async checkNoWarningBanner() {
+    await expect(this.warningBannerText).not.toBeVisible();
+  }
+
+  async clearChValue(index: number, value: string) {
+    await expect(this.comboBox.nth(index)).toBeVisible();
+    await this.comboBox.nth(index).click();
+    await this.comboBox.nth(index).fill(value);
+    await expect(this.itineraryModalFormFooter).toBeVisible();
+    await this.itineraryModalFormFooter.click();
+  }
+
+  async selectIncompatibleTrack(trackNameIndex: number, incompatibleTrackName: string) {
+    const trackNameSelector = this.trackNameSelector.nth(trackNameIndex);
+    await expect(trackNameSelector).toBeVisible();
+    await trackNameSelector.click();
+    await trackNameSelector.fill(incompatibleTrackName);
+    await trackNameSelector.press('Enter');
+  }
+
+  async checkMapIncompatibilityDetails(expectedText: string) {
+    await expect(this.infoBannerText).toBeVisible();
+    await expect(this.infoBannerText).toHaveText(expectedText);
+  }
+
+  async checkInvalidReasonInTimetable(value: string) {
+    await expect(this.invalidReason).toBeVisible();
+    await expect(this.invalidReason).toHaveText(value);
   }
 }
 export default ItineraryModalPage;
