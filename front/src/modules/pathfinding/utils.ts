@@ -5,7 +5,6 @@ import type {
   GeoJsonLineString,
   LightRollingStock,
   LoadingGaugeType,
-  PathItemLocation,
   PathProperties,
   PathfindingInput,
   PathfindingItem,
@@ -44,32 +43,6 @@ export const formatSuggestedOperationalPoints = (
     coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position)!,
     metadata: op?.metadata,
   }));
-
-export const matchPathStepAndOp = (
-  step: PathItemLocation,
-  op: Pick<
-    SuggestedOP,
-    'opId' | 'uic' | 'secondaryCode' | 'mainCode' | 'track' | 'offsetOnTrack' | 'countryCode'
-  >
-) => {
-  if (step.type === 'track_offset') {
-    return step.track === op.track && step.offset === op.offsetOnTrack;
-  }
-  if (step.operational_point.type === 'id') {
-    return step.operational_point.operational_point === op.opId;
-  }
-  if (step.operational_point.type === 'uic') {
-    return (
-      step.operational_point.uic === op.uic &&
-      step.operational_point.secondary_code === op.secondaryCode
-    );
-  }
-  return (
-    step.operational_point.main_code === op.mainCode &&
-    step.operational_point.secondary_code === op.secondaryCode &&
-    step.operational_point.country_code === op.countryCode
-  );
-};
 
 export const getPathfindingQuery = ({
   infraId,
@@ -165,9 +138,7 @@ export const upsertPathStepsInOPs = (
         updatedOPs.push(formattedStep);
       }
     } else {
-      const index = updatedOPs.findIndex(
-        (op) => matchPathStepAndOp(step.location, op) && step.positionOnPath === op.positionOnPath
-      );
+      const index = updatedOPs.findIndex((op) => op.pathStepId === step.id);
       if (index < 0) {
         throw new Error(`Could not find path step "${step.id}" in OP list`);
       }
@@ -183,58 +154,3 @@ export const upsertPathStepsInOPs = (
   });
   return updatedOPs;
 };
-
-export const pathStepMatchesOp = (
-  pathStep: PathStep,
-  op: Pick<
-    SuggestedOP,
-    | 'pathStepId'
-    | 'opId'
-    | 'uic'
-    | 'secondaryCode'
-    | 'countryCode'
-    | 'mainCode'
-    | 'track'
-    | 'offsetOnTrack'
-    | 'name'
-    | 'kp'
-  >,
-  withKP = false
-) => {
-  if (!matchPathStepAndOp(pathStep.location, op)) {
-    return pathStep.id === op.pathStepId;
-  }
-  if (
-    pathStep.location.type === 'operational_point_part_reference' &&
-    pathStep.location.operational_point.type === 'uic'
-  ) {
-    return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;
-  }
-  return true;
-};
-
-/**
- * Check if a suggested operational point is a via.
- * Some OPs have same uic so we need to check also the secondary code (can be still not enough
- * probably because of imports problem).
- * If the vias has no uic, it has been added via map click and we know it has an id.
- * @param withKP - If true, we check the kp compatibility instead of the name.
- * It is used in the times and stops table to check if an operational point is a via.
- */
-export const isVia = (
-  vias: PathStep[],
-  op: Pick<
-    SuggestedOP,
-    | 'pathStepId'
-    | 'opId'
-    | 'uic'
-    | 'secondaryCode'
-    | 'countryCode'
-    | 'mainCode'
-    | 'track'
-    | 'offsetOnTrack'
-    | 'name'
-    | 'kp'
-  >,
-  { withKP = false } = {}
-) => vias.some((via) => pathStepMatchesOp(via, op, withKP));
