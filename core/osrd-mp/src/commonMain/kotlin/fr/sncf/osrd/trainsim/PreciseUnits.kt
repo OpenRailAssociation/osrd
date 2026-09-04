@@ -168,10 +168,21 @@ value class PreciseSpeed(val micrometersPerSecond: Long) : Comparable<PreciseSpe
             micrometersPerSecond2 =
                 (micrometersPerSecond signalingTimes 1_000_000) / duration.microseconds
         )
+
+    /**
+     * Division floored towards -inf. A -0.5um/s-2 deceleration would normally round up to 0um/s-2
+     * which would create a less constrained step. This function instead rounds it to -1um/s-2.
+     */
+    fun floorDiv(duration: PreciseDuration): PreciseAcceleration =
+        PreciseAcceleration(
+            micrometersPerSecond2 =
+                (micrometersPerSecond signalingTimes 1_000_000).floorDiv(duration.microseconds)
+        )
 }
 
 val Double.metersPerSecond: PreciseSpeed
     get() = PreciseSpeed(micrometersPerSecond = (this * 1e6).toLong())
+
 /** kilometers per hour */
 val Double.kph: PreciseSpeed
     get() = PreciseSpeed(micrometersPerSecond = (this / 3.6e-6).toLong())

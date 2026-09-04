@@ -50,7 +50,7 @@ internal class PreciseIntegrationStep(
         val newEndSpeed = startSpeed + acceleration * newTimeDelta
         val newPositionDelta = newTimeDelta * (startSpeed + newEndSpeed) / 2
 
-        require(newPositionDelta < positionDelta)
+        check(newPositionDelta < positionDelta)
 
         return PreciseIntegrationStep(
             newTimeDelta,
@@ -165,9 +165,9 @@ data class TrainState(
         val timeDelta = time - previous.time
         val constrainedTimeDelta = mostConstrained.time - previous.time
 
-        val acceleration = (speed - previous.speed) / timeDelta
+        val acceleration = (speed - previous.speed).floorDiv(timeDelta)
         val constrainedAcceleration =
-            (mostConstrained.speed - previous.speed) / constrainedTimeDelta
+            (mostConstrained.speed - previous.speed).floorDiv(constrainedTimeDelta)
         val newAcceleration = min(acceleration, constrainedAcceleration)
 
         // Use max instead of min, since going with the lesser acceleration for
@@ -187,7 +187,12 @@ data class TrainState(
             newSpeed = 0.micrometersPerSecond
         }
 
-        val newPosition = previous.position + (previous.speed + newSpeed) * newTimeDelta / 2
+        val newPosition =
+            if (newSpeed == 0.micrometersPerSecond && mostConstrained.speed == newSpeed) {
+                mostConstrained.position
+            } else {
+                previous.position + (previous.speed + newSpeed) * newTimeDelta / 2
+            }
 
         val newPantograph = pantograph.merge(mostConstrained.pantograph) // TODO interpoler le temps
 
@@ -284,8 +289,8 @@ data class TrainState(
                 pantograph = pantograph, // TODO interpoler le temps
             )
 
-        require(truncated.isBefore(this))
-        require(oldState.isBefore(truncated))
+        check(truncated.isBefore(this))
+        check(oldState.isBefore(truncated))
 
         return truncated
     }
@@ -315,8 +320,8 @@ data class TrainState(
                 pantograph = pantograph, // TODO interpoler le temps
             )
 
-        require(truncated.isBefore(this))
-        require(oldState.isBefore(truncated))
+        check(truncated.isBefore(this))
+        check(oldState.isBefore(truncated))
 
         return truncated
     }
@@ -344,15 +349,15 @@ data class TrainState(
             } else {
                 // This is like (2*newPositionDelta)/(newEndSpeed+startSpeed),
                 // but with less likeliness of timeDelta becoming zero.
-                newEndPos / (newEndSpeed + oldState.speed) -
-                    oldState.position / (newEndSpeed + oldState.speed)
+                2 * newEndPos / (newEndSpeed + oldState.speed) -
+                    2 * oldState.position / (newEndSpeed + oldState.speed)
             }
 
         val truncated =
             copy(time = oldState.time + newTimeDelta, position = newEndPos, speed = newEndSpeed)
 
-        require(oldState.isBefore(truncated))
-        require(truncated.isBefore(this))
+        check(oldState.isBefore(truncated))
+        check(truncated.isBefore(this))
 
         return truncated
     }
@@ -841,6 +846,8 @@ internal fun decelerationCurve(
     return curve
 }
 
+data class Decision(val trainState: TrainState, val constraint: Constraint?)
+
 fun step(
     context: EnvelopeSimContext,
     constraints: Iterable<Constraint>,
@@ -849,50 +856,70 @@ fun step(
 ): TrainState {
     tracer?.stepStart(currentState)
 
+    val decisions =
+        constraints.asSequence().flatMap { constraint ->
+            val nextStates = constraint.enactDecision(context, currentState)
+
+            tracer?.decisions(constraint, nextStates)
+
+            for (nextState in nextStates) {
+                check(currentState.position <= nextState.position) {
+                    "constraint $constraint made train go backwards"
+                }
+                check(currentState.time < nextState.time) {
+                    "constraint $constraint didn't advance time"
+                }
+                check(nextState.time - currentState.time <= context.timeStep.seconds) {
+                    "constraint $constraint advanced too much time"
+                }
+            }
+
+            nextStates.asSequence().map { trainState -> Decision(trainState, constraint) }
+        } + Decision(currentState.accelerate(context), null)
     val mergedState =
-        constraints
-            .asSequence()
-            .flatMap {
-                val nextStates = it.enactDecision(context, currentState)
+        decisions
+            .reduce { a, b ->
+                val mergedState = b.trainState.merge(currentState, a.trainState)
 
-                tracer?.decisions(it, nextStates)
-
-                for (nextState in nextStates) {
-                    require(currentState.position <= nextState.position) {
-                        "constraint $it made train go backwards"
-                    }
-                    require(currentState.time < nextState.time) {
-                        "constraint $it didn't advance time"
-                    }
-                    require(nextState.time - currentState.time <= context.timeStep.seconds) {
-                        "constraint $it advanced too much time"
-                    }
+                check(currentState.position <= mergedState.position) {
+                    "merge between ${a.constraint} and ${b.constraint} made train go backwards"
+                }
+                check(currentState.time < mergedState.time) {
+                    "merge between ${a.constraint} and ${b.constraint} didn't advance time"
+                }
+                check(mergedState.time - currentState.time <= context.timeStep.seconds) {
+                    "merge between ${a.constraint} and ${b.constraint} advanced too much time"
                 }
 
-                nextStates
+                Decision(mergedState, null)
             }
-            .reduceOrNull { mostConstrained, decision ->
-                decision.merge(currentState, mostConstrained)
-            } ?: return currentState.accelerate(context)
+            .trainState
 
     tracer?.mergedState(mergedState)
-
-    val maxSpeed = context.rollingStock.maxSpeed.metersPerSecond
-    require(mergedState.speed <= maxSpeed || currentState.speed > maxSpeed) {
-        "train is going too fast"
-    }
 
     val truncatedState =
         constraints
             .fold(mergedState) { mergedState, constraint ->
                 val truncatedState = constraint.truncateStep(context, currentState, mergedState)
 
-                require(currentState.position <= truncatedState.position) { "train went backwards" }
-                require(currentState.time < truncatedState.time) { "step didn't advance time" }
+                check(currentState.position <= truncatedState.position) {
+                    "constraint $constraint went backwards"
+                }
+                check(currentState.time < truncatedState.time) {
+                    "constraint $constraint didn't advance time"
+                }
+                check(truncatedState.time - currentState.time <= context.timeStep.seconds) {
+                    "constraint $constraint advanced too much time"
+                }
 
                 truncatedState
             }
             .truncate(currentState, context.path.length.meters)
+
+    val maxSpeed = context.rollingStock.maxSpeed.metersPerSecond
+    check(truncatedState.speed <= maxSpeed || currentState.speed > maxSpeed) {
+        "train is going too fast (speed=${truncatedState.speed}, max=$maxSpeed)"
+    }
 
     tracer?.truncatedState(truncatedState)
 

@@ -24,7 +24,68 @@ interface SpeedConstraint : Constraint {
         speedCurves(context, currentState).mapNotNull { curve ->
             enactCurveDecision(context, currentState, curve)
         }
+
+    override fun truncateStep(
+        context: EnvelopeSimContext,
+        currentState: TrainState,
+        mergedState: TrainState,
+    ): TrainState =
+        speedCurves(context, currentState)
+            .asSequence()
+            .map { curve ->
+                if (
+                    curve.lerp(currentState.position.micrometers) ==
+                        currentState.speed.micrometersPerSecond
+                ) {
+                    val i =
+                        curve.firstStrictlyAfter(currentState.position.micrometers)
+                            ?: return@map mergedState
+                    val nextPosition = curve.xs[i].micrometers
+                    val nextSpeed = curve.ys[i].micrometersPerSecond
+                    if (
+                        nextPosition < mergedState.position &&
+                            arePointsAligned(
+                                currentState.position.micrometers,
+                                currentState.speed.micrometersPerSecond,
+                                nextPosition.micrometers,
+                                nextSpeed.micrometersPerSecond,
+                                mergedState.position.micrometers,
+                                mergedState.speed.micrometersPerSecond,
+                            )
+                    ) {
+                        return@map curve.advance(
+                            currentState,
+                            currentState.time + context.timeStep.seconds,
+                        )!!
+                    } else {
+                        return@map mergedState
+                    }
+                }
+
+                val truncated = mergedState.truncate(currentState, curve)
+                if (truncated.time > currentState.time) {
+                    return@map truncated
+                }
+
+                val curveSpeed =
+                    curve.lerp(currentState.position.micrometers)?.micrometersPerSecond
+                        ?: return@map mergedState
+                curve.advance(
+                    currentState.copy(speed = curveSpeed),
+                    currentState.time + context.timeStep.seconds,
+                ) ?: mergedState
+            }
+            .minByOrNull { state -> state.time } ?: mergedState
 }
+
+private fun arePointsAligned(
+    x0: Long,
+    y0: Long,
+    x1: Long,
+    y1: Long,
+    x2: Long,
+    y2: Long,
+): Boolean = if (x1 == x0 || x2 == x0) x1 == x2 else (y1 - y0) / (x1 - x0) == (y2 - y0) / (x2 - x0)
 
 fun enactCurveDecision(
     context: EnvelopeSimContext,
@@ -77,38 +138,60 @@ private fun tryEnactCurveDecision(
     val startSpeedLimit =
         curve.lerp(currentState.position.micrometers)?.micrometersPerSecond ?: return null
 
-    if (currentState.speed == startSpeedLimit) {
+    return if (currentState.speed == startSpeedLimit) {
         // The stock is on the curve, so we return the next point on the curve.
+        curve.advance(currentState, currentState.time + context.timeStep.seconds)
+    } else if (currentState.speed < startSpeedLimit) {
+        // The stock is below the curve
+        currentState.accelerate(context).truncate(currentState, curve)
+    } else {
+        // The stock is above the curve
+        currentState.brake(context).truncate(currentState, curve)
+    }
+}
 
-        // Snap on the curve
-        val startSpeed = startSpeedLimit
+/**
+ * Assuming this is a speed curve, fast-forward to the next point, up to the given time [to], from
+ * the given state [from].
+ *
+ * [from] must be on the curve, and must be strictly before [to].
+ */
+private fun Curve.advance(from: TrainState, to: PreciseDuration): TrainState? {
+    require(from.time < to)
 
-        val nextPointIndex =
-            curve.firstStrictlyAfter(currentState.position.micrometers) ?: return null
-        val endPosition = curve.xs[nextPointIndex].micrometers
-        val endSpeed = curve.ys[nextPointIndex].micrometersPerSecond
-        val positionDelta = endPosition - currentState.position
+    val fromSpeed = lerp(from.position.micrometers)?.micrometersPerSecond ?: return null
+    require(fromSpeed == from.speed)
+
+    var nextPointIndex = firstStrictlyAfter(from.position.micrometers) ?: return null
+
+    while (true) {
+        val toPosition = xs[nextPointIndex].micrometers
+        val toSpeed = ys[nextPointIndex].micrometersPerSecond
+
+        val positionDelta = toPosition - from.position
         val timeDelta =
-            if (endSpeed + startSpeed == 0.micrometersPerSecond) {
+            if (toSpeed + from.speed == 0.micrometersPerSecond) {
                 return TrainState(
-                    time = currentState.time + context.timeStep.seconds,
-                    position = currentState.position,
+                    time = to,
+                    position = from.position,
                     speed = 0.micrometersPerSecond,
                 )
             } else {
-                (2 * positionDelta) / (endSpeed + startSpeed)
+                (2 * positionDelta) / (toSpeed + from.speed)
             }
-        return currentState
-            .accelerate(context)
-            .copy(time = currentState.time + timeDelta, position = endPosition, speed = endSpeed)
-            .truncate(currentState, currentState.time + context.timeStep.seconds)
-    } else if (currentState.speed < startSpeedLimit) {
-        // The stock is below the curve
 
-        return currentState.accelerate(context).truncate(currentState, curve)
-    } else {
-        // The stock is above the curve
+        if (timeDelta > 0.microseconds) {
+            return TrainState(
+                    time = from.time + timeDelta,
+                    position = toPosition,
+                    speed = toSpeed,
+                )
+                .truncate(from, to)
+        }
 
-        return currentState.brake(context).truncate(currentState, curve)
+        nextPointIndex++
+        if (nextPointIndex >= size) {
+            return null
+        }
     }
 }
