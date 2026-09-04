@@ -36,6 +36,7 @@ license = "LGPL-3.0"
 approx = "0.5.1"
 arcstr = { version = "1.2.0", features = ["serde"] }
 authz = { path = "./authz" }
+aws-lc-rs = { version = "1.17.1", default-features = false }
 cache = { path = "./cache" }
 chrono = { version = "0.4.45", default-features = false, features = ["serde"] }
 clap = { version = "4.6", features = ["derive", "env"] }
@@ -52,7 +53,7 @@ deadpool = { version = "0.13.0", default-features = false, features = [
 ] }
 deadpool-redis = { version = "0.23", default-features = false, features = [
   "tokio-comp",
-  "tokio-native-tls-comp",
+  "tokio-rustls-comp",
 ] }
 derive_more = { version = "2.1.1", features = [
   "debug",
@@ -92,7 +93,6 @@ linkme = "0.3.36"
 models = { path = "./models" }
 mvt = "0.15.0"
 object_store = { version = "0.14.0", features = ["aws"] }
-openssl = "0.10.80"
 opentelemetry = { version = "0.32.0", default-features = false, features = [
   "trace",
 ] }
@@ -111,7 +111,6 @@ opentelemetry_sdk = { version = "0.32.0", default-features = false, features = [
 ordered-float = { version = "5.3.0", features = ["serde"] }
 phf = { version = "0.14.0", features = ["macros", "serde"] }
 postgis_diesel = { version = "3.1.0", features = ["serde"] }
-postgres-openssl = "0.5.3"
 pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
 quote = "1.0"
@@ -120,6 +119,7 @@ rangemap = "1.7.1"
 regex = "1.12"
 reqwest = { version = "0.13.3", default-features = false, features = ["json"] }
 rstest = { version = "0.26.1", default-features = false }
+rustls-native-certs = "0.8.4"
 schemas = { path = "./schemas" }
 search = { path = "./search" }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
@@ -136,6 +136,7 @@ tempfile = "3.20.0" # redis-test (crate cache) isn't up to date
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.17"
+tokio-rustls = "0.26.4"
 tokio-stream = { version = "0.1.19", default-features = false, features = [
   "rt",
 ] }
@@ -155,6 +156,7 @@ utoipa = { git = "https://github.com/osrd-project/utoipa.git", rev = "5103a24a6d
   "uuid",
 ] }
 uuid = { version = "1.23.1", features = ["serde", "v4"] }
+x509-cert = { version = "0.3.0", default-features = false, features = ["std"] }
 zstd = "0.13.3"
 
 [dependencies]

@@ -11,7 +11,6 @@ For both tests or run:
 
 - [rustup](https://rustup.rs/)
 - [libpq](https://www.postgresql.org/docs/current/libpq.html) (may be packaged as `libpq-dev`)
-- [openssl](https://www.openssl.org)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
 - [fga CLI](https://github.com/openfga/cli)
 - a C toolchain
