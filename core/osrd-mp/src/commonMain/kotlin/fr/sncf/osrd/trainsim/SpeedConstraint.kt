@@ -62,7 +62,18 @@ interface SpeedConstraint : Constraint {
                     }
                 }
 
-                mergedState.truncate(currentState, curve)
+                val truncated = mergedState.truncate(currentState, curve)
+                if (truncated.time > currentState.time) {
+                    return@map truncated
+                }
+
+                val curveSpeed =
+                    curve.lerp(currentState.position.micrometers)?.micrometersPerSecond
+                        ?: return@map mergedState
+                curve.advance(
+                    currentState.copy(speed = curveSpeed),
+                    currentState.time + context.timeStep.seconds,
+                ) ?: mergedState
             }
             .minByOrNull { state -> state.time } ?: mergedState
 }
@@ -151,26 +162,36 @@ private fun Curve.advance(from: TrainState, to: PreciseDuration): TrainState? {
     val fromSpeed = lerp(from.position.micrometers)?.micrometersPerSecond ?: return null
     require(fromSpeed == from.speed)
 
-    val nextPointIndex = firstStrictlyAfter(from.position.micrometers) ?: return null
-    val toPosition = xs[nextPointIndex].micrometers
-    val toSpeed = ys[nextPointIndex].micrometersPerSecond
+    var nextPointIndex = firstStrictlyAfter(from.position.micrometers) ?: return null
 
-    val positionDelta = toPosition - from.position
-    val timeDelta =
-        if (toSpeed + from.speed == 0.micrometersPerSecond) {
+    while (true) {
+        val toPosition = xs[nextPointIndex].micrometers
+        val toSpeed = ys[nextPointIndex].micrometersPerSecond
+
+        val positionDelta = toPosition - from.position
+        val timeDelta =
+            if (toSpeed + from.speed == 0.micrometersPerSecond) {
+                return TrainState(
+                    time = to,
+                    position = from.position,
+                    speed = 0.micrometersPerSecond,
+                )
+            } else {
+                (2 * positionDelta) / (toSpeed + from.speed)
+            }
+
+        if (timeDelta > 0.microseconds) {
             return TrainState(
-                time = to,
-                position = from.position,
-                speed = 0.micrometersPerSecond,
-            )
-        } else {
-            (2 * positionDelta) / (toSpeed + from.speed)
+                    time = from.time + timeDelta,
+                    position = toPosition,
+                    speed = toSpeed,
+                )
+                .truncate(from, to)
         }
 
-    return TrainState(
-            time = from.time + timeDelta,
-            position = toPosition,
-            speed = toSpeed,
-        )
-        .truncate(from, to)
+        nextPointIndex++
+        if (nextPointIndex >= size) {
+            return null
+        }
+    }
 }

@@ -165,9 +165,9 @@ data class TrainState(
         val timeDelta = time - previous.time
         val constrainedTimeDelta = mostConstrained.time - previous.time
 
-        val acceleration = (speed - previous.speed) / timeDelta
+        val acceleration = (speed - previous.speed).floorDiv(timeDelta)
         val constrainedAcceleration =
-            (mostConstrained.speed - previous.speed) / constrainedTimeDelta
+            (mostConstrained.speed - previous.speed).floorDiv(constrainedTimeDelta)
         val newAcceleration = min(acceleration, constrainedAcceleration)
 
         // Use max instead of min, since going with the lesser acceleration for
@@ -187,7 +187,12 @@ data class TrainState(
             newSpeed = 0.micrometersPerSecond
         }
 
-        val newPosition = previous.position + (previous.speed + newSpeed) * newTimeDelta / 2
+        val newPosition =
+            if (newSpeed == 0.micrometersPerSecond && mostConstrained.speed == newSpeed) {
+                mostConstrained.position
+            } else {
+                previous.position + (previous.speed + newSpeed) * newTimeDelta / 2
+            }
 
         val newPantograph = pantograph.merge(mostConstrained.pantograph) // TODO interpoler le temps
 
@@ -344,8 +349,8 @@ data class TrainState(
             } else {
                 // This is like (2*newPositionDelta)/(newEndSpeed+startSpeed),
                 // but with less likeliness of timeDelta becoming zero.
-                newEndPos / (newEndSpeed + oldState.speed) -
-                    oldState.position / (newEndSpeed + oldState.speed)
+                2 * newEndPos / (newEndSpeed + oldState.speed) -
+                    2 * oldState.position / (newEndSpeed + oldState.speed)
             }
 
         val truncated =
