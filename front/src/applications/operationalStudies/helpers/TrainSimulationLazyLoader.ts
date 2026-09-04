@@ -47,6 +47,7 @@ export default class TrainSimulationLazyLoader {
     }
     this.pending.push(...ids);
     this.prevPromise = this.prevPromise.finally(() => this.processPending());
+    console.log('simulateTrainSchedules', ids);
   }
 
   /**
@@ -67,6 +68,7 @@ export default class TrainSimulationLazyLoader {
   }
 
   async processBatch(ids: number[]) {
+    console.log('processBatch', ids);
     let trainSchedulesPromise: Promise<PostTrainSchedulesSimulationSummaryApiResponse> =
       Promise.resolve({});
     if (ids.length > 0) {

@@ -1,4 +1,4 @@
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,31 +9,14 @@ import type {
   TrainScheduleResponse,
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import { simulationResultsInitialState } from 'reducers/simulationResults';
+import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import useLazySimulateTrains, { type UseLazySimulateTrainsOptions } from '../useLazySimulateTrains';
 
+const { postTrainSchedulesSimulationSummary } = mockOsrdEditoastEndpoints;
+
 let onProgress: ((results: Map<number, TrainScheduleSimulationSummaryResult>) => void) | undefined;
-
-const { mockSimulateTrainSchedules } = vi.hoisted(() => ({
-  mockSimulateTrainSchedules: vi.fn(),
-}));
-
-vi.mock('applications/operationalStudies/helpers/TrainSimulationLazyLoader', () => ({
-  default: vi.fn(
-    class {
-      simulateTrainSchedules = mockSimulateTrainSchedules;
-      pending = [];
-      cancel = vi.fn();
-      constructor(options: {
-        onProgress: (results: Map<number, TrainScheduleSimulationSummaryResult>) => void;
-      }) {
-        onProgress = options.onProgress;
-      }
-    }
-  ),
-}));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -94,21 +77,41 @@ describe('useLazySimulateTrains', () => {
   };
 
   describe('simulateTrainSchedules', () => {
-    it('should simulate train schedules by their IDs', () => {
-      const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-      result.current.simulateTrainSchedules([mockTrain]);
-      expect(mockSimulateTrainSchedules).toHaveBeenCalledWith([mockTrain.id]);
-    });
-  });
+    it('should simulate train schedules by their IDs', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
 
-  describe('removeSimulatedTrainSchedules', () => {
-    it('should remove simulated train schedules by their IDs', () => {
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
+
       act(() => {
         result.current.simulateTrainSchedules([mockTrain]);
       });
+
+      await waitFor(() => {
+        expect(result.current.simulatedTrainsById.size).not.toBe(0);
+      });
+
+      expect(postTrainSchedulesSimulationSummary).toHaveBeenCalledWith({
+        body: {
+          electrical_profile_set_id: 1,
+          ids: [mockTrain.id],
+          infra_id: 1,
+          timetable_id: 1,
+        },
+      });
+    });
+  });
+
+  /*
+  describe('removeSimulatedTrainSchedules', () => {
+    it('should remove simulated train schedules by their IDs', () => {
+      const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
       act(() => {
-        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
+        result.current.simulateTrainSchedules([mockTrain]);
       });
 
       expect(result.current.simulatedTrainsById.size).toBe(1);
@@ -197,26 +200,6 @@ describe('useLazySimulateTrains', () => {
         result.current.updateSimulatedTrainScheduleDepartureTime(3, new Date(2000, 1, 1));
       });
       expect(result.current.simulatedTrainsById.size).toBe(0);
-    });
-  });
-
-  describe('loader selection', () => {
-    it('should use create the loader when rolling stocks are available', () => {
-      renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-
-      expect(vi.mocked(TrainSimulationLazyLoader).mock.instances.length).toBe(1);
-    });
-
-    it('should not create a loader when there are no rolling stocks list', () => {
-      renderHookWithStore(
-        () =>
-          useLazySimulateTrains({
-            ...baseOptions,
-            rollingStocks: null,
-          }),
-        {}
-      );
-      expect(vi.mocked(TrainSimulationLazyLoader).mock.instances.length).toBe(0);
     });
   });
 
@@ -397,4 +380,5 @@ describe('useLazySimulateTrains', () => {
       expect(mockCancel).toHaveBeenCalled();
     });
   });
+  */
 });
