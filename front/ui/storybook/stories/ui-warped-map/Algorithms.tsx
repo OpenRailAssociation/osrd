@@ -14,6 +14,7 @@ import { Layer, type LineLayerSpecification, Source } from 'react-map-gl/maplibr
 
 import { OSM_BASE_MAP_STYLE, OSM_SOURCE } from './helpers';
 import { useAsyncMemo } from './useAsyncMemo';
+import './init';
 
 const SOURCES: SourceDefinition[] = [OSM_SOURCE];
 
