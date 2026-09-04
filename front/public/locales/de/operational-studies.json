@@ -397,6 +397,7 @@
     "inputOPMainCodesExample": "Bsp.: HHA HGÖ FKS",
     "itineraryModal": {
       "addLocationOnMap": "Betriebsstelle auf der Karte hinzufügen",
+      "addTrack": "Hinzufügen",
       "alertInvalidOP": "Mindestens ein Wegepunkt konnte nicht erkannt werden",
       "cancel": "Abbrechen",
       "focusLocationOnMap": "Karte auf diese Betriebsstelle zentrieren",

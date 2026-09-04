@@ -35,6 +35,7 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value' | 'onChange'> & {
 
   allowCustomValue?: boolean;
   onAddCustomValue?: (value: string) => void;
+  /** Defaults to `Add` */
   addCustomValueLabel?: string;
 };
 
@@ -63,7 +64,7 @@ const ComboBox = <T,>({
   renderFooterItem,
   allowCustomValue = false,
   onAddCustomValue,
-  addCustomValueLabel,
+  addCustomValueLabel = 'Add',
   ...inputProps
 }: ComboBoxProps<T>) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
@@ -345,7 +346,7 @@ const ComboBox = <T,>({
               onMouseEnter={() => setActiveSuggestionIndex(customValueIndex)}
               data-testid={testIdPrefix ? `${testIdPrefix}-add-custom` : undefined}
             >
-              {addCustomValueLabel ?? `Add "${inputValue.trim()}"`}
+              {`${addCustomValueLabel} "${inputValue.trim()}"`}
             </li>
           )}
 
