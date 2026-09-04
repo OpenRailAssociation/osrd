@@ -72,6 +72,7 @@ const formatTime = (t: StartTime, locale: Intl.Locale) =>
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
+        hour12: false,
       })
     : t.toLocaleString(locale, { style: 'digital', hours: '2-digit' });
 
