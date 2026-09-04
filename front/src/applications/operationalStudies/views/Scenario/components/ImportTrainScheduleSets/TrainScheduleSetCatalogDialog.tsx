@@ -18,7 +18,7 @@ type TrainScheduleSetCatalogDialogueProps = {
   onCancel: () => void;
   onSubmit: (
     data: Array<{ type: TrainScheduleSetImportType; trainScheduleSet: TrainScheduleSet }>
-  ) => void;
+  ) => void | Promise<void>;
 };
 
 const TrainScheduleSetCatalogDialog = ({
@@ -28,6 +28,7 @@ const TrainScheduleSetCatalogDialog = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrainScheduleSet' });
   const { loading, error, data, trainScheduleSetsAlreadyImported } = useLoadCatalog();
   const [cart, setCart] = useState<CartManagement['cart']>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
    * Add or update a TSS to cart.
@@ -55,18 +56,24 @@ const TrainScheduleSetCatalogDialog = ({
     [setCart]
   );
 
-  const submit = useCallback(() => {
-    onSubmit(
-      cart.map(({ trainScheduleSetId, importType }) => {
-        const trainScheduleSet = data?.trainScheduleSets.get(trainScheduleSetId);
-        if (!trainScheduleSet)
-          throw new Error(`Can't find trainSheculeSet ${trainScheduleSetId} in catalog`);
-        return {
-          type: importType,
-          trainScheduleSet,
-        };
-      })
-    );
+  const submit = useCallback(async () => {
+    // the button is disabled while importing, otherwise a double click imports twice
+    setIsSubmitting(true);
+    try {
+      await onSubmit(
+        cart.map(({ trainScheduleSetId, importType }) => {
+          const trainScheduleSet = data?.trainScheduleSets.get(trainScheduleSetId);
+          if (!trainScheduleSet)
+            throw new Error(`Can't find trainSheculeSet ${trainScheduleSetId} in catalog`);
+          return {
+            type: importType,
+            trainScheduleSet,
+          };
+        })
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }, [cart, onSubmit, data?.trainScheduleSets]);
 
   return (
@@ -85,8 +92,19 @@ const TrainScheduleSetCatalogDialog = ({
             )}
           </div>
           <div className="buttons">
-            <Button variant="Cancel" label={t('cancel')} onClick={onCancel} />
-            <Button isDisabled={loading} label={t('import')} onClick={submit} />
+            <Button
+              variant="Cancel"
+              label={t('cancel')}
+              isDisabled={isSubmitting}
+              onClick={onCancel}
+            />
+            <Button
+              isDisabled={loading}
+              isLoading={isSubmitting}
+              label={t('import')}
+              dataTestID="import-train-schedule-sets-button"
+              onClick={submit}
+            />
           </div>
         </>
       }
