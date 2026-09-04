@@ -96,7 +96,7 @@ const StdcmResultsTable = ({
                 ? '='
                 : step.name || t('reportSheet.unknown')}
             </td>
-            <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCode}</td>
+            <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCodeLabel}</td>
             <td className="stop">
               {isLastStep || step.stopDuration !== null ? dateToHHMM(step.time) : ''}
             </td>
