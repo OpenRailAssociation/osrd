@@ -35,6 +35,7 @@ use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
 use models::TrainScheduleException;
+use models::TrainScheduleLinking;
 use models::prelude::*;
 use models::round_trips::TrainScheduleRoundTrips;
 use models::train_schedule::BaseTrainOrOccurrenceId;
@@ -220,11 +221,14 @@ pub(in crate::views) async fn update_train_schedule(
                 .await?;
 
             if !train_schedule.has_same_pace(train_schedule_base.clone().paced.as_ref()) {
+                let conn = &mut tx.clone();
                 TrainScheduleException::delete_exceptions_for_train_schedule(
-                    &mut tx.clone(),
+                    conn,
                     train_schedule.id,
                 )
                 .await?;
+                TrainScheduleLinking::delete_linkings_for_train_schedule(conn, train_schedule.id)
+                    .await?;
             }
 
             let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
