@@ -7,6 +7,7 @@ import { SECONDS_IN_A_DAY } from 'utils/timeManipulation';
 import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
 import TimePropagationMenu from './TimePropagationMenu';
+import type { TimesStopsTableFeatures } from './TimesStopsTable';
 import type { PropagationMode, TimesStopsRowNew } from './types';
 
 // Types
@@ -475,7 +476,7 @@ const renderTimeSection = (value: string, focused: boolean, hasTyped: boolean) =
   </span>
 );
 
-type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
+type TimeCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Date | null> &
   React.InputHTMLAttributes<HTMLInputElement> & {
     /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
     referenceDate?: Date;
@@ -686,7 +687,7 @@ const TimeCell = ({
   const shouldShowPropagationMenu =
     controlledValue !== null && !disabled && state.focusedSection !== null && state.hasTyped;
   const isFirstRow = row.index === 0;
-  const isLastRow = row.index === table.getRowCount() - 1;
+  const isLastRow = row.index === table.getRowModel().rows.length - 1;
 
   return (
     <>
