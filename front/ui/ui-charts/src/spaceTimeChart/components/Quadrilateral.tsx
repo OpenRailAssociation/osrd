@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { indexToColor } from '../../common/helpers/colors';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
   PickingElement,
@@ -75,7 +75,7 @@ export const Quadrilateral = ({ id, vertices, style }: QuadrilateralProps) => {
 
       const pickingElement: QuadrilaterPickingElement = { type: 'quadrilateral', id };
       const index = registerPickingElement(pickingElement);
-      const color = hexToRgb(indexToColor(index));
+      const color = indexToColor(index);
 
       drawAliasedQuadrilateral(imageData, points, color, scalingRatio);
     },

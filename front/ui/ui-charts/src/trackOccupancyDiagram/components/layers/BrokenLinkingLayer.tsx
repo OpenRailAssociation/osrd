@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { hexToRgb, indexToColor } from '../../../common/helpers/colors';
+import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
 import type {
@@ -132,7 +132,7 @@ const BrokenLinkingLayer = ({
           direction: brokenLinking.direction,
         };
         const pickingIndex = registerPickingElement(pickingElement);
-        const color = hexToRgb(indexToColor(pickingIndex));
+        const color = indexToColor(pickingIndex);
 
         drawAliasedRect(
           imageData,
