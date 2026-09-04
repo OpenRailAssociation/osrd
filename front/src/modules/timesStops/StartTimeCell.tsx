@@ -4,11 +4,12 @@ import { type StartTime, Duration } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import TimeCell, { type TimeCellHandle } from './TimeCell';
+import type { TimesStopsTableFeatures } from './TimesStopsTable';
 import type { PropagationMode, TimesStopsRowNew } from './types';
 
 type StartTimeCellProps = {
   type: 'time' | 'duration';
-  cellContext: CellContext<TimesStopsRowNew, StartTime | null>;
+  cellContext: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>;
 } & React.InputHTMLAttributes<HTMLInputElement> & {
     /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
     referenceDate?: Date;
@@ -43,7 +44,11 @@ const StartTimeCell = ({
     }
     // Unfortunately, CellContext is a complicated type and cannot be narrowed
     // down, so we use a cast here.
-    const timeCellContext = cellContext as CellContext<TimesStopsRowNew, Date | null>;
+    const timeCellContext = cellContext as CellContext<
+      TimesStopsTableFeatures,
+      TimesStopsRowNew,
+      Date | null
+    >;
     return (
       <TimeCell
         {...timeCellContext}
@@ -63,7 +68,11 @@ const StartTimeCell = ({
     }
     // Unfortunately, CellContext is a complicated type and cannot be narrowed
     // down, so we use a cast here.
-    const durationCellContext = cellContext as CellContext<TimesStopsRowNew, Duration | null>;
+    const durationCellContext = cellContext as CellContext<
+      TimesStopsTableFeatures,
+      TimesStopsRowNew,
+      Duration | null
+    >;
     return (
       <DurationCell
         {...durationCellContext}
