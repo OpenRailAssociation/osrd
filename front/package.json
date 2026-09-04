@@ -124,7 +124,7 @@
     "oxfmt": "^0.63.0",
     "oxlint": "^1.79.0",
     "oxlint-tsgolint": "^7.0.2001",
-    "pdfjs-dist": "^6.2.108",
+    "pdfjs-dist": "^6.3.289",
     "sass": "^1.102.0",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
