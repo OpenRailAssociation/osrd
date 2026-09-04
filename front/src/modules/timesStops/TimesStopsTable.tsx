@@ -63,6 +63,11 @@ declare module '@tanstack/react-table' {
     onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
     onRequestedMarginChange: (row: TimesStopsRowNew, requestedMargin: MarginValue | null) => void;
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+    onReferenceBaseArrivalChange: (
+      row: TimesStopsRowNew,
+      arrival: StartTime | null,
+      propagationMode: PropagationMode
+    ) => void;
   }
 }
 
@@ -149,6 +154,11 @@ type TimesStopsTableProps = {
   onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
   onRequestedMarginChange: (row: TimesStopsRowNew, value: MarginValue | null) => void;
   onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+  onReferenceBaseArrivalChange: (
+    row: TimesStopsRowNew,
+    arrival: StartTime | null,
+    propagationMode: PropagationMode
+  ) => void;
 };
 
 const columnHelper = createColumnHelper<TimesStopsRowNew>();
@@ -184,6 +194,7 @@ const TimesStopsTable = ({
   onReceptionSignalChange,
   onRequestedMarginChange,
   onPowerRestrictionChange,
+  onReferenceBaseArrivalChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -534,6 +545,43 @@ const TimesStopsTable = ({
     );
   };
 
+  const returnBaseArrival = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
+    const row = info.row.original;
+    const { allRows } = info.table.options.meta!;
+
+    const isFirstRow = info.row.index === 0;
+
+    if (isFirstRow) {
+      const value = row.requestedArrival;
+      return (
+        <span data-testid="first-base-arrival">
+          {value ? formatTime(value, dateTimeLocale) : ''}
+        </span>
+      );
+    } else if (scheduleNotHonored || !isValid) {
+      return (
+        <StartTimeCell
+          type={startTimeCellType}
+          ref={registerTimeCellRef(info.row.index, 'baseArrival')}
+          cellContext={info}
+          referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
+          clearButtonTitle={t('clearRequestedArrivalTime')}
+          onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
+          onCommit={(date, propagationMode) => {
+            info.table.options.meta!.onReferenceBaseArrivalChange(row, date, propagationMode);
+          }}
+        />
+      );
+    } else {
+      const value = info.getValue();
+      return (
+        <span data-testid="computed-base-arrival">
+          {value ? formatTime(value, dateTimeLocale) : ''}
+        </span>
+      );
+    }
+  };
+
   const columns = useMemo(
     () => [
       columnHelper.display({
@@ -681,8 +729,16 @@ const TimesStopsTable = ({
           'data-testid': 'total-travel-time',
         },
       }),
+      columnHelper.accessor('baseArrival', {
+        header: () => t('baseArrival'),
+        cell: returnBaseArrival,
+        meta: {
+          className: 'col-reference-base-arrivial col-with-clock-time',
+          'data-testid': 'reference-base-arrivial',
+        },
+      }),
     ],
-    [startTime, focusCellBelow, focusRequestedCellOnTab, t]
+    [startTime, focusCellBelow, focusRequestedCellOnTab, t, scheduleNotHonored]
   );
 
   // eslint-disable-next-line react/incompatible-library
@@ -702,6 +758,7 @@ const TimesStopsTable = ({
       onReceptionSignalChange,
       onRequestedMarginChange,
       onPowerRestrictionChange,
+      onReferenceBaseArrivalChange,
     },
   });
 

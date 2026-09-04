@@ -170,6 +170,7 @@ const TimeStopsTableWrapper = ({
     updateReceptionSignal,
     updateRequestedMargin,
     updatePowerRestrictions,
+    updateReferenceBaseArrival,
   } = useUpdateTimesStopsTable(selectedTrain, rows, trainSchedulesWithDetails);
 
   // True if we are still waiting for fresh simulation data after a user edit.
@@ -388,6 +389,27 @@ const TimeStopsTableWrapper = ({
       updatePowerRestrictions(row, value)
     );
 
+  const handleReferenceBaseArrivalChange = (
+    row: TimesStopsRowNew,
+    arrival: StartTime | null,
+    propagationMode: PropagationMode
+  ) => {
+    const singleEdit: PendingEdit = {
+      rowId: row.id,
+      field: 'referenceBaseArrival',
+      value: arrival,
+    };
+    commitEdit(
+      buildEditsForUpdate(singleEdit, {
+        row,
+        field: 'referenceBaseArrival',
+        value: arrival,
+        propagationMode,
+      }),
+      () => updateReferenceBaseArrival(row, arrival, propagationMode)
+    );
+  };
+
   return (
     <TimesStopsTable
       rows={optimisticRows}
@@ -403,6 +425,7 @@ const TimeStopsTableWrapper = ({
       onReceptionSignalChange={handleReceptionSignalChange}
       onRequestedMarginChange={handleRequestedMarginChange}
       onPowerRestrictionChange={handlePowerRestrictionChange}
+      onReferenceBaseArrivalChange={handleReferenceBaseArrivalChange}
     />
   );
 };

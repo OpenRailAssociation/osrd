@@ -77,6 +77,8 @@ export type TimesStopsRowNew = {
   // Travel Times
   timeFromPreviousOp: Duration | null;
   totalTravelTime: Duration | null;
+
+  baseArrival: StartTime | null;
 };
 
 export type TimesStopsRow = {
@@ -174,13 +176,21 @@ export type PowerRestrictionUpdate = {
   value: string | null;
 };
 
+export type ReferenceBaseArrivalUpdate = {
+  row: TimesStopsRowNew;
+  field: 'referenceBaseArrival';
+  value: StartTime | null;
+  propagationMode: PropagationMode;
+};
+
 export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
   | DepartureUpdate
   | ReceptionSignalUpdate
   | RequestedMarginUpdate
-  | PowerRestrictionUpdate;
+  | PowerRestrictionUpdate
+  | ReferenceBaseArrivalUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: StartTime | null }
@@ -189,7 +199,8 @@ export type OptimisticEdit =
   | { field: 'stopDurationWithArrival'; value: { stop: Duration | null; arrival: StartTime } }
   | { field: 'receptionSignal'; value: ReceptionSignal | undefined }
   | { field: 'requestedTheoreticalMargin'; value: MarginValue | null }
-  | { field: 'powerRestriction'; value: string | null };
+  | { field: 'powerRestriction'; value: string | null }
+  | { field: 'referenceBaseArrival'; value: StartTime | null };
 
 export type PendingEdit = OptimisticEdit & { rowId: string };
 
