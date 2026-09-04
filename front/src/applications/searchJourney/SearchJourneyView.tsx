@@ -25,8 +25,13 @@ const SearchJourneyView = () => {
   const { loading, error } = useSearchJourneyEnv();
   const journeys = useSelector(getSearchJourneyJourneys);
   const selectedSolution = useSelector(getSearchJourneySelectedSolution);
-  const { geometry, markers, trainNames, operationalPointNames } =
-    useSearchJourneySolutionDetails(selectedSolution);
+  const {
+    geometry,
+    markers,
+    trainNames,
+    operationalPointNames,
+    loading: solutionDetailsLoading,
+  } = useSearchJourneySolutionDetails(selectedSolution);
 
   const resultsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -55,10 +60,14 @@ const SearchJourneyView = () => {
             <SearchJourneyMap />
             {journeys && (
               <div ref={resultsSectionRef} className="search-journey-results-section">
-                <SearchJourneyResults
-                  trainNames={trainNames}
-                  operationalPointNames={operationalPointNames}
-                />
+                {solutionDetailsLoading ? (
+                  <Loader position="center" className="mt-5" />
+                ) : (
+                  <SearchJourneyResults
+                    trainNames={trainNames}
+                    operationalPointNames={operationalPointNames}
+                  />
+                )}
               </div>
             )}
             {selectedSolution && <SearchJourneyResultsMap geometry={geometry} markers={markers} />}

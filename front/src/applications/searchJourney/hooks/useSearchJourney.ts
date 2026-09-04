@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { setSearchJourneyResults } from 'reducers/searchJourney';
+import { clearSearchJourneyResults, setSearchJourneyResults } from 'reducers/searchJourney';
 import {
   getSearchJourneyDestination,
   getSearchJourneyInfraId,
@@ -52,6 +52,7 @@ export default function useSearchJourney() {
 
     setRequestStatus(SEARCH_JOURNEY_REQUEST_STATUS.pending);
     setError(null);
+    dispatch(clearSearchJourneyResults());
     const request = postSearchJourneys({
       journeySearchQuery: {
         infra_id: infraId,
