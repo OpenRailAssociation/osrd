@@ -487,9 +487,14 @@ const getNgeTrainrunSectionsWithNodes = (
   const trainrunSections: TrainrunSectionDto[] = groupedTrainSchedules.flatMap(
     ([trainSchedule, returnTrainSchedule], index) => {
       // Figure out the primary node key for each path item
-      const pathNodeKeys = trainSchedule.path.map((pathItem) => {
-        const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem.location));
-        return node!.path_item_key;
+      const pathNodeKeys: string[] = [];
+      trainSchedule.path.forEach((pathItem) => {
+        const nodeKey = state.getNodeByKey(
+          MacroEditorState.getPathKey(pathItem.location)
+        )!.path_item_key;
+        if (pathNodeKeys.at(-1) !== nodeKey) {
+          pathNodeKeys.push(nodeKey);
+        }
       });
 
       const startTime = parseStartTime(trainSchedule.start_time, state.timetableType);
