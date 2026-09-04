@@ -268,12 +268,19 @@ export default function useOccupancyZoneDrop({
               })
             : rawTrainSchedule.paced.exceptions;
 
-        // Clear exceptions that no longer differ from the updated model.
+        // Clear exceptions that no longer differ from the updated model. `movedExceptions` already
+        // has the new track so `checkChangeGroups` needs the
+        // untouched exceptions as a reference to notice that change.
         const {
           exceptions: reconciledExceptions,
           modifiedExceptions: exceptionsToUpdate,
           exceptionsToDeleteIds,
-        } = checkChangeGroups(updatedModelTrainSchedule, rawTrainSchedule.paced, movedExceptions);
+        } = checkChangeGroups(
+          updatedModelTrainSchedule,
+          rawTrainSchedule.paced,
+          movedExceptions,
+          rawTrainSchedule.paced.exceptions
+        );
 
         if (exceptionsToDeleteIds.length) {
           await deleteExceptions(dispatch, exceptionsToDeleteIds);
