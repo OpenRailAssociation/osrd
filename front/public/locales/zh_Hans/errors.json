@@ -1,0 +1,40 @@
+{
+  "401": "未认证用户",
+  "403": "拒绝访问",
+  "404": "未找到资源",
+  "500": "服务器错误",
+  "502": "服务器错误",
+  "503": "服务器错误",
+  "504": "服务器无响应。",
+  "editoast": {
+    "authorization": {
+      "Forbidden": "拒绝访问",
+      "Unauthenticated": "未认证的用户"
+    },
+    "authz": {
+      "GrantsApiMisuse": "API使用错误",
+      "NoSuchUser": "未知用户"
+    },
+    "catalog_entry": {
+      "Database": "内部错误（数据库）"
+    },
+    "infra": {
+      "Database": "内部错误"
+    },
+    "level_crossing": {
+      "UnsupportedTimetableType": "不支持每小时的时间表。"
+    },
+    "operation": {
+      "EmptyId": "不允许使用空字符串id"
+    },
+    "postgres": {
+      "Username": "无效的用户名"
+    },
+    "rollingstocks": {
+      "CannotCreateCompoundImage": "无法在合成的图像上复制分离的图像"
+    },
+    "search": {
+      "IntegerConversion": "无法转换为i64"
+    }
+  }
+}

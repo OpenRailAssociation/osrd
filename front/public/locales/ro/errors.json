@@ -1,0 +1,35 @@
+{
+  "401": "Utilizator neautentificat",
+  "403": "Acces refuzat",
+  "404": "Resursă negăsită",
+  "500": "Erori server",
+  "502": "Erori server",
+  "503": "Erori server",
+  "504": "Serverul nu a răspuns.",
+  "default": "A apărut o eroare.",
+  "editoast": {
+    "DatabaseAccessError": "Eroare fatală la accesul bazei de date",
+    "JoinError": {
+      "panic": "Panică",
+      "unhandled_add_case_here": "Caz de JoinError neașteptat"
+    },
+    "app_health": {
+      "Database": "Eroare la baza de date",
+      "Openfga": "Eroare la OpenFGA",
+      "Timeout": "Serviciul nu a răspuns la timp",
+      "Valkey": "Eroare la Valkey"
+    },
+    "attached": {
+      "TrackNotFound": "Secțiunea {{track_id}} nu a fost găsită"
+    },
+    "authorization": {
+      "AuthError": "Eroare internă de autentificare/autorizare, încercați din nou sau contactați support",
+      "DbError": "Eroare fatală la accesul baza de date",
+      "Forbidden": "Acces nepermis",
+      "Unauthenticated": "Utilizator neautentificat"
+    },
+    "authz": {
+      "Authorizer": "Eroare internă"
+    }
+  }
+}

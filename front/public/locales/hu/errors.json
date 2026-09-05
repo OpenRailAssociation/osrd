@@ -1,0 +1,9 @@
+{
+  "401": "Nem hitelesített felhasználó",
+  "403": "Hozzáférés megtagadva",
+  "404": "Erőforrás nem található",
+  "500": "Szerver hiba",
+  "502": "Szerver hiba",
+  "503": "Szerver hiba",
+  "504": "Szerver nem válaszol"
+}
