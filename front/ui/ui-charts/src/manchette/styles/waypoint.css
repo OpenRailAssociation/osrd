@@ -1,4 +1,4 @@
-.ui-manchette-container .waypoint {
+.waypoint {
   @apply text-grey-80;
   height: 32px;
   line-height: 1.5rem;
@@ -11,8 +11,7 @@
     position: relative;
     opacity: 0.6;
     flex-grow: 1;
-    margin-left: auto;
-    margin-right: auto;
+    margin-inline: auto;
     min-width: 12px;
     align-self: stretch;
     &::after {
@@ -24,15 +23,17 @@
       @apply bg-grey-40;
     }
   }
+
   .waypoint-name {
     max-width: 190px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
   }
+
   .waypoint-ch {
     font-size: 0.875rem;
-    margin: 0 2px;
+    margin-inline: 2px;
     width: 16px;
     text-align: left;
     & + .waypoint-separator {
@@ -45,7 +46,7 @@
     @apply text-grey-50;
     font-size: 0.75rem;
     font-weight: 400;
-    width: calc(41px - 8px); /* 8px is the padding-left */
+    width: calc(41px - 12px); /* 12px is the padding-left */
   }
 
   &:not(.menu-active):hover,
