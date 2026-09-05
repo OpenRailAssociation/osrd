@@ -166,12 +166,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const timetableContext = useMemo(
     (): TimetableContextType => ({
       trainSchedules: trainSchedulesById,
+      hourlyTimetableDuration,
       upsertTrainSchedules: upsertTrainSchedulesWithNge,
       removeTrainSchedules: removeTrainSchedulesWithNge,
       updateTrainScheduleDepartureTime: updateTrainScheduleDepartureTimeWithNge,
     }),
     [
       trainSchedulesById,
+      hourlyTimetableDuration,
       upsertTrainSchedulesWithNge,
       removeTrainSchedulesWithNge,
       updateTrainScheduleDepartureTimeWithNge,

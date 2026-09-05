@@ -12,6 +12,7 @@ import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
+import { toHourlyPattern } from './helpers/adaptImportedTrains';
 import { processJsonFile } from './helpers/parseJson';
 import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
@@ -20,7 +21,7 @@ const useImportTrainSchedules = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
-  const { upsertTrainSchedules } = useTimetableContext();
+  const { hourlyTimetableDuration, upsertTrainSchedules } = useTimetableContext();
 
   const subCategories = useSubCategoryContext();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
@@ -32,17 +33,28 @@ const useImportTrainSchedules = () => {
    * If the interface is unset or the interface responds with 415 unsupported media type, fallback to local xml parsing.
    */
   const processXmlFile = async (file: File, fileContent: string): Promise<TimetableJsonPayload> => {
+    const adaptToTimetable = (payload: TimetableJsonPayload): TimetableJsonPayload => {
+      if (!hourlyTimetableDuration) return payload;
+
+      return {
+        ...payload,
+        train_schedules: payload.train_schedules.map((train) =>
+          toHourlyPattern(train, hourlyTimetableDuration)
+        ),
+      };
+    };
+
     if (!railwayManagerUrl) {
-      return await locallyProcessXmlFile(fileContent);
+      return adaptToTimetable(await locallyProcessXmlFile(fileContent));
     }
     try {
       const { paced_trains: train_schedules, ...rest } = await postTransformTimetable({
         body: file,
       }).unwrap();
-      return { ...rest, train_schedules };
+      return adaptToTimetable({ ...rest, train_schedules });
     } catch (error: unknown) {
       if (isObject(error) && 'status' in error && error.status === '415')
-        return await locallyProcessXmlFile(fileContent);
+        return adaptToTimetable(await locallyProcessXmlFile(fileContent));
       throw error;
     }
   };
