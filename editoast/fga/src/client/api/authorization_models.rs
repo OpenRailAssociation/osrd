@@ -38,7 +38,7 @@ impl Client {
                 .append_pair("page_size", page_size.to_string().as_str());
         }
 
-        let response = self.inner.get(url).send().await?;
+        let response = self.fetch(self.inner.get(url)).await?;
         let Response {
             authorization_models,
             continuation_token,
@@ -58,10 +58,7 @@ impl Client {
             .join(format!("stores/{store_id}/authorization-models").as_str())
             .unwrap();
         let response = self
-            .inner
-            .post(url)
-            .json(authorization_model)
-            .send()
+            .fetch(self.inner.post(url).json(authorization_model))
             .await?;
 
         #[derive(serde::Deserialize)]
