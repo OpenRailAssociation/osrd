@@ -176,7 +176,7 @@ describe('useLoadCatalog', () => {
 
   it('should early return if catalogData is undefined', async () => {
     // Never-resolving promise: catalogData stays undefined for the whole test
-    getAllCatalogEntries.mockReturnValue(new Promise<never>(() => {}) as never);
+    getAllCatalogEntries.mockReturnValue(new Promise<never>(() => {}));
 
     const { result } = renderHookWithStore(() => useLoadCatalog());
 
