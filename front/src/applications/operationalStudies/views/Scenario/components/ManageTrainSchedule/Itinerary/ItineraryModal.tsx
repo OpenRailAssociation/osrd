@@ -179,7 +179,10 @@ export function setupStateWithTrainSchedule(
   return state;
 }
 
-const createDefaultTrainName = (stepsWithLocationOrInput: PathStepV2[]): string => {
+const createDefaultTrainName = (
+  stepsWithLocationOrInput: PathStepV2[],
+  pathStepsMetadataById: Map<string, PathStepMetadata>
+): string => {
   const createDefaultStepName = (pathStep: PathStepV2): string => {
     const location = pathStep.location;
     if (!location) return '';
@@ -188,13 +191,15 @@ const createDefaultTrainName = (stepsWithLocationOrInput: PathStepV2[]): string 
         return `${location.track}+${Math.round(location.offset / 1000)}`;
       case 'operational_point_part_reference': {
         const op = location.operational_point;
+        const opMetadatas = pathStepsMetadataById.get(pathStep.id);
+        const hasMainCode = opMetadatas && !opMetadatas.isInvalid && opMetadatas.type === 'opRef';
         switch (op.type) {
           case 'domestic':
             return op.main_code;
-          case 'uic':
-            return `UIC ${op.uic}`;
           case 'id':
-            return `ID ${op.operational_point}`;
+            return hasMainCode ? opMetadatas.mainCode : `ID ${op.operational_point}`;
+          case 'uic':
+            return hasMainCode ? opMetadatas.mainCode : `UIC ${op.uic}`;
         }
       }
     }
@@ -456,6 +461,7 @@ const ItineraryModal = ({
         type: 'opRef',
         isInvalid: false,
         name: op.name,
+        mainCode: op.main_code,
         uic: op.uic,
         secondaryCode: op.secondary_code,
         parts: coordinates
@@ -773,7 +779,7 @@ const ItineraryModal = ({
     if (stepsWithLocationOrInput.length < 2) return;
 
     const name = isNameEmpty
-      ? createDefaultTrainName(stepsWithLocationOrInput)
+      ? createDefaultTrainName(stepsWithLocationOrInput, pathStepsMetadataById)
       : modalFormState.name;
 
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>

@@ -203,6 +203,7 @@ export const usePathStepsMetadata = (
           type: 'opRef',
           isInvalid: false,
           name: matchedOp.name,
+          mainCode: matchedOp.main_code,
           uic: matchedOp.uic,
           secondaryCode: matchedOp.secondary_code,
           trackName: local_track_name ?? undefined,
