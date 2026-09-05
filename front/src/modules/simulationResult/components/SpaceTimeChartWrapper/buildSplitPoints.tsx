@@ -9,6 +9,7 @@ import {
   isLinkingPickingElement,
   type PickingElement,
   type SplitPoint,
+  type OccupancyZone,
 } from '@osrd-project/ui-charts';
 import { keyBy, sortBy } from 'lodash';
 
@@ -16,14 +17,20 @@ import type { CategoryColors } from 'applications/operationalStudies/types';
 import trashIcon from 'assets/pictures/trash-white.svg';
 import { Spinner } from 'common/Loaders';
 import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
+import type { TimeRange } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
 import type { CurveStyleInput } from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import type { Duration } from 'utils/duration';
 
 import type { PanelSelectionMode } from './CurveSelectionSidePanel';
 import buildWaypointLinkings, { type ExistingLinking } from './helpers/linkings';
-import type { MovableOccupancyZone, DeployedWaypoint } from './helpers/zones';
+import {
+  type MovableOccupancyZone,
+  type DeployedWaypoint,
+  repeatOccupancyZonesInRange,
+} from './helpers/zones';
 
 type Path = {
   id: string;
@@ -52,6 +59,8 @@ type BuildSplitPointsProps = {
     hovered?: PickingElement;
     showSuggestions: boolean;
   };
+  repeatTimeRange?: TimeRange;
+  hourlyTimetableDuration?: Duration;
 };
 
 export function buildSplitPoints({
@@ -69,6 +78,8 @@ export function buildSplitPoints({
   activeTrackId,
   onTrackDragOver,
   linkings,
+  repeatTimeRange,
+  hourlyTimetableDuration,
 }: BuildSplitPointsProps): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -108,7 +119,7 @@ export function buildSplitPoints({
       const baseZones = zones ?? [];
       const zonesCountByTrainScheduleId = countZonesByTrainScheduleId(baseZones);
 
-      const occupancyZones = baseZones.flatMap((zone) => {
+      let occupancyZones: (OccupancyZone & MovableOccupancyZone)[] = baseZones.flatMap((zone) => {
         const isHovered = hoveredTrainIdForChart === zone.trainId;
         let totalOccurrencesOnTrack = 0;
         if (isOccurrenceId(zone.trainId)) {
@@ -146,6 +157,10 @@ export function buildSplitPoints({
           },
         ];
       });
+
+      if (hourlyTimetableDuration && repeatTimeRange) {
+        occupancyZones = repeatOccupancyZonesInRange(occupancyZones, hourlyTimetableDuration, repeatTimeRange);
+      }
 
       const { linkings: waypointLinkings, brokenLinkings } = buildWaypointLinkings({
         zones: baseZones,

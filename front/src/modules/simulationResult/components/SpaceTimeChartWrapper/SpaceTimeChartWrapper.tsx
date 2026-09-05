@@ -457,6 +457,8 @@ const SpaceTimeChartWrapper = ({
           hovered: hoveredLinking,
           showSuggestions: linkingMode,
         },
+        repeatTimeRange,
+        hourlyTimetableDuration,
       }),
     [
       trackOccupancyDiagramsData,
@@ -476,6 +478,8 @@ const SpaceTimeChartWrapper = ({
       linkings,
       hoveredLinking,
       linkingMode,
+      repeatTimeRange,
+      hourlyTimetableDuration,
     ]
   );
 
