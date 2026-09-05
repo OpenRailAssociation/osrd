@@ -26,6 +26,7 @@ describe('generateSelectPropsForGrant', () => {
     const result = generateGrantSelectProps({
       subjectGrant: 'READER',
       userPrivileges: new Set(GRANTS.OWNER),
+      resourceType: 'infra',
       t,
     });
 
@@ -49,6 +50,7 @@ describe('generateSelectPropsForGrant', () => {
     const result = generateGrantSelectProps({
       subjectGrant: 'READER',
       userPrivileges: new Set(GRANTS.WRITER),
+      resourceType: 'infra',
       t,
     });
 
@@ -66,6 +68,7 @@ describe('generateSelectPropsForGrant', () => {
     const result = generateGrantSelectProps({
       subjectGrant: 'WRITER',
       userPrivileges: new Set(GRANTS.READER),
+      resourceType: 'infra',
       t,
     });
 
