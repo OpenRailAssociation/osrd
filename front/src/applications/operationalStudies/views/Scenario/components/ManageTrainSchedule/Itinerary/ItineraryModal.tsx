@@ -446,8 +446,10 @@ const ItineraryModal = ({
       // coordinates:
       const geometry = pathProperties?.geometry;
       const coordinates = geometry
-        ? along(lineString(geometry.coordinates), op.position, { units: 'millimeters' }).geometry
-            .coordinates
+        ? geometry.coordinates.map(
+            (gc) =>
+              along(lineString(gc), op.position, { units: 'millimeters' }).geometry.coordinates
+          )
         : undefined;
 
       // Pre-fill the metadata so the new step shows its name right away and
@@ -459,14 +461,12 @@ const ItineraryModal = ({
         uic: op.uic,
         secondaryCode: op.secondary_code,
         parts: coordinates
-          ? [
-              {
-                type: 'valid',
-                trackId: op.part.track,
-                trackName: op.part.local_track_name,
-                coordinates,
-              },
-            ]
+          ? coordinates.map((c) => ({
+              type: 'valid',
+              trackId: op.part.track,
+              trackName: op.part.local_track_name,
+              coordinates: c,
+            }))
           : [],
       });
 

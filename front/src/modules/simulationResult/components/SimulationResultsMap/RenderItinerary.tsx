@@ -1,11 +1,11 @@
-import type { Feature, LineString } from 'geojson';
+import type { Feature, MultiLineString } from 'geojson';
 import { Source } from 'react-map-gl/maplibre';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { GeoJsonMultiLineString } from 'common/api/osrdEditoastApi';
 import { OrderedLayer } from 'common/Map/Layers';
 
 type ItineraryProps = {
-  geojsonPath: Feature<LineString> | GeoJsonLineString;
+  geojsonPath: Feature<MultiLineString> | GeoJsonMultiLineString;
   layerOrder: number;
 };
 

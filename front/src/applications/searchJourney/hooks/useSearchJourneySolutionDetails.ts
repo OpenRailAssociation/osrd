@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import {
   osrdEditoastApi,
   type CoreTrackRange,
-  type GeoJsonLineString,
+  type GeoJsonMultiLineString,
 } from 'common/api/osrdEditoastApi';
 import { MARKER_TYPE, type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
 import type { SearchJourneySolution } from 'reducers/searchJourney';
@@ -46,7 +46,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
   const infraId = useSelector(getSearchJourneyInfraId);
   const dispatch = useAppDispatch();
 
-  const [geometry, setGeometry] = useState<GeoJsonLineString>();
+  const [geometry, setGeometry] = useState<GeoJsonMultiLineString>();
   const [markers, setMarkers] = useState<MarkerInformation[]>([]);
   const [trainNames, setTrainNames] = useState<Record<number, string>>({});
   const [operationalPointNames, setOperationalPointNames] = useState<Record<string, string>>({});
@@ -106,7 +106,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
           }
         }
 
-        let newGeometry: GeoJsonLineString | undefined;
+        let newGeometry: GeoJsonMultiLineString | undefined;
         if (allTrackRanges.length > 0) {
           const pathProperties = await dispatch(
             osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.initiate(

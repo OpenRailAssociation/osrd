@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import { compact } from 'lodash';
 
 import type {
-  GeoJsonLineString,
+  GeoJsonMultiLineString,
   LightRollingStock,
   LoadingGaugeType,
   PathItemLocation,
@@ -15,7 +15,7 @@ import { getSupportedElectrification, isThermal } from 'modules/rollingStock/hel
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
-import { getPointOnTrackCoordinates } from 'utils/geometry';
+import { getPointOnTracksCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 
 export const formatSuggestedOperationalPoints = (
@@ -24,7 +24,7 @@ export const formatSuggestedOperationalPoints = (
       metadata?: NonNullable<SuggestedOP['metadata']>;
     }
   >,
-  geometry: GeoJsonLineString,
+  geometry: GeoJsonMultiLineString,
   pathLength: number
 ): SuggestedOP[] =>
   operationalPoints.map((op) => ({
@@ -41,7 +41,7 @@ export const formatSuggestedOperationalPoints = (
     track: op.part.track,
     trackName: op.part.local_track_name,
     positionOnPath: op.position,
-    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position)!,
+    coordinates: getPointOnTracksCoordinates(geometry, pathLength, op.position)!,
     metadata: op?.metadata,
   }));
 
