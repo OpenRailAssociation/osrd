@@ -37,6 +37,7 @@ import {
 } from 'utils/trainId';
 
 import { MarginUnit } from '../consts';
+import { cascadeArrivals } from '../helpers/arrivalCascade';
 import {
   upsertPathStep,
   applyScheduleEdit,
@@ -46,7 +47,7 @@ import {
   insertScheduleItemInOrder,
 } from '../helpers/cellUpdate';
 import { propagateStopDuration } from '../helpers/stopDurationPropagation';
-import { adjustFollowingWaypointsForMidnight, propagateTime } from '../helpers/timePropagation';
+import { propagateTime } from '../helpers/timePropagation';
 import type {
   CellUpdate,
   OptimisticEdit,
@@ -138,7 +139,17 @@ const useUpdateTimesStopsTable = (
         update.field === 'stopDuration'
           ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
           : propagateTime(update, selectedTrain, scenario.timetable_type);
-      if (propagatedResult) return { ...propagatedResult, updatedMargins: selectedTrain.margins };
+      if (propagatedResult)
+        return {
+          ...propagatedResult,
+          // The days must be right before saving
+          updatedSchedule: cascadeArrivals({
+            schedule: propagatedResult.updatedSchedule,
+            path: propagatedResult.updatedPath,
+            fromPathIndex: 1,
+          }),
+          updatedMargins: selectedTrain.margins,
+        };
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
@@ -217,36 +228,16 @@ const useUpdateTimesStopsTable = (
         updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
       }
 
-      // For atThisWaypoint: stops after the edited point that now fall before it in time
-      // must be bumped to the next day.
-      if (
-        (update.field === 'requestedArrival' || update.field === 'requestedDeparture') &&
-        update.propagationMode === 'atThisWaypoint' &&
-        update.value !== null &&
-        update.value instanceof Date &&
-        !isOrigin
-      ) {
-        updatedSchedule = adjustFollowingWaypointsForMidnight(update.value, pathStepId, {
-          ...selectedTrain,
+      return {
+        updatedPath,
+        // The days must be right before saving
+        updatedSchedule: cascadeArrivals({
           schedule: updatedSchedule,
-        });
-      }
-
-      // Same idea for stop duration: a longer stop can push the departure past the next stop's
-      // arrival, so following stops get bumped too — including at the origin, unlike above.
-      if (
-        update.field === 'stopDuration' &&
-        update.propagationMode === 'atThisWaypoint' &&
-        newState.departure !== null &&
-        newState.departure instanceof Date
-      ) {
-        updatedSchedule = adjustFollowingWaypointsForMidnight(newState.departure, pathStepId, {
-          ...selectedTrain,
-          schedule: updatedSchedule,
-        });
-      }
-
-      return { updatedPath, updatedSchedule, updatedMargins: selectedTrain.margins };
+          path: updatedPath,
+          fromPathIndex: 1,
+        }),
+        updatedMargins: selectedTrain.margins,
+      };
     },
     [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
   );

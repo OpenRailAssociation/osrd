@@ -10,9 +10,8 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration, type StartTime, addDurationToStartTime, startTimeToMs } from 'utils/duration';
+import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 
-import { ONE_DAY } from './consts';
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { propagateStopDuration } from './helpers/stopDurationPropagation';
@@ -44,27 +43,6 @@ type TimeStopsTableWrapperProps = {
   voltages?: PathPropertiesFormatted['voltages'];
   isSimulationDataLoading?: boolean;
   rollingStock?: RollingStock;
-};
-
-const bumpMidnightCrossings = (rows: TimesStopsRowNew[]): TimesStopsRowNew[] => {
-  let lastArrival: StartTime | null = null;
-  return rows.map((row) => {
-    if (row.requestedArrival === null) return row;
-    if (lastArrival !== null && row.requestedArrival < lastArrival) {
-      const bumped = addDurationToStartTime(row.requestedArrival, ONE_DAY);
-      lastArrival = bumped;
-      return {
-        ...row,
-        requestedArrival: bumped,
-        requestedDeparture:
-          row.requestedDeparture !== null
-            ? addDurationToStartTime(row.requestedDeparture, ONE_DAY)
-            : null,
-      };
-    }
-    lastArrival = row.requestedArrival;
-    return row;
-  });
 };
 
 const TimeStopsTableWrapper = ({
@@ -126,16 +104,13 @@ const TimeStopsTableWrapper = ({
   }
 
   const optimisticRows = useMemo(() => {
-    let copyRows: TimesStopsRowNew[] = rows;
-    if (optimisticEdits) {
-      const editMap = new Map(optimisticEdits.map((e): [string, PendingEdit] => [e.rowId, e]));
-      copyRows = rows.map((row) => {
-        const edit = editMap.get(row.id);
-        return edit ? { ...row, ...computeOptimisticRow(row, edit) } : row;
-      });
-    }
+    if (!optimisticEdits) return rows;
 
-    return bumpMidnightCrossings(copyRows);
+    const editMap = new Map(optimisticEdits.map((e): [string, PendingEdit] => [e.rowId, e]));
+    return rows.map((row) => {
+      const edit = editMap.get(row.id);
+      return edit ? { ...row, ...computeOptimisticRow(row, edit) } : row;
+    });
   }, [rows, optimisticEdits]);
 
   const startTime = useMemo(

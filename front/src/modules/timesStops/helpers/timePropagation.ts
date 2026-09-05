@@ -1,4 +1,4 @@
-import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
+import type { TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import {
   Duration,
@@ -7,8 +7,8 @@ import {
   subtractStartTime,
 } from 'utils/duration';
 
-import { ONE_DAY } from '../consts';
 import type { ArrivalUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
+import { cascadeArrivals } from './arrivalCascade';
 import { propagateStopDuration } from './stopDurationPropagation';
 import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
 
@@ -80,52 +80,20 @@ const propagateFromEditedPoint = (
     timetableType === 'CALENDAR'
       ? new Date(selectedTrain.start_time)
       : new Duration({ milliseconds: selectedTrain.start_time });
+  const isFromDeparture = direction === 'fromDeparture';
   // For fromDeparture: the train's start time shifts by delta. For toDestination: it stays the same.
-  const newStartTime =
-    direction === 'fromDeparture'
-      ? addDurationToStartTime(currentStartTime, delta)
-      : currentStartTime;
+  const newStartTime = isFromDeparture
+    ? addDurationToStartTime(currentStartTime, delta)
+    : currentStartTime;
 
-  // Compute shifted offsets for all affected items, sorted by path order.
-  const affectedItems = Iterator.from(selectedTrain.schedule ?? [])
-    .map((item) => ({
-      item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
-    }))
-    .filter(({ item, pathIndex }) => {
-      if (!item.arrival) return false;
-      return direction === 'fromDeparture'
-        ? pathIndex > editedPathIndex
-        : pathIndex >= editedPathIndex;
-    })
-    .toArray();
-
-  // Apply cascade: each waypoint is compared against the previous one.
-  // If it falls before, it crossed midnight and gets +24h.
-  // For fromDeparture: the edited item is excluded from the loop, but its offset is the baseline —
-  // any shifted offset that falls before it gets +24h.
-  // For toDestination: the edited item is included in the loop, so start at 0.
-  const editedItem = selectedTrain.schedule?.find((item) => item.at === editedPathStepId);
-  const editedOldOffset = editedItem?.arrival ? Duration.parse(editedItem.arrival) : null;
-  let lastOffset =
-    direction === 'fromDeparture' && editedOldOffset !== null
-      ? editedOldOffset
-      : new Duration({ seconds: 0 });
-  const adjustments = new Map<string, string>();
-
-  for (const { item } of affectedItems) {
-    const shifted =
-      direction === 'fromDeparture'
-        ? Duration.parse(item.arrival!).sub(delta)
-        : Duration.parse(item.arrival!).add(delta);
-    const adjustedArrival = shifted.ms < lastOffset.ms ? shifted.add(ONE_DAY) : shifted;
-    adjustments.set(item.at, adjustedArrival.toISOString());
-    lastOffset = adjustedArrival;
-  }
-
-  const updatedSchedule = (selectedTrain.schedule ?? []).map((item) =>
-    adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
-  );
+  // For fromDeparture: the edited item is excluded from the cascade.
+  // For toDestination: the edited item is part of the cascade.
+  const updatedSchedule = cascadeArrivals({
+    schedule: selectedTrain.schedule ?? [],
+    path: selectedTrain.path,
+    fromPathIndex: isFromDeparture ? editedPathIndex + 1 : editedPathIndex,
+    shift: (arrival) => (isFromDeparture ? arrival.sub(delta) : arrival.add(delta)),
+  });
 
   return {
     updatedPath: selectedTrain.path,
@@ -148,41 +116,6 @@ const propagateShiftAll = (
     updatedSchedule: selectedTrain.schedule ?? [],
     updatedStartTime: addDurationToStartTime(currentStartTime, delta),
   };
-};
-
-/**
- * For atThisWaypoint: waypoints after the edited point that now fall before it in time
- * must be on the next day.
- */
-export const adjustFollowingWaypointsForMidnight = (
-  newValue: Date,
-  editedPathStepId: string,
-  selectedTrain: Train
-): ScheduleItem[] => {
-  const startTime = new Date(selectedTrain.start_time);
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
-
-  const itemsAfterUpdatedStep = Iterator.from(selectedTrain.schedule ?? [])
-    .map((item) => ({
-      item,
-      pathIndex: selectedTrain.path.findIndex((step) => step.id === item.at),
-    }))
-    .filter(({ item, pathIndex }) => item.arrival && pathIndex > editedPathIndex)
-    .toArray();
-
-  let lastOffset = Duration.subtractDate(newValue, startTime);
-  const adjustments = new Map<string, string>();
-
-  for (const { item } of itemsAfterUpdatedStep) {
-    const itemOffset = Duration.parse(item.arrival!);
-    const adjustedArrival = itemOffset.ms < lastOffset.ms ? itemOffset.add(ONE_DAY) : itemOffset;
-    adjustments.set(item.at, adjustedArrival.toISOString());
-    lastOffset = adjustedArrival;
-  }
-
-  return (selectedTrain.schedule ?? []).map((item) =>
-    adjustments.has(item.at) ? { ...item, arrival: adjustments.get(item.at) } : item
-  );
 };
 
 export const propagateTime = (
