@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -44,9 +44,18 @@ const NotificationWrapper = (notif: Notification) => {
 
 const Notifications = (props: { notifications: Array<Notification> }) => {
   const { notifications } = props;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof container.showPopover !== 'function') return;
+
+    if (container.matches(':popover-open')) container.hidePopover();
+    if (notifications.length > 0) container.showPopover();
+  }, [notifications]);
 
   return (
-    <div className="notifications">
+    <div className="notifications" ref={containerRef} popover="manual">
       {notifications.map((notif: Notification, index) => (
         <NotificationWrapper key={index} {...notif} />
       ))}
