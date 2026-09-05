@@ -11,7 +11,7 @@ environment:
 processes:
   core:
     working_dir: "${OSRD_PATH}/core/"
-    command: "gradle run --args='worker'"
+    command: "./gradlew run --args='worker'"
     environment:
       - "ALL_INFRA=true"
       - "CORE_EDITOAST_URL=http://localhost:8090"
