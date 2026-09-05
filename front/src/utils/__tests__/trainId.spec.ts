@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
+import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import type { OccurrenceId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
@@ -13,6 +14,7 @@ import {
   formatEditoastIdToExceptionId,
   extractExceptionIdFromOccurrenceId,
   formatTrainScheduleIdToExceptionId,
+  formatTrainScheduleIdToOccurrenceId,
   isTrainIdInTimetable,
 } from '../trainId';
 
@@ -90,6 +92,31 @@ describe('formatTrainScheduleIdToExceptionId', () => {
     const trainScheduleId = 'invalid_trainSchedule_123' as TrainScheduleId;
     expect(() => formatTrainScheduleIdToExceptionId(trainScheduleId, 12345)).toThrow(
       'The train schedule id should start with "trainSchedule_"'
+    );
+  });
+});
+
+describe('formatTrainScheduleIdToOccurrenceId', () => {
+  const trainScheduleId = 'trainSchedule_123' as TrainScheduleId;
+
+  it('should return an indexed occurrence id for an indexed exception, including index 0', () => {
+    const exception = { occurrence_index: 0 } as PacedTrainException;
+    expect(formatTrainScheduleIdToOccurrenceId(trainScheduleId, exception)).toBe(
+      'indexedoccurrence_123_0'
+    );
+  });
+
+  it('should return an indexed occurrence id for a non-zero index', () => {
+    const exception = { occurrence_index: 2 } as PacedTrainException;
+    expect(formatTrainScheduleIdToOccurrenceId(trainScheduleId, exception)).toBe(
+      'indexedoccurrence_123_2'
+    );
+  });
+
+  it('should return an added exception id when occurrence_index is undefined', () => {
+    const exception = { id: 42 } as PacedTrainException;
+    expect(formatTrainScheduleIdToOccurrenceId(trainScheduleId, exception)).toBe(
+      'exception_123_42'
     );
   });
 });
