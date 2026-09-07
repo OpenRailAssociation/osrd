@@ -31,8 +31,8 @@ async function checkI18N(
 
   if (
     !(
-      error.properties &&
-      'enum' in error.properties?.type &&
+      error.properties?.type &&
+      'enum' in error.properties.type &&
       Array.isArray(error.properties.type.enum) &&
       error.properties.type.enum.length !== 0 &&
       typeof error.properties.type.enum[0] === 'string'
