@@ -84,10 +84,10 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
       await timesStopsTablePage.verifyColumnCount(departureRow, EXPECTED_COLUMN_COUNT);
     });
 
-    await test.step('Verify computed arrival cells contain no editable input', async () => {
-      await Promise.all(
-        [departureRow, via1Row].map((row) => timesStopsTablePage.verifyComputedArrivalReadOnly(row))
-      );
+    await test.step('Verify computed arrival cells are read-only', async () => {
+      for (const row of [departureRow, via1Row]) {
+        await timesStopsTablePage.verifyComputedArrivalIsReadOnly(row);
+      }
     });
 
     await test.step('Verify computed departure shows empty-dot marker on rows without a stop', async () => {
@@ -161,14 +161,14 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
     });
 
     await test.step('Verify via 1 row has no status class (no requested arrival)', async () => {
-      await timesStopsTablePage.verifyRowStatus(via1Row, STATUS_CLASSES.NONE);
+      await timesStopsTablePage.verifyRowStatusNeutral(via1Row);
     });
 
     await test.step('Verify via 2 row with requested arrival shows a schedule status', async () =>
       await timesStopsTablePage.verifyRowStatus(via2Row, STATUS_CLASSES.WARNING_MARGIN));
 
     await test.step('Waypoint row (no schedule, no simulation) has neutral status', async () => {
-      await timesStopsTablePage.verifyRowStatus(waypointRow, STATUS_CLASSES.NONE);
+      await timesStopsTablePage.verifyRowStatusNeutral(waypointRow);
     });
 
     await test.step('Destination row has a schedule status (has requested arrival constraint)', async () => {

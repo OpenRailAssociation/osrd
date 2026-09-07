@@ -35,7 +35,6 @@ export const myTrain: TrainSchedule[] = readJsonFile(
 );
 
 export const STATUS_CLASSES = {
-  NONE: '',
   WARNING_MARGIN: 'warning-margin',
   WARNING_SCHEDULE: 'warning-schedule',
   SUCCESS_SCHEDULE: 'success-schedule',

@@ -5,12 +5,13 @@ type TimesStopsTableMargin = {
   difference: string;
 };
 
-type TimesStopsTableRowStatus =
+export type TimesStopsTableStatusClass =
   | 'warning-margin'
   | 'warning-schedule'
   | 'success-schedule'
-  | 'invalid-path-step'
-  | '';
+  | 'invalid-path-step';
+
+type TimesStopsTableRowStatus = TimesStopsTableStatusClass | '';
 
 export type TimesStopsTableRow = {
   index: number;
