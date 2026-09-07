@@ -78,7 +78,6 @@
     "prefer-nullish-coalescing": "off",
     "prefer-readonly-parameter-types": "off",
     "prefer-tag-over-role": "off",
-    "preserve-caught-error": "off",
     "radix": "off",
     "react-in-jsx-scope": "off",
     "require-array-sort-compare": "off",

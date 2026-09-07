@@ -85,7 +85,7 @@ const fetchPathProperties = async (
     };
   } catch (error) {
     console.error('Error fetching path properties:', error);
-    throw new Error('Path properties could not be fetched.');
+    throw new Error('Path properties could not be fetched.', { cause: error });
   }
 };
 
