@@ -276,7 +276,7 @@ const ComboBox = <T,>({
 
   return (
     <div
-      data-testid={testIdPrefix ? `${testIdPrefix}` : undefined}
+      data-testid={testIdPrefix ? testIdPrefix : undefined}
       className="ui-combo-box"
       style={{ '--number-of-suggestions': numberOfSuggestionsToShow } as React.CSSProperties}
       ref={wrapperRef}

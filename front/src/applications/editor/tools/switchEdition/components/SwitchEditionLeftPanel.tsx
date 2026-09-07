@@ -114,7 +114,7 @@ const SwitchEditionLeftPanel = () => {
           if (id && id !== entityToSave.properties.id) {
             const savedEntity = {
               ...entityToSave,
-              properties: { ...entityToSave.properties, id: `${id}` },
+              properties: { ...entityToSave.properties, id },
             };
             setState({
               ...state,

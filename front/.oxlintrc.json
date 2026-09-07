@@ -58,7 +58,6 @@
     "no-throw-literal": "off",
     "no-unassigned-import": "off",
     "no-underscore-dangle": "off",
-    "no-unnecessary-template-expression": "off",
     "no-unnecessary-type-conversion": "off",
     "no-unnecessary-type-parameters": "off",
     "no-unsafe-argument": "off",

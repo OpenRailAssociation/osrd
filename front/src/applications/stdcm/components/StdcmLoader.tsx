@@ -93,7 +93,7 @@ const StdcmLoader = ({
   return (
     <div
       ref={loaderRef}
-      className={cx('stdcm-loader', `${loaderStatus.status}`, {
+      className={cx('stdcm-loader', loaderStatus.status, {
         'with-fade-in-animation':
           loaderStatus.status === 'loader-absolute' && loaderStatus.firstLaunch,
         'with-slide-animation':

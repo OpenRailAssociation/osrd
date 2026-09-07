@@ -134,7 +134,7 @@ const LayersModal = ({
         </div>
         <div className="row">
           {layers.map(({ layer, icon }) => (
-            <div className="col-lg-6" key={`${layer}`}>
+            <div className="col-lg-6" key={layer}>
               <div className="d-flex align-items-center mt-2">
                 <SwitchSNCF
                   id={`map-layer-${layer}`}

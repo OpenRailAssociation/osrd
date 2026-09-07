@@ -33,7 +33,7 @@ export function makeEffortCurve(selectedMode: string): ValueOf<EffortCurveForms>
 export const getDefaultRollingStockMode = (selectedMode: string | null): EffortCurveForms | null =>
   selectedMode
     ? {
-        [`${selectedMode}`]: makeEffortCurve(selectedMode),
+        [selectedMode]: makeEffortCurve(selectedMode),
       }
     : null;
 
