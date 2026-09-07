@@ -68,6 +68,13 @@ const SpeedDistanceDiagramWrapper = ({
       etcs: t('speedDistanceSettings.etcs.title'),
       electricalProfiles: t('speedDistanceSettings.electricalProfiles'),
       powerRestrictions: t('speedDistanceSettings.powerRestrictions'),
+      reticleValues: {
+        incompatible: t('speedDistanceSettings.incompatible'),
+        electric: t('speedDistanceSettings.electric'),
+        accelerating: t('speedDistanceSettings.accelerating'),
+        decelerating: t('speedDistanceSettings.decelerating'),
+        coasting: t('speedDistanceSettings.coasting'),
+      },
     },
     layersDisplay: {
       context: t('speedDistanceSettings.context'),

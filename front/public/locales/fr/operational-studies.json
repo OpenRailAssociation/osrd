@@ -631,7 +631,11 @@
     "simulationSheet": "Fiche de tracé",
     "speedDistanceDiagram": "GEV",
     "speedDistanceSettings": {
+      "accelerating": "En accélération",
+      "coasting": "En roue libre",
       "context": "Contexte",
+      "decelerating": "En décélération",
+      "electric": "Électrique",
       "electricalProfiles": "Profils électrique",
       "energySource": "Source d'énergie",
       "etcs": {
@@ -646,6 +650,7 @@
         "title": "ETCS",
         "transition": "Trans."
       },
+      "incompatible": "Incompatible",
       "invalidSimulation": "Le train sélectionné ne peut pas être simulé",
       "noData": "La donnée est affichée lorsqu'un train est sélectionné",
       "powerRestrictions": "Restrictions de puissance",
