@@ -45,7 +45,6 @@
     "max-lines": "off",
     "no-array-index-key": "off",
     "no-await-in-loop": "off",
-    "no-base-to-string": "off",
     "no-confusing-void-expression": "off",
     "no-else-return": "off",
     "no-floating-promises": "off",

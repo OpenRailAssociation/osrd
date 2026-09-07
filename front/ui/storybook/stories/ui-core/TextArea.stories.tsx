@@ -6,7 +6,7 @@ import { type Meta, type StoryObj, type Decorator } from '@storybook/react-vite'
 import '@osrd-project/ui-core/dist/theme.css';
 
 const withControlledValue: Decorator = (Story, ctx) => {
-  const [value, setValue] = useState<string>(String(ctx.args.value ?? ''));
+  const [value, setValue] = useState<string>(ctx.args.value as string);
   return (
     <Story
       args={{

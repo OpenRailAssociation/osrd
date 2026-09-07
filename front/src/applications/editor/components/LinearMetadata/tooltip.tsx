@@ -9,7 +9,7 @@ type LinearMetadataTooltipProps<T> = {
   schema: JSONSchema7;
 };
 
-export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
+export const LinearMetadataTooltip = <T extends Record<string, string | number>>({
   item,
   point,
   schema,
