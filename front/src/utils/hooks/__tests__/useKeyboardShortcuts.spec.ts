@@ -72,13 +72,12 @@ describe('useKeyboardShortcuts', () => {
   const handlerMock1 = vi.fn();
   const handlerMock2 = vi.fn();
 
-  const { result } = renderHook(() => useKeyboardShortcuts());
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should register a shortcut', () => {
+    const { result } = renderHook(() => useKeyboardShortcuts());
     result.current.register({
       code: 'KeyS',
       optionalKeys: { ctrlKey: true },
@@ -92,6 +91,8 @@ describe('useKeyboardShortcuts', () => {
 
   it('should unregister a shortcut', () => {
     const handlerMock = vi.fn();
+
+    const { result } = renderHook(() => useKeyboardShortcuts());
 
     result.current.register({
       code: 'KeyS',
@@ -115,6 +116,8 @@ describe('useKeyboardShortcuts', () => {
   it('should not register the same shortcut twice', () => {
     const handlerMock = vi.fn();
 
+    const { result } = renderHook(() => useKeyboardShortcuts());
+
     result.current.register({
       code: 'KeyS',
       optionalKeys: { ctrlKey: true },
@@ -133,6 +136,8 @@ describe('useKeyboardShortcuts', () => {
   });
 
   it('should handle multiple shortcuts', () => {
+    const { result } = renderHook(() => useKeyboardShortcuts());
+
     result.current.register({
       code: 'KeyS',
       optionalKeys: { ctrlKey: true },
