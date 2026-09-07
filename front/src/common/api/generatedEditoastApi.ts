@@ -1879,8 +1879,7 @@ export type GetInfraByInfraIdAutoFixesApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
-export type GetInfraByInfraIdBboxApiResponse =
-  /** status 200 The bbox of the infra if it contains tracks */ null | BoundingBox;
+export type GetInfraByInfraIdBboxApiResponse = /** status 200 The bbox of the infra if it contains tracks */ null | BoundingBox;
 export type GetInfraByInfraIdBboxApiArg = {
   /** An existing infra ID */
   infraId: number;
