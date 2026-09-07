@@ -7,7 +7,10 @@ import {
   removeWhitespace,
   stripTimeColons,
 } from '../../utils/data-normalizer';
-import type { TimesStopsTableRow } from '../../utils/times-stops-table-types';
+import type {
+  TimesStopsTableRow,
+  TimesStopsTableStatusClass,
+} from '../../utils/times-stops-table-types';
 import OpSimulationResultPage from './simulation-results-page';
 
 class TimesStopsTablePage extends OpSimulationResultPage {
@@ -204,16 +207,12 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.realMargin(row)).not.toBeAttached();
   }
 
-  async verifyRowStatus(
-    row: Locator,
-    expectedStatus:
-      | 'warning-margin'
-      | 'warning-schedule'
-      | 'success-schedule'
-      | 'invalid-path-step'
-      | ''
-  ): Promise<void> {
+  async verifyRowStatus(row: Locator, expectedStatus: TimesStopsTableStatusClass): Promise<void> {
     await expect(this.stepStatusCell(row)).toContainClass(expectedStatus);
+  }
+
+  async verifyRowStatusNeutral(row: Locator): Promise<void> {
+    await expect(this.stepStatusCell(row)).toHaveClass('');
   }
 
   async verifyRequestedArrivalValue(row: Locator, value: string): Promise<void> {
@@ -342,10 +341,15 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(row.getByRole('cell')).toHaveCount(expectedCount);
   }
 
-  async verifyComputedArrivalReadOnly(row: Locator): Promise<void> {
-    await expect(
-      this.computedArrival(row).getByTestId('computed-arrival-input')
-    ).not.toBeAttached();
+  private async verifyCellIsReadOnly(cell: Locator): Promise<void> {
+    await expect(cell.getByRole('textbox')).toHaveCount(0);
+    await expect(cell.getByRole('combobox')).toHaveCount(0);
+    await cell.click();
+    await expect(cell).not.toBeFocused();
+  }
+
+  async verifyComputedArrivalIsReadOnly(row: Locator): Promise<void> {
+    await this.verifyCellIsReadOnly(this.computedArrival(row));
   }
 
   async verifyComputedDepartureIsEmpty(row: Locator): Promise<void> {
