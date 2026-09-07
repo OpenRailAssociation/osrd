@@ -413,6 +413,7 @@
     },
     "inputOPMainCodesExample": "E.g., LSN CIG CCS",
     "itineraryModal": {
+      "addCustomTrackName": "Add \"{{trackName}}\"",
       "addLocationOnMap": "Add a location on the map",
       "addPoint": "Add point",
       "addPointOnMap": "Add this waypoint using the map",
