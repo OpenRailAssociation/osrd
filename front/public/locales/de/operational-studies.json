@@ -400,6 +400,7 @@
     },
     "inputOPMainCodesExample": "Bsp.: HHA HGÖ FKS",
     "itineraryModal": {
+      "addCustomTrackName": "„{{trackName}}“ hinzufügen",
       "addLocationOnMap": "Betriebsstelle auf der Karte hinzufügen",
       "alertInvalidOP": "Mindestens ein Wegepunkt konnte nicht erkannt werden",
       "cancel": "Abbrechen",
