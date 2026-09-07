@@ -23,7 +23,7 @@ import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { SkeletonLoader } from 'common/Loaders';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { useDateTimeLocale } from 'utils/date';
-import { type Duration, type StartTime, subtractStartTime } from 'utils/duration';
+import { type Duration, type StartTime, startTimeToMs, subtractStartTime } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
@@ -798,34 +798,51 @@ const TimesStopsTable = ({
     ])
   );
 
-  const getRowDayOffset = (row: Row<TimesStopsTableFeatures, TimesStopsRowNew>): number | null => {
-    if (!row.original.pathStepId) return null;
-    const arrival = row.original.computedArrival ?? row.original.requestedArrival;
-    if (!arrival) return null;
-    const diff = subtractStartTime(
-      truncateStartTimeToDay(arrival),
-      truncateStartTimeToDay(startTime)
+  const computeDayOffset = (time: StartTime): number =>
+    Math.round(
+      subtractStartTime(truncateStartTimeToDay(time), truncateStartTimeToDay(startTime)).total(
+        'day'
+      )
     );
-    return diff.total('day');
+
+  const honouredAlong = (rowSequence: Row<TimesStopsTableFeatures, TimesStopsRowNew>[]) => {
+    let honoured = true;
+    return rowSequence.map(({ original: { requestedArrival, computedArrival } }) => {
+      if (requestedArrival && computedArrival) {
+        honoured = startTimeToMs(requestedArrival) === startTimeToMs(computedArrival);
+      }
+      return honoured;
+    });
   };
 
   const tableRows = table.getRowModel().rows;
 
   /**
    * For each row, compute the effective day offset relative to the train start time.
-   * Non-path-step rows (e.g. via points without times) inherit the previous row's offset
-   * so that day-change banners are only shown when the day actually changes.
+   * Times are read from the simulation between two honoured requested times.
+   * It is ignored otherwise.
+   * The floor is the day the train leaves the previous row on,
+   * so a row with no time inherits it and a stop crossing midnight moves what follows.
    */
-  const effectiveDayOffsets = tableRows.reduce<number[]>((acc, row, i) => {
-    const rawOffset = getRowDayOffset(row);
-    if (rawOffset !== null) {
-      acc.push(rawOffset);
-    } else {
-      const prevOffset = i > 0 ? acc[i - 1] : 0;
-      acc.push(prevOffset);
-    }
-    return acc;
-  }, []);
+  const honouredBefore = honouredAlong(tableRows);
+  const honouredAfter = honouredAlong(tableRows.toReversed()).reverse();
+  const readsSimulation = honouredBefore.map((before, i) => before && honouredAfter[i]);
+  const effectiveDayOffsets: number[] = [];
+  let floor = 0;
+
+  for (const [index, { original }] of tableRows.entries()) {
+    const { requestedArrival, computedArrival, requestedDeparture, computedDeparture } = original;
+    const arrival = readsSimulation[index]
+      ? (computedArrival ?? requestedArrival)
+      : requestedArrival;
+    const departure = readsSimulation[index]
+      ? (computedDeparture ?? requestedDeparture)
+      : requestedDeparture;
+
+    const offset = arrival ? Math.max(computeDayOffset(arrival), floor) : floor;
+    effectiveDayOffsets.push(offset);
+    floor = departure ? Math.max(offset, computeDayOffset(departure)) : offset;
+  }
 
   const virtualizedWrapperRef = React.useRef<HTMLDivElement>(null);
 
@@ -909,7 +926,6 @@ const TimesStopsTable = ({
             const rowIndex = virtualRow.index;
             const row = tableRows[rowIndex];
 
-            const rowArrivalDate = row.original.computedArrival ?? row.original.requestedArrival;
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
@@ -925,8 +941,13 @@ const TimesStopsTable = ({
 
             let dayChangeLabel = null;
             if (hasDayChanged) {
-              if (rowArrivalDate instanceof Date) {
-                dayChangeLabel = rowArrivalDate.toLocaleDateString(dateTimeLocale, {
+              // Derived from the computed offset, not from the row time, which the offset may have outrun.
+              if (startTime instanceof Date) {
+                dayChangeLabel = new Date(
+                  startTime.getFullYear(),
+                  startTime.getMonth(),
+                  startTime.getDate() + dayOffset
+                ).toLocaleDateString(dateTimeLocale, {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
