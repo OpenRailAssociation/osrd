@@ -291,6 +291,15 @@ const useTimesStopsTableData = (
         const hasRequestedTrack =
           pathStepLocation.type === 'track_offset' || !!pathStepLocation.local_track_name;
 
+        // Custom track name added by the user.
+        const isRequestedTrackUnknown =
+          pathStepLocation.type === 'operational_point_part_reference' &&
+          !!pathStepLocation.local_track_name &&
+          !!pathStepOp &&
+          !pathStepOp.parts.some(
+            (part) => part.local_track_name === pathStepLocation.local_track_name
+          );
+
         const schedule = { ...scheduleByAt[pathStep.id] };
         if (stepIndex === 0) schedule.arrival = 'PT0S'; // The first step has no stored scheduled arrival as redundant with start date
         const computedArrival =
@@ -332,7 +341,8 @@ const useTimesStopsTableData = (
           schedule,
           computedArrival,
           invalidPathStep:
-            !matchingOp && pathStepLocation.type === 'operational_point_part_reference',
+            (!matchingOp && pathStepLocation.type === 'operational_point_part_reference') ||
+            isRequestedTrackUnknown,
           scheduleNotHonored,
           marginNotHonored,
           powerRestriction,
