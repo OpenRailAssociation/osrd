@@ -1,7 +1,11 @@
 import {
   COMPUTED_THEORETICAL_MARGIN_DEPARTURE,
+  DAY_CHANGE_LABEL,
   EXPECTED_COLUMN_COUNT,
+  EXPECTED_POWER_RESTRICTION_OPTIONS,
   EXPECTED_ROW_COUNT,
+  MARGINS_DIFFERENCE_DEPARTURE,
+  MARGINS_DIFFERENCE_VIA_B,
   POWER_RESTRICTION_C1,
   REAL_MARGIN_DEPARTURE,
   REQUESTED_MARGIN_DEPARTURE,
@@ -16,6 +20,7 @@ import {
   STOP_DURATION_NONE,
   STOP_DURATION_VIA_A,
   STOP_DURATION_VIA_B,
+  TRACK_NAME_ORIGIN,
   myTrain,
 } from '../../assets/operation-studies/simulation-result/times-stops-table-const';
 import test from '../../page-object-fixture';
@@ -43,6 +48,7 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
     await test.step(`Verify ${EXPECTED_ROW_COUNT} data rows and at least one date-separator row`, async () => {
       await timesStopsTablePage.verifyDataRowCount(EXPECTED_ROW_COUNT);
       await timesStopsTablePage.verifyDateSeparatorVisible();
+      await timesStopsTablePage.verifyDateSeparatorText(DAY_CHANGE_LABEL);
     });
 
     await test.step('Verify non-empty station names on all rows', async () => {
@@ -84,10 +90,11 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
       await timesStopsTablePage.verifyColumnCount(departureRow, EXPECTED_COLUMN_COUNT);
     });
 
-    await test.step('Verify computed arrival cells are read-only', async () => {
+    await test.step('Verify computed cells are read-only', async () => {
       for (const row of [departureRow, via1Row]) {
         await timesStopsTablePage.verifyComputedArrivalIsReadOnly(row);
       }
+      await timesStopsTablePage.verifyComputedDepartureIsReadOnly(via2Row);
     });
 
     await test.step('Verify computed departure shows empty-dot marker on rows without a stop', async () => {
@@ -98,6 +105,15 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
     await test.step('Verify op-name dot visible on explicit path-step rows, absent on intermediate waypoint', async () => {
       await timesStopsTablePage.verifyOpNameDotVisible(departureRow);
       await timesStopsTablePage.verifyOpNameDotAbsent(waypointRow);
+    });
+
+    await test.step('Verify track dot only on path-step rows whose track was requested', async () => {
+      await timesStopsTablePage.verifyTrackNameDotVisible(departureRow);
+      await timesStopsTablePage.verifyTrackNameDotVisible(via1Row);
+      await timesStopsTablePage.verifyTrackName(departureRow, TRACK_NAME_ORIGIN);
+      await timesStopsTablePage.verifyTrackNameDotAbsent(via2Row);
+      await timesStopsTablePage.verifyTrackNameDotAbsent(destRow);
+      await timesStopsTablePage.verifyTrackNameDotAbsent(waypointRow);
     });
   });
 
@@ -138,8 +154,19 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
       );
     });
 
-    await test.step('Verify margins-difference column is rendered on departure row', async () => {
-      await timesStopsTablePage.verifyMarginsDifferencePresent(departureRow);
+    await test.step('Verify the power restriction selector offers the rolling stock codes plus the empty set symbol', async () => {
+      await timesStopsTablePage.verifyPowerRestrictionOptions(
+        via1Row,
+        EXPECTED_POWER_RESTRICTION_OPTIONS
+      );
+    });
+
+    await test.step(`Verify margins difference shows ${MARGINS_DIFFERENCE_DEPARTURE} on the departure row and ${MARGINS_DIFFERENCE_VIA_B} on via 2`, async () => {
+      await timesStopsTablePage.verifyMarginsDifferenceText(
+        departureRow,
+        MARGINS_DIFFERENCE_DEPARTURE
+      );
+      await timesStopsTablePage.verifyMarginsDifferenceText(via2Row, MARGINS_DIFFERENCE_VIA_B);
     });
 
     await test.step('Verify computed theoretical margin and real margin present on via 2 row (has requested arrival)', async () => {
@@ -149,6 +176,30 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
   });
 
   /** *************** Test 3 **************** */
+  test('Empty editable cells show the + placeholder', async ({ timesStopsTablePage }) => {
+    const departureRow = timesStopsTablePage.getRow(ROW_INDEX_ORIGIN);
+    const via1Row = timesStopsTablePage.getRow(ROW_INDEX_VIA_A);
+    const via2Row = timesStopsTablePage.getRow(ROW_INDEX_VIA_B);
+    const waypointRow = timesStopsTablePage.getRow(ROW_INDEX_WAYPOINT);
+
+    await test.step('Empty requested arrival and departure show +', async () => {
+      await timesStopsTablePage.verifyArrivalPlaceholderVisible(via1Row);
+      await timesStopsTablePage.verifyDeparturePlaceholderVisible(via1Row);
+    });
+
+    await test.step('Empty stop duration shows +', async () => {
+      await timesStopsTablePage.verifyDurationPlaceholderVisible(waypointRow);
+      await timesStopsTablePage.verifyDurationPlaceholderVisible(departureRow);
+    });
+
+    await test.step('Filled cells show no +', async () => {
+      await timesStopsTablePage.verifyArrivalPlaceholderHidden(via2Row);
+      await timesStopsTablePage.verifyDeparturePlaceholderHidden(via2Row);
+      await timesStopsTablePage.verifyDurationPlaceholderHidden(via2Row);
+    });
+  });
+
+  /** *************** Test 4 **************** */
   test('Row status indicators', async ({ timesStopsTablePage }) => {
     const departureRow = timesStopsTablePage.getRow(ROW_INDEX_ORIGIN);
     const via1Row = timesStopsTablePage.getRow(ROW_INDEX_VIA_A);

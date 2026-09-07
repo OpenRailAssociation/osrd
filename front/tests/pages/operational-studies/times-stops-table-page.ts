@@ -117,6 +117,24 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     return row.getByTestId('op-name-dot');
   }
 
+  private trackNameDot(row: Locator): Locator {
+    return row.getByTestId('track-name-dot');
+  }
+
+  private timeCellPlaceholder(
+    row: Locator,
+    field: 'requested-arrival' | 'requested-departure'
+  ): Locator {
+    return row
+      .getByRole('cell')
+      .filter({ has: this.page.getByTestId(field) })
+      .getByTestId('input-cell-placeholder');
+  }
+
+  private durationCellPlaceholder(row: Locator): Locator {
+    return this.durationCell(row).getByTestId('input-cell-placeholder');
+  }
+
   private marginUnitBtnPercent(row: Locator): Locator {
     return this.requestedTheoreticalMargin(row).getByTestId('margin-unit-btn-percent');
   }
@@ -176,6 +194,15 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.powerRestrictionCombobox(row).getByTestId(testId)).toHaveCount(count);
   }
 
+  async verifyPowerRestrictionOptions(row: Locator, expectedValues: string[]): Promise<void> {
+    await expect(this.powerRestrictionCombobox(row).getByRole('option')).toHaveCount(
+      expectedValues.length
+    );
+    for (const value of expectedValues) {
+      await this.verifyPowerRestrictionHasOption(row, value, 1);
+    }
+  }
+
   async verifyRequestedTheoreticalMarginText(row: Locator, marginText: string): Promise<void> {
     await expect(this.requestedTheoreticalMargin(row)).toHaveText(marginText);
     if (marginText === '') {
@@ -229,6 +256,10 @@ class TimesStopsTablePage extends OpSimulationResultPage {
 
   async verifyDateSeparatorVisible(): Promise<void> {
     await expect(this.dateSeparatorRows).toBeVisible();
+  }
+
+  async verifyDateSeparatorText(expectedDate: string): Promise<void> {
+    await expect(this.dateSeparatorRows.first()).toContainText(expectedDate);
   }
 
   async verifyComputedArrivalChanged(row: Locator, previousText: string): Promise<void> {
@@ -352,6 +383,10 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await this.verifyCellIsReadOnly(this.computedArrival(row));
   }
 
+  async verifyComputedDepartureIsReadOnly(row: Locator): Promise<void> {
+    await this.verifyCellIsReadOnly(this.computedDeparture(row));
+  }
+
   async verifyComputedDepartureIsEmpty(row: Locator): Promise<void> {
     await expect(this.computedDeparture(row)).toHaveClass(/cell-empty-dot/);
   }
@@ -364,8 +399,44 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await expect(this.opNameDot(row)).not.toBeAttached();
   }
 
-  async verifyMarginsDifferencePresent(row: Locator): Promise<void> {
-    await expect(this.marginsDifference(row)).toBeVisible();
+  async verifyTrackNameDotVisible(row: Locator): Promise<void> {
+    await expect(this.trackNameDot(row)).toBeVisible();
+  }
+
+  async verifyTrackNameDotAbsent(row: Locator): Promise<void> {
+    await expect(this.trackNameDot(row)).not.toBeAttached();
+  }
+
+  async verifyTrackName(row: Locator, expectedName: string): Promise<void> {
+    await expect(this.trackName(row)).toHaveText(expectedName);
+  }
+
+  async verifyArrivalPlaceholderVisible(row: Locator): Promise<void> {
+    await expect(this.timeCellPlaceholder(row, 'requested-arrival')).toBeVisible();
+  }
+
+  async verifyArrivalPlaceholderHidden(row: Locator): Promise<void> {
+    await expect(this.timeCellPlaceholder(row, 'requested-arrival')).toBeHidden();
+  }
+
+  async verifyDeparturePlaceholderVisible(row: Locator): Promise<void> {
+    await expect(this.timeCellPlaceholder(row, 'requested-departure')).toBeVisible();
+  }
+
+  async verifyDeparturePlaceholderHidden(row: Locator): Promise<void> {
+    await expect(this.timeCellPlaceholder(row, 'requested-departure')).toBeHidden();
+  }
+
+  async verifyDurationPlaceholderVisible(row: Locator): Promise<void> {
+    await expect(this.durationCellPlaceholder(row)).toBeVisible();
+  }
+
+  async verifyDurationPlaceholderHidden(row: Locator): Promise<void> {
+    await expect(this.durationCellPlaceholder(row)).toBeHidden();
+  }
+
+  async verifyMarginsDifferenceText(row: Locator, text: string): Promise<void> {
+    await expect(this.marginsDifference(row)).toHaveText(text);
   }
 
   async verifyComputedTheoreticalMarginPresent(row: Locator): Promise<void> {
