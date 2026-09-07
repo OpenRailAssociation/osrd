@@ -4584,7 +4584,7 @@ export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
   /** Time in ms at which the train *arrives* at each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+    The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
     
     In case multiple path items are at the same position, the stop duration
     of the earlier ones are added to the path item time of the next. For
@@ -4593,10 +4593,14 @@ export type CoreReportTrain = {
     of A plus 2s. */
   path_item_times: number[];
   /** List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length */
+    Both positions (in mm) and times (in ms) must have the same length
+    The length of positions and times is arbitrary and comes from a curve simplification
+    made in core */
   positions: number[];
   /** List of speeds associated to a position */
   speeds: number[];
+  /** List of times of a train
+    The first value is always `0` and the last one is always the total duration of the simulation. */
   times: number[];
 };
 export type CoreRoutingZoneRequirement = {
