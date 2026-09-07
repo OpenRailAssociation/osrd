@@ -16,12 +16,15 @@ export const STOP_DURATION_VIA_B = '00h10m00s';
 export const STOP_DURATION_NONE = '00h00m00s';
 export const REQUESTED_ARRIVAL_VIA_B = '00:03:54';
 export const REQUESTED_DEPARTURE_VIA_B = '00:13:54';
+export const DAY_CHANGE_LABEL = '28 mai 2026';
 
 export const EMPTY_TIME_PLACEHOLDER = 'hh:mm:ss';
 export const EDIT_ARRIVAL_VIA_A = '21:30:00';
 export const EDIT_DEPARTURE_VIA_B = '00:15:00';
 export const COMPUTED_THEORETICAL_MARGIN_DEPARTURE = '00m19s';
 export const REAL_MARGIN_DEPARTURE = '158m07s';
+export const MARGINS_DIFFERENCE_DEPARTURE = '+157m48s';
+export const MARGINS_DIFFERENCE_VIA_B = '-00m07s';
 
 export const STOP_DURATION_EDIT_DIGITS = '0500';
 export const STOP_DURATION_EDIT_DISPLAY = '00h05m00s';
@@ -29,6 +32,15 @@ export const MARGIN_EDIT_VALUE = '5';
 export const MARGIN_EDIT_DISPLAY = '5%';
 export const NO_POWER_RESTRICTION_VALUE = 'NO_POWER_RESTRICTION';
 export const POWER_RESTRICTION_C1 = 'C1';
+const POWER_RESTRICTION_C2 = 'C2';
+export const TRACK_NAME_ORIGIN = 'V1';
+
+export const EXPECTED_POWER_RESTRICTION_OPTIONS = [
+  '',
+  NO_POWER_RESTRICTION_VALUE,
+  POWER_RESTRICTION_C1,
+  POWER_RESTRICTION_C2,
+];
 
 export const myTrain: TrainSchedule[] = readJsonFile(
   './tests/assets/operation-studies/simulation-result/train.json'
