@@ -51,7 +51,7 @@ export const getOpKey = (location: PathItemLocation | null): string | null => {
   if (!location || location.type === 'track_offset') return null;
   const op = location.operational_point;
   if (op.type === 'domestic') return `${op.country_code} ${op.main_code} ${op.secondary_code}`;
-  if (op.type === 'id') return `${op.operational_point}`;
+  if (op.type === 'id') return op.operational_point;
   if (op.type === 'uic') return `${op.uic} ${op.secondary_code}`;
   return null;
 };

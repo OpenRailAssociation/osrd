@@ -166,7 +166,7 @@ const IncompatibleConstraints = ({
             type: key as IncompatibleConstraintType,
             start: e.range.start * ratio,
             end: e.range.end * ratio,
-            value: 'value' in e ? `${e.value}` : undefined,
+            value: 'value' in e ? e.value : undefined,
             bbox: bbox(
               lineSliceAlong(geometry as LineString, e.range.start * ratio, e.range.end * ratio, {
                 units: 'millimeters',

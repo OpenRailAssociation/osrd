@@ -137,7 +137,7 @@ const UniqueTrainItem = ({
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
-          text: `${trainName}`,
+          text: trainName,
         })
       );
     } catch (e) {

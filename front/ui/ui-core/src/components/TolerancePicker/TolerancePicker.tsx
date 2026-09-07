@@ -64,7 +64,7 @@ const TolerancePicker = ({
   }, [formatToleranceValue, minusTolerance, plusTolerance, translateWarningMessage]);
 
   return (
-    <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="ui-tolerance-picker">
+    <div data-testid={testIdPrefix ? testIdPrefix : undefined} className="ui-tolerance-picker">
       <div>
         <Input
           testIdPrefix={testIdPrefix}

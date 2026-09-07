@@ -66,7 +66,7 @@ export default function useSearchOperationalPoint({
         object: 'operationalpoint',
         query: [
           'and',
-          ['=', ['main_code'], `${searchQuery}`],
+          ['=', ['main_code'], searchQuery],
           ['=', ['infra_id'], infraId],
           stdcmPerimeterOperationalpointsFilter,
         ],

@@ -44,7 +44,7 @@ const RequestedTimeColumnHeader = ({
 
   const items: OSRDMenuItem[] = [
     {
-      title: `${t(`columnHeader.${field}.overwriteAll`, { count: overwriteRequestTimesCount })}`,
+      title: t(`columnHeader.${field}.overwriteAll`, { count: overwriteRequestTimesCount }),
       icon: <ArrowLeft />,
       onClick: () => {
         setOpen(false);
@@ -62,7 +62,7 @@ const RequestedTimeColumnHeader = ({
 
   if (fillRequestTimesCount !== 0 && fillRequestTimesCount !== overwriteRequestTimesCount) {
     items.push({
-      title: `${t(`columnHeader.${field}.fillEmpty`, { count: fillRequestTimesCount })}`,
+      title: t(`columnHeader.${field}.fillEmpty`, { count: fillRequestTimesCount }),
       icon: <ArrowLeft />,
       onClick: () => {
         setOpen(false);

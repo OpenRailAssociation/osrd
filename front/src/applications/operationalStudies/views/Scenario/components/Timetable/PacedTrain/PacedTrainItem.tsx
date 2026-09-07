@@ -295,7 +295,7 @@ const PacedTrainItem = ({
     dispatch(
       setSuccess({
         title: t('timetable.pacedTrainAdded'),
-        text: `${pacedTrainName}`,
+        text: pacedTrainName,
       })
     );
   };
