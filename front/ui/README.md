@@ -36,7 +36,9 @@ To execute the test suite, run `npm run test`.
 4. In "Release title", type "osrd-ui vX.Y.Z".
 5. Trim down the release notes by filtering out OSRD PRs, only keeping ui-\* material. Organize the
    changelog by package and highlight breaking API changes.
-6. Untick "Set as latest release".
+   * Save the release note into a file then you can do `cat /tmp/changelog.txt | grep "\bui\b"`
+   * Manually check if every changes are ui related
+6. Select release label "None".
 7. Publish the release.
 
 ### Implications
