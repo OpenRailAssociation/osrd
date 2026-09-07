@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator } from '@playwright/test';
 
 import {
   expectFieldsToHaveValues,
@@ -9,10 +9,6 @@ import type { ConsistChangeFields } from '../../utils/stdcm-types';
 import ViaSection from './via-section';
 
 class ConsistChangeSection extends ViaSection {
-  constructor(page: Page) {
-    super(page);
-  }
-
   private getEditConsistButton(viaNumber: number): Locator {
     return this.getViaCard(viaNumber).getByTestId('edit-consist');
   }
