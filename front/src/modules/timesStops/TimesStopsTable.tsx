@@ -446,9 +446,7 @@ const TimesStopsTable = ({
     />
   );
 
-  const returnStepStatusCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, unknown>
-  ) => {
+  const returnStepStatusCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew>) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <span data-testid="step-status">&nbsp;</span>;
     }
@@ -498,7 +496,7 @@ const TimesStopsTable = ({
   };
 
   const returnOPOnPathIndexCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, unknown>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew>
   ) => <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>;
 
   const returnTrackNameCell = (

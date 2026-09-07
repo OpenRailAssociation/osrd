@@ -81,7 +81,7 @@ export function calculateStepTimeAndDays(
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
-  t: TFunction<'translation', undefined>,
+  t: TFunction,
   startTime?: Date,
   tableType?: TableType
 ): TimesStopsInputRow[] => {
