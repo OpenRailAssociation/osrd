@@ -57,6 +57,9 @@ type UpdateTrainScheduleParams = {
   occurrenceId?: OccurrenceId;
   addedExceptions: { startTime: StartTime }[];
   deletedAddedExceptionId?: number;
+  /** Exceptions to use as-is instead of the saved ones, when some of them were already
+   * changed (e.g. moved to a new track) before calling this function. */
+  originalExceptionsOverride?: PacedTrainException[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   dispatch: AppDispatch;
 };
@@ -78,6 +81,7 @@ export async function updateTrainSchedule({
   occurrenceId,
   addedExceptions,
   deletedAddedExceptionId,
+  originalExceptionsOverride,
   upsertTrainSchedules,
   dispatch,
 }: UpdateTrainScheduleParams): Promise<UpdateTrainScheduleResult> {
@@ -236,6 +240,7 @@ export async function updateTrainSchedule({
   } = checkChangeGroups(
     updatedTrainSchedule,
     updatedTrainSchedule.paced,
+    intervalChanged ? [] : (originalExceptionsOverride ?? originalPacedExceptions),
     intervalChanged ? [] : originalPacedExceptions
   );
 
