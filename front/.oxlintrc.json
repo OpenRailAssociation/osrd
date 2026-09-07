@@ -71,7 +71,6 @@
     "no-unsafe-assignment": "off",
     "no-unsafe-enum-comparison": "off",
     "no-unsafe-member-access": "off",
-    "no-unsafe-optional-chaining": "off",
     "no-unsafe-type-assertion": "off",
     "no-useless-constructor": "off",
     "no-useless-default-assignment": "off",
