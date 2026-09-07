@@ -1,6 +1,8 @@
 use authz::v2;
+use models::TrainScheduleLinking;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use authz::RollingStockPrivilege;
 use axum::Extension;
@@ -375,12 +377,13 @@ pub(in crate::views) async fn conflicts(
     let train_schedules_with_exceptions = match authn_state.user() {
         None => train_schedules_with_exceptions,
         Some(user) => {
-            let rolling_stock_names: HashSet<_> = train_schedules_with_exceptions
+            let rolling_stock_names: HashSet<String> = train_schedules_with_exceptions
                 .iter()
                 .flat_map(|(train_schedule, exceptions)| {
-                    std::iter::once(train_schedule.rolling_stock_name.clone())
-                        .chain(exceptions.iter().filter_map(exception_rolling_stock_name))
+                    std::iter::once(train_schedule.rolling_stock_name.as_str())
+                        .chain(exceptions.iter().filter_map(|e| e.rolling_stock_name()))
                 })
+                .map(str::to_owned)
                 .collect();
             let rolling_stocks: Vec<_> = models::RollingStock::retrieve_batch_unchecked::<
                 HashSet<String>,
@@ -415,11 +418,9 @@ pub(in crate::views) async fn conflicts(
                     let exceptions = exceptions
                         .into_iter()
                         .filter(|exception| {
-                            exception_rolling_stock_name(exception).is_none_or(
-                                |rolling_stock_name| {
-                                    authorized_rolling_stock_names.contains(&rolling_stock_name)
-                                },
-                            )
+                            exception
+                                .rolling_stock_name()
+                                .is_none_or(|name| authorized_rolling_stock_names.contains(name))
                         })
                         .collect();
                     (train_schedule, exceptions)
@@ -554,71 +555,6 @@ pub(in crate::views) async fn conflicts(
         .map(|response| Conflict::from_core_response(response, &trains_ids_map))
         .collect();
     Ok(Json(conflicts_response?))
-}
-
-/// Take a collection of train schedules and their associated exceptions and filter out those with
-/// an unauthorized rolling stock. When a train schedule is filtered out all its exceptions are
-/// skipped aswell, but when an exception is filtered its associated train schedule is kept if its
-/// rolling stock is authorized given the provided authentication state.
-pub async fn filter_unauthorized_train_schedules_and_exceptions(
-    openfga: &fga::Client,
-    conn: DbConnection,
-    authn_state: crate::authentication::State,
-    train_schedules_with_exceptions: Vec<(
-        models::TrainSchedule,
-        Vec<schemas::TrainScheduleException>,
-    )>,
-) -> crate::error::Result<Vec<(models::TrainSchedule, Vec<schemas::TrainScheduleException>)>> {
-    let Some(user) = authn_state.user() else {
-        return Ok(train_schedules_with_exceptions);
-    };
-    let system_authorizer = SystemAuthorizer::new_infallible(openfga);
-    let Ok(authorized_train_schedules) =
-        authz::v2::rolling_stock_list(user, RollingStockPrivilege::CanRestrictedRead)
-            .authorize(&system_authorizer)
-            .await?
-            .access()
-            .await?;
-    match authorized_train_schedules {
-        authz::v2::ResourcesList::All => Ok(train_schedules_with_exceptions),
-        authz::v2::ResourcesList::Privileged(authorized_rs_list) => {
-            let authorized_rolling_stocks: Vec<models::RollingStock> =
-                models::RollingStock::retrieve_batch_unchecked(
-                    &mut conn.clone(),
-                    authorized_rs_list.iter().map(|rs| rs.0),
-                )
-                .await?;
-            let authorized_rolling_stock_names: Vec<String> = authorized_rolling_stocks
-                .into_iter()
-                .map(|rolling_stock| rolling_stock.name)
-                .collect();
-
-            Ok(train_schedules_with_exceptions
-                .into_iter()
-                .filter(|(train_schedule, _)| {
-                    authorized_rolling_stock_names.contains(&train_schedule.rolling_stock_name)
-                })
-                .map(|(train_schedule, exceptions)| {
-                    (
-                        train_schedule,
-                        exceptions
-                            .into_iter()
-                            .filter(|exception| {
-                                if let Some(RollingStockChangeGroup {
-                                    rolling_stock_name, ..
-                                }) = &exception.change_groups.rolling_stock
-                                {
-                                    authorized_rolling_stock_names.contains(rolling_stock_name)
-                                } else {
-                                    true
-                                }
-                            })
-                            .collect(),
-                    )
-                })
-                .collect_vec())
-        }
-    }
 }
 
 async fn get_linkings_from_train_schedules(
@@ -841,6 +777,9 @@ mod tests {
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
@@ -1250,6 +1189,8 @@ mod tests {
         #[case] target_initial_speed: f64,
         #[case] is_valid: bool,
     ) {
+        use core_client::pathfinding::TrackRange;
+
         let mut source_occurrence = TrainOccurrence {
             start_time: millisecond::i64::new(5000),
             ..TrainOccurrence::fake()
@@ -1260,9 +1201,13 @@ mod tests {
             .last_mut()
             .expect("Schedule cannot be empty");
         if source_arrival_is_stop {
+            use schemas::train_schedule::ReceptionSignal;
+
             source_arrival_schedule_item.stop_for = Some(Default::default());
             source_arrival_schedule_item.reception_signal = ReceptionSignal::Stop;
         } else {
+            use schemas::train_schedule::ReceptionSignal;
+
             source_arrival_schedule_item.stop_for = None;
             source_arrival_schedule_item.reception_signal = ReceptionSignal::Open;
         }
