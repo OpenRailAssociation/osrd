@@ -46,7 +46,6 @@
     "no-array-index-key": "off",
     "no-await-in-loop": "off",
     "no-base-to-string": "off",
-    "no-confusing-non-null-assertion": "off",
     "no-confusing-void-expression": "off",
     "no-duplicate-type-constituents": "off",
     "no-else-return": "off",
