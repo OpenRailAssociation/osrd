@@ -176,7 +176,7 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
   });
 
   /** *************** Test 3 **************** */
-  test('Empty editable cells show the + placeholder', async ({ timesStopsTablePage }) => {
+  test('+ placeholder visibility in editable cells', async ({ timesStopsTablePage }) => {
     const departureRow = timesStopsTablePage.getRow(ROW_INDEX_ORIGIN);
     const via1Row = timesStopsTablePage.getRow(ROW_INDEX_VIA_A);
     const via2Row = timesStopsTablePage.getRow(ROW_INDEX_VIA_B);
