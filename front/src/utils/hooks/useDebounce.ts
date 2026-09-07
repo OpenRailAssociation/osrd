@@ -19,7 +19,7 @@ export const useDebounce = <T = string | number>(value: T, delay: number): T => 
 /**
  * Debounce function
  */
-export const useDebouncedFunc = <T = (number | null) | (string | null)>(
+export const useDebouncedFunc = <T = number | string | null>(
   value: T,
   delay: number,
   func: (newValue: T) => void
