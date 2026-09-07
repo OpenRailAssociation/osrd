@@ -62,7 +62,7 @@ const InfraSelectorModalBodyEdition = ({
   const handleSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const status = await validateFile(event.target.files[0]);
-      if (status === true) {
+      if (status) {
         setErrorMessage(undefined);
         setSelectedFile(event.target.files[0]);
       }

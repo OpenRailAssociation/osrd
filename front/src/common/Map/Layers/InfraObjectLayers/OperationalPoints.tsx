@@ -58,7 +58,7 @@ function getFilterHighlighted(
     ];
   else if (data.highlightedArea) result = ['within', data.highlightedArea];
 
-  if (reverseCondition === true) {
+  if (reverseCondition) {
     return ['!=', result, true];
   }
   return result;
