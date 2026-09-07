@@ -132,12 +132,12 @@ const clampTimeState = (state: TimeState): TimeState => {
       case 0:
         return '00';
       case 1:
-        if (parseInt(digits) * 10 > Math.floor(max)) {
+        if (parseInt(digits, 10) * 10 > Math.floor(max)) {
           return digits.padStart(2, '0');
         }
         return digits.padEnd(2, '0');
       case 2:
-        if (parseInt(digits) > max) {
+        if (parseInt(digits, 10) > max) {
           return max.toString().padStart(2, '0');
         }
         return digits;
@@ -231,7 +231,7 @@ const computeDigitState = (state: TimeState, digit: string): TimeState => {
     focusedSection === 'minutes' &&
     hasNoDigits(state.hours) &&
     hasNoDigits(state.minutes) &&
-    parseInt(digit) > 2
+    parseInt(digit, 10) > 2
   ) {
     return {
       ...state,

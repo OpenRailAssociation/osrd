@@ -75,7 +75,6 @@
     "prefer-nullish-coalescing": "off",
     "prefer-readonly-parameter-types": "off",
     "prefer-tag-over-role": "off",
-    "radix": "off",
     "react-in-jsx-scope": "off",
     "require-mock-type-parameters": "off",
     "require-unicode-regexp": "off",

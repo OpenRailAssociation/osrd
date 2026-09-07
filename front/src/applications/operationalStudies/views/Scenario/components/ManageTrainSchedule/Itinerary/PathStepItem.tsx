@@ -182,7 +182,7 @@ const PathStepItem = ({
       .sort((a, b) => {
         const aIsNum = !isNaN(Number(a));
         const bIsNum = !isNaN(Number(b));
-        if (aIsNum && bIsNum) return parseInt(a) - parseInt(b);
+        if (aIsNum && bIsNum) return parseInt(a, 10) - parseInt(b, 10);
         if (aIsNum) return -1;
         if (bIsNum) return 1;
         return a.localeCompare(b);
