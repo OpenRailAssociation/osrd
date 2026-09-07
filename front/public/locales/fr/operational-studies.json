@@ -413,6 +413,7 @@
     },
     "inputOPMainCodesExample": "Ex : LSN CIG CCS",
     "itineraryModal": {
+      "addCustomTrackName": "Ajouter « {{trackName}} »",
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
       "addPoint": "Ajouter",
       "addPointOnMap": "Ajoutez ce point en utilisant la carte",
