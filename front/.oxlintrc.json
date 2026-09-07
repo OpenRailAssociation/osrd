@@ -47,7 +47,6 @@
     "no-await-in-loop": "off",
     "no-base-to-string": "off",
     "no-confusing-void-expression": "off",
-    "no-duplicate-type-constituents": "off",
     "no-else-return": "off",
     "no-floating-promises": "off",
     "no-inline-comments": "off",
