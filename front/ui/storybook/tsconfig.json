@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "../",
     "outDir": "./dist",
-    "declarationDir": "./dist"
+    "declarationDir": "./dist",
+    "types": ["vite/client"]
   }
 }
