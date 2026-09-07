@@ -118,12 +118,16 @@ const TimePicker = ({
       if (!displaySeconds) {
         const [h, m] = value.split(':');
         if (h !== undefined && m !== undefined) {
-          onTimeChange({ hours: parseInt(h), minutes: parseInt(m) });
+          onTimeChange({ hours: parseInt(h, 10), minutes: parseInt(m, 10) });
         }
       } else {
         const [h, m, s] = value.split(':');
         if (h !== undefined && m !== undefined && s !== undefined) {
-          onTimeChange({ hours: parseInt(h), minutes: parseInt(m), seconds: parseInt(s) });
+          onTimeChange({
+            hours: parseInt(h, 10),
+            minutes: parseInt(m, 10),
+            seconds: parseInt(s, 10),
+          });
         }
       }
     },

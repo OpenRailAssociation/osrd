@@ -455,7 +455,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     ]);
 
     return {
-      index: parseInt(indexText ?? '0'),
+      index: parseInt(indexText ?? '0', 10),
       status: cleanWhitespace(statusClass) as TimesStopsTableRow['status'],
       stationName: cleanWhitespace(stationName),
       stationCh: cleanWhitespace(stationCh),
