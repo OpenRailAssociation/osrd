@@ -204,7 +204,7 @@ const useFilterRollingStock = ({
     isStdcm,
     allRollingStocks
       .map((rs) => rs.id)
-      .sort()
+      .sort((a, b) => a - b)
       .join('|'),
   ]);
 

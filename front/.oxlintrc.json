@@ -79,7 +79,6 @@
     "prefer-tag-over-role": "off",
     "radix": "off",
     "react-in-jsx-scope": "off",
-    "require-array-sort-compare": "off",
     "require-mock-type-parameters": "off",
     "require-unicode-regexp": "off",
     "restrict-template-expressions": "off",

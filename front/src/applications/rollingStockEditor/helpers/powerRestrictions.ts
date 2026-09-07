@@ -38,6 +38,8 @@ export const getElectricalProfilesAndPowerRestrictions = (
 export const orderSelectorList = (list: (string | null)[]) => {
   const index = list.includes('O') ? 2 : 1;
   return isNull(list[0]) || list[0] === 'O'
-    ? list.slice(0, index).concat(list.slice(index).sort())
-    : list.sort();
+    ? /* eslint-disable-next-line typescript/require-array-sort-compare */
+      list.slice(0, index).concat(list.slice(index).sort())
+    : /* eslint-disable-next-line typescript/require-array-sort-compare */
+      list.sort();
 };
