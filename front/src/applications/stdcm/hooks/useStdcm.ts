@@ -287,10 +287,10 @@ const useStdcm = ({
                 await handleSuccess(result, payload);
                 break;
               case 'preprocessing_simulation_error':
-                await handleRejection(result.error);
+                handleRejection(result.error);
                 break;
               case 'internal_error':
-                await handleRejection(result.error);
+                handleRejection(result.error);
             }
             break;
           }

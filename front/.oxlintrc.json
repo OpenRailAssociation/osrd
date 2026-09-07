@@ -30,7 +30,6 @@
   ],
   "rules": {
     "array-callback-return": "off",
-    "await-thenable": "off",
     "checked-requires-onchange-or-readonly": "off",
     "click-events-have-key-events": "off",
     "consistent-return": "off",

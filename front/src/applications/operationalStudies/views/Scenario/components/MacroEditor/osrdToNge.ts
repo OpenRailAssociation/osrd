@@ -789,5 +789,5 @@ export const loadNgeDto = async (
   ).unwrap();
 
   await loadAndIndexNge(state, trainSchedules, dispatch, t, subCategories, notes);
-  return await getNgeDto(state, groupedTrainSchedules, subCategories, notes);
+  return getNgeDto(state, groupedTrainSchedules, subCategories, notes);
 };

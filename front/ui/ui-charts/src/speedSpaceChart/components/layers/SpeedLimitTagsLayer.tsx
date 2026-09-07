@@ -52,7 +52,7 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
         },
         speeds: store.speeds,
       };
-      await drawSpeedLimitTags({
+      drawSpeedLimitTags({
         ctx,
         width,
         height: marginTop,
@@ -77,7 +77,7 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
     const updateTooltip = async () => {
       const currentCanvas = canvas.current as HTMLCanvasElement;
       const ctx = currentCanvas.getContext('2d') as CanvasRenderingContext2D;
-      tooltip.current = await computeTooltip({ ctx, width, height: marginTop, store });
+      tooltip.current = computeTooltip({ ctx, width, height: marginTop, store });
     };
     updateTooltip();
   }, [width, marginTop, store]);
