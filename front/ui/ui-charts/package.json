@@ -12,9 +12,9 @@
     "access": "public"
   },
   "type": "module",
-  "module": "dist/index.esm.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "main": "dist/index.esm.js",
+  "main": "dist/index.js",
   "style": "dist/theme.css",
   "files": [
     "/dist"
@@ -23,13 +23,13 @@
     "./dist/theme.css": "./dist/theme.css",
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.esm.js"
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "rollup -c --failAfterWarnings",
-    "watch": "rollup -c -w",
+    "build": "tsdown --fail-on-warn",
+    "watch": "tsdown -w",
     "test": "vitest run",
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "oxlint . --max-warnings 0 && oxfmt . --check",
