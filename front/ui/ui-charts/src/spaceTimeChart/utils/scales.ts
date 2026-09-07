@@ -141,9 +141,10 @@ export function getNormalizedScaleAtPosition(
     if (!pickLast) {
       if (position <= node.limit) node = node.left;
       else node = node.right;
+    } else if (position >= node.limit) {
+      node = node.right;
     } else {
-      if (position >= node.limit) node = node.right;
-      else node = node.left;
+      node = node.left;
     }
   }
   return node;

@@ -127,8 +127,8 @@ const useFilterTrainSchedules = (
 
           if (isMainCategory(category)) {
             if (category.main_category !== trainCategoryFilter) return false;
-          } else {
-            if (category.sub_category_code !== trainCategoryFilter) return false;
+          } else if (category.sub_category_code !== trainCategoryFilter) {
+            return false;
           }
         }
       }
