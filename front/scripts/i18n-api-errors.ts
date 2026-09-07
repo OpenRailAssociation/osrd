@@ -69,7 +69,7 @@ async function checkI18N(
       fs.readFileSync(new URL(localized_i18n_error_path, import.meta.url), 'utf8')
     );
     // Init the i18n system
-    const i18n = await i18next.createInstance(
+    const i18n = i18next.createInstance(
       {
         lng: locale,
         resources: {

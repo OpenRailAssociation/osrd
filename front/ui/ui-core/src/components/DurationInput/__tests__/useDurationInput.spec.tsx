@@ -81,7 +81,7 @@ describe('useDurationInput', () => {
       ))
     );
 
-    await act(() => {
+    await act(async () => {
       result.current.handleChange(
         result.current.fields[1],
         '3'.padStart(result.current.fields[1].digits!, '3')
@@ -108,7 +108,7 @@ describe('useDurationInput', () => {
     );
 
     const lastField = result.current.fields.at(-1)!;
-    await act(() => {
+    await act(async () => {
       result.current.handleChange(lastField, '3'.padStart(lastField.digits!, '3'));
     });
     expect(mockFocus).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe('useDurationInput', () => {
         ))
       );
 
-      await act(() => {
+      await act(async () => {
         result.current.handleKeyDown(result.current.fields[0], {
           key,
           preventDefault: () => {
@@ -168,7 +168,7 @@ describe('useDurationInput', () => {
       ))
     );
 
-    await act(() => {
+    await act(async () => {
       result.current.handleKeyDown(result.current.fields[1], {
         key: 'ArrowLeft',
         preventDefault: () => {
@@ -208,7 +208,7 @@ describe('useDurationInput', () => {
 
     const firstField = result.current.fields[0];
 
-    await act(() => {
+    await act(async () => {
       render(
         <input
           key="firstInput"
@@ -231,7 +231,7 @@ describe('useDurationInput', () => {
 
     const firstField = result.current.fields[0];
 
-    await act(() => {
+    await act(async () => {
       render(
         <input
           key={`firstInput`}
