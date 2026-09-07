@@ -1,5 +1,8 @@
 import {
+  COMPUTED_THEORETICAL_MARGIN_VIA_B,
+  COMPUTED_THEORETICAL_MARGIN_VIA_B_AFTER_MARGIN_EDIT,
   EDIT_ARRIVAL_VIA_A,
+  EDIT_DEPARTURE_VIA_A,
   EDIT_DEPARTURE_VIA_B,
   EMPTY_TIME_PLACEHOLDER,
   MARGIN_EDIT_DISPLAY,
@@ -7,7 +10,11 @@ import {
   MARGIN_MIN_PER_100KM_DISPLAY,
   MARGIN_MIN_PER_100KM_VALUE,
   MARGIN_UNIT_MIN_PER_100KM,
+  MARGIN_UNIT_PERCENT,
+  MARGINS_DIFFERENCE_VIA_B,
+  MARGINS_DIFFERENCE_VIA_B_AFTER_MARGIN_EDIT,
   NO_POWER_RESTRICTION_VALUE,
+  REAL_MARGIN_VIA_B,
   REQUESTED_ARRIVAL_VIA_B,
   REQUESTED_DEPARTURE_VIA_B,
   ROW_INDEX_ORIGIN,
@@ -27,6 +34,7 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
   setupScenarioFixture({
     scenarioNamePrefix: SCENARIO_NAME_PREFIX,
     trains: myTrain,
+    scope: 'test',
   });
 
   test.beforeEach('Wait for the times-stops table', async ({ scenarioTimetableSection }) => {
@@ -70,9 +78,22 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
         await timesStopsTablePage.verifyComputedArrivalChanged(destRow, destinationArrivalBefore);
       });
 
+      await test.step('Set then clear a requested departure on via 1 and verify the cell returns to "+"', async () => {
+        await timesStopsTablePage.editRequestedDeparture(via1Row, EDIT_DEPARTURE_VIA_A);
+        await timesStopsTablePage.verifyRequestedDepartureValue(via1Row, EDIT_DEPARTURE_VIA_A);
+        await timesStopsTablePage.waitForSimulation();
+
+        await timesStopsTablePage.clearRequestedDeparture(via1Row);
+        await timesStopsTablePage.verifyRequestedDepartureValue(via1Row, EMPTY_TIME_PLACEHOLDER);
+        await timesStopsTablePage.verifyDeparturePlaceholderVisible(via1Row);
+        await timesStopsTablePage.verifyRequestedArrivalValue(via1Row, EMPTY_TIME_PLACEHOLDER);
+        await timesStopsTablePage.waitForSimulation();
+      });
+
       await test.step('Clear requested arrival for via 2 and verify computed arrival remains attached', async () => {
         await timesStopsTablePage.clearRequestedArrival(via2Row);
         await timesStopsTablePage.verifyRequestedArrivalValue(via2Row, EMPTY_TIME_PLACEHOLDER);
+        await timesStopsTablePage.verifyArrivalPlaceholderVisible(via2Row);
         await timesStopsTablePage.verifyComputedArrivalAttached(via2Row);
       });
     }
@@ -170,6 +191,16 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
       await timesStopsTablePage.verifyMarginPlaceholderVisible(waypointRow);
     });
 
+    await test.step('Verify the calculated margin columns of via 2 before any margin is set', async () => {
+      await timesStopsTablePage.waitForSimulation();
+      await timesStopsTablePage.verifyComputedTheoreticalMarginText(
+        via2Row,
+        COMPUTED_THEORETICAL_MARGIN_VIA_B
+      );
+      await timesStopsTablePage.verifyRealMarginText(via2Row, REAL_MARGIN_VIA_B);
+      await timesStopsTablePage.verifyMarginsDifferenceText(via2Row, MARGINS_DIFFERENCE_VIA_B);
+    });
+
     await test.step(`Set ${MARGIN_EDIT_DISPLAY} margin → value displayed, placeholder hidden`, async () => {
       await timesStopsTablePage.waitForSimulation();
       await timesStopsTablePage.editRequestedMargin(waypointRow, MARGIN_EDIT_VALUE);
@@ -186,12 +217,24 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
       await timesStopsTablePage.verifyInheritedMarginStyle(via2Row);
     });
 
-    await test.step(`Switching unit to ${MARGIN_MIN_PER_100KM_DISPLAY} and committing updates the display accordingly`, async () => {
-      await timesStopsTablePage.editRequestedMarginWithUnit(
-        waypointRow,
-        MARGIN_MIN_PER_100KM_VALUE,
-        MARGIN_UNIT_MIN_PER_100KM
+    await test.step('Verify the calculated margin columns of via 2 were recomputed', async () => {
+      await timesStopsTablePage.verifyComputedTheoreticalMarginText(
+        via2Row,
+        COMPUTED_THEORETICAL_MARGIN_VIA_B_AFTER_MARGIN_EDIT
       );
+      await timesStopsTablePage.verifyMarginsDifferenceText(
+        via2Row,
+        MARGINS_DIFFERENCE_VIA_B_AFTER_MARGIN_EDIT
+      );
+      await timesStopsTablePage.verifyRealMarginText(via2Row, REAL_MARGIN_VIA_B);
+    });
+
+    await test.step(`Switching unit to ${MARGIN_MIN_PER_100KM_DISPLAY} and committing updates the display accordingly`, async () => {
+      await timesStopsTablePage.startEditingRequestedMargin(waypointRow);
+      await timesStopsTablePage.verifyActiveMarginUnit(waypointRow, MARGIN_UNIT_PERCENT);
+      await timesStopsTablePage.switchMarginUnit(waypointRow, MARGIN_UNIT_MIN_PER_100KM);
+      await timesStopsTablePage.verifyActiveMarginUnit(waypointRow, MARGIN_UNIT_MIN_PER_100KM);
+      await timesStopsTablePage.fillRequestedMargin(waypointRow, MARGIN_MIN_PER_100KM_VALUE);
       await timesStopsTablePage.verifyRequestedTheoreticalMarginText(
         waypointRow,
         MARGIN_MIN_PER_100KM_DISPLAY

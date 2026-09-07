@@ -290,14 +290,6 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     return (await this.computedDeparture(row).textContent()) ?? '';
   }
 
-  async getRealMarginText(row: Locator): Promise<string> {
-    return (
-      (await this.realMargin(row)
-        .textContent()
-        .catch(() => '')) ?? ''
-    );
-  }
-
   async clickSignalReceptionClosed(row: Locator): Promise<void> {
     await this.signalReceptionClosedCheckbox(row).click();
   }
@@ -306,8 +298,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await this.shortSlipDistanceCheckbox(row).click();
   }
 
-  async editRequestedArrival(row: Locator, timeValue: string): Promise<void> {
-    const input = this.requestedArrivalInput(row);
+  private async editTimeCell(input: Locator, timeValue: string): Promise<void> {
     const isEmpty = (await input.inputValue()) === EMPTY_TIME_PLACEHOLDER;
     if (isEmpty) {
       // Focus directly to avoid triggering FOCUSED_WITH_PREFILL via placeholder click
@@ -322,23 +313,25 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await input.press('Enter');
   }
 
+  private async clearTimeCell(input: Locator): Promise<void> {
+    await input.click();
+    await this.durationCellClearButton.click();
+  }
+
+  async editRequestedArrival(row: Locator, timeValue: string): Promise<void> {
+    await this.editTimeCell(this.requestedArrivalInput(row), timeValue);
+  }
+
   async editRequestedDeparture(row: Locator, timeValue: string): Promise<void> {
-    const input = this.requestedDepartureInput(row);
-    const isEmpty = (await input.inputValue()) === EMPTY_TIME_PLACEHOLDER;
-    if (isEmpty) {
-      await input.focus();
-    } else {
-      await input.click();
-      await input.press('ArrowLeft');
-      await input.press('ArrowLeft');
-    }
-    await input.pressSequentially(stripTimeColons(timeValue));
-    await input.press('Enter');
+    await this.editTimeCell(this.requestedDepartureInput(row), timeValue);
   }
 
   async clearRequestedArrival(row: Locator): Promise<void> {
-    await this.requestedArrivalInput(row).click();
-    await this.durationCellClearButton.click();
+    await this.clearTimeCell(this.requestedArrivalInput(row));
+  }
+
+  async clearRequestedDeparture(row: Locator): Promise<void> {
+    await this.clearTimeCell(this.requestedDepartureInput(row));
   }
 
   async editStopDuration(row: Locator, digits: string): Promise<void> {
@@ -347,21 +340,28 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await this.durationCell(row).press('Enter');
   }
 
-  async editRequestedMargin(row: Locator, value: string): Promise<void> {
+  async startEditingRequestedMargin(row: Locator): Promise<void> {
     const placeholder = this.marginCellPlaceholder(row);
     if (await placeholder.isVisible()) {
       await placeholder.click();
     } else {
       await this.marginCellEditable(row).click();
     }
+  }
+
+  async fillRequestedMargin(row: Locator, value: string): Promise<void> {
     await this.marginCellInput(row).fill(value);
     await this.marginCellInput(row).press('Enter');
   }
 
+  async editRequestedMargin(row: Locator, value: string): Promise<void> {
+    await this.startEditingRequestedMargin(row);
+    await this.fillRequestedMargin(row, value);
+  }
+
   async clearRequestedMargin(row: Locator): Promise<void> {
     await this.marginCellEditable(row).click();
-    await this.marginCellInput(row).fill('');
-    await this.marginCellInput(row).press('Enter');
+    await this.fillRequestedMargin(row, '');
   }
 
   async selectPowerRestriction(row: Locator, value: string): Promise<void> {
@@ -468,15 +468,9 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     value: string,
     unit: 'percent' | 'minPer100km'
   ): Promise<void> {
-    const placeholder = this.marginCellPlaceholder(row);
-    if (await placeholder.isVisible()) {
-      await placeholder.click();
-    } else {
-      await this.marginCellEditable(row).click();
-    }
+    await this.startEditingRequestedMargin(row);
     await this.switchMarginUnit(row, unit);
-    await this.marginCellInput(row).fill(value);
-    await this.marginCellInput(row).press('Enter');
+    await this.fillRequestedMargin(row, value);
   }
 
   // Wait for simulation triggered by a previous edit to complete.

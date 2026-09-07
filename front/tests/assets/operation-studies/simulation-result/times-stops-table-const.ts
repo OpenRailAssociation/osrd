@@ -21,10 +21,15 @@ export const DAY_CHANGE_LABEL = '28 mai 2026';
 export const EMPTY_TIME_PLACEHOLDER = 'hh:mm:ss';
 export const EDIT_ARRIVAL_VIA_A = '21:30:00';
 export const EDIT_DEPARTURE_VIA_B = '00:15:00';
+export const EDIT_DEPARTURE_VIA_A = '21:35:00';
 export const COMPUTED_THEORETICAL_MARGIN_DEPARTURE = '00m19s';
 export const REAL_MARGIN_DEPARTURE = '158m07s';
 export const MARGINS_DIFFERENCE_DEPARTURE = '+157m48s';
 export const MARGINS_DIFFERENCE_VIA_B = '-00m07s';
+export const COMPUTED_THEORETICAL_MARGIN_VIA_B = '00m07s';
+export const REAL_MARGIN_VIA_B = '00m00s';
+export const COMPUTED_THEORETICAL_MARGIN_VIA_B_AFTER_MARGIN_EDIT = '00m15s';
+export const MARGINS_DIFFERENCE_VIA_B_AFTER_MARGIN_EDIT = '-00m15s';
 
 export const STOP_DURATION_EDIT_DIGITS = '0500';
 export const STOP_DURATION_EDIT_DISPLAY = '00h05m00s';
@@ -56,6 +61,7 @@ export const EXPECTED_COLUMN_COUNT = 18;
 export const MARGIN_MIN_PER_100KM_VALUE = '3';
 export const MARGIN_MIN_PER_100KM_DISPLAY = '3min/100km';
 export const MARGIN_UNIT_MIN_PER_100KM = 'minPer100km';
+export const MARGIN_UNIT_PERCENT = 'percent';
 export const REQUESTED_MARGIN_DEPARTURE = '2%';
 
 export const ROW_INDEX_DISPLAY_ORDER: ReadonlyArray<[number, string]> = [
