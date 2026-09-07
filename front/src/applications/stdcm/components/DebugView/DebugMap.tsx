@@ -212,7 +212,7 @@ const DebugMap = ({ failureData, simulationData }: DebugMapProps) => {
             <strong>{hovered.point.lastOPName}</strong>
           </div>
           <div>at: {hovered.point.at}</div>
-          <div>caused by: {hovered.point.source?.toString()}</div>
+          <div>caused by: {JSON.stringify(hovered.point.source)}</div>
           <div>time lost: {fmtSeconds(hovered.point.time_lost)}</div>
           <div>best remaining: {fmtSeconds(hovered.point.best_remaining_time)}</div>
           <div>travel time: {fmtSeconds(hovered.point.current_travel_time)}</div>
