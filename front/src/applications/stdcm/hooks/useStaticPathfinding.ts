@@ -79,8 +79,12 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   }, [pathSteps]);
 
   useEffect(() => {
+    let dependenciesUpToDate = true;
+
     const launchPathfinding = async () => {
       setPathfinding(undefined);
+      setShowPathfindingStatusMessage(false);
+
       if (!infra || workerStatus !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
         return;
       }
@@ -126,6 +130,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         allowedTrackSections,
       });
 
+      if (!dependenciesUpToDate) {
+        return;
+      }
+
       setPathfinding(pathfindingResult);
 
       if (pathfindingResult?.status === 'failure') {
@@ -134,6 +142,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     };
 
     launchPathfinding();
+
+    return () => {
+      dependenciesUpToDate = false;
+    };
   }, [
     pathStepsLocations,
     rollingStock,
