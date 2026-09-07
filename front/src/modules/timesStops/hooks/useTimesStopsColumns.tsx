@@ -31,7 +31,7 @@ const timeColumn = (isOutputTable: boolean) =>
     pasteValue: ({ value }) => ({ time: value }),
     minWidth: isOutputTable ? 110 : 170,
     isCellEmpty: ({ rowData }) => !rowData,
-  }) as Partial<Column<TimeExtraDays | undefined, string, string>>;
+  }) as Partial<Column<TimeExtraDays | undefined, string>>;
 
 function durationColumn() {
   const format = (duration: Duration | null | undefined) => String(duration?.total('second') ?? '');

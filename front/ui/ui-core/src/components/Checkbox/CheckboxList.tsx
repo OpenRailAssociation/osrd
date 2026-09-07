@@ -7,7 +7,7 @@ import { type CheckboxTreeItem } from './type';
 
 export type CheckboxListProps = {
   items: CheckboxTreeItem[];
-  onClickItem: (e: React.MouseEvent<HTMLInputElement, MouseEvent>, item: CheckboxTreeItem) => void;
+  onClickItem: (e: React.MouseEvent<HTMLInputElement>, item: CheckboxTreeItem) => void;
   small?: boolean;
   label?: string;
   readOnly?: boolean;

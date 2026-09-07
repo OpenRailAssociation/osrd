@@ -17,7 +17,7 @@ export const getShortDepartureDate = (train: Train, locale?: Intl.Locale) =>
 
 export const getShortCategoryName = (
   train: Train,
-  t: TFunction<'translation'>,
+  t: TFunction,
   subCategories: SubCategory[]
 ): string | undefined => {
   const category = train.category;
@@ -27,7 +27,7 @@ export const getShortCategoryName = (
   return findSubCategory(subCategories, category)?.name;
 };
 
-export const getComfortType = (train: Train, t: TFunction<'translation'>): string | null =>
+export const getComfortType = (train: Train, t: TFunction): string | null =>
   train.comfort ? t(`translation:rollingStock.comfortTypes.${train.comfort}`) : '';
 
 export const getServiceInterval = (train: PacedTrain): number =>
