@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
-import { checkChangeGroups } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import type {
   PacedTrainException,
@@ -25,11 +24,6 @@ import {
   isPacedTrain,
   isPacedTrainWithDetails,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import {
-  deleteExceptions,
-  storeTrainSchedule,
-  updateExceptions,
-} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -237,36 +231,19 @@ export default function useOccupancyZoneDrop({
               })
             : rawTrainSchedule.paced.exceptions;
 
-        // Clear exceptions that no longer differ from the updated model. `movedExceptions` already
-        // has the new track so `checkChangeGroups` needs the
-        // untouched exceptions as a reference to notice that change.
-        const {
-          exceptions: reconciledExceptions,
-          modifiedExceptions: exceptionsToUpdate,
-          exceptionsToDeleteIds,
-        } = checkChangeGroups(
-          updatedModelTrainSchedule,
-          rawTrainSchedule.paced,
-          movedExceptions,
-          rawTrainSchedule.paced.exceptions
-        );
-
-        if (exceptionsToDeleteIds.length) {
-          await deleteExceptions(dispatch, exceptionsToDeleteIds);
-        }
-        if (exceptionsToUpdate.length) {
-          await updateExceptions(dispatch, exceptionsToUpdate, rawTrainSchedule.id);
-        }
-
-        await storeTrainSchedule(
-          trainSchedule.id,
-          {
-            ...updatedModelTrainSchedule,
-            paced: { ...rawTrainSchedule.paced, exceptions: reconciledExceptions },
-          },
+        const result = await updateTrainSchedule({
+          timetableId,
+          trainScheduleId: rawTrainSchedule.id,
+          originalTrainSchedule: trainSchedule,
+          updatedTrainSchedule: updatedModelTrainSchedule,
+          originalExceptionsOverride: movedExceptions,
+          addedExceptions: [],
+          upsertTrainSchedules,
           dispatch,
-          upsertTrainSchedules
-        );
+        });
+        if (!result.success) {
+          throw new Error(`Invalid train schedule: ${result.errorCodes.join(', ')}`);
+        }
       }
     },
     [
