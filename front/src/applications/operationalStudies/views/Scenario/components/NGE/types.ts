@@ -43,10 +43,10 @@ export type TransitionDto = {
 };
 
 export enum PortAlignment {
-  Top,
-  Bottom,
-  Left,
-  Right,
+  Top = 0,
+  Bottom = 1,
+  Left = 2,
+  Right = 3,
 }
 
 export type TrainrunDto = {
