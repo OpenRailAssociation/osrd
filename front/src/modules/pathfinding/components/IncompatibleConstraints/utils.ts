@@ -68,5 +68,5 @@ export function getSegmentsConstraints(
 }
 
 export function getSizeOfEnabledFilters(filters: FiltersConstrainstState) {
-  return Object.values(filters).filter((value) => value.enabled === true).length;
+  return Object.values(filters).filter((value) => value.enabled).length;
 }

@@ -392,7 +392,7 @@ export function onStopSignalToReceptionSignal(
   if (isNil(onStopSignal)) {
     return undefined;
   }
-  if (onStopSignal === true) {
+  if (onStopSignal) {
     return shortSlipDistance ? 'SHORT_SLIP_STOP' : 'STOP';
   }
   return 'OPEN';

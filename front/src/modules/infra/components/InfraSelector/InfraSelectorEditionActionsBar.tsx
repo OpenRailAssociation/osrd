@@ -135,8 +135,9 @@ const ActionsBar = ({
     );
   }
 
-  const lockButtonTitle =
-    infra.locked === true ? t('infraManagement.actions.unlock') : t('infraManagement.actions.lock');
+  const lockButtonTitle = infra.locked
+    ? t('infraManagement.actions.unlock')
+    : t('infraManagement.actions.lock');
   return (
     <>
       <button
