@@ -44,7 +44,7 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
             callback({ ...data, traceId });
           } catch (e) {
             console.error(e);
-            throw new Error(`Error while JSON parse ${line}`);
+            throw new Error(`Error while JSON parse ${line}`, { cause: e });
           }
         }
       }
