@@ -15,7 +15,7 @@ const useMultiSelection = <T extends { id: number }>(
   const toggleSelection = useCallback(
     (id: number) => {
       setSelectedItemIds(
-        selectedItemIds.indexOf(id) !== -1
+        selectedItemIds.includes(id)
           ? selectedItemIds.filter((selectedItemId) => selectedItemId !== id)
           : selectedItemIds.concat([id])
       );
