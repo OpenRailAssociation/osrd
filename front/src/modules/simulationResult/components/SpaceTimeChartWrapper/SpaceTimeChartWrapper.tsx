@@ -87,7 +87,7 @@ import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
 import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
 import type { ExistingLinking } from './helpers/linkings';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
-import { getOccupancyBlocks } from './helpers/utils';
+import { getOccupancyBlocks, isTrainSelected } from './helpers/utils';
 import {
   parseOccupancyZonePathId,
   formatOccupancyZonePathId,
@@ -402,35 +402,18 @@ const SpaceTimeChartWrapper = ({
 
   const isDraggingOccupancyZoneId = useCallback(
     (waypointId: string, trainId: TrainId) => {
-      if (
-        waypointId !== draggingOccupancyZoneRef?.waypointId ||
-        !draggingOccupancyZoneBaseTrainId
-      ) {
+      if (waypointId !== draggingOccupancyZoneRef?.waypointId || !selection) {
         return false;
       }
-
-      // In 'single' mode, a single occupancy zone is marked as being dragged.
-      if (isOccurrenceId(draggingOccupancyZoneBaseTrainId)) {
-        return trainId === draggingOccupancyZoneBaseTrainId;
-      }
-
-      if (extractTrainScheduleIdFromTrainId(trainId) !== draggingOccupancyZoneBaseTrainId) {
-        return false;
-      }
-      // 'all' mode drags every occurrence, exceptions included. 'compliant' only drags the
-      // ones still following the model's path.
-      if (panelSelectionMode === 'all') {
-        return true;
-      }
-      const { exception } = findTrainScheduleAndException(trainSchedulesWithDetails ?? [], trainId);
-      return !exception?.path_and_schedule;
+      return isTrainSelected(
+        trainId,
+        'tod',
+        getTrainExceptionTypes(trainSchedulesWithDetailsById, trainId),
+        selection,
+        panelSelectionMode
+      );
     },
-    [
-      draggingOccupancyZoneRef,
-      draggingOccupancyZoneBaseTrainId,
-      panelSelectionMode,
-      trainSchedulesWithDetails,
-    ]
+    [draggingOccupancyZoneRef, selection, trainSchedulesWithDetailsById, panelSelectionMode]
   );
 
   const splitPoints = useMemo<SplitPoint[]>(
