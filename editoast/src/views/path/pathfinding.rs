@@ -428,10 +428,10 @@ fn build_pathfinding_request(
         expected_version: infra.version,
         path_items: track_offsets
             .into_iter()
-            .enumerate()
-            .map(|(index, offsets)| core_client::pathfinding::PathItem {
+            .zip(&pathfinding_input.path_items)
+            .map(|(offsets, path_item)| core_client::pathfinding::PathItem {
                 locations: offsets,
-                can_backtrack: pathfinding_input.path_items[index].can_backtrack,
+                can_backtrack: path_item.can_backtrack,
             })
             .collect(),
         rolling_stock_loading_gauge: pathfinding_input.rolling_stock_loading_gauge,
