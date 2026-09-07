@@ -52,7 +52,6 @@
     "no-else-return": "off",
     "no-floating-promises": "off",
     "no-inline-comments": "off",
-    "no-lonely-if": "off",
     "no-loop-func": "off",
     "no-misused-promises": "off",
     "no-misused-spread": "off",
