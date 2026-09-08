@@ -2,7 +2,7 @@ use authz::Role;
 use axum::extract::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
+use axum::response::IntoResponse as _;
 use axum::response::Response;
 use database::DbConnectionPoolV2;
 

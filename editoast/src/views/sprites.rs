@@ -5,7 +5,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use thiserror::Error;
-use tower::ServiceExt;
+use tower::ServiceExt as _;
 use tower_http::services::ServeFile;
 
 use crate::AppState;

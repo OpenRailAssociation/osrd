@@ -130,7 +130,7 @@ mod tests {
     use models::prelude::*;
     use schemas::infra::Detector;
     use schemas::infra::TrackSection;
-    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDIdentified as _;
     use schemas::primitives::ObjectType;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

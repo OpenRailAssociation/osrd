@@ -1,4 +1,4 @@
-use deadpool_redis::redis::AsyncCommands;
+use deadpool_redis::redis::AsyncCommands as _;
 use models::map::MAP_LAYER_NAMES;
 
 use crate::error::Result;

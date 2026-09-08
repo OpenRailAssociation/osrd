@@ -350,7 +350,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_clean_orphaned_openfga_tuples() {
-        use fga::model::Relation;
+        use fga::model::Relation as _;
 
         // Setup FGA client with migrations
         let client = fga::test_client!("authz@");

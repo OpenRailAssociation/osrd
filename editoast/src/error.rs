@@ -2,7 +2,7 @@ use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use colored::Colorize;
+use colored::Colorize as _;
 use database::DatabaseError;
 use database::db_connection_pool::DatabasePoolBuildError;
 use database::db_connection_pool::DatabasePoolError;

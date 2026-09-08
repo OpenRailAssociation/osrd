@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use anyhow::bail;
 use authz;
 use authz::Group;
-use authz::v2::Authorizer;
+use authz::v2::Authorizer as _;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;

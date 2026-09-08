@@ -18,7 +18,7 @@ use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
 use authz::v2;
 use authz::v2::Actor;
-use authz::v2::Authorizer;
+use authz::v2::Authorizer as _;
 use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Path;
@@ -28,8 +28,8 @@ use axum::response::IntoResponse;
 use axum::response::Json;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use futures::TryStreamExt;
-use itertools::Itertools;
+use futures::TryStreamExt as _;
+use itertools::Itertools as _;
 use models::Group;
 use models::Infra;
 use models::Project;
@@ -42,7 +42,7 @@ use serde::Serialize;
 use strum::Display;
 #[cfg(test)]
 use strum::EnumIter;
-use strum::IntoEnumIterator;
+use strum::IntoEnumIterator as _;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -1022,7 +1022,7 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
     use std::collections::HashSet;
-    use strum::IntoEnumIterator;
+    use strum::IntoEnumIterator as _;
 
     use super::*;
     use crate::error::InternalError;

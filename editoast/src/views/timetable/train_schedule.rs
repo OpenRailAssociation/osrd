@@ -17,7 +17,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use common::units::millisecond;
-use core_client::AsCoreRequest;
+use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingInputError::UnauthorizedRollingStock;
@@ -2321,7 +2321,7 @@ mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestRequestExt;
+    use crate::views::test_app::TestRequestExt as _;
 
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::timetable::simulation;

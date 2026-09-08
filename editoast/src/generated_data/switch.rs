@@ -3,9 +3,13 @@ use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use schemas::primitives::ObjectType;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use super::GeneratedData;
 use super::utils::InvolvedObjects;

@@ -18,6 +18,10 @@ use diesel::sql_types::Double;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
@@ -49,7 +53,7 @@ use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 use thiserror::Error;
 
 use crate::infra_cache::object_cache::BufferStopCache;
@@ -1107,7 +1111,7 @@ pub mod tests {
     use schemas::primitives::BoundingBox;
     use schemas::primitives::Identifier;
     use schemas::primitives::NonBlankString;
-    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDIdentified as _;
     use schemas::primitives::OSRDObject;
 
     use super::InfraCache;

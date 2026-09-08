@@ -3,11 +3,15 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use schemas::infra::InfraObject;
-use schemas::primitives::OSRDIdentified;
-use schemas::primitives::OSRDObject;
-use std::ops::DerefMut;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject as _;
+use std::ops::DerefMut as _;
 
 use super::OperationError;
 use models::infra_objects::get_table;

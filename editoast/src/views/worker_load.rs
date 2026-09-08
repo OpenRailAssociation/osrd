@@ -2,7 +2,7 @@ use authz::v2;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use core_client::AsCoreRequest;
+use core_client::AsCoreRequest as _;
 use core_client::Error as CoreClientError;
 use core_client::mq_client::MqClientError;
 use core_client::worker_load::WorkerLoadRequest;

@@ -276,7 +276,7 @@ mod tests {
     use common::units::millisecond;
     use models;
     use models::TrainScheduleException;
-    use models::prelude::Retrieve;
+    use models::prelude::Retrieve as _;
     use models::prelude::*;
     use models::train_schedule_exception::TrainScheduleExceptionChangeset;
     use schemas::TrainScheduleExceptionChangeGroups;

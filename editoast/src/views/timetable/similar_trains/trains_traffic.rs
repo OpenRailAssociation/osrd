@@ -7,7 +7,7 @@ use chrono::DateTime;
 use chrono::Months;
 
 use chrono::Utc;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -227,7 +227,7 @@ impl TrainsTrafficPool {
 pub mod tests {
     use chrono::DateTime;
     use chrono::Utc;
-    use std::str::FromStr;
+    use std::str::FromStr as _;
 
     use super::graph;
     use crate::views::timetable::similar_trains::OperationalPoint;

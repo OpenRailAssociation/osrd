@@ -48,7 +48,7 @@ pub fn fix_track_section(
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Deref;
+    use std::ops::Deref as _;
 
     use super::*;
     use crate::infra_cache::ObjectCache;

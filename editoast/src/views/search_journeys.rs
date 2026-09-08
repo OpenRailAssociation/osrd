@@ -6,7 +6,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::Infra;
 use models::prelude::*;
 use profile_connection_scan::Connection;

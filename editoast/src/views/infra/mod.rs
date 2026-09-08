@@ -24,8 +24,8 @@ use common::geometry::GeoJsonPoint;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use geos::Geom;
-use itertools::Itertools;
+use geos::Geom as _;
+use itertools::Itertools as _;
 use models::prelude::*;
 use schemas::infra::SwitchType;
 use schemas::primitives::BoundingBox;
@@ -857,6 +857,10 @@ pub mod tests {
     use core_client::mocking::MockingClient;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
+    #[allow(
+        clippy::unused_trait_names,
+        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+    )]
     use diesel_async::RunQueryDsl;
     use rstest::rstest;
     use schemas::infra::Electrification;
@@ -867,8 +871,8 @@ pub mod tests {
     use schemas::primitives::ObjectType;
     use serde_json::json;
     use std::collections::HashMap;
-    use std::ops::DerefMut;
-    use strum::IntoEnumIterator;
+    use std::ops::DerefMut as _;
+    use strum::IntoEnumIterator as _;
 
     use super::*;
     use crate::fixtures::create_empty_infra;

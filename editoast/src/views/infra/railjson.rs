@@ -14,7 +14,7 @@ use futures::future::try_join_all;
 use schemas::infra::RailJson;
 use serde::Deserialize;
 use serde::Serialize;
-use strum::IntoEnumIterator;
+use strum::IntoEnumIterator as _;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 

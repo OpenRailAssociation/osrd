@@ -1,19 +1,23 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use database::tables::infra_layer_detector::dsl;
 use diesel::delete;
-use diesel::query_dsl::methods::FilterDsl;
+use diesel::query_dsl::methods::FilterDsl as _;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use schemas::primitives::ObjectType;
 
 use super::GeneratedData;
 use super::utils::InvolvedObjects;
-use crate::diesel::ExpressionMethods;
+use crate::diesel::ExpressionMethods as _;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 

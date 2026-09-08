@@ -21,7 +21,7 @@ pub mod trains_traffic;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::Deref;
+use std::ops::Deref as _;
 
 use arcstr::ArcStr;
 use authz::Role;
@@ -448,7 +448,7 @@ fn decide_best_train_combination(
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use itertools::Itertools;
+    use itertools::Itertools as _;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use uuid::Uuid;

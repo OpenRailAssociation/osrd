@@ -22,15 +22,19 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use futures_util::Future;
-use itertools::Itertools;
-use schemas::primitives::OSRDObject;
+use itertools::Itertools as _;
+use schemas::primitives::OSRDObject as _;
 use schemas::primitives::ObjectType;
 use serde_json::to_value;
-use sha1::Digest;
+use sha1::Digest as _;
 use sha1::Sha1;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 use tracing::warn;
 
 use super::GeneratedData;

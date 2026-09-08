@@ -8,7 +8,7 @@ use authz;
 use authz::Role;
 use authz::identity::GroupInfo;
 use authz::identity::UserInfo;
-use authz::v2::Authorizer;
+use authz::v2::Authorizer as _;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
@@ -16,7 +16,7 @@ use database::DbConnectionPoolV2;
 use itertools::Itertools as _;
 use models::Group;
 use models::prelude::*;
-use strum::IntoEnumIterator;
+use strum::IntoEnumIterator as _;
 use tracing::info;
 
 use crate::authorizers::SystemAuthorizer;

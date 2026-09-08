@@ -1,6 +1,6 @@
 use authz::RollingStockPrivilege;
 use authz::v2;
-use authz::v2::Authorizer;
+use authz::v2::Authorizer as _;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -34,7 +34,7 @@ use crate::AppState;
 use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 
@@ -340,7 +340,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::fixtures::create_fast_rolling_stock;
     use crate::views::test_app;
-    use crate::views::test_app::TestRequestExt;
+    use crate::views::test_app::TestRequestExt as _;
 
     fn is_sorted(data: &[i64]) -> bool {
         for elem in data.windows(2) {

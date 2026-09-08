@@ -10,7 +10,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::prelude::*;
 use models::round_trips::TrainScheduleRoundTrips;
 use models::timetable::Timetable;

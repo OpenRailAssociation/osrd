@@ -4,7 +4,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::Timetable;
 use models::TrainScheduleLinking;
 use models::prelude::*;
@@ -175,7 +175,7 @@ pub(in crate::views) async fn list(
     }): Json<ListLinkingsQuery>,
 ) -> Result<Json<Vec<LinkingResponse>>> {
     use database::tables::train_schedule_linking::dsl;
-    use diesel::BoolExpressionMethods;
+    use diesel::BoolExpressionMethods as _;
     use diesel::prelude::*;
     use models::prelude::*;
 
@@ -346,8 +346,8 @@ mod tests {
     use std::collections::HashSet;
 
     use authz::Role;
-    use models::prelude::Create;
-    use models::prelude::Model;
+    use models::prelude::Create as _;
+    use models::prelude::Model as _;
     use reqwest::StatusCode;
     use serde_json::json;
 

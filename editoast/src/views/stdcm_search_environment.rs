@@ -1,4 +1,4 @@
-use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use authz::Role;
@@ -13,7 +13,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::prelude::*;
 use models::stdcm_search_environment::StdcmSearchEnvironment;
 use serde::Deserialize;
@@ -299,8 +299,8 @@ pub mod tests {
 
     use axum::http::StatusCode;
     use chrono::Duration;
-    use chrono::DurationRound;
-    use chrono::TimeZone;
+    use chrono::DurationRound as _;
+    use chrono::TimeZone as _;
     use chrono::Utc;
     use models::Timetable;
     use pretty_assertions::assert_eq;

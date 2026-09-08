@@ -1,7 +1,7 @@
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use schemas::infra::Domestic;
 use schemas::infra::OperationalPoint;
 use schemas::infra::TrackOffset;

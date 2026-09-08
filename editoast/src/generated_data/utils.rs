@@ -3,8 +3,8 @@ use std::collections::HashSet;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::infra_cache::operation::CacheOperation;
-use schemas::primitives::OSRDIdentified;
-use schemas::primitives::OSRDObject;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject as _;
 use schemas::primitives::ObjectType;
 
 /// This struct gives a set of objects that needs to be updated or deleted given a list of operations.

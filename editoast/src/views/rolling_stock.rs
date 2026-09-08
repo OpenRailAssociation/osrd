@@ -29,7 +29,7 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use image::DynamicImage;
-use image::GenericImage;
+use image::GenericImage as _;
 use image::ImageBuffer;
 use image::ImageFormat;
 use image::ImageReader;
@@ -817,7 +817,7 @@ pub(in crate::views) async fn filter_readable_occurrences(
 #[cfg(test)]
 pub mod tests {
     use authz::RollingStockGrant;
-    use itertools::Itertools;
+    use itertools::Itertools as _;
     use models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
     use serde_json::json;
@@ -836,7 +836,7 @@ pub mod tests {
     use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app;
     use crate::views::test_app::TestApp;
-    use crate::views::test_app::TestRequestExt;
+    use crate::views::test_app::TestRequestExt as _;
     use models::rolling_stock::RollingStock;
 
     impl TestApp {

@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use itertools::Itertools as _;
 use json_patch::Patch;
 use json_patch::PatchOperation;
 use json_patch::RemoveOperation;

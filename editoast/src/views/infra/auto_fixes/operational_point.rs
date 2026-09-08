@@ -1,10 +1,10 @@
-use itertools::Itertools;
+use itertools::Itertools as _;
 use json_patch::Patch;
 use json_patch::PatchOperation;
 use json_patch::RemoveOperation;
 use json_patch::ReplaceOperation;
 use ordered_float::OrderedFloat;
-use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDIdentified as _;
 use schemas::primitives::OSRDObject as _;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
