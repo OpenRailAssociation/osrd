@@ -1,9 +1,9 @@
-use opentelemetry::trace::TracerProvider;
+use opentelemetry::trace::TracerProvider as _;
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::SpanExporter;
-use tracing_subscriber::Layer;
-use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::Layer as _;
+use tracing_subscriber::layer::SubscriberExt as _;
 use url::Url;
 
 #[derive(Debug, PartialEq)]
