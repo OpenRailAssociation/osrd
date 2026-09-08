@@ -774,7 +774,7 @@ const ItineraryModal = ({
       : modalFormState.name;
 
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
-      i === stepsWithLocationOrInput.length - 1
+      i === stepsWithLocationOrInput.length - 1 && !step.stopFor
         ? { ...step, stopFor: new Duration({ minutes: 0 }) }
         : step
     );
