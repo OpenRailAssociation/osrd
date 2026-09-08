@@ -376,8 +376,7 @@ const StdcmConfig = ({
           >
             {effectiveFormErrors && (
               <StdcmWarningBox
-                infra={infra}
-                workerStatus={pathfindingWorkerStatus}
+                pathfinding={pathfinding}
                 errorInfos={effectiveFormErrors}
                 removeOriginArrivalTime={removeOriginArrivalTime}
                 removeDestinationArrivalTime={removeDestinationArrivalTime}
