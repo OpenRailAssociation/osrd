@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 
-use itertools::Itertools;
+use itertools::Itertools as _;
 use schemas::infra::BufferStop;
 use schemas::infra::Detector;
 use schemas::infra::Direction;
@@ -18,7 +18,7 @@ use schemas::infra::TrackSection;
 use schemas::infra::Waypoint;
 use schemas::infra::builtin_node_types_list;
 use schemas::primitives::Identifier;
-use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDIdentified as _;
 
 /* Part 1: type definitions */
 // When building the graph, a node can be a trackEndPoint, a detector or a buffer stop

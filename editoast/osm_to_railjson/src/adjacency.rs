@@ -1,5 +1,5 @@
 use geo_types::Coord;
-use osm4routing::Distance;
+use osm4routing::Distance as _;
 use osm4routing::Edge;
 use osm4routing::NodeId;
 use schemas::infra::Endpoint;

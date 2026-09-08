@@ -8,7 +8,7 @@ use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 
 use std::collections::HashMap;
-use std::str::FromStr;
+use std::str::FromStr as _;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering;
 

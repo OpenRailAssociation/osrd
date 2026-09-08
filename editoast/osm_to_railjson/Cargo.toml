@@ -22,3 +22,6 @@ tempfile.workspace = true
 
 [lints]
 workspace = true
+
+[lints.clippy]
+unused_trait_names = "deny"
