@@ -5,7 +5,7 @@ use deadpool::managed::Pool;
 use deadpool::managed::RecycleError;
 use deadpool::managed::RecycleResult;
 use educe::Educe;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use lapin::BasicProperties;
 use lapin::Channel;
 use lapin::Connection;
@@ -25,7 +25,7 @@ use tokio::sync::RwLock;
 use tokio::sync::mpsc;
 use tokio::task;
 use tokio::time::Duration;
-use tokio_stream::StreamExt;
+use tokio_stream::StreamExt as _;
 use tracing::Instrument as _;
 use tracing::debug_span;
 use url::Url;
@@ -535,7 +535,7 @@ impl RabbitMQClient {
 fn attach_tracing_info(headers: &mut FieldTable) {
     use opentelemetry::global as otel;
     use tracing::Span;
-    use tracing_opentelemetry::OpenTelemetrySpanExt;
+    use tracing_opentelemetry::OpenTelemetrySpanExt as _;
     let ctx = Span::current().context();
 
     otel::get_text_map_propagator(|propagator| {

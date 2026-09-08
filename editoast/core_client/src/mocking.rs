@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use std::ops::Deref;
+use std::ops::Deref as _;
 use std::sync::Arc;
 use std::sync::Mutex;
 
