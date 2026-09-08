@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Search } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { VscJson } from 'react-icons/vsc';
 
@@ -18,6 +19,11 @@ type InfraSelectorModalBodyEditionProps = {
   filter: string;
 };
 
+type FileSelection = {
+  file: File | undefined;
+  validating: boolean;
+};
+
 const InfraSelectorModalBodyEdition = ({
   infrasList,
   setFilter,
@@ -26,7 +32,10 @@ const InfraSelectorModalBodyEdition = ({
   const [isFocused, setIsFocused] = useState<number | undefined>(undefined);
   const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>('');
-  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const [fileSelection, setFileSelection] = useState<FileSelection>({
+    file: undefined,
+    validating: false,
+  });
 
   const { t } = useTranslation();
   const [postInfra] = osrdEditoastApi.endpoints.postInfra.useMutation();
@@ -44,30 +53,42 @@ const InfraSelectorModalBodyEdition = ({
     // redraw is in the deps to force the reload of the privileges when the user changes his own grant
   }, [getUserPrivileges, JSON.stringify(infrasList.map((infra) => infra.id))]);
 
-  const validateFile = async (fileToValidate: File) => {
+  const validateFile = async (fileToValidate: File): Promise<string | null> => {
     if (fileToValidate.size === 0) {
-      setErrorMessage(t('jsonUpload.emptyFile'));
-      return false;
+      return t('jsonUpload.emptyFile');
     }
     try {
       JSON.parse(await fileToValidate.text());
     } catch (e) {
       console.error(e);
-      setErrorMessage(t('jsonUpload.badJSON'));
-      return false;
+      return t('jsonUpload.badJSON');
     }
-    return true;
+    return null;
   };
 
   const handleSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const status = await validateFile(event.target.files[0]);
-      if (status === true) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    event.target.value = ''; // Resets the input value to let the onChange retrigger on consecutive inputs with the same file/path, necessary on chrome
+
+    setFileSelection({ file, validating: true });
+    const status = await validateFile(file);
+
+    setFileSelection((prev) => {
+      if (prev.file !== file) return prev; // File input could have changed during validation
+
+      if (!status) {
         setErrorMessage(undefined);
-        setSelectedFile(event.target.files[0]);
+        return { file, validating: false };
       }
-      event.target.value = ''; // Resets the input value to let the onChange retrigger on consecutive inputs with the same file/path, necessary on chrome
-    }
+      setErrorMessage(status);
+      return { file: undefined, validating: false };
+    });
+  };
+
+  const handleUnselect = () => {
+    setFileSelection({ file: undefined, validating: false });
+    setErrorMessage(undefined);
   };
 
   const addNewInfra = async () => {
@@ -76,15 +97,15 @@ const InfraSelectorModalBodyEdition = ({
       return;
     }
 
-    if (selectedFile) {
+    if (fileSelection.file) {
       postInfraRailjson({
         name: nameNewInfra,
-        railJson: JSON.parse(await selectedFile.text()),
+        railJson: JSON.parse(await fileSelection.file.text()),
         generateData: true,
       })
         .unwrap()
         .then(() => {
-          setSelectedFile(undefined);
+          setFileSelection({ file: undefined, validating: false });
           setErrorMessage(undefined);
         })
         .catch(() => {
@@ -146,34 +167,34 @@ const InfraSelectorModalBodyEdition = ({
           />
           <div className="infra-add-error">{errorMessage}</div>
           <div className="infra-add-import">
-            {selectedFile ? (
-              <>
-                <label className="infra-add-import-input-file with-file">
-                  <VscJson />
-                  <span className="ml-2" title={selectedFile.name}>
-                    {selectedFile.name}
-                  </span>
-                  <input type="file" onChange={handleSelect} accept=".json,.railjson" />
-                </label>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger btn-block mt-1 mb-2"
-                  onClick={() => setSelectedFile(undefined)}
-                >
-                  {t('infraManagement.addInfraJSONFileRemove')}
-                </button>
-              </>
-            ) : (
-              <label className="infra-add-import-input-file">
-                <VscJson />
+            <label
+              className={cx('infra-add-import-input-file', {
+                'with-file': fileSelection.file,
+              })}
+            >
+              <VscJson />
+              {fileSelection.file ? (
+                <span className="ml-2" title={fileSelection.file.name}>
+                  {fileSelection.file.name}
+                </span>
+              ) : (
                 <span className="flex-grow-1 text-center">
                   {t('infraManagement.addInfraJSONFile')}
                 </span>
-                <input type="file" onChange={handleSelect} accept=".json,.railjson" />
-              </label>
+              )}
+              <input type="file" onChange={handleSelect} accept=".json,.railjson" />
+            </label>
+            {(fileSelection.file || fileSelection.validating) && (
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger btn-block mt-1 mb-2"
+                onClick={handleUnselect}
+              >
+                {t('infraManagement.addInfraJSONFileRemove')}
+              </button>
             )}
           </div>
-          {isInfraLoading ? (
+          {isInfraLoading || fileSelection.validating ? (
             <Loader />
           ) : (
             <button
@@ -181,7 +202,9 @@ const InfraSelectorModalBodyEdition = ({
               onClick={addNewInfra}
               type="button"
             >
-              {selectedFile ? t('infraManagement.addInfraJSON') : t('infraManagement.addInfra')}
+              {fileSelection.file
+                ? t('infraManagement.addInfraJSON')
+                : t('infraManagement.addInfra')}
             </button>
           )}
         </div>
