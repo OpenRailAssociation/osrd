@@ -4,7 +4,6 @@ use std::collections::VecDeque;
 use std::fmt::Display;
 use std::hash::Hash;
 use std::hash::Hasher;
-use std::hash::{self};
 use std::ops::Shr;
 
 use serde::Deserialize;
@@ -272,7 +271,7 @@ impl<'a> Iterator for Alternatives<'a> {
 }
 
 impl Hash for TypeSpec {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: Hasher>(&self, state: &mut H) {
         core::mem::discriminant(self).hash(state);
         if matches!(self, Self::Union(_, _)) {
             for alternative in self.iter_union_alternatives() {
@@ -282,7 +281,7 @@ impl Hash for TypeSpec {
     }
 }
 
-fn hash_eq<T: hash::Hash>(a: &T, b: &T) -> bool {
+fn hash_eq<T: Hash>(a: &T, b: &T) -> bool {
     let mut ha = DefaultHasher::new();
     let mut hb = DefaultHasher::new();
     a.hash(&mut ha);
