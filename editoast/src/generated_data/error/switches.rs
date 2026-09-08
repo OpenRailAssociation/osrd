@@ -7,7 +7,7 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use schemas::infra::TrackEndpoint;
-use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDIdentified as _;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
 
@@ -148,7 +148,7 @@ mod tests {
     use crate::infra_cache::tests::create_switch_cache_point;
     use crate::infra_cache::tests::create_track_endpoint;
     use schemas::infra::Endpoint;
-    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDIdentified as _;
     use schemas::primitives::ObjectRef;
     use schemas::primitives::ObjectType;
 

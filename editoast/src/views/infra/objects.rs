@@ -170,7 +170,7 @@ mod tests {
     use crate::views::test_app::TestRequestExt as _;
     use schemas::infra::Switch;
     use schemas::infra::SwitchType;
-    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDIdentified as _;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn check_invalid_ids() {

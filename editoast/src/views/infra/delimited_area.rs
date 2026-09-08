@@ -14,7 +14,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use editoast_derive::EditoastError;
 use itertools::Either;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::Infra;
 use models::prelude::*;
 use schemas::infra::Direction;

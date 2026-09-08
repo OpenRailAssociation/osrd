@@ -7,7 +7,7 @@ use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use schemas::rolling_stock::SubCategory;
 use serde::Serialize;
 use std::sync::Arc;
@@ -16,7 +16,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use models::prelude::*;

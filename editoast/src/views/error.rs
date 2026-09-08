@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::http;
 use axum::response::IntoResponse as _;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use utoipa::openapi::ContentBuilder;
 use utoipa::openapi::KnownFormat;
 use utoipa::openapi::ObjectBuilder;

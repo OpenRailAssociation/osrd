@@ -27,6 +27,9 @@ members = [
 [workspace.lints.rust]
 async_fn_in_trait = "allow" # all of our public traits are only used inside the project
 
+[workspace.lints.clippy]
+unused_trait_names = "deny"
+
 [workspace.package]
 version = "0.1.0"
 edition = "2024"

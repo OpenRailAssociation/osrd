@@ -1,8 +1,12 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 
 use super::GeneratedData;

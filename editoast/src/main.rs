@@ -13,7 +13,7 @@ mod infra_cache;
 mod map;
 mod views;
 
-use clap::Parser;
+use clap::Parser as _;
 use client::Client;
 use client::Color;
 use client::Commands;
@@ -38,11 +38,11 @@ use common::tracing::TracingConfig;
 use common::tracing::create_tracing_subscriber;
 use database::DbConnectionPoolV2;
 use opentelemetry_otlp::WithExportConfig as _;
-use std::io::IsTerminal;
+use std::io::IsTerminal as _;
 use std::process::exit;
 use std::sync::Arc;
 use tracing::error;
-use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::util::SubscriberInitExt as _;
 pub use views::AppState;
 
 /// The mode editoast is running in

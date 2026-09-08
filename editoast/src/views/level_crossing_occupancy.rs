@@ -26,7 +26,7 @@ use common::units::quantities::Offset;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::TrainScheduleException;
 use models::prelude::*;
 use models::rolling_stock::RollingStock;

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use chrono::Duration;
 use clap::Args;
 use tokio::sync::RwLock;
-use tracing::Instrument;
+use tracing::Instrument as _;
 use url::Url;
 
 use crate::client::trains_traffic;

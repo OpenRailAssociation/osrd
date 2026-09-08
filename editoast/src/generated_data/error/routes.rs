@@ -10,8 +10,8 @@ use crate::infra_cache::ObjectCache;
 use schemas::infra::SwitchDirection;
 use schemas::infra::Waypoint;
 use schemas::primitives::Identifier;
-use schemas::primitives::OSRDIdentified;
-use schemas::primitives::OSRDObject;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject as _;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
 
@@ -234,7 +234,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use schemas::infra::Direction;
     use schemas::infra::Waypoint;
-    use schemas::primitives::OSRDObject;
+    use schemas::primitives::OSRDObject as _;
     use schemas::primitives::ObjectRef;
     use schemas::primitives::ObjectType;
 

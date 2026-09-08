@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use diesel::QueryableByName;
@@ -8,10 +8,14 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use json_patch::Patch;
 use schemas::infra::InfraObject;
-use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDIdentified as _;
 use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -128,6 +132,10 @@ mod tests {
     use diesel::sql_query;
     use diesel::sql_types::Double;
     use diesel::sql_types::Text;
+    #[allow(
+        clippy::unused_trait_names,
+        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+    )]
     use diesel_async::RunQueryDsl;
     use pretty_assertions::assert_eq;
 
@@ -140,14 +148,14 @@ mod tests {
     use schemas::infra::Switch;
     use schemas::primitives::OSRDObject;
     use serde_json::from_str;
-    use std::ops::DerefMut;
+    use std::ops::DerefMut as _;
 
     use super::UpdateOperation;
     use crate::infra_cache::operation::OperationError;
     use crate::infra_cache::operation::create::apply_create_operation;
     use database::DbConnectionPoolV2;
     use schemas::infra::TrackSection;
-    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDIdentified as _;
     use schemas::primitives::ObjectType;
 
     async fn create_empty_infra(conn: &mut DbConnection) -> Infra {

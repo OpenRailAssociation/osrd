@@ -2,12 +2,16 @@ use database::DbConnection;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use super::OperationError;
 use models::infra_objects::get_table;
@@ -82,8 +86,8 @@ mod tests {
     use schemas::infra::SpeedSection;
     use schemas::infra::Switch;
     use schemas::infra::TrackSection;
-    use schemas::primitives::OSRDIdentified;
-    use schemas::primitives::OSRDObject;
+    use schemas::primitives::OSRDIdentified as _;
+    use schemas::primitives::OSRDObject as _;
 
     async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
         Infra::changeset()

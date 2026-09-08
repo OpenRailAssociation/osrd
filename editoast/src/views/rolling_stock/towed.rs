@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use authz::Role;

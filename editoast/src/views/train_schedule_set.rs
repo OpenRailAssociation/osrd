@@ -2,7 +2,7 @@ use axum::extract::Query;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use models::prelude::*;
 use schemas::paced_train::TrainSchedule;
 use thiserror::Error;
