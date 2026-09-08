@@ -89,7 +89,13 @@ const useStaticPathfinding = (
   useEffect(() => {
     const launchPathfinding = async () => {
       setPathfinding(undefined);
-      if (!infra || workerStatus !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
+      if (
+        !infra ||
+        workerStatus !== 'READY' ||
+        !rollingStock ||
+        debouncedTotalLength === undefined ||
+        pathStepsLocations.length < 2
+      ) {
         return;
       }
 

@@ -8,24 +8,27 @@ import type {
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
-type ConsistChange = {
+type PathfindingConsistChange = {
   index: number;
   rollingStockID: number;
+  totalLength: number;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
 };
 
 type SegmentConstraints = {
   segmentRollingStock: LightRollingStock;
+  segmentTotalLength: number;
   segmentLoadingGauge?: LoadingGaugeType;
   segmentSpeedLimitByTag?: string | null;
 };
 
 type getSegmentConstraintsOptions = {
   segmentIndex: number;
-  consistChanges: ConsistChange[];
+  consistChanges: PathfindingConsistChange[];
   getLightRollingStockById: GetLightRollingStockById;
   rollingStock: LightRollingStock;
+  totalLength: number;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
 };
@@ -33,12 +36,12 @@ type getSegmentConstraintsOptions = {
 type LaunchSegmentedPathfindingOptions = {
   pathSegmentsIndexes: number[];
   stdcmPathSteps: PathfindingItem[];
-  consistChanges: ConsistChange[];
+  consistChanges: PathfindingConsistChange[];
   getLightRollingStockById: GetLightRollingStockById;
   postPathfindingBlocks: PostPathfindingBlocks;
   infraId: number;
   rollingStock: LightRollingStock;
-  totalLength: number | undefined;
+  totalLength: number;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
   allowedTrackSections?: string[];
@@ -52,13 +55,15 @@ type PostPathfindingBlocks = ReturnType<
   typeof osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery
 >[0];
 
-export const getConsistChanges = (pathSteps: StdcmPathStep[]): ConsistChange[] =>
+export const getConsistChanges = (pathSteps: StdcmPathStep[]): PathfindingConsistChange[] =>
   pathSteps.flatMap((step, index) => {
-    if (!step.isVia || !step.consistChange?.rollingStockID) return [];
+    if (!step.isVia || !step.consistChange?.rollingStockID || !step.consistChange?.totalLength)
+      return [];
     return [
       {
         index,
         rollingStockID: step.consistChange.rollingStockID,
+        totalLength: step.consistChange.totalLength,
         loadingGauge: step.consistChange.loadingGauge,
         speedLimitByTag: step.consistChange.speedLimitByTag,
       },
@@ -66,7 +71,7 @@ export const getConsistChanges = (pathSteps: StdcmPathStep[]): ConsistChange[] =
   });
 
 export const getPathSegmentsIndexes = (
-  consistChanges: ConsistChange[],
+  consistChanges: PathfindingConsistChange[],
   totalSteps: number
 ): number[] => [0, ...consistChanges.map((change) => change.index), totalSteps - 1];
 
@@ -75,12 +80,14 @@ export const getSegmentConstraints = async ({
   consistChanges,
   getLightRollingStockById,
   rollingStock,
+  totalLength,
   loadingGauge,
   speedLimitByTag,
 }: getSegmentConstraintsOptions): Promise<SegmentConstraints> => {
   if (segmentIndex === 0) {
     return {
       segmentRollingStock: rollingStock,
+      segmentTotalLength: totalLength,
       segmentLoadingGauge: loadingGauge,
       segmentSpeedLimitByTag: speedLimitByTag,
     };
@@ -93,6 +100,7 @@ export const getSegmentConstraints = async ({
 
   return {
     segmentRollingStock,
+    segmentTotalLength: previousStep.totalLength,
     segmentLoadingGauge: previousStep.loadingGauge ?? loadingGauge,
     segmentSpeedLimitByTag: previousStep.speedLimitByTag ?? speedLimitByTag,
   };
@@ -125,12 +133,13 @@ export const launchSegmentedPathfinding = async ({
     const endSliceIndex = pathSegmentsIndexes[i + 1] + 1;
     const segmentSteps = stdcmPathSteps.slice(pathSegmentsIndexes[i], endSliceIndex);
 
-    const { segmentRollingStock, segmentLoadingGauge, segmentSpeedLimitByTag } =
+    const { segmentRollingStock, segmentTotalLength, segmentLoadingGauge, segmentSpeedLimitByTag } =
       await getSegmentConstraints({
         segmentIndex: i,
         consistChanges,
         getLightRollingStockById,
         rollingStock,
+        totalLength,
         loadingGauge,
         speedLimitByTag,
       });
@@ -138,7 +147,7 @@ export const launchSegmentedPathfinding = async ({
     const payload = getPathfindingQuery({
       infraId,
       rollingStock: segmentRollingStock,
-      totalLength,
+      totalLength: segmentTotalLength,
       pathSteps: segmentSteps,
       loadingGauge: segmentLoadingGauge,
       speedLimitByTag: segmentSpeedLimitByTag,
