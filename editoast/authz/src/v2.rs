@@ -14,7 +14,7 @@ pub use test_client_ext::TestClientExt;
 
 use std::collections::HashSet;
 
-use futures::FutureExt;
+use futures::FutureExt as _;
 use futures::future::BoxFuture;
 
 use crate::Infra;
