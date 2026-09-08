@@ -1,4 +1,4 @@
-use std::hash::Hash;
+use std::hash::Hash as _;
 use std::hash::Hasher;
 
 /// Hash a float through a rounded integer value
