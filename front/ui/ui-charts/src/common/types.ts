@@ -25,7 +25,7 @@ type RenderingKey = `${typeof RENDERING}-${LayerType}`;
 type PickingKey = `${typeof PICKING}-${PickingLayerType}`;
 export type LayerKey = RenderingKey | PickingKey;
 
-export type LayerEntry =
+export type LayerRef =
   | { type: typeof RENDERING; layer: typeof LAYERS[number] }
   | { type: typeof PICKING; layer: typeof PICKING_LAYERS[number] };
 

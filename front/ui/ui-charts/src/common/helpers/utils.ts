@@ -1,7 +1,7 @@
 // ============= Canvas ==============
 
 import { PICKING, RENDERING } from "../consts";
-import { LayerKey, LayerEntry } from "../types";
+import { LayerKey, LayerRef } from "../types";
 
 /**
  * This function returns the picking layers scaling ratio. We basically take the min of the screen
@@ -23,7 +23,7 @@ export function getPickingScalingRatio(): number {
   return pickingDownscalingRatio * dpr;
 }
 
-export const makeContextKey = ({ type, layer }: LayerEntry): LayerKey => {
+export const makeContextKey = ({ type, layer }: LayerRef): LayerKey => {
   switch (type) {
     case RENDERING:
       return `${RENDERING}-${layer}`;

@@ -1,4 +1,4 @@
-import { LayerEntry } from "./types";
+import { LayerRef } from "./types";
 
 export const LAYERS = ['background', 'graduations', 'paths', 'overlay', 'captions'] as const;
 export const PICKING_LAYERS = ['paths', 'overlay'] as const;
@@ -6,7 +6,7 @@ export const PICKING_LAYERS = ['paths', 'overlay'] as const;
 export const RENDERING = 'rendering';
 export const PICKING = 'picking';
 
-export const allLayers: LayerEntry[] = [
+export const allLayers: LayerRef[] = [
   ...LAYERS.map((layer) => ({ type: RENDERING, layer }) as const),
   ...PICKING_LAYERS.map((layer) => ({ type: PICKING, layer }) as const),
 ];
