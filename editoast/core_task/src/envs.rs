@@ -1,4 +1,5 @@
 pub(crate) mod core;
+pub(crate) mod occupancy_blocks;
 pub(crate) mod pathfinding;
 pub(crate) mod simulation;
 
