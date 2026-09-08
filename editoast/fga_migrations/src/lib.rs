@@ -5,11 +5,11 @@ use fga::client::Client;
 use fga::client::Error;
 use fga::client::InitializationError;
 use fga::compile_model;
-use fga::model::Relation;
+use fga::model::Relation as _;
 use fga::model::Type;
 use indexmap::IndexMap;
 use indexmap::indexmap;
-use sha1::Digest;
+use sha1::Digest as _;
 use sha1::Sha1;
 use tracing::info;
 use tracing::instrument;
@@ -196,8 +196,8 @@ mod tests {
     use crate::Editoast;
     use crate::OPENFGA_MIGRATIONS;
     use fga::Client;
-    use fga::model::Relation;
-    use sha1::Digest;
+    use fga::model::Relation as _;
+    use sha1::Digest as _;
     use sha1::Sha1;
 
     pub fn get_latest_model(store_id: &str) -> String {
