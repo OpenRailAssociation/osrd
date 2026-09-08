@@ -58,14 +58,38 @@ describe('getCurveVisualState', () => {
     );
 
     it.each(['std', 'tod'] as const)(
-      'D.3 - hover on an occurrence from train list, sibling on %s should receive the hover',
+      'D.3 - hover on an occurrence from train list on %s, only that occurrence should receive the hover',
       (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_2, relevantExceptionTypes: [] },
+              hover: { trainId: PACED_1_OCC_2, from: 'timetable' },
+            })
+          )
+        ).toEqual({ state: 'none', hovered: true });
         expect(
           getCurveVisualState(
             buildInput({
               chart,
               train: { id: PACED_1_OCC_3, relevantExceptionTypes: [] },
               hover: { trainId: PACED_1_OCC_2, from: 'timetable' },
+            })
+          )
+        ).toEqual({ state: 'none', hovered: false });
+      }
+    );
+
+    it.each(['std', 'tod'] as const)(
+      'D.3 - hover on a paced train from train list on %s, every occurrence should receive the hover',
+      (chart) => {
+        expect(
+          getCurveVisualState(
+            buildInput({
+              chart,
+              train: { id: PACED_1_OCC_3, relevantExceptionTypes: [] },
+              hover: { trainId: TRAIN_SCHEDULE_1, from: 'timetable' },
             })
           )
         ).toEqual({ state: 'none', hovered: true });
@@ -281,13 +305,25 @@ describe('getCurveVisualState', () => {
       ).toBe(true);
     });
 
-    it('should highlight every occurrence when hovering from the train list', () => {
+    it('should highlight only the hovered occurrence when hovering it from the train list', () => {
       expect(
         getCurveVisualState(
           buildInput({
             ...compliantStdSelection,
             train: { id: PACED_1_OCC_3, relevantExceptionTypes: ['start_time'] },
             hover: { trainId: PACED_1_OCC_2, from: 'timetable' },
+          })
+        ).hovered
+      ).toBe(false);
+    });
+
+    it('should highlight every occurrence when hovering the paced train from the train list', () => {
+      expect(
+        getCurveVisualState(
+          buildInput({
+            ...compliantStdSelection,
+            train: { id: PACED_1_OCC_3, relevantExceptionTypes: ['start_time'] },
+            hover: { trainId: TRAIN_SCHEDULE_1, from: 'timetable' },
           })
         ).hovered
       ).toBe(true);
