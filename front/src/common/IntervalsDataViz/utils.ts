@@ -1,32 +1,14 @@
 import type { CSSProperties } from 'react';
 
-import { isNil, isNaN, omit, values } from 'lodash';
+import { isNil, omit, values } from 'lodash';
 
 import type { LinearMetadataItem } from './types';
-
-/**
- * Simple function that take an input and try to convert it as a number.
- */
-export function castToNumber(value: unknown): number | null | undefined {
-  if (isNil(value)) return value;
-
-  if (typeof value === 'boolean') return +value;
-  if (value === '') return null;
-
-  const stringValue = `${value}`;
-  const castValue = +stringValue;
-
-  return isNaN(castValue) || Math.abs(castValue) === Infinity ? null : castValue;
-}
 
 /**
  * Given a number, shorten it in string.
  * Example 1234 -> 1.2K
  */
-export function shortNumber(value: unknown): string {
-  let num = castToNumber(value);
-  if (isNil(num)) return '';
-
+export function shortNumber(num: number): string {
   if (Math.abs(num) < 1000) {
     return `${Math.round(num)}`;
   }
