@@ -1,8 +1,7 @@
 import { createElement } from 'react';
 
-import { cleanup, waitFor } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   TimetableContext,
@@ -60,7 +59,7 @@ vi.mock('modules/trainSchedule/hooks/useSelectedTrainSchedule', () => ({
   default: mockUseSelectedTrainSchedule,
 }));
 
-describe.skip('useSimulationResults', () => {
+describe('useSimulationResults', () => {
   const baseTrain = {
     id: 1,
     start_time: '2026-03-16T08:00:00.000Z',
@@ -187,17 +186,13 @@ describe.skip('useSimulationResults', () => {
     });
   });
 
-  afterEach(() => {
-    cleanup();
-  });
-
   describe('when no train can be resolved', () => {
     it('should return no results when no selected train id is available', async () => {
       mockGetSelectedTrain.mockReturnValue(undefined);
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
+      await vi.waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
       expect(result.current.results).toBeUndefined();
     });
 
@@ -206,7 +201,7 @@ describe.skip('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
+      await vi.waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
       expect(result.current.results).toBeUndefined();
     });
   });
@@ -214,7 +209,7 @@ describe.skip('useSimulationResults', () => {
   it('should return a valid simulation result for a standard train', async () => {
     const { result } = renderUseSimulationResults();
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(result.current.results?.isValid).toBe(true);
       expect(getTrainPath).toHaveBeenCalledWith({
         id: TRAIN_SCHEDULE_ID,
@@ -303,7 +298,7 @@ describe.skip('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
+      await vi.waitFor(() => expect(result.current.isSimulationDataLoading).toBe(false));
       expect(result.current.results).toEqual(expectedResults);
     });
   });
@@ -322,7 +317,7 @@ describe.skip('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => {
+      await vi.waitFor(() => {
         expect(result.current.isSimulationDataLoading).toBe(false);
         expect(result.current.results).toBeUndefined();
         expect(getTrainPath).toHaveBeenCalledWith({
@@ -355,7 +350,7 @@ describe.skip('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => {
+      await vi.waitFor(() => {
         expect(result.current.results?.isValid).toBe(true);
         expect(getTrainPath).toHaveBeenCalledWith({
           id: OCCURRENCE_ID,
@@ -407,7 +402,7 @@ describe.skip('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => {
+      await vi.waitFor(() => {
         expect(result.current.results?.isValid).toBe(true);
         expect(getTrainPath).toHaveBeenCalledWith({
           id: ADDED_EXCEPTION_ID,
@@ -458,7 +453,7 @@ describe.skip('useSimulationResults', () => {
 
         const { result } = renderUseSimulationResults();
 
-        await waitFor(() => expect(result.current.results?.isValid).toBe(true));
+        await vi.waitFor(() => expect(result.current.results?.isValid).toBe(true));
         expect(result.current.results).toMatchObject({
           isValid: true,
           train: { id: selectedId, start_time: expectedStartTime },
@@ -487,20 +482,20 @@ describe.skip('useSimulationResults', () => {
 
       const { result } = renderUseSimulationResults();
 
-      await waitFor(() => expect(result.current.isSimulationDataLoading).toBe(true));
+      await vi.waitFor(() => expect(result.current.isSimulationDataLoading).toBe(true));
     });
   });
 
   it('should refetch and update results when the selected train id changes', async () => {
     const { result, rerender } = renderUseSimulationResults();
 
-    await waitFor(() => expect(result.current.results?.train.id).toBe(TRAIN_SCHEDULE_ID));
+    await vi.waitFor(() => expect(result.current.results?.train.id).toBe(TRAIN_SCHEDULE_ID));
 
     mockGetSelectedTrain.mockReturnValue({ id: 'trainSchedule_2' });
     mockUseSelectedTrainSchedule.mockReturnValue({ ...baseTrain, id: 2 });
     rerender();
 
-    await waitFor(() => {
+    await vi.waitFor(() => {
       expect(result.current.results?.train.id).toBe('trainSchedule_2');
       expect(getTrainPath).toHaveBeenLastCalledWith({
         id: 'trainSchedule_2',
