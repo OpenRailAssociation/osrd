@@ -234,9 +234,10 @@ const ComboBox = <T,>({
   const clearInput = useCallback(() => {
     setInputValue('');
     onChange?.('');
+    onSelectSuggestion(undefined);
     resetSuggestions();
     focusInput();
-  }, [resetSuggestions, onChange, focusInput]);
+  }, [resetSuggestions, onChange, onSelectSuggestion, focusInput]);
 
   useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
@@ -244,7 +245,7 @@ const ComboBox = <T,>({
     if (inputProps.readOnly || inputProps.disabled) return undefined;
     return [
       // Conditionally include the clear icon only when input is not empty
-      ...(value
+      ...(inputValue
         ? [
             {
               icon: <XCircle variant="fill" />,
@@ -268,7 +269,7 @@ const ComboBox = <T,>({
     inputProps.readOnly,
     inputProps.disabled,
     clearInput,
-    value,
+    inputValue,
     small,
     focusInput,
     isInputFocused,
