@@ -15,11 +15,11 @@ use fga_migrations::MigrationError;
 use fga_migrations::TargetMigration;
 use fga_migrations::run_migrations;
 
-use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_otlp::WithExportConfig as _;
 use tracing::info;
-use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::util::SubscriberInitExt as _;
 
-use clap::Parser;
+use clap::Parser as _;
 use url::Url;
 
 fn setup_telemetry(telemetry_url: Url) {
