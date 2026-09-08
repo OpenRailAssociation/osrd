@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use fga::client::UserList;
 use fga::model::Relation as _;
-use futures::FutureExt;
+use futures::FutureExt as _;
 
 use crate::Group;
 use crate::ProjectPrivilege;
@@ -242,7 +242,7 @@ mod tests {
     use crate::authz_client;
     use crate::model::Project;
     use crate::v2::Check;
-    use crate::v2::TestClientExt;
+    use crate::v2::TestClientExt as _;
 
     use super::*;
 
