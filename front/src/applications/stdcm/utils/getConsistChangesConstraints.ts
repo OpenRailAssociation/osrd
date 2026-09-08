@@ -38,6 +38,7 @@ type LaunchSegmentedPathfindingOptions = {
   postPathfindingBlocks: PostPathfindingBlocks;
   infraId: number;
   rollingStock: LightRollingStock;
+  totalLength: number | undefined;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
   allowedTrackSections?: string[];
@@ -112,6 +113,7 @@ export const launchSegmentedPathfinding = async ({
   postPathfindingBlocks,
   infraId,
   rollingStock,
+  totalLength,
   loadingGauge,
   speedLimitByTag,
   allowedTrackSections,
@@ -136,6 +138,7 @@ export const launchSegmentedPathfinding = async ({
     const payload = getPathfindingQuery({
       infraId,
       rollingStock: segmentRollingStock,
+      totalLength,
       pathSteps: segmentSteps,
       loadingGauge: segmentLoadingGauge,
       speedLimitByTag: segmentSpeedLimitByTag,
