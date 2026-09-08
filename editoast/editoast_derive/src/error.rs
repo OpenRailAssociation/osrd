@@ -10,7 +10,7 @@ use syn::DeriveInput;
 use syn::Fields;
 use syn::Ident;
 use syn::Lit;
-use syn::ext::IdentExt;
+use syn::ext::IdentExt as _;
 
 const DEFAULT_STATUS_CODE: u16 = 400;
 
