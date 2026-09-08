@@ -93,13 +93,17 @@ impl ToTokens for RetrieveBatchImpl {
                     conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::prelude::Model;
+                    use crate::prelude::Model as _;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel::SelectableHelper as _;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
-                    use futures_util::TryStreamExt;
-                    use std::ops::DerefMut;
+                    use futures_util::TryStreamExt as _;
+                    use std::ops::DerefMut as _;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok({ #retrieve_loop })
@@ -113,14 +117,18 @@ impl ToTokens for RetrieveBatchImpl {
                     conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::prelude::Identifiable;
-                    use crate::prelude::Model;
+                    use crate::prelude::Identifiable as _;
+                    use crate::prelude::Model as _;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel::SelectableHelper as _;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
-                    use futures_util::TryStreamExt;
-                    use std::ops::DerefMut;
+                    use futures_util::TryStreamExt as _;
+                    use std::ops::DerefMut as _;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok({ #retrieve_with_key_loop })

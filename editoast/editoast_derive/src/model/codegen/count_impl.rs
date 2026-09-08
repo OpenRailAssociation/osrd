@@ -31,10 +31,10 @@ impl ToTokens for CountImpl {
                     conn: &mut database::DbConnection,
                     settings: crate::prelude::SelectionSettings<Self>,
                 ) -> std::result::Result<u64, Self::Error> {
-                    use diesel::QueryDsl;
-                    use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
-                    use std::ops::DerefMut;
+                    use diesel::QueryDsl as _;
+                    use diesel_async::RunQueryDsl as _;
+                    use futures_util::stream::TryStreamExt as _;
+                    use std::ops::DerefMut as _;
 
                     let mut query = #table_mod::table.select(diesel::dsl::count_star()).into_boxed();
 

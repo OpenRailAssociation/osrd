@@ -29,9 +29,13 @@ impl ToTokens for DeleteImpl {
                     conn: &mut database::DbConnection,
                 ) -> std::result::Result<bool, Self::Error> {
                     use diesel::prelude::*;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
                     let id = self.#primary_key;
                     diesel::delete(#table_mod::table.find(id))
                         .execute(conn.write().await.deref_mut())

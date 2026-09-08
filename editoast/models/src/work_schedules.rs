@@ -1,13 +1,12 @@
 use chrono::DateTime;
 use chrono::Utc;
-use editoast_derive::Model;
 use schemas::infra::TrackRange;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Model)]
+#[derive(Debug, Clone, editoast_derive::Model)]
 #[model(table = database::tables::work_schedule_group)]
 #[model(gen(ops = crd, batch_ops = c, list))]
 #[model(error(create = WsGroupError, update = WsGroupError))]

@@ -61,8 +61,12 @@ impl ToTokens for DeleteBatchImpl {
                 ) -> std::result::Result<usize, Self::Error> {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     let counts = { #delete_loop };

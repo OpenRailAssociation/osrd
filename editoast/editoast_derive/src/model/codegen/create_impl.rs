@@ -41,9 +41,9 @@ impl ToTokens for CreateImpl {
                     self,
                     conn: &mut database::DbConnection,
                 ) -> std::result::Result<#model, Self::Error> {
-                    use diesel_async::RunQueryDsl;
+                    use diesel_async::RunQueryDsl as _;
                     use #table_mod::dsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
                     diesel::insert_into(#table_mod::table)
                         .#values
                         .returning((#(dsl::#columns,)*))

@@ -73,13 +73,17 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     conn: &mut database::DbConnection,
                     values: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::prelude::Identifiable;
-                    use crate::prelude::Model;
-                    use std::ops::DerefMut;
+                    use crate::prelude::Identifiable as _;
+                    use crate::prelude::Model as _;
+                    use std::ops::DerefMut as _;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
-                    use futures_util::TryStreamExt;
+                    use futures_util::TryStreamExt as _;
                     let values = values.into_iter().collect::<Vec<_>>();
                     Ok({ #create_loop })
                 }

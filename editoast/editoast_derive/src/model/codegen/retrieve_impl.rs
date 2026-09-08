@@ -40,9 +40,13 @@ impl ToTokens for RetrieveImpl {
                 ) -> std::result::Result<Option<#model>, Self::Error> {
                     use diesel::prelude::*;
                     use diesel::SelectableHelper as _;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     dsl::#table_name
                         .#(filter(#eqs)).*

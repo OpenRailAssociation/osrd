@@ -91,8 +91,12 @@ impl crate::prelude::Exists<(i64)> for Timetable {
         id: (i64),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         use database::tables::timetable::dsl;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
@@ -116,9 +120,13 @@ impl crate::prelude::Retrieve<(i64)> for Timetable {
     ) -> std::result::Result<Option<Timetable>, Self::Error> {
         use diesel::prelude::*;
         use diesel::SelectableHelper as _;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
         use database::tables::timetable::dsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         dsl::timetable
             .filter(dsl::id.eq(id))

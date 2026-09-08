@@ -44,8 +44,12 @@ impl ToTokens for UpdateImpl {
                     #id_ident: #ty,
                 ) -> std::result::Result<Option<#model>, Self::Error> {
                     use diesel::prelude::*;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
                     use #table_mod::dsl;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     diesel::update(dsl::#table_name.#(filter(#eqs)).*)

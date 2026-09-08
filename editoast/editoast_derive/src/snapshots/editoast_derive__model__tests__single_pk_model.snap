@@ -29,21 +29,21 @@ impl Timetable {
 }
 impl _TimetableField<Timetable, i64, database::tables::timetable::id> {
     pub fn eq(&self, value: i64) -> crate::prelude::FilterSetting<Timetable> {
-        use diesel::ExpressionMethods;
+        use diesel::ExpressionMethods as _;
         crate::prelude::FilterSetting::new(database::tables::timetable::id.eq(value))
     }
     pub fn eq_any(&self, values: Vec<i64>) -> crate::prelude::FilterSetting<Timetable> {
-        use diesel::ExpressionMethods;
+        use diesel::ExpressionMethods as _;
         crate::prelude::FilterSetting::new(
             database::tables::timetable::id.eq_any(values),
         )
     }
     pub fn asc(&self) -> crate::prelude::SortSetting<Timetable> {
-        use diesel::ExpressionMethods;
+        use diesel::ExpressionMethods as _;
         crate::prelude::SortSetting(Box::new(database::tables::timetable::id.asc()))
     }
     pub fn desc(&self) -> crate::prelude::SortSetting<Timetable> {
-        use diesel::ExpressionMethods;
+        use diesel::ExpressionMethods as _;
         crate::prelude::SortSetting(Box::new(database::tables::timetable::id.desc()))
     }
 }
@@ -91,8 +91,12 @@ impl crate::prelude::Exists<(i64)> for Timetable {
         id: (i64),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         use database::tables::timetable::dsl;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
@@ -116,9 +120,13 @@ impl crate::prelude::Retrieve<(i64)> for Timetable {
     ) -> std::result::Result<Option<Timetable>, Self::Error> {
         use diesel::prelude::*;
         use diesel::SelectableHelper as _;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
         use database::tables::timetable::dsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         dsl::timetable
             .filter(dsl::id.eq(id))
@@ -145,8 +153,12 @@ impl crate::prelude::DeleteStatic<(i64)> for Timetable {
         id: (i64),
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         use database::tables::timetable::dsl;
         tracing::Span::current().record("query_id", tracing::field::debug(&id));
         diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
@@ -164,9 +176,9 @@ impl crate::prelude::Create<Timetable> for TimetableChangeset {
         self,
         conn: &mut database::DbConnection,
     ) -> std::result::Result<Timetable, Self::Error> {
-        use diesel_async::RunQueryDsl;
+        use diesel_async::RunQueryDsl as _;
         use database::tables::timetable::dsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         diesel::insert_into(database::tables::timetable::table)
             .default_values()
             .returning((dsl::id,))
@@ -191,9 +203,13 @@ impl crate::prelude::Delete for Timetable {
         conn: &mut database::DbConnection,
     ) -> std::result::Result<bool, Self::Error> {
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
         use database::tables::timetable::dsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         let id = self.id;
         diesel::delete(database::tables::timetable::table.find(id))
             .execute(conn.write().await.deref_mut())
@@ -228,7 +244,7 @@ impl crate::prelude::List for Timetable {
         use diesel_async::RunQueryDsl as _;
         use futures_util::TryStreamExt as _;
         use database::tables::timetable::dsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         let mut query = database::tables::timetable::table.into_boxed();
         for filter_fun in &settings.filters {
             let crate::prelude::FilterSetting(filter) = (*filter_fun)();
@@ -295,10 +311,10 @@ impl crate::prelude::Count for Timetable {
         conn: &mut database::DbConnection,
         settings: crate::prelude::SelectionSettings<Self>,
     ) -> std::result::Result<u64, Self::Error> {
-        use diesel::QueryDsl;
-        use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
-        use std::ops::DerefMut;
+        use diesel::QueryDsl as _;
+        use diesel_async::RunQueryDsl as _;
+        use futures_util::stream::TryStreamExt as _;
+        use std::ops::DerefMut as _;
         let mut query = database::tables::timetable::table
             .select(diesel::dsl::count_star())
             .into_boxed();
@@ -336,13 +352,17 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<Timetable> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::prelude::Model;
+        use crate::prelude::Model as _;
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel::SelectableHelper as _;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use futures_util::TryStreamExt;
-        use std::ops::DerefMut;
+        use futures_util::TryStreamExt as _;
+        use std::ops::DerefMut as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
         Ok({
@@ -385,14 +405,18 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<((i64), Timetable)> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::prelude::Identifiable;
-        use crate::prelude::Model;
+        use crate::prelude::Identifiable as _;
+        use crate::prelude::Model as _;
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel::SelectableHelper as _;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use futures_util::TryStreamExt;
-        use std::ops::DerefMut;
+        use futures_util::TryStreamExt as _;
+        use std::ops::DerefMut as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
         Ok({
@@ -445,8 +469,12 @@ impl crate::prelude::DeleteBatch<(i64)> for Timetable {
     ) -> std::result::Result<usize, Self::Error> {
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
         let counts = {

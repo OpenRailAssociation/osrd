@@ -43,7 +43,7 @@ impl ToTokens for ListImpl {
                     use diesel_async::RunQueryDsl as _;
                     use futures_util::TryStreamExt as _;
                     use #table_mod::dsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
 
                     let mut query = #table_mod::table.into_boxed();
 

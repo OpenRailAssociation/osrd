@@ -67,10 +67,14 @@ impl ToTokens for CreateBatchImpl {
                 ) -> std::result::Result<C, Self::Error> {
                     use crate::prelude::Model;
                     use #table_mod::dsl;
-                    use std::ops::DerefMut;
+                    use std::ops::DerefMut as _;
                     use diesel::prelude::*;
+                    #[allow(
+                        clippy::unused_trait_names,
+                        reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                    )]
                     use diesel_async::RunQueryDsl;
-                    use futures_util::TryStreamExt;
+                    use futures_util::TryStreamExt as _;
                     let values = values.into_iter().collect::<Vec<_>>();
                     Ok({ #create_loop })
                 }

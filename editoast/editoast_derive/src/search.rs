@@ -8,7 +8,7 @@ use darling::Result;
 use darling::ast;
 use darling::util;
 use proc_macro2::TokenStream;
-use quote::ToTokens;
+use quote::ToTokens as _;
 use quote::quote;
 use syn::DeriveInput;
 use syn::punctuated::Punctuated;
