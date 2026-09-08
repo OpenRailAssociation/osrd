@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::str::FromStr;
+use std::str::FromStr as _;
 
 use chrono::DateTime;
 use chrono::Utc;

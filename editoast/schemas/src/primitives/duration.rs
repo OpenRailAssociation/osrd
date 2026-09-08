@@ -23,7 +23,7 @@
 //! ```
 
 use std::ops::Deref;
-use std::str::FromStr;
+use std::str::FromStr as _;
 
 use chrono::Duration as ChronoDuration;
 use iso8601::Duration as IsoDuration;
