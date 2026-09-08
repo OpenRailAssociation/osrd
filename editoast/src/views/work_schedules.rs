@@ -1,4 +1,4 @@
-use super::pagination::PaginatedList;
+use super::pagination::PaginatedList as _;
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;

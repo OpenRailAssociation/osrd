@@ -1,4 +1,4 @@
-use core_client::AsCoreRequest;
+use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use core_client::pathfinding::TrainPath;
 use core_client::signal_projection::SignalUpdate;
@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
-use std::hash::Hasher;
+use std::hash::Hasher as _;
 use std::sync::Arc;
 use utoipa::ToSchema;
 

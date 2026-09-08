@@ -12,7 +12,7 @@ use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use schemas::infra::ApplicableDirections;
 use schemas::infra::Direction;
-use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDIdentified as _;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
 

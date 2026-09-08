@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use database::tables::infra_layer_signal::dsl;
 use diesel::delete;
-use diesel::query_dsl::methods::FilterDsl;
+use diesel::query_dsl::methods::FilterDsl as _;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
@@ -15,7 +15,7 @@ use schemas::primitives::ObjectType;
 
 use super::GeneratedData;
 use super::utils::InvolvedObjects;
-use crate::diesel::ExpressionMethods;
+use crate::diesel::ExpressionMethods as _;
 use crate::generated_data::sprite_config::SpriteConfig;
 use crate::generated_data::sprite_config::SpriteConfigs;
 use crate::infra_cache::InfraCache;
@@ -69,6 +69,10 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a SignalC
     }
 
     for ((signaling_system, sprite_id), signals) in group_by_sprite {
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
         sql_query("UPDATE infra_layer_signal SET signaling_system = $2, sprite = $3 WHERE infra_id = $1 AND obj_id = ANY($4)")
             .bind::<BigInt, _>(infra)
@@ -91,6 +95,10 @@ impl GeneratedData for SignalLayer {
         infra: i64,
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabaseError> {
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         sql_query(include_str!("sql/generate_signal_layer.sql"))
@@ -115,6 +123,10 @@ impl GeneratedData for SignalLayer {
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabaseError> {
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         let involved_objects =

@@ -5,7 +5,7 @@ use chrono::NaiveDate;
 use chrono::Utc;
 use serde::Deserialize;
 use std::fs::File;
-use std::io::BufRead;
+use std::io::BufRead as _;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -75,7 +75,7 @@ pub async fn import_trains_traffic(
 #[cfg(test)]
 pub mod tests {
     use std::path::PathBuf;
-    use std::str::FromStr;
+    use std::str::FromStr as _;
     use std::sync::Arc;
 
     use chrono::DateTime;

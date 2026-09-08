@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use arcstr::ArcStr;
-use itertools::Itertools;
+use itertools::Itertools as _;
 
 use super::OperationalPoint;
 

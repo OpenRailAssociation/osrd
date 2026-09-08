@@ -197,7 +197,7 @@
 
 // TODO: the documentation of this file needs to be updated (no more search.yml)
 
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 use std::sync::Arc;
 
 use axum::Extension;
@@ -214,6 +214,10 @@ use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_derive::Search;
@@ -820,7 +824,7 @@ pub struct SearchConfigFinder;
 #[cfg(test)]
 pub mod tests {
     use models::infra_objects::SchemaModel as _;
-    use models::prelude::CreateBatch;
+    use models::prelude::CreateBatch as _;
     use pretty_assertions::assert_eq;
 
     use schemas::infra::OperationalPoint;
@@ -832,7 +836,7 @@ pub mod tests {
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_train_schedule_set;
-    use crate::generated_data::InfraGeneratedData;
+    use crate::generated_data::InfraGeneratedData as _;
     use crate::infra_cache::InfraCache;
     use crate::views::test_app;
     use crate::views::test_app::TestRequestExt as _;

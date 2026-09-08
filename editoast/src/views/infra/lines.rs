@@ -90,7 +90,7 @@ mod tests {
     use schemas::infra::TrackSectionSncfExtension;
     use schemas::primitives::Identifier;
     use serde_json::json;
-    use std::str::FromStr;
+    use std::str::FromStr as _;
 
     use crate::fixtures::create_empty_infra;
     use crate::infra_cache::operation::create::apply_create_operation;

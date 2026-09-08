@@ -6,7 +6,7 @@ use authz::ProjectGrant;
 use authz::RollingStock;
 use authz::RollingStockGrant;
 use authz::v2;
-use authz::v2::TestClientExt;
+use authz::v2::TestClientExt as _;
 use authz::v2::special_authorizers;
 use axum::http::Method;
 use std::collections::HashMap;

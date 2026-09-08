@@ -21,6 +21,10 @@ use detector::DetectorLayer;
 use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use electrification::ElectrificationLayer;
 use error::ErrorLayer;
@@ -37,7 +41,7 @@ use serde::Deserialize;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
 use std::collections::HashMap;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 use std::sync::Arc;
 use switch::SwitchLayer;
 use tracing::debug;
@@ -239,6 +243,10 @@ impl InfraGeneratedData for Infra {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::Text;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         let query = dsl::infra_layer_error
