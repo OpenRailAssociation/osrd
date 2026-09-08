@@ -25,6 +25,7 @@ import ChronogramWrapper from 'modules/simulationResult/components/Chronogram/Ch
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import { setFailure } from 'reducers/main';
 import type { TrainId } from 'reducers/osrdconf/types';
+import { updateHoveredTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -67,10 +68,12 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       openItineraryModalToCreate() {
         setTrainScheduleToEditData(undefined);
         setItineraryModalOpen(true);
+        dispatch(updateHoveredTrainId(undefined));
       },
       openItineraryModalToEdit(editData) {
         setTrainScheduleToEditData(editData);
         setItineraryModalOpen(true);
+        dispatch(updateHoveredTrainId(undefined));
       },
       closeItineraryModal() {
         setItineraryModalOpen(false);
@@ -79,7 +82,13 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       isItineraryModalOpen: itineraryModalOpen,
       trainScheduleToEditData,
     }),
-    [itineraryModalOpen, setItineraryModalOpen, trainScheduleToEditData, setTrainScheduleToEditData]
+    [
+      itineraryModalOpen,
+      setItineraryModalOpen,
+      trainScheduleToEditData,
+      setTrainScheduleToEditData,
+      dispatch,
+    ]
   );
 
   const {

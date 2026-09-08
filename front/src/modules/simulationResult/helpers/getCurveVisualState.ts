@@ -80,7 +80,8 @@ const getChartSelectionState = (
 
 /**
  * Tells whether hovering `hover.trainId` should highlight `train`. By default
- * the hover covers every occurrence of the same paced train (D.2/D.3). When a
+ * the hover covers every occurrence of the same paced train (D.2/D.3), except
+ * for an occurrence hovered in the train list, which highlights itself alone.
  * chart selection is already open on that paced train, the hover instead
  * previews what a click would select: hovering a compliant occurrence
  * highlights the other compliant ones, and hovering an exception highlights
@@ -92,6 +93,11 @@ const isHighlightedByHover = (
   selection: CurveStyleInput['selection']
 ): boolean => {
   if (!samePacedTrain(train.id, hover.trainId)) return false;
+
+  // Hovering an occurrence row in the train list targets that occurrence only;
+  // hovering the paced train row still covers all of its occurrences.
+  if (hover.from === 'timetable' && isOccurrenceId(hover.trainId))
+    return train.id === hover.trainId;
 
   const isPreview =
     !!selection &&
