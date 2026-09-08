@@ -23,7 +23,7 @@ export type LayerType = (typeof LAYERS)[number];
 
 type RenderingKey = `${typeof RENDERING}-${LayerType}`;
 type PickingKey = `${typeof PICKING}-${PickingLayerType}`;
-export type ContextKey = RenderingKey | PickingKey;
+export type LayerKey = RenderingKey | PickingKey;
 
 export type LayerEntry =
   | { type: typeof RENDERING; layer: typeof LAYERS[number] }

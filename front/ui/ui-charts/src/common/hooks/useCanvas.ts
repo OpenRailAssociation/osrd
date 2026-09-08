@@ -17,7 +17,7 @@ import type {
   PickingLayerType,
   Point,
   PickingElement,
-  ContextKey,
+  LayerKey,
 } from '../types';
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';
@@ -35,8 +35,8 @@ export function useCanvas<T extends BaseChartContextType>(
 ) {
   // Most things are handled through refs here so that we have a very precise control on when to
   // render anything:
-  const canvasesRef = useRef<Partial<Record<ContextKey, HTMLCanvasElement>>>({});
-  const contextsRef = useRef<Partial<Record<ContextKey, CanvasRenderingContext2D>>>({});
+  const canvasesRef = useRef<Partial<Record<LayerKey, HTMLCanvasElement>>>({});
+  const contextsRef = useRef<Partial<Record<LayerKey, CanvasRenderingContext2D>>>({});
   const pickingFunctions = useRef<PickingFunctionsMap<T>>(
     PICKING_LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {} as PickingFunctionsMap<T>)
   );
