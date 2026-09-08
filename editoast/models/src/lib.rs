@@ -183,7 +183,7 @@ mod tests {
 
     use database::DbConnectionPoolV2;
     use editoast_derive::Model;
-    use itertools::Itertools;
+    use itertools::Itertools as _;
     use pretty_assertions::assert_eq;
 
     use crate::prelude::*;

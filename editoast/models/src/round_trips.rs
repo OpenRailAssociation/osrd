@@ -1,9 +1,9 @@
 use database::DbConnection;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
+use diesel::ExpressionMethods as _;
+use diesel::QueryDsl as _;
 use diesel::QueryableByName;
 use editoast_derive::Model;
-use itertools::Itertools;
+use itertools::Itertools as _;
 
 use crate::pagination::load_for_pagination;
 
@@ -69,8 +69,12 @@ impl TrainScheduleRoundTrips {
     ) -> Result<usize, database::DatabaseError> {
         use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
 
         let ids = train_schedule_ids.into_iter().collect_vec();
         let nb = diesel::delete(
@@ -91,8 +95,12 @@ impl TrainScheduleRoundTrips {
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
-        use std::ops::DerefMut;
+        use std::ops::DerefMut as _;
 
         let ids = train_schedule_ids.into_iter().collect_vec();
         let results = database::tables::train_schedule_round_trips::table

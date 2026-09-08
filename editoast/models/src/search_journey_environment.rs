@@ -3,10 +3,10 @@ use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
-use diesel_async::RunQueryDsl;
+use diesel_async::RunQueryDsl as _;
 use editoast_derive::Model;
 use std::collections::HashSet;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use crate::SearchJourneyEnvironmentTimetable;
 use crate::prelude::*;
@@ -113,8 +113,8 @@ mod tests {
     use super::*;
     use database::DbConnectionPoolV2;
     use database::tables::search_journey_environment_timetable::dsl;
-    use diesel::ExpressionMethods;
-    use diesel::QueryDsl;
+    use diesel::ExpressionMethods as _;
+    use diesel::QueryDsl as _;
     use pretty_assertions::assert_eq;
     use std::collections::HashSet;
 

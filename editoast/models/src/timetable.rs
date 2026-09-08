@@ -6,11 +6,15 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use std::collections::HashSet;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 

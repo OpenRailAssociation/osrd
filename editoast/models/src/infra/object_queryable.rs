@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use common::geometry::GeoJson;
 use database::DbConnection;
@@ -9,7 +9,7 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use diesel_async::RunQueryDsl as _;
 use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;

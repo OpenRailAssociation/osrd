@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
@@ -7,6 +7,10 @@ use database::DbConnection;
 use database::tables::authn_user;
 use database::tables::authn_user_identity;
 use diesel::prelude::*;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use itertools::Itertools as _;
