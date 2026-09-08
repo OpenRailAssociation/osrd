@@ -1,14 +1,14 @@
 use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnection;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
-use diesel_async::RunQueryDsl;
+use diesel::ExpressionMethods as _;
+use diesel::QueryDsl as _;
+use diesel_async::RunQueryDsl as _;
 use editoast_derive::Model;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 use utoipa::ToSchema;
 
 use crate::prelude::*;
@@ -162,8 +162,8 @@ pub mod fixtures {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use chrono::DurationRound;
-    use chrono::TimeZone;
+    use chrono::DurationRound as _;
+    use chrono::TimeZone as _;
     use chrono::Utc;
     use pretty_assertions::assert_eq;
 

@@ -83,6 +83,10 @@ impl Project {
         use database::tables::study::dsl;
         use diesel::dsl::*;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         let studies_count = dsl::study

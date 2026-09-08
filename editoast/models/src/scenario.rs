@@ -1,10 +1,10 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use chrono::DateTime;
 use chrono::Utc;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
-use diesel_async::RunQueryDsl;
+use diesel::ExpressionMethods as _;
+use diesel::QueryDsl as _;
+use diesel_async::RunQueryDsl as _;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

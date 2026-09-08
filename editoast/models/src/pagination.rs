@@ -8,8 +8,8 @@ use diesel::query_builder::QueryFragment;
 use diesel::query_builder::QueryId;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Untyped;
-use diesel_async::RunQueryDsl;
-use std::ops::DerefMut;
+use diesel_async::RunQueryDsl as _;
+use std::ops::DerefMut as _;
 
 #[derive(QueryId)]
 struct PaginatedQuery<Q> {

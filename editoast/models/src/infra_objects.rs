@@ -76,8 +76,12 @@ macro_rules! infra_model {
                 infra_id: i64,
             ) -> Result<C, database::DatabaseError> {
                 use diesel::prelude::*;
+                #[allow(
+                    clippy::unused_trait_names,
+                    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+                )]
                 use diesel_async::RunQueryDsl;
-                use futures::TryStreamExt;
+                use futures::TryStreamExt as _;
                 use $table::dsl;
                 let stream = $table::table
                     .filter(dsl::infra_id.eq(infra_id))
@@ -281,6 +285,10 @@ impl OperationalPointModel {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         if uic.is_empty() {
@@ -310,6 +318,10 @@ impl OperationalPointModel {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         if domestics.is_empty() {
@@ -347,6 +359,10 @@ impl OperationalPointModel {
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         if ids.is_empty() {
@@ -376,6 +392,10 @@ impl TrackSectionModel {
     ) -> Result<HashSet<String>, database::DatabaseError> {
         use database::tables::infra_object_track_section::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         if ids.is_empty() {

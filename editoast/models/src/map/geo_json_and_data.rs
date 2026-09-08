@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use diesel::prelude::*;
@@ -6,6 +6,10 @@ use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use geos::geojson::Geometry;
 use geos::geojson::Value as GeoJsonValue;

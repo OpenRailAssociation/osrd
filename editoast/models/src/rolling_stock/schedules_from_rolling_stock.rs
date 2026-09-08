@@ -1,8 +1,12 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use diesel::prelude::*;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use serde::Serialize;
 use utoipa::ToSchema;
 

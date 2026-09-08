@@ -1,11 +1,11 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use diesel_async::RunQueryDsl as _;
 use schemas::primitives::ObjectType;
 
 use super::Infra;

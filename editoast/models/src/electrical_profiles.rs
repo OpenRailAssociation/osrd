@@ -1,8 +1,12 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use database::tables::electrical_profile_set;
 use diesel::prelude::*;
+#[allow(
+    clippy::unused_trait_names,
+    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+)]
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use schemas::infra::ElectricalProfileSetData;

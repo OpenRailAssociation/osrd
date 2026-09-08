@@ -5,9 +5,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use std::io::Write;
+use std::io::Write as _;
 use std::ops::Deref;
-use std::str::FromStr;
+use std::str::FromStr as _;
 
 use diesel::deserialize::FromSql;
 use diesel::pg::Pg;
