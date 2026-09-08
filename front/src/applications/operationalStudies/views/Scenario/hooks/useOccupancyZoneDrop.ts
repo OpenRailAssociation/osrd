@@ -47,6 +47,7 @@ function upsertPathStepTrack(
       uic: op.uic,
       secondaryCode: op.secondary_code,
       mainCode: op.main_code,
+      countryCode: op.country_code,
       // Never match by track/offset: we're switching the track
       track: '',
       offsetOnTrack: NaN,
