@@ -1,6 +1,6 @@
 use fga::client::UserList;
 use fga::model::Relation as _;
-use futures::FutureExt;
+use futures::FutureExt as _;
 use itertools::Itertools as _;
 use std::collections::HashSet;
 
