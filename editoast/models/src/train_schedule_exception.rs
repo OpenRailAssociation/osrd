@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
 use editoast_derive::Model;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use schemas::paced_train::PacedTrainException;
 use schemas::train_schedule_exception::TrainScheduleExceptionChangeGroups;
 
@@ -99,6 +99,10 @@ impl TrainScheduleException {
     ) -> Result<usize, crate::Error> {
         use database::tables::train_schedule_exception::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         let deleted = diesel::delete(

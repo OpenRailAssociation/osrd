@@ -1,14 +1,14 @@
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 use database::DbConnection;
-use diesel::OptionalExtension;
+use diesel::OptionalExtension as _;
 use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
+use diesel_async::RunQueryDsl as _;
 use schemas::infra::TrackSection;
 use schemas::primitives::Identifier;
 use serde::Deserialize;

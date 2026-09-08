@@ -6,7 +6,7 @@ use common::units::millisecond;
 use common::units::quantities::Offset;
 use derive_more::Display;
 use editoast_derive::Model;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use schemas;
 use schemas::TrainScheduleException;
 use schemas::paced_train;

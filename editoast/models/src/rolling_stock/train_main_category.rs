@@ -1,6 +1,6 @@
-use std::io::Write;
+use std::io::Write as _;
 use std::ops::Deref;
-use std::str::FromStr;
+use std::str::FromStr as _;
 
 use database::tables::sql_types;
 use diesel::deserialize::FromSql;

@@ -1,6 +1,6 @@
 use database::DbConnection;
 use editoast_derive::Model;
-use std::ops::DerefMut;
+use std::ops::DerefMut as _;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
@@ -26,6 +26,10 @@ impl TrainScheduleLinking {
     ) -> Result<usize, crate::Error> {
         use database::tables::train_schedule_linking::dsl;
         use diesel::prelude::*;
+        #[allow(
+            clippy::unused_trait_names,
+            reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
+        )]
         use diesel_async::RunQueryDsl;
 
         let deleted = diesel::delete(
