@@ -16,6 +16,7 @@ import {
 import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PowerRestriction } from 'applications/operationalStudies/types';
+import { buildPathWaypointsFromRawOPs } from 'applications/operationalStudies/utils';
 import type {
   CoreOperationalPointOnPath,
   OperationalPointReference,
@@ -698,6 +699,14 @@ const ItineraryModal = ({
     }
   }, [pathProperties]);
 
+  const pathWaypoints = useMemo(() => {
+    if (!displayedPathProperties) return null;
+    return buildPathWaypointsFromRawOPs(
+      displayedPathProperties.operational_points,
+      pathfindingSteps.map((step) => ({ ...step, location: step.location! }))
+    );
+  }, [displayedPathProperties, pathfindingSteps]);
+
   const openModal = () => {
     modalRef.current?.showModal();
   };
@@ -1122,6 +1131,7 @@ const ItineraryModal = ({
           pathSteps={pathSteps}
           pathStepsMetadata={pathStepsMetadataById}
           pathProperties={displayedPathProperties}
+          pathWaypoints={pathWaypoints}
           selectedStepId={mapSelectionStepId ?? undefined}
           isMapSelectionMode={mapSelectionStepId !== null}
           onMapSelectionClick={handleMapSelectionClick}
