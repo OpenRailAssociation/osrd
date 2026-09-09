@@ -179,8 +179,8 @@ type MarginsCoreBase = {
 };
 
 export type MarginsCoreComputed = MarginsCoreBase & {
-  provisionalLostTime: number;
-  finalLostTime: number;
+  provisionalLostTime: number | undefined;
+  finalLostTime: number | undefined;
 };
 
 export type MarginsCore = null | MarginsCoreBase | MarginsCoreComputed;
