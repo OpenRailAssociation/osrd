@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/OpenRailAssociation/osrd/issues",
   "type": "module",
-  "main": "dist/index.esm.js",
-  "module": "dist/index.esm.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"
@@ -21,13 +21,13 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.esm.js"
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "rollup -c --failAfterWarnings",
-    "watch": "rollup -c -w",
+    "build": "tsdown --fail-on-warn",
+    "watch": "tsdown -w",
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "oxlint . --max-warnings 0 && oxfmt . --check",
     "lint:fix": "oxlint . --fix && oxfmt . --write"
@@ -63,5 +63,8 @@
     "react": "^18.0.0 || ^19.1.0",
     "react-dom": "^18.0.0 || ^19.1.0",
     "react-map-gl": "^8.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0"
   }
 }

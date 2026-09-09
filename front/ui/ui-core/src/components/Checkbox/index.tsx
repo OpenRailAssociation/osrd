@@ -3,8 +3,8 @@ export { default as CheckboxList, type CheckboxListProps } from './CheckboxList'
 export { default as CheckboxesTree, type CheckboxesTreeProps } from './CheckboxTree';
 export {
   CheckboxState,
-  CheckboxTreeItem,
-  ChildrenParentMap,
-  ItemStates,
-  ParentChildrenMap,
+  type CheckboxTreeItem,
+  type ChildrenParentMap,
+  type ItemStates,
+  type ParentChildrenMap,
 } from './type';

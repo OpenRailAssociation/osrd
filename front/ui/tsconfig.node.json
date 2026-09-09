@@ -1,0 +1,9 @@
+{
+  "include": ["**/tsdown.config.ts", "**/scripts/*.ts"],
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "composite": true,
+    "types": ["node"],
+    "emitDeclarationOnly": true
+  }
+}
