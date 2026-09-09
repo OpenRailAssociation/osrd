@@ -4,7 +4,6 @@ import type { Feature, Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
-import { matchOpRefAndWaypoint } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
   type OperationalPoint,
@@ -19,6 +18,7 @@ import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { setFailure } from 'reducers/main';
@@ -46,6 +46,7 @@ type ItineraryModalMapProps = {
   pathSteps?: PathStepV2[];
   pathStepsMetadata?: Map<string, PathStepMetadata>;
   pathProperties?: PathProperties;
+  pathWaypoints: PathWaypoint[] | null;
   selectedStepId?: string;
   isMapSelectionMode?: boolean;
   onMapSelectionClick?: (featureInfoClick: FeatureInfoClick) => void;
@@ -58,6 +59,7 @@ const ItineraryModalMap = ({
   pathSteps,
   pathStepsMetadata,
   pathProperties,
+  pathWaypoints,
   selectedStepId,
   isMapSelectionMode,
   onMapSelectionClick,
@@ -356,14 +358,12 @@ const ItineraryModalMap = ({
             if (!pathStepMetadata || !pathStepLocation || pathStepMetadata.isInvalid) return null;
 
             let coordinates: Position | undefined;
-            if (pathProperties?.operational_points) {
+            if (pathWaypoints) {
               // If there is a pathfinding, we use it to get the simulated coordinates
               if (pathStepMetadata.type === 'trackOffset') {
                 coordinates = pathStepMetadata.coordinates;
               } else {
-                const matchedOp = pathProperties.operational_points.find((op) =>
-                  matchOpRefAndWaypoint(pathStepLocation, op)
-                );
+                const matchedOp = pathWaypoints.find((waypoint) => waypoint.pathItemId === step.id);
                 const trackMetadata = pathStepMetadata.parts.find(
                   (part) => part.type === 'valid' && part.trackId === matchedOp?.part.track
                 );
