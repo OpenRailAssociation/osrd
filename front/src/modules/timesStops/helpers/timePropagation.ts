@@ -123,7 +123,6 @@ export const propagateTime = (
   const oldValue = update.row[update.field];
   const newValue = update.value;
   const isOriginArrival = isOriginArrivalUpdate(update);
-  const isShiftAllPropagation = update.propagationMode === 'shiftAllWaypoints';
   const delta = computeDeltaForPropagationMode(
     oldValue,
     newValue,
@@ -146,22 +145,21 @@ export const propagateTime = (
     );
   }
 
-  if (isOriginArrival || update.propagationMode === 'shiftAllWaypoints') {
-    if (!isOriginArrival) return propagateShiftAll(delta, selectedTrain, timetableType);
-    let result: PropagationResult | undefined;
-    if (isShiftAllPropagation || update.propagationMode === 'toDestination')
-      result = propagateShiftAll(delta, selectedTrain, timetableType);
-    // atThisWaypoint at origin = only move start_time. Following offsets are compensated so
+  if (update.propagationMode === 'shiftAllWaypoints')
+    return propagateShiftAll(delta, selectedTrain, timetableType);
+
+  if (isOriginArrival) {
+    // At origin, every mode but toDestination only moves start_time. Following offsets are compensated so
     // their absolute times stay the same — which is exactly what fromDeparture does.
-    else if (update.propagationMode === 'atThisWaypoint')
-      result = propagateFromEditedPoint(
-        delta,
-        update.row.pathStepId!,
-        selectedTrain,
-        'fromDeparture',
-        timetableType
-      );
-    return result;
+    return update.propagationMode === 'toDestination'
+      ? propagateShiftAll(delta, selectedTrain, timetableType)
+      : propagateFromEditedPoint(
+          delta,
+          update.row.pathStepId!,
+          selectedTrain,
+          'fromDeparture',
+          timetableType
+        );
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
