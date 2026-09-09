@@ -10,7 +10,7 @@ export const resetZoom = () =>
 export const zoom = (setStore: React.Dispatch<React.SetStateAction<Store>>) =>
   d3zoom
     .zoom()
-    .filter((event) => event.shiftKey)
+    .filter((event) => event.shiftKey || event.type === 'mousedown')
     .on('zoom', () => {
       const canvas = d3selection.select(FRONT_INTERACTIVITY_LAYER_ID) as d3selection.Selection<
         Element,
