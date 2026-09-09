@@ -211,6 +211,7 @@ export const computeOptimisticRow = (
     | 'shortSlipDistance'
     | 'requestedTheoreticalMargin'
     | 'powerRestriction'
+    | 'baseArrival'
   >
 > => {
   if (edit.field === 'powerRestriction') return { powerRestriction: edit.value };
@@ -221,6 +222,10 @@ export const computeOptimisticRow = (
     return row.isTheoreticalMarginBoundary
       ? { requestedTheoreticalMargin: edit.value ?? undefined }
       : {};
+
+  if (edit.field === 'referenceBaseArrival') {
+    return { baseArrival: edit.value };
+  }
 
   const { arrival, stop, departure } = applyScheduleEdit(
     { arrival: row.requestedArrival, stop: row.stopDuration },
