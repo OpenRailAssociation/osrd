@@ -559,17 +559,8 @@ const useUpdateTimesStopsTable = (
   );
 
   const updateReferenceBaseArrival = useCallback(
-    (
-      row: TimesStopsRowNew,
-      referenceBaseArrival: StartTime | null,
-      propagationMode: PropagationMode
-    ) =>
-      updateCell({
-        row,
-        field: 'referenceBaseArrival',
-        value: referenceBaseArrival,
-        propagationMode,
-      }),
+    (row: TimesStopsRowNew, referenceBaseArrival: StartTime | null) =>
+      updateCell({ row, field: 'referenceBaseArrival', value: referenceBaseArrival }),
     [updateCell]
   );
 

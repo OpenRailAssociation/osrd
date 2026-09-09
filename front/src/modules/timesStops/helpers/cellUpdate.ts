@@ -196,8 +196,13 @@ export const computeOptimisticRow = (
     | 'shortSlipDistance'
     | 'requestedTheoreticalMargin'
     | 'powerRestriction'
+    | 'baseArrival'
   >
 > => {
+  if (edit.field === 'referenceBaseArrival') {
+    return { baseArrival: edit.value };
+  }
+
   if (edit.field === 'powerRestriction') {
     return {
       requestedArrival: row.requestedArrival,

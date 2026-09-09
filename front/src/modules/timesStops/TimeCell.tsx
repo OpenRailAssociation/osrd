@@ -490,6 +490,7 @@ type TimeCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Date
     onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (date: Date | null, propagationMode: PropagationMode) => void;
     disableClear?: boolean;
+    disablePropagation?: boolean;
     ref?: React.Ref<TimeCellHandle>;
   };
 
@@ -502,6 +503,7 @@ const TimeCell = ({
   onTabKeyDown,
   onCommit,
   disableClear,
+  disablePropagation,
   ref,
   ...props
 }: TimeCellProps) => {
@@ -685,7 +687,11 @@ const TimeCell = ({
   const editedDate =
     isTimeComplete && referenceDate ? buildDateFromState(state, referenceDate) : null;
   const shouldShowPropagationMenu =
-    controlledValue !== null && !disabled && state.focusedSection !== null && state.hasTyped;
+    !disablePropagation &&
+    controlledValue !== null &&
+    !disabled &&
+    state.focusedSection !== null &&
+    state.hasTyped;
   const isFirstRow = row.index === 0;
   const isLastRow = row.index === table.getRowModel().rows.length - 1;
 

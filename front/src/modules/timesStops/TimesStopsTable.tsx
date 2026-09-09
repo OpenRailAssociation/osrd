@@ -76,11 +76,7 @@ declare module '@tanstack/react-table' {
     onRequestedMarginChange: (row: TimesStopsRowNew, requestedMargin: MarginValue | null) => void;
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
     onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
-    onReferenceBaseArrivalChange: (
-      row: TimesStopsRowNew,
-      arrival: StartTime | null,
-      propagationMode: PropagationMode
-    ) => void;
+    onReferenceBaseArrivalChange: (row: TimesStopsRowNew, arrival: StartTime | null) => void;
   }
 }
 
@@ -169,11 +165,7 @@ type TimesStopsTableProps = {
   onRequestedMarginChange: (row: TimesStopsRowNew, value: MarginValue | null) => void;
   onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
   onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
-  onReferenceBaseArrivalChange: (
-    row: TimesStopsRowNew,
-    arrival: StartTime | null,
-    propagationMode: PropagationMode
-  ) => void;
+  onReferenceBaseArrivalChange: (row: TimesStopsRowNew, arrival: StartTime | null) => void;
 };
 
 const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
@@ -637,9 +629,8 @@ const TimesStopsTable = ({
           referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
           clearButtonTitle={t('clearRequestedArrivalTime')}
           onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
-          onCommit={(date, propagationMode) => {
-            info.table.options.meta!.onReferenceBaseArrivalChange(row, date, propagationMode);
-          }}
+          onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
+          disablePropagation
         />
       );
     } else {

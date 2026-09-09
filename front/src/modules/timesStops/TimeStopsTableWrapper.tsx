@@ -382,26 +382,11 @@ const TimeStopsTableWrapper = ({
     commitEdit(edits, () => updateMultipleTimes(targetRows, field));
   };
 
-  const handleReferenceBaseArrivalChange = (
-    row: TimesStopsRowNew,
-    arrival: StartTime | null,
-    propagationMode: PropagationMode
-  ) => {
-    const singleEdit: PendingEdit = {
-      rowId: row.id,
-      field: 'referenceBaseArrival',
-      value: arrival,
-    };
-    commitEdit(
-      buildEditsForUpdate(singleEdit, {
-        row,
-        field: 'referenceBaseArrival',
-        value: arrival,
-        propagationMode,
-      }),
-      () => updateReferenceBaseArrival(row, arrival, propagationMode)
+  // The base march is a reference value: editing it never shifts the other waypoints.
+  const handleReferenceBaseArrivalChange = (row: TimesStopsRowNew, arrival: StartTime | null) =>
+    commitEdit([{ rowId: row.id, field: 'referenceBaseArrival', value: arrival }], () =>
+      updateReferenceBaseArrival(row, arrival)
     );
-  };
 
   return (
     <TimesStopsTable
