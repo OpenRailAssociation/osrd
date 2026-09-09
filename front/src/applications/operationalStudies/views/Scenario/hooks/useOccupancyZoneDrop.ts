@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 
-import type { Track } from '@osrd-project/ui-charts';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -29,7 +28,7 @@ function upsertPathStepTrack(
   path: PathItem[],
   op: ProjectionWaypoint,
   pathItemRelativeLocation: PathItemRelativeLocation,
-  trackName: string
+  localTrackName: string | null
 ): PathItem[] {
   const newPath = [...path];
 
@@ -50,7 +49,7 @@ function upsertPathStepTrack(
       ...pathStep,
       location: {
         ...pathStep.location,
-        local_track_name: trackName,
+        local_track_name: localTrackName,
       },
     };
   } else {
@@ -75,7 +74,7 @@ function upsertPathStepTrack(
           // OP ID is never null because pathfinding succeeded
           operational_point: op.opId!,
         },
-        local_track_name: trackName,
+        local_track_name: localTrackName,
       },
     });
   }
@@ -156,7 +155,7 @@ export default function useOccupancyZoneDrop({
       waypointId: string,
       trainId: TrainId,
       occupancyZone: MovableOccupancyZone,
-      track: Track
+      localTrackName: string | null
     ) => {
       const { trainSchedule, exception } = findTrainScheduleAndException(
         trainSchedulesWithDetails,
@@ -173,7 +172,7 @@ export default function useOccupancyZoneDrop({
         path,
         operationalPoint,
         occupancyZone.pathItemRelativeLocation,
-        track.name!
+        localTrackName
       );
 
       if (exception) {
