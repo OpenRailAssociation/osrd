@@ -169,6 +169,11 @@ export const transformElectricalBoundariesToRanges = (
   return formattedData;
 };
 
+/**
+ * Do *not* use this function from outside of buildPathWaypointsFromRawOPs():
+ * this breaks when an OP appears multiple times on a path. Instead, use
+ * pathStepId or pathItemId.
+ */
 export const matchOpRefAndWaypoint = (
   location: PathItemLocation,
   waypoint: CoreOperationalPointOnPath
