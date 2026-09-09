@@ -185,7 +185,6 @@ export type ReferenceBaseArrivalUpdate = {
   row: TimesStopsRowNew;
   field: 'referenceBaseArrival';
   value: StartTime | null;
-  propagationMode: PropagationMode;
 };
 
 export type CellUpdate =
