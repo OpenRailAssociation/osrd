@@ -37,11 +37,13 @@ export default function getLinkableOccupancyData(
   }
 
   const schedule = exceptionPathAndSchedule?.schedule ?? train.schedule;
-  const hasStop =
+  const initialSpeed = exception?.initial_speed?.value ?? train.initialSpeed;
+
+  const stopsAtPathStart = blockType === 'outgoing' && !initialSpeed;
+  const hasScheduledStop =
     location.type === 'exact_path_item' &&
     !!schedule?.some(({ at, stop_for }) => at === location.path_item_id && !isNil(stop_for));
-  const initialSpeed = exception?.initial_speed?.value ?? train.initialSpeed;
-  const isStop = hasStop || (blockType === 'outgoing' && !initialSpeed);
+  const isStop = stopsAtPathStart || hasScheduledStop;
 
   return { blockType, isStop, active: !exception?.disabled };
 }
