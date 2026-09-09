@@ -50,11 +50,14 @@ import { propagateStopDuration } from '../helpers/stopDurationPropagation';
 import { propagateTime } from '../helpers/timePropagation';
 import { getTruncatedToSecondStartTime } from '../helpers/utils';
 import type {
+  ArrivalUpdate,
   CellUpdate,
+  DepartureUpdate,
   OptimisticEdit,
   PowerRestrictionUpdate,
   ReceptionSignalUpdate,
   RequestedMarginUpdate,
+  StopDurationUpdate,
   PropagationMode,
   StopPropagationMode,
   MarginValue,
@@ -152,104 +155,86 @@ const useUpdateTimesStopsTable = (
     };
   };
 
-  /**
-   * Compute the updated path and schedule based on the cell update.
-   */
-  const computeUpdatedPathAndSchedule = useCallback(
-    (
-      update: Exclude<CellUpdate, PowerRestrictionUpdate | BatchTimesUpdate>
-    ):
-      | {
-          updatedPath: PathItem[];
-          updatedSchedule: ScheduleItem[];
-          updatedMargins: TrainSchedule['margins'];
-          updatedStartTime?: StartTime;
-        }
-      | undefined => {
-      const propagatedResult =
-        update.field === 'stopDuration'
-          ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
-          : propagateTime(update, selectedTrain, scenario.timetable_type);
-      if (propagatedResult)
-        return {
-          ...propagatedResult,
-          // The days must be right before saving
-          updatedSchedule: cascadeArrivals({
-            schedule: propagatedResult.updatedSchedule,
-            path: propagatedResult.updatedPath,
-            fromPathIndex: 1,
-          }),
-          updatedMargins: selectedTrain.margins,
-        };
-
-      if (update.field === 'requestedTheoreticalMargin') return computeMarginUpdate(update);
-      if (update.field === 'receptionSignal') return computeReceptionSignalUpdate(update);
-
-      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
-      const currentSchedule = selectedTrain.schedule ?? [];
-      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
-      const isOrigin = pathStepId === updatedPath[0].id;
-
-      // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
-      let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
-      if (update.field === 'stopDuration') {
-        edit = {
-          field: 'stopDuration',
-          value: update.value !== null ? new Duration({ seconds: update.value }) : null,
-        };
-      } else {
-        edit = update;
-      }
-
-      const newState = applyScheduleEdit(
-        { arrival: update.row.requestedArrival, stop: update.row.stopDuration },
-        edit
-      );
-
-      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
-      const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
-        newState,
-        startTime
-      );
-
-      const shouldRemove = newArrival === null && newStopFor === null;
-      let updatedSchedule: ScheduleItem[];
-
-      if (shouldRemove) {
-        // Both fields cleared: remove the schedule item entirely
-        if (existingItemIndex < 0) return undefined;
-        updatedSchedule = removeElementAtIndex(currentSchedule, existingItemIndex);
-      } else if (existingItemIndex >= 0) {
-        // Update existing schedule item
-        updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
-          ...currentSchedule[existingItemIndex],
-          arrival: isOrigin ? null : newArrival,
-          stop_for: newStopFor,
-        });
-      } else {
-        // Insert new schedule item in path order
-        const newItem: ScheduleItem = {
-          at: pathStepId,
-          arrival: isOrigin ? null : newArrival,
-          stop_for: newStopFor,
-        };
-        updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
-      }
-
+  const computeTimesUpdate = (update: ArrivalUpdate | DepartureUpdate | StopDurationUpdate) => {
+    const propagatedResult =
+      update.field === 'stopDuration'
+        ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
+        : propagateTime(update, selectedTrain, scenario.timetable_type);
+    if (propagatedResult)
       return {
-        updatedPath,
+        ...propagatedResult,
         // The days must be right before saving
         updatedSchedule: cascadeArrivals({
-          schedule: updatedSchedule,
-          path: updatedPath,
+          schedule: propagatedResult.updatedSchedule,
+          path: propagatedResult.updatedPath,
           fromPathIndex: 1,
         }),
         updatedMargins: selectedTrain.margins,
-        updatedStartTime: startTime,
       };
-    },
-    [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
-  );
+
+    const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+    const currentSchedule = selectedTrain.schedule ?? [];
+    const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
+    const isOrigin = pathStepId === updatedPath[0].id;
+
+    // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
+    let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
+    if (update.field === 'stopDuration') {
+      edit = {
+        field: 'stopDuration',
+        value: update.value !== null ? new Duration({ seconds: update.value }) : null,
+      };
+    } else {
+      edit = update;
+    }
+
+    const newState = applyScheduleEdit(
+      { arrival: update.row.requestedArrival, stop: update.row.stopDuration },
+      edit
+    );
+
+    const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
+    const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
+      newState,
+      startTime
+    );
+
+    const shouldRemove = newArrival === null && newStopFor === null;
+    let updatedSchedule: ScheduleItem[];
+
+    if (shouldRemove) {
+      // Both fields cleared: remove the schedule item entirely
+      if (existingItemIndex < 0) return undefined;
+      updatedSchedule = removeElementAtIndex(currentSchedule, existingItemIndex);
+    } else if (existingItemIndex >= 0) {
+      // Update existing schedule item
+      updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
+        ...currentSchedule[existingItemIndex],
+        arrival: isOrigin ? null : newArrival,
+        stop_for: newStopFor,
+      });
+    } else {
+      // Insert new schedule item in path order
+      const newItem: ScheduleItem = {
+        at: pathStepId,
+        arrival: isOrigin ? null : newArrival,
+        stop_for: newStopFor,
+      };
+      updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
+    }
+
+    return {
+      updatedPath,
+      // The days must be right before saving
+      updatedSchedule: cascadeArrivals({
+        schedule: updatedSchedule,
+        path: updatedPath,
+        fromPathIndex: 1,
+      }),
+      updatedMargins: selectedTrain.margins,
+      updatedStartTime: startTime,
+    };
+  };
 
   /**
    * Compute the updated path and rebuilt power_restrictions array when a power restriction
@@ -267,69 +252,86 @@ const useUpdateTimesStopsTable = (
     };
   };
 
-  const computeUpdateWithBatch = (update: Exclude<CellUpdate, PowerRestrictionUpdate>) => {
-    if ('rows' in update) {
-      let updatedSchedule = selectedTrain.schedule ?? [];
-      let currentPath = selectedTrain.path;
+  /** Fill several rows at once with the times computed by the simulation. */
+  const computeBatchTimesUpdate = (update: BatchTimesUpdate) => {
+    let updatedSchedule = selectedTrain.schedule ?? [];
+    let currentPath = selectedTrain.path;
 
-      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
+    const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
 
-      for (const row of update.rows) {
-        const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(
-          row,
-          currentPath,
-          allRows
-        );
-        currentPath = updatedPathForRow;
-        const existingItemIndex = updatedSchedule.findIndex((item) => item.at === pathStepId);
+    for (const row of update.rows) {
+      const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(
+        row,
+        currentPath,
+        allRows
+      );
+      currentPath = updatedPathForRow;
+      const existingItemIndex = updatedSchedule.findIndex((item) => item.at === pathStepId);
 
-        const edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }> =
-          update.field === 'requestedArrival'
-            ? {
-                field: 'requestedArrival',
-                value: row.computedArrival,
-              }
-            : {
-                field: 'requestedDeparture',
-                value: row.computedDeparture,
-              };
+      const edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }> =
+        update.field === 'requestedArrival'
+          ? {
+              field: 'requestedArrival',
+              value: row.computedArrival,
+            }
+          : {
+              field: 'requestedDeparture',
+              value: row.computedDeparture,
+            };
 
-        const newState = applyScheduleEdit(
-          { arrival: row.requestedArrival, stop: row.stopDuration },
-          edit
-        );
+      const newState = applyScheduleEdit(
+        { arrival: row.requestedArrival, stop: row.stopDuration },
+        edit
+      );
 
-        const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
-          newState,
-          startTime
-        );
+      const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
+        newState,
+        startTime
+      );
 
-        if (existingItemIndex >= 0) {
-          // Update existing schedule item
-          updatedSchedule = replaceElementAtIndex(updatedSchedule, existingItemIndex, {
-            ...updatedSchedule[existingItemIndex],
-            arrival: newArrival,
-            stop_for: newStopFor,
-          });
-        } else {
-          // Insert new schedule item in path order
-          const newItem: ScheduleItem = { at: pathStepId };
-          if (newArrival !== null) newItem.arrival = newArrival;
-          if (newStopFor !== null) newItem.stop_for = newStopFor;
-          updatedSchedule = insertScheduleItemInOrder(updatedSchedule, newItem, currentPath);
-        }
+      if (existingItemIndex >= 0) {
+        // Update existing schedule item
+        updatedSchedule = replaceElementAtIndex(updatedSchedule, existingItemIndex, {
+          ...updatedSchedule[existingItemIndex],
+          arrival: newArrival,
+          stop_for: newStopFor,
+        });
+      } else {
+        // Insert new schedule item in path order
+        const newItem: ScheduleItem = { at: pathStepId };
+        if (newArrival !== null) newItem.arrival = newArrival;
+        if (newStopFor !== null) newItem.stop_for = newStopFor;
+        updatedSchedule = insertScheduleItemInOrder(updatedSchedule, newItem, currentPath);
       }
-
-      return {
-        updatedPath: currentPath,
-        updatedSchedule,
-        updatedMargins: selectedTrain.margins,
-        updatedStartTime: startTime,
-      };
-    } else {
-      return computeUpdatedPathAndSchedule(update);
     }
+
+    return {
+      updatedPath: currentPath,
+      updatedSchedule,
+      updatedMargins: selectedTrain.margins,
+      updatedStartTime: startTime,
+    };
   };
+
+  /** Compute the updated train fields for a cell update. */
+  const computeTrainUpdate = useCallback(
+    (
+      update: Exclude<CellUpdate, PowerRestrictionUpdate>
+    ):
+      | {
+          updatedPath: PathItem[];
+          updatedSchedule: ScheduleItem[];
+          updatedMargins: TrainSchedule['margins'];
+          updatedStartTime?: StartTime;
+        }
+      | undefined => {
+      if ('rows' in update) return computeBatchTimesUpdate(update);
+      if (update.field === 'requestedTheoreticalMargin') return computeMarginUpdate(update);
+      if (update.field === 'receptionSignal') return computeReceptionSignalUpdate(update);
+      return computeTimesUpdate(update);
+    },
+    [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
+  );
 
   /**
    * Handle update when the selected train is an occurrence of a PacedTrain.
@@ -383,7 +385,7 @@ const useUpdateTimesStopsTable = (
           powerRestrictions,
         });
       } else {
-        const result = computeUpdateWithBatch(update);
+        const result = computeTrainUpdate(update);
         if (!result) return 'skipped';
 
         const trainWithUpdatedMargins = {
@@ -428,7 +430,7 @@ const useUpdateTimesStopsTable = (
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
     },
-    [selectedTrain, trainSchedulesWithDetails, computeUpdatedPathAndSchedule, timetableId, dispatch]
+    [selectedTrain, trainSchedulesWithDetails, computeTrainUpdate, timetableId, dispatch]
   );
 
   /**
@@ -448,7 +450,7 @@ const useUpdateTimesStopsTable = (
         });
       }
 
-      const result = computeUpdateWithBatch(update);
+      const result = computeTrainUpdate(update);
       if (!result) return 'skipped';
 
       return persistTrain({
@@ -462,7 +464,7 @@ const useUpdateTimesStopsTable = (
           : selectedTrain.start_time,
       });
     },
-    [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
+    [selectedTrain, computeTrainUpdate, updateTrainSchedule]
   );
 
   /**
