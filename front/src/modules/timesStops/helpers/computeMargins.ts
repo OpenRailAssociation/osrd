@@ -158,13 +158,22 @@ export function computeMargins(
 
   if (!isCoreComputed(core)) return marginsUndefined;
   const { theoreticalMargin, isBoundary, provisionalLostTime, finalLostTime } = core;
-  const diffMargins = finalLostTime - provisionalLostTime;
+
+  const diffMargins =
+    finalLostTime !== undefined && provisionalLostTime !== undefined
+      ? finalLostTime - provisionalLostTime
+      : undefined;
 
   return {
     theoreticalMargin,
     isTheoreticalMarginBoundary: isBoundary,
-    theoreticalMarginSeconds: { value: provisionalLostTime, unit: MarginUnit.second },
-    calculatedMargin: { value: finalLostTime, unit: MarginUnit.second },
-    diffMargins: { value: diffMargins, unit: MarginUnit.second },
+    theoreticalMarginSeconds:
+      provisionalLostTime !== undefined
+        ? { value: provisionalLostTime, unit: MarginUnit.second }
+        : undefined,
+    calculatedMargin:
+      finalLostTime !== undefined ? { value: finalLostTime, unit: MarginUnit.second } : undefined,
+    diffMargins:
+      diffMargins !== undefined ? { value: diffMargins, unit: MarginUnit.second } : undefined,
   };
 }
