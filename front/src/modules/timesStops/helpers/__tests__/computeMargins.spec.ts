@@ -61,13 +61,13 @@ describe('computeMargins without pathItemTimes (reference_base_arrival based)', 
       d: { theoreticalMargin: '20%', isBoundary: false },
     };
     const scheduleByAt: Record<string, ScheduleItem> = {
-      b: { at: 'b', reference_base_arrival: 'PT5M' },
+      b: { at: 'b', arrival: 'PT5M', reference_base_arrival: 'PT5M' },
       d: { at: 'd', arrival: 'PT25M', reference_base_arrival: 'PT20M' },
     };
 
     const result = computeMargins(theoreticalMargins, train, scheduleByAt, 1, undefined);
 
-    // finalLostTime = 25min - 20min = 300s
+    // finalLostTime = (25min - 5 min) - (20min - 5min) = 300s
     // provisionalLostTime = (20min - 5min) * 20% = 900s * 0.2 = 180s
     expect(result).toEqual({
       theoreticalMargin: { value: 20, unit: MarginUnit.percent },
@@ -75,6 +75,53 @@ describe('computeMargins without pathItemTimes (reference_base_arrival based)', 
       theoreticalMarginSeconds: { value: 180, unit: MarginUnit.second },
       calculatedMargin: { value: 300, unit: MarginUnit.second },
       diffMargins: { value: 120, unit: MarginUnit.second },
+    });
+  });
+
+  it('leaves every margin empty when the next step has no reference base arrival', () => {
+    const theoreticalMargins: TheoreticalMarginsRecord = {
+      a: { theoreticalMargin: '10%', isBoundary: true },
+      b: { theoreticalMargin: '10%', isBoundary: true },
+      c: { theoreticalMargin: '10%', isBoundary: false },
+      d: { theoreticalMargin: '10%', isBoundary: false },
+    };
+    const scheduleByAt: Record<string, ScheduleItem> = {
+      b: { at: 'b', arrival: 'PT12M' },
+    };
+
+    const result = computeMargins(theoreticalMargins, train, scheduleByAt, 0, undefined);
+
+    // Nothing can be derived from a requested arrival alone: the cells stay empty
+    // instead of displaying a margin of 0.
+    expect(result).toEqual({
+      theoreticalMargin: { value: 10, unit: MarginUnit.percent },
+      isTheoreticalMarginBoundary: true,
+      theoreticalMarginSeconds: undefined,
+      calculatedMargin: undefined,
+      diffMargins: undefined,
+    });
+  });
+
+  it('keeps a difference of margins of exactly zero visible', () => {
+    const theoreticalMargins: TheoreticalMarginsRecord = {
+      a: { theoreticalMargin: '20%', isBoundary: true },
+      b: { theoreticalMargin: '20%', isBoundary: false },
+      c: { theoreticalMargin: '20%', isBoundary: false },
+      d: { theoreticalMargin: '20%', isBoundary: false },
+    };
+    const scheduleByAt: Record<string, ScheduleItem> = {
+      b: { at: 'b', arrival: 'PT12M', reference_base_arrival: 'PT10M' },
+    };
+
+    const result = computeMargins(theoreticalMargins, train, scheduleByAt, 0, undefined);
+
+    // finalLostTime = provisionalLostTime = 120s: the requested margin is exactly honored
+    expect(result).toEqual({
+      theoreticalMargin: { value: 20, unit: MarginUnit.percent },
+      isTheoreticalMarginBoundary: true,
+      theoreticalMarginSeconds: { value: 120, unit: MarginUnit.second },
+      calculatedMargin: { value: 120, unit: MarginUnit.second },
+      diffMargins: { value: 0, unit: MarginUnit.second },
     });
   });
 });
