@@ -76,7 +76,7 @@ export const computeRowPowerRestrictionStatus = (
     const rowPosition = operationalPointPositions.get(row.opOnPathIndex);
     const hasWarning =
       rowPosition !== undefined &&
-      warningRanges.some((w) => rowPosition >= w.begin && rowPosition < w.end);
+      warningRanges.some((w) => rowPosition >= w.begin && rowPosition <= w.end);
 
     // 3. Detect block boundaries. A block represents a contiguous run of rows
     //    where the *same* active restriction is incompatible. So a new block
