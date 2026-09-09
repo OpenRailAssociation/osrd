@@ -31,36 +31,29 @@ const toHmsDuration = (date: StartTime) =>
       })
     : date;
 
-// Delta based on HH:mm:ss only. Ignores the calendar day.
-const computeDelta = (oldValue: StartTime | null, newValue: StartTime | null): Duration | null => {
-  if (!oldValue || !newValue) return null;
-  return toHmsDuration(newValue).sub(toHmsDuration(oldValue));
-};
-
 const computeDeltaForPropagationMode = (
   oldValue: StartTime | null,
   newValue: StartTime | null,
-  mode: PropagationMode
-): Duration | null =>
-  mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
-    ? computeDelta(oldValue, newValue)
-    : oldValue && newValue
-      ? subtractStartTime(newValue, oldValue)
-      : null;
+  mode: PropagationMode,
+  isOriginArrival: boolean
+): Duration | null => {
+  if (!oldValue || !newValue) return null;
+  // At the origin arrival or for shiftAll and fromDeparture compares HH:mm:ss only (start_time absorbs the shift).
+  // For toDestination compares full date-times, so it can produce a D+1.
+  return isOriginArrival || mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
+    ? toHmsDuration(newValue).sub(toHmsDuration(oldValue))
+    : subtractStartTime(newValue, oldValue);
+};
 
 export const formatPropagationDeltaLabelByMode = (
   oldValue: Date | null,
   newValue: Date | null,
   mode: PropagationMode,
   isOriginArrival = false
-): string => {
-  // At the origin arrival, propagation always uses HH:mm:ss delta (start_time shift),
-  // regardless of mode, to keep the label consistent with the actual propagation.
-  const delta = isOriginArrival
-    ? computeDelta(oldValue, newValue)
-    : computeDeltaForPropagationMode(oldValue, newValue, mode);
-  return formatSignedDelta(delta ?? Duration.zero);
-};
+): string =>
+  formatSignedDelta(
+    computeDeltaForPropagationMode(oldValue, newValue, mode, isOriginArrival) ?? Duration.zero
+  );
 
 /**
  * Propagate a time edit along the path.
@@ -131,12 +124,12 @@ export const propagateTime = (
   const newValue = update.value;
   const isOriginArrival = isOriginArrivalUpdate(update);
   const isShiftAllPropagation = update.propagationMode === 'shiftAllWaypoints';
-  // Origin and shiftAll use HH:mm:ss delta only. toDestination uses full datetime (can produce D+1).
-  // fromDeparture uses HH:mm:ss only since start_time absorbs the shift.
-  const delta =
-    isOriginArrival || isShiftAllPropagation
-      ? computeDelta(oldValue, newValue)
-      : computeDeltaForPropagationMode(oldValue, newValue, update.propagationMode);
+  const delta = computeDeltaForPropagationMode(
+    oldValue,
+    newValue,
+    update.propagationMode,
+    isOriginArrival
+  );
   if (delta === null) return undefined;
 
   // A departure update propagated toDestination is the same delta applied to the stop duration.
