@@ -60,8 +60,8 @@ const validateSvgAndExtractPath = (svgFilePath, height) => {
   const svg = readFileSync(svgFilePath, 'utf8');
   const svgElement = load(svg)('svg');
   svgElement.find('title').remove();
-  const svgWidth = parseInt(svgElement.attr('width'));
-  const svgHeight = parseInt(svgElement.attr('height'));
+  const svgWidth = parseInt(svgElement.attr('width'), 10);
+  const svgHeight = parseInt(svgElement.attr('height'), 10);
   const svgViewBox = svgElement.attr('viewBox');
   const svgPath = svgElement
     .html()
@@ -82,7 +82,7 @@ const validateSvgAndExtractPath = (svgFilePath, height) => {
     throw new Error(`${svgFilePath}: Missing viewBox attribute.`);
   }
 
-  if (svgHeight !== parseInt(height)) {
+  if (svgHeight !== parseInt(height, 10)) {
     throw new Error(`${svgFilePath}: Height in filename does not match height attribute of SVG`);
   }
 
@@ -96,11 +96,11 @@ const validateSvgAndExtractPath = (svgFilePath, height) => {
 
   const [, viewBoxWidth, viewBoxHeight] = svgViewBox.match(viewBoxPattern);
 
-  if (svgWidth !== parseInt(viewBoxWidth)) {
+  if (svgWidth !== parseInt(viewBoxWidth, 10)) {
     throw new Error(`${svgFilePath}: width attribute and viewBox width do not match.`);
   }
 
-  if (svgHeight !== parseInt(viewBoxHeight)) {
+  if (svgHeight !== parseInt(viewBoxHeight, 10)) {
     throw new Error(`${svgFilePath}: height attribute and viewBox height do not match.`);
   }
 
@@ -134,7 +134,7 @@ if (existsSync(indexFile)) {
 // Generate a 'sizes.ts' file mapping sizes to their designations
 const sizesFile = join('.', 'src', 'sizes.ts');
 const sizes = Object.entries(reversed).reduce((acc, [key, value]) => {
-  acc[value] = parseInt(key);
+  acc[value] = parseInt(key, 10);
   return acc;
 }, {});
 const sizesContent = `export default ${JSON.stringify(sizes, null, 2)};\n`;
@@ -147,7 +147,7 @@ for (const [name, currentData] of Object.entries(representation)) {
   const definitions = supportedVariants.map((variant) => {
     const supportedSizes = Object.keys(currentData[variant]);
     const sizeStr = supportedSizes
-      .map((word) => reversed[`${word}`])
+      .map((word) => reversed[word])
       .map((word) => `"${word}"`)
       .join(' | ');
 
