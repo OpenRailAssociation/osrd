@@ -37,7 +37,7 @@ const TrainScheduleSetCartItem = ({
         <SegmentedControl
           value={importType}
           getOptionLabel={(set) => t(`importType.${set}`)}
-          getOptionValue={(set) => `${set}`}
+          getOptionValue={(set) => set}
           getOptionIcon={renderOptionIcon}
           onChange={(set) => upsertToCart(trainScheduleSet.id, set)}
           options={TRAINSCHEDULESET_IMPORT_TYPE}

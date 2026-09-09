@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
-import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
   osrdEditoastApi,
@@ -17,7 +16,6 @@ import {
   type TrainScheduleResponse,
   type SubCategory,
 } from 'common/api/osrdEditoastApi';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
@@ -56,18 +54,7 @@ import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
-
-const openConfirmModal = ({
-  openModal,
-  deleteAllExceptions,
-  title,
-}: {
-  openModal: (modal: React.ReactNode) => void;
-  deleteAllExceptions: () => void;
-  title: string;
-}) => {
-  openModal(<ConfirmModal onConfirm={() => deleteAllExceptions()} title={title} />);
-};
+import ResetExceptionsDialog from './ResetExceptionsDialog';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -75,7 +62,6 @@ type PacedTrainItemProps = {
   isOccurrencesListOpen: boolean;
   handleOpenOccurrencesList: (pacedTrainId: number) => void;
   pacedTrain: PacedTrainWithDetails;
-  isOnEdit: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (
     pacedTrainToEdit: PacedTrainWithDetails,
@@ -98,7 +84,6 @@ const PacedTrainItem = ({
   isOccurrencesListOpen,
   handleOpenOccurrencesList,
   pacedTrain,
-  isOnEdit,
   selectPacedTrainToEdit,
   selectedTrainId,
   setSelectedTrainScheduleIds,
@@ -110,10 +95,10 @@ const PacedTrainItem = ({
   showMovebutton,
   timetableId,
 }: PacedTrainItemProps) => {
-  const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
-  const { openModal, closeModal } = useContext(ModalContext);
+  const { openModal } = useContext(ModalContext);
+  const [isResetDialogOpen, setIsResetExceptionsDialogOpen] = useState(false);
 
   const { rollingStocks } = useRollingStockContext();
   const { removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
@@ -224,8 +209,6 @@ const PacedTrainItem = ({
         id: pacedTrain.id,
       },
     ]);
-
-    closeModal();
   };
 
   const duplicatePacedTrain = async () => {
@@ -312,7 +295,7 @@ const PacedTrainItem = ({
     dispatch(
       setSuccess({
         title: t('timetable.pacedTrainAdded'),
-        text: `${pacedTrainName}`,
+        text: pacedTrainName,
       })
     );
   };
@@ -333,12 +316,11 @@ const PacedTrainItem = ({
     );
   }, [deletePacedTrain, openModal, t]);
 
-  const content = (
+  return (
     <div
       data-testid="scenario-train-schedule"
       data-train-id={pacedTrain.id}
       className={cx('scenario-timetable-train paced-train', {
-        modified: isOnEdit,
         'in-selection': isInSelection,
         closed: !isOccurrencesListOpen,
       })}
@@ -448,13 +430,7 @@ const PacedTrainItem = ({
           editTrainSchedule={() => selectPacedTrainToEdit(pacedTrain)}
           deleteTrainSchedule={openDeleteModal}
           showResetExceptionsButton={pacedTrain.paced.exceptions.length > 0}
-          resetAllExceptions={() =>
-            openConfirmModal({
-              openModal,
-              deleteAllExceptions,
-              title: t('timetable.resetAllExceptions'),
-            })
-          }
+          resetAllExceptions={() => setIsResetExceptionsDialogOpen(true)}
           showMovebutton={showMovebutton}
         />
       </div>
@@ -495,16 +471,25 @@ const PacedTrainItem = ({
           ))}
         </div>
       )}
+      {isResetDialogOpen &&
+        createPortal(
+          <ResetExceptionsDialog
+            onCancel={() => setIsResetExceptionsDialogOpen(false)}
+            onReset={deleteAllExceptions}
+            labels={{
+              title: t('timetable.resetExceptions'),
+              texts: [
+                t('timetable.resetAllExceptions'),
+                t('timetable.resetExceptionsCount', { count: pacedTrain.paced.exceptions.length }),
+              ],
+              submit: t('timetable.reset'),
+              cancel: t('timetable.cancel'),
+            }}
+          />,
+          document.body
+        )}
     </div>
   );
-  if (!isOnEdit) {
-    return content;
-  }
-
-  if (!editedElementContainer) {
-    return null;
-  }
-  return createPortal(content, editedElementContainer);
 };
 
 export default PacedTrainItem;

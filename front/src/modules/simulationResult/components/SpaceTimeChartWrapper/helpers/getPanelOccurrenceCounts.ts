@@ -1,7 +1,10 @@
 import { getOccurrencesNb } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedDetails } from 'modules/trainSchedule/types';
+import type { TrainScheduleId } from 'reducers/osrdconf/types';
+import { extractTrainScheduleIdFromTrainId } from 'utils/trainId';
 
 import type { CurveStyleExceptionType } from '../../../types';
+import type { MovableOccupancyZone } from './zones';
 
 /**
  * For the curve selection panel:
@@ -34,6 +37,25 @@ const getPanelOccurrenceCounts = (
   }
 
   return { compliant: active - nonCompliant, all: active };
+};
+
+/**
+ * Like getPanelOccurrenceCounts, but scoped to one TOD waypoint: only counts occurrences
+ * whose zone reaches that waypoint, since a reroute exception can skip it entirely.
+ */
+export const getTodOccurrenceCounts = (
+  zones: MovableOccupancyZone[],
+  trainScheduleId: TrainScheduleId,
+  exceptionType: CurveStyleExceptionType
+): { compliant: number; all: number } => {
+  const occurrenceZones = zones.filter(
+    (zone) => extractTrainScheduleIdFromTrainId(zone.trainId) === trainScheduleId
+  );
+  const nonCompliant = occurrenceZones.filter((zone) =>
+    zone.exceptionTypes.includes(exceptionType)
+  ).length;
+
+  return { compliant: occurrenceZones.length - nonCompliant, all: occurrenceZones.length };
 };
 
 export default getPanelOccurrenceCounts;

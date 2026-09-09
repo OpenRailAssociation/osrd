@@ -195,7 +195,6 @@ services:
       S3_SECRET_ACCESS_KEY: secret_key
       S3_ENDPOINT_URL: http://s3:9900
       S3_BUCKET_NAME: osrd
-      ENABLE_BACKTRACK: ${ENABLE_BACKTRACK-false}
     command: >
       /bin/sh -c "
         fga_migrations apply &&

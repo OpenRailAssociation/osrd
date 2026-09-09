@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.Helpers.smallInfra
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class TemporarySpeedLimitTests {
@@ -67,8 +68,11 @@ class TemporarySpeedLimitTests {
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
         val resultSpeedLimits =
-            res.trainPath.getSpeedLimitProperties(
+            resSuccess.trainPath.getSpeedLimitProperties(
                 "",
                 buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
@@ -109,8 +113,11 @@ class TemporarySpeedLimitTests {
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
         val resultSpeedLimits =
-            res.trainPath.getSpeedLimitProperties(
+            resSuccess.trainPath.getSpeedLimitProperties(
                 "",
                 buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
@@ -154,8 +161,11 @@ class TemporarySpeedLimitTests {
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
         val resultSpeedLimits =
-            res.trainPath.getSpeedLimitProperties(
+            resSuccess.trainPath.getSpeedLimitProperties(
                 "",
                 buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
@@ -197,8 +207,11 @@ class TemporarySpeedLimitTests {
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+
         val resultSpeedLimits =
-            res.trainPath.getSpeedLimitProperties(
+            resSuccess.trainPath.getSpeedLimitProperties(
                 "",
                 buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )

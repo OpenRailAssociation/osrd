@@ -5,7 +5,7 @@
   "proseWrap": "always",
   "trailingComma": "es5",
   "sortPackageJson": false,
-  "ignorePatterns": ["*.md", "dist", "node_modules", "storybook-static", "ui-icons"],
+  "ignorePatterns": ["*.md", "dist", "node_modules", "storybook-static", "ui-icons/src"],
   "sortImports": {
     "groups": [
       "react",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { Turnaround } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import type { Position } from 'geojson';
 import { Marker } from 'react-map-gl/maplibre';
@@ -40,6 +41,7 @@ export type PathStepsMarkerProps = {
   markerState?: PATH_STEP_MARKER_STATE;
   draggable?: boolean;
   isSelected?: boolean;
+  isBackTrack?: boolean;
   resetKey?: number;
   onDragStart?: () => void;
   onDrag?: (lngLat: { lng: number; lat: number }) => void;
@@ -55,6 +57,7 @@ const PathStepMarker = ({
   markerState = PATH_STEP_MARKER_STATE.REST,
   draggable,
   isSelected,
+  isBackTrack,
   resetKey,
   onDragStart,
   onDrag,
@@ -98,7 +101,16 @@ const PathStepMarker = ({
       >
         <img src={MARKER_IMAGES[effectiveMarkerState]} alt={MARKER_IMAGES[effectiveMarkerState]} />
         <span className={cx('indicator', effectiveMarkerState)}>{markerIndicator}</span>
-        {name && <div className="label">{name}</div>}
+        {name && (
+          <div className="label">
+            {isBackTrack && (
+              <span className="backtrack-icon">
+                <Turnaround />
+              </span>
+            )}
+            {name}
+          </div>
+        )}
       </div>
     </Marker>
   );

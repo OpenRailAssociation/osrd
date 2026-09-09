@@ -35,6 +35,7 @@ const GrantsManager = ({
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
 
   const grantLabel = getGrantLabel(userPrivileges);
+  const canRead = userPrivileges.has('can_read');
 
   return (
     <div className="grant-manager">
@@ -44,27 +45,29 @@ const GrantsManager = ({
             grant: t(`authorization.grants.${GRANTS_LABEL[grantLabel]}`),
           })}
         </span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setDisplayGrantSection(!displayGrantSection);
-          }}
-        >
-          {displayGrantSection ? (
-            <span className="blue-label">
-              {t('common.collapse')}
-              <ChevronUp />
-            </span>
-          ) : (
-            <span className="grey-label">
-              {t('common.details')}
-              <ChevronDown />
-            </span>
-          )}
-        </button>
+        {canRead && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDisplayGrantSection(!displayGrantSection);
+            }}
+          >
+            {displayGrantSection ? (
+              <span className="blue-label">
+                {t('common.collapse')}
+                <ChevronUp />
+              </span>
+            ) : (
+              <span className="grey-label">
+                {t('common.details')}
+                <ChevronDown />
+              </span>
+            )}
+          </button>
+        )}
       </div>
-      {displayGrantSection && (
+      {canRead && displayGrantSection && (
         <GrantsManagerSubjects
           resourceId={resourceId}
           resourceType={resourceType}

@@ -1,14 +1,12 @@
 import { expect } from '@playwright/test';
 
-import type {
-  ElectricalProfileSet,
-  Infra,
-  Project,
-  Scenario,
-  Study,
-} from 'common/api/osrdEditoastApi';
+import type { ElectricalProfileSet } from 'common/api/osrdEditoastApi';
 
-import { improbableRollingStockName } from '../../assets/constants/project-const';
+import {
+  globalProjectName,
+  globalStudyName,
+  improbableRollingStockName,
+} from '../../assets/constants/project-const';
 import { allSettingsData } from '../../assets/operation-studies/simulation-settings/all-settings';
 import { electricalProfileOffData } from '../../assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-off';
 import { electricalProfileOnData } from '../../assets/operation-studies/simulation-settings/electrical-profiles/electrical-profile-on';
@@ -22,10 +20,8 @@ import {
   TRAIN_START_TIME,
 } from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
-import { waitForInfraStateToBeCached } from '../../utils';
-import { deleteApiRequest, getInfra, setElectricalProfile } from '../../utils/api-utils';
-import createScenario from '../../utils/scenario';
-import { deleteScenario } from '../../utils/teardown-utils';
+import setupScenarioFixture from '../../scenario-fixture';
+import { deleteApiRequest, setElectricalProfile } from '../../utils/api-utils';
 import { PLACEHOLDER } from '../itineraryModal/itinerary-modal.consts';
 
 test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-tab'] }, () => {
@@ -33,14 +29,9 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
   test.use({ ignorePageErrors: true });
 
   let electricalProfileSet: ElectricalProfileSet;
-  let project: Project;
-  let study: Study;
-  let scenario: Scenario;
-  let infra: Infra;
 
-  test.beforeAll('Add electrical profile via API and fetch infrastructure', async () => {
+  test.beforeAll('Add electrical profile via API', async () => {
     electricalProfileSet = await setElectricalProfile();
-    infra = await getInfra();
   });
 
   test.afterAll('Delete the electrical profile', async () => {
@@ -48,28 +39,17 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       await deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
   });
 
-  test.beforeEach(
-    async ({
-      page,
-      scenarioTimetableSection,
-      itineraryModalPage,
-      headerPage,
-      timesStopsTablePage,
-    }) => {
-      await test.step('Create then navigate to scenario page', async () => {
-        ({ project, study, scenario } = await createScenario(
-          undefined,
-          null,
-          null,
-          null,
-          electricalProfileSet.id
-        ));
-        await page.goto(
-          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-        );
-        await waitForInfraStateToBeCached(infra.id);
-      });
+  setupScenarioFixture({
+    scenarioNamePrefix: 'simulation-settings-scenario',
+    trains: [],
+    scope: 'test',
+    projectName: globalProjectName,
+    studyName: globalStudyName,
+    electricalProfileId: () => electricalProfileSet.id,
+  });
 
+  test.beforeEach(
+    async ({ scenarioTimetableSection, itineraryModalPage, headerPage, timesStopsTablePage }) => {
       await test.step('Create a unique train with an explicit route (WS - MWS - MES - SES)', async () => {
         await scenarioTimetableSection.openItineraryModal();
         await itineraryModalPage.fillRollingStock(improbableRollingStockName);
@@ -103,10 +83,6 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
       });
     }
   );
-
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(study.id, scenario.name);
-  });
 
   /** *************** Test 1 **************** */
   test('Activate electrical profiles', async ({

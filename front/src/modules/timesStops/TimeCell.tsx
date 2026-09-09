@@ -7,6 +7,7 @@ import { SECONDS_IN_A_DAY } from 'utils/timeManipulation';
 import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
 import TimePropagationMenu from './TimePropagationMenu';
+import type { TimesStopsTableFeatures } from './TimesStopsTable';
 import type { PropagationMode, TimesStopsRowNew } from './types';
 
 // Types
@@ -131,12 +132,12 @@ const clampTimeState = (state: TimeState): TimeState => {
       case 0:
         return '00';
       case 1:
-        if (parseInt(digits) * 10 > Math.floor(max)) {
+        if (parseInt(digits, 10) * 10 > Math.floor(max)) {
           return digits.padStart(2, '0');
         }
         return digits.padEnd(2, '0');
       case 2:
-        if (parseInt(digits) > max) {
+        if (parseInt(digits, 10) > max) {
           return max.toString().padStart(2, '0');
         }
         return digits;
@@ -230,7 +231,7 @@ const computeDigitState = (state: TimeState, digit: string): TimeState => {
     focusedSection === 'minutes' &&
     hasNoDigits(state.hours) &&
     hasNoDigits(state.minutes) &&
-    parseInt(digit) > 2
+    parseInt(digit, 10) > 2
   ) {
     return {
       ...state,
@@ -475,7 +476,7 @@ const renderTimeSection = (value: string, focused: boolean, hasTyped: boolean) =
   </span>
 );
 
-type TimeCellProps = CellContext<TimesStopsRowNew, Date | null> &
+type TimeCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Date | null> &
   React.InputHTMLAttributes<HTMLInputElement> & {
     /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
     referenceDate?: Date;
@@ -686,7 +687,7 @@ const TimeCell = ({
   const shouldShowPropagationMenu =
     controlledValue !== null && !disabled && state.focusedSection !== null && state.hasTyped;
   const isFirstRow = row.index === 0;
-  const isLastRow = row.index === table.getRowCount() - 1;
+  const isLastRow = row.index === table.getRowModel().rows.length - 1;
 
   return (
     <>

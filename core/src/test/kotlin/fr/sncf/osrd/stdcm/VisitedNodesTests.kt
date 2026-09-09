@@ -7,6 +7,7 @@ import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.graph.visited_node_tracking.VisitedNodes
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -23,7 +24,7 @@ class VisitedNodesTests {
         VisitedNodes.Fingerprint(
             identifier = DummyEdgeIdentifier(1),
             waypointIndex = 1,
-            startOffset = 0.meters,
+            startOffset = Offset.zero(),
             null,
         )
 

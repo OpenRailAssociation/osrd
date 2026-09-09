@@ -63,7 +63,7 @@ const generateGrantSelectProps = ({
   if (subjectValueIndex < 0) {
     const options = [
       {
-        label: t(`authorization.grants.${GRANTS_LABEL[subjectGrant || 'NONE']}`),
+        label: t(`authorization.grants.${GRANTS_LABEL[subjectGrant]}`),
         value: subjectGrant,
       },
     ];
@@ -76,7 +76,7 @@ const generateGrantSelectProps = ({
 
   // In case of not owner of the resource, we need to remove all options below the subject one.
   // A user can't revoke a grant if he is not owner
-  if (userPrivileges.has('can_share_ownership') === false) {
+  if (!userPrivileges.has('can_share_ownership')) {
     const filteredOptions = allowedOptions.filter((_, index) => index >= subjectValueIndex);
     return {
       value: allowedOptions[subjectValueIndex],

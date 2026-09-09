@@ -23,7 +23,6 @@ import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import type { FeatureInfoClick } from '../types';
-import AddPathStepPopup from './AddPathStepPopup';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',
@@ -76,10 +75,6 @@ const ManageTrainScheduleMap = ({
   );
 
   const [featureInfoClick, setFeatureInfoClick] = useState<FeatureInfoClick>();
-
-  const resetFeatureInfoClick = useCallback(() => {
-    setFeatureInfoClick(undefined);
-  }, []);
 
   const closeFeatureInfoClickPopup = useCallback(() => {
     if (featureInfoClick) {
@@ -201,15 +196,6 @@ const ManageTrainScheduleMap = ({
         mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
       >
-        {featureInfoClick && (
-          <AddPathStepPopup
-            infraId={infraID}
-            pathProperties={pathProperties}
-            featureInfoClick={featureInfoClick}
-            resetFeatureInfoClick={resetFeatureInfoClick}
-          />
-        )}
-
         <ItineraryLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
           geometry={pathGeometry}

@@ -10,9 +10,7 @@ import GrantsManager from 'common/authorization/components/GrantsManager';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { useInfraActions, useInfraID, useOsrdContext } from 'common/osrdContext';
-import { MODES } from 'main/consts';
-import { deleteItinerary } from 'reducers/osrdconf/operationalStudiesConf';
+import { useInfraActions, useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
 
@@ -47,7 +45,6 @@ const InfraSelectorModalBodyStandard = ({
 }: InfraSelectorModalBodyStandardProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { mode } = useOsrdContext();
   const { updateInfraID } = useInfraActions();
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
@@ -68,7 +65,6 @@ const InfraSelectorModalBodyStandard = ({
       if (isInEditor) {
         navigate(`/editor/${id}`);
       }
-      if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItinerary());
       if (!onlySelectionMode) {
         closeModal();
       }

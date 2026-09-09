@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 import {
   Alert,
@@ -28,7 +28,6 @@ import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import { resetItineraryForm } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -38,11 +37,7 @@ import RoundTripsModal from '../RoundTrips/RoundTripsModal';
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
 import type { TimetableFilters, TimetableMode } from './types';
-import {
-  computeLatestMidnight,
-  exportTrainSchedules,
-  timetableHasInvalidTrainSchedule,
-} from './utils';
+import { exportTrainSchedules, timetableHasInvalidTrainSchedule } from './utils';
 
 type TimetableToolbarProps = {
   timetableFilters: TimetableFilters;
@@ -80,7 +75,7 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
-  const { infraId, timetableId, scenario } = useScenarioContext();
+  const { infraId, timetableId } = useScenarioContext();
   const { trainSchedules } = useTimetableContext();
 
   const { data: trainScheduleRoundTripsData } =
@@ -153,6 +148,8 @@ const TimetableToolbar = ({
     }
   };
 
+  const trainSchedulesList = useMemo(() => [...trainSchedules.values()], [trainSchedules]);
+
   return (
     <>
       {areInvalidTrainSchedules && (
@@ -176,7 +173,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-select-options-button"
             title={t('timetable.selectOptions')}
             onClick={toggleisSelectMode}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <CheckBox />
@@ -188,7 +185,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-show-train-details-button"
             title={showTrainDetails ? t('lessDetails') : t('moreDetails')}
             onClick={toggleShowTrainDetails}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <Note />
@@ -198,7 +195,7 @@ const TimetableToolbar = ({
             data-testid="scenarios-manage-round-trips-button"
             title={t('roundTripsModal.manageRoundTrips')}
             onClick={() => setRoundTripsModalIsOpen(true)}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <ArrowSwitch />
@@ -232,14 +229,6 @@ const TimetableToolbar = ({
             data-testid="scenarios-add-train-schedule-button"
             title={t('timetable.addTrainSchedule')}
             onClick={() => {
-              dispatch(
-                resetItineraryForm({
-                  startTime:
-                    scenario.timetable_type === 'CALENDAR'
-                      ? computeLatestMidnight(trainSchedules, new Date())
-                      : undefined,
-                })
-              );
               openItineraryModalToCreate();
             }}
             type="button"
@@ -255,7 +244,7 @@ const TimetableToolbar = ({
             data-testid="timetable-filter-button"
             title={t('timetable.toggleFilters')}
             onClick={toggleFilterPanel}
-            disabled={trainSchedules.length === 0}
+            disabled={trainSchedules.size === 0}
             type="button"
           >
             <Filter />
@@ -263,11 +252,11 @@ const TimetableToolbar = ({
           <div className="timetable-sort-switch">
             <button
               className={cx('timetable-mode-button', {
-                active: timetableMode === 'calendar',
+                active: timetableMode === 'chronological',
               })}
-              data-testid="timetable-calendar-mode-button"
-              title={t('timetable.modeCalendar')}
-              onClick={() => setTimetableMode('calendar')}
+              data-testid="timetable-chronological-mode-button"
+              title={t('timetable.modeChronological')}
+              onClick={() => setTimetableMode('chronological')}
               type="button"
             >
               <Calendar />
@@ -314,7 +303,7 @@ const TimetableToolbar = ({
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
           timetableId={timetableId}
-          trainSchedules={trainSchedules}
+          trainSchedules={trainSchedulesList}
           refreshNge={refreshNge}
         />
       )}

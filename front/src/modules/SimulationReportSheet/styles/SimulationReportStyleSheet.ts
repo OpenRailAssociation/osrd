@@ -3,21 +3,21 @@ import { StyleSheet, Font } from '@react-pdf/renderer';
 Font.register({
   family: 'IBM Plex Sans',
   fonts: [
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Regular.ttf', fontWeight: 'normal' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Medium.ttf', fontWeight: 'medium' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-SemiBold.ttf', fontWeight: 'semibold' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Bold.ttf', fontWeight: 'bold' },
-    { src: '/newFonts/IBM-Plex-Sans/IBMPlexSans-Italic.ttf', fontStyle: 'italic' },
+    { src: '/embeddedFonts/IBMPlexSans-Regular.ttf', fontWeight: 'normal' },
+    { src: '/embeddedFonts/IBMPlexSans-Medium.ttf', fontWeight: 'medium' },
+    { src: '/embeddedFonts/IBMPlexSans-SemiBold.ttf', fontWeight: 'semibold' },
+    { src: '/embeddedFonts/IBMPlexSans-Bold.ttf', fontWeight: 'bold' },
+    { src: '/embeddedFonts/IBMPlexSans-Italic.ttf', fontStyle: 'italic' },
   ],
 });
 
 Font.register({
   family: 'IBM Plex Mono',
   fonts: [
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-Regular.ttf', fontWeight: 'normal' },
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-Medium.ttf', fontWeight: 'medium' },
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-SemiBold.ttf', fontWeight: 'semibold' },
-    { src: '/newFonts/IBM-Plex-Mono/IBMPlexMono-Bold.ttf', fontWeight: 'bold' },
+    { src: '/embeddedFonts/IBMPlexMono-Regular.ttf', fontWeight: 'normal' },
+    { src: '/embeddedFonts/IBMPlexMono-Medium.ttf', fontWeight: 'medium' },
+    { src: '/embeddedFonts/IBMPlexMono-SemiBold.ttf', fontWeight: 'semibold' },
+    { src: '/embeddedFonts/IBMPlexMono-Bold.ttf', fontWeight: 'bold' },
   ],
 });
 
@@ -612,6 +612,26 @@ const styles = {
       padding: '0 8',
       marginLeft: '8',
       marginVertical: '1',
+    },
+    passageStopContainer: {
+      position: 'relative',
+      justifyContent: 'center',
+    },
+    backtrackIconContainer: {
+      position: 'absolute',
+      top: '1',
+      left: '-14',
+      width: '48',
+      height: '24',
+      borderRadius: '12',
+      backgroundColor: '#000000',
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingLeft: '6',
+    },
+    backtrackIcon: {
+      width: '16',
+      height: '16',
     },
     td: {
       fontSize: '14',

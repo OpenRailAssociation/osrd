@@ -47,8 +47,7 @@ function getConflictTrainNames(
       // Check if the exception has a name change group
       // Otherwise, the name is `${pacedTrainName}/+`
       const namedException = trainSchedule.paced.exceptions.find(
-        // TODO_EXCEPTION: remove `!` when using TrainSchedulingException type
-        (exception) => exception.id! === train.exception_id && exception.train_name
+        (exception) => train.exception_id === exception.id && exception.train_name
       );
       trainNames.push(
         namedException ? namedException.train_name!.value : `${trainSchedule.train_name}/+`
@@ -72,14 +71,8 @@ function getConflictTrainCategories(
 
 export default function addTrainNamesToConflicts(
   conflicts: Conflict[],
-  trainSchedules: TrainScheduleResponse[]
+  trainMap: Map<number, TrainScheduleResponse>
 ): ConflictWithTrainNames[] {
-  const trainMap: Map<number, TrainScheduleResponse> = new Map();
-
-  for (const trainSchedule of trainSchedules) {
-    trainMap.set(trainSchedule.id, trainSchedule);
-  }
-
   return conflicts.map((conflict) => {
     const names = getConflictTrainNames(conflict, trainMap);
     const categories = getConflictTrainCategories(conflict, trainMap);

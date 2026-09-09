@@ -11,6 +11,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
 import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
@@ -37,7 +38,8 @@ import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
-import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
+import fr.sncf.osrd.stdcm.STDCMPartialResult
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
@@ -61,6 +63,7 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.File
+import java.time.Duration
 import java.time.Duration.between
 import java.time.Duration.ofMillis
 import java.time.LocalDateTime
@@ -161,8 +164,18 @@ class STDCMEndpoint(
                     consistSchedules.rollingStocks.map { it.length },
                 )
             val requirements = getRequirements(request, infra, timetableCacheManager)
-            val failureExplainer =
+
+            val fullFailureExplainer =
                 FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra)
+
+            val workSchedulesFailureExplainer =
+                FailureExplainer(
+                    request.startTime,
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    maxLargestConflicts = 2,
+                    maxClosestConflicts = 1,
+                )
 
             var callback: ProgressCallback? = null
             if (ctx != null) {
@@ -192,45 +205,90 @@ class STDCMEndpoint(
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
-                    failureExplainer = failureExplainer,
+                    fullFailureExplainer,
+                    workSchedulesFailureExplainer,
                     callback,
                 )
-            failureExplainer.saveReport(s3Context)
-            if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
-                val result = PathNotFound()
+
+            fullFailureExplainer.saveReport(s3Context)
+            // STDCM has found a valid solution: return the result with the complete path and
+            // simulation.
+            if (path is STDCMCompleteResult && !hasDuplicateTracks(infra, path.trainPath)) {
+                val pathfindingResponse =
+                    runPathfindingBlockPostProcessing(
+                        infra,
+                        path.trainPath,
+                        path.waypointOffsets,
+                        path.backtrackIndexes,
+                    )
+
+                val simulationResponse =
+                    buildSimResponse(
+                        infra,
+                        path,
+                        request.consistSchedule.values[0].speedLimitTag,
+                        temporarySpeedLimitManager,
+                        request.comfort,
+                    )
+
+                val departureTime =
+                    request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
+
+                logDebugData(
+                    infra.rawInfra,
+                    path,
+                    simulationResponse,
+                    departureTime,
+                    requirements.metadata,
+                    s3Context,
+                )
+
+                val result = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
                 val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
                 return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
             }
-            val pathfindingResponse =
-                runPathfindingBlockPostProcessing(
-                    infra,
-                    path.trainPath,
-                    path.waypointOffsets,
-                    path.backtrackIndexes,
+
+            val report = workSchedulesFailureExplainer.makeReport()
+            val mostBlockingWorkSchedules =
+                report.largestConflicts.map { ConflictingWorkSchedule(it.source.id, it.lastOPId) }
+            val nearestToDestinationWorkSchedules =
+                report.closestConflicts.map { ConflictingWorkSchedule(it.source.id, it.lastOPId) }
+            var partialPathfindingResult: PathfindingBlockResponse? = null
+            var lastReachedOperationalPoint: LastReachedOperationalPoint? = null
+
+            // No solution was found, but STDCM managed to go up to a certain point: return the
+            // corresponding partial path.
+            if (path is STDCMPartialResult) {
+                partialPathfindingResult =
+                    runPathfindingBlockPostProcessing(
+                        infra,
+                        path.trainPath,
+                        path.waypointOffsets,
+                        path.backtrackIndexes,
+                    )
+                val id =
+                    path.trainPath
+                        .getOperationalPointParts()
+                        .asSequence()
+                        .map {
+                            infra.rawInfra.getOperationalPointPartOpId(it.value)
+                        }
+                        .last()
+                val arrivalTime =
+                    request.startTime.plus(Duration.ofSeconds(path.earliestReachableTime.toLong()))
+                lastReachedOperationalPoint =
+                    LastReachedOperationalPoint(id, path.geoPoint, arrivalTime)
+            }
+            // STDCM found a valid solution, but it found unavoidable conflicts in the
+            // post-processing. Return the corresponding blocking work schedules.
+            // TODO : check with PO for this behaviour
+            val result =
+                PathNotFound(
+                    mostBlockingWorkSchedules.distinct(),
+                    nearestToDestinationWorkSchedules,
+                    partialPathfindingResult,
+                    lastReachedOperationalPoint,
                 )
-
-            val simulationResponse =
-                buildSimResponse(
-                    infra,
-                    path,
-                    request.consistSchedule.values[0].speedLimitTag,
-                    temporarySpeedLimitManager,
-                    request.comfort,
-                )
-
-            val departureTime =
-                request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
-
-            logDebugData(
-                infra.rawInfra,
-                path,
-                simulationResponse,
-                departureTime,
-                requirements.metadata,
-                s3Context,
-            )
-
-            val result = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
             val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
             RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
         } catch (ex: Throwable) {
@@ -246,7 +304,7 @@ class STDCMEndpoint(
          */
         fun logDebugData(
             infra: RawInfra,
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             simulationResponse: SimulationSuccess,
             departureTime: ZonedDateTime,
             requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
@@ -269,7 +327,7 @@ class STDCMEndpoint(
         /** Build the simulation part of the response */
         fun buildSimResponse(
             infra: FullInfra,
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             speedLimitTag: String?,
             temporarySpeedLimitManager: TemporarySpeedLimitManager?,
             comfort: Comfort,
@@ -327,7 +385,7 @@ class STDCMEndpoint(
 
         /** Build the electrical profiles from the path */
         fun buildSTDCMElectricalProfiles(
-            path: STDCMResult,
+            path: STDCMCompleteResult,
             rollingStocks: DistanceRangeMap<RollingStock>,
             comfort: Comfort,
         ): RangeValues<ElectricalProfileValue> {

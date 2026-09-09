@@ -1,15 +1,18 @@
-import React, { useCallback, Fragment, useMemo, useRef } from 'react';
+import React, { useCallback, Fragment, useMemo, useRef, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { Alert, Moon, TriangleDown } from '@osrd-project/ui-icons';
 import {
+  columnVisibilityFeature,
   createColumnHelper,
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  tableFeatures,
+  useTable,
   type CellContext,
+  type HeaderContext,
   type Row,
   type RowData,
+  type TableFeatures,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import cx from 'classnames';
@@ -23,23 +26,32 @@ import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, subtractStartTime } from 'utils/duration';
 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
+import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
 import { onStopSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
+import RequestedTimeColumnHeader from './RequestedTimeColumnHeader';
 import StartTimeCell from './StartTimeCell';
 import type { TimeCellHandle } from './TimeCell';
-import type { MarginValue, PropagationMode, StopPropagationMode, TimesStopsRowNew } from './types';
+import type {
+  MarginValue,
+  PropagationMode,
+  RequestedTimeField,
+  StopPropagationMode,
+  TimeFillMode,
+  TimesStopsRowNew,
+} from './types';
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-  interface ColumnMeta<TData extends RowData, TValue> {
+  interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
     className: string;
     tabbable?: boolean;
     title?: string;
     'data-testid'?: string;
   }
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-  interface TableMeta<TData extends RowData> {
+  interface TableMeta<TFeatures extends TableFeatures, TData extends RowData> {
     allRows: TimesStopsRowNew[];
     isComputedDataPending?: boolean;
     availablePowerRestrictions: string[];
@@ -63,6 +75,7 @@ declare module '@tanstack/react-table' {
     onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
     onRequestedMarginChange: (row: TimesStopsRowNew, requestedMargin: MarginValue | null) => void;
     onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+    onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   }
 }
 
@@ -72,6 +85,7 @@ const formatTime = (t: StartTime, locale: Intl.Locale) =>
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
+        hour12: false,
       })
     : t.toLocaleString(locale, { style: 'digital', hours: '2-digit' });
 
@@ -91,7 +105,7 @@ const getArrivalReferenceDate = (
     (r) => r.opOnPathIndex < row.opOnPathIndex && (r.requestedDeparture || r.requestedArrival)
   );
 
-  if (!previousRow) return startTime;
+  if (!previousRow) return truncateStartTimeToDay(startTime) as Date;
 
   const refDate = previousRow.requestedDeparture ?? previousRow.requestedArrival ?? startTime;
   if (!(refDate instanceof Date)) {
@@ -149,9 +163,12 @@ type TimesStopsTableProps = {
   onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
   onRequestedMarginChange: (row: TimesStopsRowNew, value: MarginValue | null) => void;
   onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+  onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
 };
 
-const columnHelper = createColumnHelper<TimesStopsRowNew>();
+const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
+export type TimesStopsTableFeatures = typeof tableFeatureSet;
+const columnHelper = createColumnHelper<TimesStopsTableFeatures, TimesStopsRowNew>();
 const getTimeCellKey = (rowIndex: number, columnId: string) => `${rowIndex}-${columnId}`;
 type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture';
 type TabbableCellHandle = TimeCellHandle | DurationCellHandle;
@@ -184,6 +201,7 @@ const TimesStopsTable = ({
   onReceptionSignalChange,
   onRequestedMarginChange,
   onPowerRestrictionChange,
+  onApplyTimesFromSimulation,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -193,6 +211,9 @@ const TimesStopsTable = ({
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
   const startTimeCellType: 'time' | 'duration' =
     scenario.timetable_type === 'CALENDAR' ? 'time' : 'duration';
+
+  const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
+  const [mouseOverTimeField, setMouseOverTimeField] = useState<RequestedTimeField>();
 
   const registerTimeCellRef = useCallback(
     (rowIndex: number, columnId: string) => (handle: TabbableCellHandle | null) => {
@@ -236,7 +257,7 @@ const TimesStopsTable = ({
     editable,
     dataTestId,
   }: {
-    info: CellContext<TimesStopsRowNew, MarginValue | undefined>;
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, MarginValue | undefined>;
     showPolarity?: boolean;
     editable?: boolean;
     dataTestId: string;
@@ -258,7 +279,7 @@ const TimesStopsTable = ({
   };
 
   const returnRequestTheoreticalMarginCell = (
-    info: CellContext<TimesStopsRowNew, MarginValue | undefined>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, MarginValue | undefined>
   ) => {
     const { allRows } = info.table.options.meta!;
     const row = info.row.original;
@@ -288,7 +309,7 @@ const TimesStopsTable = ({
   };
 
   const returnShortSlipDistanceCell = (
-    info: CellContext<TimesStopsRowNew, boolean | undefined>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, boolean | undefined>
   ) => {
     const { closedSignal, shortSlipDistance } = info.row.original;
     const isDisabled = !closedSignal;
@@ -310,7 +331,9 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnPowerRestrictionCell = (info: CellContext<TimesStopsRowNew, string | null>) => {
+  const returnPowerRestrictionCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, string | null>
+  ) => {
     const {
       availablePowerRestrictions: codes,
       powerRestrictionBlocks: blocks,
@@ -359,7 +382,9 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnDepartureTimeCell = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
+  const returnDepartureTimeCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+  ) => {
     const row = info.row.original;
     return (
       <StartTimeCell
@@ -381,7 +406,7 @@ const TimesStopsTable = ({
   };
 
   const returnReceptionOnCloseSignalCell = (
-    info: CellContext<TimesStopsRowNew, boolean | undefined>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, boolean | undefined>
   ) => {
     const { closedSignal, stopDuration, shortSlipDistance } = info.row.original;
     const isDisabled = !stopDuration;
@@ -408,7 +433,9 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnStopDurationCell = (info: CellContext<TimesStopsRowNew, Duration | null>) => (
+  const returnStopDurationCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Duration | null>
+  ) => (
     <DurationCell
       ref={registerTimeCellRef(info.row.index, 'stopDuration')}
       clearButtonTitle={t('clearStopDuration')}
@@ -419,7 +446,7 @@ const TimesStopsTable = ({
     />
   );
 
-  const returnStepStatusCell = (info: CellContext<TimesStopsRowNew, unknown>) => {
+  const returnStepStatusCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew>) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <span data-testid="step-status">&nbsp;</span>;
     }
@@ -447,7 +474,7 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnOPCell = (info: CellContext<TimesStopsRowNew, string>) => {
+  const returnOPCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, string>) => {
     const { name, secondaryCode, pathStepId } = info.row.original;
     return (
       <>
@@ -468,11 +495,13 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnOPOnPathIndexCell = (info: CellContext<TimesStopsRowNew, unknown>) => (
-    <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>
-  );
+  const returnOPOnPathIndexCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew>
+  ) => <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>;
 
-  const returnTrackNameCell = (info: CellContext<TimesStopsRowNew, string>) => {
+  const returnTrackNameCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, string>
+  ) => {
     const { pathStepId, hasRequestedTrack } = info.row.original;
     return (
       <>
@@ -486,7 +515,9 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnArrivalTimeCell = (info: CellContext<TimesStopsRowNew, StartTime | null>) => {
+  const returnArrivalTimeCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+  ) => {
     const row = info.row.original;
     const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
     return (
@@ -508,7 +539,7 @@ const TimesStopsTable = ({
   };
 
   const returnCalculatedArrivalTimeCell = (
-    info: CellContext<TimesStopsRowNew, StartTime | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
   ) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <SkeletonLoader className="cell-loading-placeholder" />;
@@ -520,7 +551,7 @@ const TimesStopsTable = ({
   };
 
   const returnCalculatedDepartureTimeCell = (
-    info: CellContext<TimesStopsRowNew, StartTime | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
   ) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <SkeletonLoader className="cell-loading-placeholder" />;
@@ -534,162 +565,205 @@ const TimesStopsTable = ({
     );
   };
 
+  const onMouseEnterTimeColumnMenu = (
+    allRows: TimesStopsRowNew[],
+    field: RequestedTimeField,
+    mode: TimeFillMode
+  ) => {
+    const rowsToHighlight = getRowsToUpdateFromSimulation(allRows, field, mode);
+
+    setHighlightedRowIds(new Set(rowsToHighlight.map((row) => row.id)));
+    setMouseOverTimeField(field);
+  };
+
+  const returnRequestedTimeHeader = (field: RequestedTimeField) => {
+    const requestedTimeHeader = (
+      info: HeaderContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+    ) => {
+      const { allRows } = info.table.options.meta!;
+      return (
+        <RequestedTimeColumnHeader
+          field={field}
+          isSimulationValid={isValid}
+          rows={allRows}
+          onFillEmpty={() => info.table.options.meta!.onApplyTimesFromSimulation(field, 'fill')}
+          onOverwriteAll={() =>
+            info.table.options.meta!.onApplyTimesFromSimulation(field, 'overwrite')
+          }
+          onMouseEnterFillEmpty={() => onMouseEnterTimeColumnMenu(allRows, field, 'fill')}
+          onMouseEnterOverwriteAll={() => onMouseEnterTimeColumnMenu(allRows, field, 'overwrite')}
+          onMouseLeave={() => setHighlightedRowIds(new Set())}
+        />
+      );
+    };
+    requestedTimeHeader.displayName = 'RequestedTimeHeader';
+    return requestedTimeHeader;
+  };
+
   const columns = useMemo(
-    () => [
-      columnHelper.display({
-        id: 'opOnPathIndex',
-        header: '',
-        cell: returnOPOnPathIndexCell,
-        meta: {
-          className: 'col-index computed',
-        },
-      }),
-      columnHelper.display({
-        id: 'stepStatus',
-        header: '',
-        cell: returnStepStatusCell,
-        meta: {
-          className: 'col-step-status computed',
-        },
-      }),
-      columnHelper.accessor('name', {
-        header: () => t('operational_point'),
-        cell: returnOPCell,
-        meta: {
-          className: 'col-name computed',
-          title: t('operational_point'),
-        },
-      }),
-      columnHelper.accessor('track', {
-        header: () => t('trackName'),
-        cell: returnTrackNameCell,
-        meta: {
-          className: 'col-track computed',
-          title: t('trackName'),
-        },
-      }),
-      columnHelper.accessor('requestedArrival', {
-        header: () => t('arrivalTime'),
-        cell: returnArrivalTimeCell,
-        meta: {
-          className: 'col-requested-arrival col-with-clock-time',
-          tabbable: true,
-          title: t('arrivalTime'),
-        },
-      }),
-      columnHelper.accessor('computedArrival', {
-        header: () => t('calculatedArrivalTime'),
-        cell: returnCalculatedArrivalTimeCell,
-        meta: {
-          className: 'col-computed-arrival col-with-clock-time computed',
-          title: t('calculatedArrivalTime'),
-        },
-      }),
-      columnHelper.accessor('stopDuration', {
-        header: () => t('stopTime'),
-        cell: returnStopDurationCell,
-        meta: {
-          className: 'col-stop-duration col-with-duration',
-          tabbable: true,
-          title: t('stopTime'),
-        },
-      }),
-      columnHelper.accessor('requestedDeparture', {
-        header: () => t('departureTime'),
-        cell: returnDepartureTimeCell,
-        meta: {
-          className: 'col-requested-departure col-with-clock-time',
-          tabbable: true,
-          title: t('departureTime'),
-        },
-      }),
-      columnHelper.accessor('computedDeparture', {
-        header: () => t('calculatedDepartureTime'),
-        cell: returnCalculatedDepartureTimeCell,
-        meta: {
-          className: 'col-computed-departure col-with-clock-time computed',
-          title: t('calculatedDepartureTime'),
-        },
-      }),
-      columnHelper.accessor('closedSignal', {
-        header: () => t('receptionOnClosedSignal'),
-        cell: returnReceptionOnCloseSignalCell,
-        meta: {
-          className: 'col-closed-signal col-with-checkbox',
-          title: t('receptionOnClosedSignalFull'),
-        },
-      }),
-      columnHelper.accessor('shortSlipDistance', {
-        header: () => t('shortSlipDistance'),
-        cell: returnShortSlipDistanceCell,
-        meta: {
-          className: 'col-short-slip-distance col-with-checkbox',
-          title: t('shortSlipDistance'),
-        },
-      }),
-      columnHelper.accessor('powerRestriction', {
-        header: () => t('powerRestriction'),
-        cell: returnPowerRestrictionCell,
-        meta: {
-          className: 'col-power-restriction',
-        },
-      }),
-      columnHelper.accessor('requestedTheoreticalMargin', {
-        header: () => t('requestedTheoreticalMargin'),
-        cell: returnRequestTheoreticalMarginCell,
-        meta: {
-          className: 'col-requested-theoretical-margin',
-          title: t('requestedTheoreticalMargin'),
-        },
-      }),
-      columnHelper.accessor('computedTheoreticalMarginSeconds', {
-        header: () => t('computedTheoreticalMargin'),
-        cell: (info) => returnMarginCell({ info, dataTestId: 'computed-theoretical-margin' }),
-        meta: {
-          className: 'col-computed-theoretical-margin computed computed-margin',
-          title: t('computedTheoreticalMargin'),
-        },
-      }),
-      columnHelper.accessor('realMargin', {
-        header: () => t('realMargin'),
-        cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin' }),
-        meta: {
-          className: 'col-real-margin computed computed-margin',
-          title: t('realMargin'),
-        },
-      }),
-      columnHelper.accessor('marginsDifference', {
-        header: () => t('diffMargins'),
-        cell: (info) =>
-          returnMarginCell({ info, showPolarity: true, dataTestId: 'margins-difference' }),
-        meta: {
-          className: 'col-margins-difference computed computed-margin',
-          title: t('diffMargins'),
-        },
-      }),
-      columnHelper.accessor('timeFromPreviousOp', {
-        header: () => t('timeFromPreviousOp'),
-        meta: {
-          className: 'col-time-from-previous-op col-with-duration computed',
-          'data-testid': 'time-from-previous-op',
-        },
-      }),
-      columnHelper.accessor('totalTravelTime', {
-        header: () => t('totalTravelTime'),
-        meta: {
-          className: 'col-total-travel-time col-with-duration computed',
-          'data-testid': 'total-travel-time',
-        },
-      }),
-    ],
+    () =>
+      columnHelper.columns([
+        columnHelper.display({
+          id: 'opOnPathIndex',
+          header: '',
+          cell: returnOPOnPathIndexCell,
+          meta: {
+            className: 'col-index computed',
+          },
+        }),
+        columnHelper.display({
+          id: 'stepStatus',
+          header: '',
+          cell: returnStepStatusCell,
+          meta: {
+            className: 'col-step-status computed',
+          },
+        }),
+        columnHelper.accessor('name', {
+          header: () => t('operational_point'),
+          cell: returnOPCell,
+          meta: {
+            className: 'col-name computed',
+            title: t('operational_point'),
+          },
+        }),
+        columnHelper.accessor('track', {
+          header: () => t('trackName'),
+          cell: returnTrackNameCell,
+          meta: {
+            className: 'col-track computed',
+            title: t('trackName'),
+          },
+        }),
+        columnHelper.accessor('requestedArrival', {
+          header: returnRequestedTimeHeader('requestedArrival'),
+          cell: returnArrivalTimeCell,
+          meta: {
+            className: 'col-requested-arrival col-with-clock-time',
+            tabbable: true,
+            title: t('requestedArrival'),
+          },
+        }),
+        columnHelper.accessor('computedArrival', {
+          header: () => t('calculatedArrivalTime'),
+          cell: returnCalculatedArrivalTimeCell,
+          meta: {
+            className: 'col-computed-arrival col-with-clock-time computed',
+            title: t('calculatedArrivalTime'),
+          },
+        }),
+        columnHelper.accessor('stopDuration', {
+          header: () => t('stopTime'),
+          cell: returnStopDurationCell,
+          meta: {
+            className: 'col-stop-duration col-with-duration',
+            tabbable: true,
+            title: t('stopTime'),
+          },
+        }),
+        columnHelper.accessor('requestedDeparture', {
+          header: returnRequestedTimeHeader('requestedDeparture'),
+          cell: returnDepartureTimeCell,
+          meta: {
+            className: 'col-requested-departure col-with-clock-time',
+            tabbable: true,
+            title: t('requestedDeparture'),
+          },
+        }),
+        columnHelper.accessor('computedDeparture', {
+          header: () => t('calculatedDepartureTime'),
+          cell: returnCalculatedDepartureTimeCell,
+          meta: {
+            className: 'col-computed-departure col-with-clock-time computed',
+            title: t('calculatedDepartureTime'),
+          },
+        }),
+        columnHelper.accessor('closedSignal', {
+          header: () => t('receptionOnClosedSignal'),
+          cell: returnReceptionOnCloseSignalCell,
+          meta: {
+            className: 'col-closed-signal col-with-checkbox',
+            title: t('receptionOnClosedSignalFull'),
+          },
+        }),
+        columnHelper.accessor('shortSlipDistance', {
+          header: () => t('shortSlipDistance'),
+          cell: returnShortSlipDistanceCell,
+          meta: {
+            className: 'col-short-slip-distance col-with-checkbox',
+            title: t('shortSlipDistance'),
+          },
+        }),
+        columnHelper.accessor('powerRestriction', {
+          header: () => t('powerRestriction'),
+          cell: returnPowerRestrictionCell,
+          meta: {
+            className: 'col-power-restriction',
+          },
+        }),
+        columnHelper.accessor('requestedTheoreticalMargin', {
+          header: () => t('requestedTheoreticalMargin'),
+          cell: returnRequestTheoreticalMarginCell,
+          meta: {
+            className: 'col-requested-theoretical-margin',
+            title: t('requestedTheoreticalMargin'),
+          },
+        }),
+        columnHelper.accessor('computedTheoreticalMarginSeconds', {
+          header: () => t('computedTheoreticalMargin'),
+          cell: (info) =>
+            returnMarginCell({
+              info,
+              dataTestId: 'computed-theoretical-margin',
+            }),
+          meta: {
+            className: 'col-computed-theoretical-margin computed computed-margin',
+            title: t('computedTheoreticalMargin'),
+          },
+        }),
+        columnHelper.accessor('realMargin', {
+          header: () => t('realMargin'),
+          cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin' }),
+          meta: {
+            className: 'col-real-margin computed computed-margin',
+            title: t('realMargin'),
+          },
+        }),
+        columnHelper.accessor('marginsDifference', {
+          header: () => t('diffMargins'),
+          cell: (info) =>
+            returnMarginCell({
+              info,
+              showPolarity: true,
+              dataTestId: 'margins-difference',
+            }),
+          meta: {
+            className: 'col-margins-difference computed computed-margin',
+            title: t('diffMargins'),
+          },
+        }),
+        columnHelper.accessor('timeFromPreviousOp', {
+          header: () => t('timeFromPreviousOp'),
+          meta: {
+            className: 'col-time-from-previous-op col-with-duration computed',
+            'data-testid': 'time-from-previous-op',
+          },
+        }),
+        columnHelper.accessor('totalTravelTime', {
+          header: () => t('totalTravelTime'),
+          meta: {
+            className: 'col-total-travel-time col-with-duration computed',
+            'data-testid': 'total-travel-time',
+          },
+        }),
+      ]),
     [startTime, focusCellBelow, focusRequestedCellOnTab, t]
   );
 
-  // eslint-disable-next-line react/incompatible-library
-  const table = useReactTable({
+  const table = useTable({
     data: rows,
     columns,
-    getCoreRowModel: getCoreRowModel(),
+    features: tableFeatureSet,
     meta: {
       allRows: rows,
       isComputedDataPending,
@@ -702,6 +776,7 @@ const TimesStopsTable = ({
       onReceptionSignalChange,
       onRequestedMarginChange,
       onPowerRestrictionChange,
+      onApplyTimesFromSimulation,
     },
   });
 
@@ -723,7 +798,7 @@ const TimesStopsTable = ({
     ])
   );
 
-  const getRowDayOffset = (row: Row<TimesStopsRowNew>): number | null => {
+  const getRowDayOffset = (row: Row<TimesStopsTableFeatures, TimesStopsRowNew>): number | null => {
     if (!row.original.pathStepId) return null;
     const arrival = row.original.computedArrival ?? row.original.requestedArrival;
     if (!arrival) return null;
@@ -759,6 +834,7 @@ const TimesStopsTable = ({
   //       which would also allow us to use `useWindowVirtualizer`!
   const centerColumn = document.querySelector('.center-column');
 
+  // eslint-disable-next-line react/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     overscan: 10,
@@ -787,7 +863,9 @@ const TimesStopsTable = ({
 
   return (
     <div
-      className={cx('times-stops-table-new', { 'computed-data-pending': isComputedDataPending })}
+      className={cx('times-stops-table-new', {
+        'computed-data-pending': isComputedDataPending,
+      })}
       data-testid="times-stops-table-new"
       ref={virtualizedWrapperRef}
       style={{ height: `${height}px` }}
@@ -798,7 +876,9 @@ const TimesStopsTable = ({
             <div className="power-restriction-warning-content">
               <Alert variant="fill" />
               <span>
-                {t('powerRestrictionIncompatibility', { count: powerRestrictionWarningCount })}
+                {t('powerRestrictionIncompatibility', {
+                  count: powerRestrictionWarningCount,
+                })}
               </span>
             </div>
           </caption>
@@ -833,6 +913,15 @@ const TimesStopsTable = ({
             const dayOffset = effectiveDayOffsets[rowIndex];
             const prevDayOffset = rowIndex > 0 ? effectiveDayOffsets[rowIndex - 1] : 0;
             const hasDayChanged = dayOffset > prevDayOffset;
+            const nextDayOffset =
+              rowIndex < tableRows.length - 1 ? effectiveDayOffsets[rowIndex + 1] : dayOffset;
+            const nextHasDayChanged = nextDayOffset > dayOffset;
+
+            const isCellHighlighted = (idx: number, field: string) =>
+              mouseOverTimeField === field &&
+              idx >= 0 &&
+              idx < tableRows.length &&
+              highlightedRowIds.has(tableRows[idx].original.id);
 
             let dayChangeLabel = null;
             if (hasDayChanged) {
@@ -892,6 +981,18 @@ const TimesStopsTable = ({
                           cell.column.id === 'powerRestriction' &&
                           table.options.meta!.powerRestrictionBlocks.get(row.original.id)
                             ?.hasWarning,
+                        'requested-cell-highlighted-arrival':
+                          cell.column.id === 'requestedArrival' &&
+                          highlightedRowIds.has(row.original.id) &&
+                          mouseOverTimeField === 'requestedArrival',
+                        'requested-cell-highlighted-departure':
+                          cell.column.id === 'requestedDeparture' &&
+                          highlightedRowIds.has(row.original.id) &&
+                          mouseOverTimeField === 'requestedDeparture',
+                        'requested-cell-highlighted--connect-top':
+                          !hasDayChanged && isCellHighlighted(rowIndex - 1, cell.column.id),
+                        'requested-cell-highlighted--connect-bottom':
+                          !nextHasDayChanged && isCellHighlighted(rowIndex + 1, cell.column.id),
                       })}
                       data-testid={cell.column.columnDef.meta?.['data-testid']}
                     >

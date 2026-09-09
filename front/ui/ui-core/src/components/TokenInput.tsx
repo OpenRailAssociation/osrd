@@ -66,7 +66,7 @@ const TokenInput = ({
     }
   };
 
-  const focusInput = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const focusInput = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       inputRef.current?.focus();
     }

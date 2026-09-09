@@ -190,6 +190,9 @@ const useFilterRollingStock = ({
   const userPrivilegesByRollingStockId = useAsyncMemo(async () => {
     // early exit if rollingstock is empty
     if (allRollingStocks.length === 0) return {};
+    // STDCM already reads all authorized rolling stocks with /light_rolling_stock?page_size=1000
+    // No need to send an additional *expensive* request.
+    if (isStdcm) return {};
     // call editoast
     const data = await getUserPrivileges({
       rolling_stock: allRollingStocks.map((rs) => rs.id),
@@ -198,9 +201,10 @@ const useFilterRollingStock = ({
     return data.rolling_stock || {};
   }, [
     getUserPrivileges,
+    isStdcm,
     allRollingStocks
       .map((rs) => rs.id)
-      .sort()
+      .sort((a, b) => a - b)
       .join('|'),
   ]);
 

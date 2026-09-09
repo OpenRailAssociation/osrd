@@ -2,9 +2,10 @@ import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 
-import type { StopDurationUpdate } from '../types';
+import { ONE_DAY } from '../consts';
+import type { StopDurationUpdate, PropagationResult } from '../types';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { formatSignedDelta, ONE_DAY, type PropagationResult } from './timePropagation';
+import { formatSignedDelta } from './utils';
 
 export const formatStopDurationDeltaLabel = (
   oldValue: Duration | null,

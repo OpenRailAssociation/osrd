@@ -68,7 +68,7 @@ const DropdownSNCF = ({
             {titleContent}
             {noArrow && (
               <i
-                className={`${isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down'}`}
+                className={isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down'}
                 aria-hidden="true"
               />
             )}

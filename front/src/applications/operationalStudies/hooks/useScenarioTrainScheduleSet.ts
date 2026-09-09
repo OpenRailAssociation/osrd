@@ -17,7 +17,12 @@ import type { TrainScheduleSetImportType } from '../views/Scenario/components/Im
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';
 import { useScenarioContext } from './useScenarioContext';
 
-export type TrainScheduleSetFormData = Omit<TrainScheduleSet, 'catalog_entry_id' | 'id'> & {
+// The timetable type is not part of the form: a train schedule set inherits it from the timetable
+// it is created in, and it can never be updated afterwards (a set must stay homogeneous).
+export type TrainScheduleSetFormData = Omit<
+  TrainScheduleSet,
+  'catalog_entry_id' | 'id' | 'timetable_type'
+> & {
   catalog?: { id: number; type: 'selected' } | { name: string; type: 'create' };
 };
 
@@ -48,8 +53,8 @@ export default function useScenarioTrainScheduleSet(
     keyPrefix: 'main.timetable.trainScheduleSets.error',
   });
 
-  const { timetableId } = useScenarioContext();
-  const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
+  const { timetableId, scenario } = useScenarioContext();
+  const { trainSchedules, upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
 
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({ id: timetableId });
@@ -97,6 +102,7 @@ export default function useScenarioTrainScheduleSet(
         trainScheduleSetForm: {
           ...trainScheduleSetData,
           catalog_entry_id: catalogEntryId,
+          timetable_type: scenario.timetable_type,
         },
       }).unwrap();
 
@@ -115,6 +121,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
+      scenario.timetable_type,
     ]
   );
 
@@ -130,8 +137,22 @@ export default function useScenarioTrainScheduleSet(
             trainScheduleSets?.map((tss) => tss.id).filter((tssId) => tssId !== id) ?? [],
         },
       }).unwrap();
+
+      // The train schedules are kept in a local state, so the ones of the unlinked set must be
+      // dropped explicitly, otherwise they stay displayed until the page is reloaded.
+      removeTrainSchedules(
+        [...trainSchedules.values()]
+          .filter((trainSchedule) => trainSchedule.train_schedule_set_id === id)
+          .map((trainSchedule) => trainSchedule.id)
+      );
     },
-    [timetableId, trainScheduleSets, linkTrainScheduleSetToTimetable]
+    [
+      timetableId,
+      trainScheduleSets,
+      linkTrainScheduleSetToTimetable,
+      trainSchedules,
+      removeTrainSchedules,
+    ]
   );
 
   const updateTrainScheduleSet = useCallback(
@@ -193,7 +214,7 @@ export default function useScenarioTrainScheduleSet(
       }).unwrap();
 
       // copy all the trains that were attached to the old published tss
-      const trainsToCopy: TrainSchedule[] = trainSchedules
+      const trainsToCopy: TrainSchedule[] = [...trainSchedules.values()]
         .filter((trainSchedule) => trainSchedule.train_schedule_set_id === trainScheduleSet.id)
         .map((trainSchedule) => {
           const {
@@ -295,7 +316,7 @@ export default function useScenarioTrainScheduleSet(
               catalog_entry_id: item.trainScheduleSet.catalog_entry_id,
               published: false,
               description: item.trainScheduleSet.description,
-              timetable_type: 'CALENDAR',
+              timetable_type: scenario.timetable_type,
             },
           }).unwrap();
 
@@ -333,6 +354,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       upsertTrainSchedules,
+      scenario.timetable_type,
     ]
   );
 

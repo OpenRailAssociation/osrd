@@ -107,6 +107,7 @@ paths:
                 enum:
                 - infra
                 - rolling_stock
+                - project
         required: true
       responses:
         '200':
@@ -133,6 +134,7 @@ paths:
                   enum:
                   - infra
                   - rolling_stock
+                  - project
   /authz/me/groups:
     get:
       tags:
@@ -175,6 +177,7 @@ paths:
                 enum:
                 - infra
                 - rolling_stock
+                - project
         required: true
       responses:
         '200':
@@ -204,6 +207,7 @@ paths:
                   enum:
                   - infra
                   - rolling_stock
+                  - project
   /authz/user/info:
     post:
       tags:
@@ -6704,6 +6708,34 @@ components:
           type: string
           enum:
           - editoast:authz:Database
+    EditoastAuthzErrorIncompatibleGrant:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzErrorIncompatibleGrantContext
+          required:
+          - grant
+          - resource_type
+          properties:
+            grant:
+              type: object
+            resource_type:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:authz:IncompatibleGrant
     EditoastAuthzErrorUnknownIdentities:
       type: object
       required:
@@ -7285,6 +7317,7 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorOpenFga'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
+      - $ref: '#/components/schemas/EditoastAuthzErrorIncompatibleGrant'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
@@ -13649,6 +13682,7 @@ components:
       enum:
       - infra
       - rolling_stock
+      - project
     RevokeBody:
       type: object
       required:
@@ -15530,6 +15564,7 @@ components:
       - can_delete
       - can_share_ownership
       - can_revoke
+      - has_access
     StartTimeChangeGroup:
       type: object
       required:
@@ -15541,6 +15576,37 @@ components:
           description: |-
             For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
             For hourly timetables: elapsed ms since the timetable start.
+    StdcmConflictingWorkSchedule:
+      type: object
+      description: Represents one conflicting work schedule in a partial pathfinding result
+      required:
+      - start_date_time
+      - end_date_time
+      - last_op
+      properties:
+        end_date_time:
+          type: string
+          format: date-time
+        last_op:
+          $ref: '#/components/schemas/OperationalPoint'
+        start_date_time:
+          type: string
+          format: date-time
+    StdcmLastReachedOperationalPoint:
+      type: object
+      description: Represents the last reached operational point in a partial pathfinding result
+      required:
+      - geographic
+      - arrival_time
+      - operational_point
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+        geographic:
+          $ref: '#/components/schemas/GeoJsonPoint'
+        operational_point:
+          $ref: '#/components/schemas/OperationalPoint'
     StdcmPathfindingItem:
       type: object
       required:
@@ -15597,8 +15663,26 @@ components:
       - type: object
         title: StdcmResponsePathNotFound
         required:
+        - most_blocking_work_schedules
+        - nearest_to_destination_work_schedules
         - status
         properties:
+          last_reached_operational_point:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/StdcmLastReachedOperationalPoint'
+          most_blocking_work_schedules:
+            type: array
+            items:
+              $ref: '#/components/schemas/StdcmConflictingWorkSchedule'
+          nearest_to_destination_work_schedules:
+            type: array
+            items:
+              $ref: '#/components/schemas/StdcmConflictingWorkSchedule'
+          partial_pathfinding_result:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/CorePathfindingResultSuccess'
           status:
             type: string
             enum:

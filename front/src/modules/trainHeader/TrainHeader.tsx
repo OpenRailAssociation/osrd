@@ -10,7 +10,6 @@ import type { PathfindingResult } from 'common/api/osrdEditoastApi';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type { Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import type { StartTime } from 'utils/duration';
@@ -88,12 +87,6 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
     const trainSchedule = occurrenceId
       ? applyOccurrenceOnPacedTrain(originalTrainSchedule, train, occurrenceId, rollingStocks)
       : originalTrainSchedule;
-    dispatch(
-      selectTrainToEdit({
-        trainSchedule,
-        isOccurrence: !!occurrenceId,
-      })
-    );
     openItineraryModalToEdit({
       trainSchedule,
       parentPacedTrain: originalTrainSchedule ?? train,

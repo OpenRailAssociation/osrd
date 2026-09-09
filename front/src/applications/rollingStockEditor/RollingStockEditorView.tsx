@@ -4,7 +4,11 @@ import { Upload } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type LightRollingStockWithLiveries,
+  type RollingStockWithLiveries,
+} from 'common/api/osrdEditoastApi';
 import GrantsManager from 'common/authorization/components/GrantsManager';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -47,15 +51,6 @@ const RollingStockEditor = () => {
 
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
 
-  const { data: selectedRollingStock, isFetching: isSelectedRollingStockLoading } =
-    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
-      pageMode.type === 'view' || pageMode.type === 'edit'
-        ? {
-            rollingStockId: pageMode.rollingStockId,
-          }
-        : skipToken
-    );
-
   const {
     filteredRollingStockList,
     filters,
@@ -66,6 +61,27 @@ const RollingStockEditor = () => {
     resetFilters,
     userPrivilegesByRollingStockId,
   } = useFilterRollingStock();
+
+  const isUserPrivilegesByRollingStockIdReady = userPrivilegesByRollingStockId.type === 'ready';
+
+  const canRead =
+    selectedRollingStockId !== undefined &&
+    isUserPrivilegesByRollingStockIdReady &&
+    userPrivilegesByRollingStockId.data[selectedRollingStockId]?.has('can_read');
+
+  const fullQuery = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
+    canRead ? { rollingStockId: selectedRollingStockId } : skipToken
+  );
+
+  const restrictedQuery = osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
+    selectedRollingStockId !== undefined && !canRead
+      ? { rollingStockId: selectedRollingStockId }
+      : skipToken
+  );
+
+  const { data: selectedRollingStock, isFetching: isSelectedRollingStockLoading } = canRead
+    ? fullQuery
+    : restrictedQuery;
 
   // depending on the current key of ref2scroll, scroll to the selected rolling stock card when it is opened with scrollIntoView()
   // scrollBy() is used to ensure that the card will be found even if the list is too long
@@ -139,7 +155,14 @@ const RollingStockEditor = () => {
     );
   }, [openModal, setPageMode]);
 
-  const isRollingStockReady = userPrivilegesByRollingStockId.type === 'ready';
+  const asFullRollingStock = (
+    rollingStock: LightRollingStockWithLiveries | RollingStockWithLiveries
+  ) => {
+    if (!('inertia_coefficient' in rollingStock)) {
+      throw new Error('Expected a full rolling stock');
+    }
+    return rollingStock;
+  };
 
   return (
     <>
@@ -200,7 +223,7 @@ const RollingStockEditor = () => {
             selectedRollingStock={selectedRollingStock}
             ref2scroll={ref2scroll}
             userPrivilegesByRollingStockId={
-              isRollingStockReady ? userPrivilegesByRollingStockId.data : {}
+              isUserPrivilegesByRollingStockIdReady ? userPrivilegesByRollingStockId.data : {}
             }
           />
         </div>
@@ -212,9 +235,9 @@ const RollingStockEditor = () => {
           {/* Edit */}
           {pageMode.type === 'edit' && (
             <>
-              {selectedRollingStock && (
+              {selectedRollingStock && canRead && (
                 <RollingStockEditorForm
-                  rollingStockData={selectedRollingStock}
+                  rollingStockData={asFullRollingStock(selectedRollingStock)}
                   setPageMode={setPageMode}
                 />
               )}
@@ -235,7 +258,7 @@ const RollingStockEditor = () => {
                     resourceId={selectedRollingStock.id}
                     resourceType="rolling_stock"
                     userPrivileges={
-                      isRollingStockReady
+                      isUserPrivilegesByRollingStockIdReady
                         ? userPrivilegesByRollingStockId.data[selectedRollingStock.id]
                         : undefined
                     }

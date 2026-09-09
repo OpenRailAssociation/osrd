@@ -69,8 +69,6 @@ const TrainList = ({
   expandedTrainScheduleSetIds,
   setShowTrainScheduleSetDialog,
 }: TrainListProps) => {
-  const { trainScheduleToEditData } = useItineraryModalContext();
-
   const dateTimeLocale = useDateTimeLocale();
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();
@@ -160,7 +158,7 @@ const TrainList = ({
     () => (trainSchedules: TrainScheduleWithDetails[]) =>
       trainSchedules.map((trainSchedule, index) => (
         <div key={`timetable-train-card-${trainSchedule.id}`} data-train-id={trainSchedule.id}>
-          {timetableMode === 'calendar' && showDepartureDates[index] && (
+          {timetableMode === 'chronological' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
           {!isPacedTrainWithDetails(trainSchedule) ? (
@@ -172,7 +170,6 @@ const TrainList = ({
                 workerStatus === 'READY' &&
                 selectedTrainId === formatEditoastIdToTrainScheduleId(trainSchedule.id)
               }
-              isModified={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectTrainToEdit={selectTrainScheduleToEdit}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               projectionPathIsUsed={
@@ -192,7 +189,6 @@ const TrainList = ({
               handleSelectPacedTrain={handleSelectTrainSchedule}
               isOccurrencesListOpen={expandedTrainScheduleIds.has(trainSchedule.id)}
               handleOpenOccurrencesList={handleExpandTrainSchedule}
-              isOnEdit={trainSchedule.id === trainScheduleToEditData?.trainSchedule.id}
               selectedTrainId={selectedTrainId}
               setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
               infraIsCached={workerStatus === 'READY'}
@@ -220,7 +216,6 @@ const TrainList = ({
       selectedTrainId,
       setSelectedTrainScheduleIds,
       subCategories,
-      trainScheduleToEditData?.trainSchedule.id,
       timetableMode,
       trainIdUsedForProjection,
       workerStatus,
@@ -229,7 +224,7 @@ const TrainList = ({
 
   return (
     <Virtualizer>
-      {timetableMode === 'calendar' && trainsToItems(trainSchedulesWithDetails)}
+      {timetableMode === 'chronological' && trainsToItems(trainSchedulesWithDetails)}
       {timetableMode === 'trainScheduleSet' &&
         (trainSchedulesByTrainScheduleSets ? (
           trainSchedulesByTrainScheduleSets

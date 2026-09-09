@@ -46,13 +46,13 @@ export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
 const formatTrainSchedulesForExport = (
-  trainSchedules: TrainScheduleResponse[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
   selectedTimeTableIdsFromClick: number[]
 ) => {
   const trainScheduleIndexByEditoastId = new Map<number, number>();
 
-  const formattedTrainSchedules = trainSchedules
-    .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
+  const formattedTrainSchedules = selectedTimeTableIdsFromClick
+    .map((id) => trainSchedules.get(id)!)
     .reduce<TrainSchedule[]>((acc, trainSchedule) => {
       trainScheduleIndexByEditoastId.set(trainSchedule.id, acc.length);
       acc.push(omit(trainSchedule, ['id', 'train_schedule_set_id']));
@@ -63,20 +63,6 @@ const formatTrainSchedulesForExport = (
     formattedTrainSchedules,
     trainScheduleIndexByEditoastId,
   };
-};
-
-export const copyTrainSchedulesToClipboard = async (
-  selectedTimeTableIdsFromClick: number[],
-  trainSchedules: TrainScheduleResponse[]
-) => {
-  const { formattedTrainSchedules } = formatTrainSchedulesForExport(
-    trainSchedules,
-    selectedTimeTableIdsFromClick
-  );
-  const jsonString = JSON.stringify({ train_schedules: formattedTrainSchedules });
-  const blob = new Blob([jsonString], { type: 'text/plain' });
-  const clipboardItem = new ClipboardItem({ [blob.type]: blob });
-  await navigator.clipboard.write([clipboardItem]);
 };
 
 /**
@@ -127,7 +113,7 @@ type TimetableExportPayload = {
 };
 
 export const buildTimetableExportPayload = (
-  trainSchedules: TrainScheduleResponse[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
   selectedTimeTableIdsFromClick: number[],
   roundTrips?: RoundTrips
 ): TimetableExportPayload => {
@@ -147,13 +133,27 @@ export const buildTimetableExportPayload = (
   };
 };
 
+export const copyTrainSchedulesToClipboard = async (
+  selectedTimeTableIdsFromClick: number[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
+  roundTrips: RoundTrips
+) => {
+  const clipboardPayload = buildTimetableExportPayload(
+    trainSchedules,
+    selectedTimeTableIdsFromClick,
+    roundTrips
+  );
+  const jsonString = JSON.stringify(clipboardPayload);
+  const blob = new Blob([jsonString], { type: 'text/plain' });
+  const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+  await navigator.clipboard.write([clipboardItem]);
+};
+
 export const exportTrainSchedules = (
   selectedTimeTableIdsFromClick: number[],
-  trainSchedules: TrainScheduleResponse[],
+  trainSchedules: Map<number, TrainScheduleResponse>,
   roundTrips?: RoundTrips
 ) => {
-  if (!trainSchedules) return;
-
   const payload = buildTimetableExportPayload(
     trainSchedules,
     selectedTimeTableIdsFromClick,

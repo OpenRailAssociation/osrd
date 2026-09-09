@@ -1879,8 +1879,7 @@ export type GetInfraByInfraIdAutoFixesApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
-export type GetInfraByInfraIdBboxApiResponse =
-  /** status 200 The bbox of the infra if it contains tracks */ null | BoundingBox;
+export type GetInfraByInfraIdBboxApiResponse = /** status 200 The bbox of the infra if it contains tracks */ null | BoundingBox;
 export type GetInfraByInfraIdBboxApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -2977,7 +2976,7 @@ export type PostWorkerLoadApiArg = {
   };
 };
 export type StandardGrant = 'RESTRICTED_READER' | 'READER' | 'WRITER' | 'OWNER';
-export type ResourceType = 'infra' | 'rolling_stock';
+export type ResourceType = 'infra' | 'rolling_stock' | 'project';
 export type GrantBody = {
   grant: StandardGrant;
   resource_id: number;
@@ -2998,7 +2997,8 @@ export type StandardPrivilege =
   | 'can_share_write'
   | 'can_delete'
   | 'can_share_ownership'
-  | 'can_revoke';
+  | 'can_revoke'
+  | 'has_access';
 export type SubjectType = 'User' | 'Group';
 export type PaginationStats = {
   /** The total number of items */
@@ -4924,6 +4924,16 @@ export type StdcmProgressionEvent = {
   best_travel_time: number;
   point: GeoJsonPoint;
 };
+export type StdcmLastReachedOperationalPoint = {
+  arrival_time: string;
+  geographic: GeoJsonPoint;
+  operational_point: OperationalPoint;
+};
+export type StdcmConflictingWorkSchedule = {
+  end_date_time: string;
+  last_op: OperationalPoint;
+  start_date_time: string;
+};
 export type InternalError = {
   context: {
     [key: string]: unknown;
@@ -4952,6 +4962,10 @@ export type StdcmResponse =
       status: 'success';
     }
   | {
+      last_reached_operational_point?: null | StdcmLastReachedOperationalPoint;
+      most_blocking_work_schedules: StdcmConflictingWorkSchedule[];
+      nearest_to_destination_work_schedules: StdcmConflictingWorkSchedule[];
+      partial_pathfinding_result?: null | CorePathfindingResultSuccess;
       status: 'path_not_found';
     }
   | {

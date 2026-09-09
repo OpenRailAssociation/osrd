@@ -52,7 +52,9 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(30.meters))))
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(30.meters))))
                 .run()!!
-        assertEquals(Offset<PhysicsPath>(100.meters), res.trainPath.getLength())
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertEquals(Offset<PhysicsPath>(100.meters), resSuccess.trainPath.getLength())
     }
 
     /** Look for a path where the blocks are occupied before and after */
@@ -83,7 +85,9 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that no path is found when the blocks aren't connected */
@@ -135,7 +139,7 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
-        assertNull(res)
+        assertTrue(res is STDCMPartialResult)
     }
 
     /** Test that we can find a path even if the last block is occupied when the train starts */
@@ -156,7 +160,9 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that the path can change depending on the occupancy */
@@ -204,14 +210,20 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(lastBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph2)
                 .run()!!
-        val blocks1 = res1.trainPath.getBlocks().map { infra.getBlockName(it.value) }
-        val blocks2 = res2.trainPath.getBlocks().map { infra.getBlockName(it.value) }
+
+        assertTrue(res1 is STDCMCompleteResult)
+        val res1Success = res1 as STDCMCompleteResult
+        assertTrue(res2 is STDCMCompleteResult)
+        val res2Success = res2 as STDCMCompleteResult
+
+        val blocks1 = res1Success.trainPath.getBlocks().map { infra.getBlockName(it.value) }
+        val blocks2 = res2Success.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         assertFalse(blocks1.contains("b->c1"))
         assertTrue(blocks1.contains("b->c2"))
-        occupancyTest(res1, occupancyGraph1)
+        occupancyTest(res1Success, occupancyGraph1)
         assertFalse(blocks2.contains("b->c2"))
         assertTrue(blocks2.contains("b->c1"))
-        occupancyTest(res2, occupancyGraph2)
+        occupancyTest(res2Success, occupancyGraph2)
     }
 
     /** Test that everything works well when the train is at max speed during block transitions */
@@ -277,7 +289,7 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(BlockLocation(firstLoop, Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(disconnectedBlock, Offset(0.meters))))
                 .run()
-        assertNull(res)
+        assertTrue(res is STDCMPartialResult)
     }
 
     /**
@@ -298,7 +310,7 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(block, Offset(10000.meters))))
                 .setMaxRunTime(100.0)
                 .run()
-        assertNull(res)
+        assertTrue(res is STDCMPartialResult)
     }
 
     /**
@@ -321,7 +333,7 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(blocks[9], Offset(1000.meters))))
                 .setMaxRunTime(100.0)
                 .run()
-        assertNull(res)
+        assertTrue(res is STDCMPartialResult)
     }
 
     /** Test that the start delay isn't included in the total run time */
@@ -430,7 +442,9 @@ class STDCMPathfindingTests {
                 .setUnavailableTimes(occupancyGraph)
                 .setMaxRunTime(runTime + 60) // We add a margin for the stop time
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that we return the earliest path among the fastest ones */
@@ -457,7 +471,9 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(blocks[0], Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
         assertTrue(res.departureTime < 300)
     }
 
@@ -497,7 +513,7 @@ class STDCMPathfindingTests {
                     )
                 )
                 .run()
-        assertNull(res)
+        assertTrue(res is STDCMPartialResult)
     }
 
     /** Start and end are on the same block, but reversed */
@@ -587,10 +603,12 @@ class STDCMPathfindingTests {
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
         if (isFirstPath) {
-            assertTrue(res.departureTime < 17.0)
+            assertTrue(resSuccess.departureTime < 17.0)
         } else {
-            assertEquals(17.0, res.departureTime)
+            assertEquals(17.0, resSuccess.departureTime)
         }
     }
 
@@ -631,7 +649,7 @@ class STDCMPathfindingTests {
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        assertTrue(res.departureTime < 19.0)
+        assertTrue(res is STDCMCompleteResult && res.departureTime < 19.0)
     }
 
     /**
@@ -676,7 +694,9 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(blocks[0], Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        assertEquals(departureTime, res.departureTime)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertEquals(departureTime, resSuccess.departureTime)
     }
 
     /**
@@ -698,7 +718,9 @@ class STDCMPathfindingTests {
                 )
                 .setEndLocations(setOf(BlockLocation(blocks[0], Offset(100.meters))))
                 .run()!!
-        assertEquals(plannedStepArrivalTime, res.departureTime)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertEquals(plannedStepArrivalTime, resSuccess.departureTime)
     }
 
     /**
@@ -729,7 +751,9 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(BlockLocation(blocks[0], Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        assertEquals(maxPossibleDelay, res.departureTime)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertEquals(maxPossibleDelay, resSuccess.departureTime)
     }
 
     /**
@@ -749,7 +773,9 @@ class STDCMPathfindingTests {
                 )
                 .setEndLocations(setOf(BlockLocation(blocks[0], Offset(100.meters))))
                 .run()!!
-        assertEquals(0.0, res.departureTime)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertEquals(0.0, resSuccess.departureTime)
     }
 
     /**
@@ -782,7 +808,9 @@ class STDCMPathfindingTests {
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
 
-        assertEquals(totalDelay, res.departureTime)
+        assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        assertEquals(totalDelay, resSuccess.departureTime)
     }
 
     /**

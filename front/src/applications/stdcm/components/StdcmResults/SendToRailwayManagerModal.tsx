@@ -332,7 +332,11 @@ const SendToRailwayManagerModal = ({
         stdcmResults.results.simulationPathSteps,
         stdcmData.simulation
       ),
-      requested_steps: transformStepsToApiFormat(steps, timingContext),
+      requested_steps: transformStepsToApiFormat(
+        steps,
+        timingContext,
+        stdcmData.pathfinding_result.backtrack_path_items
+      ),
       departure_time: normalizedDate.toISOString(),
       user_message: comment,
       similar_train: similarTrain,

@@ -10,7 +10,7 @@ import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, TimeChartContextType } from '../../common/types';
 
 const MARGIN = 100;
-const TOP_CAPTION_HEIGHT = 24;
+export const TOP_CAPTION_HEIGHT = 24;
 
 const MINUTE_OPTIONS: Intl.DateTimeFormatOptions = {
   minute: '2-digit',
@@ -45,9 +45,15 @@ const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
     pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
   );
 
-// Signed integer hour count relative to time origin 0, used for the hourly
-// pattern mode (e.g. hourly timetables): …, -2, -1, 0, 1, 2, …
-const HOURLY_HOURS_FORMATTER = (t: number) => `${Math.round(t / HOUR)}`;
+// Signed time relative to time origin 0, used for the hourly pattern mode
+// (e.g. hourly timetables): …, -02:00, -01:00, 00:00, 01:00, 02:00, …
+const HOURLY_HOURS_FORMATTER = (t: number) => {
+  const sign = t < 0 ? '-' : '';
+  const totalMinutes = Math.round(Math.abs(t) / MINUTE);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
 
 const DATES_FORMATER = (t: number) => new Date(t).toLocaleDateString(undefined, DATE_OPTIONS);
 
@@ -155,6 +161,7 @@ export const TimeCaptions = () => {
       labelMarks.forEach(({ styles, formatter, time }) => {
         const text = formatter(time, pixelsPerMinute);
 
+        ctx.save();
         ctx.textAlign = styles.textAlign || 'center';
         ctx.textBaseline = 'top';
         ctx.fillStyle = styles.color;
@@ -166,7 +173,6 @@ export const TimeCaptions = () => {
 
         if (!swapAxis) {
           ctx.beginPath();
-          ctx.strokeStyle = timeCaptionsStyles[1].color;
           ctx.lineWidth = 1;
           let tickHeight = 4;
           const mod = time % (60 * 60 * 1000);
@@ -182,7 +188,6 @@ export const TimeCaptions = () => {
           ctx.lineTo(timePixel, tickHeight);
           ctx.stroke();
 
-          ctx.fillStyle = timeCaptionsStyles[1].color;
           ctx.fillText(text, timePixel, styles.topOffset || 0);
           ctx.fillText(text, timePixel, spaceAxisSize + (styles.topOffset || 0));
         } else {
@@ -193,6 +198,7 @@ export const TimeCaptions = () => {
           ctx.fillText(text, 0, 0);
           ctx.restore();
         }
+        ctx.restore();
       });
 
       // Render caption top border:

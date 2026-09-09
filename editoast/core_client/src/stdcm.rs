@@ -15,8 +15,7 @@ use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
 use super::simulation::SimulationSuccess;
-use crate::AsCoreRequest;
-use crate::Json;
+use crate::AsCoreStreaming;
 use crate::WorkerKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -146,17 +145,31 @@ pub struct ConsistSchedule {
     pub values: Vec<ConsistConfiguration>,
 }
 
+/// Represents the last reached operational point in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct LastReachedOperationalPoint {
+    pub id: String,
+    pub coordinates: ProgressCoordinates,
+    pub arrival_time: DateTime<Utc>,
+}
+
+/// Represents one conflicting work schedule in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct ConflictingWorkSchedule {
+    pub id: String,
+    pub last_op_id: String,
+}
+
+/// Intermediate event emitted during progression
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct UpdateEvent {
+    pub point: ProgressCoordinates,
+    pub best_travel_time: u64,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
-#[serde(tag = "status", rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(clippy::large_enum_variant)]
-pub enum ProgressStatus {
-    InProgress {
-        point: ProgressCoordinates,
-        best_travel_time: u64,
-    },
-    Done {
-        result: Response,
-    },
+pub struct FinalEvent {
+    pub result: Response,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
@@ -176,10 +189,16 @@ pub enum Response {
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
-    PathNotFound,
+    PathNotFound {
+        most_blocking_work_schedules: Vec<ConflictingWorkSchedule>,
+        nearest_to_destination_work_schedules: Vec<ConflictingWorkSchedule>,
+        partial_path: Option<PathfindingResultSuccess>,
+        last_reached_operational_point: Option<LastReachedOperationalPoint>,
+    },
 }
 
-impl AsCoreRequest<Json<Response>> for Request {
+impl AsCoreStreaming for Request {
+    type Response = crate::Progress<UpdateEvent, FinalEvent>;
     const URL_PATH: &'static str = "/stdcm";
 
     fn worker_key(&self) -> WorkerKey {

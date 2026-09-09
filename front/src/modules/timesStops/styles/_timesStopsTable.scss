@@ -48,13 +48,39 @@
       th {
         background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
 
-        .th-content {
+        // Exclude the requested time columns so the triangle button is not affected by the mask-image
+        .th-content:not(:has(.requested-time-column-header-wrapper)) {
           overflow: hidden;
           display: -webkit-box;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
           line-clamp: 2;
           mask-image: linear-gradient(to right, black 80%, transparent 100%);
+        }
+      }
+    }
+
+    .requested-time-column-header-wrapper {
+      display: flex;
+      flex-direction: column;
+
+      .requested-time-column-header-toggle {
+        align-self: end;
+
+        // To be able to keep the same height for the header, the triangle button
+        // needs to slightly overflow the header title
+        margin: -5px -4px -5px;
+
+        &--disabled {
+          cursor: not-allowed;
+        }
+
+        .requested-time-column-header-toggle-icon-open {
+          color: var(--primary80);
+        }
+
+        .requested-time-column-header-toggle-icon-closed {
+          color: var(--black25);
         }
       }
     }
@@ -401,6 +427,34 @@
       }
     }
 
+    .requested-cell-highlighted-departure,
+    .requested-cell-highlighted-arrival {
+      --hl-top: 1;
+      --hl-right: 1;
+      --hl-bottom: 1;
+      --hl-left: 1;
+
+      box-shadow:
+        // inner ring, 1px inset
+        inset 0 calc(1px * var(--hl-top)) 0 0 var(--primary80),
+        inset calc(-1px * var(--hl-right)) 0 0 0 var(--primary80),
+        inset 0 calc(-1px * var(--hl-bottom)) 0 0 var(--primary80),
+        inset calc(1px * var(--hl-left)) 0 0 0 var(--primary80),
+        // outer ring, 4px inset
+        inset 0 calc(4px * var(--hl-top)) 0 0 var(--primary10),
+        inset calc(-4px * var(--hl-right)) 0 0 0 var(--primary10),
+        inset 0 calc(-4px * var(--hl-bottom)) 0 0 var(--primary10),
+        inset calc(4px * var(--hl-left)) 0 0 0 var(--primary10);
+
+      &.requested-cell-highlighted--connect-top {
+        --hl-top: 0;
+      }
+
+      &.requested-cell-highlighted--connect-bottom {
+        --hl-bottom: 0;
+      }
+    }
+
     /* Computed / uncomputed cells */
     td[class^='col-']::before {
       content: '';
@@ -527,4 +581,11 @@
   width: 38px;
   height: 16px;
   border-radius: 8px;
+}
+
+.overwrite-all-confirm-explanations {
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin-bottom: 0;
+  line-height: 24px;
 }

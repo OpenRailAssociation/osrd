@@ -86,7 +86,7 @@ fun simulateBlock(
  * search inaccuracies
  */
 fun occupancyTest(
-    res: STDCMResult,
+    res: STDCMCompleteResult,
     occupancyGraph: ImmutableMultimap<BlockId, OccupancySegment>,
     tolerance: Double = 0.0,
 ) {

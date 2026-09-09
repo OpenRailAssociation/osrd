@@ -268,10 +268,6 @@ impl Request {
                 _ => panic!("Unexpected pathfinding result"),
             })?;
 
-        // TODO : Remove this env var when the backtracking feature is done
-        let enable_backtrack =
-            std::env::var("ENABLE_BACKTRACK").unwrap_or_else(|_| "false".to_string()) == "true";
-
         Ok(track_offsets
             .iter()
             .zip(&self.steps)
@@ -280,11 +276,7 @@ impl Request {
                     stop_duration: path_item.duration,
                     path_item: core_client::pathfinding::PathItem {
                         locations: track_offset.clone(),
-                        can_backtrack: if enable_backtrack {
-                            path_item.duration.is_some()
-                        } else {
-                            false
-                        },
+                        can_backtrack: path_item.pathfinding_item.can_backtrack,
                     },
                     step_timing_data: path_item.timing_data.as_ref().map(|timing_data| {
                         core_client::stdcm::StepTimingData {

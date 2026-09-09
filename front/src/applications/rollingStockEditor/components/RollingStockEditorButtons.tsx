@@ -5,7 +5,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { RollingStock } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { useCheckProtectedAction } from 'common/authorization/hooks/useProtectedAction';
 import type { Privilege } from 'common/authorization/types';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -17,7 +17,7 @@ import type { PageMode } from '../RollingStockEditorView';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockEditorButtonsProps = {
-  rollingStock: RollingStock;
+  rollingStock: RollingStock | LightRollingStock;
   resetFilters: () => void;
   setPageMode: React.Dispatch<React.SetStateAction<PageMode>>;
   isCondensed: boolean;
@@ -47,7 +47,13 @@ const RollingStockEditorButtons = ({
     () =>
       checkProtectedAction(userPrivileges, ['can_read'], () => {
         const date = new Date().getTime().toString().slice(-3);
-        const duplicatedRollingStock = { ...rollingStock, name: `${rollingStock.name}-${date}` };
+        if (!('inertia_coefficient' in rollingStock)) {
+          throw new Error('Cannot duplicate a light rolling stock');
+        }
+        const duplicatedRollingStock = {
+          ...rollingStock,
+          name: `${rollingStock.name}-${date}`,
+        };
         postRollingstock({
           locked: false,
           rollingStockForm: duplicatedRollingStock,
@@ -148,6 +154,7 @@ const RollingStockEditorButtons = ({
         aria-label={t('common.duplicate')}
         title={t('common.duplicate')}
         tabIndex={0}
+        disabled={!userPrivileges.has('can_read')}
         onClick={duplicateRollingStock}
       >
         <Duplicate />

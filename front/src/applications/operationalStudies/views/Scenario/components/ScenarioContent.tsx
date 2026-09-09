@@ -8,7 +8,6 @@ import {
   type ItineraryModalContextType,
   type TrainScheduleToEditData,
 } from 'applications/operationalStudies/hooks/useItineraryModalContext';
-import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import {
@@ -32,7 +31,6 @@ import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import BoardWrapper from './BoardWrapper';
-import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';
 import { handleOperation } from './MacroEditor/ngeToOsrd';
 import { loadNgeDto } from './MacroEditor/osrdToNge';
@@ -86,7 +84,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const {
     trainSchedulesWithDetails,
-    trainSchedules,
+    trainSchedulesById,
     projectionData,
     conflicts,
     isConflictsLoading,
@@ -105,11 +103,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     totalConflictsCount,
     selectedTrainConflictsCount,
     displayedConflicts,
-  } = useConflictsFilter(
-    useMemo(() => trainSchedules || [], [trainSchedules]),
-    conflicts,
-    isConflictsLoading
-  );
+  } = useConflictsFilter(trainSchedulesById, conflicts, isConflictsLoading);
 
   const macroEditorState = useRef<MacroEditorState>(null);
   const lastNgeOperationPromise = useRef(Promise.resolve());
@@ -126,13 +120,20 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
-    const state = new MacroEditorState(infraId, scenario.id);
+    const state = new MacroEditorState(infraId, scenario.id, scenario.timetable_type);
 
     const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
+  }, [
+    dispatch,
+    infraId,
+    scenario.id,
+    scenario.timetable_id,
+    scenario.timetable_type,
     // eslint-disable-next-line react/use-memo
-  }, [dispatch, infraId, scenario.id, scenario.timetable_id, activeBoards.has('macro')]);
+    activeBoards.has('macro'),
+  ]);
 
   const upsertTrainSchedulesWithNge = useCallback(
     (updatedTrainSchedules: TrainScheduleResponse[]) => {
@@ -164,13 +165,13 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const timetableContext = useMemo(
     (): TimetableContextType => ({
-      trainSchedules: trainSchedules ?? [],
+      trainSchedules: trainSchedulesById,
       upsertTrainSchedules: upsertTrainSchedulesWithNge,
       removeTrainSchedules: removeTrainSchedulesWithNge,
       updateTrainScheduleDepartureTime: updateTrainScheduleDepartureTimeWithNge,
     }),
     [
-      trainSchedules,
+      trainSchedulesById,
       upsertTrainSchedulesWithNge,
       removeTrainSchedulesWithNge,
       updateTrainScheduleDepartureTimeWithNge,
@@ -217,95 +218,94 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const defaultStartTime = useMemo(
     () =>
       scenario.timetable_type === 'CALENDAR'
-        ? computeLatestMidnight(trainSchedules ?? [], new Date())
+        ? computeLatestMidnight([...trainSchedulesById.values()], new Date())
         : Duration.zero,
-    [scenario.timetable_type, trainSchedules]
+    [scenario.timetable_type, trainSchedulesById]
   );
 
   return (
     <TimetableContext.Provider value={timetableContext}>
       <ItineraryModalContext.Provider value={itineraryModalContext}>
-        <EditedElementContainerProvider>
-          <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
-            {itineraryModalOpen && (
-              <ManageTrainScheduleContextProvider>
-                <ItineraryModal
-                  onTrainCreated={openAndScrollToTableBoard}
-                  trainScheduleToEditData={trainScheduleToEditData}
-                  defaultStartTime={defaultStartTime}
-                />
-              </ManageTrainScheduleContextProvider>
-            )}
-            <div
-              data-testid="scenario-left-column"
-              className="left-column"
-              style={{ display: activeBoards.has('trains') ? 'block' : 'none' }}
-            >
-              <div className="scenario-sidemenu">
-                <TimetableBoardWrapper
-                  trainSchedulesWithDetails={trainSchedulesWithDetails}
-                  refreshNge={refreshNge}
-                  projectingOnSimulatedPathException={
-                    projectionData?.projectingOnSimulatedPathException
-                  }
-                  selectedTrainScheduleIds={selectedTrainScheduleIds}
-                  setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
-                />
-              </div>
+        <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
+          {itineraryModalOpen && (
+            <ItineraryModal
+              onTrainCreated={openAndScrollToTableBoard}
+              trainScheduleToEditData={trainScheduleToEditData}
+              defaultStartTime={defaultStartTime}
+            />
+          )}
+          <div
+            data-testid="scenario-left-column"
+            className="left-column"
+            style={{ display: activeBoards.has('trains') ? 'block' : 'none' }}
+          >
+            <div className="scenario-sidemenu">
+              <TimetableBoardWrapper
+                trainSchedulesWithDetails={trainSchedulesWithDetails}
+                refreshNge={refreshNge}
+                projectingOnSimulatedPathException={
+                  projectionData?.projectingOnSimulatedPathException
+                }
+                selectedTrainScheduleIds={selectedTrainScheduleIds}
+                setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
+              />
             </div>
-            <div className="center-column">
-              {!isInfraLoaded && !itineraryModalOpen && <ScenarioLoaderMessage />}
-              <div className="scenario-results">
-                {/* STD / TABLES / SDD / MAP */}
-                {isInfraLoaded && isBoardSimulationResultsActive && (
-                  <SimulationResults
-                    scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
-                    projectionData={projectionData}
-                    conflicts={conflicts}
-                    trainSchedulesWithDetails={trainSchedulesWithDetails}
-                    activeBoards={activeBoards}
-                    hourlyTimetableDuration={hourlyTimetableDuration}
-                    isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
-                    setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
-                  />
-                )}
-                {/* MACRO */}
-                {activeBoards.has('macro') && (
-                  <BoardWrapper
-                    name={t('boards.macro')}
-                    resizable={{
-                      height: macroBoardHeight,
-                      setHeight: setMacroBoardHeight,
-                      minHeight: MACRO_MIN_HEIGHT,
-                    }}
-                  >
-                    <div className="osrd-simulation-container">
-                      <div
-                        data-testid="macro-editor"
-                        className="chart-container"
-                        style={{
-                          height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
-                        }}
-                      >
-                        {(!ngeDto || ngeIsLoading) && (
-                          <Loader
-                            msg={t('main.loadingMacroEditor')}
-                            className="scenario-loader"
-                            childClass="scenario-loader-msg"
-                          />
-                        )}
-                        <NGE
-                          activeFilterSettingId={ngeDto?.filterData.filterSettings.at(0)?.id}
-                          dto={ngeDto}
-                          onOperation={handleNGEOperation}
-                          onLoad={handleNGELoad}
+          </div>
+          <div className="center-column">
+            {!isInfraLoaded && !itineraryModalOpen && <ScenarioLoaderMessage />}
+            <div className="scenario-results">
+              {/* STD / TABLES / SDD / MAP */}
+              {isInfraLoaded && isBoardSimulationResultsActive && (
+                <SimulationResults
+                  scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
+                  projectionData={projectionData}
+                  conflicts={conflicts}
+                  trainSchedulesWithDetails={trainSchedulesWithDetails}
+                  activeBoards={activeBoards}
+                  hourlyTimetableDuration={hourlyTimetableDuration}
+                  isScrollingToTimeStopsTable={isScrollingToTimeStopsTable}
+                  setIsScrollingToTimeStopsTable={setIsScrollingToTimeStopsTable}
+                />
+              )}
+              {/* MACRO */}
+              {activeBoards.has('macro') && (
+                <BoardWrapper
+                  name={t('boards.macro')}
+                  resizable={{
+                    height: macroBoardHeight,
+                    setHeight: setMacroBoardHeight,
+                    minHeight: MACRO_MIN_HEIGHT,
+                  }}
+                >
+                  <div className="osrd-simulation-container">
+                    <div
+                      data-testid="macro-editor"
+                      className="chart-container"
+                      style={{
+                        height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
+                      }}
+                    >
+                      {(!ngeDto || ngeIsLoading) && (
+                        <Loader
+                          msg={t('main.loadingMacroEditor')}
+                          className="scenario-loader"
+                          childClass="scenario-loader-msg"
                         />
-                      </div>
+                      )}
+                      <NGE
+                        activeFilterSettingId={ngeDto?.filterData.filterSettings.at(0)?.id}
+                        dto={ngeDto}
+                        onOperation={handleNGEOperation}
+                        onLoad={handleNGELoad}
+                      />
                     </div>
-                  </BoardWrapper>
-                )}
-                {/* CHRONOGRAM */}
-                {isInfraLoaded && trainSchedulesWithDetails.length > 0 && (
+                  </div>
+                </BoardWrapper>
+              )}
+              {/* CHRONOGRAM */}
+              {scenario.timetable_type === 'CALENDAR' &&
+                isInfraLoaded &&
+                trainSchedulesWithDetails.length > 0 && (
                   <BoardWrapper
                     hidden={!activeBoards.has('chronogram')}
                     name={t('boards.chronogram')}
@@ -325,39 +325,38 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                     </div>
                   </BoardWrapper>
                 )}
-              </div>
             </div>
-            {/* CONFLICTS */}
-            <div
-              className="right-column"
-              data-testid="conflicts-list"
-              style={{ display: activeBoards.has('conflicts') ? 'block' : 'none' }}
+          </div>
+          {/* CONFLICTS */}
+          <div
+            className="right-column"
+            data-testid="conflicts-list"
+            style={{ display: activeBoards.has('conflicts') ? 'block' : 'none' }}
+          >
+            <BoardWrapper
+              hidden={!activeBoards.has('conflicts')}
+              name={t('main.conflicts.conflictsCount', { count: totalConflictsCount })}
+              withFooter
             >
-              <BoardWrapper
-                hidden={!activeBoards.has('conflicts')}
-                name={t('main.conflicts.conflictsCount', { count: totalConflictsCount })}
-                withFooter
-              >
-                <div className="conflicts-wrapper">
-                  {isConflictsLoading && (
-                    <Loader
-                      msg={t('main.loadingConflicts')}
-                      className="scenario-loader"
-                      childClass="scenario-loader-msg"
-                    />
-                  )}
-                  <Conflicts
-                    showOnlySelectedTrain={showOnlySelectedTrain}
-                    onToggleFilter={handleToggleConflictsFilter}
-                    selectedTrainName={selectedTrainName}
-                    conflictsCount={selectedTrainConflictsCount}
-                    displayedConflicts={displayedConflicts}
+              <div className="conflicts-wrapper">
+                {isConflictsLoading && (
+                  <Loader
+                    msg={t('main.loadingConflicts')}
+                    className="scenario-loader"
+                    childClass="scenario-loader-msg"
                   />
-                </div>
-              </BoardWrapper>
-            </div>
-          </main>
-        </EditedElementContainerProvider>
+                )}
+                <Conflicts
+                  showOnlySelectedTrain={showOnlySelectedTrain}
+                  onToggleFilter={handleToggleConflictsFilter}
+                  selectedTrainName={selectedTrainName}
+                  conflictsCount={selectedTrainConflictsCount}
+                  displayedConflicts={displayedConflicts}
+                />
+              </div>
+            </BoardWrapper>
+          </div>
+        </main>
       </ItineraryModalContext.Provider>
     </TimetableContext.Provider>
   );

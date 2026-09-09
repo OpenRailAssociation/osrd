@@ -35,7 +35,7 @@ const useMapBlankStyle = (): MapProps['mapStyle'] => {
     const isDefaultSpriteValid = await isValidUrl(ponctualObjectsSprites.url);
 
     const sprites: (Sprite | null)[] = await Promise.all([
-      isDefaultSpriteValid ? ponctualObjectsSprites : null,
+      Promise.resolve(isDefaultSpriteValid ? ponctualObjectsSprites : null),
       ...signalingSystems.map(async (id) => {
         const signalingSystemsURL = `${SPRITES_URL}/${id}/sprites`;
         const isValid = await isValidUrl(signalingSystemsURL);

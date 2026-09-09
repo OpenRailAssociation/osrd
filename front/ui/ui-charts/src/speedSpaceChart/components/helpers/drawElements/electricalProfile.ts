@@ -107,7 +107,7 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
           ctx.fillStyle = '#000';
           ctx.font = '600 14px IBM Plex Sans';
           ctx.textAlign = 'center';
-          ctx.fillText(`${electricalProfile}`, xStart + profileWidth / 2, topLayer / 2);
+          ctx.fillText(electricalProfile, xStart + profileWidth / 2, topLayer / 2);
 
           // Draw begin and end position
           ctx.fillStyle = 'rgb(49, 46, 43)';
@@ -115,14 +115,14 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
           ctx.textAlign = 'right';
           ctx.fillText(
-            `${(start || 0).toFixed(1)}`,
+            (start || 0).toFixed(1),
             xStart - (MARGIN_POSITION_TEXT + profileNameOverflow / 2),
             topLayer / 2
           );
 
           ctx.textAlign = 'left';
           ctx.fillText(
-            `${end!.toFixed(1)}`,
+            end!.toFixed(1),
             xStart + profileWidth + (MARGIN_POSITION_TEXT + profileNameOverflow / 2),
             topLayer / 2
           );

@@ -71,6 +71,8 @@ pub struct RunserverArgs {
     trains_traffic_path: Option<PathBuf>,
     #[command(flatten)]
     s3: S3Args,
+    #[clap(long, env = "ENABLE_PROJECT_PERMISSIONS")]
+    enable_project_permissions: bool,
 }
 
 /// Create and run the server
@@ -92,6 +94,7 @@ pub async fn runserver(
         dynamic_assets_path,
         trains_traffic_path,
         s3,
+        enable_project_permissions,
     }: RunserverArgs,
     postgres: PostgresConfig,
     valkey_config: ValkeyConfig,
@@ -125,6 +128,7 @@ pub async fn runserver(
         app_version,
         trains_traffic,
         s3_config: build_s3_config(s3),
+        enable_project_permissions,
     };
 
     let server = views::Server::new(config).await?;

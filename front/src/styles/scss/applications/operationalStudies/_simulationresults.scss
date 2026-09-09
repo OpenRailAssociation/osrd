@@ -115,13 +115,6 @@
         0 2px 4px rgba(0, 0, 0, 0.22);
     }
 
-    .driver-train-schedule {
-      background-color: white;
-      padding: 16px;
-      border-radius: 4px;
-      margin-inline: 38px 30px;
-    }
-
     .simulation-sheet-container {
       display: flex;
       justify-content: space-between;
@@ -147,11 +140,6 @@
     }
 
     /* MAP */
-    .train-speed-label {
-      text-shadow: 0 0 3px #fff;
-      padding-bottom: 24px;
-    }
-
     .map-pathfinding-marker {
       display: flex;
       align-items: center;

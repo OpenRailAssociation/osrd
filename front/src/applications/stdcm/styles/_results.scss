@@ -280,6 +280,23 @@
               text-align: center;
               padding: 1px 9px;
             }
+            .backtrack-icon {
+              display: flex;
+              justify-content: flex-end;
+              color: var(--info60);
+              padding: 3px 0 11px 0;
+            }
+            .backtrack-svg {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .backtrack-label {
+              color: var(--info60);
+              font-weight: normal;
+              padding: 3px 0 11px 0;
+            }
+
             .weight {
               width: 128px;
               padding-left: 40px;
@@ -373,6 +390,35 @@
           line-height: 24px;
         }
 
+        .nearest-reached-point {
+          line-height: 24px;
+          margin-bottom: 24px;
+        }
+
+        .blocking-work-schedules {
+          margin-bottom: 24px;
+
+          .conflicts-title {
+            display: block;
+            line-height: 24px;
+          }
+
+          ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+            li {
+              line-height: 24px;
+            }
+          }
+        }
+
+        .too-much-traffic {
+          line-height: 24px;
+          margin-bottom: 24px;
+        }
+
         .alternative-simulations-info {
           padding: 22px 40px 26px 40px;
           text-align: center;
@@ -403,6 +449,18 @@
       box-shadow:
         0 0 0 2px rgba(255, 255, 255, 0.75) inset,
         0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+
+      .last-reached-point-marker {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 1);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 1) inset,
+          0 0 0 1px rgba(255, 255, 255, 1),
+          0 0 0 2px rgba(255, 0, 183, 1),
+          0 0 0 4.5px rgba(255, 157, 51, 0.4);
+      }
     }
   }
 

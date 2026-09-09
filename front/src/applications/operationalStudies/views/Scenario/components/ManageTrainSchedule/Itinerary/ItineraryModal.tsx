@@ -6,6 +6,7 @@ import bbox from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import cx from 'classnames';
 import type { Position } from 'geojson';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
@@ -34,10 +35,19 @@ import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath'
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
-import { isPacedTrainWithDetails } from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  DEFAULT_PACED_TRAIN_INTERVAL,
+  getDefaultPacedTrainTimeWindow,
+  isPacedTrainWithDetails,
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { PathStep, PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type {
+  EditingTrainType,
+  PathStep,
+  PathStepMetadata,
+  PathStepV2,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
@@ -57,7 +67,7 @@ import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
-import ItineraryModalFooter, { type FooterTrainType } from './ItineraryModalFooter';
+import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
@@ -70,7 +80,7 @@ type ItineraryModalProps = {
 };
 
 export type ItineraryModalFormState = {
-  name?: string;
+  name: string;
   rollingStockId?: number;
   rollingStockName: string;
   speedLimitTag?: string;
@@ -101,11 +111,12 @@ export type ItineraryModalTrainState = {
   speedLimitByTag?: string;
 };
 
-function blankNewTrainState(
+export function blankNewTrainState(
   startTime: StartTime | undefined,
   timetableType: TimetableType
 ): ItineraryModalTrainState {
   startTime ??= timetableType === 'CALENDAR' ? new Date() : Duration.zero;
+
   return {
     name: '',
     startTime,
@@ -122,15 +133,17 @@ function blankNewTrainState(
     usingSpeedLimits: true,
     stopsAtEndOfBlock: false,
     powerRestriction: [],
-    timeWindow: new Duration({ minutes: 120 }),
-    interval: new Duration({ minutes: 60 }),
+    timeWindow: getDefaultPacedTrainTimeWindow(timetableType),
+    interval: DEFAULT_PACED_TRAIN_INTERVAL,
     addedExceptions: [],
-    editingTrainType: 'uniqueTrain',
+    // An hourly timetable only holds services, never unique trains
+    editingTrainType: timetableType === 'HOURLY' ? 'pacedTrain' : 'uniqueTrain',
   };
 }
 
-function setupStateWithTrainSchedule(
+export function setupStateWithTrainSchedule(
   trainSchedule: TrainScheduleWithDetails,
+  timetableType: TimetableType,
   isOccurrence?: boolean
 ): ItineraryModalTrainState {
   const state: ItineraryModalTrainState = {
@@ -153,8 +166,8 @@ function setupStateWithTrainSchedule(
     powerRestriction: trainSchedule.power_restrictions || [],
     constraintDistribution: trainSchedule.constraint_distribution || 'STANDARD',
     editingTrainType: 'uniqueTrain',
-    timeWindow: new Duration({ minutes: 120 }),
-    interval: new Duration({ minutes: 60 }),
+    timeWindow: getDefaultPacedTrainTimeWindow(timetableType),
+    interval: DEFAULT_PACED_TRAIN_INTERVAL,
     addedExceptions: [],
   };
 
@@ -166,6 +179,27 @@ function setupStateWithTrainSchedule(
 
   return state;
 }
+
+const createDefaultTrainName = (
+  t: TFunction<'operational-studies', 'manageTrainSchedule.itineraryModal'>,
+  stepsWithLocationOrInput: PathStepV2[],
+  pathStepsMetadataById: Map<string, PathStepMetadata>
+): string => {
+  const createDefaultStepName = (pathStep: PathStepV2, trackOffsetDefault: string): string => {
+    const location = pathStep.location;
+    if (!location) return '';
+    if (location.type === 'track_offset') return trackOffsetDefault;
+    const op = location.operational_point;
+    if (op.type === 'domestic') return op.main_code;
+    const metadata = pathStepsMetadataById.get(pathStep.id);
+    if (isOpRefMetadata(metadata)) return metadata.mainCode;
+    return op.type === 'id' ? `ID ${op.operational_point}` : `UIC ${op.uic}`;
+  };
+
+  const origin = stepsWithLocationOrInput[0];
+  const destination = stepsWithLocationOrInput[stepsWithLocationOrInput.length - 1];
+  return `${createDefaultStepName(origin, t('origin'))} → ${createDefaultStepName(destination, t('destination'))}`;
+};
 
 const ItineraryModal = ({
   onTrainCreated,
@@ -211,7 +245,13 @@ const ItineraryModal = ({
     if (!wasInitialized) {
       if (trainScheduleToEditData) {
         const train = trainScheduleToEditData.trainSchedule;
-        setTrainState(setupStateWithTrainSchedule(train, !!trainScheduleToEditData.occurrenceId));
+        setTrainState(
+          setupStateWithTrainSchedule(
+            train,
+            scenario.timetable_type,
+            !!trainScheduleToEditData.occurrenceId
+          )
+        );
         setModalFormState({
           name: train.name,
           rollingStockName: train.rollingStockName,
@@ -413,6 +453,7 @@ const ItineraryModal = ({
         type: 'opRef',
         isInvalid: false,
         name: op.name,
+        mainCode: op.main_code,
         uic: op.uic,
         secondaryCode: op.secondary_code,
         parts: coordinates
@@ -579,7 +620,7 @@ const ItineraryModal = ({
     }
   };
 
-  const isNameEmpty = !modalFormState.name || modalFormState.name.trim() === '';
+  const isNameEmpty = modalFormState.name.trim() === '';
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
@@ -720,18 +761,21 @@ const ItineraryModal = ({
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const submitItinerary = (trainType?: FooterTrainType) => {
+  const submitItinerary = (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
-    if (isNameEmpty) return;
 
     const stepsWithLocationOrInput = pathSteps.filter(
       (step) => !isEmptyStep(step, getInputForStep(step.id))
     );
     if (stepsWithLocationOrInput.length < 2) return;
 
+    const name = isNameEmpty
+      ? createDefaultTrainName(t, stepsWithLocationOrInput, pathStepsMetadataById)
+      : modalFormState.name;
+
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
-      i === stepsWithLocationOrInput.length - 1
+      i === stepsWithLocationOrInput.length - 1 && !step.stopFor
         ? { ...step, stopFor: new Duration({ minutes: 0 }) }
         : step
     );
@@ -742,7 +786,7 @@ const ItineraryModal = ({
 
     setTrainState((oldTrainState: ItineraryModalTrainState) => ({
       ...oldTrainState,
-      name: modalFormState.name ?? '',
+      name,
       category: modalFormState.category ?? null,
       rollingStockId: modalFormState.rollingStockId,
       rollingStockName: modalFormState.rollingStockName,
@@ -811,8 +855,6 @@ const ItineraryModal = ({
             onRollingStockMessageChange={setRollingStockMessage}
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
-            submitAttempted={submitAttempted}
-            isNameEmpty={isNameEmpty}
           />
         </div>
         <div className="itinerary-modal-form-body" data-testid="itinerary-modal-form-body">

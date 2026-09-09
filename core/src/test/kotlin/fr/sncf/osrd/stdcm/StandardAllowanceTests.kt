@@ -102,8 +102,8 @@ class StandardAllowanceTests {
                     .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                     .setStandardAllowance(allowance)
             )
-        Assertions.assertNotNull(res.withoutAllowance!!)
-        Assertions.assertNotNull(res.withAllowance!!)
+        Assertions.assertNotNull(res.withoutAllowance!! as STDCMCompleteResult)
+        Assertions.assertNotNull(res.withAllowance!! as STDCMCompleteResult)
         val secondBlockEntryTime =
             (res.withAllowance.departureTime +
                 res.withAllowance.envelope.interpolateArrivalAt(
@@ -136,8 +136,8 @@ class StandardAllowanceTests {
                     .setEndLocations(setOf(BlockLocation(block, Offset(10000.meters))))
                     .setStandardAllowance(allowance)
             )
-        Assertions.assertNotNull(res.withoutAllowance!!)
-        Assertions.assertNotNull(res.withAllowance!!)
+        Assertions.assertNotNull(res.withoutAllowance!! as STDCMCompleteResult)
+        Assertions.assertNotNull(res.withAllowance!! as STDCMCompleteResult)
         val timeEnterOccupiedSection =
             (res.withAllowance.departureTime +
                 res.withAllowance.envelope.interpolateArrivalAt(5000.0))
@@ -187,8 +187,11 @@ class StandardAllowanceTests {
                 .setEndLocations(setOf(BlockLocation(blocks[2], Offset(1000.meters))))
                 .setStandardAllowance(allowance)
                 .run()!!
-        occupancyTest(res, occupancyGraph, TIME_STEP)
-        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateArrivalAt(11000.0))
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, TIME_STEP)
+        val thirdBlockEntryTime =
+            (resSuccess.departureTime + resSuccess.envelope.interpolateArrivalAt(11000.0))
         Assertions.assertEquals(
             1000.0,
             thirdBlockEntryTime,
@@ -236,8 +239,11 @@ class StandardAllowanceTests {
                 .setEndLocations(setOf(BlockLocation(blocks[2], Offset(1.meters))))
                 .setStandardAllowance(allowance)
                 .run()!!
-        occupancyTest(res, occupancyGraph, TIME_STEP)
-        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateArrivalAt(10001.0))
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, TIME_STEP)
+        val thirdBlockEntryTime =
+            (resSuccess.departureTime + resSuccess.envelope.interpolateArrivalAt(10001.0))
         Assertions.assertEquals(1000.0, thirdBlockEntryTime, 3 * TIME_STEP)
     }
 
@@ -314,9 +320,9 @@ class StandardAllowanceTests {
                     .setUnavailableTimes(occupancyGraph)
                     .setStandardAllowance(allowance)
             )
-        Assertions.assertNotNull(res.withoutAllowance)
-        Assertions.assertNotNull(res.withAllowance)
-        occupancyTest(res.withAllowance!!, occupancyGraph, TIME_STEP)
+        Assertions.assertNotNull(res.withoutAllowance as STDCMCompleteResult)
+        Assertions.assertNotNull(res.withAllowance as STDCMCompleteResult)
+        occupancyTest(res.withAllowance, occupancyGraph, TIME_STEP)
         checkAllowanceResult(res, allowance)
     }
 
@@ -364,8 +370,11 @@ class StandardAllowanceTests {
                 .setEndLocations(setOf(BlockLocation(blocks[2], Offset(1000.meters))))
                 .setStandardAllowance(allowance)
                 .run()!!
-        occupancyTest(res, occupancyGraph, TIME_STEP)
-        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateArrivalAt(11000.0))
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph, TIME_STEP)
+        val thirdBlockEntryTime =
+            (resSuccess.departureTime + resSuccess.envelope.interpolateArrivalAt(11000.0))
         // 2 allowances + the extra safety TIME_STEP added when avoiding conflicts gives us 3 *
         // TIME_STEP
         Assertions.assertEquals(1000.0, thirdBlockEntryTime, 3 * TIME_STEP)
@@ -474,9 +483,9 @@ class StandardAllowanceTests {
                     .setUnavailableTimes(occupancyGraph)
                     .setStandardAllowance(allowance)
             )
-        Assertions.assertNotNull(res.withoutAllowance)
-        Assertions.assertNotNull(res.withAllowance)
-        occupancyTest(res.withAllowance!!, occupancyGraph, TIME_STEP)
+        Assertions.assertNotNull(res.withoutAllowance as STDCMCompleteResult)
+        Assertions.assertNotNull(res.withAllowance as STDCMCompleteResult)
+        occupancyTest(res.withAllowance, occupancyGraph, TIME_STEP)
 
         // We need a high tolerance because there are several binary searches
         checkAllowanceResult(res, allowance, 4 * TIME_STEP)
@@ -529,8 +538,11 @@ class StandardAllowanceTests {
                     .setUnavailableTimes(occupancyGraph)
                     .setStandardAllowance(allowance)
             )
-        Assertions.assertEquals(0.0, res.withAllowance!!.envelope.endSpeed)
-        Assertions.assertEquals(0.0, res.withoutAllowance!!.envelope.endSpeed)
+        Assertions.assertEquals(0.0, (res.withAllowance!! as STDCMCompleteResult).envelope.endSpeed)
+        Assertions.assertEquals(
+            0.0,
+            (res.withoutAllowance!! as STDCMCompleteResult).envelope.endSpeed,
+        )
         occupancyTest(res.withAllowance, occupancyGraph, 2 * TIME_STEP)
 
         // We need a high tolerance because there are several binary searches
@@ -562,8 +574,8 @@ class StandardAllowanceTests {
                 .setStandardAllowance(AllowanceValue.Percentage(5.0))
         val res = runWithAndWithoutAllowance(builder)
         val step = 1_000
-        val envelopeWithAllowances = res.withAllowance!!.envelope
-        val fastestEnvelope = res.withoutAllowance!!.envelope
+        val envelopeWithAllowances = (res.withAllowance!! as STDCMCompleteResult).envelope
+        val fastestEnvelope = (res.withoutAllowance!! as STDCMCompleteResult).envelope
         for (start in 0..envelopeWithAllowances.endPos.roundToInt() step step) {
             for (end in (start + step)..envelopeWithAllowances.endPos.roundToInt() step step) {
                 fun getTime(envelope: Envelope): Double {
@@ -610,11 +622,11 @@ class StandardAllowanceTests {
         ) {
             var mutTolerance = tolerance
             if (java.lang.Double.isNaN(mutTolerance)) mutTolerance = 2 * TIME_STEP
-            val baseEnvelope = results.withoutAllowance!!.envelope
+            val baseEnvelope = (results.withoutAllowance!! as STDCMCompleteResult).envelope
             val extraTime =
                 value.getAllowanceTime(baseEnvelope.totalTime, baseEnvelope.totalDistance)
             val baseTime = baseEnvelope.totalTime
-            val actualTime = results.withAllowance!!.envelope.totalTime
+            val actualTime = (results.withAllowance!! as STDCMCompleteResult).envelope.totalTime
             Assertions.assertEquals(baseTime + extraTime, actualTime, mutTolerance)
         }
     }

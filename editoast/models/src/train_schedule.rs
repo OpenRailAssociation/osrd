@@ -443,6 +443,34 @@ impl OccurrenceId {
             exception_id,
         }
     }
+
+    pub fn train_schedule_id(&self) -> i64 {
+        match self {
+            Self::Base {
+                train_schedule_id, ..
+            }
+            | Self::Created {
+                train_schedule_id, ..
+            }
+            | Self::Modified {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+        }
+    }
+
+    pub fn index(&self) -> Option<usize> {
+        match self {
+            Self::Base { index, .. } | Self::Modified { index, .. } => Some(*index),
+            Self::Created { .. } => None,
+        }
+    }
+
+    pub fn added_exception_id(&self) -> Option<i64> {
+        match self {
+            Self::Base { .. } | Self::Modified { .. } => None,
+            Self::Created { exception_id, .. } => Some(*exception_id),
+        }
+    }
 }
 
 impl Display for OccurrenceId {

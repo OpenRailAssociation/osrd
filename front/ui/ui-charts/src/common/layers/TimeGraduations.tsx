@@ -7,13 +7,13 @@ import type { TimeChartContextType, DrawingFunction } from '../../common/types';
 import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
 import { useDraw } from '../hooks/useCanvas';
 
-// Signed `Xh MM` string for hourly pattern mode (e.g. -1h30, 0h05, 2h15).
+// Signed `HH:MM` string for hourly pattern mode (e.g. -01:30, 00:05, 02:15).
 function formatHourlyTime(t: number): string {
   const sign = t < 0 ? '-' : '';
   const abs = Math.abs(t);
-  const h = Math.floor(abs / HOUR);
-  const m = Math.floor((abs % HOUR) / MINUTE);
-  return `${sign}${h}h${m.toString().padStart(2, '0')}`;
+  const hours = Math.floor(abs / HOUR);
+  const minutes = Math.floor((abs % HOUR) / MINUTE);
+  return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 const TimeGraduations = () => {

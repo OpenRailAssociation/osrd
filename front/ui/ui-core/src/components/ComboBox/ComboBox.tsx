@@ -82,23 +82,22 @@ const ComboBox = <T,>({
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLInputElement>(null);
 
-  const removeFocus = () => {
+  const removeFocus = useCallback(() => {
     setIsInputFocused(false);
     setActiveSuggestionIndex(-1);
     setTimeout(() => {
       inputRef.current?.blur();
     }, 0);
     resetSuggestions();
-  };
+  }, [resetSuggestions]);
 
-  /* eslint-disable react-hooks/exhaustive-deps */
   const focusInput = useCallback(() => {
     if (isInputFocused) {
       removeFocus();
     } else {
       inputRef.current?.focus();
     }
-  }, [inputRef, isInputFocused]);
+  }, [inputRef, isInputFocused, removeFocus]);
 
   const normalizedInputValue = useMemo(() => inputValue.trim().toLowerCase(), [inputValue]);
 
@@ -202,12 +201,10 @@ const ComboBox = <T,>({
           const exactSuggestion = suggestionsByLabel.get(normalizedInputValue);
           if (exactSuggestion) {
             selectSuggestion(exactSuggestion);
+          } else if (showAddCustomValue) {
+            confirmCustomValue();
           } else {
-            if (showAddCustomValue) {
-              confirmCustomValue();
-            } else {
-              onAddCustomValue?.(inputValue);
-            }
+            onAddCustomValue?.(inputValue);
           }
         }
         break;
@@ -234,12 +231,13 @@ const ComboBox = <T,>({
     setIsInputFocused(true);
   };
 
-  const clearInput = () => {
+  const clearInput = useCallback(() => {
     setInputValue('');
     onChange?.('');
+    onSelectSuggestion(undefined);
     resetSuggestions();
     focusInput();
-  };
+  }, [resetSuggestions, onChange, onSelectSuggestion, focusInput]);
 
   useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
@@ -247,7 +245,7 @@ const ComboBox = <T,>({
     if (inputProps.readOnly || inputProps.disabled) return undefined;
     return [
       // Conditionally include the clear icon only when input is not empty
-      ...(value
+      ...(inputValue
         ? [
             {
               icon: <XCircle variant="fill" />,
@@ -271,7 +269,7 @@ const ComboBox = <T,>({
     inputProps.readOnly,
     inputProps.disabled,
     clearInput,
-    value,
+    inputValue,
     small,
     focusInput,
     isInputFocused,
@@ -279,7 +277,7 @@ const ComboBox = <T,>({
 
   return (
     <div
-      data-testid={testIdPrefix ? `${testIdPrefix}` : undefined}
+      data-testid={testIdPrefix ? testIdPrefix : undefined}
       className="ui-combo-box"
       style={{ '--number-of-suggestions': numberOfSuggestionsToShow } as React.CSSProperties}
       ref={wrapperRef}

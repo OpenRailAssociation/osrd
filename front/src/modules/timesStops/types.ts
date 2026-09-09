@@ -1,4 +1,9 @@
-import type { PathItemLocation, ReceptionSignal } from 'common/api/osrdEditoastApi';
+import type {
+  PathItemLocation,
+  ReceptionSignal,
+  PathItem,
+  ScheduleItem,
+} from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Duration, StartTime } from 'utils/duration';
@@ -120,6 +125,12 @@ export type PropagationMode =
   | 'atThisWaypoint'
   | 'toDestination';
 
+export type PropagationResult = {
+  updatedPath: PathItem[];
+  updatedSchedule: ScheduleItem[];
+  updatedStartTime: StartTime;
+};
+
 export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
 
 export type UpdateCellStatus = 'updated' | 'skipped';
@@ -163,13 +174,19 @@ export type PowerRestrictionUpdate = {
   value: string | null;
 };
 
+export type BatchTimesUpdate = {
+  rows: TimesStopsRowNew[];
+  field: RequestedTimeField;
+};
+
 export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
   | DepartureUpdate
   | ReceptionSignalUpdate
   | RequestedMarginUpdate
-  | PowerRestrictionUpdate;
+  | PowerRestrictionUpdate
+  | BatchTimesUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: StartTime | null }
@@ -201,3 +218,6 @@ export type MarginsCoreComputed = MarginsCoreBase & {
 };
 
 export type MarginsCore = null | MarginsCoreBase | MarginsCoreComputed;
+
+export type RequestedTimeField = 'requestedArrival' | 'requestedDeparture';
+export type TimeFillMode = 'fill' | 'overwrite';

@@ -8,6 +8,7 @@ import type {
   PathItemLocation,
   PathProperties,
   PathfindingInput,
+  PathfindingItem,
   PostInfraByInfraIdPathfindingBlocksApiArg,
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
@@ -83,7 +84,7 @@ export const getPathfindingQuery = ({
     LightRollingStock,
     'effort_curves' | 'loading_gauge' | 'max_speed' | 'length' | 'supported_signaling_systems'
   >;
-  pathSteps: (PathItemLocation | null)[];
+  pathSteps: (PathfindingItem | null)[];
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
   allowedTrackSections?: string[];
@@ -92,10 +93,7 @@ export const getPathfindingQuery = ({
   const destination = pathSteps.at(-1);
   if (infraId && rollingStock && origin && destination) {
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
-    const pathItems: PathfindingInput['path_items'] = compact(pathSteps).map((location) => ({
-      location,
-      can_backtrack: false,
-    }));
+    const pathItems: PathfindingInput['path_items'] = compact(pathSteps);
 
     return {
       infraId,

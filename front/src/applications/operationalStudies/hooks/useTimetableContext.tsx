@@ -11,7 +11,7 @@ import type { TrainId } from 'reducers/osrdconf/types';
  * It does not contain any simulation-related data.
  */
 export type TimetableContextType = {
-  trainSchedules: TrainScheduleResponse[];
+  trainSchedules: Map<number, TrainScheduleResponse>;
   removeTrainSchedules: (ids: number[]) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   updateTrainScheduleDepartureTime: (

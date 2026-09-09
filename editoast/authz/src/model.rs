@@ -114,7 +114,18 @@ pub enum InfraPrivilege {
 }
 
 #[derive(
-    Debug, Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    EnumIter,
 )]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
@@ -231,7 +242,19 @@ impl fga::model::Type for Role {
     }
 }
 
-#[derive(fga::Type, fga::Object, derive_more::FromStr, Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(
+    fga::Type,
+    fga::Object,
+    derive_more::Display,
+    derive_more::From,
+    derive_more::FromStr,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    PartialEq,
+)]
 #[cfg_attr(test, derive(Ord, PartialOrd))]
 pub struct Project(pub i64);
 
@@ -242,8 +265,7 @@ pub enum ProjectPrivilege {
     HasAccess,
 }
 
-#[derive(EnumString, Serialize)]
-#[cfg_attr(test, derive(Debug, PartialEq))]
+#[derive(Clone, Copy, Debug, EnumString, Eq, Hash, Serialize, PartialEq, EnumIter)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum ProjectGrant {

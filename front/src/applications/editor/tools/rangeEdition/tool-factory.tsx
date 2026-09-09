@@ -131,7 +131,7 @@ function getRangeEditionTool<T extends EditorRange>({
                   entityId && entityId !== entity.properties.id
                     ? {
                         ...entity,
-                        properties: { ...entity.properties, id: `${entityId}` },
+                        properties: { ...entity.properties, id: entityId },
                       }
                     : entity;
                 setState({

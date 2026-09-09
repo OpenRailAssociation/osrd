@@ -1,4 +1,4 @@
-import type { PathItem, ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
+import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import {
   Duration,
@@ -7,19 +7,20 @@ import {
   subtractStartTime,
 } from 'utils/duration';
 
-import type { ArrivalUpdate, CellUpdate, PropagationMode } from '../types';
-import { truncateStartTimeToSecond } from './utils';
+import { ONE_DAY } from '../consts';
+import type {
+  ArrivalUpdate,
+  BatchTimesUpdate,
+  CellUpdate,
+  PropagationMode,
+  PropagationResult,
+} from '../types';
+import { propagateStopDuration } from './stopDurationPropagation';
+import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
 
-export const ONE_DAY = new Duration({ hours: 24 });
-
-export type PropagationResult = {
-  updatedPath: PathItem[];
-  updatedSchedule: ScheduleItem[];
-  updatedStartTime: StartTime;
-};
-
-const isOriginArrivalUpdate = (update: CellUpdate): update is ArrivalUpdate =>
-  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
+const isOriginArrivalUpdate = (
+  update: Exclude<CellUpdate, BatchTimesUpdate>
+): update is ArrivalUpdate => update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
 const toHmsDuration = (date: StartTime) =>
   date instanceof Date
@@ -46,15 +47,6 @@ const computeDeltaForPropagationMode = (
     : oldValue && newValue
       ? subtractStartTime(truncateStartTimeToSecond(newValue), truncateStartTimeToSecond(oldValue))
       : null;
-
-export const formatSignedDelta = (delta: Duration) => {
-  const sign = delta.ms >= 0 ? '+' : '-';
-  const label = delta
-    .abs()
-    .round('second')
-    .toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
-  return `${sign}${label}`;
-};
 
 export const formatPropagationDeltaLabelByMode = (
   oldValue: Date | null,
@@ -201,7 +193,7 @@ export const adjustFollowingWaypointsForMidnight = (
 };
 
 export const propagateTime = (
-  update: CellUpdate,
+  update: Exclude<CellUpdate, BatchTimesUpdate>,
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {
@@ -210,18 +202,32 @@ export const propagateTime = (
 
   const oldValue = update.row[update.field];
   const newValue = update.value;
-  const isOriginUpdate = isOriginArrivalUpdate(update);
+  const isOriginArrival = isOriginArrivalUpdate(update);
   const isShiftAllPropagation = update.propagationMode === 'shiftAllWaypoints';
   // Origin and shiftAll use HH:mm:ss delta only. toDestination uses full datetime (can produce D+1).
   // fromDeparture uses HH:mm:ss only since start_time absorbs the shift.
   const delta =
-    isOriginUpdate || isShiftAllPropagation
+    isOriginArrival || isShiftAllPropagation
       ? computeDelta(oldValue, newValue)
       : computeDeltaForPropagationMode(oldValue, newValue, update.propagationMode);
   if (delta === null) return undefined;
 
-  if (isOriginUpdate || update.propagationMode === 'shiftAllWaypoints') {
-    if (!isOriginUpdate) return propagateShiftAll(delta, selectedTrain, timetableType);
+  // A departure update propagated toDestination is the same delta applied to the stop duration.
+  if (update.field === 'requestedDeparture' && update.propagationMode === 'toDestination') {
+    return propagateStopDuration(
+      {
+        row: update.row,
+        field: 'stopDuration',
+        value: (update.row.stopDuration ?? Duration.zero).add(delta).total('second'),
+        propagationMode: 'toDestination',
+      },
+      selectedTrain,
+      timetableType
+    );
+  }
+
+  if (isOriginArrival || update.propagationMode === 'shiftAllWaypoints') {
+    if (!isOriginArrival) return propagateShiftAll(delta, selectedTrain, timetableType);
     let result: PropagationResult | undefined;
     if (isShiftAllPropagation || update.propagationMode === 'toDestination')
       result = propagateShiftAll(delta, selectedTrain, timetableType);
@@ -235,8 +241,11 @@ export const propagateTime = (
         'fromDeparture',
         timetableType
       );
-    // Use the exact typed value as updatedStartTime (avoids inheriting sub-second ms from current start_time)
-    return result && newValue ? { ...result, updatedStartTime: newValue } : result;
+    // Keep the computed start time: the typed value's day is only inferred from HH:mm:ss
+    // Truncate the sub-second part inherited from start_time.
+    return result
+      ? { ...result, updatedStartTime: truncateStartTimeToSecond(result.updatedStartTime) }
+      : result;
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;

@@ -27,10 +27,6 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
    */
   declare readonly options: TrainTrackProjectionLazyLoaderOptions;
 
-  constructor(options: TrainTrackProjectionLazyLoaderOptions) {
-    super(options);
-  }
-
   async processBatch(ids: number[]) {
     const { infraId, timetableId, path, electricalProfileSetId } = this.options;
 

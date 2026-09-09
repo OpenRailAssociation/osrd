@@ -42,11 +42,18 @@ const NotificationWrapper = (notif: Notification) => {
   );
 };
 
+const openPopover = (container: HTMLDivElement | null) => {
+  if (typeof container?.showPopover !== 'function' || container.matches(':popover-open')) return;
+  container.showPopover();
+};
+
 const Notifications = (props: { notifications: Array<Notification> }) => {
   const { notifications } = props;
 
+  if (notifications.length === 0) return null;
+
   return (
-    <div className="notifications">
+    <div className="notifications" ref={openPopover} popover="manual">
       {notifications.map((notif: Notification, index) => (
         <NotificationWrapper key={index} {...notif} />
       ))}

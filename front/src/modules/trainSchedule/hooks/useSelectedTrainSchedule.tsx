@@ -26,7 +26,7 @@ const useSelectedTrainSchedule = (): TrainScheduleResponse | undefined => {
   const trainScheduleId = extractTrainScheduleId(trainId);
 
   return useMemo(
-    () => trainSchedules.find((trainSchedule) => trainSchedule.id === trainScheduleId),
+    () => (trainScheduleId ? trainSchedules.get(trainScheduleId) : undefined),
     [trainSchedules, trainScheduleId]
   );
 };

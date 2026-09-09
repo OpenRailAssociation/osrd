@@ -1,6 +1,7 @@
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type {
   GeoJsonPoint,
+  GeoJsonLineString,
   Conflict,
   LightRollingStock,
   LightRollingStockWithLiveries,
@@ -33,6 +34,11 @@ export type StdcmPathNotFound = Extract<StdcmResponseWithTraceId, { status: 'pat
 
 export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
 
+export type StdcmPathNotFoundOutput = StdcmPathNotFound & {
+  /** Geometry of the partial path reached, drawn in red on the result map */
+  partialPathGeometry?: GeoJsonLineString;
+};
+
 export type StdcmPathProperties = PathProperties & {
   manchetteOperationalPoints?: PathWaypoint[];
   suggestedOperationalPoints: SuggestedOP[];
@@ -57,6 +63,7 @@ export type StdcmResultsOperationalPoint = {
   name?: string;
   consistChange?: ConsistData;
   secondaryCode?: string | null;
+  secondaryCodeLabel?: string | null;
   stopDuration: Duration | null;
   stopEndTime: Date;
   trackName?: string;
@@ -147,7 +154,7 @@ export type StdcmConflictsOutput = {
   conflicts: Conflict[];
 };
 
-export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmPathNotFound;
+export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmPathNotFoundOutput;
 
 export type StdcmSimulation = {
   index: number;

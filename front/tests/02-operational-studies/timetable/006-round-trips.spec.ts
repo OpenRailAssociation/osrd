@@ -1,9 +1,5 @@
-import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import {
-  trainScheduleProjectName,
-  trainScheduleStudyName,
-} from '../../assets/constants/project-const';
 import {
   FirstPacedTrain,
   FirstUniqueTrain,
@@ -13,12 +9,8 @@ import {
   ThirdUniqueTrain,
 } from '../../assets/operation-studies/round-trips/round-trip-card';
 import test from '../../page-object-fixture';
-import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
-import { getInfra, getProject, getStudy } from '../../utils/api-utils';
+import setupScenarioFixture from '../../scenario-fixture';
 import { readJsonFile } from '../../utils/file-utils';
-import createScenario from '../../utils/scenario';
-import sendTrains from '../../utils/send-trains';
-import { deleteScenario } from '../../utils/teardown-utils';
 import type { RoundTripsModalTranslations } from '../../utils/types';
 
 const frTranslations: RoundTripsModalTranslations = readJsonFile<{
@@ -31,42 +23,14 @@ test.describe(
   'Round trips management',
   { tag: ['@op', '@train-schedules', '@round-trips'] },
   () => {
-    let project: Project;
-    let study: Study;
-    let scenarioItems: Scenario;
-    let infra: Infra;
-
-    test.beforeAll('Fetch project, study and infrastructure', async () => {
-      project = await getProject(trainScheduleProjectName);
-      study = await getStudy(project.id, trainScheduleStudyName);
-      infra = await getInfra();
+    setupScenarioFixture({
+      scenarioNamePrefix: 'round-trips-scenario',
+      trains: [...trains.slice(4, 7), ...trains.slice(25, 28)],
+      scope: 'test',
     });
 
-    test.beforeEach('Open scenario & round-trip modal', async ({ page, roundTripPage }) => {
-      await test.step('Create, open scenario and wait for infra to be loaded', async () => {
-        const { scenario, trainScheduleSet } = await createScenario(
-          generateUniqueName('round-trips-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        );
-        scenarioItems = scenario;
-
-        const selectedTrains = [...trains.slice(4, 7), ...trains.slice(25, 28)];
-        await sendTrains(trainScheduleSet.id, selectedTrains);
-
-        await page.goto(
-          `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
-        );
-        await waitForInfraStateToBeCached(infra.id);
-      });
-      await test.step('Open round trip page modal', async () => {
-        await roundTripPage.openRoundTripModal();
-      });
-    });
-
-    test.afterEach('Delete the created scenario', async () => {
-      await deleteScenario(study.id, scenarioItems.name);
+    test.beforeEach('Open round trip page modal', async ({ roundTripPage }) => {
+      await roundTripPage.openRoundTripModal();
     });
 
     /** *************** Test 1 **************** */

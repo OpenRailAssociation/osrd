@@ -185,7 +185,7 @@ pub struct RollingStockNameParam {
 }
 
 /// Get a rolling stock by Id
-#[editoast_derive::route(Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -219,7 +219,7 @@ pub(in crate::views) async fn get(
 }
 
 /// Get a rolling stock by name
-#[editoast_derive::route(Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
@@ -781,7 +781,7 @@ pub(in crate::views) async fn filter_readable_occurrences(
     let Ok(authorized_rolling_stocks) = SystemAuthorizer::new_infallible(openfga)
         .authorize(authz::v2::rolling_stock_list(
             user,
-            RollingStockPrivilege::CanRead,
+            RollingStockPrivilege::CanRestrictedRead,
         ))
         .await?
         .access()
@@ -1304,109 +1304,124 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
-        // GIVEN
         let app = test_app!().build();
         let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // a user with the role to reach the endpoint and a read grant on the rolling stock
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
         let user = app
             .user("authorized", "Authorized")
-            .with_roles([Role::OperationalStudies])
-            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(rolling_stock.id, authz::RollingStockGrant::Reader)
             .create()
             .await;
 
-        // WHEN
-        let raw_response = app
-            .rolling_stock_get_by_id_request(fast_rolling_stock.id)
+        let response: RollingStock = app
+            .get(format!("/rolling_stock/{}", rolling_stock.id).as_str())
             .by_user(&user.info)
-            .await;
+            .await
+            .assert_status_ok()
+            .json();
 
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
-
-        assert_eq!(response, fast_rolling_stock);
+        assert_eq!(response, rolling_stock);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_by_id_with_privilege_and_no_roles() {
+    async fn get_rolling_stock_by_id_requires_reader_grant() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
 
-        let fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
-
-        // a user that does not have the role to reach the endpoint but has a read grant on the rolling stock
-        let user = app
-            .user("unauthorized", "Unauthorized")
-            .with_rolling_stock_grant(fast_rolling_stock.id, authz::RollingStockGrant::Reader)
+        let user_reader = app
+            .user("alice", "Alice")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+        let user_restricted = app
+            .user("bob", "Bob")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::RestrictedReader)
             .create()
             .await;
 
-        app.rolling_stock_get_by_id_request(fast_rolling_stock.id)
-            .by_user(&user.info)
+        app.rolling_stock_get_by_id_request(rolling_stock.id)
+            .by_user(&user_restricted.info)
             .await
             .assert_status_forbidden();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_rolling_stock_by_id_without_permission() {
-        let app = test_app!().build();
-        let db_pool = app.db_pool();
-
-        let fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
-
-        // a user that has the role to reach the endpoint but no read grant on the rolling stock
-        let user = app
-            .user("unauthorized", "Unauthorized")
-            .with_roles([Role::OperationalStudies])
-            .create()
-            .await;
-
-        app.rolling_stock_get_by_id_request(fast_rolling_stock.id)
-            .by_user(&user.info)
+        app.rolling_stock_get_by_id_request(rolling_stock.id)
+            .by_user(&user_reader.info)
             .await
-            .assert_status_forbidden();
+            .assert_status_ok();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_name() {
-        // GIVEN
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
-
-        // WHEN
-        let raw_response = app
-            .get(format!("/rolling_stock/name/{rs_name}").as_str())
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
+        let user = app
+            .user("user", "User")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
             .await;
-
-        // THEN
-        let response: RollingStock = raw_response.assert_status_ok().json();
-
-        assert_eq!(response, fast_rolling_stock);
+        let response: RollingStock = app
+            .get(format!("/rolling_stock/name/{}", rolling_stock.name).as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response, rolling_stock);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_rolling_stock_by_id() {
-        let app = test_app!().skip_authz().build();
+    async fn get_rolling_stock_by_name_requires_reader_grant() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
 
-        app.rolling_stock_get_by_id_request(0)
+        let user_reader = app
+            .user("alice", "Alice")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::Reader)
+            .create()
+            .await;
+        let user_restricted = app
+            .user("bob", "Bob")
+            .with_rolling_stock_grant(rolling_stock.id, RollingStockGrant::RestrictedReader)
+            .create()
+            .await;
+
+        app.get(format!("/rolling_stock/name/{}", rolling_stock.name).as_str())
+            .by_user(user_restricted.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(format!("/rolling_stock/name/{}", rolling_stock.name).as_str())
+            .by_user(user_reader.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_nonexistent_rolling_stock_by_id() {
+        // Note: the endpoint currently returns 403 Forbidden over 404 Not Found (the opposite of
+        // what happens when retrieving a rolling stock by name). That was not a rational choice but
+        // a random behavior due to the way it is implemented.
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.get(format!("/rolling_stock/{}", i64::MAX).as_str())
+            .by_user(admin.as_ref())
             .await
             .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_unexisting_rolling_stock_by_name() {
-        let app = test_app!().skip_authz().build();
-
-        app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
+    async fn get_nonexistent_rolling_stock_by_name() {
+        // Note: the endpoint currently returns 404 Not Found over 403 Forbidden (the opposite of
+        // what happens when retrieving a rolling stock by id). That was not a rational choice but a
+        // random behavior due to the way it is implemented.
+        let app = test_app!().build();
+        let user = app.user("user", "User").create().await;
+        app.get(format!("/rolling_stock/name/{}", "nonexistent").as_str())
+            .by_user(user.as_ref())
             .await
             .assert_status_not_found();
     }

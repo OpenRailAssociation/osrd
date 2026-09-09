@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-noninteractive-tabindex */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import {
   useReducer,
   useRef,
@@ -17,6 +15,7 @@ import { Duration } from 'utils/duration';
 import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
 import DurationPropagationMenu from './DurationPropagationMenu';
+import type { TimesStopsTableFeatures } from './TimesStopsTable';
 import type { StopPropagationMode, TimesStopsRowNew } from './types';
 
 type ActiveUnit = 'h' | 'm' | 's';
@@ -404,7 +403,7 @@ export type DurationCellHandle = {
   focus: () => void;
 };
 
-type DurationCellProps = CellContext<TimesStopsRowNew, Duration | null> &
+type DurationCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Duration | null> &
   Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
     prefillValue?: Duration | null;
     onEnterKeyDown?: () => void;
@@ -437,7 +436,7 @@ const DurationCell = ({
   // Guards onBlur against double-committing after an explicit blur() (Enter/Escape/menu-select).
   const blurHandledRef = useRef(false);
   const isFirstRow = row.index === 0;
-  const isLastRow = row.index === table.getRowCount() - 1;
+  const isLastRow = row.index === table.getRowModel().rows.length - 1;
   const allDigitsCleared = Object.values(state.units).every((u) => isCleared(u));
 
   useImperativeHandle(
@@ -552,8 +551,10 @@ const DurationCell = ({
 
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={containerRef}
+        /* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */
         tabIndex={0}
         className="duration-cell"
         data-testid="duration-cell"

@@ -222,6 +222,7 @@ pub async fn create_scenario(
 
 pub struct ScenarioFixtureSet {
     pub scenario: Scenario,
+    pub project_id: i64,
     pub timetable: Timetable,
     pub infra: Infra,
     pub train_schedule_set: TrainScheduleSet,
@@ -238,6 +239,7 @@ pub async fn create_scenario_fixtures_set(
     let scenario = create_scenario(conn, name, study.id, timetable.id, infra.id).await;
     ScenarioFixtureSet {
         scenario,
+        project_id: project.id,
         timetable,
         infra,
         train_schedule_set,

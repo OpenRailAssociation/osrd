@@ -39,6 +39,7 @@ export type ConsistChangeData = {
 export type SimulationTableRow = {
   name: string | null;
   secondaryCode?: string | null;
+  secondaryCodeLabel?: string | null;
   trackName?: string;
   endTime: string | Date | null;
   passageStop: string | Date | null;
@@ -48,6 +49,7 @@ export type SimulationTableRow = {
   referenceEngine: string;
   stopTypeLabel?: string;
   stopType?: string;
+  isBackTrack?: boolean;
   rowStyle: Style;
   consistChanges?: {
     currentConsist: {

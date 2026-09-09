@@ -1,6 +1,5 @@
 import type { Position } from 'geojson';
 
-import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type {
   ConsistData,
   MarginType,
@@ -12,8 +11,6 @@ import type {
 } from 'applications/stdcm/types';
 import type {
   TrainCategory,
-  Comfort,
-  Distribution,
   LoadingGaugeType,
   RelatedOperationalPoint,
   PathItemLocation,
@@ -48,30 +45,10 @@ export type ItineraryForm = {
   rollingStockName: string;
   speedLimitTag?: string;
   pathSteps: (PathStep | null)[];
-  trainType?: OperationalStudiesConfState['editingTrainType'];
+  trainType?: EditingTrainType;
 };
 
-export type OperationalStudiesConfState = OsrdConfState & {
-  name: string;
-  category: TrainCategory | null;
-  startTime: Date;
-  initialSpeed?: number;
-  labels: string[];
-  rollingStockName: string;
-  rollingStockComfort: Comfort;
-  pathSteps: (PathStep | null)[];
-  constraintDistribution: Distribution;
-  usingElectricalProfiles: boolean;
-  usingSpeedLimits: boolean;
-  stopsAtEndOfBlock: boolean;
-  powerRestriction: PowerRestriction[];
-  timeWindow: Duration;
-  interval: Duration;
-  addedExceptions: {
-    startTime: Date;
-  }[];
-  editingTrainType: 'uniqueTrain' | 'pacedTrain' | 'occurrence';
-};
+export type EditingTrainType = 'uniqueTrain' | 'pacedTrain' | 'occurrence';
 
 export type OsrdStdcmConfState = OsrdConfState & {
   stdcmPathSteps: StdcmPathStep[];
@@ -151,6 +128,7 @@ export type PathStepMetadata =
       type: 'opRef';
       isInvalid: false;
       name: string;
+      mainCode: string;
       /** Store the UIC for cases where we modify a step that was defined by an op id / trigram */
       uic?: number | null;
       /** Required when the corresponding path step is an operational_point since it won't

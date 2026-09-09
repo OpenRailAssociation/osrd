@@ -201,8 +201,28 @@ jobs:
             exit 0
           fi
 
+          is_github_synthetic_merge() {
+            local hash="$1"
+
+            local committer
+            local subject
+
+            committer="$(git show --no-patch --format='%cn <%ce>' "$hash")"
+            subject="$(git show --no-patch --format='%s' "$hash")"
+
+            [[ "$committer" == "GitHub <noreply@github.com>" ]] &&
+              [[ "$subject" =~ ^Merge\ [0-9a-f]{40}\ into\ [0-9a-f]{40}$ ]]
+          }
+
           commit_titles() {
-            git log --format=%s origin/"$BASE"..HEAD --skip=1
+            git log --format=%H origin/"$BASE"..HEAD |
+              while read -r hash; do
+                if is_github_synthetic_merge "$hash"; then
+                  continue
+                fi
+
+                git show --no-patch --format=%s "$hash"
+              done
           }
 
           commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
@@ -380,7 +400,7 @@ jobs:
           exit $(docker wait core-test)
 
       - name: Report JUnit failures
-        uses: mikepenz/action-junit-report@v6.4.2
+        uses: mikepenz/action-junit-report@v6.5.0
         if: failure()
         with:
           report_paths: "./core/build/test-results/test/TEST-*.xml"
@@ -1085,7 +1105,7 @@ jobs:
             -v "$PWD/front/test-results:/app/test-results" \
             ${{ fromJSON(needs.build-front.outputs.stable_tags).front-tests }} \
             sh -c "npx playwright merge-reports --reporter=./tests/reporter/generate-personalized-report.ts ./all-blob-reports \
-              && npx tsx ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
+              && node ./tests/reporter/generate-github-summary.ts ./test-results/personalized-report.json ./test-results/summary.md"
           cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
   check_reuse_compliance:
@@ -1135,6 +1155,6 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@v0.6.2
+        uses: zizmorcore/zizmor-action@v0.6.3
         with:
           config: .github/zizmor.yml

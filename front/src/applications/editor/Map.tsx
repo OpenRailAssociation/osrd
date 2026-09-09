@@ -9,6 +9,7 @@ import { withTranslation } from 'react-i18next';
 import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
+import getInfraErrorFromTileProperties from 'applications/editor/components/InfraErrors/utils';
 import type { Layer } from 'applications/editor/consts';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import EditorContext from 'applications/editor/context';
@@ -16,7 +17,6 @@ import { getEntity } from 'applications/editor/data/api';
 import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
-import type { InfraError } from 'common/api/osrdEditoastApi';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import {
   IGNLayers,
@@ -180,7 +180,7 @@ const MapUnplugged = ({
                   id: feature.properties.obj_id,
                   type: feature.properties?.obj_type,
                   renderedEntity: feature,
-                  error: feature.properties as InfraError,
+                  error: getInfraErrorFromTileProperties(feature.properties),
                 };
               }
             } else {

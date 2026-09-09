@@ -1,4 +1,7 @@
+use authz::ProjectPrivilege;
 use authz::Role;
+use authz::v2::project_privilege_check;
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -21,8 +24,11 @@ use utoipa::ToSchema;
 use super::OperationalStudiesOrderingParam;
 use super::project::ProjectError;
 use super::study::StudyError;
+use crate::AppState;
+use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -329,7 +335,13 @@ pub(in crate::views) async fn patch(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool,
+        openfga,
+        config,
+        ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
 ) -> Result<Json<ScenarioResponse>> {
     let (details, project, study) = db_pool
@@ -359,6 +371,12 @@ pub(in crate::views) async fn get(
             ))
         })
         .await?;
+
+    if config.enable_project_permissions {
+        project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
+            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+            .await?;
+    }
 
     Ok(Json(ScenarioResponse::new(details, project, study)))
 }
@@ -418,17 +436,23 @@ pub(in crate::views) async fn list(
 
 #[cfg(test)]
 mod tests {
+    use authz::ProjectGrant;
     use pretty_assertions::assert_eq;
 
+    use rstest::rstest;
     use serde_json::json;
 
     use super::*;
+    #[cfg(test)]
+    use crate::fixtures::ScenarioFixtureSet;
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_project;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_study;
     use crate::fixtures::create_timetable;
     use crate::views::test_app;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::TestRequestExt as _;
 
     pub fn scenario_url(scenario_id: Option<i64>) -> String {
         format!(
@@ -438,16 +462,96 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_scenario() {
-        let app = test_app!().skip_authz().build();
-        let pool = app.db_pool();
-
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
-
-        let url = scenario_url(Some(fixtures.scenario.id));
-        let response: ScenarioResponse = app.get(&url).await.assert_status_ok().json();
+    async fn scenarios_get() {
+        let app = test_app!().build();
+        let fixtures = create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await;
+        let user = app
+            .user("owner", "Owner")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(fixtures.project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+        let response: ScenarioResponse = app
+            .get(&format!("/scenarios/{}", fixtures.scenario.id))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
 
         assert_eq!(response.scenario, fixtures.scenario);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenarios_get_admin_allowed() {
+        let app = test_app!().build();
+        let fixtures = create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.get(&format!("/scenarios/{}", fixtures.scenario.id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[rstest]
+    #[case::no_role(
+        test_app!().build(),
+        create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await,
+        app
+            .user("bob", "Bob")
+            .with_project_grant(fixtures.project_id, ProjectGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::no_grant(
+        test_app!().build(),
+        create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await,
+        app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenario_get_forbidden(
+        #[case] app: TestApp,
+        #[case] fixtures: ScenarioFixtureSet,
+        #[case] user_forbidden: authz::identity::User,
+    ) {
+        let user_authorized = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(fixtures.project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+        app.get(&format!("/scenarios/{}", fixtures.scenario.id))
+            .by_user(user_forbidden.as_ref())
+            .await
+            .assert_status_forbidden();
+        app.get(&format!("/scenarios/{}", fixtures.scenario.id))
+            .by_user(user_authorized.as_ref())
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenario_get_not_found() {
+        let app = test_app!().build();
+        let ScenarioFixtureSet { scenario, .. } =
+            create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "scenario").await;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        app.get(&format!("/scenarios/{}", scenario.id + 1000))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

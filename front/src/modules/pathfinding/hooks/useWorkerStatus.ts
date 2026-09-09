@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 
@@ -29,25 +29,23 @@ export default function useWorkerStatus({
     }
   );
 
-  useEffect(() => {
-    if (infraId) {
-      setShouldPoll(true);
-    }
-  }, [infraId]);
+  const [prevInfraId, setPrevInfraId] = useState(infraId);
+  if (infraId !== prevInfraId) {
+    setPrevInfraId(infraId);
+    setShouldPoll(true);
+  }
 
-  useEffect(() => {
-    if (workerStatus) {
-      switch (workerStatus) {
-        case 'READY':
-        case 'ERROR': {
-          setShouldPoll(false);
-          break;
-        }
-        default:
-          break;
+  if (shouldPoll) {
+    switch (workerStatus) {
+      case 'READY':
+      case 'ERROR': {
+        setShouldPoll(false);
+        break;
       }
+      default:
+        break;
     }
-  }, [workerStatus]);
+  }
 
   return workerStatus;
 }

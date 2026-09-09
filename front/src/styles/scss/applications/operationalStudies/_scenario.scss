@@ -222,11 +222,7 @@
     }
   }
 
-  &.modified {
-    z-index: 3;
-  }
-
-  &:hover:not(.modified, .paced-train) {
+  &:hover:not(.paced-train) {
     .train-time {
       color: var(--grey20);
     }
@@ -328,41 +324,6 @@
     padding-bottom: 8px;
     z-index: 1;
     background-color: var(--coolgray1);
-  }
-
-  .scenario-timetable-manage-train-schedule {
-    .scenario-timetable-manage-train-schedule-header {
-      display: flex;
-      flex-direction: column;
-      padding: 8px 8px 0;
-
-      .custom-control-label {
-        padding-top: 0;
-      }
-
-      .input-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .paced-trains-container {
-        padding: 12px;
-      }
-    }
-
-    .scenario-timetable-manage-train-schedule-body {
-      padding: 8px;
-    }
-
-    #timetable-edited-element {
-      padding: 14px 24px;
-      @include hide-train-details;
-
-      .scenario-timetable-train {
-        @extend %scenario-timetable-train;
-      }
-    }
   }
 
   .scenario-sidemenu {
@@ -936,12 +897,6 @@ $train-category-colors: (
 
     max-width: 560px;
 
-    &.delete-dialog {
-      max-width: 680px;
-    }
-
-    font-family: 'IBM Plex Sans';
-
     &:has(.wizz-effect:active) {
       .train-schedule-set-name:has(.error),
       .new-catalog-entry-input:has(.error),
@@ -949,10 +904,6 @@ $train-category-colors: (
       .catalog-entry:has(.error) {
         animation: tilt-shaking 0.25s 0s;
       }
-    }
-
-    h5 {
-      margin-bottom: 0;
     }
 
     section {
@@ -1007,33 +958,8 @@ $train-category-colors: (
         font-weight: 600;
       }
     }
-
-    .train-schedule-set-dialog-footer {
-      display: flex;
-
-      // all the following styles should propbably be modified in osrd-ui
-      align-items: center; // instead of align-content
-      padding-left: 16px;
-      padding-block: 23px;
-
-      .submit-error {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--error60);
-        font-weight: 600;
-      }
-
-      &.with-error {
-        background-color: var(--error5);
-        justify-content: space-between;
-      }
-
-      .footer-buttons {
-        display: flex;
-        gap: 24px;
-        flex-shrink: 0;
-      }
-    }
+  }
+  .dialog-content.confirm-dialog {
+    max-width: 680px;
   }
 }

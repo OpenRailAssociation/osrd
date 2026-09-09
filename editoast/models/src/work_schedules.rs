@@ -49,7 +49,7 @@ pub enum WorkScheduleType {
     Track,
 }
 
-#[derive(Debug, Default, Clone, Model, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Default, Clone, Model, Serialize, Deserialize, ToSchema, PartialEq)]
 #[model(table = database::tables::work_schedule)]
 #[model(gen(batch_ops = c, list))]
 pub struct WorkSchedule {

@@ -52,7 +52,6 @@ import kotlin.to
  */
 interface InfraExplorer {
     val isPathComplete: Boolean
-    val backtrackingLocations: AppendOnlyLinkedList<BlockLocation>
 
     /**
      * Get the path properties for the current edge only, starting at the given offset and for the
@@ -164,17 +163,16 @@ fun InfraExplorer.getRemainingBlocks(): List<BlockId> {
     return res
 }
 
-/** Returns the first backtracking location in the lookahead blocks. */
-fun InfraExplorer.getBacktrackingLocationInLookahead(): BlockLocation? {
-    val lastBacktrackingLocation = this.backtrackingLocations.lastOrNull() ?: return null
-    return if (
-        this.getLookahead().any {
-            it.value == lastBacktrackingLocation.edge &&
-                it.objectEnd == lastBacktrackingLocation.offset
-        }
+/** Returns the first backtracking location in the InfraExplorer's lookahead. */
+fun InfraExplorer.nextBacktrackLocation(): BlockLocation? {
+    if (getLookahead().isEmpty()) return null
+    val backtrackOffset =
+        getBacktrackLocationsInRange(getLookahead().first().pathBegin).firstOrNull() ?: return null
+    val backtrackBlockRange = getBlocksInRange(backtrackOffset, backtrackOffset).first()
+    return BlockLocation(
+        backtrackBlockRange.value,
+        Offset(backtrackOffset - backtrackBlockRange.objectAbsolutePathStart),
     )
-        lastBacktrackingLocation
-    else null
 }
 
 /** Used to identify an edge. */
@@ -250,9 +248,6 @@ private class InfraExplorerImpl(
     private var stepTracker: StepTracker,
     private var constraints: List<PathfindingConstraint>?,
     override var isPathComplete: Boolean = false,
-    // The locations where this InfraExplorer is really backtracking.
-    override var backtrackingLocations: AppendOnlyLinkedList<BlockLocation> =
-        appendOnlyLinkedListOf(),
 ) : InfraExplorer {
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
@@ -316,10 +311,8 @@ private class InfraExplorerImpl(
                         blockLocation,
                         possibleBacktracking.location,
                     )
-                if (extendedToBacktracking) {
-                    explorerToBacktracking.backtrackingLocations.add(possibleBacktracking.location)
-                    infraExplorers.add(explorerToBacktracking)
-                }
+                // Blocked explorers are dropped
+                if (extendedToBacktracking) infraExplorers.add(explorerToBacktracking)
             }
         }
         return infraExplorers
@@ -406,7 +399,6 @@ private class InfraExplorerImpl(
             this.stepTracker.clone(),
             this.constraints,
             this.isPathComplete,
-            this.backtrackingLocations.shallowCopy(),
         )
     }
 

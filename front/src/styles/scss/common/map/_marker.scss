@@ -33,6 +33,14 @@
       top: 12px;
     }
 
+    .backtrack-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 4px;
+      line-height: 0;
+    }
+
     .label {
       position: absolute;
       top: 10px;
@@ -48,6 +56,10 @@
       padding-inline: 8px;
       padding-bottom: 1px;
       white-space: nowrap;
+
+      &:has(.backtrack-icon) {
+        background-color: var(--info60);
+      }
     }
   }
 }

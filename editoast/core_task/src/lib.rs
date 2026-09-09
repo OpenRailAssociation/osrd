@@ -1,3 +1,4 @@
+#![recursion_limit = "256"]
 mod envs;
 mod path_properties;
 

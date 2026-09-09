@@ -275,6 +275,170 @@ def test_work_schedules(
     assert departure_time >= end_time.astimezone(departure_time.tzinfo)
 
 
+def test_work_schedules_failure_explainer(
+    small_infra: Infra, timetable_id: int, fast_rolling_stock: int, session: Session
+):
+    start_time = datetime.datetime(2024, 1, 1, 14, 0, 0, tzinfo=datetime.UTC)
+    end_time = start_time + datetime.timedelta(days=10)
+    now = datetime.datetime.now(tz=datetime.UTC)
+    work_schedules_r = session.post(
+        EDITOAST_URL + "work_schedules/",
+        json={
+            "work_schedule_group_name": f"generic_group_{now}",
+            "work_schedules": [
+                {
+                    "start_date_time": start_time.isoformat(),
+                    "end_date_time": end_time.isoformat(),
+                    "obj_id": "TD3",
+                    "track_ranges": [{"begin": 0, "end": 100, "track": "TD3"}],
+                    "work_schedule_type": "CATENARY",
+                }
+            ],
+        },
+    )
+    work_schedules_response = work_schedules_r.json()
+
+    stdcm_payload = {
+        "start_time": "2024-01-05T13:00:00+00:00",
+        "maximum_departure_delay": 7200000,
+        "maximum_run_time": 43200000,
+        "time_gap_before": 0,
+        "time_gap_after": 0,
+        "steps": [
+            {
+                "duration": None,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 1,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
+        ],
+        "comfort": "STANDARD",
+        "margin": "0%",
+        "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
+    }
+    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
+
+    assert content["most_blocking_work_schedules"][0][
+        "start_date_time"
+    ] == start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert content["most_blocking_work_schedules"][0][
+        "end_date_time"
+    ] == end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert (
+        content["most_blocking_work_schedules"][0]["last_op"]["id"]
+        == "Mid_West_station_duplicate"
+    )
+
+    assert content["nearest_to_destination_work_schedules"][0][
+        "start_date_time"
+    ] == start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert content["nearest_to_destination_work_schedules"][0][
+        "end_date_time"
+    ] == end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert (
+        content["nearest_to_destination_work_schedules"][0]["last_op"]["id"]
+        == "Mid_West_station_duplicate"
+    )
+
+    assert content["partial_pathfinding_result"] is not None
+    assert (
+        content["last_reached_operational_point"]["operational_point"]["id"]
+        == "Mid_West_station_duplicate"
+    )
+
+
+def test_work_schedules_failure_explainer_at_departure(
+    small_infra: Infra, timetable_id: int, fast_rolling_stock: int, session: Session
+):
+    start_time = datetime.datetime(2024, 1, 1, 14, 0, 0, tzinfo=datetime.UTC)
+    end_time = start_time + datetime.timedelta(days=10)
+    now = datetime.datetime.now(tz=datetime.UTC)
+    work_schedules_r = session.post(
+        EDITOAST_URL + "work_schedules/",
+        json={
+            "work_schedule_group_name": f"generic_group_{now}",
+            "work_schedules": [
+                {
+                    "start_date_time": start_time.isoformat(),
+                    "end_date_time": end_time.isoformat(),
+                    "obj_id": "TA2",
+                    "track_ranges": [{"begin": 0, "end": 100, "track": "TA2"}],
+                    "work_schedule_type": "CATENARY",
+                }
+            ],
+        },
+    )
+    work_schedules_response = work_schedules_r.json()
+
+    stdcm_payload = {
+        "start_time": "2024-01-05T13:00:00+00:00",
+        "maximum_departure_delay": 7200000,
+        "maximum_run_time": 43200000,
+        "time_gap_before": 0,
+        "time_gap_after": 0,
+        "steps": [
+            {
+                "duration": None,
+                "pathfinding_item": {
+                    "location": {"type": "track_offset", "track": "TA2", "offset": 500},
+                    "can_backtrack": False,
+                },  # To start on the WS OP
+            },
+            {
+                "duration": 1,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
+        ],
+        "comfort": "STANDARD",
+        "margin": "0%",
+        "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
+    }
+    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload, session)
+
+    assert content["most_blocking_work_schedules"][0][
+        "start_date_time"
+    ] == start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert content["most_blocking_work_schedules"][0][
+        "end_date_time"
+    ] == end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert content["most_blocking_work_schedules"][0]["last_op"]["id"] == "West_station"
+
+    assert content["nearest_to_destination_work_schedules"][0][
+        "start_date_time"
+    ] == start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert content["nearest_to_destination_work_schedules"][0][
+        "end_date_time"
+    ] == end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert (
+        content["nearest_to_destination_work_schedules"][0]["last_op"]["id"]
+        == "West_station"
+    )
+
+    assert content["partial_pathfinding_result"] is not None
+    assert (
+        content["last_reached_operational_point"]["operational_point"]["id"]
+        == "West_station"
+    )
+
+
 def test_mrsp_sources(
     small_infra: Infra,
     timetable_id: int,

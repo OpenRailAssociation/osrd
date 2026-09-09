@@ -156,7 +156,7 @@ const DetailsBox = ({
                           )}
                           <div
                             style={{
-                              color: ETCS_COLOR_DICTIONARY[brakingCurveType].toString(),
+                              color: ETCS_COLOR_DICTIONARY[brakingCurveType].hex(),
                             }}
                           >
                             {brakingCurveType}
@@ -166,7 +166,7 @@ const DetailsBox = ({
                               key={endOfCurve}
                               className="number-text"
                               style={{
-                                color: ETCS_COLOR_DICTIONARY[brakingCurveType].toString(),
+                                color: ETCS_COLOR_DICTIONARY[brakingCurveType].hex(),
                               }}
                             >
                               {speedValues

@@ -47,6 +47,7 @@ function upsertPathStepTrack(
       uic: op.uic,
       secondaryCode: op.secondary_code,
       mainCode: op.main_code,
+      countryCode: op.country_code,
       // Never match by track/offset: we're switching the track
       track: '',
       offsetOnTrack: NaN,
@@ -156,7 +157,7 @@ export default function useOccupancyZoneDrop({
         },
       }).unwrap();
 
-      const rawTrainSchedule = trainSchedules.find((ts) => ts.id === trainSchedule.id)!;
+      const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
       upsertTrainSchedules([
         {
           ...rawTrainSchedule,
@@ -209,7 +210,7 @@ export default function useOccupancyZoneDrop({
       if (exception) {
         await updateExceptionPath(exception, trainSchedule, newPath);
       } else {
-        const rawTrainSchedule = trainSchedules.find((ts) => ts.id === trainSchedule.id)!;
+        const rawTrainSchedule = trainSchedules.get(trainSchedule.id)!;
         const updatedTrainSchedule = {
           ...rawTrainSchedule,
           path: newPath,

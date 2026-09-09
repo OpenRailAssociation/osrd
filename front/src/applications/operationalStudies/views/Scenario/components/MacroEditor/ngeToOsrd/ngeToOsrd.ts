@@ -13,7 +13,11 @@ import type {
 import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
+import {
+  DEFAULT_TIME_WINDOW,
+  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+  TRAINRUN_DIRECTIONS,
+} from '../consts';
 import type MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId, localStorageFilterSettingKey } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
@@ -25,6 +29,7 @@ import {
   getTrainrunLabels,
   generatePathAndSchedule,
   createPacedAttributesFromTrainrun,
+  defaultBaseStartTime,
 } from './trainrun';
 
 const handleLabelOperation = async ({
@@ -225,6 +230,10 @@ export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload => {
   const macroNotes = dto.freeFloatingTexts.map((note) => castNgeNoteToOsrd(note, dto));
 
+  // TODO Hourly timetables: the import flow doesn't know the target timetable type yet, so
+  // it always produces absolute start times.
+  const baseStartTime = defaultBaseStartTime('CALENDAR');
+
   const dedupNodes = relabelDuplicateTrigrams(dto.nodes);
   const macroNodes: MacroNodeForm[] = [];
   for (const node of dedupNodes) {
@@ -252,11 +261,15 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
         : [TRAINRUN_DIRECTIONS.FORWARD, TRAINRUN_DIRECTIONS.BACKWARD];
     for (const [index, trainrunSections] of groupedTrainrunSections.entries()) {
       for (const direction of directions) {
+        // The JSON import has its own rules to adapt services to the target timetable, which are
+        // not handled here yet, so it keeps the historical default time window.
+        const paced = createPacedAttributesFromTrainrun(trainrun, dto, DEFAULT_TIME_WINDOW);
         const pathAndSchedule = generatePathAndSchedule(
           trainrunSections,
           dedupNodes,
-          undefined,
-          direction
+          baseStartTime,
+          direction,
+          paced
         );
         const isTrainSplit = groupedTrainrunSections.length > 1;
         const commonProps = {
@@ -265,7 +278,6 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
           category,
           ...pathAndSchedule,
         };
-        const paced = createPacedAttributesFromTrainrun(trainrun, dto);
         trainSchedules.push({
           ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
           ...commonProps,

@@ -10,6 +10,8 @@ export * from './components/WorkScheduleLayer';
 export * from './components/PatternRect';
 export * from './components/Quadrilateral';
 export * from './components/ZoomRect';
+export * from './components/PeriodicMarker';
+export * from './components/TrainInfoBar';
 
 export { DEFAULT_THEME } from './lib/consts';
 export { SpaceTimeChartContext, SpaceTimeChartCanvasContext } from './lib/context';

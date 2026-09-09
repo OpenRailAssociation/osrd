@@ -31,7 +31,7 @@ describe('processJsonFile', () => {
         round_trips: [[0, 1]],
       };
       const exportPayload = buildTimetableExportPayload(
-        payloadTrains,
+        new Map(payloadTrains.map((ts) => [ts.id, ts])),
         payloadTrains.map(({ id }) => id),
         payloadRoundTrips
       );

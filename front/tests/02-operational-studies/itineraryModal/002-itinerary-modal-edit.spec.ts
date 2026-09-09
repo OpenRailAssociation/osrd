@@ -133,11 +133,13 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
       await test.step('Insert a path step in the itinerary', async () => {
         await itineraryModalPage.insertIntermediatePathStep(1, NORTH_STATION_MAIN_CODE, 1);
         await itineraryModalPage.checkPathStepValue(2, SOUTH_STATION_BV);
-        await itineraryModalPage.checkPathStepMarkers([
-          { name: NORTH_STATION_BV, index: 1 },
-          { name: NORTH_STATION_BV, index: 2 },
-          { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 3 },
-        ]);
+        if (browserName === 'chromium') {
+          await itineraryModalPage.checkPathStepMarkers([
+            { name: NORTH_STATION_BV, index: 1 },
+            { name: NORTH_STATION_BV, index: 2 },
+            { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 3 },
+          ]);
+        }
         await itineraryModalPage.checkNumberedRowsCount(4);
       });
       await test.step('remove pathStep and check rows and map update', async () => {

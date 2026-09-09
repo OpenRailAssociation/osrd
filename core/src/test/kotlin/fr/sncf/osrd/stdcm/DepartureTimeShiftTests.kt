@@ -8,7 +8,6 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -32,11 +31,13 @@ class DepartureTimeShiftTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .run()!!
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
         val secondBlockEntryTime =
-            (res.departureTime +
-                res.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).meters))
+            (resSuccess.departureTime +
+                resSuccess.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).meters))
         Assertions.assertTrue(secondBlockEntryTime >= 3600)
-        occupancyTest(res, occupancyGraph)
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that we can add delays to avoid several occupied blocks */
@@ -65,11 +66,13 @@ class DepartureTimeShiftTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .run()!!
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
         val secondBlockEntryTime =
-            (res.departureTime +
-                res.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).meters))
+            (resSuccess.departureTime +
+                resSuccess.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).meters))
         Assertions.assertTrue(secondBlockEntryTime >= 3600)
-        occupancyTest(res, occupancyGraph)
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /**
@@ -104,7 +107,9 @@ class DepartureTimeShiftTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(BlockLocation(lastBlock, Offset(1000.meters))))
                 .run()!!
-        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        val blocks = resSuccess.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
         Assertions.assertTrue(blocks.contains("b->c2"))
         Assertions.assertTrue(blocks.contains("c2->d"))
         Assertions.assertFalse(blocks.contains("b->c1"))
@@ -148,7 +153,9 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(lastBlock, Offset(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        val blocks = resSuccess.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
         Assertions.assertTrue(blocks.contains("b->c1"))
         Assertions.assertTrue(blocks.contains("c1->d"))
         Assertions.assertFalse(blocks.contains("b->c2"))
@@ -201,7 +208,7 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
-        Assertions.assertNull(res)
+        Assertions.assertTrue(res is STDCMPartialResult)
     }
 
     /**
@@ -243,7 +250,9 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(thirdBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** This is the same test as the one above, but with the split on the first block. */
@@ -279,7 +288,9 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** This is the same test as the one above, but with the split on the last block. */
@@ -310,7 +321,9 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that we keep track of how much we can shift the departure time over several blocks */
@@ -353,7 +366,7 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(forthBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
-        Assertions.assertNull(res)
+        Assertions.assertTrue(res is STDCMPartialResult)
     }
 
     /**
@@ -403,7 +416,7 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(forthBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
-        Assertions.assertNull(res)
+        Assertions.assertTrue(res is STDCMPartialResult)
     }
 
     /** Test that we can consider more than two openings */
@@ -449,7 +462,9 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(BlockLocation(thirdBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        occupancyTest(res, occupancyGraph)
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        occupancyTest(resSuccess, occupancyGraph)
     }
 
     /** Test that we don't add more delay than specified */
@@ -481,6 +496,6 @@ class DepartureTimeShiftTests {
                 .setTimeStep(timeStep)
                 .setMaxDepartureDelay(1000 - 2 * timeStep)
                 .run()
-        assertNull(res)
+        Assertions.assertTrue(res is STDCMPartialResult)
     }
 }

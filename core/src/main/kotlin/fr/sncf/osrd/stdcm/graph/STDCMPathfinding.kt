@@ -34,7 +34,11 @@ import org.slf4j.LoggerFactory
 
 data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
 
-data class Result(
+data class Result(val node: STDCMNode) {
+    val hasReachedDestination = node.infraExplorer.getStepTracker().hasReachedDestination()
+}
+
+data class PathResult(
     val edges: List<STDCMEdge>, // Full path as a list of edges
     val waypoints: List<EdgeLocation>,
 )
@@ -62,7 +66,8 @@ fun findPath(
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
-    failureExplainer: FailureExplainer? = null,
+    fullFailureExplainer: FailureExplainer? = null,
+    workSchedulesFailureExplainer: FailureExplainer? = null,
     progressCallback: ProgressCallback? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
@@ -80,7 +85,8 @@ fun findPath(
             pathfindingTimeout,
             temporarySpeedLimitManager,
             searchMetadata,
-            failureExplainer,
+            fullFailureExplainer,
+            workSchedulesFailureExplainer,
             progressCallback,
         )
         .findPath()
@@ -101,7 +107,8 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata?,
-    failureExplainer: FailureExplainer?,
+    fullFailureExplainer: FailureExplainer?,
+    workSchedulesFailureExplainer: FailureExplainer?,
     private val progressCallback: ProgressCallback? = null,
 ) {
 
@@ -121,7 +128,8 @@ class STDCMPathfinding(
             standardAllowance,
             temporarySpeedLimitManager,
             searchMetadata,
-            failureExplainer,
+            fullFailureExplainer,
+            workSchedulesFailureExplainer,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
@@ -130,17 +138,22 @@ class STDCMPathfinding(
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, consistSchedule)
-        val path = findPathImpl()
-        graph.stdcmSimulations.logWarnings()
-        if (path == null) {
-            logger.info("Failed to find a path")
-            return null
-        }
-        logger.info("Path found, start postprocessing")
 
+        // If we are in a dead end, and the destination is not reached, the pathfinding should fail
+        if (starts.isEmpty()) return null
+
+        val result = findPathImpl()
+        graph.stdcmSimulations.logWarnings()
+        if (!result.hasReachedDestination) {
+            logger.info("Failed to reach destination, start postprocessing partial result")
+            return STDCMPostProcessing(graph).makePartialResult(fullInfra, result.node)
+        }
+
+        logger.info("Reached destination, start postprocessing")
+        val path = buildPath(result.node)
         val res =
             STDCMPostProcessing(graph)
-                .makeResult(
+                .makeCompleteResult(
                     fullInfra,
                     path,
                     graph.standardAllowance,
@@ -200,7 +213,7 @@ class STDCMPathfinding(
         }
     }
 
-    private fun findPathImpl(): Result? {
+    private fun findPathImpl(): Result {
         val queue = PriorityQueue<STDCMNode>()
 
         val progressLogger = ProgressLogger(graph, callback = progressCallback)
@@ -211,13 +224,14 @@ class STDCMPathfinding(
         }
         val start = Instant.now()
         var lastFValue = Double.NEGATIVE_INFINITY
+        var closestNode: STDCMNode = queue.peek()
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val endNode = queue.poll()
             if (endNode == null) {
                 fValueLogger.logAggregatedSummary()
-                return null
+                return Result(closestNode)
             }
             if (endNode.getMinTotalSimulationTime(graph.remainingTimeEstimator) > maxRunTime)
                 continue
@@ -233,9 +247,12 @@ class STDCMPathfinding(
 
             progressLogger.processNode(endNode)
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
-                return buildResult(endNode)
+                return Result(endNode)
             }
             queue += getAdjacentNodes(endNode)
+            if (endNode.remainingTimeEstimation < closestNode.remainingTimeEstimation) {
+                closestNode = endNode
+            }
         }
     }
 
@@ -247,7 +264,7 @@ class STDCMPathfinding(
             .filter { graph.tryMarkPending(it) }
     }
 
-    private fun buildResult(node: STDCMNode): Result {
+    private fun buildPath(node: STDCMNode): PathResult {
         var mutLastEdge: STDCMEdge? = node.previousEdge
         val edges = ArrayDeque<STDCMEdge>()
 
@@ -265,7 +282,7 @@ class STDCMPathfinding(
             node.infraExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
         val waypoints = makeWaypoints(edgeList, reachedSteps)
 
-        return Result(edgeList, waypoints)
+        return PathResult(edgeList, waypoints)
     }
 
     /** Converts start locations into starting nodes. */

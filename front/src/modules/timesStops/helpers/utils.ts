@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { keyColumn, createTextColumn } from '@sdziadkowiec/react-datasheet-grid';
 import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
@@ -44,10 +43,45 @@ export const truncateStartTimeToDay = (date: StartTime): StartTime => {
   }
 };
 
+/** Convert receptionSignal enum to onStopSignal boolean */
+export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSignal) {
+  if (isNil(receptionSignal)) {
+    return { shortSlipDistance: undefined, onStopSignal: undefined };
+  }
+  if (receptionSignal === 'STOP') {
+    return { shortSlipDistance: false, onStopSignal: true };
+  }
+  if (receptionSignal === 'SHORT_SLIP_STOP') {
+    return { shortSlipDistance: true, onStopSignal: true };
+  }
+  return { shortSlipDistance: false, onStopSignal: false };
+}
+
+export function calculateStepTimeAndDays(
+  startTime?: Date | null,
+  duration?: Duration | null
+): TimeExtraDays | undefined {
+  if (!startTime || !duration) {
+    return undefined;
+  }
+
+  const start = dayjs(startTime);
+  const dur = dayjs.duration(duration.ms);
+
+  const waypointArrivalTime = start.add(dur);
+  const daySinceDeparture = waypointArrivalTime.diff(start, 'day');
+  const time: TimeString = waypointArrivalTime.format('HH:mm:ss');
+
+  return {
+    time,
+    daySinceDeparture,
+  };
+}
+
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
-  t: TFunction<'translation', undefined>,
+  t: TFunction,
   startTime?: Date,
   tableType?: TableType
 ): TimesStopsInputRow[] => {
@@ -134,6 +168,15 @@ export function formatDigitsAndUnit(fullValue: string | number | undefined, unit
   const digits = getDigits(extractedUnit);
   return `${round(extractedValue, digits)}${NO_BREAK_SPACE}${extractedUnit}`;
 }
+
+export const formatSignedDelta = (delta: Duration) => {
+  const sign = delta.ms >= 0 ? '+' : '-';
+  const label = delta
+    .abs()
+    .round('second')
+    .toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
+  return `${sign}${label}`;
+};
 
 export function disabledTextColumn(
   key: string,
@@ -341,27 +384,6 @@ export function durationSinceStartTime(
   return Duration.subtractDate(step.toDate(), startTime);
 }
 
-export function calculateStepTimeAndDays(
-  startTime?: Date | null,
-  duration?: Duration | null
-): TimeExtraDays | undefined {
-  if (!startTime || !duration) {
-    return undefined;
-  }
-
-  const start = dayjs(startTime);
-  const dur = dayjs.duration(duration.ms);
-
-  const waypointArrivalTime = start.add(dur);
-  const daySinceDeparture = waypointArrivalTime.diff(start, 'day');
-  const time: TimeString = waypointArrivalTime.format('HH:mm:ss');
-
-  return {
-    time,
-    daySinceDeparture,
-  };
-}
-
 /** Convert onStopSignal boolean to receptionSignal enum */
 export function onStopSignalToReceptionSignal(
   onStopSignal?: boolean,
@@ -370,24 +392,10 @@ export function onStopSignalToReceptionSignal(
   if (isNil(onStopSignal)) {
     return undefined;
   }
-  if (onStopSignal === true) {
+  if (onStopSignal) {
     return shortSlipDistance ? 'SHORT_SLIP_STOP' : 'STOP';
   }
   return 'OPEN';
-}
-
-/** Convert receptionSignal enum to onStopSignal boolean */
-export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSignal) {
-  if (isNil(receptionSignal)) {
-    return { shortSlipDistance: undefined, onStopSignal: undefined };
-  }
-  if (receptionSignal === 'STOP') {
-    return { shortSlipDistance: false, onStopSignal: true };
-  }
-  if (receptionSignal === 'SHORT_SLIP_STOP') {
-    return { shortSlipDistance: true, onStopSignal: true };
-  }
-  return { shortSlipDistance: false, onStopSignal: false };
 }
 
 export const getOperationalPointName = (

@@ -290,7 +290,7 @@ class STDCMHeuristicTests {
             InfraExplorerWithEnvelopeImpl(
                 infraExplorer,
                 appendOnlyLinkedListOf(),
-                SpacingResourceGenerator(infra.fullInfra(), null),
+                mutableListOf(SpacingResourceGenerator(infra.fullInfra(), Offset(0.meters), null)),
                 ConsistSchedule(listOf(STANDARD_TRAIN), null),
             )
         val defaultNode =

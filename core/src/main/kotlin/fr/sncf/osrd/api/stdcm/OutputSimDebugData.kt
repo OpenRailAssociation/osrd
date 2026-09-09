@@ -19,7 +19,7 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMCompleteResult
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
@@ -82,7 +82,7 @@ data class ZoneLocation(
 
 fun generateDebugData(
     rawInfra: RawInfra,
-    path: STDCMResult,
+    path: STDCMCompleteResult,
     simulationResponse: SimulationSuccess,
     departureTime: ZonedDateTime,
     requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,

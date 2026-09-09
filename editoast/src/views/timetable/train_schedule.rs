@@ -35,6 +35,7 @@ use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
 use models::TrainScheduleException;
+use models::TrainScheduleLinking;
 use models::prelude::*;
 use models::round_trips::TrainScheduleRoundTrips;
 use models::train_schedule::BaseTrainOrOccurrenceId;
@@ -220,11 +221,14 @@ pub(in crate::views) async fn update_train_schedule(
                 .await?;
 
             if !train_schedule.has_same_pace(train_schedule_base.clone().paced.as_ref()) {
+                let conn = &mut tx.clone();
                 TrainScheduleException::delete_exceptions_for_train_schedule(
-                    &mut tx.clone(),
+                    conn,
                     train_schedule.id,
                 )
                 .await?;
+                TrainScheduleLinking::delete_linkings_for_train_schedule(conn, train_schedule.id)
+                    .await?;
             }
 
             let train_schedule_changeset: TrainScheduleChangeset = train_schedule_base.into();
@@ -1013,9 +1017,12 @@ pub(in crate::views) async fn etcs_braking_curves(
     )
     .await?;
 
-    v2::rolling_stock_privilege_check(authz::RollingStock(rs.id), RollingStockPrivilege::CanRead)
-        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-        .await?;
+    v2::rolling_stock_privilege_check(
+        authz::RollingStock(rs.id),
+        RollingStockPrivilege::CanRestrictedRead,
+    )
+    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .await?;
 
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(
@@ -1641,7 +1648,7 @@ pub(in crate::views) async fn occupancy_blocks(
                 authz::v2::rolling_stock_privileges(*user, authz::RollingStock(rolling_stock.id))
                     .map(async move |grants| {
                         grants
-                            .contains(&RollingStockPrivilege::CanRead)
+                            .contains(&RollingStockPrivilege::CanRestrictedRead)
                             .then_some(rolling_stock.name.clone())
                     })
             });
@@ -2270,6 +2277,7 @@ mod tests {
 
     use models::rolling_stock::TrainMainCategory;
     use models::timetable::Timetable;
+    use models::train_schedule_linking::TrainScheduleLinkingChangeset;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
@@ -2495,6 +2503,48 @@ mod tests {
             "Expected exceptions to be reset after interval change, but found {}",
             exceptions_after.len()
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_paced_train_deletes_linkings_when_interval_changes() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+
+        let source_train_schedule =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        let target_train_schedule =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+
+        TrainScheduleLinkingChangeset::default()
+            .timetable_id(timetable.id)
+            .source_train_schedule_id(source_train_schedule.id)
+            .source_occurrence_index(Some(0))
+            .target_train_schedule_id(target_train_schedule.id)
+            .target_occurrence_index(Some(0))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create a linking");
+
+        let mut updated_train_schedule = simple_paced_train_base();
+        updated_train_schedule.paced.as_mut().unwrap().interval =
+            chrono::Duration::minutes(30).try_into().unwrap();
+
+        app.put(&format!(
+            "/train_schedules/{}?timetable_id={}",
+            source_train_schedule.id, timetable.id
+        ))
+        .json(&json!(&updated_train_schedule))
+        .await
+        .assert_status_no_content();
+
+        let linkings = TrainScheduleLinking::list(&mut pool.get_ok(), SelectionSettings::new())
+            .await
+            .expect("Failed to fetch linkings");
+
+        assert!(linkings.is_empty());
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -4303,7 +4353,10 @@ mod tests {
         let user = app
             .user("partially-authorized", "Partially authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -4311,10 +4364,13 @@ mod tests {
         let authorized_user = app
             .user("authorized", "Authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_rolling_stock_grant(
                 unreadable_rolling_stock.id,
-                authz::RollingStockGrant::Reader,
+                authz::RollingStockGrant::RestrictedReader,
             )
             .with_roles([authz::Role::OperationalStudies])
             .create()
@@ -4390,7 +4446,10 @@ mod tests {
         let user = app
             .user("partially-authorized", "Partially authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_roles([authz::Role::OperationalStudies])
             .create()
             .await;
@@ -4398,10 +4457,13 @@ mod tests {
         let authorized_user = app
             .user("authorized", "Authorized")
             .with_infra_grant(small_infra.id, authz::InfraGrant::Reader)
-            .with_rolling_stock_grant(readable_rolling_stock.id, authz::RollingStockGrant::Reader)
+            .with_rolling_stock_grant(
+                readable_rolling_stock.id,
+                authz::RollingStockGrant::RestrictedReader,
+            )
             .with_rolling_stock_grant(
                 unreadable_rolling_stock.id,
-                authz::RollingStockGrant::Reader,
+                authz::RollingStockGrant::RestrictedReader,
             )
             .with_roles([authz::Role::OperationalStudies])
             .create()
@@ -4656,7 +4718,7 @@ mod tests {
             schedule,
             operational_point_reference,
             use_simulation,
-            Some(authz::RollingStockGrant::Reader),
+            Some(authz::RollingStockGrant::RestrictedReader),
         )
         .await
     }

@@ -5,6 +5,7 @@ import {
   type SimilarTrainWithSecondaryCode,
   type StdcmPathProperties,
   type StdcmResultsOperationalPoint,
+  type StdcmSuccessResponse,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
@@ -270,15 +271,40 @@ function consolidateOvertakesToSingleSteps(
         stopDuration: Duration.subtractDate(nextStep.time, step.time),
         stopEndTime: nextStep.time,
         stopType: StdcmStopTypes.OVERTAKE,
+        secondaryCodeLabel: 'O', // indicating an overtake
       };
       consolidatedSteps.push(consolidatedStep);
       i += 1; // to skip the next step, as we consolidated two overtake steps in one
     } else {
-      consolidatedSteps.push(step);
+      consolidatedSteps.push({
+        ...step,
+        secondaryCodeLabel: step.secondaryCode,
+      });
     }
   }
-  consolidatedSteps.push(steps[steps.length - 1]);
+  const lastStep = steps[steps.length - 1];
+  consolidatedSteps.push({ ...lastStep, secondaryCodeLabel: lastStep.secondaryCode });
   return consolidatedSteps;
+}
+
+function consolidateBacktrackSteps(
+  steps: StdcmResultsOperationalPoint[],
+  pathfindingResult: StdcmSuccessResponse['pathfinding_result']
+): StdcmResultsOperationalPoint[] {
+  const backtrackPathItemIndexes = pathfindingResult.backtrack_path_items ?? [];
+  if (!backtrackPathItemIndexes.length) return steps;
+  const backtrackPositions = backtrackPathItemIndexes.map(
+    (index) => pathfindingResult.path_item_positions[index]
+  );
+  const isBacktrackStep = (step: StdcmResultsOperationalPoint) =>
+    backtrackPositions.includes(step.positionOnPath);
+
+  return steps.filter((step, index) => {
+    const nextStep = steps[index + 1];
+    const isSameStepBeforeBacktrack =
+      nextStep && nextStep.opId === step.opId && isBacktrackStep(nextStep);
+    return !isSameStepBeforeBacktrack;
+  });
 }
 
 /**
@@ -288,6 +314,7 @@ function consolidateOvertakesToSingleSteps(
  * @param simulation Simulation response containing final output positions and times
  * @param simulationPathSteps List of simulation path steps
  * @param departureTime Departure time in hh:mm format
+ * @param pathfindingResult Pathfinding result, used to detect and consolidate backtrack points
  * @returns A list of formated operational points with weight, times and stop durations
  */
 export function getOperationalPointsWithTimes({
@@ -297,6 +324,7 @@ export function getOperationalPointsWithTimes({
   simulation,
   simulationPathSteps,
   departureTime,
+  pathfindingResult,
 }: {
   operationalPoints: StdcmPathProperties['operational_points'];
   suggestedOperationalPoints: SuggestedOP[];
@@ -304,6 +332,7 @@ export function getOperationalPointsWithTimes({
   simulation: SimulationResponseSuccess;
   simulationPathSteps: StdcmPathStep[];
   departureTime: Date;
+  pathfindingResult: StdcmSuccessResponse['pathfinding_result'];
 }): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
@@ -334,7 +363,10 @@ export function getOperationalPointsWithTimes({
     stopPositions,
     { positions, times, speeds, departureTime }
   );
-  const formattedConsolidatedOps = consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
+  const formattedConsolidatedOps = consolidateBacktrackSteps(
+    consolidateOvertakesToSingleSteps(formattedOpsWithAllStops),
+    pathfindingResult
+  );
 
   return formattedConsolidatedOps.map((op) => ({
     ...op,
@@ -365,7 +397,8 @@ export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'
 // Maps Stdcm path steps to the Step payload expected by the Railway Manager API.
 export const transformStepsToApiFormat = (
   steps: StdcmPathStep[],
-  { originArrivalTime, destinationArrivalTime, beforeTolerance, afterTolerance }: TimingContext
+  { originArrivalTime, destinationArrivalTime, beforeTolerance, afterTolerance }: TimingContext,
+  backtrackPathItems?: number[] | null
 ): RequestedStep[] =>
   steps.map((step, index) => {
     const baseStep: RequestedStep = {
@@ -385,10 +418,15 @@ export const transformStepsToApiFormat = (
             total_length: step.consistChange.totalLength!,
           }
         : undefined;
+
+      const stopType: StdcmStopTypes = backtrackPathItems?.includes(index)
+        ? StdcmStopTypes.BACKTRACK
+        : step.stopType;
+
       return {
         ...baseStep,
         duration: step.stopFor?.ms || 0,
-        type: STOP_TYPE_MAPPING[step.stopType],
+        type: STOP_TYPE_MAPPING[stopType],
         consist_change: formatedConsistChange,
       };
     }

@@ -9,7 +9,9 @@ import type { CatalogById, TrainScheduleSetById } from './types';
 /**
  * Loads the train schedule set catalog for the scenario's timetable.
  *
- * For each catalog entry, fetches its published train schedule sets; entries with none are dropped from the result.
+ * For each catalog entry, fetches its published train schedule sets matching the timetable type;
+ * entries with none are dropped from the result. A timetable can only import train schedule sets
+ * of its own type, so a calendar timetable never sees hourly train schedule sets and vice versa.
  * Also exposes the set of train schedule set ids already imported into the timetable from the catalog.
  */
 export default function useLoadCatalog() {
@@ -47,6 +49,7 @@ export default function useLoadCatalog() {
           getTrainScheduleSets({
             catalogEntryId: catalogEntry.id,
             published: true,
+            timetableType: scenario.timetable_type,
           }).unwrap()
         )
       );
@@ -75,7 +78,7 @@ export default function useLoadCatalog() {
     } finally {
       setLoading(false);
     }
-  }, [catalogData, getTrainScheduleSets]);
+  }, [catalogData, getTrainScheduleSets, scenario.timetable_type]);
 
   /**
    * When hook is mounted

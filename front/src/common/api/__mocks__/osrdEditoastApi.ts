@@ -10,6 +10,11 @@ import { osrdEditoastApi } from '../osrdEditoastApi';
 type Endpoints = (typeof osrdEditoastApi)['endpoints'];
 
 /**
+ * A Promise or its direct result.
+ */
+type PromiseOr<T> = T | Promise<T>;
+
+/**
  * Given an endpoint type, extract its argument and result types and build a
  * mock function type.
  *
@@ -18,7 +23,7 @@ type Endpoints = (typeof osrdEditoastApi)['endpoints'];
  * returned by the endpoint if it wasn't mocked.
  */
 type MockQueryFn<E> = E extends { Types: { QueryArg: infer A; ResultType: infer R } }
-  ? Mock<(arg: A) => QueryReturnValue<R, ApiError>>
+  ? Mock<(arg: A) => PromiseOr<QueryReturnValue<R, ApiError>>>
   : never;
 
 /**

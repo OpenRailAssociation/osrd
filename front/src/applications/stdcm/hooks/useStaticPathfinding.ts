@@ -4,7 +4,7 @@ import { compact, isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { stdcmPathStepToPathItemLocation } from 'applications/stdcm/utils';
+import { canPathStepBacktrack, stdcmPathStepToPathItemLocation } from 'applications/stdcm/utils';
 import {
   osrdEditoastApi,
   type PathfindingResult,
@@ -29,10 +29,22 @@ import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 /**
  * Compute the path items locations from the path steps
  */
-function pathStepsToLocations(
-  pathSteps: StdcmPathStep[]
-): Array<NonNullable<StdcmPathStep['operationalPoint']>> {
-  return compact(pathSteps.map((s) => s.operationalPoint));
+function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
+  NonNullable<StdcmPathStep['operationalPoint']> & {
+    canBacktrack: boolean;
+  }
+> {
+  return compact(
+    pathSteps.map((step) => {
+      if (!step.operationalPoint) {
+        return null;
+      }
+      return {
+        ...step.operationalPoint,
+        canBacktrack: canPathStepBacktrack(step),
+      };
+    })
+  );
 }
 
 const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
@@ -87,9 +99,10 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         return;
       }
 
-      const stdcmPathSteps = pathStepsLocations.map((step) =>
-        stdcmPathStepToPathItemLocation(step)
-      );
+      const stdcmPathSteps = pathStepsLocations.map((step) => ({
+        location: stdcmPathStepToPathItemLocation(step),
+        can_backtrack: step.canBacktrack,
+      }));
 
       const pathSegmentsIndexes = getPathSegmentsIndexes(consistChanges, pathStepsLocations.length);
 

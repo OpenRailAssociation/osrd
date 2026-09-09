@@ -1,5 +1,15 @@
 pub(crate) mod request;
 
+use crate::AppState;
+use crate::authentication;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::views::AuthorizationError;
+use crate::views::path::pathfinding::TrainScheduleWithConsist;
+use crate::views::timetable::PhysicsConsistParameters;
+use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::SimulationResponseSuccess;
+use crate::views::timetable::simulation::consist_train_simulation_batch;
 use authz;
 use authz::RollingStockPrivilege;
 use authz::v2;
@@ -19,24 +29,34 @@ use axum_streams::StreamBodyAs;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use common::geometry::GeoJsonPoint;
 use common::units::millisecond;
-use core_client::AsCoreRequest;
+use core_client::AsCoreStreaming;
 use core_client::CoreClient;
+use core_client::Progress;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::stdcm::ConflictingWorkSchedule;
 use core_client::stdcm::ConsistConfiguration;
 use core_client::stdcm::ConsistSchedule;
+use core_client::stdcm::LastReachedOperationalPoint;
 use core_client::stdcm::Request as StdcmRequest;
 use core_client::stdcm::UndirectedTrackRange;
-use database::DbConnectionPoolV2;
+use database::{DbConnection, DbConnectionPoolV2};
 use editoast_derive::EditoastError;
 use futures::StreamExt as _;
 use futures::stream;
 use geos::geojson::Geometry;
 use geos::geojson::Value;
 use itertools::Itertools as _;
+use models::Infra;
+use models::WorkSchedule;
+use models::prelude::*;
+use models::rolling_stock::RollingStock;
+use models::timetable::Timetable;
 use request::Request;
 use request::convert_steps;
+use schemas::infra::OperationalPoint;
 use schemas::primitives::PositiveDuration;
 use schemas::rolling_stock::RollingResistancePerWeight;
 use schemas::rolling_stock::RollingResistanceRaw;
@@ -47,32 +67,30 @@ use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainOccurrence;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::collections::HashSet;
-use std::pin::pin;
 use std::sync::Arc;
 use thiserror::Error;
-use tokio::spawn;
 use tokio::sync::mpsc;
-use tracing::Instrument as _;
-use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::AppState;
-use crate::authentication;
-use crate::error::InternalError;
-use crate::error::Result;
-use crate::views::AuthorizationError;
-use crate::views::path::pathfinding::TrainScheduleWithConsist;
-use crate::views::timetable::PhysicsConsistParameters;
-use crate::views::timetable::simulation;
-use crate::views::timetable::simulation::SimulationResponseSuccess;
-use crate::views::timetable::simulation::consist_train_simulation_batch;
-use models::Infra;
-use models::WorkSchedule;
-use models::prelude::*;
-use models::rolling_stock::RollingStock;
-use models::timetable::Timetable;
+/// Represents the last reached operational point in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct StdcmLastReachedOperationalPoint {
+    #[schema(value_type = GeoJsonPoint)]
+    pub geographic: Geometry,
+    pub arrival_time: DateTime<Utc>,
+    pub operational_point: OperationalPoint,
+}
+
+/// Represents one conflicting work schedule in a partial pathfinding result
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct StdcmConflictingWorkSchedule {
+    pub start_date_time: DateTime<Utc>,
+    pub end_date_time: DateTime<Utc>,
+    pub last_op: OperationalPoint,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
@@ -86,7 +104,12 @@ pub(in crate::views) enum StdcmResponse {
         pathfinding_result: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
-    PathNotFound,
+    PathNotFound {
+        most_blocking_work_schedules: Vec<StdcmConflictingWorkSchedule>,
+        nearest_to_destination_work_schedules: Vec<StdcmConflictingWorkSchedule>,
+        partial_pathfinding_result: Option<PathfindingResultSuccess>,
+        last_reached_operational_point: Option<StdcmLastReachedOperationalPoint>,
+    },
     PreprocessingSimulationError {
         error: simulation::Response,
     },
@@ -180,7 +203,7 @@ pub(in crate::views) struct StdcmQueryParams {
     fields(
         timetable_id = id,
         infra_id = query.infra,
-        path_found,
+        path_found = tracing::field::Empty,
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -371,7 +394,7 @@ pub(in crate::views) async fn stdcm(
             .get_temporary_speed_limits(&mut conn, total_simulation_run_time)
             .await?,
         comfort: request.comfort,
-        path_items: request.get_stdcm_path_items(conn, infra_id).await?,
+        path_items: request.get_stdcm_path_items(conn.clone(), infra_id).await?,
         start_time: earliest_departure_time,
         maximum_departure_delay: request.get_maximum_departure_delay(total_simulation_run_time),
         maximum_run_time: request.get_maximum_run_time(total_simulation_run_time),
@@ -379,6 +402,7 @@ pub(in crate::views) async fn stdcm(
         time_gap_after: request.time_gap_after,
         margin: request.margin,
         time_step: Some(2000),
+        // TODO: filter editoast work schedules according to time window and save as variable to be used later on in step 6
         work_schedules: work_schedules
             .iter()
             .filter_map(|ws| {
@@ -387,81 +411,169 @@ pub(in crate::views) async fn stdcm(
             .collect(),
     };
 
-    let (tx, rx) = mpsc::unbounded_channel();
+    let (response_tx, response_rx) = mpsc::unbounded_channel();
+    tokio::spawn(async move {
+        let stdcm_stream = stdcm_request.fetch(core_client.as_ref()).await;
 
-    let stream_result_lambda = async move {
-        let stream_stdcm_response = stdcm_request
-            .fetch_streaming::<core_client::Json<core_client::stdcm::ProgressStatus>>(
-                core_client.as_ref(),
-            )
-            .await
-            .map_err(InternalError::from);
-        let stream_stdcm_response = match stream_stdcm_response {
-            Ok(stream_stdcm_response) => stream_stdcm_response,
-            Err(e) => {
-                let _ = tx.send(StdcmProgression::Completed(StdcmResponse::InternalError {
-                    error: e,
-                }));
-                return;
-            }
-        };
+        match stdcm_stream {
+            Err(error) => response_tx
+                .send(StdcmProgression::Completed(StdcmResponse::InternalError {
+                    error: error.into(),
+                }))
+                .expect("the receiver should not be dropped"),
+            Ok(stream) => {
+                stream
+                    .fold(
+                        (response_tx, infra, conn, work_schedules),
+                        async |(tx, infra, mut conn, work_schedules), event| {
+                            let api_event = match event {
+                                Ok(Progress::Event(core_client::stdcm::UpdateEvent {
+                                    point,
+                                    best_travel_time,
+                                })) => StdcmProgression::Ongoing(StdcmProgressionEvent {
+                                    point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
+                                    best_travel_time,
+                                }),
+                                Ok(Progress::Final(core_client::stdcm::FinalEvent { result })) => {
+                                    match result {
+                                        core_client::stdcm::Response::Success {
+                                            simulation,
+                                            path,
+                                            departure_time,
+                                        } => {
+                                            tracing::Span::current().record("path_found", true);
+                                            StdcmProgression::Completed(StdcmResponse::Success {
+                                                simulation: simulation.into(),
+                                                pathfinding_result: path,
+                                                departure_time,
+                                            })
+                                        }
+                                        core_client::stdcm::Response::PathNotFound {
+                                            most_blocking_work_schedules,
+                                            nearest_to_destination_work_schedules,
+                                            partial_path,
+                                            last_reached_operational_point,
+                                        } => {
+                                            tracing::Span::current().record("path_found", false);
+                                            let last_reached_operational_point =
+                                                match last_reached_operational_point {
+                                                    Some(last_reached_op) => {
+                                                        let op = fetch_operational_point(
+                                                            &infra,
+                                                            &mut conn,
+                                                            &last_reached_op.id,
+                                                        )
+                                                        .await;
+                                                        Some(
+                                                            as_stdcm_last_reached_operational_point(
+                                                                last_reached_op,
+                                                                op,
+                                                            ),
+                                                        )
+                                                    }
+                                                    None => None,
+                                                };
 
-        // 6. Handle STDCM Core Response
-        let result_stream = stream_stdcm_response.map(move |response| {
-            let response = response.map_err(InternalError::from);
+                                            let ws_map: HashMap<_, _> = work_schedules
+                                                .iter()
+                                                .map(|ws| (ws.obj_id.as_str(), ws))
+                                                .collect();
+                                            let stdcm_most_blocking_work_schedules =
+                                                enrich_conflicting_work_schedules(
+                                                    most_blocking_work_schedules,
+                                                    &ws_map,
+                                                    &infra,
+                                                    &mut conn,
+                                                )
+                                                .await;
+                                            let stdcm_nearest_to_destination_work_schedules =
+                                                enrich_conflicting_work_schedules(
+                                                    nearest_to_destination_work_schedules,
+                                                    &ws_map,
+                                                    &infra,
+                                                    &mut conn,
+                                                )
+                                                .await;
 
-            let span = Span::current();
-
-            match response {
-                Ok(result) => match result {
-                    core_client::stdcm::ProgressStatus::InProgress {
-                        point,
-                        best_travel_time,
-                    } => StdcmProgression::Ongoing(StdcmProgressionEvent {
-                        point: Geometry::new(Value::Point(vec![point.lon, point.lat])),
-                        best_travel_time,
-                    }),
-                    core_client::stdcm::ProgressStatus::Done { result } => match result {
-                        core_client::stdcm::Response::Success {
-                            simulation,
-                            path,
-                            departure_time,
-                        } => {
-                            span.record("path_found", true);
-                            StdcmProgression::Completed(StdcmResponse::Success {
-                                simulation: simulation.into(),
-                                pathfinding_result: path,
-                                departure_time,
-                            })
-                        }
-                        core_client::stdcm::Response::PathNotFound => {
-                            span.record("path_found", false);
-                            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
-                        }
-                    },
-                },
-                Err(e) => StdcmProgression::Completed(StdcmResponse::InternalError { error: e }),
-            }
-        });
-
-        let mut result_stream = pin!(result_stream);
-        while let Some(item) = result_stream.next().await {
-            if tx.send(item).is_err() {
-                break;
+                                            StdcmProgression::Completed(
+                                                StdcmResponse::PathNotFound {
+                                                    most_blocking_work_schedules:
+                                                        stdcm_most_blocking_work_schedules,
+                                                    nearest_to_destination_work_schedules:
+                                                        stdcm_nearest_to_destination_work_schedules,
+                                                    partial_pathfinding_result: partial_path,
+                                                    last_reached_operational_point,
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+                                Err(error) => {
+                                    StdcmProgression::Completed(StdcmResponse::InternalError {
+                                        error: error.into(),
+                                    })
+                                }
+                            };
+                            tx.send(api_event)
+                                .expect("the receiver should not be dropped");
+                            (tx, infra, conn, work_schedules)
+                        },
+                    )
+                    .await;
             }
         }
-    };
-    spawn(stream_result_lambda.in_current_span());
-    let stream = tokio_stream::wrappers::UnboundedReceiverStream::new(rx);
+    });
+
     // Set `Content-Encoding` header to `identity` to not compress the payloads
     // This made the lmr live search progress display very laggy because the compression
     // layer compresses 8KB at a time which we do not wish to wait for (8KB of core intermediate
     // payloads is about 50 of them which is a lot to wait for)
     Ok((
         [(header::CONTENT_ENCODING, "identity")],
-        StreamBodyAs::json_nl(stream),
+        StreamBodyAs::json_nl(tokio_stream::wrappers::UnboundedReceiverStream::new(
+            response_rx,
+        )),
     )
         .into_response())
+}
+
+async fn fetch_operational_point(
+    infra: &Infra,
+    conn: &mut DbConnection,
+    op_id: &str,
+) -> OperationalPoint {
+    infra
+        .get_objects(
+            conn,
+            schemas::primitives::ObjectType::OperationalPoint,
+            &vec![op_id.to_owned()],
+        )
+        .await
+        .ok()
+        .and_then(|objs| objs.into_iter().next())
+        .and_then(|obj| serde_json::from_value(obj.railjson).ok())
+         .expect("the operational point ID should exist since it has been sent to `core`, and returned back")
+}
+
+async fn enrich_conflicting_work_schedules(
+    conflicting_work_schedules: Vec<ConflictingWorkSchedule>,
+    work_shedule_map: &HashMap<&str, &WorkSchedule>,
+    infra: &Infra,
+    conn: &mut DbConnection,
+) -> Vec<StdcmConflictingWorkSchedule> {
+    let mut enriched = Vec::with_capacity(conflicting_work_schedules.len());
+    for ConflictingWorkSchedule { id, last_op_id } in conflicting_work_schedules {
+        let ws = work_shedule_map.get(id.as_str()).expect(
+            "the work schedule ID should exist since it has been sent to `core`, and returned back",
+        );
+        let op: OperationalPoint = fetch_operational_point(infra, conn, &last_op_id).await;
+        enriched.push(StdcmConflictingWorkSchedule {
+            start_date_time: ws.start_date_time,
+            end_date_time: ws.end_date_time,
+            last_op: op,
+        });
+    }
+    enriched
 }
 
 struct VirtualTrainRun {
@@ -479,10 +591,6 @@ impl VirtualTrainRun {
         infra: &Infra,
         consists_parameters: &[PhysicsConsistParameters],
     ) -> Result<Vec<Self>> {
-        // TODO : Remove this env var when the backtracking feature is done
-        let enable_backtrack =
-            std::env::var("ENABLE_BACKTRACK").unwrap_or_else(|_| "false".to_string()) == "true";
-
         // Doesn't matter for now, but eventually it will affect tmp speed limits
         let approx_start_time = stdcm_request.get_earliest_step_time();
         let train_schedules_with_consists = itertools::chain!(
@@ -517,11 +625,7 @@ impl VirtualTrainRun {
                                 .unwrap()
                         }),
                         reception_signal: ReceptionSignal::Stop,
-                        can_backtrack: if enable_backtrack {
-                            stdcm_step.duration.is_some()
-                        } else {
-                            false
-                        },
+                        can_backtrack: stdcm_step.pathfinding_item.can_backtrack,
                         ..Default::default()
                     })
                     .collect::<Vec<ScheduleItem>>(),
@@ -612,6 +716,21 @@ pub fn as_core_work_schedule(
     })
 }
 
+/// Convert core_client LastReachedOperationalPoint to StdcmLastReachedOperationalPoint
+fn as_stdcm_last_reached_operational_point(
+    lrop: LastReachedOperationalPoint,
+    operational_point: OperationalPoint,
+) -> StdcmLastReachedOperationalPoint {
+    StdcmLastReachedOperationalPoint {
+        geographic: Geometry::new(Value::Point(vec![
+            lrop.coordinates.lon,
+            lrop.coordinates.lat,
+        ])),
+        arrival_time: lrop.arrival_time,
+        operational_point,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use authz::InfraGrant;
@@ -628,6 +747,7 @@ mod tests {
     use rstest::rstest;
     use schemas::fixtures::simple_rolling_stock;
     use schemas::fixtures::towed_rolling_stock;
+    use schemas::infra::OperationalPointPart;
     use schemas::rolling_stock::LoadingGaugeType;
     use schemas::rolling_stock::RollingResistanceRaw;
     use schemas::train_schedule::Comfort;
@@ -653,6 +773,7 @@ mod tests {
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_towed_rolling_stock;
+    use crate::fixtures::create_work_schedules_fixture_set;
     use crate::views::path::pathfinding::PathfindingItem;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestRequestExt as _;
@@ -785,6 +906,90 @@ mod tests {
             path_item_positions: vec![0, 10],
             backtrack_path_items: Some(vec![]),
         }
+    }
+
+    fn pathfinding_result_partial() -> PathfindingResultSuccess {
+        PathfindingResultSuccess {
+            path: TrainPath {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+            },
+            length: 10,
+            path_item_positions: vec![0, 5],
+            backtrack_path_items: Some(vec![]),
+        }
+    }
+
+    fn last_reached_operational_point() -> LastReachedOperationalPoint {
+        LastReachedOperationalPoint {
+            id: "South_East_station".to_string(),
+            coordinates: core_client::stdcm::ProgressCoordinates { lat: 2.0, lon: 2.0 },
+            arrival_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                .expect("Failed to parse datetime"),
+        }
+    }
+
+    fn new_ses_op() -> OperationalPoint {
+        OperationalPoint {
+            id: "South_East_station".into(),
+            parts: vec![OperationalPointPart {
+                track: "TH1".into(),
+                position: 4400.0,
+                local_track_name: "V1".into(),
+                ..Default::default()
+            }],
+            name: "South_East_station".into(),
+            uic: Some(8788),
+            country_code: "FR".into(),
+            main_code: "SES".into(),
+            secondary_code: Some("BV".into()),
+            is_passenger_station: true,
+            secondary_name: Some("0".into()),
+            ..Default::default()
+        }
+    }
+
+    fn new_ss_op() -> OperationalPoint {
+        OperationalPoint {
+            id: "South_station".into(),
+            parts: vec![OperationalPointPart {
+                track: "TF1".into(),
+                position: 4300.0,
+                local_track_name: "V1".into(),
+                ..Default::default()
+            }],
+            name: "South_station".into(),
+            uic: Some(8766),
+            country_code: "FR".into(),
+            main_code: "SS".into(),
+            secondary_code: Some("BV".into()),
+            is_passenger_station: true,
+            secondary_name: Some("0".into()),
+            ..Default::default()
+        }
+    }
+
+    fn new_work_schedule_changeset(obj_ids: Vec<String>) -> Vec<Changeset<WorkSchedule>> {
+        let track_ranges = vec![schemas::infra::TrackRange::new("d", 100.0, 150.0)];
+        let start_date_time = DateTime::parse_from_rfc3339("2024-03-13 06:00:00Z")
+            .unwrap()
+            .to_utc();
+        let end_date_time = DateTime::parse_from_rfc3339("2024-03-13 12:00:00Z")
+            .unwrap()
+            .to_utc();
+
+        obj_ids
+            .into_iter()
+            .map(|obj_id| {
+                WorkSchedule::changeset()
+                    .start_date_time(start_date_time)
+                    .end_date_time(end_date_time)
+                    .track_ranges(track_ranges.clone())
+                    .obj_id(obj_id)
+                    .work_schedule_type(models::work_schedules::WorkScheduleType::Track)
+            })
+            .collect()
     }
 
     fn simulation_empty_response() -> core_client::simulation::Response {
@@ -1025,7 +1230,7 @@ mod tests {
                     mass.get::<kilogram>() as u64,
                 )
                 .response(StatusCode::OK)
-                .json(core_client::stdcm::ProgressStatus::Done {
+                .json(core_client::stdcm::FinalEvent {
                     result: core_client::stdcm::Response::Success {
                         simulation: simulation_empty_response().success().unwrap(),
                         path: pathfinding_result_success(),
@@ -1171,8 +1376,25 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
-                result: core_client::stdcm::Response::PathNotFound,
+            .json(core_client::stdcm::FinalEvent {
+                result: core_client::stdcm::Response::PathNotFound {
+                    most_blocking_work_schedules: vec![
+                        ConflictingWorkSchedule {
+                            id: "work_schedule_0".to_string(),
+                            last_op_id: "South_East_station".to_string(),
+                        },
+                        ConflictingWorkSchedule {
+                            id: "work_schedule_1".to_string(),
+                            last_op_id: "South_station".to_string(),
+                        },
+                    ],
+                    nearest_to_destination_work_schedules: vec![ConflictingWorkSchedule {
+                        id: "work_schedule_2".to_string(),
+                        last_op_id: "South_East_station".to_string(),
+                    }],
+                    partial_path: Some(pathfinding_result_partial()),
+                    last_reached_operational_point: Some(last_reached_operational_point()),
+                },
             })
             .finish();
 
@@ -1197,18 +1419,53 @@ mod tests {
             None,
             None,
         ));
+        let work_schedules_changeset = new_work_schedule_changeset(vec![
+            "work_schedule_0".to_string(),
+            "work_schedule_1".to_string(),
+            "work_schedule_2".to_string(),
+        ]);
+        let (_, work_schedules) =
+            create_work_schedules_fixture_set(&mut db_pool.get_ok(), work_schedules_changeset)
+                .await;
+        let (most_blocking_work_schedules, nearest_to_destination_work_schedules) =
+            work_schedules.split_at(2);
+        let stdcm_most_blocking_work_schedules = most_blocking_work_schedules
+            .iter()
+            .zip(vec![new_ses_op(), new_ss_op()])
+            .map(|(ws, op)| StdcmConflictingWorkSchedule {
+                start_date_time: ws.start_date_time,
+                end_date_time: ws.end_date_time,
+                last_op: op,
+            })
+            .collect();
+        let stdm_nearest_blocking_work_schedules = nearest_to_destination_work_schedules
+            .iter()
+            .map(|ws| StdcmConflictingWorkSchedule {
+                start_date_time: ws.start_date_time,
+                end_date_time: ws.end_date_time,
+                last_op: new_ses_op(),
+            })
+            .collect();
 
         let stdcm_response: StdcmProgression = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .by_user(user.as_ref())
-            .json(&get_stdcm_payload(None, consist_schedule))
+            .json(&get_stdcm_payload(Some(1), consist_schedule))
             .await
             .assert_status_ok()
             .last_jsonl();
 
         assert_eq!(
             stdcm_response,
-            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
+            StdcmProgression::Completed(StdcmResponse::PathNotFound {
+                most_blocking_work_schedules: stdcm_most_blocking_work_schedules,
+                nearest_to_destination_work_schedules: stdm_nearest_blocking_work_schedules,
+                partial_pathfinding_result: Some(pathfinding_result_partial()),
+                last_reached_operational_point: Some(as_stdcm_last_reached_operational_point(
+                    last_reached_operational_point(),
+                    new_ses_op()
+                )),
+            })
         );
     }
 
@@ -1217,15 +1474,15 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
                 best_travel_time: 1,
             })
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
                 best_travel_time: 5,
             })
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1298,16 +1555,33 @@ mod tests {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 0.0, lon: 0.0 },
                 best_travel_time: 1,
             })
-            .json(core_client::stdcm::ProgressStatus::InProgress {
+            .json(core_client::stdcm::UpdateEvent {
                 point: core_client::stdcm::ProgressCoordinates { lat: 1.0, lon: 1.0 },
                 best_travel_time: 5,
             })
-            .json(core_client::stdcm::ProgressStatus::Done {
-                result: core_client::stdcm::Response::PathNotFound,
+            .json(core_client::stdcm::FinalEvent {
+                result: core_client::stdcm::Response::PathNotFound {
+                    most_blocking_work_schedules: vec![
+                        ConflictingWorkSchedule {
+                            id: "work_schedule_0".to_string(),
+                            last_op_id: "South_station".to_string(),
+                        },
+                        ConflictingWorkSchedule {
+                            id: "work_schedule_1".to_string(),
+                            last_op_id: "South_East_station".to_string(),
+                        },
+                    ],
+                    nearest_to_destination_work_schedules: vec![ConflictingWorkSchedule {
+                        id: "work_schedule_2".to_string(),
+                        last_op_id: "South_station".to_string(),
+                    }],
+                    partial_path: Some(pathfinding_result_partial()),
+                    last_reached_operational_point: Some(last_reached_operational_point()),
+                },
             })
             .finish();
 
@@ -1332,11 +1606,38 @@ mod tests {
             None,
             None,
         ));
+        let work_schedules_changeset = new_work_schedule_changeset(vec![
+            "work_schedule_0".to_string(),
+            "work_schedule_1".to_string(),
+            "work_schedule_2".to_string(),
+        ]);
+        let (_, work_schedules) =
+            create_work_schedules_fixture_set(&mut db_pool.get_ok(), work_schedules_changeset)
+                .await;
+        let (most_blocking_work_schedules, nearest_to_destination_work_schedules) =
+            work_schedules.split_at(2);
+        let stdcm_most_blocking_work_schedules = most_blocking_work_schedules
+            .iter()
+            .zip(vec![new_ss_op(), new_ses_op()])
+            .map(|(ws, op)| StdcmConflictingWorkSchedule {
+                start_date_time: ws.start_date_time,
+                end_date_time: ws.end_date_time,
+                last_op: op,
+            })
+            .collect();
+        let stdcm_nearest_blocking_work_schedules = nearest_to_destination_work_schedules
+            .iter()
+            .map(|ws| StdcmConflictingWorkSchedule {
+                start_date_time: ws.start_date_time,
+                end_date_time: ws.end_date_time,
+                last_op: new_ss_op(),
+            })
+            .collect();
 
         let stdcm_response: Vec<StdcmProgression> = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .by_user(user.as_ref())
-            .json(&get_stdcm_payload(None, consist_schedule))
+            .json(&get_stdcm_payload(Some(1), consist_schedule))
             .await
             .assert_status_ok()
             .jsonl();
@@ -1358,7 +1659,15 @@ mod tests {
         );
         assert_eq!(
             stdcm_response[2].clone(),
-            StdcmProgression::Completed(StdcmResponse::PathNotFound {})
+            StdcmProgression::Completed(StdcmResponse::PathNotFound {
+                most_blocking_work_schedules: stdcm_most_blocking_work_schedules,
+                nearest_to_destination_work_schedules: stdcm_nearest_blocking_work_schedules,
+                partial_pathfinding_result: Some(pathfinding_result_partial()),
+                last_reached_operational_point: Some(as_stdcm_last_reached_operational_point(
+                    last_reached_operational_point(),
+                    new_ses_op()
+                )),
+            }),
         );
     }
 
@@ -1495,7 +1804,7 @@ mod tests {
             .finish();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1602,7 +1911,7 @@ mod tests {
             .finish();
         core.stub("/stdcm")
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
@@ -1736,7 +2045,7 @@ mod tests {
                 comfort_acceleration.get::<meter_per_second_squared>(),
             )
             .response(StatusCode::OK)
-            .json(core_client::stdcm::ProgressStatus::Done {
+            .json(core_client::stdcm::FinalEvent {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),

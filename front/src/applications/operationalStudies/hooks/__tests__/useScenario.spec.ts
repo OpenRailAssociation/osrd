@@ -51,6 +51,7 @@ const mockScenario = {
   id: 42,
   infra_id: 10,
   timetable_id: 100,
+  timetable_type: 'CALENDAR',
   name: 'Test Scenario',
 };
 
@@ -134,6 +135,24 @@ describe('useScenario', () => {
     expect(mocks.linkTrainScheduleSets).toHaveBeenCalledWith({
       id: mockScenario.timetable_id,
       body: { train_schedule_set_ids: [999] },
+    });
+  });
+
+  it('should create the sandbox with the timetable type of the scenario', async () => {
+    mocks.useGetScenario.mockReturnValue({
+      data: { ...mockScenario, timetable_type: 'HOURLY' },
+      isError: false,
+      error: undefined,
+    });
+    mocks.useGetTrainScheduleSets.mockReturnValue({
+      currentData: [{ id: 10, name: 'Named set' }],
+    });
+
+    const { result } = renderHook(() => useScenario());
+
+    await waitFor(() => expect(result.current.sandboxId).toBe(999));
+    expect(mocks.postTrainScheduleSets).toHaveBeenCalledWith({
+      trainScheduleSetForm: expect.objectContaining({ timetable_type: 'HOURLY' }),
     });
   });
 

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { Train } from 'reducers/osrdconf/types';
 import { MAX_DURATION_MS } from 'utils/duration';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
@@ -21,11 +22,11 @@ import ExtraOccurrenceForm from './ExtraOccurrenceForm';
 import ExtraOccurrenceRow from './ExtraOccurrenceRow';
 import { ServiceChangeWarningDialog } from './ServiceChangeWarningDialog';
 
-export type ServiceTimingError = 'TOO_LOW' | 'TOO_HIGH' | null;
+export type ServiceTimingError = 'tooLow' | 'tooHigh' | null;
 
 export function computeServiceTimingError(serviceTiming?: number): ServiceTimingError {
-  if (!serviceTiming) return 'TOO_LOW';
-  if (serviceTiming > MAX_DURATION_MS) return 'TOO_HIGH';
+  if (!serviceTiming) return 'tooLow';
+  if (serviceTiming > MAX_DURATION_MS) return 'tooHigh';
   return null;
 }
 
@@ -60,6 +61,7 @@ export default function TrainServiceForm({
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const { scenario } = useScenarioContext();
+  const timetableType = scenario.timetable_type;
 
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
 
@@ -73,15 +75,25 @@ export default function TrainServiceForm({
   const extraOccurrences =
     train.paced?.exceptions?.filter((exp) => exp.occurrence_index === undefined) ?? [];
 
-  const serviceIntervalError = useMemo(
-    () => (isPacedTrain ? computeServiceTimingError(fields.service_interval) : null),
-    [isPacedTrain, fields.service_interval]
-  );
+  const intervalHasChanged = fields.service_interval !== fieldsFromTrain.service_interval;
+  const windowHasChanged = fields.service_window !== fieldsFromTrain.service_window;
 
-  const serviceWindowError = useMemo(
-    () => (isPacedTrain ? computeServiceTimingError(fields.service_window) : null),
-    [isPacedTrain, fields.service_window]
-  );
+  const intervalOutsideWindowError =
+    fields.service_interval &&
+    fields.service_window &&
+    fields.service_interval > fields.service_window
+      ? ('intervalOutsideWindow' as const)
+      : null;
+
+  const serviceIntervalError = useMemo(() => {
+    if (!isPacedTrain || !intervalHasChanged) return null;
+    return computeServiceTimingError(fields.service_interval) ?? intervalOutsideWindowError;
+  }, [isPacedTrain, fields.service_interval, intervalHasChanged, intervalOutsideWindowError]);
+
+  const serviceWindowError = useMemo(() => {
+    if (!isPacedTrain || !windowHasChanged) return null;
+    return computeServiceTimingError(fields.service_window) ?? intervalOutsideWindowError;
+  }, [isPacedTrain, fields.service_window, intervalHasChanged, intervalOutsideWindowError]);
 
   const erroneousFields = useMemo(
     () =>
@@ -131,18 +143,20 @@ export default function TrainServiceForm({
         </div>
       ) : (
         <div className="train-service-form">
-          <div className="train-schedule-kind">
-            <Switch
-              id="train-header-schedule-kind-toggle"
-              dataTestId="train-header-schedule-kind-toggle"
-              checked={!fields.is_unique}
-              label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
-              size="sm"
-              onChange={() => {
-                onFieldImmediateChange('is_unique', !fields.is_unique);
-              }}
-            />
-          </div>
+          {timetableType !== 'HOURLY' && (
+            <div className="train-schedule-kind">
+              <Switch
+                id="train-header-schedule-kind-toggle"
+                dataTestId="train-header-schedule-kind-toggle"
+                checked={!fields.is_unique}
+                label={t('manageTrainSchedule.trainHeader.serviceModelTrain')}
+                size="sm"
+                onChange={() => {
+                  onFieldImmediateChange('is_unique', !fields.is_unique);
+                }}
+              />
+            </div>
+          )}
           {isPacedTrain && (
             <>
               <div className="train-service-interval" data-testid="train-header-service-cadence">
@@ -159,10 +173,9 @@ export default function TrainServiceForm({
                     serviceIntervalError
                       ? {
                           status: 'error',
-                          message:
-                            serviceIntervalError === 'TOO_HIGH'
-                              ? t('manageTrainSchedule.errorMessages.intervalTooHigh')
-                              : t('manageTrainSchedule.errorMessages.intervalTooLow'),
+                          message: t(
+                            `manageTrainSchedule.errorMessages.pacedTrainInterval.${serviceIntervalError}`
+                          ),
                         }
                       : undefined
                   }
@@ -176,16 +189,15 @@ export default function TrainServiceForm({
                   units={['h', 'm']}
                   padChar="0"
                   label={t('manageTrainSchedule.trainHeader.form.serviceWindow')}
-                  value={fields.service_window ?? 2 * 3_600_000} // 2h00m
+                  value={fields.service_window ?? getDefaultPacedTrainTimeWindow(timetableType).ms}
                   onChange={(ms: number) => onFieldImmediateChange('service_window', ms)}
                   statusWithMessage={
                     serviceWindowError
                       ? {
                           status: 'error',
-                          message:
-                            serviceWindowError === 'TOO_HIGH'
-                              ? t('manageTrainSchedule.errorMessages.timeWindowTooHigh')
-                              : t('manageTrainSchedule.errorMessages.timeWindowTooLow'),
+                          message: t(
+                            `manageTrainSchedule.errorMessages.pacedTrainTimeWindow.${serviceWindowError}`
+                          ),
                         }
                       : undefined
                   }
@@ -230,7 +242,7 @@ export default function TrainServiceForm({
               .map((occurrence) => (
                 <ExtraOccurrenceRow
                   key={`${occurrence.id}-${occurrence.key}`}
-                  startTime={parseStartTime(occurrence.start_time!.value, scenario.timetable_type)}
+                  startTime={parseStartTime(occurrence.start_time!.value, timetableType)}
                   onDelete={() => {
                     // TODO_EXCEPTION: remove this when the exception migration will be done
                     if (occurrence.id !== null && occurrence.id !== undefined) {

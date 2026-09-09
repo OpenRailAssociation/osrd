@@ -17,3 +17,5 @@ export const marginsUndefined = {
   calculatedMargin: undefined,
   diffMargins: undefined,
 } as const;
+
+export const ONE_DAY = new Duration({ hours: 24 });

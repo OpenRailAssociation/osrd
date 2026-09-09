@@ -10,14 +10,14 @@ import {
   type TestStep,
 } from '@playwright/test/reporter';
 
-import { formatAnsiMessageToHtml } from '.';
-import { logger } from '../logging-fixture';
+import { logger } from '../logging-fixture.ts';
+import { formatAnsiMessageToHtml } from './index.ts';
 import type {
   PersonalizedReport,
   PersonalizedTest,
   PersonalizedTestState,
   ReporterOptions,
-} from './playwright-report-types';
+} from './playwright-report-types.ts';
 
 // This class generates a personalized JSON report from Playwright test execution.
 class GenerateReport implements Reporter {

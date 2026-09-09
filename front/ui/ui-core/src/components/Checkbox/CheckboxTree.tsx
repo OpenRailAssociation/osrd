@@ -28,10 +28,7 @@ const CheckboxesTree = ({
   onChange,
   computeNewItemsTree,
 }: CheckboxesTreeProps) => {
-  const handleClick = (
-    e: React.MouseEvent<HTMLInputElement, MouseEvent>,
-    item: CheckboxTreeItem
-  ) => {
+  const handleClick = (e: React.MouseEvent<HTMLInputElement>, item: CheckboxTreeItem) => {
     const newItems = computeNewItemsTree
       ? computeNewItemsTree(items, item)
       : defaultComputeNewItemsTree(items, item);

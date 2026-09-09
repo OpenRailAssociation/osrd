@@ -26,7 +26,7 @@ const AddNewCard = ({ testId, className, modalComponent, item, onOpenModal }: Ad
   return (
     <div
       data-testid={testId}
-      className={`${className}`}
+      className={className}
       {...(!newProjectStudyScenarioAllowed && { 'aria-disabled': true })}
       role="button"
       tabIndex={0}

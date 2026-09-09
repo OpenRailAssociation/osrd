@@ -10,6 +10,7 @@ use fga::client::UserOrUserset;
 use futures::TryStreamExt as _;
 use models::Group;
 use models::Infra;
+use models::Project;
 use models::User;
 use models::prelude::*;
 use std::collections::HashSet;
@@ -18,6 +19,7 @@ struct ExistingEntities {
     users: HashSet<i64>,
     groups: HashSet<i64>,
     infras: HashSet<i64>,
+    projects: HashSet<i64>,
 }
 
 pub async fn run_garbage_collector(
@@ -124,10 +126,17 @@ async fn load_existing_entities(
         .map(|infra| infra.id)
         .collect();
 
+    let projects = Project::list(conn, SelectionSettings::new())
+        .await?
+        .into_iter()
+        .map(|project| project.id)
+        .collect();
+
     Ok(ExistingEntities {
         users,
         groups,
         infras,
+        projects,
     })
 }
 
@@ -160,12 +169,37 @@ where
     })
 }
 
+fn is_orphaned_project_relation<R>(
+    untyped: &UntypedTuple,
+    relation: R,
+    entities: &ExistingEntities,
+) -> Option<bool>
+where
+    R: fga::model::Relation<User = authz::User, Object = authz::Project>,
+{
+    let (user, project) = untyped.as_relation(relation)?;
+    if !entities.projects.contains(&project.0) {
+        return Some(true);
+    }
+    Some(match user {
+        UserOrUserset::User(user) => !entities.users.contains(&user.0),
+        UserOrUserset::Userset(userset) => is_userset_orphaned(&userset, entities),
+    })
+}
+
 /// Checks if a tuple references orphaned entities
 fn is_tuple_orphaned(untyped: &UntypedTuple, entities: &ExistingEntities) -> bool {
     // Infra relations
     if let Some(is_orphaned) = is_orphaned_infra_relation(untyped, authz::Infra::reader(), entities)
         .or_else(|| is_orphaned_infra_relation(untyped, authz::Infra::writer(), entities))
         .or_else(|| is_orphaned_infra_relation(untyped, authz::Infra::owner(), entities))
+    {
+        return is_orphaned;
+    }
+
+    // Project relations
+    if let Some(is_orphaned) =
+        is_orphaned_project_relation(untyped, authz::Project::owner(), entities)
     {
         return is_orphaned;
     }
@@ -210,6 +244,7 @@ fn is_tuple_orphaned(untyped: &UntypedTuple, entities: &ExistingEntities) -> boo
 mod tests {
     use super::*;
     use crate::fixtures::create_empty_infra;
+    use crate::fixtures::create_project;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
     use models::SearchJourneyEnvironment;
@@ -336,6 +371,12 @@ mod tests {
             let orphan = create_empty_infra(conn).await;
             (authz::Infra(existing.id), authz::Infra(orphan.id))
         };
+        let (existing_project, orphan_project) = {
+            let conn = &mut db_pool.get_ok();
+            let existing = create_project(conn, "existing_project").await;
+            let orphan = create_project(conn, "orphan_project").await;
+            (authz::Project(existing.id), authz::Project(orphan.id))
+        };
         let existing_user = authz::User(
             models::User::register(
                 db_pool.get_ok(),
@@ -379,6 +420,17 @@ mod tests {
                     .tuple(authz::Group::member().userset(&orphan_group), &fga_infra),
             )
             .write(&authz::Infra::reader().tuple(&existing_user, &orphan_infra))
+            .write(&authz::Project::owner().tuple(&existing_user, &existing_project))
+            .write(&authz::Project::owner().tuple(&orphan_user, &existing_project))
+            .write(&authz::Project::owner().tuple(
+                authz::Group::member().userset(&existing_group),
+                &existing_project,
+            ))
+            .write(&authz::Project::owner().tuple(
+                authz::Group::member().userset(&orphan_group),
+                &existing_project,
+            ))
+            .write(&authz::Project::owner().tuple(&existing_user, &orphan_project))
             .execute()
             .await
             .unwrap();
@@ -393,20 +445,35 @@ mod tests {
                 .await
                 .unwrap();
             Infra::delete_static(conn, orphan_infra.0).await.unwrap();
+            Project::delete_static(conn, orphan_project.0)
+                .await
+                .unwrap();
         }
 
-        // Run GC — 2 orphaned by user/group deletion + 1 orphaned by infra deletion
+        // Run GC:
+        // 4 orphaned by user/group deletion
+        // 1 orphaned by infra deletion
+        // 1 orphaned by project deletion
         let deleted = delete_orphaned_tuples(&client, &db_pool).await.unwrap();
-        assert_eq!(deleted, 3, "should delete exactly the 3 orphaned tuples");
+        assert_eq!(deleted, 6, "should delete exactly the 6 orphaned tuples");
 
         // Existing tuples should remain
+        // Existing user
         assert!(
             client
                 .tuple_exists(authz::Infra::reader().tuple(&existing_user, &fga_infra))
                 .await
                 .unwrap(),
-            "tuple for existing user should remain"
+            "tuple for existing user related to infra should remain"
         );
+        assert!(
+            client
+                .tuple_exists(authz::Project::owner().tuple(&existing_user, &existing_project))
+                .await
+                .unwrap(),
+            "tuple for existing user related to project should remain"
+        );
+        // Existing group
         assert!(
             client
                 .tuple_exists(
@@ -415,17 +482,36 @@ mod tests {
                 )
                 .await
                 .unwrap(),
-            "tuple for existing group should remain"
+            "tuple for existing group related to infra should remain"
+        );
+        assert!(
+            client
+                .tuple_exists(authz::Project::owner().tuple(
+                    authz::Group::member().userset(&existing_group),
+                    &existing_project
+                ))
+                .await
+                .unwrap(),
+            "tuple for existing group related to project should remain"
         );
 
         // Orphaned tuples should be gone
+        // Orphan user
         assert!(
             !client
                 .tuple_exists(authz::Infra::reader().tuple(&orphan_user, &fga_infra))
                 .await
                 .unwrap(),
-            "tuple for deleted user should be removed"
+            "tuple for deleted user related to infra should be removed"
         );
+        assert!(
+            !client
+                .tuple_exists(authz::Project::owner().tuple(&orphan_user, &existing_project))
+                .await
+                .unwrap(),
+            "tuple for deleted user related to project should be removed"
+        );
+        // Orphan group
         assert!(
             !client
                 .tuple_exists(
@@ -434,14 +520,33 @@ mod tests {
                 )
                 .await
                 .unwrap(),
-            "tuple for deleted group should be removed"
+            "tuple for deleted group related to should be removed"
         );
+        assert!(
+            !client
+                .tuple_exists(authz::Project::owner().tuple(
+                    authz::Group::member().userset(&orphan_group),
+                    &existing_project,
+                ))
+                .await
+                .unwrap(),
+            "tuple for deleted group related to project should be removed"
+        );
+        // Orphan infra
         assert!(
             !client
                 .tuple_exists(authz::Infra::reader().tuple(&existing_user, &orphan_infra))
                 .await
                 .unwrap(),
             "tuple for deleted infra should be removed"
+        );
+        // Orphan project
+        assert!(
+            !client
+                .tuple_exists(authz::Project::owner().tuple(&existing_user, &orphan_project))
+                .await
+                .unwrap(),
+            "tuple for deleted project should be removed"
         );
     }
 }

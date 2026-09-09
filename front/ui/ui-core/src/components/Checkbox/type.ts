@@ -1,9 +1,9 @@
 import { type CheckboxProps } from './Checkbox';
 
 export enum CheckboxState {
-  UNCHECKED,
-  CHECKED,
-  INDETERMINATE,
+  UNCHECKED = 0,
+  CHECKED = 1,
+  INDETERMINATE = 2,
 }
 
 export type ItemStates = Record<number, CheckboxState>;

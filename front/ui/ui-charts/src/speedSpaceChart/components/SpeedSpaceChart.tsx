@@ -241,7 +241,7 @@ const SpeedSpaceChart = ({
       style={{
         width: `${width}px`,
         height: `${height}px`,
-        backgroundColor: `${backgroundColor}`,
+        backgroundColor,
         position: 'relative',
       }}
       tabIndex={0}

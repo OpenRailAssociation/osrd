@@ -2,6 +2,8 @@ import type { PathItemLocation, PostSimilarTrainsApiResponse } from 'common/api/
 import { type MarkerInformation, MARKER_TYPE } from 'common/Map/components/ItineraryMarkers';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
+import { StdcmStopTypes } from '../types';
+
 export const getTimesInfoFromDate = (date?: Date | null) =>
   date
     ? {
@@ -18,7 +20,10 @@ export const getTimesInfoFromDate = (date?: Date | null) =>
     : undefined;
 
 type ExtractedMarkerInfo = Required<Omit<MarkerInformation, 'metadata'>>;
-export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): ExtractedMarkerInfo[] =>
+export const extractMarkersInfo = (
+  pathSteps: StdcmPathStep[],
+  backtrackPathItemIndexes: number[] = []
+): ExtractedMarkerInfo[] =>
   pathSteps.reduce((acc: ExtractedMarkerInfo[], step, index) => {
     if (!step.operationalPoint) return acc;
 
@@ -44,6 +49,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): ExtractedMarkerI
       },
       coordinates: step.operationalPoint.coordinates,
       name: step.operationalPoint.name,
+      isBackTrack: backtrackPathItemIndexes.includes(index),
     });
 
     return acc;
@@ -118,3 +124,8 @@ export const stdcmPathStepToPathItemLocation = (
     },
   };
 };
+
+export const canPathStepBacktrack = (pathStep: StdcmPathStep): boolean =>
+  pathStep.isVia &&
+  (pathStep.stopType === StdcmStopTypes.SERVICE_STOP ||
+    pathStep.stopType === StdcmStopTypes.DRIVER_SWITCH);

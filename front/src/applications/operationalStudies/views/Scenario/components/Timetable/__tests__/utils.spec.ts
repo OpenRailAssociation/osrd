@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import type { RoundTrips, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
+import { mapBy } from 'utils/types';
 
 import { buildTimetableExportPayload, computeLatestMidnight } from '../utils';
 
@@ -13,7 +14,7 @@ const buildTrainSchedule = (id: number): TrainScheduleResponse =>
 
 describe('buildTimetableExportPayload', () => {
   it('includes forced one-way round trips for selected train schedules', () => {
-    const trainSchedules = [buildTrainSchedule(12)];
+    const trainSchedules = mapBy([buildTrainSchedule(12)], 'id');
     const roundTrips: RoundTrips = { one_ways: [12], round_trips: [] };
 
     const payload = buildTimetableExportPayload(trainSchedules, [12], roundTrips);
@@ -26,16 +27,20 @@ describe('buildTimetableExportPayload', () => {
     const trainB = buildTrainSchedule(42);
     const roundTrips: RoundTrips = { round_trips: [[21, 42]] };
 
-    const payloadWithBoth = buildTimetableExportPayload([trainA, trainB], [21, 42], roundTrips);
+    const payloadWithBoth = buildTimetableExportPayload(
+      mapBy([trainA, trainB], 'id'),
+      [21, 42],
+      roundTrips
+    );
     expect(payloadWithBoth.round_trips).toEqual([[0, 1]]);
 
-    const payloadWithSingle = buildTimetableExportPayload([trainA], [21], roundTrips);
+    const payloadWithSingle = buildTimetableExportPayload(mapBy([trainA], 'id'), [21], roundTrips);
     expect(payloadWithSingle.round_trips).toBeUndefined();
   });
 
   it('handles train schedule one-ways', () => {
-    const trainSchedule = buildTrainSchedule(7);
-    const payload = buildTimetableExportPayload([trainSchedule], [7], {
+    const trainSchedules = mapBy([buildTrainSchedule(7)], 'id');
+    const payload = buildTimetableExportPayload(trainSchedules, [7], {
       one_ways: [7],
     });
 

@@ -38,7 +38,7 @@ export type IntervalItemBaseProps<T> = {
    * Event on click on a data item
    */
   onClick?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    e: React.MouseEvent<HTMLDivElement>,
     item: LinearMetadataItem<T>,
     index: number,
     point: number // point on the linear metadata
@@ -53,7 +53,7 @@ export type IntervalItemBaseProps<T> = {
    * Event on click on a data item
    */
   onDoubleClick?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    e: React.MouseEvent<HTMLDivElement>,
     item: LinearMetadataItem<T>,
     index: number,
     point: number // point on the linear metadata
@@ -63,7 +63,7 @@ export type IntervalItemBaseProps<T> = {
    * Event when mouse enter into data item
    */
   onMouseEnter?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    e: React.MouseEvent<HTMLDivElement>,
     item: LinearMetadataItem<T>,
     index: number,
     point: number // point on the linear metadata
@@ -73,7 +73,7 @@ export type IntervalItemBaseProps<T> = {
    * Event when mouse over a data item
    */
   onMouseOver?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    e: React.MouseEvent<HTMLDivElement>,
     item: LinearMetadataItem<T>,
     index: number,
     point: number // point on the linear metadata

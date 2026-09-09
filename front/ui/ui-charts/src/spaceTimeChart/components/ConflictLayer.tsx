@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { indexToColor } from '../../common/helpers/colors';
 import { drawAliasedRect } from '../../common/helpers/utils';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
@@ -84,7 +84,7 @@ export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {
 
         const pickingElement: ConflictPickingElement = { type: 'conflict', conflictIndex };
         const index = registerPickingElement(pickingElement);
-        const color = hexToRgb(indexToColor(index));
+        const color = indexToColor(index);
 
         drawAliasedRect(
           imageData,

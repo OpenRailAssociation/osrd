@@ -41,13 +41,13 @@ export type LinearMetadataDatavizProps<T> = IntervalItemBaseProps<T> & {
   /**
    * Event when mouse leaves data item
    */
-  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
 
   /**
    * Event when the mouse move on a data item
    */
   onMouseMove?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    e: React.MouseEvent<HTMLDivElement>,
     item: LinearMetadataItem<T>,
     index: number,
     point: number // point on the linear metadata
