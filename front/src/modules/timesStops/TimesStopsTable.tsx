@@ -303,7 +303,8 @@ const TimesStopsTable = ({
       isScheduledOP(row) || !!row.requestedTheoreticalMargin
         ? row.requestedTheoreticalMargin
         : null;
-    const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
+    const isInherited =
+      !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin || !!row.baseArrival;
 
     return (
       <div data-testid="requested-theoretical-margin">
