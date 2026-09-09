@@ -18,7 +18,7 @@ import {
 } from 'utils/duration';
 
 import type { OptimisticEdit, PendingEdit, TimesStopsRowNew } from '../types';
-import { receptionSignalToSignalBooleans, truncateStartTimeToSecond } from './utils';
+import { receptionSignalToSignalBooleans, getTruncatedToSecondOffset } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -149,12 +149,7 @@ export const scheduleStateToApiFields = (
   startTime: StartTime
 ): { arrival: string | null; stop_for: string | null } => ({
   arrival:
-    state.arrival !== null
-      ? subtractStartTime(
-          truncateStartTimeToSecond(state.arrival),
-          truncateStartTimeToSecond(startTime)
-        ).toISOString()
-      : null,
+    state.arrival !== null ? subtractStartTime(state.arrival, startTime).toISOString() : null,
   stop_for: state.stop !== null ? state.stop.toISOString() : null,
 });
 
@@ -248,7 +243,7 @@ export const propagationToEdits = (
     if (!item?.arrival) return [];
     const newArrival = addDurationToStartTime(
       result.updatedStartTime,
-      Duration.parse(item.arrival)
+      getTruncatedToSecondOffset(item.arrival)
     );
     if (row.requestedArrival && startTimeToMs(newArrival) === startTimeToMs(row.requestedArrival))
       return [];

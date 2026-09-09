@@ -16,7 +16,7 @@ import type {
 } from '../types';
 import { cascadeArrivals } from './arrivalCascade';
 import { propagateStopDuration } from './stopDurationPropagation';
-import { truncateStartTimeToSecond, formatSignedDelta } from './utils';
+import { formatSignedDelta, getTruncatedToSecondStartTime } from './utils';
 
 const isOriginArrivalUpdate = (
   update: Exclude<CellUpdate, BatchTimesUpdate>
@@ -29,7 +29,7 @@ const toHmsDuration = (date: StartTime) =>
         minutes: date.getMinutes(),
         seconds: date.getSeconds(),
       })
-    : new Duration({ seconds: Math.floor(date.total('second')) });
+    : date;
 
 // Delta based on HH:mm:ss only. Ignores the calendar day.
 const computeDelta = (oldValue: StartTime | null, newValue: StartTime | null): Duration | null => {
@@ -45,7 +45,7 @@ const computeDeltaForPropagationMode = (
   mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
     ? computeDelta(oldValue, newValue)
     : oldValue && newValue
-      ? subtractStartTime(truncateStartTimeToSecond(newValue), truncateStartTimeToSecond(oldValue))
+      ? subtractStartTime(newValue, oldValue)
       : null;
 
 export const formatPropagationDeltaLabelByMode = (
@@ -83,10 +83,7 @@ const propagateFromEditedPoint = (
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
-  const currentStartTime =
-    timetableType === 'CALENDAR'
-      ? new Date(selectedTrain.start_time)
-      : new Duration({ milliseconds: selectedTrain.start_time });
+  const currentStartTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
   const isFromDeparture = direction === 'fromDeparture';
   // For fromDeparture: the train's start time shifts by delta. For toDestination: it stays the same.
   const newStartTime = isFromDeparture
@@ -114,10 +111,7 @@ const propagateShiftAll = (
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {
-  const currentStartTime =
-    timetableType === 'CALENDAR'
-      ? new Date(selectedTrain.start_time)
-      : new Duration({ milliseconds: selectedTrain.start_time });
+  const currentStartTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule: selectedTrain.schedule ?? [],
@@ -174,11 +168,7 @@ export const propagateTime = (
         'fromDeparture',
         timetableType
       );
-    // Keep the computed start time: the typed value's day is only inferred from HH:mm:ss
-    // Truncate the sub-second part inherited from start_time.
-    return result
-      ? { ...result, updatedStartTime: truncateStartTimeToSecond(result.updatedStartTime) }
-      : result;
+    return result;
   }
 
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
