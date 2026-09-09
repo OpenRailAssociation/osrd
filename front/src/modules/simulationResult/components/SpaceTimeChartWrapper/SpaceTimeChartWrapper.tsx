@@ -20,7 +20,6 @@ import {
   isOccupancyPickingElement,
   isBrokenLinkingPickingElement,
   isLinkingPickingElement,
-  type Track,
   DEFAULT_ZOOM_MS_PER_PX,
   timeScaleToZoomValue,
   PeriodicMarker,
@@ -89,6 +88,7 @@ import getPanelOccurrenceCounts from './helpers/getPanelOccurrenceCounts';
 import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
 import type { ExistingLinking } from './helpers/linkings';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
+import { extractLocalTrackName } from './helpers/sortTracks';
 import { getOccupancyBlocks } from './helpers/utils';
 import {
   parseOccupancyZonePathId,
@@ -137,7 +137,7 @@ type SpaceTimeChartWrapperBaseProps = {
     waypointId: string,
     trainId: TrainId,
     zone: MovableOccupancyZone,
-    track: Track
+    localTrackName: string | null
   ) => void;
   selectedProjectionId: TrainId;
   trainSchedulesWithDetails?: TrainScheduleWithDetails[];
@@ -587,7 +587,12 @@ const SpaceTimeChartWrapper = ({
     const zone = waypoint.zones!.find(({ pathId }) => pathId === draggingPathId)!;
     const dragOverTrack = waypoint.tracks!.find((tr) => tr.id === dragOverTrackId);
     if (dragOverTrack && zone.trackId !== dragOverTrackId && onOccupancyZoneDrop) {
-      onOccupancyZoneDrop(waypointId, draggingOccupancyZoneBaseTrainId, zone, dragOverTrack);
+      onOccupancyZoneDrop(
+        waypointId,
+        draggingOccupancyZoneBaseTrainId,
+        zone,
+        extractLocalTrackName(dragOverTrack)
+      );
     }
     setDraggingOccupancyZoneRef(null);
   }, [
