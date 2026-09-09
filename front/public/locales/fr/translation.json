@@ -854,14 +854,14 @@
         "title": "Écraser les heures demandées"
       },
       "requestedArrival": {
-        "fillEmpty_one": "Appliquer l'arrivée calculée à {{count}} point de passage non planifié",
-        "fillEmpty_other": "Appliquer les arrivées calculées à {{count}} points de passage non planifiés",
+        "fillEmpty_one": "Appliquer l'arrivée calculée à {{count}} point de passage non horairisé",
+        "fillEmpty_other": "Appliquer les arrivées calculées à {{count}} points de passage non horairisés",
         "overwriteAll_one": "Appliquer l'arrivée calculée à {{count}} point de passage",
         "overwriteAll_other": "Appliquer les arrivées calculées à {{count}} points de passage"
       },
       "requestedDeparture": {
-        "fillEmpty_one": "Appliquer le départ calculé à {{count}} point de passage non planifié",
-        "fillEmpty_other": "Appliquer les départs calculés à {{count}} points de passage non planifiés",
+        "fillEmpty_one": "Appliquer le départ calculé à {{count}} point de passage non horairisé",
+        "fillEmpty_other": "Appliquer les départs calculés à {{count}} points de passage non horairisés",
         "overwriteAll_one": "Appliquer le départ calculé à {{count}} point de passage",
         "overwriteAll_other": "Appliquer les départs calculés à {{count}} points de passage"
       }
