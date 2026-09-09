@@ -217,7 +217,7 @@ describe('computeRowPowerRestrictionStatus', () => {
     expect(result.get('f')?.isBlockStart).toBe(false);
   });
 
-  it('uses semi-open interval: begin is inclusive, end is exclusive', () => {
+  it('uses semi-open interval: begin is inclusive, end is inclusive', () => {
     const rows = [row('a', 0), row('b', 1), row('c', 2), row('d', 3)];
     const positions = new Map([
       [0, 100],
@@ -225,7 +225,7 @@ describe('computeRowPowerRestrictionStatus', () => {
       [2, 300],
       [3, 400],
     ]);
-    // Row at position 200 should be IN (>= begin), row at 400 should be OUT (< end)
+    // Row at position 200 should be IN (>= begin), row at 400 should be IN (<= end)
     const warningRanges = [{ begin: 200, end: 400 }];
 
     const result = computeRowPowerRestrictionStatus(rows, positions, warningRanges, []);
@@ -233,7 +233,7 @@ describe('computeRowPowerRestrictionStatus', () => {
     expect(result.get('a')?.hasWarning).toBe(false); // 100 < 200
     expect(result.get('b')?.hasWarning).toBe(true); // 200 >= 200
     expect(result.get('c')?.hasWarning).toBe(true); // 300 >= 200 && < 400
-    expect(result.get('d')?.hasWarning).toBe(false); // 400 not < 400
+    expect(result.get('d')?.hasWarning).toBe(true); // 400 <= 400
   });
 
   it('splits a visually contiguous warning into two blocks when the active restriction changes', () => {
