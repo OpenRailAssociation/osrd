@@ -12,7 +12,7 @@ const _18H00 = new Date('2026-01-01T18:00:00.000Z');
 // op11 (index 10, the edited point) has an arrival + a stop duration, unless stated otherwise.
 const makeTrain = (op11StopFor: string): Train =>
   ({
-    start_time: _18H00.toISOString(),
+    start_time: _18H00.getTime(),
     path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
     schedule: [
       { at: 'op5', arrival: 'PT15M' },
@@ -24,7 +24,7 @@ const makeTrain = (op11StopFor: string): Train =>
 // Same as makeTrain, but op11 has no schedule entry at all (a brand new stop is being created).
 const makeTrainWithoutOp11 = (): Train =>
   ({
-    start_time: _18H00.toISOString(),
+    start_time: _18H00.getTime(),
     path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
     schedule: [
       { at: 'op5', arrival: 'PT15M' },
