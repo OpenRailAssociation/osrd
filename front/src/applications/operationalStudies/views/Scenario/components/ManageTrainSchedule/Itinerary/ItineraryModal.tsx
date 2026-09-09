@@ -6,6 +6,7 @@ import bbox from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import cx from 'classnames';
 import type { Position } from 'geojson';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
@@ -180,14 +181,14 @@ export function setupStateWithTrainSchedule(
 }
 
 const createDefaultTrainName = (
+  t: TFunction<'operational-studies', 'manageTrainSchedule.itineraryModal'>,
   stepsWithLocationOrInput: PathStepV2[],
   pathStepsMetadataById: Map<string, PathStepMetadata>
 ): string => {
-  const createDefaultStepName = (pathStep: PathStepV2): string => {
+  const createDefaultStepName = (pathStep: PathStepV2, trackOffsetDefault: string): string => {
     const location = pathStep.location;
     if (!location) return '';
-    if (location.type === 'track_offset')
-      return `${location.track}+${Math.round(location.offset / 1000)}`;
+    if (location.type === 'track_offset') return trackOffsetDefault;
     const op = location.operational_point;
     if (op.type === 'domestic') return op.main_code;
     const metadata = pathStepsMetadataById.get(pathStep.id);
@@ -197,7 +198,7 @@ const createDefaultTrainName = (
 
   const origin = stepsWithLocationOrInput[0];
   const destination = stepsWithLocationOrInput[stepsWithLocationOrInput.length - 1];
-  return `${createDefaultStepName(origin)} → ${createDefaultStepName(destination)}`;
+  return `${createDefaultStepName(origin, t('origin'))} → ${createDefaultStepName(destination, t('destination'))}`;
 };
 
 const ItineraryModal = ({
@@ -770,7 +771,7 @@ const ItineraryModal = ({
     if (stepsWithLocationOrInput.length < 2) return;
 
     const name = isNameEmpty
-      ? createDefaultTrainName(stepsWithLocationOrInput, pathStepsMetadataById)
+      ? createDefaultTrainName(t, stepsWithLocationOrInput, pathStepsMetadataById)
       : modalFormState.name;
 
     const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
