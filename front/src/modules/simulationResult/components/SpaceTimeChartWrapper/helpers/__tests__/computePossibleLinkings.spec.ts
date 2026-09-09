@@ -73,6 +73,64 @@ describe('computePossibleLinkings', () => {
     );
   });
 
+  it('should link a train whose stop lasts no time to the next one', () => {
+    const linkings = computePossibleLinkings([
+      arriving({
+        localTrackName: TRACK_1,
+        editoastId: 1,
+        startTime: 10 * MINUTE,
+        endTime: 10 * MINUTE,
+      }),
+      departing({
+        localTrackName: TRACK_1,
+        editoastId: 2,
+        startTime: 30 * MINUTE,
+        endTime: 40 * MINUTE,
+      }),
+    ]);
+
+    expect(linkings).toEqual(
+      new Map([[formatEditoastIdToTrainScheduleId(1), formatEditoastIdToTrainScheduleId(2)]])
+    );
+  });
+
+  it('should link a train to the next one whose stop lasts no time', () => {
+    const linkings = computePossibleLinkings([
+      arriving({ localTrackName: TRACK_1, editoastId: 1, startTime: 0, endTime: 10 * MINUTE }),
+      departing({
+        localTrackName: TRACK_1,
+        editoastId: 2,
+        startTime: 30 * MINUTE,
+        endTime: 30 * MINUTE,
+      }),
+    ]);
+
+    expect(linkings).toEqual(
+      new Map([[formatEditoastIdToTrainScheduleId(1), formatEditoastIdToTrainScheduleId(2)]])
+    );
+  });
+
+  it('should link two trains handing the track over at the same instant', () => {
+    const linkings = computePossibleLinkings([
+      departing({
+        localTrackName: TRACK_1,
+        editoastId: 2,
+        startTime: 10 * MINUTE,
+        endTime: 10 * MINUTE,
+      }),
+      arriving({
+        localTrackName: TRACK_1,
+        editoastId: 1,
+        startTime: 10 * MINUTE,
+        endTime: 10 * MINUTE,
+      }),
+    ]);
+
+    expect(linkings).toEqual(
+      new Map([[formatEditoastIdToTrainScheduleId(1), formatEditoastIdToTrainScheduleId(2)]])
+    );
+  });
+
   it('should return no linking when there is no occupancy', () => {
     expect(computePossibleLinkings([])).toEqual(new Map());
   });

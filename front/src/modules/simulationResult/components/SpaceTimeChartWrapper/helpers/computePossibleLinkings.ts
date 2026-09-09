@@ -20,8 +20,9 @@ export type LinkableOccupancy = {
 };
 
 /**
- * One end of an occupancy block, as scanned along the time axis. A block of no duration — a train
- * crossing the track without stopping — yields a single `instant` endpoint instead of a pair.
+ * One end of an occupancy block, as scanned along the time axis. A block of no duration yields a
+ * single `instant` endpoint instead of a pair: a train crossing the track, or stopping there for
+ * no time at all.
  */
 type BlockEndpoint = {
   time: number;
@@ -37,6 +38,16 @@ type BlockEndpoint = {
 const ENDPOINT_RANK: Record<BlockEndpoint['type'], number> = { end: 0, instant: 1, start: 2 };
 
 /**
+ * At equal times and ranks, which happens between blocks of no duration, the arriving train is
+ * scanned before the departing one it hands the track over to.
+ */
+const BLOCK_RANK: Record<LinkableOccupancy['blockType'], number> = {
+  incoming: 0,
+  via: 1,
+  outgoing: 2,
+};
+
+/**
  * A linking is possible between two occupancies of a same track when the first train ends its path
  * there, the second one starts its path there, both stand still, and nothing else occupies the
  * track in between.
@@ -45,8 +56,8 @@ const ENDPOINT_RANK: Record<BlockEndpoint['type'], number> = { end: 0, instant: 
  * `TrainId` keys.
  *
  * Rather than comparing every pair of occupancies, the blocks of a track are cut into endpoints,
- * sorted by time, then scanned once: a linking is found when the end of an incoming block is
- * immediately followed by the start of an outgoing one, no other block being open in between.
+ * sorted by time, then scanned once: a linking is found when an incoming block ends where an
+ * outgoing one starts, no other block being open in between.
  *
  * @returns the possible linkings, from the source (arriving) train to the target (departing) one.
  * Since no other train may occupy the track in between, a train can be the source of at most one
@@ -73,16 +84,27 @@ export default function computePossibleLinkings(
             { time: occupancy.endTime, type: 'end', occupancy },
           ]
     );
-    endpoints.sort((a, b) => a.time - b.time || ENDPOINT_RANK[a.type] - ENDPOINT_RANK[b.type]);
+    endpoints.sort(
+      (a, b) =>
+        a.time - b.time ||
+        ENDPOINT_RANK[a.type] - ENDPOINT_RANK[b.type] ||
+        BLOCK_RANK[a.occupancy.blockType] - BLOCK_RANK[b.occupancy.blockType]
+    );
 
     let linkingSource: LinkableOccupancy | null = null;
     let openBlocks = 0;
 
     for (const { type, occupancy } of endpoints) {
+      // A stop of no duration holds the whole occupancy in one instant, where the train both
+      // reaches the track and leaves it.
       const isLinkingArrival =
-        type === 'end' && occupancy.blockType === 'incoming' && occupancy.isStop;
+        (type === 'end' || type === 'instant') &&
+        occupancy.blockType === 'incoming' &&
+        occupancy.isStop;
       const isLinkingDeparture =
-        type === 'start' && occupancy.blockType === 'outgoing' && occupancy.isStop;
+        (type === 'start' || type === 'instant') &&
+        occupancy.blockType === 'outgoing' &&
+        occupancy.isStop;
       const isTrackFree = openBlocks === 0;
 
       if (isLinkingArrival) {
