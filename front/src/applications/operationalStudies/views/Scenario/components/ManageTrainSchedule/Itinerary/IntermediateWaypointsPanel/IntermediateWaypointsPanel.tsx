@@ -3,8 +3,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { ItineraryPathProperties } from 'applications/operationalStudies/types';
-import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 import { groupOperationalPoints } from './utils';
@@ -13,14 +13,16 @@ import WaypointGroup from './WaypointGroup';
 type IntermediateWaypointsPanelProps = {
   pathSteps: PathStepV2[];
   pathProperties: ItineraryPathProperties | undefined;
+  pathWaypoints: PathWaypoint[] | null;
   status: 'idle' | 'loading' | 'error' | 'success';
   onHide: () => void;
-  onAddWaypoint: (op: CoreOperationalPointOnPath, afterStepId: string) => void;
+  onAddWaypoint: (op: PathWaypoint, afterStepId: string) => void;
 };
 
 const IntermediateWaypointsPanel = ({
   pathSteps,
   pathProperties,
+  pathWaypoints,
   status,
   onHide,
   onAddWaypoint,
@@ -51,9 +53,8 @@ const IntermediateWaypointsPanel = ({
   }, [pathSteps, pathProperties]);
 
   const groups = useMemo(
-    () =>
-      groupOperationalPoints(pathProperties?.operational_points ?? [], pathSteps, positionByStepId),
-    [pathProperties, pathSteps, positionByStepId]
+    () => groupOperationalPoints(pathWaypoints ?? [], pathSteps, positionByStepId),
+    [pathWaypoints, pathSteps, positionByStepId]
   );
 
   const [collapsedStepIds, setCollapsedStepIds] = useState<Set<string>>(new Set());

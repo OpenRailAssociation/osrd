@@ -18,7 +18,6 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { buildPathWaypointsFromRawOPs } from 'applications/operationalStudies/utils';
 import type {
-  CoreOperationalPointOnPath,
   OperationalPointReference,
   PathProperties,
   PathItemLocation,
@@ -34,6 +33,7 @@ import IncompatibleConstraints from 'modules/pathfinding/components/Incompatible
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
 import {
   DEFAULT_PACED_TRAIN_INTERVAL,
@@ -422,7 +422,7 @@ const ItineraryModal = ({
   };
 
   const handleAddWaypoint = useCallback(
-    (op: CoreOperationalPointOnPath, afterStepId: string) => {
+    (op: PathWaypoint, afterStepId: string) => {
       const insertIndex = pathSteps.findIndex((step) => step.id === afterStepId) + 1;
       if (insertIndex === 0) return;
 
@@ -1115,6 +1115,7 @@ const ItineraryModal = ({
           <IntermediateWaypointsPanel
             pathSteps={pathSteps}
             pathProperties={displayedPathProperties}
+            pathWaypoints={pathWaypoints}
             status={waypointsPanelStatus}
             onHide={() => setWaypointsPanelOpen(false)}
             onAddWaypoint={handleAddWaypoint}

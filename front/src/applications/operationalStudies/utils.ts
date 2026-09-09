@@ -174,7 +174,7 @@ export const transformElectricalBoundariesToRanges = (
  * this breaks when an OP appears multiple times on a path. Instead, use
  * pathStepId or pathItemId.
  */
-export const matchOpRefAndWaypoint = (
+const matchOpRefAndWaypoint = (
   location: PathItemLocation,
   waypoint: CoreOperationalPointOnPath
 ) => {

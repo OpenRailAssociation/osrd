@@ -1,8 +1,5 @@
-import { matchOpRefAndWaypoint } from 'applications/operationalStudies/utils';
-import type {
-  CoreOperationalPointOnPath,
-  OperationalPointReference,
-} from 'common/api/osrdEditoastApi';
+import type { OperationalPointReference } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 import type { WaypointGroup } from './types';
@@ -44,7 +41,7 @@ const isSameWaypoint = (a: LocatedStep, b: LocatedStep) => {
  * stands for.
  */
 export function groupOperationalPoints(
-  operationalPoints: CoreOperationalPointOnPath[],
+  waypoints: PathWaypoint[],
   pathSteps: PathStepV2[],
   positionByStepId?: Map<string, number>
 ): WaypointGroup[] {
@@ -73,42 +70,31 @@ export function groupOperationalPoints(
     duplicatesCount,
   }));
 
-  const isStepBeforeOp = (step: LocatedStep, op: CoreOperationalPointOnPath) => {
+  const isStepBeforeWaypoint = (step: LocatedStep, waypoint: PathWaypoint) => {
     const position = positionByStepId?.get(step.id);
-    return position !== undefined && position < op.position;
+    return position !== undefined && position < waypoint.position;
   };
 
   // Walk the OPs in path order, moving a cursor onto the latest requested step
   // each op has reached, then filing the op under that step's group.
   let currentGroupIndex = -1;
-  operationalPoints.forEach((op) => {
+  waypoints.forEach((waypoint) => {
     // Reach a step by position:
     while (
       currentGroupIndex + 1 < collapsedSteps.length &&
-      isStepBeforeOp(collapsedSteps[currentGroupIndex + 1].step, op)
+      isStepBeforeWaypoint(collapsedSteps[currentGroupIndex + 1].step, waypoint)
     ) {
       currentGroupIndex += 1;
     }
 
     // Reach a step by identity:
-    const matchedIndex = collapsedSteps.findIndex(({ step }, index) => {
-      if (index <= currentGroupIndex || !matchOpRefAndWaypoint(step.location, op)) return false;
-      // An OP crossed twice matches both steps by identity. Pick the right
-      // crossing: by position if known, else by pinned track.
-      const position = positionByStepId?.get(step.id);
-      if (position !== undefined) return position === op.position;
-      const pinnedTrack =
-        step.location.type === 'operational_point_part_reference'
-          ? step.location.local_track_name
-          : undefined;
-      return !pinnedTrack || pinnedTrack === op.part.local_track_name;
-    });
+    const matchedIndex = collapsedSteps.findIndex(({ step }) => step.id === waypoint.pathItemId);
 
     if (matchedIndex !== -1) {
       currentGroupIndex = matchedIndex;
-      groups[currentGroupIndex].requestedOp = op;
+      groups[currentGroupIndex].requestedOp = waypoint;
     } else if (currentGroupIndex >= 0) {
-      groups[currentGroupIndex].intermediates.push(op);
+      groups[currentGroupIndex].intermediates.push(waypoint);
     }
   });
 
