@@ -48,6 +48,7 @@ import {
 } from '../helpers/cellUpdate';
 import { propagateStopDuration } from '../helpers/stopDurationPropagation';
 import { propagateTime } from '../helpers/timePropagation';
+import { getTruncatedToSecondStartTime } from '../helpers/utils';
 import type {
   CellUpdate,
   OptimisticEdit,
@@ -197,10 +198,7 @@ const useUpdateTimesStopsTable = (
         edit
       );
 
-      const startTime =
-        scenario.timetable_type === 'CALENDAR'
-          ? new Date(selectedTrain.start_time)
-          : new Duration({ milliseconds: selectedTrain.start_time });
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
       const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
         newState,
         startTime
@@ -265,10 +263,7 @@ const useUpdateTimesStopsTable = (
       let updatedSchedule = selectedTrain.schedule ?? [];
       let currentPath = selectedTrain.path;
 
-      const startTime =
-        scenario.timetable_type === 'CALENDAR'
-          ? new Date(selectedTrain.start_time)
-          : new Duration({ milliseconds: selectedTrain.start_time });
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
 
       for (const row of update.rows) {
         const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(

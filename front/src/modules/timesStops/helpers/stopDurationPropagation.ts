@@ -5,7 +5,7 @@ import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 import type { StopDurationUpdate, PropagationResult } from '../types';
 import { cascadeArrivals } from './arrivalCascade';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { formatSignedDelta } from './utils';
+import { formatSignedDelta, getTruncatedToSecondStartTime } from './utils';
 
 export const formatStopDurationDeltaLabel = (
   oldValue: Duration | null,
@@ -46,10 +46,7 @@ export const propagateStopDuration = (
   // The edited point's current schedule state, if it already has one.
   const currentSchedule = selectedTrain.schedule ?? [];
   const editedItem = currentSchedule.find((item) => item.at === pathStepId);
-  const currentStartTime =
-    timetableType === 'CALENDAR'
-      ? new Date(selectedTrain.start_time)
-      : new Duration({ milliseconds: selectedTrain.start_time });
+  const currentStartTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
 
   // Set the edited point's new duration (its arrival stays the same)
   const updatedScheduleStop: ScheduleItem[] = editedItem
