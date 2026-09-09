@@ -422,6 +422,7 @@
       "alertMissingRequestedPoint": "Il faut au minimum deux points de passage pour définir un itinéraire",
       "cancel": "Annuler",
       "cancelMapSelection": "Annuler",
+      "destination": "Destination",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "frameAll": "Centrer sur tous les points de passage sur la carte",
       "intermediateWaypointsPanel": {
@@ -443,6 +444,7 @@
       "opId": "Identifiant de point",
       "opName": "Nom du point remarquable",
       "opType": "Type",
+      "origin": "Origine",
       "pass": "Passage",
       "requestedPoint": "Point sur la carte",
       "stop": "Arrêt",

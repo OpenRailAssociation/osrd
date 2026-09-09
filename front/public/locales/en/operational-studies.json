@@ -422,6 +422,7 @@
       "alertMissingRequestedPoint": "At least two path steps are required to define an itinerary",
       "cancel": "Cancel",
       "cancelMapSelection": "Cancel",
+      "destination": "Destination",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "intermediateWaypointsPanel": {
@@ -443,6 +444,7 @@
       "opId": "Operational point identifier",
       "opName": "Operational point name",
       "opType": "Type",
+      "origin": "Origin",
       "pass": "Pass",
       "requestedPoint": "Point on map",
       "stop": "Stop",
