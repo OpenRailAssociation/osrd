@@ -199,9 +199,19 @@ export const buildPathWaypointsFromRawOPs = (
     (pathItem) => pathItem.location.type !== 'track_offset'
   );
   const waypoints = ops.map((op) => {
+    // Consume remaining path steps in order. If we match a path step which
+    // isn't the first one, something went wrong: OPs on path don't go through
+    // all path items.
+    const pathItemIndex = opRefPathItemsQueue.findIndex((step) =>
+      matchOpRefAndWaypoint(step.location, op)
+    );
+    const pathItem = pathItemIndex >= 0 ? opRefPathItemsQueue[pathItemIndex] : undefined;
+
     const waypoint: PathWaypoint = {
       ...omit(op, 'id'),
-      waypointId: `op-${op.id}-${op.position}`,
+      // pathItem.id is stable with pathfinding recomputes, unlike
+      // op.position.
+      waypointId: pathItem ? `path-item-${pathItem.id}` : `op-${op.id}-${op.position}`,
       opId: op.id,
       pathItemId: null,
       location: {
@@ -210,17 +220,10 @@ export const buildPathWaypointsFromRawOPs = (
       },
     };
 
-    // Consume remaining path steps in order. If we match a path step which
-    // isn't the first one, something went wrong: OPs on path don't go through
-    // all path items.
-    const pathItemIndex = opRefPathItemsQueue.findIndex((step) =>
-      matchOpRefAndWaypoint(step.location, op)
-    );
-    if (pathItemIndex < 0) {
+    if (!pathItem) {
       return waypoint;
     }
 
-    const pathItem = opRefPathItemsQueue[pathItemIndex];
     if (pathItemIndex !== 0) {
       console.error(
         'Could not match path items to operational points:',
