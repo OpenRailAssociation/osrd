@@ -313,6 +313,7 @@ const TimesStopsTable = ({
           editable={!isLastRow}
           isInherited={isFirstRow ? false : isInherited}
           isFirstRow={isFirstRow}
+          showUnit={isValid && !scheduleNotHonored}
           onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
         />
       </div>
