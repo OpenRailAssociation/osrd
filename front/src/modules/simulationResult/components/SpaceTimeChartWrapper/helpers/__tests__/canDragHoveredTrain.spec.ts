@@ -42,19 +42,22 @@ describe('canDragHoveredTrain', () => {
       relevantExceptionType === 'start_time' ? 'path_and_schedule' : 'start_time';
     const selectedTrainBy: SelectionSource = relevantExceptionType === 'start_time' ? 'std' : 'tod';
 
-    describe("'compliant' mode", () => {
-      it('should allow dragging the selected non-paced train', () => {
+    it.each(['compliant', 'single', 'all'] as const)(
+      'should allow dragging the selected non-paced train in %s mode',
+      (panelSelectionMode) => {
         expect(
           canDragHoveredTrain({
-            panelSelectionMode: 'compliant',
+            panelSelectionMode,
             hoveredTrain: train(TRAIN_SCHEDULE_1),
             selectedTrainId: TRAIN_SCHEDULE_1,
             selectedTrainBy,
             relevantExceptionType,
           })
         ).toBe(true);
-      });
+      }
+    );
 
+    describe("'compliant' mode", () => {
       it('should forbid dragging a non-paced train that is not the selected one', () => {
         expect(
           canDragHoveredTrain({
@@ -177,18 +180,6 @@ describe('canDragHoveredTrain', () => {
             relevantExceptionType,
           })
         ).toBe(false);
-      });
-
-      it('should allow dragging a unique train regardless of mode (no panel shown for it)', () => {
-        expect(
-          canDragHoveredTrain({
-            panelSelectionMode: 'all',
-            hoveredTrain: train(TRAIN_SCHEDULE_1),
-            selectedTrainId: TRAIN_SCHEDULE_1,
-            selectedTrainBy,
-            relevantExceptionType,
-          })
-        ).toBe(true);
       });
     });
   });
