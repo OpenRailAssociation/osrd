@@ -605,42 +605,42 @@ const TimesStopsTable = ({
     return requestedTimeHeader;
   };
 
-  const returnBaseArrival = (
+  const returnBaseArrivalCell = (
     info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
   ) => {
     const row = info.row.original;
     const { allRows } = info.table.options.meta!;
-
     const isFirstRow = info.row.index === 0;
 
-    if (isFirstRow) {
-      const value = row.requestedArrival;
-      return (
-        <span data-testid="first-base-arrival">
-          {value ? formatTime(value, dateTimeLocale) : ''}
-        </span>
-      );
-    } else if (scheduleNotHonored || !isValid) {
+    if (!isValid && !isFirstRow) {
       return (
         <StartTimeCell
           type={startTimeCellType}
           ref={registerTimeCellRef(info.row.index, 'baseArrival')}
           cellContext={info}
           referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
-          clearButtonTitle={t('clearRequestedArrivalTime')}
+          clearButtonTitle={t('clearRequestedBaseArrival')}
           onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
           onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
           disablePropagation
         />
       );
-    } else {
-      const value = info.getValue();
+    }
+
+    if (isFirstRow) {
       return (
-        <span data-testid="computed-base-arrival">
-          {value ? formatTime(value, dateTimeLocale) : ''}
+        <span data-testid="first-base-arrival">
+          {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
         </span>
       );
     }
+
+    const value = info.getValue();
+    return (
+      <span data-testid="computed-base-arrival">
+        {value ? formatTime(value, dateTimeLocale) : ''}
+      </span>
+    );
   };
 
   const columns = useMemo(
@@ -800,15 +800,16 @@ const TimesStopsTable = ({
           },
         }),
         columnHelper.accessor('baseArrival', {
-          header: () => t('baseArrival'),
-          cell: returnBaseArrival,
+          header: () => t(isValid ? 'calculatedBaseArrival' : 'requestedBaseArrival'),
+          cell: returnBaseArrivalCell,
           meta: {
-            className: 'col-reference-base-arrival col-with-clock-time',
+            className: cx('col-reference-base-arrival col-with-clock-time', { computed: isValid }),
+            title: t(isValid ? 'calculatedBaseArrival' : 'requestedBaseArrival'),
             'data-testid': 'reference-base-arrival-cell',
           },
         }),
       ]),
-    [startTime, focusCellBelow, focusRequestedCellOnTab, t]
+    [startTime, focusCellBelow, focusRequestedCellOnTab, t, isValid, dateTimeLocale]
   );
 
   const table = useTable({
