@@ -53,6 +53,8 @@ import type {
   CellUpdate,
   OptimisticEdit,
   PowerRestrictionUpdate,
+  ReceptionSignalUpdate,
+  RequestedMarginUpdate,
   PropagationMode,
   StopPropagationMode,
   MarginValue,
@@ -124,6 +126,32 @@ const useUpdateTimesStopsTable = (
     return 'updated';
   };
 
+  const computeMarginUpdate = (update: RequestedMarginUpdate) => {
+    const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+    return {
+      updatedPath,
+      updatedSchedule: selectedTrain.schedule ?? [],
+      updatedMargins: computeUpdatedMargins(updatedPath, update.value, pathStepId),
+    };
+  };
+
+  /** A stop is always required to edit a reception signal, so its schedule item must exist. */
+  const computeReceptionSignalUpdate = (update: ReceptionSignalUpdate) => {
+    const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+    const currentSchedule = selectedTrain.schedule ?? [];
+    const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
+    if (existingItemIndex < 0) return undefined;
+
+    return {
+      updatedPath,
+      updatedSchedule: replaceElementAtIndex(currentSchedule, existingItemIndex, {
+        ...currentSchedule[existingItemIndex],
+        reception_signal: update.value,
+      }),
+      updatedMargins: selectedTrain.margins,
+    };
+  };
+
   /**
    * Compute the updated path and schedule based on the cell update.
    */
@@ -154,33 +182,13 @@ const useUpdateTimesStopsTable = (
           updatedMargins: selectedTrain.margins,
         };
 
+      if (update.field === 'requestedTheoreticalMargin') return computeMarginUpdate(update);
+      if (update.field === 'receptionSignal') return computeReceptionSignalUpdate(update);
+
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
       const isOrigin = pathStepId === updatedPath[0].id;
-
-      if (update.field === 'requestedTheoreticalMargin') {
-        return {
-          updatedPath,
-          updatedSchedule: currentSchedule,
-          updatedMargins: computeUpdatedMargins(updatedPath, update.value, pathStepId),
-        };
-      }
-
-      // receptionSignal: directly update the schedule item's reception_signal field.
-      // A stop is always required to edit reception signal
-      if (update.field === 'receptionSignal') {
-        if (existingItemIndex < 0) return undefined;
-        const updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
-          ...currentSchedule[existingItemIndex],
-          reception_signal: update.value,
-        });
-        return {
-          updatedPath,
-          updatedSchedule,
-          updatedMargins: selectedTrain.margins,
-        };
-      }
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
       let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
