@@ -1,5 +1,6 @@
 import type { SupportedSignalingSystem } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
+import { ROLLING_RESISTANCE_DISPLAY_UNITS } from 'modules/rollingStock/helpers/rollingResistance';
 
 import type {
   ElectricalProfileByMode,
@@ -41,19 +42,19 @@ export const newRollingStockValues: RollingStockParametersValues = {
   rollingResistanceA: {
     min: 0,
     max: 20,
-    unit: 'kN',
+    unit: ROLLING_RESISTANCE_DISPLAY_UNITS.A,
     value: 0,
   },
   rollingResistanceB: {
     min: 0,
     max: 0.5,
-    unit: 'kN/(km/h)',
+    unit: ROLLING_RESISTANCE_DISPLAY_UNITS.B,
     value: 0,
   },
   rollingResistanceC: {
     min: 0,
     max: 0.01,
-    unit: 'kN/(km/h)²',
+    unit: ROLLING_RESISTANCE_DISPLAY_UNITS.C,
     value: 0,
   },
   loadingGauge: 'G1',
@@ -247,7 +248,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     type: 'number',
     min: 0,
     max: 20,
-    units: ['kN', 'N', 'kN/t'],
+    units: [ROLLING_RESISTANCE_DISPLAY_UNITS.A, 'kN', 'N'],
     side: 'right',
     margin: 'mb-3',
   },
@@ -256,7 +257,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     type: 'number',
     min: 0,
     max: 0.5,
-    units: ['kN/(km/h)', 'N/(m/s)', 'N/(km/h)', 'kN/(km/h)/t'],
+    units: [ROLLING_RESISTANCE_DISPLAY_UNITS.B, 'kN/(km/h)', 'N/(m/s)', 'N/(km/h)'],
     side: 'right',
     margin: 'mb-3',
   },
@@ -265,7 +266,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     type: 'number',
     min: 0,
     max: 0.01,
-    units: ['kN/(km/h)²', 'N/(m/s)²', 'N/(km/h)²', 'kN/(km/h)²/t'],
+    units: [ROLLING_RESISTANCE_DISPLAY_UNITS.C, 'kN/(km/h)²', 'N/(m/s)²', 'N/(km/h)²'],
     side: 'right',
   },
   {

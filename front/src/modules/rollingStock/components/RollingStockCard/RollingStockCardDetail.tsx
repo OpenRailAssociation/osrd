@@ -11,7 +11,11 @@ import { Loader } from 'common/Loaders/Loader';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
-import convertUnits from 'modules/rollingStock/helpers/convertUnits';
+import {
+  convertRollingResistanceToDisplay,
+  formatRollingResistance,
+  ROLLING_RESISTANCE_DISPLAY_UNITS,
+} from 'modules/rollingStock/helpers/rollingResistance';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -118,76 +122,78 @@ export default function RollingStockCardDetail({
       </tbody>
     </table>
   );
-  const rightColumn = (rs: RollingStockWithLiveries) => (
-    <table className="rollingstock-details-table">
-      <tbody>
-        <tr>
-          <td className={cx({ formResistance: form })}>{t('rollingStock.rollingResistance')}</td>
-          <td className={cx('text-primary text-muted', { formResistance: form })}>
-            {t('rollingStock.rollingResistanceFormula')}
-          </td>
-        </tr>
-        <tr>
-          <td className="text-primary">{t('rollingStock.rollingResistanceA')}</td>
-          <td>
-            {convertUnits('N', 'kN', rs.rolling_resistance.A, 2)}
-            <span className="small ml-1 text-muted">kN</span>
-          </td>
-        </tr>
-        <tr>
-          <td className="text-primary">{t('rollingStock.rollingResistanceB')}</td>
-          <td>
-            {/* The b resistance received is in N/(m/s) and should appear in N/(km/h) */}
-            {convertUnits('N/(m/s)', 'kN/(km/h)', rs.rolling_resistance.B, 6)}
-            <span className="small ml-1 text-muted">kN/(km/h)</span>
-          </td>
-        </tr>
-        <tr>
-          <td className="text-primary">{t('rollingStock.rollingResistanceC')}</td>
-          <td title={rs.rolling_resistance.C.toString()}>
-            {/* The c resistance received is in N/(m/s)² and should appear in N/(km/h)² */}
-            {convertUnits('N/(m/s)²', 'kN/(km/h)²', rs.rolling_resistance.C, 6)}
-            <span className="small ml-1 text-muted">kN/(km/h)²</span>
-          </td>
-        </tr>
-        {!isEmpty(rs.supported_signaling_systems) && (
+  const rightColumn = (rs: RollingStockWithLiveries) => {
+    const rollingResistance = convertRollingResistanceToDisplay(rs.rolling_resistance);
+
+    return (
+      <table className="rollingstock-details-table">
+        <tbody>
           <tr>
-            <td className="text-primary text-nowrap pr-1">
-              {t('rollingStock.supportedSignalingSystems')}
-            </td>
-            <td>{rs.supported_signaling_systems.map((s) => s.type).join(', ')}</td>
-          </tr>
-        )}
-        {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (
-          <tr>
-            <td className="text-primary text-nowrap pr-1">
-              {t('rollingStock.powerRestrictionsInfos', {
-                count: Object.keys(rs.power_restrictions).length,
-              })}
-            </td>
-            <td>
-              {rs.power_restrictions !== null && Object.keys(rs.power_restrictions).join(' ')}
+            <td className={cx({ formResistance: form })}>{t('rollingStock.rollingResistance')}</td>
+            <td className={cx('text-primary text-muted', { formResistance: form })}>
+              {t('rollingStock.rollingResistanceFormula')}
             </td>
           </tr>
-        )}
-        <tr>
-          <td className="text-primary text-nowrap pr-1">{t('rollingStock.primaryCategory')}</td>
-          <td> {t(`rollingStock.categoriesOptions.${rs.primary_category}`)} </td>
-        </tr>
-        {!isEmpty(rs.other_categories) && (
           <tr>
-            <td className="text-primary text-nowrap pr-1">{t('rollingStock.otherCategories')}</td>
-            <td>
-              {rs.other_categories
-                .map((category) => t(`rollingStock.categoriesOptions.${category}`))
-                .toSorted()
-                .join(', ')}
+            <td className="text-primary">{t('rollingStock.rollingResistanceA')}</td>
+            <td title={rollingResistance.A.toString()}>
+              {formatRollingResistance(rollingResistance.A)}
+              <span className="small ml-1 text-muted">{ROLLING_RESISTANCE_DISPLAY_UNITS.A}</span>
             </td>
           </tr>
-        )}
-      </tbody>
-    </table>
-  );
+          <tr>
+            <td className="text-primary">{t('rollingStock.rollingResistanceB')}</td>
+            <td title={rollingResistance.B.toString()}>
+              {formatRollingResistance(rollingResistance.B)}
+              <span className="small ml-1 text-muted">{ROLLING_RESISTANCE_DISPLAY_UNITS.B}</span>
+            </td>
+          </tr>
+          <tr>
+            <td className="text-primary">{t('rollingStock.rollingResistanceC')}</td>
+            <td title={rollingResistance.C.toString()}>
+              {formatRollingResistance(rollingResistance.C)}
+              <span className="small ml-1 text-muted">{ROLLING_RESISTANCE_DISPLAY_UNITS.C}</span>
+            </td>
+          </tr>
+          {!isEmpty(rs.supported_signaling_systems) && (
+            <tr>
+              <td className="text-primary text-nowrap pr-1">
+                {t('rollingStock.supportedSignalingSystems')}
+              </td>
+              <td>{rs.supported_signaling_systems.map((s) => s.type).join(', ')}</td>
+            </tr>
+          )}
+          {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (
+            <tr>
+              <td className="text-primary text-nowrap pr-1">
+                {t('rollingStock.powerRestrictionsInfos', {
+                  count: Object.keys(rs.power_restrictions).length,
+                })}
+              </td>
+              <td>
+                {rs.power_restrictions !== null && Object.keys(rs.power_restrictions).join(' ')}
+              </td>
+            </tr>
+          )}
+          <tr>
+            <td className="text-primary text-nowrap pr-1">{t('rollingStock.primaryCategory')}</td>
+            <td> {t(`rollingStock.categoriesOptions.${rs.primary_category}`)} </td>
+          </tr>
+          {!isEmpty(rs.other_categories) && (
+            <tr>
+              <td className="text-primary text-nowrap pr-1">{t('rollingStock.otherCategories')}</td>
+              <td>
+                {rs.other_categories
+                  .map((category) => t(`rollingStock.categoriesOptions.${category}`))
+                  .toSorted()
+                  .join(', ')}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    );
+  };
   return rollingStock && !isEmpty(curvesComfortList) ? (
     <div className={form ? 'px-4' : 'rollingstock-card-body'}>
       <div className={`row pt-2 ${form}`}>

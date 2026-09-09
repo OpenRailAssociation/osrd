@@ -4,6 +4,10 @@ import { groupBy, isNull } from 'lodash';
 import type { RollingStockForm } from 'common/api/osrdEditoastApi';
 import { THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
+import {
+  convertRollingResistanceToApi,
+  ROLLING_RESISTANCE_DISPLAY_UNITS,
+} from 'modules/rollingStock/helpers/rollingResistance';
 import { getTranslationKey } from 'utils/strings';
 
 import { RS_SCHEMA_PROPERTIES } from '../consts';
@@ -38,6 +42,33 @@ export const rollingStockEditorQueryArg = (
     {}
   );
 
+  const rollingResistance = convertRollingResistanceToApi({
+    A: handleUnitValue(
+      {
+        unit: ROLLING_RESISTANCE_DISPLAY_UNITS.A,
+        value: data.rollingResistanceA.value,
+      },
+      data.rollingResistanceA,
+      data.mass
+    )!,
+    B: handleUnitValue(
+      {
+        unit: ROLLING_RESISTANCE_DISPLAY_UNITS.B,
+        value: data.rollingResistanceB.value,
+      },
+      data.rollingResistanceB,
+      data.mass
+    )!,
+    C: handleUnitValue(
+      {
+        unit: ROLLING_RESISTANCE_DISPLAY_UNITS.C,
+        value: data.rollingResistanceC.value,
+      },
+      data.rollingResistanceC,
+      data.mass
+    )!,
+  });
+
   return {
     name: data.name,
     length: data.length,
@@ -53,21 +84,7 @@ export const rollingStockEditorQueryArg = (
     inertia_coefficient: data.inertiaCoefficient,
     mass: handleUnitValue({ unit: 'kg', value: data.mass.value }, data.mass, data.mass)!, // Back-end needs value in kg.
     rolling_resistance: {
-      A: handleUnitValue(
-        { unit: 'N', value: data.rollingResistanceA.value },
-        data.rollingResistanceA,
-        data.mass
-      )!, // Back-end needs value in N.
-      B: handleUnitValue(
-        { unit: 'N/(m/s)', value: data.rollingResistanceB.value },
-        data.rollingResistanceB,
-        data.mass
-      )!, // Back-end needs value in N/(m/s).
-      C: handleUnitValue(
-        { unit: 'N/(m/s)²', value: data.rollingResistanceC.value },
-        data.rollingResistanceC,
-        data.mass
-      )!, // Back-end needs value in N/(m/s)².
+      ...rollingResistance,
       type: 'davis',
     },
     loading_gauge: data.loadingGauge,
