@@ -21,7 +21,9 @@ const Banner = ({ type = 'warning', message, onClose, dataTestId }: BannerProps)
   return (
     <div className={`banner ${type}`} data-testid={dataTestId}>
       {icon}
-      <span className={`banner-text ${type}`}>{message}</span>
+      <span className={`banner-text ${type}`} data-testid={`banner-text-${type}`}>
+        {message}
+      </span>
       {onClose && (
         <button
           className={`banner-close-button ${type}`}
