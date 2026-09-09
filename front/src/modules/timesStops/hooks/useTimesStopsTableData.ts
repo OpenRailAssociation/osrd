@@ -73,7 +73,7 @@ type BuildTableRowParams = {
   shortSlipDistance?: boolean;
   closedSignal?: boolean;
   margins?: Margins;
-  hasScheduleNotHonored?: boolean;
+  hasSimulation?: boolean;
 };
 
 const buildTableRow = ({
@@ -96,7 +96,7 @@ const buildTableRow = ({
   shortSlipDistance,
   closedSignal,
   margins,
-  hasScheduleNotHonored,
+  hasSimulation = false,
 }: BuildTableRowParams): TimesStopsRow => {
   const requestedArrival = schedule?.arrival
     ? addDurationToStartTime(startDate, getTruncatedToSecondSchedule(schedule.arrival))
@@ -139,7 +139,7 @@ const buildTableRow = ({
       ? addDurationToStartTime(startDate, computedBaseArrival)
       : null;
 
-  const baseArrival = hasScheduleNotHonored ? referenceBaseArrival : computedBaseArrivalValue;
+  const baseArrival = hasSimulation ? computedBaseArrivalValue : referenceBaseArrival;
 
   const {
     theoreticalMargin,
@@ -273,9 +273,6 @@ const useTimesStopsTableData = (
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathKeyToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
 
-    const hasScheduleNotHonored =
-      !stableIsValid || !stablePathItemRespect?.times.every((time) => time);
-
     const pathStepRowsByKey = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
         const pathStepOp = pathStepOps.get(pathStep.key);
@@ -370,7 +367,7 @@ const useTimesStopsTableData = (
           shortSlipDistance,
           closedSignal,
           margins,
-          hasScheduleNotHonored,
+          hasSimulation: stableIsValid,
         });
 
         return [pathStep.key, row];
