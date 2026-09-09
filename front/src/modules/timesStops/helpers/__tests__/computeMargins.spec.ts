@@ -77,4 +77,97 @@ describe('computeMargins without pathItemTimes (reference_base_arrival based)', 
       diffMargins: { value: 120, unit: MarginUnit.second },
     });
   });
+
+  it('leaves every margin empty when the next step has no reference base arrival', () => {
+    const theoreticalMargins: TheoreticalMarginsRecord = {
+      a: { theoreticalMargin: '10%', isBoundary: true },
+      b: { theoreticalMargin: '10%', isBoundary: true },
+      c: { theoreticalMargin: '10%', isBoundary: false },
+      d: { theoreticalMargin: '10%', isBoundary: false },
+    };
+    const scheduleByAt: Record<string, ScheduleItem> = {
+      b: { at: 'b', arrival: 'PT12M' },
+    };
+
+    const result = computeMargins(theoreticalMargins, train, scheduleByAt, 0, undefined);
+
+    // Nothing can be derived from a requested arrival alone: the cells stay empty
+    // instead of displaying a margin of 0.
+    expect(result).toEqual({
+      theoreticalMargin: { value: 10, unit: MarginUnit.percent },
+      isTheoreticalMarginBoundary: true,
+      theoreticalMarginSeconds: undefined,
+      calculatedMargin: undefined,
+      diffMargins: undefined,
+    });
+  });
+
+  it('computes the theoretical margin alone when no arrival is requested at the next step', () => {
+    const theoreticalMargins: TheoreticalMarginsRecord = {
+      a: { theoreticalMargin: '10%', isBoundary: true },
+      b: { theoreticalMargin: '10%', isBoundary: true },
+      c: { theoreticalMargin: '10%', isBoundary: false },
+      d: { theoreticalMargin: '10%', isBoundary: false },
+    };
+    const scheduleByAt: Record<string, ScheduleItem> = {
+      b: { at: 'b', reference_base_arrival: 'PT10M' },
+    };
+
+    const result = computeMargins(theoreticalMargins, train, scheduleByAt, 0, undefined);
+
+    // Only the real margin needs the requested arrival
+    expect(result).toEqual({
+      theoreticalMargin: { value: 10, unit: MarginUnit.percent },
+      isTheoreticalMarginBoundary: true,
+      theoreticalMarginSeconds: { value: 60, unit: MarginUnit.second },
+      calculatedMargin: undefined,
+      diffMargins: undefined,
+    });
+  });
+
+  it('computes the real margin alone when this step has no reference base arrival', () => {
+    const theoreticalMargins: TheoreticalMarginsRecord = {
+      a: { theoreticalMargin: '10%', isBoundary: true },
+      b: { theoreticalMargin: '20%', isBoundary: true },
+      c: { theoreticalMargin: '20%', isBoundary: false },
+      d: { theoreticalMargin: '20%', isBoundary: false },
+    };
+    const scheduleByAt: Record<string, ScheduleItem> = {
+      d: { at: 'd', arrival: 'PT25M', reference_base_arrival: 'PT20M' },
+    };
+
+    const result = computeMargins(theoreticalMargins, train, scheduleByAt, 1, undefined);
+
+    // The section duration is unknown without a reference base arrival at b
+    expect(result).toEqual({
+      theoreticalMargin: { value: 20, unit: MarginUnit.percent },
+      isTheoreticalMarginBoundary: true,
+      theoreticalMarginSeconds: undefined,
+      calculatedMargin: { value: 300, unit: MarginUnit.second },
+      diffMargins: undefined,
+    });
+  });
+
+  it('keeps a difference of margins of exactly zero visible', () => {
+    const theoreticalMargins: TheoreticalMarginsRecord = {
+      a: { theoreticalMargin: '20%', isBoundary: true },
+      b: { theoreticalMargin: '20%', isBoundary: false },
+      c: { theoreticalMargin: '20%', isBoundary: false },
+      d: { theoreticalMargin: '20%', isBoundary: false },
+    };
+    const scheduleByAt: Record<string, ScheduleItem> = {
+      b: { at: 'b', arrival: 'PT12M', reference_base_arrival: 'PT10M' },
+    };
+
+    const result = computeMargins(theoreticalMargins, train, scheduleByAt, 0, undefined);
+
+    // finalLostTime = provisionalLostTime = 120s: the requested margin is exactly honored
+    expect(result).toEqual({
+      theoreticalMargin: { value: 20, unit: MarginUnit.percent },
+      isTheoreticalMarginBoundary: true,
+      theoreticalMarginSeconds: { value: 120, unit: MarginUnit.second },
+      calculatedMargin: { value: 120, unit: MarginUnit.second },
+      diffMargins: { value: 0, unit: MarginUnit.second },
+    });
+  });
 });
