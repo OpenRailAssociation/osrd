@@ -70,9 +70,6 @@ const propagateFromEditedPoint = (
   direction: 'fromDeparture' | 'toDestination',
   timetableType: TimetableType
 ): PropagationResult | undefined => {
-  // Delta strategy by direction:
-  // - fromDeparture: compare time-of-day only
-  // - toDestination: compare full date-time (can produce D+1)
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
@@ -103,7 +100,7 @@ const propagateShiftAll = (
   delta: Duration,
   selectedTrain: Train,
   timetableType: TimetableType
-): PropagationResult | undefined => {
+): PropagationResult => {
   const currentStartTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
   return {
     updatedPath: selectedTrain.path,
