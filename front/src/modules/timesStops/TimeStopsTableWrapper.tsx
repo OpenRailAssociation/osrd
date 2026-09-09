@@ -40,6 +40,7 @@ type TimeStopsTableWrapperProps = {
   selectedTrain: Train;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   simulatedTrain?: SimulationResponseSuccess['final_output'];
+  simulatedBaseTrain?: SimulationResponseSuccess['base'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'];
@@ -55,6 +56,7 @@ const TimeStopsTableWrapper = ({
   selectedTrain,
   trainSchedulesWithDetails,
   simulatedTrain,
+  simulatedBaseTrain,
   simulatedPathItemTimes,
   simulatedPathItemRespect,
   operationalPointsOnPath,
@@ -76,6 +78,7 @@ const TimeStopsTableWrapper = ({
     isSimulationDataLoading,
     selectedTrain,
     simulatedTrain,
+    simulatedBaseTrain,
     simulatedPathItemTimes,
     simulatedPathItemRespect,
     operationalPointsOnPath
@@ -382,7 +385,6 @@ const TimeStopsTableWrapper = ({
     commitEdit(edits, () => updateMultipleTimes(targetRows, field));
   };
 
-  // The base march is a reference value: editing it never shifts the other waypoints.
   const handleReferenceBaseArrivalChange = (row: TimesStopsRowNew, arrival: StartTime | null) =>
     commitEdit([{ rowId: row.id, field: 'referenceBaseArrival', value: arrival }], () =>
       updateReferenceBaseArrival(row, arrival)

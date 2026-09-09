@@ -51,6 +51,19 @@ const getPowerRestrictionForPathStep = (
   return null;
 };
 
+/** Arrival time at a position along the path, interpolated between the two surrounding points. */
+const interpolateArrivalAt = (
+  reportTrain: { positions: number[]; speeds: number[]; times: number[] },
+  position: number
+): Duration | undefined => {
+  const matchingIndex = reportTrain.positions.findIndex((p) => p === position);
+  const arrivalMs =
+    matchingIndex === -1
+      ? interpolateValue(reportTrain, position, 'times')
+      : reportTrain.times[matchingIndex];
+  return arrivalMs !== undefined ? new Duration({ milliseconds: arrivalMs }) : undefined;
+};
+
 type BuildTableRowParams = {
   id: string;
   pathStepId: string | null;
@@ -199,6 +212,7 @@ const useTimesStopsTableData = (
   isSimulationDataLoading: boolean,
   selectedTrain: Train,
   simulatedTrain?: SimulationResponseSuccess['final_output'],
+  simulatedBaseTrain?: SimulationResponseSuccess['base'],
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'],
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
@@ -217,6 +231,7 @@ const useTimesStopsTableData = (
   //   isValid=false, not fetching → clear the snapshot (genuinely invalid simulation)
   const lastSimRef = useRef<{
     simulatedTrain: typeof simulatedTrain;
+    simulatedBaseTrain: typeof simulatedBaseTrain;
     simulatedPathItemTimes: typeof simulatedPathItemTimes;
     simulatedPathItemRespect: typeof simulatedPathItemRespect;
     operationalPointsOnPath: typeof operationalPointsOnPath;
@@ -232,6 +247,7 @@ const useTimesStopsTableData = (
   if (isValid) {
     lastSimRef.current = {
       simulatedTrain,
+      simulatedBaseTrain,
       simulatedPathItemTimes,
       simulatedPathItemRespect,
       operationalPointsOnPath,
@@ -246,6 +262,7 @@ const useTimesStopsTableData = (
   const stableIsValid = !!activeBundle;
 
   const stableTrain = activeBundle?.simulatedTrain;
+  const stableBaseTrain = activeBundle?.simulatedBaseTrain;
   const stablePathItemTimes = activeBundle?.simulatedPathItemTimes;
   const stablePathItemRespect = activeBundle?.simulatedPathItemRespect;
   const stableOPs = activeBundle?.operationalPointsOnPath;
@@ -388,20 +405,12 @@ const useTimesStopsTableData = (
             opOnPathIndex: opIndex,
           });
         } else {
-          let computedArrival: Duration | undefined;
-          if (stableTrain) {
-            const matchingReportTrainIndex = stableTrain.positions.findIndex(
-              (position) => position === op.position
-            );
-            const computedArrivalMs =
-              matchingReportTrainIndex === -1
-                ? interpolateValue(stableTrain, op.position, 'times')
-                : stableTrain.times[matchingReportTrainIndex];
-            computedArrival =
-              computedArrivalMs !== undefined
-                ? new Duration({ milliseconds: computedArrivalMs })
-                : undefined;
-          }
+          const computedArrival = stableTrain
+            ? interpolateArrivalAt(stableTrain, op.position)
+            : undefined;
+          const computedBaseArrival = stableBaseTrain
+            ? interpolateArrivalAt(stableBaseTrain, op.position)
+            : undefined;
 
           const receptionSignal = op.pathItemId
             ? scheduleByAt[op.pathItemId]?.reception_signal
@@ -420,8 +429,10 @@ const useTimesStopsTableData = (
               trackName,
               startDate,
               computedArrival,
+              computedBaseArrival,
               shortSlipDistance,
               closedSignal: onStopSignal,
+              hasSimulation: stableIsValid,
               location: {
                 type: 'operational_point_part_reference',
                 operational_point: {
@@ -448,6 +459,7 @@ const useTimesStopsTableData = (
     selectedTrain,
     stableIsValid,
     stableTrain,
+    stableBaseTrain,
     stableOPs,
     stablePathItemTimes,
     stablePathItemRespect,
