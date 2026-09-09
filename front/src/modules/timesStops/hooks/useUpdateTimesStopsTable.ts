@@ -237,6 +237,7 @@ const useUpdateTimesStopsTable = (
           fromPathIndex: 1,
         }),
         updatedMargins: selectedTrain.margins,
+        updatedStartTime: startTime,
       };
     },
     [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
@@ -311,7 +312,12 @@ const useUpdateTimesStopsTable = (
         }
       }
 
-      return { updatedPath: currentPath, updatedSchedule, updatedMargins: selectedTrain.margins };
+      return {
+        updatedPath: currentPath,
+        updatedSchedule,
+        updatedMargins: selectedTrain.margins,
+        updatedStartTime: startTime,
+      };
     } else {
       return computeUpdatedPathAndSchedule(update);
     }
