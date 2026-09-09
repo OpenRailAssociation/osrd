@@ -131,8 +131,9 @@ fun buildFinalEnvelope(
                         comfort,
                     )
                 )
+            val conflict = findConflict(newEnvelope, blockAvailability, edges, updatedTimeData)
             val conflictOffset =
-                findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
+                conflict?.firstConflictOffset
                     ?: return FinalEnvelopeResult(newEnvelope, allowanceRanges)
             if (fixedPoints.any { it.offset == conflictOffset }) {
                 // Error case: a conflict prevents us from finding a solution,
@@ -156,6 +157,7 @@ fun buildFinalEnvelope(
                     conflictOffset,
                     allowanceRanges,
                     attempt,
+                    conflict.causes,
                 )
             }
             val newPoint =
@@ -309,17 +311,12 @@ private fun makeFixedPoint(
     offset = Offset.min(offset, pathLength)
     var time = getTimeOnEdges(edges, offset, updatedTimeData)
 
-    // Points located on engineering allowances are tricky to get right: we know we need to add some
-    // time compared to the reference time, but we don't know how much. The standalone sim can't
-    // take "valid intervals", just scheduled points.
-    // This is a "best effort" guess, were we assume that the allowance is mostly distributed
-    // linearly. TODO: find a more robust algorithm.
-    val currentAllowances = allowanceRanges.filter { conflictOffset in it.from..<it.to }
-    for (currentAllowance in currentAllowances) {
-        val relativeAllowancePosition =
-            (offset - currentAllowance.from) / (currentAllowance.to - currentAllowance.from)
-        val extraAllowanceTime = currentAllowance.addedDuration * relativeAllowancePosition
-        time += extraAllowanceTime
+    // getTimeOnEdges returns the "un-slowed" time inside an allowance range (the added delay only
+    // appears at the carrier edge's start). We can't sum each containing range's contribution:
+    // overlapping/nested ranges would double-count and produce non-monotonic times. Instead we
+    // interpolate between the reliable cumulative times known at each range boundary.
+    if (allowanceRanges.any { offset in it.from..it.to }) {
+        time = interpolateAllowanceTime(edges, offset, updatedTimeData, allowanceRanges)
     }
 
     val nextConflictTime =
@@ -333,6 +330,43 @@ private fun makeFixedPoint(
     time = min(nextConflictTime, time)
 
     return FixedTimePoint(time, offset, if (stopDuration > 0) stopDuration else null)
+}
+
+/**
+ * Estimates the time at an offset located inside one or more engineering allowance ranges.
+ *
+ * Each range ends at its carrier edge's start, whose exploration time already includes the absorbed
+ * delay; those per-boundary times are monotonic in offset. We collect all range boundaries, attach
+ * each one's exploration time (forced non-decreasing as a safety net), then linearly interpolate
+ * the requested offset between its bracketing boundaries. This replaces summing each containing
+ * range's linear ramp, which double-counted delay on overlapping/nested ranges.
+ */
+private fun interpolateAllowanceTime(
+    edges: List<STDCMEdge>,
+    offset: Offset<PhysicsPath>,
+    updatedTimeData: TimeData,
+    allowanceRanges: List<EngineeringAllowanceRange>,
+): Double {
+    val boundaries = sortedSetOf<Offset<PhysicsPath>>()
+    for (range in allowanceRanges) {
+        boundaries.add(range.from)
+        boundaries.add(range.to)
+    }
+    val anchors = mutableListOf<Pair<Offset<PhysicsPath>, Double>>()
+    var prevTime = Double.NEGATIVE_INFINITY
+    for (b in boundaries) {
+        val t = max(prevTime, getTimeOnEdges(edges, b, updatedTimeData))
+        anchors.add(b to t)
+        prevTime = t
+    }
+    val hiIndex = anchors.indexOfFirst { it.first >= offset }
+    if (hiIndex < 0) return anchors.last().second
+    if (hiIndex == 0) return anchors.first().second
+    val (loOffset, loTime) = anchors[hiIndex - 1]
+    val (hiOffset, hiTime) = anchors[hiIndex]
+    if (hiOffset == loOffset) return hiTime
+    val ratio = (offset - loOffset) / (hiOffset - loOffset)
+    return loTime + (hiTime - loTime) * ratio
 }
 
 /**
@@ -383,14 +417,15 @@ private fun getTimeOnEdges(
 
 /**
  * Looks for the first detected conflict that would happen on the given envelope. If a conflict is
- * found, returns its offset. Otherwise, returns null.
+ * found, returns an Unavailable instance, containing an offset and some metadata. Otherwise,
+ * returns null.
  */
-private fun findConflictOffsets(
+private fun findConflict(
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
     edges: List<STDCMEdge>,
     updatedTimeData: TimeData,
-): Offset<PhysicsPath>? {
+): BlockAvailabilityInterface.Unavailable? {
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
     val availability =
         blockAvailability.getAvailability(
@@ -399,10 +434,7 @@ private fun findConflictOffsets(
             explorer.getSimulatedLength(),
             updatedTimeData.departureTime,
         )
-    val offsetDistance =
-        (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset
-            ?: return null
-    return offsetDistance
+    return availability as? BlockAvailabilityInterface.Unavailable
 }
 
 /** Returns an infra explorer with envelope, with the given new envelope and updated time data */
@@ -509,6 +541,7 @@ private fun handlePostProcessingConflict(
     conflictOffset: Offset<PhysicsPath>,
     allowanceRanges: List<EngineeringAllowanceRange>,
     attempt: Int,
+    conflictCauses: List<BlockAvailabilityInterface.ConflictCause>,
 ): FinalEnvelopeResult {
     if (graph.searchMetadata != null) {
         val stringDebugData by lazy {
@@ -537,11 +570,34 @@ private fun handlePostProcessingConflict(
     postProcessingLogger.error(
         "NOTE: look through the logs for allowance issues, they may cause mismatches."
     )
+    postProcessingLogger.error(
+        "NOTE: set STDCM_DEBUG_DATA_FILENAME or look at the s3 files to get search data, " +
+            "which can be handled by core/script/generate-debug-space-chart.py " +
+            "even with no successful simulation."
+    )
+
+    fun formatTime(timeSinceDeparture: Double): String? {
+        val originalTime = graph.searchMetadata?.originalStartTime ?: return null
+        // Convert to Europe/Paris to match generate-debug-space-chart.py
+        val absoluteTime =
+            originalTime
+                .plusSeconds((timeSinceDeparture + updatedTimeData.departureTime).toLong())
+                .withZoneSameInstant(java.time.ZoneId.of("Europe/Paris"))
+        return "%02d:%02d:%02d".format(absoluteTime.hour, absoluteTime.minute, absoluteTime.second)
+    }
+
     val conflictTime = fixedPoints.first { it.offset == conflictOffset }.time
     postProcessingLogger.info(
         "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
             "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
     )
+    postProcessingLogger.info("    absolute conflict time: ${formatTime(conflictTime)}")
+    postProcessingLogger.info("    conflict causes:")
+    for (cause in conflictCauses) {
+        postProcessingLogger.info(
+            "        id \"${cause.cause}\", would need to arrive ${cause.duration}s later (or leave earlier)"
+        )
+    }
 
     var remainingDistance = conflictOffset.distance
     for ((i, edge) in edges.withIndex()) {
