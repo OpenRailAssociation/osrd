@@ -28,7 +28,7 @@ const _18H50_MIDNIGHT_CROSSING = new Date('2026-01-02T18:50:00.000Z');
 // Mocked train — only op11 (index 10) and op17 (index 16) have a scheduled arrival.
 const makeTrain = (): Train =>
   ({
-    start_time: _18H00.toISOString(),
+    start_time: _18H00.getTime(),
     // op1 at index 0 through op20 at index 19
     path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
     schedule: [
