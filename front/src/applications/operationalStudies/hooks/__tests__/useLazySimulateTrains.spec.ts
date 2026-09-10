@@ -1,43 +1,19 @@
 import { act } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
 import TrainSimulationLazyLoader from 'applications/operationalStudies/helpers/TrainSimulationLazyLoader';
+import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import type {
   LightRollingStockWithLiveries,
   PacedTrainException,
   TrainScheduleResponse,
   TrainScheduleSimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import { simulationResultsInitialState } from 'reducers/simulationResults';
-import { Duration } from 'utils/duration';
 
 import useLazySimulateTrains, { type UseLazySimulateTrainsOptions } from '../useLazySimulateTrains';
 
-let onProgress: ((results: Map<number, TrainScheduleSimulationSummaryResult>) => void) | undefined;
-
-const { mockSimulateTrainSchedules } = vi.hoisted(() => ({
-  mockSimulateTrainSchedules: vi.fn(),
-}));
-
-vi.mock('applications/operationalStudies/helpers/TrainSimulationLazyLoader', () => ({
-  default: vi.fn(
-    class {
-      simulateTrainSchedules = mockSimulateTrainSchedules;
-      pending = [];
-      cancel = vi.fn();
-      constructor(options: {
-        onProgress: (results: Map<number, TrainScheduleSimulationSummaryResult>) => void;
-      }) {
-        onProgress = options.onProgress;
-      }
-    }
-  ),
-}));
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
+const { postTrainSchedulesSimulationSummary } = mockOsrdEditoastEndpoints;
 
 describe('useLazySimulateTrains', () => {
   const mockTrain: TrainScheduleResponse = {
@@ -83,35 +59,68 @@ describe('useLazySimulateTrains', () => {
     train_schedule_set_id: 1,
   };
 
-  const mockOnProgress = vi.fn();
   const baseOptions: UseLazySimulateTrainsOptions = {
     infraId: 1,
     timetableId: 1,
     timetableType: 'CALENDAR',
     electricalProfileSetId: 1,
     rollingStocks: [],
-    onProgress: mockOnProgress,
+    onProgress: () => {},
   };
 
+  let spyOnCancel: MockInstance;
+  let spyOnLazyLoaderSimulation: MockInstance;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    spyOnCancel = vi.spyOn(TrainSimulationLazyLoader.prototype, 'cancel');
+    spyOnLazyLoaderSimulation = vi.spyOn(
+      TrainSimulationLazyLoader.prototype,
+      'simulateTrainSchedules'
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('simulateTrainSchedules', () => {
-    it('should simulate train schedules by their IDs', () => {
+    it('should simulate train schedules by their IDs', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-      result.current.simulateTrainSchedules([mockTrain]);
-      expect(mockSimulateTrainSchedules).toHaveBeenCalledWith([mockTrain.id]);
+
+      act(() => {
+        result.current.simulateTrainSchedules([mockTrain]);
+      });
+
+      await vi.waitUntil(() => result.current.simulatedTrainsById.size > 0);
+
+      expect(postTrainSchedulesSimulationSummary).toHaveBeenCalledWith({
+        body: {
+          electrical_profile_set_id: 1,
+          ids: [mockTrain.id],
+          infra_id: 1,
+          timetable_id: 1,
+        },
+      });
     });
   });
 
-  describe('removeSimulatedTrainSchedules', () => {
-    it('should remove simulated train schedules by their IDs', () => {
+  describe('removeSimulatedTrainSchedules', async () => {
+    it('should remove simulated train schedules by their IDs', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
       act(() => {
         result.current.simulateTrainSchedules([mockTrain]);
       });
-      act(() => {
-        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
-      });
 
-      expect(result.current.simulatedTrainsById.size).toBe(1);
+      await vi.waitUntil(() => result.current.simulatedTrainsById.size > 0);
 
       act(() => {
         result.current.removeSimulatedTrainSchedules([mockTrain.id]);
@@ -120,19 +129,20 @@ describe('useLazySimulateTrains', () => {
       expect(result.current.simulatedTrainsById.size).toBe(0);
     });
 
-    it('should only remove the specified train and keep the others', () => {
+    it('should only remove the specified train and keep the others', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: {
+          [mockTrain.id]: mockSimulationSummaryResult,
+          [mockTrain2.id]: mockSimulationSummaryResult,
+        },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
       act(() => {
         result.current.simulateTrainSchedules([mockTrain, mockTrain2]);
       });
-      act(() => {
-        onProgress?.(
-          new Map([
-            [mockTrain.id, mockSimulationSummaryResult],
-            [mockTrain2.id, mockSimulationSummaryResult],
-          ])
-        );
-      });
+
+      await vi.waitUntil(() => result.current.simulatedTrainsById.size > 0);
 
       act(() => {
         result.current.removeSimulatedTrainSchedules([mockTrain.id]);
@@ -144,14 +154,17 @@ describe('useLazySimulateTrains', () => {
   });
 
   describe('updateProjectedTrainScheduleDepartureTime', () => {
-    it('should update the departure time in the simulated trains map', () => {
+    it('should update the departure time in the simulated trains map', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
       act(() => {
         result.current.simulateTrainSchedules([mockTrain]);
       });
-      act(() => {
-        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
-      });
+
+      await vi.waitUntil(() => result.current.simulatedTrainsById.size > 0);
 
       const newDeparture = new Date(2000, 1, 1);
       act(() => {
@@ -160,7 +173,11 @@ describe('useLazySimulateTrains', () => {
       expect(result.current.simulatedTrainsById.get(mockTrain.id)?.startTime).toEqual(newDeparture);
     });
 
-    it('should update departure time and apply shifted exceptions when provided', () => {
+    it('should update departure time and apply shifted exceptions when provided', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
       act(() => {
         result.current.simulateTrainSchedules([
@@ -174,9 +191,8 @@ describe('useLazySimulateTrains', () => {
           },
         ]);
       });
-      act(() => {
-        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
-      });
+
+      await vi.waitUntil(() => result.current.simulatedTrainsById.size > 0);
 
       const newDeparture = new Date(2000, 1, 1);
       act(() => {
@@ -204,7 +220,7 @@ describe('useLazySimulateTrains', () => {
     it('should use create the loader when rolling stocks are available', () => {
       renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
-      expect(vi.mocked(TrainSimulationLazyLoader).mock.instances.length).toBe(1);
+      expect(spyOnLazyLoaderSimulation).toHaveBeenCalledTimes(1);
     });
 
     it('should not create a loader when there are no rolling stocks list', () => {
@@ -216,7 +232,8 @@ describe('useLazySimulateTrains', () => {
           }),
         {}
       );
-      expect(vi.mocked(TrainSimulationLazyLoader).mock.instances.length).toBe(0);
+
+      expect(spyOnLazyLoaderSimulation).not.toHaveBeenCalled();
     });
   });
 
@@ -224,51 +241,56 @@ describe('useLazySimulateTrains', () => {
     it('should return false if there are no trains to simulate', () => {
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
-      act(() => {
-        onProgress?.(new Map());
-      });
-
       expect(result.current.isTrainSimulationLoading).toBe(false);
     });
 
-    it('should return true if some trains are being simulated', () => {
-      const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-      const loaderInstance = vi.mocked(TrainSimulationLazyLoader).mock.results[0].value;
-      loaderInstance.pending = [1];
-      act(() => {
-        onProgress?.(new Map());
+    it('should return true if some trains are being simulated', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
       });
-      expect(result.current.isTrainSimulationLoading).toBe(true);
-    });
 
-    it('should return true if we simulate some train', () => {
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
       act(() => {
         result.current.simulateTrainSchedules([mockTrain]);
       });
 
-      expect(result.current.isTrainSimulationLoading).toBe(true);
+      await vi.waitFor(() => {
+        expect(result.current.isTrainSimulationLoading).toBe(true);
+      });
     });
 
-    it('should return false if no more train is being simulated', () => {
+    it('should return false if train simulations are done', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: { [mockTrain.id]: mockSimulationSummaryResult },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-      const loaderInstance = vi.mocked(TrainSimulationLazyLoader).mock.results[0].value;
-      loaderInstance.pending = [1];
+
       act(() => {
-        onProgress?.(new Map());
+        result.current.simulateTrainSchedules([mockTrain]);
       });
-      expect(result.current.isTrainSimulationLoading).toBe(true);
-      loaderInstance.pending = [];
-      act(() => {
-        onProgress?.(new Map());
+
+      await vi.waitFor(() => {
+        expect(result.current.isTrainSimulationLoading).toBe(true);
       });
-      expect(result.current.isTrainSimulationLoading).toBe(false);
+
+      await vi.waitFor(() => {
+        expect(result.current.isTrainSimulationLoading).toBe(false);
+      });
     });
   });
 
   describe('updateSimulatedTrainExceptions', () => {
-    it('should update exceptions for paced trains', () => {
+    it('should update exceptions for paced trains', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: {
+          [mockTrain.id]: {
+            ...mockSimulationSummaryResult,
+          },
+        },
+      });
+
       const { result } = renderHookWithStore(() =>
         useLazySimulateTrains({
           ...baseOptions,
@@ -287,23 +309,8 @@ describe('useLazySimulateTrains', () => {
           },
         ]);
       });
-      act(() => {
-        onProgress?.(
-          new Map([
-            [
-              mockTrain.id,
-              {
-                ...mockSimulationSummaryResult,
-                paced: {
-                  timeWindow: new Duration({}),
-                  interval: new Duration({}),
-                  exceptions: [mockTrainException],
-                },
-              },
-            ],
-          ])
-        );
-      });
+
+      await vi.waitUntil(() => result.current.simulatedTrainsById.get(mockTrain.id)?.paced);
 
       act(() => {
         result.current.updateSimulatedTrainExceptions(mockTrain.id, [
@@ -326,16 +333,22 @@ describe('useLazySimulateTrains', () => {
       ]);
     });
 
-    it('should ignore changes if mock Train is not paced', () => {
+    it('should ignore changes if mock Train is not paced', async () => {
+      postTrainSchedulesSimulationSummary.mockResolvedValue({
+        data: {
+          [mockTrain.id]: {
+            ...mockSimulationSummaryResult,
+          },
+        },
+      });
+
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
       act(() => {
         result.current.simulateTrainSchedules([mockTrain]);
       });
 
-      act(() => {
-        onProgress?.(new Map([[mockTrain.id, mockSimulationSummaryResult]]));
-      });
+      await vi.waitUntil(() => result.current.simulatedTrainsById.has(mockTrain.id));
 
       act(() => {
         result.current.updateSimulatedTrainExceptions(mockTrain.id, [
@@ -355,9 +368,9 @@ describe('useLazySimulateTrains', () => {
   describe('cleanup', () => {
     it('should cancel the loader when the component unmounts', () => {
       const { unmount } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-      const mockCancel = vi.mocked(TrainSimulationLazyLoader).mock.results[0].value.cancel;
+
       unmount();
-      expect(mockCancel).toHaveBeenCalled();
+      expect(spyOnCancel).toHaveBeenCalled();
     });
 
     it('should cancel the loader when infraId changes', () => {
@@ -365,11 +378,11 @@ describe('useLazySimulateTrains', () => {
         ({ infraId }) => useLazySimulateTrains({ ...baseOptions, infraId }),
         { initialProps: { infraId: 1 } }
       );
-      const mockCancel = vi.mocked(TrainSimulationLazyLoader).mock.results[0].value.cancel;
+
       act(() => {
         rerender({ infraId: 2 });
       });
-      expect(mockCancel).toHaveBeenCalled();
+      expect(spyOnCancel).toHaveBeenCalled();
     });
 
     it('should cancel the loader when electricalProfileSetId changes', () => {
@@ -378,11 +391,11 @@ describe('useLazySimulateTrains', () => {
           useLazySimulateTrains({ ...baseOptions, electricalProfileSetId }),
         { initialProps: { electricalProfileSetId: 1 } }
       );
-      const mockCancel = vi.mocked(TrainSimulationLazyLoader).mock.results[0].value.cancel;
+
       act(() => {
         rerender({ electricalProfileSetId: 2 });
       });
-      expect(mockCancel).toHaveBeenCalled();
+      expect(spyOnCancel).toHaveBeenCalled();
     });
 
     it('should cancel the loader when rollingStocks change', () => {
@@ -390,11 +403,11 @@ describe('useLazySimulateTrains', () => {
         ({ rollingStocks }) => useLazySimulateTrains({ ...baseOptions, rollingStocks }),
         { initialProps: { rollingStocks: [] as LightRollingStockWithLiveries[] | null } }
       );
-      const mockCancel = vi.mocked(TrainSimulationLazyLoader).mock.results[0].value.cancel;
+
       act(() => {
         rerender({ rollingStocks: null });
       });
-      expect(mockCancel).toHaveBeenCalled();
+      expect(spyOnCancel).toHaveBeenCalled();
     });
   });
 });
