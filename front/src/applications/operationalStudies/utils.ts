@@ -199,13 +199,15 @@ export const buildPathWaypointsFromRawOPs = (
     (pathItem) => pathItem.location.type !== 'track_offset'
   );
   const waypoints = ops.map((op) => {
-    // Consume remaining path steps in order. If we match a path step which
-    // isn't the first one, something went wrong: OPs on path don't go through
-    // all path items.
+    // ops and path items follow the same order, so a match should always be
+    // the next path item in the queue. If not, some path items were skipped
+    // without ever matching an op.
     const pathItemIndex = opRefPathItemsQueue.findIndex((step) =>
       matchOpRefAndWaypoint(step.location, op)
     );
-    const pathItem = pathItemIndex >= 0 ? opRefPathItemsQueue[pathItemIndex] : undefined;
+    const pathItem = opRefPathItemsQueue.find((step) =>
+      matchOpRefAndWaypoint(step.location, op)
+    );
 
     const waypoint: PathWaypoint = {
       ...omit(op, 'id'),
