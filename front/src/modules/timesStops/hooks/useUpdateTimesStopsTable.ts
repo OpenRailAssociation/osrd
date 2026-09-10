@@ -181,7 +181,7 @@ const useUpdateTimesStopsTable = (
       const isOrigin = pathStepId === updatedPath[0].id;
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
-      let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
+      let edit: OptimisticEdit;
       if (update.field === 'stopDuration') {
         edit = {
           field: 'stopDuration',
@@ -277,7 +277,7 @@ const useUpdateTimesStopsTable = (
         currentPath = updatedPathForRow;
         const existingItemIndex = updatedSchedule.findIndex((item) => item.at === pathStepId);
 
-        const edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }> =
+        const edit: OptimisticEdit =
           update.field === 'requestedArrival'
             ? {
                 field: 'requestedArrival',

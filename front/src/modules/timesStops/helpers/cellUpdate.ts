@@ -77,7 +77,7 @@ export type ScheduleState = {
  */
 export const applyScheduleEdit = (
   current: ScheduleState,
-  edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>
+  edit: OptimisticEdit
 ): ScheduleState & { departure: StartTime | null } => {
   const { arrival, stop } = current;
 
