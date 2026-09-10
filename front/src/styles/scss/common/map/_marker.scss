@@ -16,6 +16,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--white100);
+    cursor: default;
 
     &.draggable {
       cursor: grab;
