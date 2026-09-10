@@ -4,6 +4,7 @@ import type { Track } from '@osrd-project/ui-charts';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import { buildPathItemWaypointId } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
   type PathAndScheduleChangeGroup,
@@ -24,13 +25,16 @@ import { useAppDispatch } from 'store';
 
 /**
  * Insert or update a path step to go through a specific track.
+ *
+ * Returns the updated path and, when a new path step had to be inserted (the
+ * OP wasn't an explicit path step yet), the ID of that new step.
  */
 function upsertPathStepTrack(
   path: PathItem[],
   op: ProjectionWaypoint,
   pathItemRelativeLocation: PathItemRelativeLocation,
   trackName: string
-): PathItem[] {
+): { path: PathItem[]; insertedPathStepId?: string } {
   const newPath = [...path];
 
   // First check if the OP is already an explicit path step, if so update it
@@ -53,6 +57,7 @@ function upsertPathStepTrack(
         local_track_name: trackName,
       },
     };
+    return { path: newPath };
   } else {
     // Path step needs to be inserted
 
@@ -65,8 +70,9 @@ function upsertPathStepTrack(
       throw new Error('Cannot replace origin');
     }
 
+    const insertedPathStepId = uuidV4();
     newPath.splice(beforeIndex, 0, {
-      id: uuidV4(),
+      id: insertedPathStepId,
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
@@ -78,18 +84,20 @@ function upsertPathStepTrack(
         local_track_name: trackName,
       },
     });
+    return { path: newPath, insertedPathStepId };
   }
-  return newPath;
 }
 
 export default function useOccupancyZoneDrop({
   trainSchedulesWithDetails,
   pathOperationalPoints,
   deployedWaypoints,
+  scheduleWaypointReopen,
 }: {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   pathOperationalPoints: ProjectionWaypoint[];
   deployedWaypoints: DeployedWaypoint[];
+  scheduleWaypointReopen: (waypointId: string) => void;
 }) {
   const dispatch = useAppDispatch();
   const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
@@ -169,12 +177,17 @@ export default function useOccupancyZoneDrop({
       const operationalPoint = pathOperationalPoints.find((op) => op.waypointId === waypointId)!;
 
       const path = exception?.path_and_schedule?.path ?? trainSchedule.path;
-      const newPath = upsertPathStepTrack(
+      const { path: newPath, insertedPathStepId } = upsertPathStepTrack(
         path,
         operationalPoint,
         occupancyZone.pathItemRelativeLocation,
         track.name!
       );
+
+      // Changes the waypoint's ID: reopen its TOD for the new one.
+      if (insertedPathStepId && deployedWaypoints.some((w) => w.waypointId === waypointId)) {
+        scheduleWaypointReopen(buildPathItemWaypointId(insertedPathStepId));
+      }
 
       if (exception) {
         await updateExceptionPath(exception, trainSchedule, newPath);
@@ -197,6 +210,7 @@ export default function useOccupancyZoneDrop({
       trainSchedulesWithDetails,
       pathOperationalPoints,
       deployedWaypoints,
+      scheduleWaypointReopen,
       dispatch,
       upsertTrainSchedules,
       updateExceptionPath,
