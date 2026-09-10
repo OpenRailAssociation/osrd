@@ -2,14 +2,14 @@ import { Dot, Plus } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 
 type WaypointRowProps = {
   /**
    * The OP to show, or undefined for a requested step that matches no OP along
    * the path (for instance a map-click waypoint), rendered as a placeholder
    */
-  op: CoreOperationalPointOnPath | undefined;
+  op: PathWaypoint | undefined;
   /**
    * Name shown when `op` has none (a requested step matching no OP, like a
    * track-offset point for instance)
