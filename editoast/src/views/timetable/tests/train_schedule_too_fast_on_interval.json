@@ -1,101 +1,103 @@
 {
-    "id": "trainschedule_38366",
-    "train_name": "tooFastOnInterval",
-    "labels": [],
-    "rolling_stock_name": "rs-fictive",
-    "start_time": 1797146700000,
-    "path": [
-        {
-            "id": "idA",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 87700000,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
-        },
-        {
-            "id": "idB",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 87700001,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
-        },
-        {
-            "id": "idC",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 87700002,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
-        },
-        {
-            "id": "idD",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 87700003,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
-        },
-        {
-            "id": "idE",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 87700004,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
+  "id": "trainschedule_38366",
+  "train_name": "tooFastOnInterval",
+  "labels": [],
+  "rolling_stock_name": "rs-fictive",
+  "start_time": 1797146700000,
+  "path": [
+    {
+      "key": "idA",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 87700000,
+          "secondary_code": "BV",
+          "type": "uic"
         }
-    ],
-    "schedule": [
-        {
-            "at": "idB",
-            "arrival": null,
-            "stop_for": "PT1S",
-            "reception_signal": "OPEN"
-        },
-        {
-            "at": "idC",
-            "arrival": "PT201S",
-            "stop_for": null,
-            "reception_signal": "OPEN"
-        },
-        {
-            "at": "idE",
-            "arrival": "PT396S",
-            "stop_for": "P0D",
-            "reception_signal": "OPEN"
+      }
+    },
+    {
+      "key": "idB",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 87700001,
+          "secondary_code": "BV",
+          "type": "uic"
         }
+      }
+    },
+    {
+      "key": "idC",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 87700002,
+          "secondary_code": "BV",
+          "type": "uic"
+        }
+      }
+    },
+    {
+      "key": "idD",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 87700003,
+          "secondary_code": "BV",
+          "type": "uic"
+        }
+      }
+    },
+    {
+      "key": "idE",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 87700004,
+          "secondary_code": "BV",
+          "type": "uic"
+        }
+      }
+    }
+  ],
+  "schedule": [
+    {
+      "at": "idB",
+      "arrival": null,
+      "stop_for": "PT1S",
+      "reception_signal": "OPEN"
+    },
+    {
+      "at": "idC",
+      "arrival": "PT201S",
+      "stop_for": null,
+      "reception_signal": "OPEN"
+    },
+    {
+      "at": "idE",
+      "arrival": "PT396S",
+      "stop_for": "P0D",
+      "reception_signal": "OPEN"
+    }
+  ],
+  "margins": {
+    "boundaries": [
+      "idE"
     ],
-    "margins": {
-        "boundaries": ["idE"],
-        "values": [
-            "6.5min/100km",
-            "0%"
-        ]
-    },
-    "initial_speed": 0,
-    "comfort": "STANDARD",
-    "constraint_distribution": "STANDARD",
-    "speed_limit_tag": null,
-    "power_restrictions": [],
-    "options": {
-        "use_electrical_profiles": true,
-        "use_speed_limits_for_simulation": true
-    },
-    "category": null
+    "values": [
+      "6.5min/100km",
+      "0%"
+    ]
+  },
+  "initial_speed": 0,
+  "comfort": "STANDARD",
+  "constraint_distribution": "STANDARD",
+  "speed_limit_tag": null,
+  "power_restrictions": [],
+  "options": {
+    "use_electrical_profiles": true,
+    "use_speed_limits_for_simulation": true
+  },
+  "category": null
 }

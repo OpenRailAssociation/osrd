@@ -158,8 +158,8 @@ export const computePowerRestrictionWarnings = ({
 
   const pathStepPositions = new Map<string, number>();
   path.forEach((pathStep) => {
-    const matchingOp = operationalPointsOnPath?.find((op) => op.pathItemId === pathStep.id);
-    if (matchingOp) pathStepPositions.set(pathStep.id, matchingOp.position);
+    const matchingOp = operationalPointsOnPath?.find((op) => op.pathItemId === pathStep.key);
+    if (matchingOp) pathStepPositions.set(pathStep.key, matchingOp.position);
   });
 
   const ranges: { begin: number; end: number; value: string }[] = powerRestrictions.flatMap(

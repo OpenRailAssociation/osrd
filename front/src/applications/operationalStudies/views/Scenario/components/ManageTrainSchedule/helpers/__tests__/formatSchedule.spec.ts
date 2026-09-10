@@ -10,7 +10,7 @@ describe('formatSchedule', () => {
     it('should ignore steps without arrival or stopFor', () => {
       const pathSteps: PathStep[] = [
         {
-          id: 'id331',
+          key: 'id331',
           location: {
             type: 'operational_point_part_reference',
             operational_point: { uic: 8706, secondary_code: 'BV', type: 'uic' },
@@ -26,7 +26,7 @@ describe('formatSchedule', () => {
     it("should format the train's schedule field", () => {
       const pathSteps: PathStep[] = [
         {
-          id: 'id332',
+          key: 'id332',
           location: {
             type: 'operational_point_part_reference',
             operational_point: { uic: 8737, secondary_code: 'BV', type: 'uic' },

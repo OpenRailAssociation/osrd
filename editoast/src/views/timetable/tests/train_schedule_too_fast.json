@@ -1,67 +1,67 @@
 {
-    "id": "trainschedule-98",
-    "train_name": "tooFast",
-    "labels": [],
-    "rolling_stock_name": "TC64700",
-    "start_time": 1722600000000,
-    "path": [
-        {
-            "id": "id440",
-            "location": {
-                "type": "track_offset",
-                "track": "TA0",
-                "offset": 1299000
-            }
-        },
-        {
-            "id": "id935",
-            "location": {
-                "type": "operational_point_part_reference",
-                "operational_point": {
-                    "uic": 4,
-                    "secondary_code": "BV",
-                    "type": "uic"
-                }
-            }
-        },
-        {
-            "id": "id916",
-            "location": {
-                "type": "track_offset",
-                "track": "TH1",
-                "offset": 4095000
-            }
-        }
-    ],
-    "schedule": [
-        {
-            "at": "id935",
-            "arrival": "PT1740S",
-            "stop_for": "P0D",
-            "reception_signal": "OPEN"
-        },
-        {
-            "at": "id916",
-            "arrival": null,
-            "stop_for": "P0D",
-            "reception_signal": "OPEN"
-        }
-    ],
-    "margins": {
-        "boundaries": [
-            "id916"
-        ],
-        "values": [
-            "27%",
-            "0%"
-        ]
+  "id": "trainschedule-98",
+  "train_name": "tooFast",
+  "labels": [],
+  "rolling_stock_name": "TC64700",
+  "start_time": 1722600000000,
+  "path": [
+    {
+      "key": "id440",
+      "location": {
+        "type": "track_offset",
+        "track": "TA0",
+        "offset": 1299000
+      }
     },
-    "initial_speed": 0,
-    "comfort": "STANDARD",
-    "constraint_distribution": "MARECO",
-    "speed_limit_tag": null,
-    "power_restrictions": [],
-    "options": {
-        "use_electrical_profiles": true
+    {
+      "key": "id935",
+      "location": {
+        "type": "operational_point_part_reference",
+        "operational_point": {
+          "uic": 4,
+          "secondary_code": "BV",
+          "type": "uic"
+        }
+      }
+    },
+    {
+      "key": "id916",
+      "location": {
+        "type": "track_offset",
+        "track": "TH1",
+        "offset": 4095000
+      }
     }
+  ],
+  "schedule": [
+    {
+      "at": "id935",
+      "arrival": "PT1740S",
+      "stop_for": "P0D",
+      "reception_signal": "OPEN"
+    },
+    {
+      "at": "id916",
+      "arrival": null,
+      "stop_for": "P0D",
+      "reception_signal": "OPEN"
+    }
+  ],
+  "margins": {
+    "boundaries": [
+      "id916"
+    ],
+    "values": [
+      "27%",
+      "0%"
+    ]
+  },
+  "initial_speed": 0,
+  "comfort": "STANDARD",
+  "constraint_distribution": "MARECO",
+  "speed_limit_tag": null,
+  "power_restrictions": [],
+  "options": {
+    "use_electrical_profiles": true
+  }
 }

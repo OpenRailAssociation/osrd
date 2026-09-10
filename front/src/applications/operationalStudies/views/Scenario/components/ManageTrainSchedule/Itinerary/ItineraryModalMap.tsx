@@ -49,9 +49,9 @@ type ItineraryModalMapProps = {
   selectedStepId?: string;
   isMapSelectionMode?: boolean;
   onMapSelectionClick?: (featureInfoClick: FeatureInfoClick) => void;
-  onPathStepDragEnd?: (stepId: string, featureInfoClick: FeatureInfoClick) => void;
+  onPathStepDragEnd?: (stepKey: string, featureInfoClick: FeatureInfoClick) => void;
   onOpSelectionConfirm?: (location: PathItemLocation, displayName: string) => void;
-  getStepName?: (stepId: string) => string | undefined;
+  getStepName?: (stepKey: string) => string | undefined;
 };
 
 const ItineraryModalMap = ({
@@ -85,7 +85,7 @@ const ItineraryModalMap = ({
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
   const [isDraggingMarker, setIsDraggingMarker] = useState(false);
   const [snapDragPosition, setSnapDragPosition] = useState<{
-    stepId: string;
+    stepKey: string;
     coordinates: Position;
     feature: Feature;
   } | null>(null);
@@ -164,28 +164,28 @@ const ItineraryModalMap = ({
   );
 
   const handleMarkerDrag = useCallback(
-    (stepId: string, lngLat: { lng: number; lat: number }) => {
+    (stepKey: string, lngLat: { lng: number; lat: number }) => {
       const result = querySnapOnTrack(lngLat);
-      setSnapDragPosition(result ? { stepId, ...result } : null);
+      setSnapDragPosition(result ? { stepKey, ...result } : null);
     },
     [querySnapOnTrack]
   );
 
   const handleMarkerDragEnd = useCallback(
-    (stepId: string, lngLat: { lng: number; lat: number }) => {
+    (stepKey: string, lngLat: { lng: number; lat: number }) => {
       setIsDraggingMarker(false);
 
       // Use the last snapped position computed during drag, otherwise re-query at drop point
       const snapped =
-        snapDragPosition?.stepId === stepId ? snapDragPosition : querySnapOnTrack(lngLat);
+        snapDragPosition?.stepKey === stepKey ? snapDragPosition : querySnapOnTrack(lngLat);
       setSnapDragPosition(null);
 
       if (!snapped) {
-        setMarkerResetKeys((prev) => ({ ...prev, [stepId]: (prev[stepId] ?? 0) + 1 }));
+        setMarkerResetKeys((prev) => ({ ...prev, [stepKey]: (prev[stepKey] ?? 0) + 1 }));
         return;
       }
 
-      onPathStepDragEnd?.(stepId, {
+      onPathStepDragEnd?.(stepKey, {
         feature: snapped.feature,
         coordinates: snapped.coordinates,
         isOperationalPoint: false,
@@ -350,7 +350,7 @@ const ItineraryModalMap = ({
         )}
         {pathSteps &&
           pathSteps.map((step, index) => {
-            const pathStepMetadata = pathStepsMetadata?.get(step.id);
+            const pathStepMetadata = pathStepsMetadata?.get(step.key);
             const pathStepLocation = step.location;
 
             if (!pathStepMetadata || !pathStepLocation || pathStepMetadata.isInvalid) return null;
@@ -381,7 +381,7 @@ const ItineraryModalMap = ({
 
             let name = '';
             if (pathStepMetadata.type === 'trackOffset') {
-              const stepName = getStepName?.(step.id);
+              const stepName = getStepName?.(step.key);
               if (stepName) {
                 name = stepName;
               } else if (pathStepMetadata.label) {
@@ -397,23 +397,23 @@ const ItineraryModalMap = ({
               name = computeOpRefMarkerName(pathStepMetadata);
             }
 
-            const isSelected = selectedStepId === step.id;
+            const isSelected = selectedStepId === step.key;
 
             return (
               <PathStepMarker
-                key={step.id}
-                id={step.id}
+                key={step.key}
+                id={step.key}
                 testId="path-step-marker"
                 markerIndicator={(index + 1).toString()}
                 name={name}
                 coordinates={coordinates}
                 markerState={isSelected ? PATH_STEP_MARKER_STATE.SELECTED : undefined}
                 isSelected={isSelected}
-                resetKey={markerResetKeys[step.id]}
+                resetKey={markerResetKeys[step.key]}
                 draggable={!!onPathStepDragEnd && isSelected}
                 onDragStart={() => setIsDraggingMarker(true)}
-                onDrag={(lngLat) => handleMarkerDrag(step.id, lngLat)}
-                onDragEnd={(lngLat) => handleMarkerDragEnd(step.id, lngLat)}
+                onDrag={(lngLat) => handleMarkerDrag(step.key, lngLat)}
+                onDragEnd={(lngLat) => handleMarkerDragEnd(step.key, lngLat)}
               />
             );
           })}

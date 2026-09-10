@@ -13,7 +13,7 @@
                         "track": "TG3",
                         "offset": 40137
                     },
-                    "id": "0"
+                    "key": "0"
                 },
                 {
                     "location": {
@@ -21,7 +21,7 @@
                         "track": "TG3",
                         "offset": 13164
                     },
-                    "id": "1"
+                    "key": "1"
                 },
                 {
                     "location": {
@@ -29,7 +29,7 @@
                         "track": "TG0",
                         "offset": 179959
                     },
-                    "id": "2"
+                    "key": "2"
                 }
             ],
             "initial_speed": 0,

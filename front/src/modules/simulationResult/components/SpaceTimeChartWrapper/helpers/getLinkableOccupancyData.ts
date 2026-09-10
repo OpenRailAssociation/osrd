@@ -27,19 +27,19 @@ export default function getLinkableOccupancyData(
 ): Pick<LinkableOccupancy, 'blockType' | 'isStop' | 'active'> {
   const exceptionPathAndSchedule = exception?.path_and_schedule;
   const path = exceptionPathAndSchedule?.path;
-  const originPathItemId = path?.at(0)?.id ?? train.originPathItem.id;
-  const destinationPathItemId = path?.at(-1)?.id ?? train.destinationPathItem.id;
+  const originPathItemId = path?.at(0)?.key ?? train.originPathItem.key;
+  const destinationPathItemId = path?.at(-1)?.key ?? train.destinationPathItem.key;
 
   let blockType: LinkableOccupancy['blockType'] = 'via';
   if (location.type === 'exact_path_item') {
-    if (location.path_item_id === originPathItemId) blockType = 'outgoing';
-    else if (location.path_item_id === destinationPathItemId) blockType = 'incoming';
+    if (location.path_item_key === originPathItemId) blockType = 'outgoing';
+    else if (location.path_item_key === destinationPathItemId) blockType = 'incoming';
   }
 
   const schedule = exceptionPathAndSchedule?.schedule ?? train.schedule;
   const hasStop =
     location.type === 'exact_path_item' &&
-    !!schedule?.some(({ at, stop_for }) => at === location.path_item_id && !isNil(stop_for));
+    !!schedule?.some(({ at, stop_for }) => at === location.path_item_key && !isNil(stop_for));
   const initialSpeed = exception?.initial_speed?.value ?? train.initialSpeed;
   const isStop = hasStop || (blockType === 'outgoing' && !initialSpeed);
 

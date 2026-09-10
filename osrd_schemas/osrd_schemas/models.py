@@ -3271,11 +3271,11 @@ class PatchOperationCopyOperation(CopyOperation):
 class PathItemRelativeLocationExactPathItem(BaseModel):
     """
     Position of an operational point on a path, relative to the input path items.
-    If the OP matches an input path item, it is located using this path item's ID,
-    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    If the OP matches an input path item, it is located using this path item's key,
+    else, if the path just passes by the OP, it is located using its previous and following path items keys
     """
 
-    path_item_id: Annotated[str, Field(min_length=1)]
+    path_item_key: Annotated[str, Field(min_length=1)]
     """
     Path item ID, when the operational point matches an item in the input path
     """
@@ -3285,17 +3285,17 @@ class PathItemRelativeLocationExactPathItem(BaseModel):
 class PathItemRelativeLocationBetweenPathItems(BaseModel):
     """
     Position of an operational point on a path, relative to the input path items.
-    If the OP matches an input path item, it is located using this path item's ID,
-    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    If the OP matches an input path item, it is located using this path item's key,
+    else, if the path just passes by the OP, it is located using its previous and following path items keys
     """
 
-    following_path_item_id: Annotated[str, Field(min_length=1)]
+    following_path_item_key: Annotated[str, Field(min_length=1)]
     """
-    Following path item ID, when the operational point is not one of the input path items
+    Following path item key, when the operational point is not one of the input path items
     """
-    previous_path_item_id: Annotated[str, Field(min_length=1)]
+    previous_path_item_key: Annotated[str, Field(min_length=1)]
     """
-    Previous path item ID, when the operational point is not one of the input path items
+    Previous path item key, when the operational point is not one of the input path items
     """
     type: Literal["between_path_items"] = "between_path_items"
 
@@ -3310,8 +3310,8 @@ class PathItemRelativeLocation(
     )
     """
     Position of an operational point on a path, relative to the input path items.
-    If the OP matches an input path item, it is located using this path item's ID,
-    else, if the path just passes by the OP, it is located using its previous and following path items IDs
+    If the OP matches an input path item, it is located using this path item's key,
+    else, if the path just passes by the OP, it is located using its previous and following path items keys
     """
 
 
@@ -6696,7 +6696,7 @@ class PathItem(BaseModel):
     A location on the path of a train
     """
 
-    id: str
+    key: str
     """
     The unique identifier of the path item.
     This is used to reference path items in the train schedule.
