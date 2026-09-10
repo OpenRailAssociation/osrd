@@ -72,7 +72,6 @@ export const ListElementComponent = ({
               'op-suggestion-secondary-code--best': secondaryCode.isBestSuggestion,
               'op-suggestion-secondary-code--inactive': secondaryCode.isCandidate === false,
             })}
-            disabled={secondaryCode.isCandidate === false}
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
