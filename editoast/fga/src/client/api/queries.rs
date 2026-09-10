@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::client::ErrorCode;
+use crate::client::InternalErrorCode;
 use crate::client::api::Message;
 use crate::model::AsUser;
 use crate::model::Relation;
@@ -59,15 +61,33 @@ pub(in crate::client) struct BatchCheckItem {
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub(in crate::client) struct BatchCheckSingleResult {
-    pub(in crate::client) allowed: bool,
-    pub(in crate::client) error: Option<CheckError>,
+#[serde(untagged)]
+pub(in crate::client) enum BatchCheckSingleResult {
+    Result { allowed: bool },
+    Error { error: CheckError },
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub(in crate::client) struct CheckError {
-    pub(in crate::client) message: String,
-    // other schema fields are left out (input_error and internal_error)
+#[serde(untagged)]
+pub(in crate::client) enum CheckError {
+    InputError {
+        message: String,
+        input_error: ErrorCode,
+    },
+    InternalError {
+        message: String,
+        internal_error: InternalErrorCode,
+    },
+}
+
+impl CheckError {
+    pub fn message(self) -> String {
+        match self {
+            CheckError::InputError { message, .. } | CheckError::InternalError { message, .. } => {
+                message
+            }
+        }
+    }
 }
 
 impl Client {
