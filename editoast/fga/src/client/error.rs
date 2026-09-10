@@ -39,6 +39,18 @@ pub enum Error {
     #[error("{code}: {message}")]
     Aborted { code: String, message: String },
 
+    #[error("{internal_error}[{}]: {message}", *internal_error as u16)]
+    CheckInternal {
+        internal_error: InternalErrorCode,
+        message: String,
+    },
+
+    #[error("{input_error}[{}]: {message}", *input_error as u16)]
+    CheckInput {
+        input_error: ErrorCode,
+        message: String,
+    },
+
     /// Custom error indicating we could not parse an identifier we got from OpenFGA
     ///
     /// Shouldn't happen and should result in a 500 or a panic.
