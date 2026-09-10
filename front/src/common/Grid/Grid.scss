@@ -9,6 +9,7 @@
     padding-block: 10px;
     border: none;
     border-bottom: solid 1px var(--coolgray11);
+
     // This font allows items to be perfectly aligned as each letters have the same width
     font-family: monospace;
     color: var(--coolgray11);
@@ -26,6 +27,7 @@
     &:focus {
       background-color: var(--primary);
       color: var(--white);
+
       // to remove browser style on focus
       outline: none;
     }

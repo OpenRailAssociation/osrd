@@ -1,10 +1,10 @@
+@use 'sass:list';
+@use 'sass:meta';
+
 /* buttons
    ========================================================================== */
-// stylelint-disable selector-no-qualifying-type
 
-//
 // Base styles
-//
 
 .btn {
   display: inline-block;
@@ -14,6 +14,7 @@
   vertical-align: middle;
   user-select: none;
   border: $btn-border-width solid transparent;
+
   @include button-size(
     $btn-padding-y,
     $btn-padding-x,
@@ -38,17 +39,19 @@
   &.disabled,
   &:disabled {
     opacity: $btn-disabled-opacity;
+
     @include box-shadow(none);
   }
 
   // Opinionated: add "hand" cursor to non-disabled .btn elements
-  &:not(:disabled):not(.disabled) {
+  &:not(:disabled, .disabled) {
     cursor: pointer;
   }
 
-  &:not(:disabled):not(.disabled):active,
-  &:not(:disabled):not(.disabled).active {
+  &:not(:disabled, .disabled):active,
+  &:not(:disabled, .disabled).active {
     background-image: none;
+
     @include box-shadow($btn-active-box-shadow);
 
     &:focus {
@@ -63,23 +66,21 @@ fieldset:disabled a.btn {
   pointer-events: none;
 }
 
-//
 // Alternate buttons
-//
 
 @each $color, $value in $btn-colors {
   .btn-#{$color} {
-    @if type-of($value) == 'list' {
+    @if meta.type-of($value) == 'list' {
       @include button-variant(
-        nth($value, 1),
-        nth($value, 2),
-        nth($value, 3),
-        nth($value, 4),
-        nth($value, 5),
-        nth($value, 6),
-        nth($value, 7),
-        nth($value, 8),
-        nth($value, 9)
+        list.nth($value, 1),
+        list.nth($value, 2),
+        list.nth($value, 3),
+        list.nth($value, 4),
+        list.nth($value, 5),
+        list.nth($value, 6),
+        list.nth($value, 7),
+        list.nth($value, 8),
+        list.nth($value, 9)
       );
     } @else {
       @include button-variant($value, $value);
@@ -93,9 +94,7 @@ fieldset:disabled a.btn {
   }
 }
 
-//
 // Link buttons
-//
 
 // Make a button look and behave like a link
 .btn-link {
@@ -138,12 +137,11 @@ fieldset:disabled a.btn {
   color: color('white');
 }
 
-//
 // Button sizes
-//
 
 .btn-sm {
   font-weight: $font-weight-medium;
+
   @include button-size(
     $btn-padding-y-sm,
     $btn-padding-x-sm,
@@ -153,9 +151,7 @@ fieldset:disabled a.btn {
   );
 }
 
-//
 // Block button
-//
 
 .btn-block {
   display: block;
@@ -176,9 +172,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button icon
-//
 
 .btn-only-icon {
   align-items: center;
@@ -211,9 +205,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button navigation
-//
 
 .btn-rounded {
   display: inline-flex;
@@ -228,6 +220,7 @@ input[type='button'] {
   background-color: gray('400');
   border: none;
   border-radius: 50%;
+
   @include transition($btn-transition);
 
   @include hover {
@@ -242,7 +235,7 @@ input[type='button'] {
     border-color: $btn-disabled-border-color;
   }
 
-  &:not(:disabled):not(.disabled).box-shadow {
+  &:not(:disabled, .disabled).box-shadow {
     box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2);
 
     @include hover {
@@ -253,25 +246,23 @@ input[type='button'] {
 
 @each $color, $value in $btn-rounded-colors {
   .btn-rounded-#{$color} {
-    @if type-of($value) == 'list' {
-      color: nth($value, 3);
-      background-color: nth($value, 1);
+    @if meta.type-of($value) == 'list' {
+      color: list.nth($value, 3);
+      background-color: list.nth($value, 1);
 
-      &:not(:disabled):not(.disabled) {
+      &:not(:disabled, .disabled) {
         &:hover,
         &:focus,
         &:active {
-          color: nth($value, 6);
-          background-color: nth($value, 4);
+          color: list.nth($value, 6);
+          background-color: list.nth($value, 4);
         }
       }
     }
   }
 }
 
-//
 // Button option
-//
 
 .btn-options {
   min-width: rem(55px);
@@ -288,9 +279,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button favorite
-//
 
 .btn.btn-favorite {
   color: gray('300');
@@ -301,9 +290,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button alert
-//
 
 .btn-notif {
   position: relative;
@@ -326,9 +313,7 @@ input[type='button'] {
   }
 }
 
-//
 // Button card
-//
 
 .btn-card {
   display: inline-flex;
@@ -358,13 +343,12 @@ input[type='button'] {
   );
 }
 
-//
 // Button color
-//
 
 .btn-color-gray {
   color: $btn-color-gray;
-  &:not(:disabled):not(.disabled) {
+
+  &:not(:disabled, .disabled) {
     @include hover-focus-active {
       color: theme-color('primary');
     }
@@ -374,16 +358,15 @@ input[type='button'] {
 .btn-color-footer {
   color: $carbon;
   background-color: color('white');
-  &:not(:disabled):not(.disabled) {
+
+  &:not(:disabled, .disabled) {
     @include hover-focus-active {
       background-color: #b9b9b9;
     }
   }
 }
 
-//
 // Button unstyled
-//
 
 .btn-unstyled {
   font-size: inherit;

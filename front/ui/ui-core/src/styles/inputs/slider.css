@@ -4,22 +4,19 @@
 
   /* ==== rest state ==== */
   .range-slider {
-    -webkit-appearance: none;
     appearance: none;
     background-color: inherit;
     height: 10px;
     width: 100%;
 
-    /* can’t have different vendor’s prefixes in the same comma separated selector 
+    /* can’t have different vendor’s prefixes in the same comma separated selector
       or the browser will ignore it as it doesn’t recognise part of it
       &::-webkit-slider-runnable-track, &::-moz-range-track need to be split
       or to write some custom postcss plugin to split it for us
     */
     &::-webkit-slider-runnable-track {
-      -webkit-appearance: none;
       appearance: none;
       height: 4px;
-      border-radius: 2px;
       box-shadow: 0 0 0 0.5px var(--color-black-25) inset;
       background: linear-gradient(
         to right,
@@ -31,10 +28,8 @@
     }
 
     &::-moz-range-track {
-      -webkit-appearance: none;
       appearance: none;
       height: 4px;
-      border-radius: 2px;
       box-shadow: 0 0 0 0.5px var(--color-black-25) inset;
       background: linear-gradient(
         to right,
@@ -46,7 +41,6 @@
     }
 
     &::-webkit-slider-thumb {
-      -webkit-appearance: none;
       appearance: none;
       width: 10px;
       height: 10px;
@@ -59,7 +53,6 @@
     }
 
     &::-moz-range-thumb {
-      -webkit-appearance: none;
       appearance: none;
       width: 10px;
       height: 10px;
@@ -81,7 +74,6 @@
         &::-webkit-slider-runnable-track {
           box-sizing: content-box;
           border-radius: 4px;
-          background-color: var(--color-white-75);
           background: linear-gradient(
             to right,
             var(--color-black-25) var(--slider-progress),
@@ -106,7 +98,6 @@
         }
 
         &::-webkit-slider-thumb {
-          -webkit-appearance: none;
           appearance: none;
           width: 10px;
           height: 10px;
@@ -119,7 +110,6 @@
         }
 
         &::-moz-range-thumb {
-          -webkit-appearance: none;
           appearance: none;
           width: 10px;
           height: 10px;
@@ -163,7 +153,6 @@
         }
 
         &::-webkit-slider-thumb {
-          -webkit-appearance: none;
           appearance: none;
           width: 10px;
           height: 10px;
@@ -176,7 +165,6 @@
         }
 
         &::-moz-range-thumb {
-          -webkit-appearance: none;
           appearance: none;
           width: 10px;
           height: 10px;
@@ -220,7 +208,6 @@
         }
 
         &::-webkit-slider-thumb {
-          -webkit-appearance: none;
           appearance: none;
           transform: scale(0.8);
           margin-top: -3px;
@@ -232,7 +219,6 @@
         }
 
         &::-moz-range-thumb {
-          -webkit-appearance: none;
           appearance: none;
           transform: scale(0.8);
           margin-top: -3px;

@@ -2,6 +2,7 @@
   from {
     transform: translateY(0);
   }
+
   to {
     transform: translateY(-6px);
   }
@@ -12,7 +13,7 @@
   .path-step-marker {
     display: flex;
     justify-content: center;
-    font-family: 'IBM Plex Sans';
+    font-family: 'IBM Plex Sans', sans-serif;
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--white100);

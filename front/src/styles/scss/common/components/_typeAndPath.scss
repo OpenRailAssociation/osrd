@@ -3,10 +3,12 @@
   background-color: var(--white);
   padding: 8px;
   border-radius: var(--border-radius);
+
   &.quick-entry-visual {
     padding: 44px 40px 42px;
     background-color: var(--ambientB10);
   }
+
   .help {
     position: relative;
     display: flex;
@@ -21,6 +23,7 @@
 
   .input-wrapper {
     position: relative;
+
     button {
       height: 48px;
     }
@@ -31,6 +34,7 @@
     z-index: 1;
     bottom: 100%;
     margin-bottom: 2px;
+
     .op {
       position: absolute;
       font-weight: 500;
@@ -46,6 +50,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 0.7rem;
+
       &.wrong {
         position: absolute;
         border-radius: 0;
@@ -57,12 +62,14 @@
         color: var(--danger);
         font-size: 1rem;
       }
+
       &:last-child:not(.wrong) {
         color: var(--carbon);
         background-color: var(--yellow);
         border: none;
         font-size: 0.8rem;
       }
+
       &:first-child:not(.wrong) {
         color: var(--carbon);
         background-color: var(--green);
@@ -71,6 +78,7 @@
       }
     }
   }
+
   .text-zone {
     font-size: 1rem;
     font-family: monospace, 'Courier New', Courier;
@@ -80,11 +88,13 @@
     background-color: var(--coolgray1);
     border-radius: var(--border-radius);
     padding: 0 8px;
+
     &::placeholder {
       text-transform: none;
       font-size: 0.9rem;
     }
   }
+
   .form-control {
     &.quick-entry-visual {
       height: 48px;
@@ -137,22 +147,24 @@
       flex: 1 0 auto;
       max-width: 45%;
       border-radius: 4px;
-      border: none;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: small;
       text-align: center;
       border: 1px solid transparent;
+
       &:focus,
       &:hover {
         outline: none;
         box-shadow: 0 0 3px var(--coolgray11);
         border: 1px solid var(--coolgray11);
       }
+
       &:nth-child(n + 8) {
         display: none;
       }
+
       .station-text {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -167,7 +179,8 @@
   width: 1px;
   height: 1px;
   background-color: transparent;
-  &:before {
+
+  &::before {
     content: '';
     position: absolute;
     bottom: 25%;

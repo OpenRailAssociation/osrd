@@ -8,29 +8,36 @@
   border: 1px solid var(--coolgray3);
   height: 336px;
   cursor: pointer;
+
   &:hover,
   &:focus,
   &:active {
     border-color: var(--purple);
+
     .project-card-img {
       &::after {
         opacity: 1;
       }
+
       .buttons {
         opacity: 1 !important;
       }
     }
   }
+
   &[aria-disabled='true'] {
     pointer-events: none;
     opacity: 0.5;
   }
+
   &.selected {
     border-color: var(--purple);
+
     .selected-mark {
       display: block;
     }
   }
+
   &.empty {
     display: flex;
     align-items: center;
@@ -39,6 +46,7 @@
     font-size: 6rem;
     color: var(--coolgray5);
     cursor: pointer;
+
     &:hover,
     &:focus,
     &:active {
@@ -46,11 +54,13 @@
       background-color: var(--coolgray3);
       color: var(--coolgray7);
     }
+
     .legend {
       margin-top: 16px;
       font-size: 1.5rem;
     }
   }
+
   .selected-mark {
     display: none;
     position: absolute;
@@ -60,11 +70,13 @@
     top: -25.6px;
     left: -12.8px;
   }
+
   .project-card-img {
     position: relative;
     height: 160px;
     overflow: hidden;
     border-radius: 4px 4px 0 0;
+
     img {
       display: flex;
       align-items: center;
@@ -75,6 +87,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     &::after {
       content: '';
       position: absolute;
@@ -86,6 +99,7 @@
       opacity: 0;
       background: linear-gradient(0deg, var(--coolgray15) 0%, rgba(255, 255, 255, 0) 100%);
     }
+
     .buttons {
       display: flex;
       justify-content: end;
@@ -99,6 +113,7 @@
       padding: 0 8px 8px;
     }
   }
+
   .project-card-studies {
     display: flex;
     align-items: center;
@@ -110,13 +125,16 @@
     font-size: 0.7rem;
     color: var(--coolgray11);
     height: 24px;
+
     div {
       white-space: nowrap;
+
       svg {
         height: 0.7rem;
       }
     }
   }
+
   .project-card-name {
     color: var(--purple);
     font-weight: 500;
@@ -127,6 +145,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .project-card-description {
     padding: 0 8px;
     margin-bottom: 8px;
@@ -135,10 +154,12 @@
     font-size: 0.8rem;
     white-space: break-spaces;
     overflow-wrap: anywhere;
+
     &::first-letter {
       text-transform: capitalize;
     }
   }
+
   .project-card-tags {
     display: flex;
     align-items: center;
@@ -149,6 +170,7 @@
     overflow: auto;
     font-weight: 500;
     font-size: 0.8rem;
+
     .project-card-tags-tag {
       color: var(--white);
       background-color: var(--purple);
@@ -160,6 +182,7 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
+
       &:hover {
         opacity: 0.65;
       }

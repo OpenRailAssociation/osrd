@@ -2,7 +2,6 @@
    ========================================================================== */
 
 // Checkboxes and radios
-//
 // Base class takes care of all the key behavioral aspects.
 
 .custom-control-input {
@@ -26,7 +25,6 @@
     }
   }
 
-  /* stylelint-disable declaration-no-important */
   &:disabled {
     ~ .custom-control-label,
     &:indeterminate ~ .custom-control-label,
@@ -37,6 +35,7 @@
       &::before {
         border-color: $custom-control-indicator-checked-disabled-bg !important;
       }
+
       cursor: default;
     }
 
@@ -44,15 +43,15 @@
       &::before {
         background-color: $custom-control-indicator-checked-disabled-bg !important;
       }
+
       cursor: default;
     }
+
     cursor: default;
   }
-  /* stylelint-enable declaration-no-important */
 }
 
 // Custom control indicators
-//
 // Build the custom controls out of psuedo-elements.
 
 .custom-control-label {
@@ -96,6 +95,7 @@
     &::before {
       @include gradient-bg($custom-checkbox-indicator-indeterminate-bg);
       @include box-shadow($custom-checkbox-indicator-indeterminate-box-shadow);
+
       border-color: $custom-control-indicator-checked-border-color;
     }
 
@@ -119,7 +119,6 @@
 }
 
 // Checkboxes
-//
 // Tweak just a few things for checkboxes.
 
 .custom-checkbox {
@@ -127,7 +126,7 @@
   align-items: center;
 
   .custom-control-input {
-    &:not(:disabled):not(.disabled):indeterminate {
+    &:not(:disabled, .disabled):indeterminate {
       ~ .custom-control-label {
         color: $custom-control-checked-color;
 
@@ -149,18 +148,20 @@
 }
 
 @each $color, $value in ('green': #4cd201, 'yellow': #ffb901, 'gray': #333333, 'pink': #a1006b) {
-  /* stylelint-disable declaration-block-single-line-max-declarations */
   .custom-checkbox.is-#{$color} .custom-control-input {
     &:not(:disabled):checked,
     &:not(:indeterminate):checked {
       ~ .custom-control-label {
         color: $value;
+
         &::before {
           background-color: $value;
           border-color: $value;
         }
+
         @include hover-focus-active {
           color: $value;
+
           &::before {
             background-color: $value;
             border-color: $value;
@@ -168,9 +169,11 @@
         }
       }
     }
+
     &:focus ~ .custom-control-label {
       color: $value;
     }
+
     &:focus ~ .custom-control-label::before {
       border-color: $value;
     }
@@ -181,12 +184,12 @@
     &:active,
     &.active {
       color: $value;
+
       &::before {
         border-color: $value;
       }
     }
   }
-  /* stylelint-enable declaration-block-single-line-max-declarations */
 }
 
 .custom-checkbox-alone {
@@ -205,7 +208,6 @@
 }
 
 // Switch
-//
 // Binary checkboxe.
 
 .switch-control {
@@ -263,7 +265,6 @@
     }
   }
 
-  // stylelint-disable selector-no-qualifying-type
   input[disabled] + & {
     cursor: initial;
 
@@ -279,11 +280,9 @@
       background-color: color('white');
     }
   }
-  // stylelint-enable selector-no-qualifying-type
 }
 
 // Options
-//
 // Radios options
 
 .options-control {
@@ -309,7 +308,6 @@
   cursor: pointer;
   border-radius: $btn-border-radius;
 
-  // stylelint-disable selector-no-qualifying-type
   input[disabled] + & {
     color: gray('300');
     cursor: default;
@@ -320,7 +318,6 @@
     color: gray('500');
     background-color: color('white');
   }
-  // stylelint-enable selector-no-qualifying-type
 }
 
 .options-control-lg {
@@ -343,12 +340,14 @@
     &:not(:first-child) {
       margin-left: rem(8px);
     }
+
     &:not(:last-child) {
       margin-right: rem(8px);
     }
 
     @include hover-focus-active {
       color: theme-color('primary');
+
       &::after {
         position: absolute;
         bottom: rem(-1px);

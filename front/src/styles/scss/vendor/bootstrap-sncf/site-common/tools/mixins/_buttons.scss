@@ -1,5 +1,6 @@
+@use 'sass:color';
+
 // Button variants
-//
 // Easily pump out default styles, as well as :hover, :focus, :active,
 // and disabled options for all buttons
 
@@ -7,21 +8,26 @@
   $background,
   $border,
   $color: color-yiq($background),
-  $hover-background: darken($background, 7.5%),
-  $hover-border: darken($border, 10%),
+  $hover-background: color.adjust($background, $lightness: -7.5%),
+  $hover-border: color.adjust($border, $lightness: -10%),
   $hover-color: color-yiq($hover-background),
-  $active-background: darken($background, 10%),
-  $active-border: darken($border, 12.5%),
+  $active-background: color.adjust($background, $lightness: -10%),
+  $active-border: color.adjust($border, $lightness: -12.5%),
   $active-color: color-yiq($active-background)
 ) {
   color: $color;
+
   @include gradient-bg($background);
+
   border-color: $border;
+
   @include box-shadow($btn-box-shadow);
 
   @include hover-focus {
     color: $hover-color;
+
     @include gradient-bg($hover-background);
+
     border-color: $hover-border;
   }
 
@@ -34,14 +40,16 @@
     border-color: $btn-disabled-border-color;
   }
 
-  &:not(:disabled):not(.disabled):active,
-  &:not(:disabled):not(.disabled).active,
+  &:not(:disabled, .disabled):active,
+  &:not(:disabled, .disabled).active,
   .show > &.dropdown-toggle {
     color: $active-color;
     background-color: $active-background;
+
     @if $enable-gradients {
       background-image: none; // Remove the gradient for the pressed/active state
     }
+
     border-color: $active-border;
   }
 }
@@ -74,8 +82,8 @@
     background-color: transparent;
   }
 
-  &:not(:disabled):not(.disabled):active,
-  &:not(:disabled):not(.disabled).active,
+  &:not(:disabled, .disabled):active,
+  &:not(:disabled, .disabled).active,
   .show > &.dropdown-toggle {
     color: color-yiq($active-background);
     background-color: $active-background;
@@ -99,6 +107,7 @@
   padding: $padding-y $padding-x;
   font-size: $font-size;
   line-height: $line-height;
+
   // Manually declare to provide an override to the browser default
   @if $enable-rounded {
     border-radius: $border-radius;

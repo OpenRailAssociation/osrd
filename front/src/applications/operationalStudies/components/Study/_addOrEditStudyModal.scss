@@ -2,20 +2,25 @@
   max-height: calc(100vh - 56px);
   display: flex;
   flex-direction: column;
+
   .modal-body {
     overflow-y: auto;
   }
+
   .study-edition-modal-title {
     display: flex;
     align-items: center;
     gap: 16px;
     width: 100%;
+
     img {
       height: 32px;
     }
   }
+
   .study-edition-modal-description {
     margin-bottom: 16px;
+
     textarea {
       min-height: auto;
     }

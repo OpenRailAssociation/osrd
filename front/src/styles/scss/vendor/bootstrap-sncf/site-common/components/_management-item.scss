@@ -51,6 +51,7 @@
 .management-item-caret {
   display: flex;
   align-items: center;
+
   &::before {
     display: inline-block;
     width: 0;
@@ -111,15 +112,14 @@
     padding-left: 0;
   }
 
-  /* stylelint-disable declaration-no-important */
   .management-item-action {
     align-items: center;
+
     .btn {
       display: flex !important;
       min-height: rem(30px);
     }
   }
-  /* stylelint-enable declaration-no-important */
 
   .management-item-spacing {
     padding-left: rem(58px);

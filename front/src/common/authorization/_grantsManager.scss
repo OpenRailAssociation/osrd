@@ -13,9 +13,11 @@
       font-size: 0.875rem;
       color: var(--info60);
     }
+
     .blue-label {
       color: var(--primary60);
     }
+
     .grey-label {
       color: var(--grey30);
     }
@@ -35,29 +37,35 @@
       flex-direction: column;
       padding-right: 22px;
       margin-top: 8px;
+
       .display-search {
         align-self: flex-start;
         border-radius: 4px;
         padding: 0 12px;
         color: var(--primary60);
       }
+
       &-section {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 13.6px 0 13.6px 13.6px;
       }
+
       &-combobox {
         flex-grow: 1;
         margin-right: 12px;
+
         * > #add-user-combobox {
           height: 32px;
         }
       }
+
       &-actions {
         display: flex;
         justify-content: end;
       }
+
       &-add-button {
         align-self: flex-end;
         padding: 0 12px;
@@ -66,12 +74,14 @@
         color: var(--primary60);
       }
     }
+
     &-list {
       border-radius: 6px;
       margin: 15px 8px 8px;
       background-color: var(--ambientC10);
       cursor: default;
     }
+
     &-card {
       display: flex;
       justify-content: space-between;
@@ -79,16 +89,20 @@
       height: 47px;
       margin-inline: 8px;
       padding-inline: 7px 4px;
+
       &:not(:last-child) {
         border-bottom: 1px solid var(--grey20);
       }
     }
+
     &-name {
       color: var(--black100);
+
       &.bold {
         font-weight: 500;
       }
     }
+
     &-grant {
       display: flex;
       align-items: center;

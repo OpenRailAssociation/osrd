@@ -4,21 +4,26 @@ form.rjsf {
     border-style: 90%;
     border-bottom: 1px solid var(--primary);
   }
+
   .form-control:not(.readonly) {
     background-color: var(--white);
 
     &:focus {
       border-color: var(--primary);
     }
+
     &:required {
       border-color: var(--danger);
     }
+
     &:required:valid {
       border-color: var(--success);
     }
+
     &:optional:invalid {
       border-color: var(--danger);
     }
+
     &:optional:invalid {
       border-color: var(--success);
     }
@@ -32,20 +37,25 @@ form.rjsf {
 
   // Reset of glyphicons that are used in jsonschema-form for arrays
   .glyphicon::before {
+    /* stylelint-disable-next-line font-family-no-missing-generic-family-keyword */
     font-family: icons !important;
     font-style: normal;
     font-weight: normal !important;
     vertical-align: top;
   }
+
   .glyphicon-plus::before {
     content: '\f101';
   }
+
   .glyphicon-remove::before {
     content: '\f129';
   }
+
   .glyphicon-arrow-up::before {
     content: '\f10a';
   }
+
   .glyphicon-arrow-down::before {
     content: '\f106';
   }

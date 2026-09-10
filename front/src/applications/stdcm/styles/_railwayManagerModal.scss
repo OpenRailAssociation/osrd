@@ -41,7 +41,7 @@
 
     section {
       h3 {
-        font-family: 'IBM Plex Sans';
+        font-family: 'IBM Plex Sans', sans-serif;
         font-size: 1.125rem;
         font-weight: 700;
         margin-bottom: 16px;
@@ -92,7 +92,7 @@
       margin: 0;
       color: var(--grey80);
 
-      li:before {
+      li::before {
         content: '·';
         font-size: 1.875rem;
         vertical-align: middle;
@@ -175,7 +175,7 @@
     .constraint-time {
       .constraint-time-label {
         color: var(--grey80);
-        font-family: 'IBM Plex Sans';
+        font-family: 'IBM Plex Sans', sans-serif;
         font-size: 1rem;
         font-weight: 600;
         text-align: center;
@@ -189,7 +189,7 @@
         padding: 8px 16px;
         min-width: 80px;
         text-align: center;
-        font-family: 'IBM Plex Sans';
+        font-family: 'IBM Plex Sans', sans-serif;
         font-size: 1rem;
         font-weight: 600;
         color: var(--grey80);
@@ -225,6 +225,7 @@
       .comment {
         width: 317px;
         min-width: 317px;
+
         .text-area-wrapper {
           display: flex;
           flex: 1;
@@ -242,6 +243,7 @@
         .ui-date-picker {
           width: 183px;
         }
+
         .ui-date-picker {
           margin: 0 13px 0 16px;
         }
@@ -253,9 +255,11 @@
         }
       }
     }
+
     .warning-section {
       background-color: var(--ambientA15);
       padding: 0 58px 50px 54px;
+
       .warning-message {
         padding: 10px 20px;
         min-height: 76px;
@@ -334,15 +338,19 @@
     100% {
       transform: translateX(0);
     }
+
     20% {
       transform: translateX(-5px);
     }
+
     40% {
       transform: translateX(5px);
     }
+
     60% {
       transform: translateX(-5px);
     }
+
     80% {
       transform: translateX(5px);
     }

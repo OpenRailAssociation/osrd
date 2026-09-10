@@ -14,7 +14,9 @@
     border-top: solid 1px;
     border-right: solid 1px;
     border-radius: 0 0 0 10px;
+
     @apply border-black-25;
+
     display: flex;
     height: 40px;
     position: sticky;
@@ -22,7 +24,6 @@
     left: 0;
     width: 100%;
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 
     .zoom-buttons {
       display: flex;
@@ -46,6 +47,7 @@
 
       .zoom-reset {
         @apply text-grey-50;
+
         font-weight: 600;
         font-size: 0.875rem;
       }
@@ -60,6 +62,7 @@
 
   .waypoints-list {
     border-bottom-left-radius: 4px;
+
     @apply bg-white-100;
   }
 }

@@ -12,19 +12,18 @@
     border: 1px solid #94918e;
 
     --ui-checkbox-outer-ring-color: #ebebea;
+
     box-shadow:
       inset 0 0 0 1px white,
       inset 0 0 0 1.5px #d3d1cf;
     background-image: linear-gradient(180deg, white 0%, #f5f5f5 100%);
     outline: 0 none;
-
     cursor: pointer;
-
     display: grid;
     grid: 1fr / 1fr;
     place-items: center;
 
-    &:before {
+    &::before {
       content: '';
       display: block;
       width: 100%;
@@ -40,14 +39,14 @@
       --ui-checkbox-outer-ring-color: #98c0f5;
     }
 
-    &:focus-visible:before {
+    &:focus-visible::before {
       border-radius: 0;
       outline: 1px solid #256afa;
       outline-offset: 2px;
       box-shadow: none;
     }
 
-    &:after {
+    &::after {
       grid-area: 1 / 1;
       content: '';
       display: block;
@@ -64,11 +63,11 @@
       box-shadow: none;
     }
 
-    &:checked:after {
+    &:checked::after {
       background-image: inline('../assets/check_regular_shadow.svg');
     }
 
-    &:indeterminate:after {
+    &:indeterminate::after {
       background-image: inline('../assets/indeterminateCheckbox_regular_shadow.svg');
     }
 
@@ -76,7 +75,9 @@
       box-shadow: none;
       background-image: none;
       background-color: white;
+
       @apply border-grey-20;
+
       cursor: default;
 
       &:checked,
@@ -85,11 +86,11 @@
         border-color: #b6b3af;
       }
 
-      &:before {
+      &::before {
         display: none;
       }
 
-      &:checked:after {
+      &:checked::after {
         background-image: inline('../assets/check_regular_without_shadow.svg');
 
         .small & {
@@ -97,7 +98,7 @@
         }
       }
 
-      &:indeterminate:after {
+      &:indeterminate::after {
         background-image: inline('../assets/indeterminateCheckbox_regular_without_shadow.svg');
 
         .small & {
@@ -115,14 +116,15 @@
       &:indeterminate {
         background-image: none;
         background-color: white;
+
         @apply border-grey-60;
       }
 
-      &:not(:focus-visible):before {
+      &:not(:focus-visible)::before {
         display: none;
       }
 
-      &:checked:after {
+      &:checked::after {
         background-image: inline('../assets/check_readonly.svg');
 
         .small & {
@@ -130,7 +132,7 @@
         }
       }
 
-      &:indeterminate:after {
+      &:indeterminate::after {
         background-image: inline('../assets/indeterminateCheckbox_readonly.svg');
 
         .small & {
@@ -144,34 +146,34 @@
     --ui-checkbox-size: 16px;
 
     input {
-      &:before {
+      &::before {
         outline-width: 1px;
       }
 
-      &:checked:after {
+      &:checked::after {
         background-image: inline('../assets/check_small_shadow.svg');
       }
 
-      &:indeterminate:after {
+      &:indeterminate::after {
         background-image: inline('../assets/indeterminateCheckbox_small_shadow.svg');
       }
 
       &:disabled {
-        &:checked:after {
+        &:checked::after {
           background-image: inline('../assets/check_small_disabled.svg');
         }
 
-        &:indeterminate:after {
+        &:indeterminate::after {
           background-image: inline('../assets/indeterminateCheckbox_small_disabled.svg');
         }
       }
 
       &.read-only {
-        &:checked:after {
+        &:checked::after {
           background-image: inline('../assets/check_small_readonly.svg');
         }
 
-        &:indeterminate:after {
+        &:indeterminate::after {
           background-image: inline('../assets/indeterminateCheckbox_small_readonly.svg');
         }
       }
@@ -192,6 +194,7 @@
     grid-template-columns: auto auto;
     margin-bottom: 0.3rem;
   }
+
   &.with-hint {
     grid-template-rows: minmax(calc(var(--ui-checkbox-size) + 6px), auto) auto;
   }
@@ -212,6 +215,7 @@
 
   .hint {
     font-size: 0.875rem;
+
     @apply text-grey-50;
   }
 
@@ -219,6 +223,7 @@
     & ~ .label,
     & ~ .hint {
       cursor: default;
+
       @apply text-grey-30;
     }
   }
@@ -227,6 +232,7 @@
     & ~ .label,
     & ~ .hint {
       cursor: default;
+
       @apply text-grey-50;
     }
   }

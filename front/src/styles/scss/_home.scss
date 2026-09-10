@@ -4,13 +4,16 @@
 
   --selection-toolbar-height: 48px;
 }
+
 .cardscontainer {
   margin: 32px;
+
   .card {
     display: flex;
     align-items: center;
     cursor: pointer;
     transition: 0.2s ease-in-out;
+
     img {
       padding: 16px;
       width: 50%;
@@ -36,18 +39,22 @@
   align-items: center;
   justify-content: center;
   padding: 16px 0 0;
+
   h1 {
     padding-top: 32px;
     font-size: 3rem;
     color: var(--coolgray9);
   }
+
   img {
     width: 128px;
   }
+
   @media screen and (max-width: 1024px) {
     h1 {
       font-size: 1.5rem;
     }
+
     img {
       width: 64px;
     }
@@ -62,9 +69,11 @@
   display: flex !important;
   padding: 8px 16px !important;
   gap: 16px;
+
   svg {
     height: 24px;
   }
+
   &:disabled svg {
     opacity: 0.5 !important;
   }

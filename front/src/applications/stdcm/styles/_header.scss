@@ -1,11 +1,11 @@
 .stdcm-header {
-  box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
   background-color: rgba(255, 255, 255, 1);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 50px 8px 0px;
+  padding: 8px 50px 8px 0;
 
   &__impersonated {
     background-color: var(--highlight30);
@@ -19,7 +19,7 @@
     color: rgba(0, 0, 0, 1);
     font-size: 2rem;
     font-weight: 600;
-    font-style: SemiBold;
+    font-style: semibold;
     letter-spacing: -0, 6px;
     text-align: left;
     line-height: 40px;
@@ -33,16 +33,16 @@
     color: rgba(33, 100, 130, 1);
     font-size: 1rem;
     font-weight: 600;
-    font-style: SemiBold;
-    letter-spacing: 0px;
+    font-style: semibold;
+    letter-spacing: 0;
     line-height: 24px;
 
     a {
       color: rgba(24, 68, 239, 1);
       font-size: 1rem;
       font-weight: 400;
-      font-style: Regular;
-      letter-spacing: 0px;
+      font-style: regular;
+      letter-spacing: 0;
       text-align: left;
       line-height: 24px;
     }
@@ -52,45 +52,54 @@
     button:focus {
       outline: none;
     }
+
     button {
       height: 40px;
       border-radius: 6px;
       color: var(--primary50);
       border: 1px solid var(--primary30);
+
       &:hover {
         color: var(--primary80);
         border: 1px solid var(--primary80);
         background-color: var(--white100);
       }
+
       &:focus {
         outline: none;
       }
+
       &:disabled {
         pointer-events: none;
         opacity: 0.5;
       }
+
       &.selected {
         box-shadow: 0 0 0 2px var(--white100) inset;
         border: 1px solid rgba(92, 89, 85);
         background-color: rgba(255, 242, 179);
+
         &:hover {
-          border: 3px solid var(--white100);
           border: 1px solid var(--black100);
           background-color: var(--black5);
         }
       }
+
       &.debug {
         width: 40px;
         color: var(--primary30);
+
         &:hover {
           color: var(--primary80);
         }
       }
+
       &.impersonated {
         width: 40px;
         color: var(--black50);
         background-color: var(--white100);
         border: 1px solid var(--black50);
+
         &:hover {
           color: var(--black100);
           border: 1px solid var(--black100);

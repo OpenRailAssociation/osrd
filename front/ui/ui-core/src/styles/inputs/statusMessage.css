@@ -12,6 +12,7 @@
     letter-spacing: 0;
     text-align: left;
     line-height: 1.5;
+
     @apply font-semibold;
 
     &.info {
@@ -54,6 +55,7 @@
     top: 8px;
     right: 8px;
     color: var(--color-info-30);
+
     &:hover {
       color: var(--color-info-80);
     }
