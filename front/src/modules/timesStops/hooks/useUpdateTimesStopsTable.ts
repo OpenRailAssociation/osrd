@@ -12,7 +12,6 @@ import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/oper
 import {
   osrdEditoastApi,
   type TrainSchedule,
-  type PathItem,
   type ReceptionSignal,
   type ScheduleItem,
   type TrainScheduleResponse,
@@ -104,27 +103,6 @@ const useUpdateTimesStopsTable = (
   const { upsertTrainSchedules } = useTimetableContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
-  const computeUpdatedMargins = useCallback(
-    (updatedPath: PathItem[], requestedMargin: MarginValue | null, pathStepId: string) => {
-      const baseTrainInputs: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'> = {
-        path: updatedPath,
-        schedule: selectedTrain.schedule,
-        margins: selectedTrain.margins,
-      };
-
-      const updatedPathSteps = updatedPath.map((_, index) =>
-        computeBasePathStep(baseTrainInputs, index)
-      );
-      const targetedStep = updatedPathSteps.find((step) => step.id === pathStepId);
-
-      if (!targetedStep) return selectedTrain.margins;
-
-      targetedStep.theoreticalMargin = formatRequestedMargin(requestedMargin) ?? undefined;
-      return formatMargin(updatedPathSteps);
-    },
-    [selectedTrain]
-  );
-
   const persistTrain = useCallback(
     async (train: TrainScheduleResponse): Promise<'updated'> => {
       await updateTrainSchedule({
@@ -140,12 +118,24 @@ const useUpdateTimesStopsTable = (
   const computeMarginUpdate = useCallback(
     (update: RequestedMarginUpdate): TrainPatch => {
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
-      return {
+
+      const baseTrainInputs: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'> = {
         path: updatedPath,
-        margins: computeUpdatedMargins(updatedPath, update.value, pathStepId),
+        schedule: selectedTrain.schedule,
+        margins: selectedTrain.margins,
       };
+      const updatedPathSteps = updatedPath.map((_, index) =>
+        computeBasePathStep(baseTrainInputs, index)
+      );
+
+      const targetedStep = updatedPathSteps.find((step) => step.id === pathStepId);
+
+      if (!targetedStep) return { path: updatedPath };
+
+      targetedStep.theoreticalMargin = formatRequestedMargin(update.value) ?? undefined;
+      return { path: updatedPath, margins: formatMargin(updatedPathSteps) };
     },
-    [selectedTrain, allRows, computeUpdatedMargins]
+    [selectedTrain, allRows]
   );
 
   /** A stop is always required to edit a reception signal, so its schedule item must exist. */
