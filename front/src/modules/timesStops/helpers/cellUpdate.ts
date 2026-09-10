@@ -284,20 +284,8 @@ export const buildPowerRestrictionsFromRows = (
   return result;
 };
 
-/** Build a TrainSchedule object from a Train with updated path and schedule. */
-export const buildUpdatedOccurrence = ({
-  selectedTrain,
-  updatedPath,
-  updatedSchedule,
-  trainName,
-  powerRestrictions,
-}: {
-  selectedTrain: Train;
-  updatedPath: PathItem[];
-  updatedSchedule: ScheduleItem[];
-  trainName: string;
-  powerRestrictions?: PowerRestrictionItem[];
-}): TrainSchedule => ({
+/** Build a TrainSchedule object from a Train. */
+export const buildUpdatedOccurrence = (selectedTrain: Train, trainName: string): TrainSchedule => ({
   category: selectedTrain.category,
   comfort: selectedTrain.comfort,
   constraint_distribution: selectedTrain.constraint_distribution,
@@ -305,10 +293,10 @@ export const buildUpdatedOccurrence = ({
   labels: selectedTrain.labels,
   margins: selectedTrain.margins,
   options: selectedTrain.options,
-  path: updatedPath,
-  power_restrictions: powerRestrictions ?? selectedTrain.power_restrictions,
+  path: selectedTrain.path,
+  power_restrictions: selectedTrain.power_restrictions,
   rolling_stock_name: selectedTrain.rolling_stock_name,
-  schedule: updatedSchedule,
+  schedule: selectedTrain.schedule,
   speed_limit_tag: selectedTrain.speed_limit_tag,
   start_time: selectedTrain.start_time,
   train_name: trainName,
