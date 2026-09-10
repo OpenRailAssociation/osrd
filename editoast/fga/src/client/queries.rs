@@ -54,6 +54,9 @@ impl Client {
     /// a tuple from 2 to 8 `bool`s respectively. Other structuring types can be supported
     /// by implementing the [StructuredChecks] trait.
     ///
+    /// If any single check of the batch returns an error, this function throws an error for the whole batch,
+    /// either [super::Error::CheckInternal] or [super::Error::CheckInput].
+    ///
     /// # Which `check` function to use?
     ///
     /// As a rule of thumb:
@@ -311,6 +314,8 @@ impl PreparedChecks<'_> {
     /// Concurrently send batch-checks requests to OpenFGA in chunks of `n` elements,
     /// with `n` the maximum number of tuple reads configured in the
     /// [super::ConnectionSettings::limits]'s [super::Limits::max_checks_per_batch_check].
+    /// If any single check of the batch returns an error, this function throws an error for the whole batch,
+    /// either [super::Error::CheckInternal] or [super::Error::CheckInput].
     pub async fn execute(self) -> Result<Vec<bool>, Error> {
         let count = self.checks.len();
 
@@ -348,17 +353,22 @@ impl PreparedChecks<'_> {
             .flatten();
 
         let mut result = vec![false; count];
-        for (correlation_id, BatchCheckSingleResult { allowed, error }) in check_results {
+        for (correlation_id, check_single_result) in check_results {
             let Some(index) = Uuid::from_str(correlation_id.as_str())
                 .ok()
                 .and_then(|correlation_id| correlation_ids.get(&correlation_id))
             else {
                 unreachable!("OpenFGA always returns correlation IDs we send it");
             };
-            if let Some(error) = error {
-                tracing::error!(correlation_id, index, error = ?error.message, "batch check item failed");
+            match check_single_result {
+                BatchCheckSingleResult::Error(error) => {
+                    tracing::error!(correlation_id, index, error = ?error, "batch check item failed");
+                    return Err(error);
+                }
+                BatchCheckSingleResult::Allowed(allowed) => {
+                    result[*index] = allowed;
+                }
             }
-            result[*index] = allowed;
         }
         Ok(result)
     }
