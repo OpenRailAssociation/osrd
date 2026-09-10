@@ -49,10 +49,11 @@ const generateGrantSelectProps = ({
     [] as Array<{ label: string; value?: Grant }>
   );
 
-  // If the subject has no grant, we are in the case to add a new  user on the resource
+  // If the subject has no grant, we are in the case to add a new user on the resource
+  // Revoking access makes no sense here since the subject already has none
   if (subjectGrant === undefined) {
     return {
-      options: allowedOptions,
+      options: allowedOptions.filter((option) => option.value !== undefined),
       readOnly: false,
     };
   }
