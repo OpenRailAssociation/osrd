@@ -50,6 +50,7 @@ function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
 const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
+  const [consistChanges, setConsistChanges] = useState(() => getConsistChanges(pathSteps));
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const rollingStock = useStdcmLightRollingStock();
@@ -66,15 +67,19 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const [getLightRollingStockById] =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useLazyQuery();
 
-  const consistChanges = useMemo(() => getConsistChanges(pathSteps), [pathSteps]);
-
-  // When pathSteps changed
+  // When pathSteps change:
   // => update the pathStepsLocations (if needed by doing a deep comparison).
+  // => update the consistChanges (if needed by doing a deep comparison).
   useEffect(() => {
     setPathStepsLocations((prev) => {
       const newSteps = pathStepsToLocations(pathSteps);
       if (isEqual(prev, newSteps)) return prev;
       return newSteps;
+    });
+    setConsistChanges((prev) => {
+      const newConsistChanges = getConsistChanges(pathSteps);
+      if (isEqual(prev, newConsistChanges)) return prev;
+      return newConsistChanges;
     });
   }, [pathSteps]);
 
