@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TimesStopsRowNew } from '../../types';
+import type { TimesStopsRow } from '../../types';
 import { getRowsToUpdateFromSimulation } from '../fillTimesFromSimulation';
 
 const _10H00 = new Date('2025-01-01T10:00:00Z');
 const _10H30 = new Date('2025-01-01T10:30:00Z');
 
-const buildRow = (overrides: Partial<TimesStopsRowNew> = {}): TimesStopsRowNew => ({
+const buildRow = (overrides: Partial<TimesStopsRow> = {}): TimesStopsRow => ({
   id: 'row-1',
   pathStepId: 'step-1',
   opOnPathIndex: 0,
@@ -14,7 +14,7 @@ const buildRow = (overrides: Partial<TimesStopsRowNew> = {}): TimesStopsRowNew =
   name: 'Some station',
   track: 'track',
   hasRequestedTrack: false,
-  location: {} as TimesStopsRowNew['location'],
+  location: {} as TimesStopsRow['location'],
   requestedArrival: null,
   computedArrival: _10H00,
   stopDuration: null,

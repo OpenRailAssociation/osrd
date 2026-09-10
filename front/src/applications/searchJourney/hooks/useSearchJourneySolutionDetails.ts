@@ -7,7 +7,7 @@ import {
   type CoreTrackRange,
   type GeoJsonLineString,
 } from 'common/api/osrdEditoastApi';
-import { MARKER_TYPE, type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
+import { MARKER_TYPE, type MarkerInformation } from 'common/Map/types';
 import type { SearchJourneySolution } from 'reducers/searchJourney';
 import { getSearchJourneyInfraId } from 'reducers/searchJourney/selectors';
 import { useAppDispatch } from 'store';

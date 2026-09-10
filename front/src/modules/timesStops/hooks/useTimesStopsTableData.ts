@@ -32,7 +32,7 @@ import {
   receptionSignalToSignalBooleans,
   truncateStartTimeToSecond,
 } from '../helpers/utils';
-import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
+import { type Margins, type StepStatus, type TimesStopsRow } from '../types';
 
 /**
  * Returns the power restriction code that explicitly STARTS at a given path step index,
@@ -91,7 +91,7 @@ const buildTableRow = ({
   shortSlipDistance,
   closedSignal,
   margins,
-}: BuildTableRowParams): TimesStopsRowNew => {
+}: BuildTableRowParams): TimesStopsRow => {
   // Truncate sub-second part: schedule.arrival is stored in whole seconds
   // (via Math.floor in diffSeconds in scheduleStateToApiFields())
   const requestedArrival = schedule?.arrival
@@ -183,7 +183,7 @@ const useTimesStopsTableData = (
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
   simulatedPathItemRespect?: Extract<SimulationSummary, { isValid: true }>['pathItemRespect'],
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
-): { allRows: TimesStopsRowNew[]; rows: TimesStopsRowNew[]; stableIsValid: boolean } => {
+): { allRows: TimesStopsRow[]; rows: TimesStopsRow[]; stableIsValid: boolean } => {
   const { t } = useTranslation('operational-studies');
   const { scenario, getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
@@ -346,7 +346,7 @@ const useTimesStopsTableData = (
       })
     );
 
-    let formattedRows: TimesStopsRowNew[] = [];
+    let formattedRows: TimesStopsRow[] = [];
 
     // Case 1: Path is known show all OPs on path (intermediate OPs included).
     // Computed arrival times are only filled in when simulation results are available.

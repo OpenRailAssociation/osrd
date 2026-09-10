@@ -4,7 +4,7 @@ import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { getPowerRestrictionsWarnings } from 'modules/timesStops/helpers/powerRestrictionWarnings';
 import type { Train } from 'reducers/osrdconf/types';
 
-import type { TimesStopsRowNew } from '../types';
+import type { TimesStopsRow } from '../types';
 import { buildPowerRestrictionsFromRows } from './cellUpdate';
 
 export type PowerRestrictionBlockInfo = {
@@ -36,7 +36,7 @@ export type PowerRestrictionBlockInfo = {
  *    Real single-row incompatibilities (outside transition zones) are kept.
  */
 export const computeRowPowerRestrictionStatus = (
-  rows: TimesStopsRowNew[],
+  rows: TimesStopsRow[],
   operationalPointPositions: Map<number, number>,
   warningRanges: { begin: number; end: number }[],
   voltages: { begin: number; end: number; value: string }[]
@@ -147,7 +147,7 @@ export const computePowerRestrictionWarnings = ({
   voltages,
   rollingStock,
 }: {
-  rows: TimesStopsRowNew[];
+  rows: TimesStopsRow[];
   path: Train['path'];
   operationalPointsOnPath: PathPropertiesFormatted['operationalPoints'] | undefined;
   voltages: PathPropertiesFormatted['voltages'] | undefined;

@@ -39,7 +39,7 @@ import type {
   RequestedTimeField,
   StopPropagationMode,
   TimeFillMode,
-  TimesStopsRowNew,
+  TimesStopsRow,
 } from './types';
 
 declare module '@tanstack/react-table' {
@@ -52,29 +52,29 @@ declare module '@tanstack/react-table' {
   }
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface TableMeta<TFeatures extends TableFeatures, TData extends RowData> {
-    allRows: TimesStopsRowNew[];
+    allRows: TimesStopsRow[];
     isComputedDataPending?: boolean;
     availablePowerRestrictions: string[];
     powerRestrictionWarningCount: number;
     powerRestrictionBlocks: Map<string, PowerRestrictionBlockInfo>;
     onArrivalChange: (
-      row: TimesStopsRowNew,
+      row: TimesStopsRow,
       arrival: StartTime | null,
       propagationMode: PropagationMode
     ) => void;
     onStopDurationChange: (
-      row: TimesStopsRowNew,
+      row: TimesStopsRow,
       durationSeconds: number | null,
       propagationMode: StopPropagationMode
     ) => void;
     onDepartureChange: (
-      row: TimesStopsRowNew,
+      row: TimesStopsRow,
       departure: StartTime | null,
       propagationMode: PropagationMode
     ) => void;
-    onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
-    onRequestedMarginChange: (row: TimesStopsRowNew, requestedMargin: MarginValue | null) => void;
-    onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+    onReceptionSignalChange: (row: TimesStopsRow, signal: ReceptionSignal | undefined) => void;
+    onRequestedMarginChange: (row: TimesStopsRow, requestedMargin: MarginValue | null) => void;
+    onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
     onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   }
 }
@@ -95,8 +95,8 @@ const formatTime = (t: StartTime, locale: Intl.Locale) =>
  * so returning the previous stop's time means "anything earlier than this is D+1".
  */
 const getArrivalReferenceDate = (
-  row: TimesStopsRowNew,
-  allRows: TimesStopsRowNew[],
+  row: TimesStopsRow,
+  allRows: TimesStopsRow[],
   startTime: StartTime
 ): Date | undefined => {
   if (!(startTime instanceof Date)) return undefined;
@@ -118,10 +118,7 @@ const getArrivalReferenceDate = (
  * Get the reference date for departure editing.
  * Uses the current row's arrival time since departure must be after arrival.
  */
-const getDepartureReferenceDate = (
-  row: TimesStopsRowNew,
-  startTime: StartTime
-): Date | undefined => {
+const getDepartureReferenceDate = (row: TimesStopsRow, startTime: StartTime): Date | undefined => {
   if (!(startTime instanceof Date)) return undefined;
   const refDate = row.requestedArrival ?? row.computedArrival ?? startTime;
   if (!(refDate instanceof Date)) {
@@ -134,11 +131,11 @@ const getDepartureReferenceDate = (
  * Check if the OP is a scheduled OP.
  * Uses the requested departure, arrival time or stop time to determine scheduling.
  */
-const isScheduledOP = (row: TimesStopsRowNew): boolean =>
+const isScheduledOP = (row: TimesStopsRow): boolean =>
   !!row.requestedDeparture || !!row.requestedArrival || !!row.stopDuration;
 
 type TimesStopsTableProps = {
-  rows: TimesStopsRowNew[];
+  rows: TimesStopsRow[];
   startTime: StartTime;
   isValid: boolean;
   isComputedDataPending?: boolean;
@@ -146,29 +143,29 @@ type TimesStopsTableProps = {
   powerRestrictionWarningCount?: number;
   powerRestrictionBlocks?: Map<string, PowerRestrictionBlockInfo>;
   onArrivalChange: (
-    row: TimesStopsRowNew,
+    row: TimesStopsRow,
     arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => void;
   onStopDurationChange: (
-    row: TimesStopsRowNew,
+    row: TimesStopsRow,
     durationSeconds: number | null,
     propagationMode: StopPropagationMode
   ) => void;
   onDepartureChange: (
-    row: TimesStopsRowNew,
+    row: TimesStopsRow,
     departure: StartTime | null,
     propagationMode: PropagationMode
   ) => void;
-  onReceptionSignalChange: (row: TimesStopsRowNew, signal: ReceptionSignal | undefined) => void;
-  onRequestedMarginChange: (row: TimesStopsRowNew, value: MarginValue | null) => void;
-  onPowerRestrictionChange: (row: TimesStopsRowNew, value: string | null) => void;
+  onReceptionSignalChange: (row: TimesStopsRow, signal: ReceptionSignal | undefined) => void;
+  onRequestedMarginChange: (row: TimesStopsRow, value: MarginValue | null) => void;
+  onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
   onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
 };
 
 const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
 export type TimesStopsTableFeatures = typeof tableFeatureSet;
-const columnHelper = createColumnHelper<TimesStopsTableFeatures, TimesStopsRowNew>();
+const columnHelper = createColumnHelper<TimesStopsTableFeatures, TimesStopsRow>();
 const getTimeCellKey = (rowIndex: number, columnId: string) => `${rowIndex}-${columnId}`;
 type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture';
 type TabbableCellHandle = TimeCellHandle | DurationCellHandle;
@@ -257,7 +254,7 @@ const TimesStopsTable = ({
     editable,
     dataTestId,
   }: {
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, MarginValue | undefined>;
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>;
     showPolarity?: boolean;
     editable?: boolean;
     dataTestId: string;
@@ -279,7 +276,7 @@ const TimesStopsTable = ({
   };
 
   const returnRequestTheoreticalMarginCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, MarginValue | undefined>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>
   ) => {
     const { allRows } = info.table.options.meta!;
     const row = info.row.original;
@@ -309,7 +306,7 @@ const TimesStopsTable = ({
   };
 
   const returnShortSlipDistanceCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, boolean | undefined>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, boolean | undefined>
   ) => {
     const { closedSignal, shortSlipDistance } = info.row.original;
     const isDisabled = !closedSignal;
@@ -332,7 +329,7 @@ const TimesStopsTable = ({
   };
 
   const returnPowerRestrictionCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, string | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string | null>
   ) => {
     const {
       availablePowerRestrictions: codes,
@@ -383,7 +380,7 @@ const TimesStopsTable = ({
   };
 
   const returnDepartureTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
   ) => {
     const row = info.row.original;
     return (
@@ -406,7 +403,7 @@ const TimesStopsTable = ({
   };
 
   const returnReceptionOnCloseSignalCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, boolean | undefined>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, boolean | undefined>
   ) => {
     const { closedSignal, stopDuration, shortSlipDistance } = info.row.original;
     const isDisabled = !stopDuration;
@@ -434,7 +431,7 @@ const TimesStopsTable = ({
   };
 
   const returnStopDurationCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Duration | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, Duration | null>
   ) => (
     <DurationCell
       ref={registerTimeCellRef(info.row.index, 'stopDuration')}
@@ -446,7 +443,7 @@ const TimesStopsTable = ({
     />
   );
 
-  const returnStepStatusCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew>) => {
+  const returnStepStatusCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow>) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <span data-testid="step-status">&nbsp;</span>;
     }
@@ -474,7 +471,7 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnOPCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, string>) => {
+  const returnOPCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string>) => {
     const { name, secondaryCode, pathStepId } = info.row.original;
     return (
       <>
@@ -495,12 +492,12 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnOPOnPathIndexCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew>
-  ) => <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>;
+  const returnOPOnPathIndexCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow>) => (
+    <span data-testid="row-index">{info.row.original.opOnPathIndex + 1}</span>
+  );
 
   const returnTrackNameCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, string>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string>
   ) => {
     const { pathStepId, hasRequestedTrack } = info.row.original;
     return (
@@ -516,7 +513,7 @@ const TimesStopsTable = ({
   };
 
   const returnArrivalTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
   ) => {
     const row = info.row.original;
     const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
@@ -539,7 +536,7 @@ const TimesStopsTable = ({
   };
 
   const returnCalculatedArrivalTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
   ) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <SkeletonLoader className="cell-loading-placeholder" />;
@@ -551,7 +548,7 @@ const TimesStopsTable = ({
   };
 
   const returnCalculatedDepartureTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
   ) => {
     if (info.table.options.meta!.isComputedDataPending) {
       return <SkeletonLoader className="cell-loading-placeholder" />;
@@ -566,7 +563,7 @@ const TimesStopsTable = ({
   };
 
   const onMouseEnterTimeColumnMenu = (
-    allRows: TimesStopsRowNew[],
+    allRows: TimesStopsRow[],
     field: RequestedTimeField,
     mode: TimeFillMode
   ) => {
@@ -578,7 +575,7 @@ const TimesStopsTable = ({
 
   const returnRequestedTimeHeader = (field: RequestedTimeField) => {
     const requestedTimeHeader = (
-      info: HeaderContext<TimesStopsTableFeatures, TimesStopsRowNew, StartTime | null>
+      info: HeaderContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
     ) => {
       const { allRows } = info.table.options.meta!;
       return (
@@ -805,7 +802,7 @@ const TimesStopsTable = ({
       )
     );
 
-  const honouredAlong = (rowSequence: Row<TimesStopsTableFeatures, TimesStopsRowNew>[]) => {
+  const honouredAlong = (rowSequence: Row<TimesStopsTableFeatures, TimesStopsRow>[]) => {
     let honoured = true;
     return rowSequence.map(({ original: { requestedArrival, computedArrival } }) => {
       if (requestedArrival && computedArrival) {

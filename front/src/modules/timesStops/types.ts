@@ -4,7 +4,6 @@ import type {
   PathItem,
   ScheduleItem,
 } from 'common/api/osrdEditoastApi';
-
 import type { Duration, StartTime } from 'utils/duration';
 
 import type { MarginUnit } from './consts';
@@ -23,8 +22,7 @@ export type StepStatus =
   | 'marginNotHonored'
   | 'allHonored';
 
-//TODO: rename TimesStopsRowNew to TimesStopsRow when deleting the old times stop input table.
-export type TimesStopsRowNew = {
+export type TimesStopsRow = {
   // Identification
   /** Unique, opaque identifier for the row. Not to be confused with path step IDs or OP IDs. */
   id: string;
@@ -94,46 +92,46 @@ export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
 export type UpdateCellStatus = 'updated' | 'skipped';
 
 export type ArrivalUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'requestedArrival';
   value: StartTime | null;
   propagationMode: PropagationMode;
 };
 
 export type StopDurationUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'stopDuration';
   value: number | null;
   propagationMode: StopPropagationMode;
 };
 
 export type DepartureUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'requestedDeparture';
   value: StartTime | null;
   propagationMode: PropagationMode;
 };
 
 export type ReceptionSignalUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'receptionSignal';
   value: ReceptionSignal | undefined;
 };
 
 export type RequestedMarginUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'requestedTheoreticalMargin';
   value: MarginValue | null;
 };
 
 export type PowerRestrictionUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'powerRestriction';
   value: string | null;
 };
 
 export type BatchTimesUpdate = {
-  rows: TimesStopsRowNew[];
+  rows: TimesStopsRow[];
   field: RequestedTimeField;
 };
 

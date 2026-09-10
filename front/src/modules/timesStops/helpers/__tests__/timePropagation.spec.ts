@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import type { Train } from 'reducers/osrdconf/types';
 import { addDurationToStartTime, Duration, type StartTime } from 'utils/duration';
 
-import type { PropagationMode, TimesStopsRowNew } from '../../types';
+import type { PropagationMode, TimesStopsRow } from '../../types';
 import { formatPropagationDeltaLabelByMode, propagateTime } from '../timePropagation';
 
 // time constants
@@ -53,7 +53,7 @@ const row = {
   pathStepId: 'op11',
   opOnPathIndex: 10,
   requestedArrival: _18H30,
-} as unknown as TimesStopsRowNew;
+} as unknown as TimesStopsRow;
 
 // Scenario 1 — +10 min at OP11 (18:30 → 18:40)
 describe('Scenario 1 — +10 min at OP11', () => {
@@ -333,7 +333,7 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
     pathStepId: 'op1',
     opOnPathIndex: 0,
     requestedArrival: _18H00,
-  } as unknown as TimesStopsRowNew;
+  } as unknown as TimesStopsRow;
 
   // At origin, all modes use HH:mm delta regardless of mode (isOriginArrival = true).
   describe('formatPropagationDeltaLabelByMode', () => {
