@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
-import { lineString } from '@turf/helpers';
+import { lineString, multiLineString } from '@turf/helpers';
 import length from '@turf/length';
-import type { Feature, FeatureCollection, LineString } from 'geojson';
+import type { Feature, FeatureCollection, LineString, MultiLineString } from 'geojson';
 import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
@@ -156,8 +156,8 @@ const SimulationWarpedMap = ({
     ] as LngLatBoundsLike;
   }, [chart, state]);
 
-  const itineraryState: Feature<LineString> | null = useMemo(() => {
-    if (pathGeometry) return lineString(pathGeometry.coordinates);
+  const itineraryState: Feature<MultiLineString> | null = useMemo(() => {
+    if (pathGeometry) return multiLineString(pathGeometry.coordinates);
     return null;
   }, [pathGeometry]);
 
@@ -180,7 +180,8 @@ const SimulationWarpedMap = ({
    */
   useEffect(() => {
     setState({ type: 'loading' });
-    if (pathGeometry) updateWarpedMapState(pathGeometry.coordinates);
+    if (pathGeometry)
+      pathGeometry.coordinates.forEach((coordinates) => updateWarpedMapState(coordinates));
   }, [pathGeometry]);
 
   /**

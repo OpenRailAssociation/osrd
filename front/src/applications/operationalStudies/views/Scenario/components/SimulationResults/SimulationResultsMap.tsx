@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
-import { lineString } from '@turf/helpers';
+import { multiLineString } from '@turf/helpers';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -65,7 +65,7 @@ const SimulationResultMap = ({
   const mapRef = React.useRef<MapRef>(null);
 
   const geojsonPath = useMemo(
-    () => pathProperties && lineString(pathProperties.geometry.coordinates),
+    () => pathProperties && multiLineString(pathProperties.geometry.coordinates),
     [pathProperties]
   );
 

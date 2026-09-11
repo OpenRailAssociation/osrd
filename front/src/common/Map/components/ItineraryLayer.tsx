@@ -1,11 +1,11 @@
 import { Source } from 'react-map-gl/maplibre';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { GeoJsonMultiLineString } from 'common/api/osrdEditoastApi';
 import { OrderedLayer } from 'common/Map/Layers';
 
 type ItineraryLayerProps = {
   layerOrder: number;
-  geometry?: GeoJsonLineString;
+  geometry?: GeoJsonMultiLineString;
   showStdcmAssets?: boolean;
   isFeasible?: boolean;
 };

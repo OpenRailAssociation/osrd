@@ -7,7 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.railjson.schema.geom.RJSLineString
+import fr.sncf.osrd.railjson.schema.geom.RJSMultiLineString
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 
@@ -15,7 +15,7 @@ class PathPropResponse(
     val slopes: RangeValues<Double>,
     val curves: RangeValues<Double>,
     val electrifications: RangeValues<Electrification>,
-    val geometry: RJSLineString,
+    val geometry: RJSMultiLineString,
     @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>,
     val zones: RangeValues<String>,
 )
