@@ -506,7 +506,6 @@
     "no": "No",
     "open": "Open",
     "previous": "Previous",
-    "reset": "Reset",
     "save": "Save",
     "saveEdits": "Save edits",
     "search": "Search",
@@ -567,16 +566,6 @@
     "yes": "Yes"
   },
   "infrastructure": "Infrastructure",
-  "interval-editor": {
-    "add": "Add",
-    "begin": "Start",
-    "delete": "Delete",
-    "end": "End",
-    "merge": "Merge with next segment",
-    "split": "Split",
-    "translate": "Shift",
-    "value": "value"
-  },
   "jsonUpload": {
     "badJSON": "Invalid content. Only RailJSON files are supported (usually .json or .railjson extensions)",
     "emptyFile": "The file is empty",
@@ -840,7 +829,6 @@
   },
   "timeStopTable": {
     "calculatedArrivalTime": "calculated arrival time",
-    "calculatedDepartureTime": "calculated depart. time",
     "calculatedDepartureTimeFull": "calculated departure time",
     "clearRequestedArrivalTime": "Clear the requested arrival time",
     "clearRequestedDepartureTime": "Clear the requested departure time",
@@ -868,10 +856,7 @@
     },
     "computedTheoreticalMargin": "computed theoretical margin",
     "dayCounter": "D+{{count}}",
-    "departureTimeFull": "requested departure time",
     "diffMargins": "margins diff.",
-    "diffMarginsFull": "margins difference",
-    "name": "CI",
     "noPathLoaded": "No path loaded",
     "operational_point": "operational point",
     "powerRestriction": "power restriction",
@@ -892,15 +877,10 @@
     "requestedArrival": "requested arrival time",
     "requestedDeparture": "requested depart. time",
     "requestedTheoreticalMargin": "requested theoretical margin",
-    "secondaryCode": "secondary code",
     "shortSlipDistance": "short slip distance",
     "stopTime": "stopping time",
-    "theoreticalMargin": "theoretical margin",
-    "theoreticalMarginPlaceholder": "% or min/100km",
-    "theoreticalMarginSeconds": "theoretical margin (s)",
     "timeFromPreviousOp": "time from above waypoint",
     "totalTravelTime": "total travel time",
-    "trackName": "track",
-    "waypoint": "Waypoint {{id}}"
+    "trackName": "track"
   }
 }

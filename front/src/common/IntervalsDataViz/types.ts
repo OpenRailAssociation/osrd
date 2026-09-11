@@ -104,3 +104,11 @@ export type OperationalPoint = {
   position: number;
   name?: string;
 };
+
+export type AdditionalDataItem = LinearMetadataItem<{ value: number | string }>;
+
+export enum INTERVAL_TYPES {
+  NUMBER = 'number',
+  NUMBER_WITH_UNIT = 'number-with-unit',
+  SELECT = 'select',
+}

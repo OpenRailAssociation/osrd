@@ -4,8 +4,6 @@ import type {
   PathItem,
   ScheduleItem,
 } from 'common/api/osrdEditoastApi';
-import type { TimeString } from 'common/types';
-import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Duration, StartTime } from 'utils/duration';
 
 import type { MarginUnit } from './consts';
@@ -17,12 +15,6 @@ export type MarginValue = {
   unit: MarginUnitType;
 };
 
-export type TimeExtraDays = {
-  time: TimeString;
-  daySinceDeparture?: number;
-  dayDisplayed?: boolean;
-};
-
 export type StepStatus =
   | 'invalidPathStep'
   | 'noSimulation'
@@ -30,8 +22,7 @@ export type StepStatus =
   | 'marginNotHonored'
   | 'allHonored';
 
-//TODO: rename TimesStopsRowNew to TimesStopsRow when deleting the old times stop input table.
-export type TimesStopsRowNew = {
+export type TimesStopsRow = {
   // Identification
   /** Unique, opaque identifier for the row. Not to be confused with path step IDs or OP IDs. */
   id: string;
@@ -79,41 +70,6 @@ export type TimesStopsRowNew = {
   totalTravelTime: Duration | null;
 };
 
-export type TimesStopsRow = {
-  pathStepId: string | undefined;
-  opId: string | undefined;
-  name: string | undefined;
-  secondaryCode?: string | null;
-  trackName?: string;
-
-  arrival?: TimeExtraDays; // value asked by user
-  departure?: TimeExtraDays; // value asked by user
-  stopFor?: Duration | null; // value asked by user
-  onStopSignal?: boolean;
-  shortSlipDistance?: boolean;
-  theoreticalMargin?: string; // value asked by user
-  isTheoreticalMarginBoundary?: boolean; // tells whether the theoreticalMargin value was inputted for this line or if it is repeated from a previous line
-
-  theoreticalMarginSeconds?: string;
-  calculatedMargin?: string;
-  diffMargins?: string;
-  calculatedArrival?: Date | null;
-  calculatedDeparture?: Date | null;
-
-  isMarginValid?: boolean;
-};
-
-export type TimesStopsInputRow = Pick<
-  SuggestedOP,
-  'uic' | 'positionOnPath' | 'offsetOnTrack' | 'track'
-> &
-  TimesStopsRow;
-
-export enum TableType {
-  Input = 'Input',
-  Output = 'Output',
-}
-
 export type TheoreticalMarginsRecord = Record<
   string,
   { theoreticalMargin: string; isBoundary: boolean }
@@ -136,46 +92,46 @@ export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
 export type UpdateCellStatus = 'updated' | 'skipped';
 
 export type ArrivalUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'requestedArrival';
   value: StartTime | null;
   propagationMode: PropagationMode;
 };
 
 export type StopDurationUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'stopDuration';
   value: number | null;
   propagationMode: StopPropagationMode;
 };
 
 export type DepartureUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'requestedDeparture';
   value: StartTime | null;
   propagationMode: PropagationMode;
 };
 
 export type ReceptionSignalUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'receptionSignal';
   value: ReceptionSignal | undefined;
 };
 
 export type RequestedMarginUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'requestedTheoreticalMargin';
   value: MarginValue | null;
 };
 
 export type PowerRestrictionUpdate = {
-  row: TimesStopsRowNew;
+  row: TimesStopsRow;
   field: 'powerRestriction';
   value: string | null;
 };
 
 export type BatchTimesUpdate = {
-  rows: TimesStopsRowNew[];
+  rows: TimesStopsRow[];
   field: RequestedTimeField;
 };
 

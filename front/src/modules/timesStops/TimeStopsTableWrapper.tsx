@@ -27,7 +27,7 @@ import {
   type StopDurationUpdate,
   type StopPropagationMode,
   type MarginValue,
-  type TimesStopsRowNew,
+  type TimesStopsRow,
   type UpdateCellStatus,
   type TimeFillMode,
   type RequestedTimeField,
@@ -265,7 +265,7 @@ const TimeStopsTableWrapper = ({
   };
 
   const buildEditsForMarginUpdate = (
-    editedRow: TimesStopsRowNew,
+    editedRow: TimesStopsRow,
     requestedMargin: MarginValue | null
   ): PendingEdit[] => {
     const edits: PendingEdit[] = [
@@ -289,7 +289,7 @@ const TimeStopsTableWrapper = ({
   };
 
   const handleArrivalChange = (
-    row: TimesStopsRowNew,
+    row: TimesStopsRow,
     arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => {
@@ -306,7 +306,7 @@ const TimeStopsTableWrapper = ({
   };
 
   const handleDepartureChange = (
-    row: TimesStopsRowNew,
+    row: TimesStopsRow,
     departure: StartTime | null,
     propagationMode: PropagationMode
   ) => {
@@ -327,7 +327,7 @@ const TimeStopsTableWrapper = ({
   };
 
   const handleStopDurationChange = (
-    row: TimesStopsRowNew,
+    row: TimesStopsRow,
     durationSeconds: number | null,
     propagationMode: StopPropagationMode
   ) => {
@@ -347,23 +347,17 @@ const TimeStopsTableWrapper = ({
     );
   };
 
-  const handleReceptionSignalChange = (
-    row: TimesStopsRowNew,
-    signal: ReceptionSignal | undefined
-  ) =>
+  const handleReceptionSignalChange = (row: TimesStopsRow, signal: ReceptionSignal | undefined) =>
     commitEdit([{ rowId: row.id, field: 'receptionSignal', value: signal }], () =>
       updateReceptionSignal(row, signal)
     );
 
-  const handleRequestedMarginChange = (
-    row: TimesStopsRowNew,
-    requestedMargin: MarginValue | null
-  ) =>
+  const handleRequestedMarginChange = (row: TimesStopsRow, requestedMargin: MarginValue | null) =>
     commitEdit(buildEditsForMarginUpdate(row, requestedMargin), () =>
       updateRequestedMargin(row, requestedMargin)
     );
 
-  const handlePowerRestrictionChange = (row: TimesStopsRowNew, value: string | null) =>
+  const handlePowerRestrictionChange = (row: TimesStopsRow, value: string | null) =>
     commitEdit([{ rowId: row.id, field: 'powerRestriction', value }], () =>
       updatePowerRestrictions(row, value)
     );

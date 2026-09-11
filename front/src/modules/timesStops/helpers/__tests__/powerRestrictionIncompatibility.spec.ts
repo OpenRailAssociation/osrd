@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TimesStopsRowNew } from '../../types';
+import type { TimesStopsRow } from '../../types';
 import { computeRowPowerRestrictionStatus } from '../powerRestrictionIncompatibility';
 
 /** Build a minimal row with only the fields used by computeRowPowerRestrictionStatus. */
@@ -8,13 +8,13 @@ const row = (
   id: string,
   opOnPathIndex: number,
   opts: { pathStepId?: string; powerRestriction?: string | null } = {}
-): TimesStopsRowNew =>
+): TimesStopsRow =>
   ({
     id,
     opOnPathIndex,
     pathStepId: opts.pathStepId ?? null,
     powerRestriction: opts.powerRestriction ?? null,
-  }) as TimesStopsRowNew;
+  }) as TimesStopsRow;
 
 describe('computeRowPowerRestrictionStatus', () => {
   it('returns empty map for empty rows', () => {

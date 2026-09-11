@@ -1,13 +1,9 @@
-import { compact, isEmpty, keyBy } from 'lodash';
-
-import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
-import type { PathStep } from 'reducers/osrdconf/types';
 
-import type { PowerRestrictionWarnings } from '../types';
+import type { PowerRestrictionWarnings } from './types';
 
 // TODO : convert begin and end in meters here instead of in PowerRestrictionsSelector
 const getInvalidZoneBoundaries = (
@@ -83,72 +79,3 @@ export const getPowerRestrictionsWarnings = (
 
   return warnings;
 };
-
-export const countWarnings = (
-  warnings: PowerRestrictionWarnings = {
-    invalidCombinationWarnings: [],
-    modeNotSupportedWarnings: [],
-    missingPowerRestrictionWarnings: [],
-  }
-): number => {
-  const { invalidCombinationWarnings, modeNotSupportedWarnings, missingPowerRestrictionWarnings } =
-    warnings;
-  return (
-    invalidCombinationWarnings.length +
-    modeNotSupportedWarnings.length +
-    missingPowerRestrictionWarnings.length
-  );
-};
-
-const formatElectricalRanges = (
-  ranges: PowerRestriction[],
-  pathStepsById: Record<string, PathStep>
-): { begin: number; end: number; value: string }[] => {
-  const formattedRanges = compact(
-    ranges.map((range) => {
-      const begin = pathStepsById[range.from]?.positionOnPath;
-      const end = pathStepsById[range.to]?.positionOnPath;
-
-      if (begin !== undefined && end !== undefined) {
-        return {
-          begin,
-          end,
-          value: range.value,
-        };
-      }
-      return null;
-    })
-  );
-  return formattedRanges;
-};
-
-const getPowerRestrictionsWarningsData = ({
-  pathSteps,
-  voltageRanges,
-  rollingStockModes,
-  powerRestrictionRanges,
-}: {
-  pathSteps: PathStep[];
-  rollingStockPowerRestrictions: RollingStock['power_restrictions'];
-  voltageRanges: RangedValue[];
-  powerRestrictionRanges: PowerRestriction[];
-  rollingStockModes: RollingStock['effort_curves']['modes'];
-}) => {
-  const pathStepsById = keyBy(pathSteps, 'id');
-  const warnings =
-    !isEmpty(voltageRanges) && !isEmpty(powerRestrictionRanges)
-      ? getPowerRestrictionsWarnings(
-          formatElectricalRanges(powerRestrictionRanges, pathStepsById),
-          voltageRanges,
-          rollingStockModes
-        )
-      : undefined;
-  const warningsNb = warnings ? countWarnings(warnings) : 0;
-
-  return {
-    warnings,
-    warningsNb,
-  };
-};
-
-export default getPowerRestrictionsWarningsData;

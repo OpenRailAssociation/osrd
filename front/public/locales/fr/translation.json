@@ -506,7 +506,6 @@
     "no": "Non",
     "open": "Ouvrir",
     "previous": "Précédent",
-    "reset": "Réinitialiser",
     "save": "Sauvegarder",
     "saveEdits": "Sauvegarder les modifications",
     "search": "Rechercher",
@@ -567,16 +566,6 @@
     "yes": "Oui"
   },
   "infrastructure": "Infrastructure",
-  "interval-editor": {
-    "add": "Ajouter",
-    "begin": "Début",
-    "delete": "Supprimer",
-    "end": "Fin",
-    "merge": "Fusionner avec le segment suivant",
-    "split": "Diviser",
-    "translate": "Translater",
-    "value": "Valeur"
-  },
   "jsonUpload": {
     "badJSON": "Contenu non valide. Seuls les fichiers RailJSON sont pris en charge (habituellement .json ou .railjson)",
     "emptyFile": "Le fichier est vide",
@@ -841,7 +830,6 @@
   "timeStopTable": {
     "calculatedArrivalTime": "arrivée calculée",
     "calculatedDepartureTime": "départ calculé",
-    "calculatedDepartureTimeFull": "départ calculé",
     "clearRequestedArrivalTime": "Effacer l'arrivée demandée",
     "clearRequestedDepartureTime": "Effacer le départ demandé",
     "clearStopDuration": "Effacer le temps d'arrêt",
@@ -868,10 +856,7 @@
     },
     "computedTheoreticalMargin": "marge théorique calculée",
     "dayCounter": "J+{{count}}",
-    "departureTimeFull": "départ demandé",
     "diffMargins": "diff. marges",
-    "diffMarginsFull": "différence entre les marges",
-    "name": "CI",
     "noPathLoaded": "Aucun chemin chargé",
     "operational_point": "point remarquable",
     "powerRestriction": "restriction de puissance",
@@ -892,15 +877,10 @@
     "requestedArrival": "arrivée demandée",
     "requestedDeparture": "départ demandé",
     "requestedTheoreticalMargin": "marge théorique demandée",
-    "secondaryCode": "code secondaire",
     "shortSlipDistance": "faible glissement",
     "stopTime": "temps d'arrêt",
-    "theoreticalMargin": "marge théorique",
-    "theoreticalMarginPlaceholder": "% ou min/100km",
-    "theoreticalMarginSeconds": "marge théorique (s)",
     "timeFromPreviousOp": "temps depuis le point précédent",
     "totalTravelTime": "temps total du trajet",
-    "trackName": "voie",
-    "waypoint": "Via {{id}}"
+    "trackName": "voie"
   }
 }

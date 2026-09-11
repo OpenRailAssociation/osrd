@@ -9,12 +9,12 @@ import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import ItineraryLayer from 'common/Map/components/ItineraryLayer';
-import { type MarkerInformation } from 'common/Map/components/ItineraryMarkers';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 
 import PathStepMarker, { PATH_STEP_MARKER_STATE } from './components/PathStepMarker';
+import type { MarkerInformation } from './types';
 import { MapContextProvider } from './useMapContext';
 
 type DefaultBaseMapProps = {

@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
-import type { MarkerInformation } from 'common/Map/components/ItineraryMarkers';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
+import type { MarkerInformation } from 'common/Map/types';
 import { defaultMapSettings } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { getSearchJourneyInfraId } from 'reducers/searchJourney/selectors';

@@ -1,8 +1,6 @@
 import cx from 'classnames';
 
-import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
-
-import type { IntervalItemBaseProps, LinearMetadataItem } from './types';
+import { INTERVAL_TYPES, type IntervalItemBaseProps, type LinearMetadataItem } from './types';
 import {
   computeStyleForDataValue,
   getPositionFromMouseEventAndSegment,
@@ -50,9 +48,7 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
   if (field && segment[field]) {
     const interval = segment;
     if (intervalType === INTERVAL_TYPES.NUMBER_WITH_UNIT) {
-      valueText = `${interval[field]} ${
-        intervalType === INTERVAL_TYPES.NUMBER_WITH_UNIT && interval.unit
-      }`;
+      valueText = `${interval[field]} ${interval.unit}`;
     } else {
       valueText = `${interval[field]}`;
     }
