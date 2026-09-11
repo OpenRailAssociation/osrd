@@ -16,8 +16,10 @@ import {
   getLoadingGauge,
   getStdcmSpeedLimitByTag,
   getTrackSectionIdsByLoadingGauge,
+  getTotalLength,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { useDebounce } from 'utils/hooks/useDebounce';
 
 import {
   getConsistChanges,
@@ -47,12 +49,18 @@ function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
   );
 }
 
-const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
+const useStaticPathfinding = (
+  workerStatus: WorkerStatus,
+  infra: Infra | undefined,
+  debounceMs = 1000
+) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
   const [consistChanges, setConsistChanges] = useState(() => getConsistChanges(pathSteps));
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const totalLength = useSelector(getTotalLength);
+  const debouncedTotalLength = useDebounce(totalLength, debounceMs);
   const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
@@ -86,7 +94,13 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   useEffect(() => {
     const launchPathfinding = async () => {
       setPathfinding(undefined);
-      if (!infra || workerStatus !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
+      if (
+        !infra ||
+        workerStatus !== 'READY' ||
+        !rollingStock ||
+        debouncedTotalLength === undefined ||
+        pathStepsLocations.length < 2
+      ) {
         return;
       }
 
@@ -126,6 +140,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         postPathfindingBlocks,
         infraId: infra.id,
         rollingStock,
+        totalLength: debouncedTotalLength,
         loadingGauge,
         speedLimitByTag,
         allowedTrackSections,
@@ -142,6 +157,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   }, [
     pathStepsLocations,
     rollingStock,
+    debouncedTotalLength,
     speedLimitByTag,
     loadingGauge,
     trackSectionIdsByLoadingGauge,
