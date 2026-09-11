@@ -90,7 +90,7 @@ export const handleNodeOperation = async ({
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
-            trigram: domesticReference,
+            trigram: node.betriebspunktName,
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });
