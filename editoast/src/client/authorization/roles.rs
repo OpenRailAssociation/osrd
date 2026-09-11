@@ -91,14 +91,7 @@ pub async fn add_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let openfga = &openfga_config.into_client().await?;
-    let system = SystemAuthorizer::new_infallible(openfga);
-
-    let roles = roles
-        .iter()
-        .map(String::as_str)
-        .map(parse_role_case_insensitive)
-        .collect::<Result<HashSet<_>, _>>()?;
+    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     info!(
         "Adding roles {} to {subject}",
         roles
@@ -107,7 +100,14 @@ pub async fn add_roles(
             .collect_vec()
             .join(", "),
     );
-    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
+
+    let openfga = &openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(openfga);
+    let roles = roles
+        .iter()
+        .map(String::as_str)
+        .map(parse_role_case_insensitive)
+        .collect::<Result<HashSet<_>, _>>()?;
     let add_roles = authz::v2::add_roles(subject.to_authz(), roles);
     let Ok(()) = system.authorize(add_roles).await?.access().await?;
     Ok(())
@@ -118,14 +118,7 @@ pub async fn remove_roles(
     pool: Arc<DbConnectionPoolV2>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let openfga = &openfga_config.into_client().await?;
-    let system = SystemAuthorizer::new_infallible(openfga);
-
-    let roles = roles
-        .iter()
-        .map(String::as_str)
-        .map(parse_role_case_insensitive)
-        .collect::<Result<HashSet<_>, _>>()?;
+    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
     info!(
         "Removing roles {} from {subject}",
         roles
@@ -134,7 +127,14 @@ pub async fn remove_roles(
             .collect_vec()
             .join(", "),
     );
-    let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
+
+    let openfga = &openfga_config.into_client().await?;
+    let system = SystemAuthorizer::new_infallible(openfga);
+    let roles = roles
+        .iter()
+        .map(String::as_str)
+        .map(parse_role_case_insensitive)
+        .collect::<Result<HashSet<_>, _>>()?;
     let remove_roles = authz::v2::remove_roles(subject.to_authz(), roles);
     let Ok(()) = system.authorize(remove_roles).await?.access().await?;
     Ok(())
