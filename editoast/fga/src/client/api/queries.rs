@@ -59,15 +59,10 @@ pub(in crate::client) struct BatchCheckItem {
 }
 
 #[derive(Debug, serde::Deserialize)]
-pub(in crate::client) struct BatchCheckSingleResult {
-    pub(in crate::client) allowed: bool,
-    pub(in crate::client) error: Option<CheckError>,
-}
-
-#[derive(Debug, serde::Deserialize)]
-pub(in crate::client) struct CheckError {
-    pub(in crate::client) message: String,
-    // other schema fields are left out (input_error and internal_error)
+#[serde(untagged)]
+pub(in crate::client) enum BatchCheckSingleResult {
+    Result { allowed: bool },
+    Error { error: Error },
 }
 
 impl Client {

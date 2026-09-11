@@ -348,17 +348,22 @@ impl PreparedChecks<'_> {
             .flatten();
 
         let mut result = vec![false; count];
-        for (correlation_id, BatchCheckSingleResult { allowed, error }) in check_results {
+        for (correlation_id, check_single_result) in check_results {
             let Some(index) = Uuid::from_str(correlation_id.as_str())
                 .ok()
                 .and_then(|correlation_id| correlation_ids.get(&correlation_id))
             else {
                 unreachable!("OpenFGA always returns correlation IDs we send it");
             };
-            if let Some(error) = error {
-                tracing::error!(correlation_id, index, error = ?error.message, "batch check item failed");
+            match check_single_result {
+                BatchCheckSingleResult::Error { error } => {
+                    tracing::error!(correlation_id, index, error = ?error, "batch check item failed");
+                    return Err(error);
+                }
+                BatchCheckSingleResult::Result { allowed } => {
+                    result[*index] = allowed;
+                }
             }
-            result[*index] = allowed;
         }
         Ok(result)
     }
