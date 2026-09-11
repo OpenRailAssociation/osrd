@@ -9,6 +9,7 @@ import {
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { updateTrainSchedule as updatePacedTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -437,12 +438,37 @@ const useUpdateTimesStopsTable = (
    * Handle update when the selected train is a TrainSchedule (not an occurrence).
    */
   const handleUpdateTrainSchedule = useCallback(
-    async (trainId: TrainScheduleId, patch: TrainPatch): Promise<UpdateCellStatus> =>
-      persistTrain({
+    async (trainId: TrainScheduleId, patch: TrainPatch): Promise<UpdateCellStatus> => {
+      const editoastId = extractEditoastIdFromTrainScheduleId(trainId);
+
+      const updatedTrain = {
         ...selectedTrain,
-        id: extractEditoastIdFromTrainScheduleId(trainId),
+        id: editoastId,
         ...patch,
-      }),
+      };
+
+      const originalPacedTrainWithDetails = trainSchedulesWithDetails.find(
+        (trainSchedule) => trainSchedule.id === editoastId
+      );
+
+      // TODO: don't use TrainScheduleWithDetails in updateTrainSchedule
+      // since we only use data contained in TrainSchedule
+      if (!originalPacedTrainWithDetails) {
+        throw new Error('Original paced train with details not found.');
+      }
+
+      const updateResult = await updatePacedTrainSchedule({
+        timetableId,
+        trainScheduleId: editoastId,
+        originalTrainSchedule: originalPacedTrainWithDetails,
+        updatedTrainSchedule: updatedTrain,
+        addedExceptions: [],
+        upsertTrainSchedules,
+        dispatch,
+      });
+
+      return updateResult.success ? 'updated' : 'skipped';
+    },
     [selectedTrain, persistTrain]
   );
 
