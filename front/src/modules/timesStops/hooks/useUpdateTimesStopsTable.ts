@@ -5,6 +5,7 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import {
   buildOccurrenceExceptionData,
+  checkChangeGroups,
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
@@ -23,7 +24,11 @@ import {
   isPacedTrainBase,
   isPacedTrainWithDetails,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import {
+  deleteExceptions,
+  syncOccurrenceException,
+  updateExceptions,
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -442,7 +447,7 @@ const useUpdateTimesStopsTable = (
       const result = computeUpdateWithBatch(update);
       if (!result) return 'skipped';
 
-      return persistTrain({
+      const updatedTrain: TrainScheduleResponse = {
         ...selectedTrain,
         id: editoastId,
         path: result.updatedPath,
@@ -451,9 +456,51 @@ const useUpdateTimesStopsTable = (
         start_time: result.updatedStartTime
           ? startTimeToMs(result.updatedStartTime)
           : selectedTrain.start_time,
+      };
+
+      const originalPacedTrainWithDetails = trainSchedulesWithDetails.find(
+        (trainSchedule) => trainSchedule.id === editoastId
+      );
+
+      if (
+        !originalPacedTrainWithDetails ||
+        !isPacedTrainWithDetails(originalPacedTrainWithDetails)
+      ) {
+        return persistTrain(updatedTrain);
+      }
+
+      const formattedPacedTrain = formatTrainScheduleWithDetailsToTrainSchedule(
+        originalPacedTrainWithDetails
+      );
+      if (!isPacedTrainBase(formattedPacedTrain)) {
+        throw new Error('Formatted PacedTrain is missing paced field');
+      }
+
+      // Reconcile the existing exceptions with the newly edited paced train:
+      // any exception that no longer differs from the updated base train is dropped.
+      const {
+        exceptions: reconciledExceptions,
+        modifiedExceptions: exceptionsToUpdate,
+        exceptionsToDeleteIds,
+      } = checkChangeGroups(
+        updatedTrain,
+        formattedPacedTrain.paced,
+        originalPacedTrainWithDetails.paced.exceptions
+      );
+
+      if (exceptionsToDeleteIds.length > 0) {
+        await deleteExceptions(dispatch, exceptionsToDeleteIds);
+      }
+      if (exceptionsToUpdate.length > 0) {
+        await updateExceptions(dispatch, exceptionsToUpdate, editoastId);
+      }
+
+      return persistTrain({
+        ...updatedTrain,
+        paced: { ...formattedPacedTrain.paced, exceptions: reconciledExceptions },
       });
     },
-    [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
+    [selectedTrain, trainSchedulesWithDetails, computeUpdatedPathAndSchedule, dispatch]
   );
 
   /**
