@@ -97,14 +97,19 @@ docker compose exec editoast editoast stdcm-search-env set-from-scenario <id> --
 ### Alternative with `nix` and `process-compose` (experimental)
 
 The project also attempts to maintain a `flake.nix` to have a full development
-environment. If you are a user of `nix` package manager, you can `nix shell` to
+environment. If you are a user of [`nix` package manager](https://nixos.org/download/), you can `nix develop` to
 enter a shell where all the necessary components to develop are available.
-First, you need to set up 2 things:
-- `export OSRD_PATH="$(pwd)"`
 
-Then, you can start the stack with the two following commands.
+You need to use this command to enter a nix shell:
+```sh
+# These flags are necessary, for the moment, because the nix develop command with flakes is still experimental
+nix --extra-experimental-features nix-command --extra-experimental-features flakes develop
+```
+
+Then, in the nix shell, you can start the stack with the following commands:
 
 ```sh
+export OSRD_PATH="$(pwd)"
 # Launch all the external services, still relies on Docker
 ./osrd-compose up --detach postgres rabbitmq valkey openfga jaeger s3
 # Launch the OSRD stack
