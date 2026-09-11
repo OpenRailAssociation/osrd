@@ -103,6 +103,10 @@ export const isTrainSelected = (
   if (trainScheduleId !== selectedTrainScheduleId) {
     return false;
   }
+  // The panel isn't shown for a unique train which are always draggable once it matches the selection.
+  if (!isOccurrenceId(trainId)) {
+    return true;
+  }
   switch (selectionMode) {
     case 'all':
       return true;

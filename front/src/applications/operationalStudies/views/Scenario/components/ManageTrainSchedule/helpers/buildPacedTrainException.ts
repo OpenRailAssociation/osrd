@@ -228,14 +228,21 @@ type CheckChangeGroupsResult = {
  * If the change group value in the paced train matches the exceptions, the exception change group is removed.
  * If the exceptions as no change group after those checks, the exception is removed.
  *
+ * `originalExceptions` can already be modified before this call where `untouchedExceptions`
+ * is the reference used to detect that.
+ *
  * Returns the cleaned exceptions list, along with modified exceptions and ids to delete.
  */
 export function checkChangeGroups(
   updatedTrain: TrainSchedule,
   paced: NonNullable<TrainSchedule['paced']>,
-  originalExceptions: PacedTrainException[]
+  originalExceptions: PacedTrainException[],
+  untouchedExceptions: PacedTrainException[] = originalExceptions
 ): CheckChangeGroupsResult {
   const normalizedUpdatedTrain = normalizeTrainForDiff(updatedTrain);
+  const untouchedExceptionsById = new Map(
+    untouchedExceptions.map((exception) => [exception.id, exception])
+  );
 
   return originalExceptions.reduce<CheckChangeGroupsResult>(
     (acc, exception) => {
@@ -350,7 +357,8 @@ export function checkChangeGroups(
 
       if (hasChangedGroup || updatedException.disabled) {
         acc.exceptions.push(updatedException);
-        if (!isEqual(updatedException, exception)) {
+        const untouchedException = untouchedExceptionsById.get(exception.id) ?? exception;
+        if (!isEqual(updatedException, untouchedException)) {
           acc.modifiedExceptions.push(updatedException);
         }
       } else {
