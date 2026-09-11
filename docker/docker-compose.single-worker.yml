@@ -3,6 +3,10 @@ services:
     environment:
       - EDITOAST_CORE_SINGLE_WORKER=true
 
+  rabbitmq:
+    volumes:
+      - "./docker/rabbitmq-single-worker.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
+
   osrdyne:
     volumes: !reset []
     environment:
