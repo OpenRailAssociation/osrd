@@ -573,13 +573,17 @@ pub(in crate::views) async fn user_grants(
             let grant = match grant_access {
                 Ok(Some(grant)) => grant,
                 Ok(None) => continue,
-                Err(Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, infra)) => {
+                Err(Check::HasInfraPrivilege(
+                    Actor::Issuer,
+                    InfraPrivilege::CanRestrictedRead,
+                    infra,
+                )) => {
                     tracing::warn!(%infra, "user cannot read infra — skipping");
                     continue;
                 }
                 Err(Check::HasRollingStockPrivilege(
                     Actor::Issuer,
-                    RollingStockPrivilege::CanRead,
+                    RollingStockPrivilege::CanRestrictedRead,
                     rolling_stock,
                 )) => {
                     tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");

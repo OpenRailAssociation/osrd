@@ -29,13 +29,17 @@ use crate::v2::subject_roles;
 pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<InfraGrant>> {
     Protected::new(move |openfga| {
         async move {
-            let (is_reader, is_writer, is_owner) = match &subject {
+            let (is_restricted_reader, is_reader, is_writer, is_owner) = match &subject {
                 Subject::User(user) => tokio::try_join!(
+                    openfga.tuple_exists(Infra::restricted_reader().tuple(user, &infra)),
                     openfga.tuple_exists(Infra::reader().tuple(user, &infra)),
                     openfga.tuple_exists(Infra::writer().tuple(user, &infra)),
                     openfga.tuple_exists(Infra::owner().tuple(user, &infra)),
                 )?,
                 Subject::Group(group) => tokio::try_join!(
+                    openfga.tuple_exists(
+                        Infra::restricted_reader().tuple(Group::member().userset(group), &infra)
+                    ),
                     openfga.tuple_exists(
                         Infra::reader().tuple(Group::member().userset(group), &infra)
                     ),
@@ -50,6 +54,7 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
                 subject,
                 infra,
                 &[
+                    (is_restricted_reader, InfraGrant::RestrictedReader),
                     (is_reader, InfraGrant::Reader),
                     (is_writer, InfraGrant::Writer),
                     (is_owner, InfraGrant::Owner),
@@ -74,10 +79,11 @@ pub fn infra_direct_grant(subject: Subject, infra: Infra) -> Protected<Option<In
 pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option<InfraGrant>> {
     Protected::new(move |openfga| {
         async move {
-            let (is_reader, is_writer, is_owner) = match &subject {
+            let (is_restricted_reader, is_reader, is_writer, is_owner) = match &subject {
                 Subject::User(user) => {
                     openfga
                         .checks((
+                            Infra::restricted_reader().check(user, &infra),
                             Infra::reader().check(user, &infra),
                             Infra::writer().check(user, &infra),
                             Infra::owner().check(user, &infra),
@@ -85,8 +91,10 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
                         .await?
                 }
                 Subject::Group(group) => {
-                    let (is_reader, is_writer, is_owner) = openfga
+                    let (is_restricted_reader, is_reader, is_writer, is_owner) = openfga
                         .checks((
+                            Infra::restricted_reader()
+                                .check(Group::member().userset(group), &infra),
                             Infra::reader().check(Group::member().userset(group), &infra),
                             Infra::writer().check(Group::member().userset(group), &infra),
                             Infra::owner().check(Group::member().userset(group), &infra),
@@ -97,25 +105,27 @@ pub fn infra_effective_grant(subject: Subject, infra: Infra) -> Protected<Option
                         subject,
                         infra,
                         &[
+                            (is_restricted_reader, "restricted_reader"),
                             (is_reader, "reader"),
                             (is_writer, "writer"),
                             (is_owner, "owner"),
                         ],
                     );
-                    (is_reader, is_writer, is_owner)
+                    (is_restricted_reader, is_reader, is_writer, is_owner)
                 }
             };
 
             Ok(is_owner
                 .then_some(InfraGrant::Owner)
                 .or_else(|| is_writer.then_some(InfraGrant::Writer))
-                .or_else(|| is_reader.then_some(InfraGrant::Reader)))
+                .or_else(|| is_reader.then_some(InfraGrant::Reader))
+                .or_else(|| is_restricted_reader.then_some(InfraGrant::RestrictedReader)))
         }
         .boxed()
     })
     .with_check(Check::HasInfraPrivilege(
         Actor::Issuer,
-        InfraPrivilege::CanRead,
+        InfraPrivilege::CanRestrictedRead,
         infra,
     ))
 }
@@ -889,7 +899,7 @@ mod tests {
     #[case::infra_direct_grant(infra_direct_grant(Subject::user(1), Infra(1)).checks, &[])]
     #[case::infra_effective_grant(
         infra_effective_grant(Subject::user(1), Infra(1)).checks,
-        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRestrictedRead, Infra(1))]
     )]
     #[case::infra_revoke_grant(
         infra_revoke_grant(Subject::user(1), Infra(1)).checks,
