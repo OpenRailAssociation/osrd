@@ -207,13 +207,17 @@
 
       .user-name {
         display: block;
-        color: var(--black100);
+        color: var(--grey30);
         font-size: 0.875rem;
         text-align: right;
         line-height: 20px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+
+        span {
+          color: var(--grey30);
+        }
       }
     }
 
