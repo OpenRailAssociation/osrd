@@ -90,11 +90,13 @@ const TimeStopsTableWrapper = ({
     edits: PendingEdit[];
     forSchedule: Train['schedule'];
     forTrainId: Train['id'];
+    forStartTime: Train['start_time'];
   } | null>(null);
 
   const optimisticEdits =
     pinnedState !== null &&
     pinnedState.forSchedule === selectedTrain.schedule &&
+    pinnedState.forStartTime === selectedTrain.start_time &&
     pinnedState.forTrainId === selectedTrain.id
       ? pinnedState.edits
       : null;
@@ -184,6 +186,7 @@ const TimeStopsTableWrapper = ({
       edits,
       forSchedule: selectedTrain.schedule,
       forTrainId: selectedTrain.id,
+      forStartTime: selectedTrain.start_time,
     });
     preEditPathItemTimesRef.current = simulatedPathItemTimes;
     isTrainSimulationPendingRef.current = true;
