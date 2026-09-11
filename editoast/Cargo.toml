@@ -157,7 +157,7 @@ utoipa = { git = "https://github.com/osrd-project/utoipa.git", rev = "5103a24a6d
 ] }
 uuid = { version = "1.23.1", features = ["serde", "v4"] }
 x509-cert = { version = "0.3.0", default-features = false, features = ["std"] }
-zstd = "0.13.3"
+zstd = "0.14.0"
 
 [dependencies]
 anyhow = "1.0"
