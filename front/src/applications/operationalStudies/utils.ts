@@ -196,6 +196,8 @@ export const matchOpRefAndWaypoint = (
   );
 };
 
+export const buildPathItemWaypointId = (pathItemId: string) => `path-item-${pathItemId}`;
+
 export const buildPathWaypointsFromRawOPs = (
   ops: CoreOperationalPointOnPath[],
   path: PathItem[]
@@ -203,10 +205,23 @@ export const buildPathWaypointsFromRawOPs = (
   let opRefPathItemsQueue = [...path].filter(
     (pathItem) => pathItem.location.type !== 'track_offset'
   );
-  const waypoints = ops.map((op) => {
+  const waypoints = ops.map((op, opIndex) => {
+    // ops and path items follow the same order, so a match should always be
+    // the next path item in the queue. If not, some path items were skipped
+    // without ever matching an op.
+    const pathItemIndex = opRefPathItemsQueue.findIndex((step) =>
+      matchOpRefAndWaypoint(step.location, op)
+    );
+    const pathItem = opRefPathItemsQueue.find((step) =>
+      matchOpRefAndWaypoint(step.location, op)
+    );
+
     const waypoint: PathWaypoint = {
       ...omit(op, 'id'),
-      waypointId: `op-${op.id}-${op.position}`,
+      // pathItem.id is stable across pathfinding recomputes, unlike
+      // op.position. For ops that aren't explicit path items, use their
+      // index in the ops list instead.
+      waypointId: pathItem ? buildPathItemWaypointId(pathItem.id) : `op-${op.id}-${opIndex}`,
       opId: op.id,
       pathItemId: null,
       location: {
@@ -215,17 +230,10 @@ export const buildPathWaypointsFromRawOPs = (
       },
     };
 
-    // Consume remaining path steps in order. If we match a path step which
-    // isn't the first one, something went wrong: OPs on path don't go through
-    // all path items.
-    const pathItemIndex = opRefPathItemsQueue.findIndex((step) =>
-      matchOpRefAndWaypoint(step.location, op)
-    );
-    if (pathItemIndex < 0) {
+    if (!pathItem) {
       return waypoint;
     }
 
-    const pathItem = opRefPathItemsQueue[pathItemIndex];
     if (pathItemIndex !== 0) {
       console.error(
         'Could not match path items to operational points:',
