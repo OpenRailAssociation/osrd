@@ -20,7 +20,9 @@ const TrackOccupancyManchette = ({
         style={{ height: TRACK_HEIGHT_CONTAINER }}
       >
         <span className="track-line">{track.line}</span>
-        <div className="track-name">{track.name}</div>
+        <div className="track-name" title={track.name}>
+          {track.name}
+        </div>
         <div className="track-rail" />
       </div>
     ))}
