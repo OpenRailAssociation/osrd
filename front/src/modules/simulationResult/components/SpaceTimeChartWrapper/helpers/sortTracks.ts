@@ -31,3 +31,7 @@ export function sortTracks(infraTracks: Track[], virtualTracks: Track[]): Track[
 
   return [...infraTracks, ...otherVirtual, ...(ncTrack ? [ncTrack] : [])];
 }
+
+export function extractLocalTrackName(track: Track): string | null {
+  return track.id === NO_TRACK_SPECIFIED_SYMBOL ? null : (track.name ?? null);
+}
