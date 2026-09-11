@@ -125,6 +125,14 @@ export const stdcmPathStepToPathItemLocation = (
   };
 };
 
+// TODO: Remove this function as soon as fake overtake tracks cease to be used
+/**
+ * Fake overtake operational points are named `OVERTAKE_<n>_<A|B>;<name of the overtaken point>`.
+ * Only the part after the semicolon is meaningful to the user.
+ */
+export const stripFakeOvertakePrefix = (name: string): string =>
+  name.match(/^OVERTAKE[^;]*;(.*)$/)?.[1] ?? name;
+
 export const canPathStepBacktrack = (pathStep: StdcmPathStep): boolean =>
   pathStep.isVia &&
   (pathStep.stopType === StdcmStopTypes.SERVICE_STOP ||

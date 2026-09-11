@@ -2,6 +2,7 @@ import { uniqBy } from 'lodash';
 import { Trans, useTranslation } from 'react-i18next';
 
 import type { StdcmPathNotFoundOutput } from 'applications/stdcm/types';
+import { stripFakeOvertakePrefix } from 'applications/stdcm/utils';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 
 type StdcmPathNotFoundDetailsProps = {
@@ -23,10 +24,12 @@ const StdcmPathNotFoundDetails = ({
   const lastReachedOperationalPoint = outputs.last_reached_operational_point;
   // The work schedules delaying the train the most, then the one nearest to the destination.
   // The same work schedule can be reported in both lists, only display it once.
+  // Two fake overtake points share the name of the point they overtake, so the displayed name is
+  // used rather than the operational point id to avoid rendering the very same line twice.
   const workSchedules = uniqBy(
     [...outputs.most_blocking_work_schedules, ...outputs.nearest_to_destination_work_schedules],
     ({ last_op, start_date_time, end_date_time }) =>
-      `${last_op.id}-${start_date_time}-${end_date_time}`
+      `${stripFakeOvertakePrefix(last_op.name)}-${start_date_time}-${end_date_time}`
   );
 
   return (
@@ -37,7 +40,7 @@ const StdcmPathNotFoundDetails = ({
         <span className="nearest-reached-point" data-testid="stdcm-nearest-reached-point">
           <Trans components={{ strong: <strong /> }}>
             {t('nearestReachedPoint', {
-              name: lastReachedOperationalPoint.operational_point.name,
+              name: stripFakeOvertakePrefix(lastReachedOperationalPoint.operational_point.name),
               time: formatTime(lastReachedOperationalPoint.arrival_time),
             })}
           </Trans>
@@ -53,7 +56,7 @@ const StdcmPathNotFoundDetails = ({
                 <span>
                   &bull;&nbsp;
                   {t('blockingWorkSchedule', {
-                    name: last_op.name,
+                    name: stripFakeOvertakePrefix(last_op.name),
                     startTime: formatTime(start_date_time),
                     endTime: formatTime(end_date_time),
                   })}
