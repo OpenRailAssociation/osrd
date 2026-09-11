@@ -408,7 +408,13 @@ pub(in crate::views) struct ListScenariosQueryParams {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(AppState {
+        db_pool,
+        openfga,
+        config,
+        ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<authentication::State>,
     Query(ListScenariosQueryParams { study_id }): Query<ListScenariosQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
@@ -419,6 +425,25 @@ pub(in crate::views) async fn list(
         .into_selection_settings()
         .order_by(move || ordering.as_scenario_ordering())
         .filter(move || Scenario::STUDY_ID.eq(study_id));
+
+    let project_id =
+        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
+            .await?
+            .project_id;
+    if config.enable_project_permissions {
+        match &authn_state {
+            crate::authentication::State::Skip => (),
+            crate::authentication::State::Authenticated { .. } => {
+                authz::v2::project_privilege_check(
+                    authz::Project(project_id),
+                    ProjectPrivilege::HasAccess,
+                )
+                .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+                .await?
+            }
+        }
+    }
+
     let (scenarios, stats) = Scenario::list_paginated(conn, settings).await?;
 
     let futures = scenarios
@@ -555,16 +580,20 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_scenarios() {
-        let app = test_app!().skip_authz().build();
-        let pool = app.db_pool();
-
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
-
-        let url = scenario_url(None);
+    async fn scenario_list() {
+        let app = test_app!().build();
+        let fixtures =
+            create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "test_scenario_name").await;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(fixtures.project_id, ProjectGrant::Owner)
+            .create()
+            .await;
         let mut response: ListScenariosResponse = app
-            .get(&url)
-            .add_query_params(json!({"study_id": fixtures.scenario.study_id}))
+            .get("/scenarios")
+            .by_user(user.as_ref())
+            .add_query_param("study_id", fixtures.scenario.study_id)
             .await
             .assert_status_ok()
             .json();
@@ -578,6 +607,88 @@ mod tests {
                 .infra_name,
             fixtures.infra.name
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenario_list_admin_allowed() {
+        let app = test_app!().build();
+        let fixtures =
+            create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "test_scenario_name").await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.get("/scenarios")
+            .by_user(admin.as_ref())
+            .add_query_param("study_id", fixtures.scenario.study_id)
+            .await
+            .assert_status_ok();
+    }
+
+    #[rstest]
+    #[case::no_role(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project").await.id,
+        create_study(&mut app.db_pool().get_ok(), "study", project_id).await.id,
+        app
+            .user("bob", "Bob")
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await
+    )]
+    #[case::no_grant(
+        test_app!().build(),
+        create_project(&mut app.db_pool().get_ok(), "project").await.id,
+        create_study(&mut app.db_pool().get_ok(), "study", project_id).await.id,
+        app
+            .user("bob", "Bob")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenario_list_forbidden(
+        #[case] app: TestApp,
+        #[case] project_id: i64,
+        #[case] study_id: i64,
+        #[case] user_forbidden: authz::identity::User,
+    ) {
+        let user_authorized = app
+            .user("alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(project_id, ProjectGrant::Owner)
+            .create()
+            .await;
+
+        app.get("/scenarios")
+            .by_user(user_forbidden.as_ref())
+            .add_query_param("study_id", study_id)
+            .await
+            .assert_status_forbidden();
+        app.get("/scenarios")
+            .by_user(user_authorized.as_ref())
+            .add_query_param("study_id", study_id)
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn scenario_list_not_found() {
+        let app = test_app!().build();
+        let fixtures =
+            create_scenario_fixtures_set(&mut app.db_pool().get_ok(), "test_scenario_name").await;
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        app.get("/scenarios")
+            .by_user(user.as_ref())
+            .add_query_param("study_id", fixtures.scenario.study_id + 1000)
+            .await
+            .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
