@@ -357,8 +357,8 @@ impl PreparedChecks<'_> {
             };
             match check_single_result {
                 BatchCheckSingleResult::Error { error } => {
-                    tracing::error!(correlation_id, index, error = ?error.message(), "batch check item failed");
-                    result[*index] = false;
+                    tracing::error!(correlation_id, index, error = ?error, "batch check item failed");
+                    return Err(error);
                 }
                 BatchCheckSingleResult::Result { allowed } => {
                     result[*index] = allowed;
