@@ -616,10 +616,10 @@ impl TrainToProjectOnOperationalPoint {
             .path()
             .iter()
             .zip(report_train.path_item_times)
-            .flat_map(|(path_item, arrival_time)| match &path_item.location {
+            .flat_map(|(path_item, path_item_time)| match &path_item.location {
                 PathItemLocation::OperationalPointPartReference(op_ref) => {
                     Some(OperationalPointRefAndTime {
-                        arrival_time,
+                        arrival_time: path_item_time.arrival,
                         stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
                         op_ref: op_ref.operational_point.clone(),
                     })

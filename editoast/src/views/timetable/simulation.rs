@@ -6,6 +6,7 @@ use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ElectricalProfiles;
+use core_client::simulation::PathItemTime;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SimulationMargins;
@@ -91,7 +92,7 @@ pub struct SimulationResponseSuccess {
 /// - the simulation response isn't derived from the given train schedule,
 /// - some of the final path item times exceed `i64::MAX`
 pub fn path_item_respect_times<T: TrainScheduleLike>(
-    path_item_times_final: &[u64],
+    path_item_times_final: &[PathItemTime],
     train_schedule: &T,
 ) -> Vec<bool> {
     // Ensure we get meaningful panic messages instead of "index out of bounds"
@@ -117,7 +118,7 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
         let arrival = Duration::from(arrival);
 
         let path_item_index = path_item_id_to_index[&schedule_item.at];
-        let path_item_time = i64::try_from(path_item_times_final[path_item_index]).unwrap();
+        let path_item_time = i64::try_from(path_item_times_final[path_item_index].arrival).unwrap();
         let path_item_time = Duration::milliseconds(path_item_time);
 
         res[path_item_index] = (path_item_time - arrival).abs() < TIME_APPROX_ERROR;
@@ -138,8 +139,8 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
 /// - the simulation response isn't derived from the given train schedule,
 /// - some of the final or provisional path item times exceed `i64::MAX`
 pub fn path_item_respect_margins<T: TrainScheduleLike>(
-    path_item_times_final: &[u64],
-    path_item_times_provisional: &[u64],
+    path_item_times_final: &[PathItemTime],
+    path_item_times_provisional: &[PathItemTime],
     train_schedule: &T,
 ) -> Vec<bool> {
     // Ensure we get meaningful panic messages instead of "index out of bounds"
@@ -197,15 +198,15 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 
             let path_item_index = path_item_id_to_index[path_item_id];
             let path_item_time_final =
-                i64::try_from(path_item_times_final[path_item_index]).unwrap();
+                i64::try_from(path_item_times_final[path_item_index].arrival).unwrap();
             let path_item_time_provisional =
-                i64::try_from(path_item_times_provisional[path_item_index]).unwrap();
+                i64::try_from(path_item_times_provisional[path_item_index].arrival).unwrap();
 
             let prev_path_item_index = path_item_id_to_index[prev_path_item_id];
             let prev_path_item_time_final =
-                i64::try_from(path_item_times_final[prev_path_item_index]).unwrap();
+                i64::try_from(path_item_times_final[prev_path_item_index].arrival).unwrap();
             let prev_path_item_time_provisional =
-                i64::try_from(path_item_times_provisional[prev_path_item_index]).unwrap();
+                i64::try_from(path_item_times_provisional[prev_path_item_index].arrival).unwrap();
 
             let interval_duration_final = path_item_time_final - prev_path_item_time_final;
             let interval_duration_provisional =
@@ -291,16 +292,16 @@ pub enum SummaryResponse {
         energy_consumption: f64,
         /// Final simulation time for each train schedule path item.
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_final: Vec<u64>,
+        /// The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        path_item_times_final: Vec<PathItemTime>,
         /// Provisional simulation time for each train schedule path item.
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_provisional: Vec<u64>,
+        /// The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        path_item_times_provisional: Vec<PathItemTime>,
         /// Base simulation time for each train schedule path item.
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_base: Vec<u64>,
+        /// The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        path_item_times_base: Vec<PathItemTime>,
         /// Whether each path item in the train schedule is reached on time.
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// Important: `true` doesn't mean the path item has been reached *precisely* at the requested time. Instead, it means it reached the path item at an acceptable time.
@@ -331,7 +332,12 @@ impl SummaryResponse {
                 ..
             }) => SummaryResponse::Success {
                 length: *final_output.report_train.positions.last().unwrap(),
-                time: *final_output.report_train.path_item_times.last().unwrap(),
+                time: final_output
+                    .report_train
+                    .path_item_times
+                    .last()
+                    .unwrap()
+                    .arrival,
                 energy_consumption: final_output.report_train.energy_consumption,
                 path_item_times_final: final_output.report_train.path_item_times.clone(),
                 path_item_times_provisional: provisional.path_item_times.clone(),
@@ -964,16 +970,28 @@ mod tests {
     fn shallow_sim_too_fast() -> SimulationResponseSuccess {
         SimulationResponseSuccess {
             base: ReportTrain {
-                path_item_times: vec![0, 1_444_453, 2_491_479],
+                path_item_times: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1_444_453),
+                    PathItemTime::new(2_491_479),
+                ],
                 ..Default::default()
             },
             provisional: ReportTrain {
-                path_item_times: vec![0, 1_834_414, 3_164_206],
+                path_item_times: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1_834_414),
+                    PathItemTime::new(3_164_206),
+                ],
                 ..Default::default()
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    path_item_times: vec![0, 1_739_394, 3_069_187],
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(1_739_394),
+                        PathItemTime::new(3_069_187),
+                    ],
                     ..Default::default()
                 },
                 ..Default::default()
@@ -988,16 +1006,34 @@ mod tests {
         // Respects margins from A to C as B to C compensates A to B, too fast on C to E as not compensated
         SimulationResponseSuccess {
             base: ReportTrain {
-                path_item_times: vec![0, 100_000, 200_000, 300_000, 400_000],
+                path_item_times: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(100_000),
+                    PathItemTime::new(200_000),
+                    PathItemTime::new(300_000),
+                    PathItemTime::new(400_000),
+                ],
                 ..Default::default()
             },
             provisional: ReportTrain {
-                path_item_times: vec![0, 100_000, 200_000, 300_000, 400_000],
+                path_item_times: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(100_000),
+                    PathItemTime::new(200_000),
+                    PathItemTime::new(300_000),
+                    PathItemTime::new(400_000),
+                ],
                 ..Default::default()
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    path_item_times: vec![0, 95_000, 201_000, 301_000, 396_000],
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(95_000),
+                        PathItemTime::new(201_000),
+                        PathItemTime::new(301_000),
+                        PathItemTime::new(396_000),
+                    ],
                     ..Default::default()
                 },
                 ..Default::default()
@@ -1010,16 +1046,16 @@ mod tests {
     fn shallow_sim_honored() -> SimulationResponseSuccess {
         SimulationResponseSuccess {
             base: ReportTrain {
-                path_item_times: vec![0, 2_186_885],
+                path_item_times: vec![PathItemTime::new(0), PathItemTime::new(2_186_885)],
                 ..Default::default()
             },
             provisional: ReportTrain {
-                path_item_times: vec![0, 2_186_885],
+                path_item_times: vec![PathItemTime::new(0), PathItemTime::new(2_186_885)],
                 ..Default::default()
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    path_item_times: vec![0, 2_186_885],
+                    path_item_times: vec![PathItemTime::new(0), PathItemTime::new(2_186_885)],
                     ..Default::default()
                 },
                 ..Default::default()
@@ -1032,16 +1068,28 @@ mod tests {
     fn shallow_sim_not_honored() -> SimulationResponseSuccess {
         SimulationResponseSuccess {
             base: ReportTrain {
-                path_item_times: vec![0, 1_425_534, 2_186_885],
+                path_item_times: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1_425_534),
+                    PathItemTime::new(2_186_885),
+                ],
                 ..Default::default()
             },
             provisional: ReportTrain {
-                path_item_times: vec![0, 1_425_534, 2_186_885],
+                path_item_times: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1_425_534),
+                    PathItemTime::new(2_186_885),
+                ],
                 ..Default::default()
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
-                    path_item_times: vec![0, 1_425_534, 2_186_885],
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(1_425_534),
+                        PathItemTime::new(2_186_885),
+                    ],
                     ..Default::default()
                 },
                 ..Default::default()

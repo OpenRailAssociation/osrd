@@ -794,6 +794,7 @@ mod tests {
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::PathItemTime;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
@@ -1153,7 +1154,7 @@ mod tests {
             times: vec![0, 2000, 4000],
             speeds: vec![0.0, 10.0, 0.0],
             energy_consumption: 100.0,
-            path_item_times: vec![0, 4000],
+            path_item_times: vec![PathItemTime::new(0), PathItemTime::new(4000)],
         }
     }
 

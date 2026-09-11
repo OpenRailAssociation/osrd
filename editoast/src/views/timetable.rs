@@ -882,11 +882,12 @@ pub(in crate::views) fn simulation_empty_response(
 ) -> core_client::simulation::Response {
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::PathItemTime;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
 
-    let path_item_times: Vec<u64> = (0..).take(path_len).collect();
+    let path_item_times: Vec<PathItemTime> = (0..).take(path_len).map(PathItemTime::new).collect();
 
     core_client::simulation::Response::Success(SimulationSuccess {
         base: ReportTrain {

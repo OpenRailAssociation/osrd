@@ -466,6 +466,7 @@ mod tests {
         use crate::views::timetable::simulation::SimulationResponseSuccess;
         use core_client::simulation::CompleteReportTrain;
         use core_client::simulation::ElectricalProfiles;
+        use core_client::simulation::PathItemTime;
         use core_client::simulation::ReportTrain;
         use core_client::simulation::SpeedLimitProperties;
 
@@ -509,7 +510,7 @@ mod tests {
                     times,
                     speeds,
                     energy_consumption: 100.0,
-                    path_item_times: vec![0, 1450],
+                    path_item_times: vec![PathItemTime::new(0), PathItemTime::new(1450)],
                 },
                 signal_critical_positions: vec![],
                 zone_updates: vec![],
