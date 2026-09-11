@@ -63,6 +63,7 @@ const handleLabelOperation = async ({
         await handleUpdateTrainSchedule({
           netzgrafikDto,
           trainrun,
+          tags: ['labelIds'],
           trainScheduleSetId,
           infraId,
           state,
@@ -156,9 +157,8 @@ export const handleOperation = async ({
       break;
     case 'trainrun': {
       await handleTrainrunOperation({
-        type,
         netzgrafikDto,
-        trainrunId: operation.trainrun.id,
+        operation,
         trainScheduleSetId,
         infraId,
         state,
