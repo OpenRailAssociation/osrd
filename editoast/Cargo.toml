@@ -118,7 +118,7 @@ rand = "0.10.1"
 rangemap = "1.7.1"
 regex = "1.12"
 reqwest = { version = "0.13.3", default-features = false, features = ["json"] }
-rstest = { version = "0.26.1", default-features = false }
+rstest = { version = "0.27.0", default-features = false }
 rustls-native-certs = "0.8.4"
 schemas = { path = "./schemas" }
 search = { path = "./search" }
