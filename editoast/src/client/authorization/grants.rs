@@ -38,9 +38,10 @@ pub enum Resource {
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum, derive_more::Display)]
-#[value(rename_all = "lower")]
+#[value(rename_all = "snake_case")]
 #[display(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CliGrant {
+    RestrictedReader,
     Reader,
     Writer,
     Owner,
@@ -49,6 +50,7 @@ pub enum CliGrant {
 impl From<CliGrant> for authz::InfraGrant {
     fn from(level: CliGrant) -> Self {
         match level {
+            CliGrant::RestrictedReader => Self::RestrictedReader,
             CliGrant::Reader => Self::Reader,
             CliGrant::Writer => Self::Writer,
             CliGrant::Owner => Self::Owner,
@@ -59,6 +61,7 @@ impl From<CliGrant> for authz::InfraGrant {
 impl From<CliGrant> for authz::RollingStockGrant {
     fn from(level: CliGrant) -> Self {
         match level {
+            CliGrant::RestrictedReader => Self::RestrictedReader,
             CliGrant::Reader => Self::Reader,
             CliGrant::Writer => Self::Writer,
             CliGrant::Owner => Self::Owner,
@@ -295,6 +298,8 @@ pub async fn list_subjects(
         Resource::Infra => {
             let infra = authz::Infra(resource_id);
             Protected::from_iter([
+                authz::v2::infra_granted_subjects(infra, authz::InfraGrant::RestrictedReader)
+                    .zip(Protected::value(CliGrant::RestrictedReader)),
                 authz::v2::infra_granted_subjects(infra, authz::InfraGrant::Reader)
                     .zip(Protected::value(CliGrant::Reader)),
                 authz::v2::infra_granted_subjects(infra, authz::InfraGrant::Writer)
@@ -306,6 +311,11 @@ pub async fn list_subjects(
         Resource::RollingStock => {
             let rolling_stock = authz::RollingStock(resource_id);
             Protected::from_iter([
+                authz::v2::rolling_stock_granted_subjects(
+                    rolling_stock,
+                    authz::RollingStockGrant::RestrictedReader,
+                )
+                .zip(Protected::value(CliGrant::RestrictedReader)),
                 authz::v2::rolling_stock_granted_subjects(
                     rolling_stock,
                     authz::RollingStockGrant::Reader,
@@ -346,7 +356,7 @@ pub async fn list_subjects(
             info!("Subject {authz_subject} from OpenFGA does not exist anymore");
             continue;
         };
-        println!("[{grant:<6}]: {subject}");
+        println!("[{:>17}]: {subject}", grant.to_string());
     }
 
     Ok(())
@@ -368,7 +378,10 @@ pub async fn list_resources(
     match resource {
         Resource::Infra => {
             let Ok(resources) = system
-                .authorize(authz::v2::infra_list(user, authz::InfraPrivilege::CanRead))
+                .authorize(authz::v2::infra_list(
+                    user,
+                    authz::InfraPrivilege::CanRestrictedRead,
+                ))
                 .await?
                 .access()
                 .await?;
@@ -395,7 +408,7 @@ pub async fn list_resources(
                         if let Some(models::Infra { name, .. }) =
                             models::Infra::retrieve(conn.clone(), *infra).await?
                         {
-                            println!("[{grant:<6}]: Infra#{}({name})", *infra);
+                            println!("[{:>17}]: Infra#{}({name})", grant, *infra);
                         } else {
                             warn!(infra = *infra, ?grant, "stale grant found");
                         }
@@ -407,7 +420,7 @@ pub async fn list_resources(
             let Ok(resources) = system
                 .authorize(authz::v2::rolling_stock_list(
                     user,
-                    authz::RollingStockPrivilege::CanRead,
+                    authz::RollingStockPrivilege::CanRestrictedRead,
                 ))
                 .await?
                 .access()
@@ -435,7 +448,7 @@ pub async fn list_resources(
                         if let Some(models::RollingStock { name, .. }) =
                             models::RollingStock::retrieve(conn.clone(), *rolling_stock).await?
                         {
-                            println!("[{grant:<6}]: RollingStock#{}({name})", *rolling_stock);
+                            println!("[{:>17}]: RollingStock#{}({name})", grant, *rolling_stock);
                         } else {
                             warn!(rolling_stock = *rolling_stock, ?grant, "stale grant found");
                         }
@@ -473,7 +486,7 @@ pub async fn list_resources(
                         if let Some(models::Project { name, .. }) =
                             models::Project::retrieve(conn.clone(), *project).await?
                         {
-                            println!("[{grant:<6}]: Project#{}({name})", *project);
+                            println!("[{:>17}]: Project#{}({name})", grant, *project);
                         } else {
                             warn!(project = *project, ?grant, "stale grant found");
                         }
