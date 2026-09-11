@@ -158,6 +158,11 @@ const useUpdateTimesStopsTable = (
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
       const isOrigin = pathStepId === updatedPath[0].id;
 
+      const startTime =
+        scenario.timetable_type === 'CALENDAR'
+          ? new Date(selectedTrain.start_time)
+          : new Duration({ milliseconds: selectedTrain.start_time });
+
       if (update.field === 'requestedTheoreticalMargin') {
         return {
           updatedPath,
@@ -181,6 +186,32 @@ const useUpdateTimesStopsTable = (
         };
       }
 
+      if (update.field === 'referenceBaseArrival') {
+        const { arrival: newReferenceBaseArrival } = scheduleStateToApiFields(
+          { arrival: update.value, stop: null },
+          startTime
+        );
+
+        let updatedSchedule: ScheduleItem[];
+        if (existingItemIndex >= 0) {
+          updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
+            ...currentSchedule[existingItemIndex],
+            reference_base_arrival: newReferenceBaseArrival,
+          });
+        } else {
+          const newItem: ScheduleItem = { at: pathStepId };
+          if (newReferenceBaseArrival !== null)
+            newItem.reference_base_arrival = newReferenceBaseArrival;
+          updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
+        }
+
+        return {
+          updatedPath,
+          updatedSchedule,
+          updatedMargins: selectedTrain.margins,
+        };
+      }
+
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
       let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
       if (update.field === 'stopDuration') {
@@ -197,10 +228,6 @@ const useUpdateTimesStopsTable = (
         edit
       );
 
-      const startTime =
-        scenario.timetable_type === 'CALENDAR'
-          ? new Date(selectedTrain.start_time)
-          : new Duration({ milliseconds: selectedTrain.start_time });
       const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
         newState,
         startTime
@@ -531,6 +558,12 @@ const useUpdateTimesStopsTable = (
     [updateCell]
   );
 
+  const updateReferenceBaseArrival = useCallback(
+    (row: TimesStopsRowNew, referenceBaseArrival: StartTime | null) =>
+      updateCell({ row, field: 'referenceBaseArrival', value: referenceBaseArrival }),
+    [updateCell]
+  );
+
   return {
     updateArrival,
     updateStopDuration,
@@ -539,6 +572,7 @@ const useUpdateTimesStopsTable = (
     updateRequestedMargin,
     updatePowerRestrictions,
     updateMultipleTimes,
+    updateReferenceBaseArrival,
   };
 };
 

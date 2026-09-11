@@ -23,6 +23,7 @@ type StartTimeCellProps = {
     onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
     onCommit?: (date: StartTime | null, propagationMode: PropagationMode) => void;
     disableClear?: boolean;
+    disablePropagation?: boolean;
     ref?: React.Ref<TimeCellHandle | DurationCellHandle>;
   };
 
@@ -36,6 +37,7 @@ const StartTimeCell = ({
   onTabKeyDown,
   onCommit,
   disableClear,
+  disablePropagation,
   ...props
 }: StartTimeCellProps) => {
   if (type === 'time') {
@@ -60,6 +62,7 @@ const StartTimeCell = ({
         onTabKeyDown={onTabKeyDown}
         onCommit={onCommit}
         disableClear={disableClear}
+        disablePropagation={disablePropagation}
       />
     );
   } else {
@@ -86,6 +89,7 @@ const StartTimeCell = ({
           onCommit?.(dur, propagationMode);
         }}
         disableClear={disableClear}
+        disablePropagation={disablePropagation}
         digital={true}
       />
     );

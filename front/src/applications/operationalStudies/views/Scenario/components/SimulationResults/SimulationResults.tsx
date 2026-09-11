@@ -371,6 +371,7 @@ const SimulationResults = ({
                 simulationSummary?.isValid && {
                   isValid: true,
                   simulatedTrain: simulationResults.simulation.final_output,
+                  simulatedBaseTrain: simulationResults.simulation.base,
                   simulatedPathItemTimes: simulationSummary.pathItemTimes,
                   simulatedPathItemRespect: simulationSummary.pathItemRespect,
                 })}

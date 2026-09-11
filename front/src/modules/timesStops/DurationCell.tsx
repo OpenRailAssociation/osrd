@@ -412,6 +412,7 @@ type DurationCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, 
     disabled?: boolean;
     clearButtonTitle?: string;
     disableClear?: boolean;
+    disablePropagation?: boolean;
     ref?: React.Ref<DurationCellHandle>;
     /** Display the duration as a digital clock, e.g. "42:53:04" */
     digital?: boolean;
@@ -425,6 +426,7 @@ const DurationCell = ({
   onEnterKeyDown,
   onTabKeyDown,
   disableClear,
+  disablePropagation,
   digital,
   ...props
 }: DurationCellProps) => {
@@ -536,7 +538,8 @@ const DurationCell = ({
 
   const isEdited = controlledValue !== null || Object.values(state.units).some((u) => u !== '00');
   const showPlaceholder = !state.isEditing && controlledValue === null;
-  const shouldShowPropagationMenu = state.isEditing && !state.allDigitsSelected;
+  const shouldShowPropagationMenu =
+    !disablePropagation && state.isEditing && !state.allDigitsSelected;
   const editedDuration = allDigitsCleared
     ? null
     : new Duration({ seconds: unitsToSeconds(state.units) });

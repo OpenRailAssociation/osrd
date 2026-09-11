@@ -23,6 +23,7 @@ export const linearMarginData: TimesStopsTableRow[] = [
     },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:22:40',
   },
   {
     index: 2,
@@ -41,6 +42,7 @@ export const linearMarginData: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:30:24',
   },
   {
     index: 3,
@@ -59,6 +61,7 @@ export const linearMarginData: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:37:02',
   },
   {
     index: 4,
@@ -77,5 +80,6 @@ export const linearMarginData: TimesStopsTableRow[] = [
     margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',
+    referenceBaseArrival: '11:50:32',
   },
 ];

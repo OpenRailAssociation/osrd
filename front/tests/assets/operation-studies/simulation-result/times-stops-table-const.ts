@@ -41,7 +41,7 @@ export const STATUS_CLASSES = {
   SUCCESS_SCHEDULE: 'success-schedule',
 } as const;
 
-export const EXPECTED_COLUMN_COUNT = 18;
+export const EXPECTED_COLUMN_COUNT = 19;
 export const MARGIN_MIN_PER_100KM_VALUE = '3';
 export const MARGIN_MIN_PER_100KM_DISPLAY = '3min/100km';
 export const MARGIN_UNIT_MIN_PER_100KM = 'minPer100km';

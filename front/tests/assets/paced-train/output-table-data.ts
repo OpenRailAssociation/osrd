@@ -27,6 +27,7 @@ export const pacedTrainOutputData: {
       },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '08:35:40',
     },
     {
       index: 2,
@@ -50,6 +51,7 @@ export const pacedTrainOutputData: {
       },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '08:41:40',
     },
     {
       index: 3,
@@ -73,6 +75,7 @@ export const pacedTrainOutputData: {
       },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '08:53:34',
     },
     {
       index: 4,
@@ -91,6 +94,7 @@ export const pacedTrainOutputData: {
       margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '09:04:25',
     },
   ],
   secondOccurrence: [
@@ -116,6 +120,7 @@ export const pacedTrainOutputData: {
       },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '09:05:40',
     },
     {
       index: 2,
@@ -139,6 +144,7 @@ export const pacedTrainOutputData: {
       },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '09:11:40',
     },
     {
       index: 3,
@@ -162,6 +168,7 @@ export const pacedTrainOutputData: {
       },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '09:23:34',
     },
     {
       index: 4,
@@ -180,6 +187,7 @@ export const pacedTrainOutputData: {
       margin: { requestedTheoretical: '', computedTheoretical: '', real: '', difference: '' },
       timeFromAboveWaypoint: '',
       totalArrivalTime: '',
+      referenceBaseArrival: '09:34:25',
     },
   ],
 };
