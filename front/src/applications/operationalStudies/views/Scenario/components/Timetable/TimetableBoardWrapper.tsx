@@ -130,7 +130,13 @@ const TimetableBoardWrapper = ({
     }
 
     return `${pacedTrainLabel}, ${uniqueTrainLabel}`;
-  }, [totalUniqueTrainCount, totalPacedTrainCount, selectedUniqueTrainIds, selectedPacedTrainIds]);
+  }, [
+    t,
+    totalUniqueTrainCount,
+    totalPacedTrainCount,
+    selectedUniqueTrainIds,
+    selectedPacedTrainIds,
+  ]);
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
   const handleTrainsDelete = async (
