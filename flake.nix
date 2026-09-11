@@ -75,16 +75,16 @@
             nil
           ]
           # Section added only on Linux systems
-          ++ lib.optionals (!stdenv.isDarwin) [
+          ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
             # Linker
             mold
           ]
           # Section added only on Darwin (macOS) systems
-          ++ lib.optionals stdenv.isDarwin [
+          ++ lib.optionals stdenv.hostPlatform.isDarwin [
             libiconv
           ];
 
-          RUSTFLAGS = if stdenv.isDarwin then "" else "-C link-arg=-fuse-ld=mold";
+          RUSTFLAGS = if stdenv.hostPlatform.isDarwin then "" else "-C link-arg=-fuse-ld=mold";
 
           # https://wiki.nixos.org/wiki/Playwright
           shellHook = ''
