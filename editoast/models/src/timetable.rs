@@ -1,5 +1,5 @@
+use common::unit_system::quantities::Time;
 use common::units::millisecond;
-use common::units::quantities::Offset;
 use database::DatabaseError;
 use database::tables::sql_types;
 use diesel::prelude::*;
@@ -71,7 +71,7 @@ impl Timetable {
     pub async fn gather_start_times(
         timetable_id: i64,
         conn: &mut DbConnection,
-    ) -> Result<Vec<Offset>, database::DatabaseError> {
+    ) -> Result<Vec<Time>, database::DatabaseError> {
         use database::tables::timetable_train_schedule_set;
         use database::tables::train_schedule;
 

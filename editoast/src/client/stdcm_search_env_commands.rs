@@ -322,7 +322,7 @@ mod tests {
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;
-    use common::units::quantities::Offset;
+    use common::unit_system::quantities::Time;
     use database::DbConnection;
     use database::DbConnectionPoolV2;
     use rstest::rstest;
@@ -334,7 +334,7 @@ mod tests {
     }
 
     async fn create_trains_from_start_times(
-        start_times: Vec<Offset>,
+        start_times: Vec<Time>,
         train_schedule_set_id: i64,
         conn: &mut DbConnection,
     ) {

@@ -11,7 +11,7 @@ use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainOccurrence;
 use crate::train_schedule::TrainScheduleOptions;
 use chrono::Duration;
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Time;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -178,7 +178,7 @@ pub struct StartTimeChangeGroup {
     /// For hourly timetables: elapsed ms since the timetable start.
     #[serde(with = "common::units::millisecond::i64")]
     #[schema(value_type = i64)]
-    pub value: Offset,
+    pub value: Time,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]

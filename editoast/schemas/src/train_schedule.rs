@@ -38,7 +38,7 @@ pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Time;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -62,7 +62,7 @@ pub struct TrainOccurrence {
     /// For hourly timetables: elapsed ms since the timetable start.
     #[serde(with = "common::units::millisecond::i64")]
     #[schema(value_type = i64)]
-    pub start_time: Offset,
+    pub start_time: Time,
     pub path: Vec<PathItem>,
     #[serde(default)]
     #[serde_as(as = "DefaultOnNull")]
@@ -91,7 +91,7 @@ pub struct TrainOccurrence {
 
 pub trait TrainScheduleLike: Clone + Send + Sync + 'static {
     fn rolling_stock_name(&self) -> &str;
-    fn start_time(&self) -> Offset;
+    fn start_time(&self) -> Time;
     fn path(&self) -> &[PathItem];
     fn schedule(&self) -> &[ScheduleItem];
     fn margins(&self) -> &Margins;
@@ -112,7 +112,7 @@ impl TrainScheduleLike for TrainOccurrence {
         &self.rolling_stock_name
     }
 
-    fn start_time(&self) -> Offset {
+    fn start_time(&self) -> Time {
         self.start_time
     }
 

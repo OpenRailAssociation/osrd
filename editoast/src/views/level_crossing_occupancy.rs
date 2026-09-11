@@ -21,8 +21,8 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use chrono::Duration;
+use common::unit_system::quantities::Time;
 use common::units::millisecond;
-use common::units::quantities::Offset;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use editoast_derive::EditoastError;
@@ -258,7 +258,7 @@ fn find_level_crossing_occupancy(
     occurrence_id: &OccurrenceId,
     simulation: &simulation::Response,
     pathfinding: &PathfindingResult,
-    start_time: Offset,
+    start_time: Time,
     rolling_stock_length: &u64,
 ) -> Option<LevelCrossingOccupancy> {
     // Check simulation results
@@ -323,7 +323,7 @@ fn find_occupancy_time_window(
     level_crossing: &LevelCrossing,
     lc_position: &u64,
     matched_track_offset: &TrackOffset,
-    start_time: Offset,
+    start_time: Time,
     rolling_stock_length: &u64,
 ) -> Option<TimeWindow> {
     let pedal_position =
