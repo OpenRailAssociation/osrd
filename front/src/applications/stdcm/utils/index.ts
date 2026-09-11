@@ -125,6 +125,14 @@ export const stdcmPathStepToPathItemLocation = (
   };
 };
 
+// TODO: Remove this function as soon as fake overtake tracks cease to be used
+/**
+ * Fake overtake operational points have a prefix before their names,
+ * e.g. `OVERTAKE_12_V4_A;Gevrey-Triage`. * Only the name after the semicolon is meaningful to the user.
+ */
+export const stripFakeOvertakePrefix = (name: string): string =>
+  name.replace(/^OVERTAKE[^;]*;/, '');
+
 export const canPathStepBacktrack = (pathStep: StdcmPathStep): boolean =>
   pathStep.isVia &&
   (pathStep.stopType === StdcmStopTypes.SERVICE_STOP ||
