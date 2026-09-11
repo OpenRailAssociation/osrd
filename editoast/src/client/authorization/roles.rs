@@ -1,25 +1,19 @@
 use std::collections::HashSet;
-use std::fmt::Display;
 use std::sync::Arc;
 
-use anyhow::anyhow;
 use anyhow::bail;
 use authz;
 use authz::Role;
-use authz::identity::GroupInfo;
-use authz::identity::UserInfo;
 use authz::v2::Authorizer;
 use clap::Args;
 use clap::Subcommand;
-use database::DbConnection;
 use database::DbConnectionPoolV2;
 use itertools::Itertools as _;
-use models::Group;
-use models::prelude::*;
 use strum::IntoEnumIterator;
 use tracing::info;
 
 use crate::authorizers::SystemAuthorizer;
+use crate::client::authorization::parse_and_fetch_subject;
 use crate::client::openfga_config::OpenfgaConfig;
 
 #[derive(Debug, Subcommand)]
@@ -60,81 +54,6 @@ pub fn list_roles() {
     Role::iter().for_each(|role| println!("{role}"));
 }
 
-#[derive(Debug, Clone)]
-struct Subject {
-    id: i64,
-    info: SubjectInfo,
-}
-impl Subject {
-    /// Create a new subject representing a user
-    pub fn new_user(id: i64, info: UserInfo) -> Self {
-        Self {
-            id,
-            info: SubjectInfo::User(info),
-        }
-    }
-
-    /// Create a new subject representing a group
-    pub fn new_group(id: i64, info: GroupInfo) -> Self {
-        Self {
-            id,
-            info: SubjectInfo::Group(info),
-        }
-    }
-
-    fn into_authz(self) -> authz::Subject {
-        match self.info {
-            SubjectInfo::User(_) => authz::Subject::User(authz::User(self.id)),
-            SubjectInfo::Group(_) => authz::Subject::Group(authz::Group(self.id)),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-enum SubjectInfo {
-    User(UserInfo),
-    Group(GroupInfo),
-}
-
-impl Display for Subject {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Self { id, info } = self;
-        match info {
-            SubjectInfo::User(UserInfo { name, identities }) => {
-                write!(f, "User {name}#{id} ({})", identities.join(", "))
-            }
-            SubjectInfo::Group(info) => write!(f, "Group #{} ({})", id, info.name),
-        }
-    }
-}
-
-async fn parse_and_fetch_subject(subject: &String, conn: DbConnection) -> anyhow::Result<Subject> {
-    let id = if let Ok(id) = subject.parse::<i64>() {
-        id
-    } else {
-        models::User::retrieve_by_identity(subject, conn.clone())
-            .await?
-            .ok_or_else(|| anyhow!("No user with identity '{subject}' found"))?
-            .id
-    };
-    let subject = if let Some(user) = models::User::retrieve(conn.clone(), id).await? {
-        let identities = user.get_identities(conn.clone()).await?;
-        Subject::new_user(
-            id,
-            UserInfo {
-                name: user.name,
-                identities,
-            },
-        )
-    } else if let Some(group) = Group::retrieve(conn, id).await? {
-        Subject::new_group(id, GroupInfo { name: group.name })
-    } else {
-        bail!("No subject found with ID {id}");
-    };
-    info!("{subject}");
-    Ok(subject)
-}
-
 pub async fn list_subject_roles(
     ListArgs { subject }: ListArgs,
     pool: Arc<DbConnectionPoolV2>,
@@ -143,7 +62,7 @@ pub async fn list_subject_roles(
     let openfga = openfga_config.into_client().await?;
     let system = SystemAuthorizer::new_infallible(&openfga);
     let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
-    let subject_roles = authz::v2::subject_roles(subject.clone().into_authz());
+    let subject_roles = authz::v2::subject_roles(subject.to_authz());
     let Ok(roles) = system.authorize(subject_roles).await?.access().await?;
 
     if roles.is_empty() {
@@ -189,7 +108,7 @@ pub async fn add_roles(
             .join(", "),
     );
     let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
-    let add_roles = authz::v2::add_roles(subject.into_authz(), roles);
+    let add_roles = authz::v2::add_roles(subject.to_authz(), roles);
     let Ok(()) = system.authorize(add_roles).await?.access().await?;
     Ok(())
 }
@@ -216,7 +135,7 @@ pub async fn remove_roles(
             .join(", "),
     );
     let subject = parse_and_fetch_subject(&subject, pool.get().await?).await?;
-    let remove_roles = authz::v2::remove_roles(subject.into_authz(), roles);
+    let remove_roles = authz::v2::remove_roles(subject.to_authz(), roles);
     let Ok(()) = system.authorize(remove_roles).await?.access().await?;
     Ok(())
 }
