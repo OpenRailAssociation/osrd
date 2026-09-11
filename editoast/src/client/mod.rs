@@ -7,7 +7,6 @@ pub mod import_rolling_stock;
 pub mod infra_commands;
 mod openfga_config;
 mod postgres_config;
-pub mod roles;
 pub mod runserver;
 pub mod search_commands;
 pub mod search_journey_env_commands;
@@ -18,6 +17,7 @@ pub mod user;
 mod valkey_config;
 
 use authorization::grants::GrantsCommand;
+use authorization::roles::RolesCommand;
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
@@ -26,7 +26,6 @@ use import_rolling_stock::ImportRollingStockArgs;
 use infra_commands::InfraCommands;
 use openfga_config::OpenfgaConfig;
 pub use postgres_config::PostgresConfig;
-use roles::RolesCommand;
 use runserver::CoreArgs;
 use runserver::RunserverArgs;
 use search_commands::SearchCommands;
@@ -102,7 +101,7 @@ pub enum Commands {
     Healthcheck(CoreArgs),
     #[command(
         about,
-        long_about = "Garbage collector.\nWarning: tuple deletions in OpenFGA are not idempotent, 
+        long_about = "Garbage collector.\nWarning: tuple deletions in OpenFGA are not idempotent,
         so do not run this command multiple times concurrently or setup some external locking."
     )]
     Gc,
