@@ -9,7 +9,7 @@ const _10H30 = new Date('2025-01-01T10:30:00Z');
 const buildRow = (overrides: Partial<TimesStopsRowNew> = {}): TimesStopsRowNew => ({
   id: 'row-1',
   pathStepId: 'step-1',
-  opOnPathIndex: 0,
+  opOnPathIndex: 1,
   stepStatus: 'allHonored',
   name: 'Some station',
   track: 'track',

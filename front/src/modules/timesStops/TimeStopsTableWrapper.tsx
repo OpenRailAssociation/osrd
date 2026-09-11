@@ -370,9 +370,7 @@ const TimeStopsTableWrapper = ({
 
   const handleApplyTimesFromSimulation = (field: RequestedTimeField, mode: TimeFillMode): void => {
     const computedField = field === 'requestedArrival' ? 'computedArrival' : 'computedDeparture';
-    const targetRows = getRowsToUpdateFromSimulation(rows, field, mode).filter(
-      (row) => row.opOnPathIndex !== 0
-    );
+    const targetRows = getRowsToUpdateFromSimulation(rows, field, mode);
     const edits: PendingEdit[] = targetRows.map((row) => ({
       rowId: row.id,
       field,
