@@ -6207,6 +6207,10 @@ class TrackSectionExtensions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    db: dict[str, Any] | None = None
+    """
+    Free-form, infrastructure-manager-specific data. OSRD does not interpret it: it is stored and returned as-is, so that RailJSON carrying data OSRD has no schema for can be imported without loss.
+    """
     sncf: TrackSectionSncfExtension | None = None
     source: Source | None = None
 
@@ -7405,7 +7409,7 @@ class RailJson(BaseModel):
     """
     `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.
     """
-    version: str = "3.5.3"
+    version: str = "3.5.4"
     """
     The version of the RailJSON format. Defaults to the current version.
     """

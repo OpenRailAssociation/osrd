@@ -63,6 +63,7 @@ mod tests {
     use geos::geojson;
     use serde_json::from_str;
 
+    use super::TrackSection;
     use super::TrackSectionExtensions;
     use crate::primitives::BoundingBox;
 
@@ -91,5 +92,14 @@ mod tests {
     #[test]
     fn test_track_extensions_deserialization() {
         from_str::<TrackSectionExtensions>(r#"{}"#).unwrap();
+    }
+
+    /// Track sections without a `db` extension must not gain a `"db": null` key,
+    /// so exporting an unrelated infrastructure stays unchanged.
+    #[test]
+    fn test_track_without_db_extension_is_not_serialized() {
+        let track = TrackSection::default();
+        let serialized = serde_json::to_value(&track).unwrap();
+        assert!(serialized["extensions"].get("db").is_none());
     }
 }
