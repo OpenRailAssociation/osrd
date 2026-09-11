@@ -511,6 +511,7 @@ const PathStepItem = ({
                   onSelectSuggestion={(option) => onTrackNameChange(option?.label ?? '')}
                   resetSuggestions={() => setTrackNameQuery('')}
                   allowCustomValue
+                  addCustomValueLabel={t('addCustomTrackName', { trackName: trackNameQuery })}
                   onAddCustomValue={(value) => {
                     onTrackNameChange(value);
                     onAddCustomTrack({ trackId: value, trackName: value });
