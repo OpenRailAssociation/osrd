@@ -1003,7 +1003,6 @@ const TimesStopsTable = ({
                           table.options.meta!.powerRestrictionBlocks.get(row.original.id)
                             ?.hasWarning,
                         'requested-cell-highlighted-arrival':
-                          cell.row.index !== 0 &&
                           cell.column.id === 'requestedArrival' &&
                           highlightedRowIds.has(row.original.id) &&
                           mouseOverTimeField === 'requestedArrival',
@@ -1012,9 +1011,7 @@ const TimesStopsTable = ({
                           highlightedRowIds.has(row.original.id) &&
                           mouseOverTimeField === 'requestedDeparture',
                         'requested-cell-highlighted--connect-top':
-                          !hasDayChanged &&
-                          !(rowIndex === 1 && cell.column.id === 'requestedArrival') &&
-                          isCellHighlighted(rowIndex - 1, cell.column.id),
+                          !hasDayChanged && isCellHighlighted(rowIndex - 1, cell.column.id),
                         'requested-cell-highlighted--connect-bottom':
                           !nextHasDayChanged && isCellHighlighted(rowIndex + 1, cell.column.id),
                       })}
