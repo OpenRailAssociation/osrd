@@ -50,6 +50,6 @@
     "@types/react-dom": "^19.2.5",
     "happy-dom": "^20.12.0",
     "tailwindcss": "^4.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.0"
   }
 }
