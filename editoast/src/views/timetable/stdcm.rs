@@ -35,7 +35,6 @@ use core_client::AsCoreStreaming;
 use core_client::CoreClient;
 use core_client::Progress;
 use core_client::pathfinding::InvalidPathItem;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::stdcm::ConflictingWorkSchedule;
 use core_client::stdcm::ConsistConfiguration;
 use core_client::stdcm::ConsistSchedule;
@@ -101,13 +100,13 @@ pub struct StdcmConflictingWorkSchedule {
 pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,
-        pathfinding_result: PathfindingResultSuccess,
+        pathfinding_result: core_client::pathfinding::PathfindingResult,
         departure_time: DateTime<Utc>,
     },
     PathNotFound {
         most_blocking_work_schedules: Vec<StdcmConflictingWorkSchedule>,
         nearest_to_destination_work_schedules: Vec<StdcmConflictingWorkSchedule>,
-        partial_pathfinding_result: Option<PathfindingResultSuccess>,
+        partial_pathfinding_result: Option<core_client::pathfinding::PathfindingResult>,
         last_reached_operational_point: Option<StdcmLastReachedOperationalPoint>,
     },
     PreprocessingSimulationError {
@@ -895,8 +894,8 @@ mod tests {
         }
     }
 
-    fn pathfinding_result_success() -> PathfindingResultSuccess {
-        PathfindingResultSuccess {
+    fn pathfinding_result_success() -> core_client::pathfinding::PathfindingResult {
+        core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],
@@ -908,8 +907,8 @@ mod tests {
         }
     }
 
-    fn pathfinding_result_partial() -> PathfindingResultSuccess {
-        PathfindingResultSuccess {
+    fn pathfinding_result_partial() -> core_client::pathfinding::PathfindingResult {
+        core_client::pathfinding::PathfindingResult {
             path: TrainPath {
                 blocks: vec![],
                 routes: vec![],

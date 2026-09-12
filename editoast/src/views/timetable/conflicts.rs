@@ -786,10 +786,11 @@ mod tests {
     use crate::views::timetable::simulation::SimulationResponseSuccess;
 
     use super::*;
+    use crate::views::path::pathfinding;
     use authz::InfraGrant;
     use authz::RollingStockGrant;
     use common::units;
-    use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::PathfindingResult;
     use core_client::pathfinding::TrackRange;
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
@@ -1228,7 +1229,7 @@ mod tests {
         let target_simulation = Response::Success(fake_occurrence_simulation_success());
 
         // Create mock pathfinding results with track section ranges
-        let source_pathfinding = PathfindingResult::Success(PathfindingResultSuccess {
+        let source_pathfinding = pathfinding::PathfindingResult::Success(PathfindingResult {
             path: TrainPath {
                 track_section_ranges: vec![
                     TrackRange {
@@ -1249,7 +1250,7 @@ mod tests {
             ..Default::default()
         });
 
-        let target_pathfinding = PathfindingResult::Success(PathfindingResultSuccess {
+        let target_pathfinding = pathfinding::PathfindingResult::Success(PathfindingResult {
             path: TrainPath {
                 track_section_ranges: vec![
                     TrackRange {

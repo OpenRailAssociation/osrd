@@ -9,7 +9,7 @@ import type {
   PathPropertiesFormatted,
 } from 'applications/operationalStudies/types';
 import type {
-  CorePathfindingResultSuccess,
+  CorePathfindingResult,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -20,7 +20,7 @@ import exportTrainCSV from './exportTrainCSV';
 import useFormattedOperationalPoints from './useFormattedOperationalPoints';
 
 const exportTrainPDF = async (
-  path: CorePathfindingResultSuccess,
+  path: CorePathfindingResult,
   scenarioData: { name: string; infraName: string },
   train: Train,
   simulation: SimulationResponseSuccess,
@@ -63,7 +63,7 @@ const exportTrainPDF = async (
 };
 
 type SimulationResultsExportProps = {
-  path: CorePathfindingResultSuccess;
+  path: CorePathfindingResult;
   scenarioData: { name: string; infraName: string };
   train: Train;
   simulation: SimulationResponseSuccess;

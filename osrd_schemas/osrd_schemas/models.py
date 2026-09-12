@@ -6363,9 +6363,9 @@ class CorePathfindingInputError(
     )
 
 
-class CorePathfindingResultSuccess(BaseModel):
+class CorePathfindingResult(BaseModel):
     """
-    A successful pathfinding result. This is also used for STDCM response.
+    A pathfinding result. This is also used for STDCM response.
     """
 
     backtrack_path_items: list[BacktrackPathItem] | None = None
@@ -6718,7 +6718,7 @@ class PathItem(BaseModel):
 class PathfindingNotFoundIncompatibleConstraints(BaseModel):
     error_type: Literal["incompatible_constraints"] = "incompatible_constraints"
     incompatible_constraints: CoreIncompatibleConstraints
-    relaxed_constraints_path: CorePathfindingResultSuccess
+    relaxed_constraints_path: CorePathfindingResult
 
 
 class PathfindingFailurePathfindingNotFound5(
@@ -6777,7 +6777,7 @@ class PathfindingInput(BaseModel):
     """
 
 
-class PathfindingResultSuccess(CorePathfindingResultSuccess):
+class PathfindingResultSuccess(CorePathfindingResult):
     status: Literal["success"] = "success"
 
 
@@ -7081,7 +7081,7 @@ class SpeedSection(BaseModel):
 
 class StdcmResponseSuccess(BaseModel):
     departure_time: AwareDatetime
-    pathfinding_result: CorePathfindingResultSuccess
+    pathfinding_result: CorePathfindingResult
     simulation: SimulationResponseSuccess
     status: Literal["success"] = "success"
 
@@ -7506,7 +7506,7 @@ class StdcmResponsePathNotFound(BaseModel):
     last_reached_operational_point: StdcmLastReachedOperationalPoint | None = None
     most_blocking_work_schedules: list[StdcmConflictingWorkSchedule]
     nearest_to_destination_work_schedules: list[StdcmConflictingWorkSchedule]
-    partial_pathfinding_result: CorePathfindingResultSuccess | None = None
+    partial_pathfinding_result: CorePathfindingResult | None = None
     status: Literal["path_not_found"] = "path_not_found"
 
 
