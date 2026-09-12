@@ -1,0 +1,211 @@
+@property --home-card-default-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: white;
+}
+
+@property --home-card-hover-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: white;
+}
+
+.home-screen {
+  min-height: 100dvh;
+
+  background-color: white;
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  display: grid;
+  grid-template-rows: repeat(4, auto);
+  align-content: space-between;
+
+  .apps-selector {
+    place-self: center;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: 48px;
+    margin-block: 60px;
+
+    @media screen and (1840px <= width < 2240px) {
+      gap: 88px;
+    }
+
+    @media screen and (2240px <= width) {
+      gap: 160px;
+    }
+  }
+
+  .app-link {
+    display: grid;
+    grid-template: auto auto / 1fr;
+    width: 144px;
+    row-gap: 23px;
+
+    flex-shrink: 0;
+
+    @media screen and (1280px <= width < 1840px) {
+      width: 192px;
+    }
+
+    @media screen and (1840px <= width) {
+      width: 240px;
+    }
+  }
+
+  .app-link[aria-disabled] {
+    cursor: not-allowed;
+  }
+
+  .app-card {
+    display: grid;
+    grid-template: 1fr / 1fr;
+    aspect-ratio: 3 / 4;
+
+    background-color: var(--home-card-default-bg);
+    box-shadow: 0 0 0 0.5px inset rgb(0 0 0 / 0.25);
+    border-radius: 16px;
+
+    transition:
+      background-color 0.2s,
+      box-shadow 0.2s,
+      translate 0.2s;
+
+    @media screen and (1280px <= width) {
+      border-radius: 24px;
+    }
+  }
+
+  .app-link[aria-disabled] .app-card {
+    box-shadow: 0 0 0 0.5px inset rgb(0 0 0 / 0.05);
+  }
+
+  .app-link:not([aria-disabled]):is(:hover, :focus-visible) .app-card {
+    background-color: var(--home-card-hover-bg);
+
+    box-shadow:
+      0 0 0 0.5px inset rgb(0 0 0 / 0.25),
+      0 0 0 4px inset rgb(0 0 0 / 0.05),
+      0 0.5px 1px 0 rgb(0 0 0 / 0.19),
+      0 5px 9px -3px rgb(0 0 0 / 0.2),
+      0 13px 12px -5px rgb(177 160 255 / 0.18);
+
+    translate: 0 -4px;
+  }
+
+  .app-card img {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 16px;
+
+    @media screen and (1280px <= width) {
+      border-radius: 24px;
+    }
+  }
+
+  .app-link[aria-disabled] .app-card img {
+    opacity: 0.2;
+  }
+
+  .app-label {
+    text-align: center;
+    text-transform: uppercase;
+    text-wrap: balance;
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.05rem;
+    min-height: 40px;
+    place-content: center;
+    color: var(--primary60);
+
+    @supports (text-wrap: pretty) {
+      text-wrap: pretty;
+    }
+  }
+
+  .app-link:not([aria-disabled]):is(:hover, :focus-visible) .app-label {
+    color: var(--primary80);
+  }
+
+  .app-link[aria-disabled] .app-label {
+    color: var(--grey50);
+  }
+
+  .not-authorized-warning {
+    grid-area: 1 / 1;
+    place-self: center;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--info60);
+    background-color: rgb(255 255 255 / 0.75);
+    padding: 9px 12px 10px;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .app-link[aria-disabled]:is(:hover, :focus-visible) .not-authorized-warning {
+    opacity: 1;
+  }
+
+  .osrd-branding {
+    place-self: center;
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--grey80);
+  }
+
+  .osrd-home-logo {
+    margin: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 11px 0 rgb(0 137 255 / 0.18);
+  }
+
+  .about-link {
+    place-self: center;
+    width: max-content;
+    margin-block: 22px;
+    color: var(--primary60);
+
+    &:hover,
+    &:focus-visible {
+      color: var(--primary80);
+      text-decoration: underline;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+/* App specific colors */
+
+.app-link-opstd {
+  --home-card-default-bg: var(--ambientB10);
+  --home-card-hover-bg: var(--ambientB5);
+}
+
+.app-link-editor {
+  --home-card-default-bg: var(--ambientD10);
+  --home-card-hover-bg: var(--ambientD5);
+}
+
+.app-link-rolling-stocks-editor {
+  --home-card-default-bg: var(--ambientC10);
+  --home-card-hover-bg: var(--ambientC5);
+}
+
+.app-link-reference-map {
+  --home-card-default-bg: var(--grey10);
+  --home-card-hover-bg: var(--grey5);
+}
+
+.app-link-stdcm {
+  --home-card-default-bg: var(--ambientA10);
+  --home-card-hover-bg: var(--ambientA5);
+}

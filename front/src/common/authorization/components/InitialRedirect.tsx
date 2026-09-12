@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 
-import Home from 'main/home';
+import Home from 'applications/home/views/Home';
 import { userHasOnlyStdcmRoles } from 'reducers/user/userSelectors';
 
 const InitialRedirect = () => {
