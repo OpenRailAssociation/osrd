@@ -2,8 +2,8 @@ version = 1
 revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
-    "python_full_version < '3.14'",
     "python_full_version >= '3.14'",
+    "python_full_version < '3.14'",
 ]
 
 [[package]]
@@ -112,14 +112,14 @@ wheels = [
 
 [[package]]
 name = "geojson-pydantic"
-version = "2.1.1"
+version = "2.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d9/76/77c6f2e608028a2885e4d9d9a28cb6801879972d4bb3106c1dca02201df6/geojson_pydantic-2.1.1.tar.gz", hash = "sha256:3b64fa2dcd98108ff8a19bfb01eee3dab41bc230be2481804aefd7c1659d1c23", size = 8156, upload-time = "2026-04-07T09:48:07.252Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/03/8fdfbf626f8ec369cc5a0814f856b883ef2b6afb01e6e594181b7b79fb5d/geojson_pydantic-2.1.2.tar.gz", hash = "sha256:94b9f80f9d8ec8b5cad94de9c8feae93d3e0081bf67a4d3929e0e36fb87479f0", size = 8152, upload-time = "2026-08-25T07:03:18.687Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/97/d59d999f00aec90fc7a4efb742fc11e6c160552aa1b313438d3497998644/geojson_pydantic-2.1.1-py3-none-any.whl", hash = "sha256:55354f22ededc3c070e3210fec6f518d784b65c4368c1763f2c6dc4bab79b898", size = 9456, upload-time = "2026-04-07T09:48:05.772Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/72/73a3b47b861f786c252d1cbdd40e0c1dcc8b1762f7ee4c8ffd638a4f57fc/geojson_pydantic-2.1.2-py3-none-any.whl", hash = "sha256:49aa772b4f4c4d0612595908294a58510c4291848db805a0c99989836ebe4659", size = 9447, upload-time = "2026-08-25T07:03:17.714Z" },
 ]
 
 [[package]]
