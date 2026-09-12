@@ -1,3 +1,10 @@
+@position-try --round-trips-menu-left {
+  margin-left: 0;
+  margin-right: -6px;
+  left: auto;
+  right: anchor(right);
+}
+
 .round-trips-modal {
   --header-height: 80px;
   --footer-height: 100px;
@@ -229,6 +236,7 @@
 
       .round-trips-card {
         position: relative;
+        anchor-scope: --round-trips-card-menu-anchor;
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -306,6 +314,7 @@
             width: 32px;
             padding-inline: 8px;
             color: var(--grey40);
+            anchor-name: --round-trips-card-menu-anchor;
           }
         }
         .round-trips-card-body {
@@ -389,5 +398,10 @@
   .round-trips-menu {
     margin-top: 5px;
     margin-left: -6px;
+    position-anchor: --round-trips-card-menu-anchor;
+    position: fixed;
+    left: anchor(left);
+    top: anchor(bottom);
+    position-try-fallbacks: --round-trips-menu-left;
   }
 }
