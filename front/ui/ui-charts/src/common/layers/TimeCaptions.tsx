@@ -17,17 +17,6 @@ const MINUTE_OPTIONS: Intl.DateTimeFormatOptions = {
   hour12: false,
 };
 
-const HOUR_OPTIONS_SHORT: Intl.DateTimeFormatOptions = {
-  hour: '2-digit',
-  hour12: false,
-};
-
-const HOUR_OPTIONS_LONG: Intl.DateTimeFormatOptions = {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-};
-
 const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   day: '2-digit',
   month: '2-digit',
@@ -39,11 +28,16 @@ const MINUTES_FORMATTER = (t: number) => {
   return `:${minutes}`;
 };
 
-const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
-  new Date(t).toLocaleTimeString(
-    undefined,
-    pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
-  );
+// Format hours manually as "HH" or "HH:MM"
+const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) => {
+  const date = new Date(t);
+  const hours = date.getHours().toString().padStart(2, '0');
+  if (pixelsPerMinute > 1) {
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+  return hours;
+};
 
 // Signed time relative to time origin 0, used for the hourly pattern mode
 // (e.g. hourly timetables): …, -02:00, -01:00, 00:00, 01:00, 02:00, …
