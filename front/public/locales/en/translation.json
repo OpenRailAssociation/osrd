@@ -453,10 +453,8 @@
   },
   "applications": {
     "infrastructures-editor": "Infrastructure editor",
-    "operational-studies": "Operational studies",
     "reference-map": "Map viewer",
-    "rolling-stocks-editor": "Rolling stock editor",
-    "stdcm": "Short term path request"
+    "rolling-stocks-editor": "Rolling stock editor"
   },
   "authorization": {
     "addGrantToUser": "Add grant to user",
@@ -529,6 +527,17 @@
     "zoom-in": "Zoom in",
     "zoom-out": "Zoom out",
     "zoom-reset": "Reset zoom"
+  },
+  "home": {
+    "about": "About",
+    "applications": {
+      "infrastructures-editor": "Infrastructures",
+      "operational-studies": "Projects",
+      "reference-map": "Cartography",
+      "rolling-stocks-editor": "Rolling stocks",
+      "stdcm": "Short term path finding"
+    },
+    "not-authorized-warning": "Your access rights are not compatible with this area."
   },
   "infraManagement": {
     "actions": {

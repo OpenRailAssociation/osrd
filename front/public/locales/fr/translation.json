@@ -453,10 +453,8 @@
   },
   "applications": {
     "infrastructures-editor": "Éditeur d'infrastructure",
-    "operational-studies": "Études d'exploitation",
     "reference-map": "Cartographie",
-    "rolling-stocks-editor": "Éditeur de matériel roulant",
-    "stdcm": "Sillons de dernière minute"
+    "rolling-stocks-editor": "Éditeur de matériel roulant"
   },
   "authorization": {
     "addGrantToUser": "Ajouter des droits à un utilisateur",
@@ -529,6 +527,17 @@
     "zoom-in": "Zoomer",
     "zoom-out": "Dézoomer",
     "zoom-reset": "Réinitialiser le zoom"
+  },
+  "home": {
+    "about": "À propos",
+    "applications": {
+      "infrastructures-editor": "Infrastructures",
+      "operational-studies": "Projets",
+      "reference-map": "Cartographie",
+      "rolling-stocks-editor": "Matériels roulants",
+      "stdcm": "Sillons de dernière minute"
+    },
+    "not-authorized-warning": "Vos droits d’accès ne couvrent pas cette partie."
   },
   "infraManagement": {
     "actions": {
