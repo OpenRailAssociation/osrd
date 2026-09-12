@@ -530,6 +530,17 @@
     "zoom-out": "Dézoomer",
     "zoom-reset": "Réinitialiser le zoom"
   },
+  "home": {
+    "about": "À propos",
+    "applications": {
+      "infrastructures-editor": "Infrastructure",
+      "operational-studies": "Projets",
+      "reference-map": "Cartographie",
+      "rolling-stocks-editor": "Matériel roulant",
+      "stdcm": "Sillons de dernière minute"
+    },
+    "not-authorized-warning": "Vos droits d’accès ne couvrent pas cette partie."
+  },
   "infraManagement": {
     "actions": {
       "cancel": "Annuler",
