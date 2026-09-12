@@ -2,6 +2,9 @@ import { useState, type PropsWithChildren } from 'react';
 
 import { Rnd } from 'react-rnd';
 
+// Set on the body while resizing, to stop iframes from capturing the drag (see scss)
+const RESIZING_CLASS = 'resizing-section';
+
 const ResizableSection = ({
   minHeight,
   height,
@@ -50,9 +53,13 @@ const ResizableSection = ({
         }}
         onResizeStart={() => {
           setBaseHeight(height);
+          document.body.classList.add(RESIZING_CLASS);
         }}
         onResize={(_e, _dir, _refToElement, delta) => {
           setHeight(baseHeight + delta.height);
+        }}
+        onResizeStop={() => {
+          document.body.classList.remove(RESIZING_CLASS);
         }}
       >
         {children}
