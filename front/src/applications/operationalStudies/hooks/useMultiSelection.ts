@@ -5,12 +5,11 @@ const useMultiSelection = <T extends { id: number }>(
 ) => {
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const [items, setItems] = useState<T[]>([]);
-
   const deleteItems = useCallback(() => {
     selectedItemIds.forEach((id) => deleteItemCallback(id));
     setItems(items.filter((item) => !selectedItemIds.includes(item.id)));
     setSelectedItemIds([]);
-  }, [selectedItemIds, deleteItemCallback]);
+  }, [selectedItemIds, deleteItemCallback, items]);
 
   const toggleSelection = useCallback(
     (id: number) => {
