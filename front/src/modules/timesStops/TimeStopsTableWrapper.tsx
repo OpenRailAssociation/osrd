@@ -17,6 +17,7 @@ import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { propagateStopDuration } from './helpers/stopDurationPropagation';
 import { propagateTime } from './helpers/timePropagation';
+import { getTruncatedToSecondStartTime } from './helpers/utils';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
@@ -118,10 +119,7 @@ const TimeStopsTableWrapper = ({
   }, [rows, optimisticEdits]);
 
   const startTime = useMemo(
-    () =>
-      scenario.timetable_type === 'CALENDAR'
-        ? new Date(selectedTrain.start_time)
-        : new Duration({ milliseconds: selectedTrain.start_time }),
+    () => getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type),
     [selectedTrain.start_time, scenario.timetable_type]
   );
 

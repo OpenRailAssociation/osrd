@@ -19,7 +19,7 @@ import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import {
-  Duration,
+  type Duration,
   type StartTime,
   addDurationToStartTime,
   subtractStartTime,
@@ -29,8 +29,9 @@ import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
 import {
   getOperationalPointName,
+  getTruncatedToSecondStartTime,
   receptionSignalToSignalBooleans,
-  truncateStartTimeToSecond,
+  getTruncatedToSecondOffset,
 } from '../helpers/utils';
 import { type Margins, type StepStatus, type TimesStopsRowNew } from '../types';
 
@@ -92,10 +93,8 @@ const buildTableRow = ({
   closedSignal,
   margins,
 }: BuildTableRowParams): TimesStopsRowNew => {
-  // Truncate sub-second part: schedule.arrival is stored in whole seconds
-  // (via Math.floor in diffSeconds in scheduleStateToApiFields())
   const requestedArrival = schedule?.arrival
-    ? addDurationToStartTime(truncateStartTimeToSecond(startDate), Duration.parse(schedule.arrival))
+    ? addDurationToStartTime(startDate, getTruncatedToSecondOffset(schedule.arrival))
     : null;
 
   // computedArrival is offset from startDate
@@ -110,8 +109,7 @@ const buildTableRow = ({
       : false;
   const computedArrivalDate = isOnTime ? requestedArrival : rawComputedArrivalDate;
 
-  // schedule.stop_for is ISO 8601 duration
-  const stopDuration = schedule?.stop_for ? Duration.parse(schedule.stop_for) : null;
+  const stopDuration = schedule?.stop_for ? getTruncatedToSecondOffset(schedule.stop_for) : null;
 
   // requestedDeparture = requestedArrival + stopDuration
   const requestedDeparture =
@@ -252,10 +250,7 @@ const useTimesStopsTableData = (
   }, [trackIds]);
 
   const allRows = useMemo(() => {
-    const startDate =
-      scenario.timetable_type === 'CALENDAR'
-        ? new Date(selectedTrain.start_time)
-        : new Duration({ milliseconds: selectedTrain.start_time });
+    const startDate = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.id, idx]));
 
@@ -295,9 +290,7 @@ const useTimesStopsTableData = (
         if (stepIndex === 0) schedule.arrival = 'PT0S'; // The first step has no stored scheduled arrival as redundant with start date
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
-            ? new Duration({
-                milliseconds: stablePathItemTimes.final[stepIndex],
-              })
+            ? getTruncatedToSecondOffset(stablePathItemTimes.final[stepIndex])
             : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         const marginNotHonored = stableIsValid && !stablePathItemRespect?.margins[stepIndex];
@@ -373,7 +366,7 @@ const useTimesStopsTableData = (
                 : stableTrain.times[matchingReportTrainIndex];
             computedArrival =
               computedArrivalMs !== undefined
-                ? new Duration({ milliseconds: computedArrivalMs })
+                ? getTruncatedToSecondOffset(computedArrivalMs)
                 : undefined;
           }
 
