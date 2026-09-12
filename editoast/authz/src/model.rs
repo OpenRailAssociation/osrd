@@ -248,6 +248,7 @@ impl fga::model::Type for Role {
     derive_more::Display,
     derive_more::From,
     derive_more::FromStr,
+    derive_more::Deref,
     Clone,
     Copy,
     Debug,
