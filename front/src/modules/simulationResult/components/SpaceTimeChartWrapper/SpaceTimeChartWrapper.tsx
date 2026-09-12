@@ -91,7 +91,7 @@ import getPanelOccurrenceCounts, {
 import getTrainExceptionTypes from './helpers/getTrainExceptionTypes';
 import type { ExistingLinking } from './helpers/linkings';
 import makeProjectedTrains from './helpers/makeProjectedTrains';
-import { getOccupancyBlocks } from './helpers/utils';
+import { getOccupancyBlocks, splitOccupancyBlocks } from './helpers/utils';
 import {
   parseOccupancyZonePathId,
   formatOccupancyZonePathId,
@@ -556,7 +556,16 @@ const SpaceTimeChartWrapper = ({
     }
   }, [selectedProjectionId, trainScheduleProjections.length]);
 
-  const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
+  const occupancyBlocks = useMemo(
+    () =>
+      splitOccupancyBlocks(
+        getOccupancyBlocks(cutProjectedTrains),
+        (trackOccupancyDiagramsData ?? []).map(
+          ({ operationalPointPosition }) => operationalPointPosition
+        )
+      ),
+    [cutProjectedTrains, trackOccupancyDiagramsData]
+  );
 
   const isZoomAtDefault = xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX);
   const handleResetClick = useCallback(() => {
