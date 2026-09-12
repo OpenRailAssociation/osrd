@@ -87,10 +87,11 @@ pub fn rolling_stock_effective_grant(
 ) -> Protected<Option<RollingStockGrant>> {
     Protected::new(move |openfga| {
         async move {
-            let (is_reader, is_writer, is_owner) = match &subject {
+            let (is_restricted_reader, is_reader, is_writer, is_owner) = match &subject {
                 Subject::User(user) => {
                     openfga
                         .checks((
+                            RollingStock::restricted_reader().check(user, &rolling_stock),
                             RollingStock::reader().check(user, &rolling_stock),
                             RollingStock::writer().check(user, &rolling_stock),
                             RollingStock::owner().check(user, &rolling_stock),
@@ -98,8 +99,10 @@ pub fn rolling_stock_effective_grant(
                         .await?
                 }
                 Subject::Group(group) => {
-                    let (is_reader, is_writer, is_owner) = openfga
+                    let (is_restricted_reader, is_reader, is_writer, is_owner) = openfga
                         .checks((
+                            RollingStock::restricted_reader()
+                                .check(Group::member().userset(group), &rolling_stock),
                             RollingStock::reader()
                                 .check(Group::member().userset(group), &rolling_stock),
                             RollingStock::writer()
@@ -113,24 +116,26 @@ pub fn rolling_stock_effective_grant(
                         subject,
                         rolling_stock,
                         &[
+                            (is_restricted_reader, "restricted_reader"),
                             (is_reader, "reader"),
                             (is_writer, "writer"),
                             (is_owner, "owner"),
                         ],
                     );
-                    (is_reader, is_writer, is_owner)
+                    (is_restricted_reader, is_reader, is_writer, is_owner)
                 }
             };
             Ok(is_owner
                 .then_some(RollingStockGrant::Owner)
                 .or_else(|| is_writer.then_some(RollingStockGrant::Writer))
-                .or_else(|| is_reader.then_some(RollingStockGrant::Reader)))
+                .or_else(|| is_reader.then_some(RollingStockGrant::Reader))
+                .or_else(|| is_restricted_reader.then_some(RollingStockGrant::RestrictedReader)))
         }
         .boxed()
     })
     .with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
         rolling_stock,
     ))
 }
@@ -341,13 +346,20 @@ pub fn rolling_stock_direct_grant(
 ) -> Protected<Option<RollingStockGrant>> {
     Protected::new(move |openfga| {
         async move {
-            let (is_reader, is_writer, is_owner) = match &subject {
+            let (is_restricted_reader, is_reader, is_writer, is_owner) = match &subject {
                 Subject::User(user) => tokio::try_join!(
+                    openfga.tuple_exists(
+                        RollingStock::restricted_reader().tuple(user, &rolling_stock)
+                    ),
                     openfga.tuple_exists(RollingStock::reader().tuple(user, &rolling_stock)),
                     openfga.tuple_exists(RollingStock::writer().tuple(user, &rolling_stock)),
                     openfga.tuple_exists(RollingStock::owner().tuple(user, &rolling_stock)),
                 )?,
                 Subject::Group(group) => tokio::try_join!(
+                    openfga.tuple_exists(
+                        RollingStock::restricted_reader()
+                            .tuple(Group::member().userset(group), &rolling_stock)
+                    ),
                     openfga.tuple_exists(
                         RollingStock::reader()
                             .tuple(Group::member().userset(group), &rolling_stock)
@@ -365,6 +377,7 @@ pub fn rolling_stock_direct_grant(
                 subject,
                 rolling_stock,
                 &[
+                    (is_restricted_reader, RollingStockGrant::RestrictedReader),
                     (is_reader, RollingStockGrant::Reader),
                     (is_writer, RollingStockGrant::Writer),
                     (is_owner, RollingStockGrant::Owner),
@@ -964,7 +977,7 @@ mod tests {
     #[case::rolling_stock_effective_grant(
         rolling_stock_effective_grant(Subject::user(1), RollingStock(1)).checks,
         &[
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRestrictedRead, RollingStock(1))
         ]
     )]
     #[rstest]
