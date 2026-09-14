@@ -516,6 +516,7 @@
       "serviceChangeWarning": {
         "cancel": "Cancel",
         "confirm": "Confirm",
+        "explanationsLinkings": "Editing the cadence or the duration of the service will delete the linkings. Do you wish to continue?",
         "explanationsWithLinkings_one": "Editing the cadence or the duration of the service will reset an exception and delete the linkings. Do you wish to continue?",
         "explanationsWithLinkings_other": "Editing the cadence or the duration of the service will reset {{count}} exceptions and delete the linkings. Do you wish to continue?",
         "explanations_one": "Editing the cadence or the duration of the service will reset an exception. Do you wish to continue?",

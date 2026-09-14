@@ -12,6 +12,7 @@ import {
 import cx from 'classnames';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
@@ -20,6 +21,7 @@ import type {
   TimetableType,
   TrainCategory,
 } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Comfort, ConstraintDistribution } from 'common/api/osrdRailwayManagerApi';
 import Banner from 'common/Banner';
 import { useInfraID } from 'common/osrdContext';
@@ -36,10 +38,11 @@ import {
   getDefaultPacedTrainTimeWindow,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { Train } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { Duration, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
-import { isOccurrenceId } from 'utils/trainId';
+import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import RollingStockField from './RollingStockField';
@@ -100,7 +103,8 @@ function computeInitialSpeedError(
 function getFieldsFromTrain(
   train: Train,
   rollingStocks: LightRollingStockWithLiveries[],
-  timetableType: TimetableType
+  timetableType: TimetableType,
+  hasLinkings: boolean
 ): TrainFieldsState {
   const rollingStock = rollingStocks.find((rs) => rs.name === train.rolling_stock_name);
   const startTime = parseStartTime(train.start_time, timetableType);
@@ -121,7 +125,8 @@ function getFieldsFromTrain(
     departure_date: startTime,
     initial_speed:
       train.initial_speed === undefined ? null : String(Math.round(train.initial_speed * 36) / 10),
-    service_changed_confirmed: !train.paced || train.paced.exceptions.length === 0,
+    service_changed_confirmed:
+      !train.paced || (train.paced.exceptions.length === 0 && !hasLinkings),
   };
 }
 
@@ -262,9 +267,21 @@ const ExpandedTrainForm = ({
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
+  const linkingsEnabled = useSelector(getFeatureFlag('linkings'));
+  const { data: linkings } = osrdEditoastApi.endpoints.postTrainSchedulesLinkings.useQuery(
+    {
+      body: {
+        timetable_id: scenario.timetable_id,
+        train_schedules: [extractEditoastIdFromTrainId(train.id)],
+      },
+    },
+    { skip: !linkingsEnabled || !train.paced, refetchOnMountOrArgChange: true }
+  );
+  const hasLinkings = !!linkings?.length;
+
   const fieldsFromTrain = useMemo(
-    () => getFieldsFromTrain(train, rollingStocks, timetableType),
-    [train, rollingStocks, timetableType]
+    () => getFieldsFromTrain(train, rollingStocks, timetableType, hasLinkings),
+    [train, rollingStocks, timetableType, hasLinkings]
   );
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
 
@@ -417,6 +434,7 @@ const ExpandedTrainForm = ({
         onFieldImmediateChange={onFieldImmediateChange}
         onPersistTrain={onPersistTrain}
         revertServiceChange={revertServiceChange}
+        hasLinkings={hasLinkings}
       />
       <div
         className={cx('train-form', {
