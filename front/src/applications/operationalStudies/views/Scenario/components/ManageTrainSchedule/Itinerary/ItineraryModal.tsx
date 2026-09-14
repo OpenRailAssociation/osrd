@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from 'react';
 
 import { ArrowSwitch, Fold, FrameAll, Plus, Unfold } from '@osrd-project/ui-icons';
 import along from '@turf/along';
@@ -282,7 +290,13 @@ const ItineraryModal = ({
   const confirmedStepIdRef = useRef<string>('');
   const focusValueRef = useRef<Record<string, string | undefined>>({});
 
-  const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
+  const [pathSteps, setPathStepsRaw] = useState<PathStepV2[]>([]);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const setPathSteps = (newPathSteps: SetStateAction<PathStepV2[]>) => {
+    setPathStepsRaw(newPathSteps);
+    setSubmitAttempted(false);
+  };
+
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
   const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
   const [bannerWiggle, setBannerWiggle] = useState(0);
@@ -622,11 +636,6 @@ const ItineraryModal = ({
   };
 
   const isNameEmpty = modalFormState.name.trim() === '';
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-
-  useEffect(() => {
-    setSubmitAttempted(false);
-  }, [pathSteps]);
 
   useEffect(() => {
     const formattedPathSteps = trainState.pathSteps
