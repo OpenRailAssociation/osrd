@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
@@ -23,6 +25,12 @@ export default function ItineraryModalFooter({
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
   const { scenario } = useScenarioContext();
+  const [submittingType, setSubmittingType] = useState<EditingTrainType>();
+
+  const handleSubmit = (type: EditingTrainType) => {
+    setSubmittingType(type);
+    onSubmit(type);
+  };
 
   return (
     <div className="itinerary-modal-form-footer" data-testid="itinerary-modal-form-footer">
@@ -40,18 +48,18 @@ export default function ItineraryModalFooter({
               label={t('submit.addSingleTrain')}
               variant="Normal"
               size="medium"
-              onClick={() => onSubmit('uniqueTrain')}
+              onClick={() => handleSubmit('uniqueTrain')}
               dataTestID="itinerary-modal-add-single-train-button"
-              isLoading={isWorking}
+              isLoading={submittingType === 'uniqueTrain' && isWorking}
             />
           )}
           <Button
             label={t('submit.addService')}
             variant="Primary"
             size="medium"
-            onClick={() => onSubmit('pacedTrain')}
+            onClick={() => handleSubmit('pacedTrain')}
             dataTestID="itinerary-modal-add-service-train-button"
-            isLoading={isWorking}
+            isLoading={submittingType === 'pacedTrain' && isWorking}
           />
         </div>
       ) : (
