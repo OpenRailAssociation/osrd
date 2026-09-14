@@ -25,7 +25,7 @@ export type SearchJourneySolution = TrainSchedulePart[];
 export type SearchJourneyState = {
   infraId?: number;
   timetableIds: number[];
-  startTime?: SearchJourneyStartTime;
+  startTime: SearchJourneyStartTime;
   origin?: SearchJourneyOperationalPoint;
   destination?: SearchJourneyOperationalPoint;
   journeys?: SearchJourneySolution[];
@@ -35,7 +35,7 @@ export type SearchJourneyState = {
 export const searchJourneyInitialState: SearchJourneyState = {
   infraId: undefined,
   timetableIds: [],
-  startTime: undefined,
+  startTime: { hours: 0, minutes: 0 },
   origin: undefined,
   destination: undefined,
   journeys: undefined,

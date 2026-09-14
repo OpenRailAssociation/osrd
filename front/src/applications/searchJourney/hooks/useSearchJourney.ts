@@ -45,10 +45,10 @@ export default function useSearchJourney() {
   >(SEARCH_JOURNEY_REQUEST_STATUS.idle);
   const [error, setError] = useState<Error | null>(null);
 
-  const isFormComplete = Boolean(infraId && origin && destination && startTime);
+  const isFormComplete = Boolean(infraId && origin && destination);
 
   const launchSearchJourneyRequest = useCallback(async () => {
-    if (!infraId || !origin || !destination || !startTime) return;
+    if (!infraId || !origin || !destination) return;
 
     setRequestStatus(SEARCH_JOURNEY_REQUEST_STATUS.pending);
     setError(null);
