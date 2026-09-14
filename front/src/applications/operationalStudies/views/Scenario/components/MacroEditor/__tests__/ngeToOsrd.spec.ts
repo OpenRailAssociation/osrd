@@ -181,4 +181,48 @@ describe('generatPathAndSchedule', () => {
       schedule: expectedSchedule,
     });
   });
+
+  const overridePath = [
+    {
+      key: 'OverrideA',
+      location: {
+        type: 'operational_point_part_reference' as const,
+        operational_point: { main_code: 'Override', country_code: '??', type: 'domestic' as const },
+        local_track_name: null,
+      },
+    },
+    {
+      key: 'OverrideB',
+      location: {
+        type: 'operational_point_part_reference' as const,
+        operational_point: { main_code: 'LTH', country_code: '??', type: 'domestic' as const },
+        local_track_name: null,
+      },
+    },
+  ];
+
+  test('should use the override path for path and schedule keys when provided', () => {
+    const result = generatePathAndSchedule(
+      sections,
+      nodes,
+      new Date(2026, 0, 15, 3, 0),
+      TRAINRUN_DIRECTIONS.FORWARD,
+      { interval: 'PT30M', time_window: 'PT3H', exceptions: [] },
+      undefined,
+      overridePath
+    );
+
+    expect(result).toEqual({
+      start_time: new Date(2026, 0, 15, 3, 59).getTime(),
+      path: overridePath,
+      schedule: [
+        {
+          at: 'OverrideB',
+          arrival: new Duration({ minutes: 2 }).toISOString(),
+          stop_for: Duration.zero.toISOString(),
+          reception_signal: 'OPEN',
+        },
+      ],
+    });
+  });
 });
