@@ -15,6 +15,7 @@ import {
   type PathItemLocation,
   type TimetableType,
   type TrainScheduleResponse,
+  type PathItem,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -253,7 +254,8 @@ const calculateStartTime = (
 const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  trainrunDirection: TRAINRUN_DIRECTIONS
+  trainrunDirection: TRAINRUN_DIRECTIONS,
+  path: PathItem[]
 ): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   return trainrunSections.flatMap((section, index) => {
@@ -290,7 +292,7 @@ const generateSchedule = (
         // This need to be done here so it doesn't make an exception pop because the
         // destination is not configured the same way in macro.
         return {
-          at: `${toNodeId}-${index + 1}`,
+          at: path[index + 1].id,
           stop_for: Duration.zero.toISOString(),
           // Default information
           reception_signal: 'OPEN',
@@ -306,7 +308,7 @@ const generateSchedule = (
     if (isStopTransit) stop_for = departure ? departure.sub(arrival) : Duration.zero;
 
     return {
-      at: `${toNodeId}-${index + 1}`,
+      at: path[index + 1].id,
       arrival: arrival.toISOString(),
       stop_for: stop_for?.toISOString() ?? null,
       // Default information
@@ -354,7 +356,8 @@ export const generatePathAndSchedule = (
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   paced: TrainSchedule['paced'],
-  state?: MacroEditorState
+  state?: MacroEditorState,
+  pathOverride?: PathItem[]
 ): Pick<TrainSchedule, 'start_time' | 'path' | 'schedule'> => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
@@ -362,8 +365,8 @@ export const generatePathAndSchedule = (
   }
 
   const startTime = calculateStartTime(sections, baseStartTime, trainrunDirection, paced);
-  const path = generatePath(sections, nodes, trainrunDirection, state);
-  const schedule = generateSchedule(sections, nodes, trainrunDirection);
+  const path = pathOverride ?? generatePath(sections, nodes, trainrunDirection, state);
+  const schedule = generateSchedule(sections, nodes, trainrunDirection, path);
   return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
@@ -603,7 +606,8 @@ export const handleUpdateTrainSchedule = async ({
     baseStartTime,
     TRAINRUN_DIRECTIONS.FORWARD,
     paced,
-    state
+    state,
+    tags.includes('nodes') ? undefined : oldForwardTrainSchedule.path
   );
   await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
 
@@ -659,17 +663,6 @@ export const handleUpdateTrainSchedule = async ({
     return;
   }
 
-  const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
-    trainrunSections,
-    netzgrafikDto.nodes,
-    baseStartTime,
-    TRAINRUN_DIRECTIONS.BACKWARD,
-    paced,
-    state
-  );
-
-  await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
-
   let newReturnTrainSchedule: TrainScheduleResponse;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
 
@@ -677,6 +670,18 @@ export const handleUpdateTrainSchedule = async ({
     // update return if already present
     const oldReturnTrainSchedule = await fetchTrainSchedule(trainScheduleIds[1], dispatch);
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTrainSchedule;
+
+    const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
+      trainrunSections,
+      netzgrafikDto.nodes,
+      baseStartTime,
+      TRAINRUN_DIRECTIONS.BACKWARD,
+      paced,
+      state,
+      tags.includes('nodes') ? undefined : oldReturnTrainSchedule.path
+    );
+    await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
+
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
       ...(tags.includes('name') && { train_name: trainrun.name }),
@@ -714,6 +719,16 @@ export const handleUpdateTrainSchedule = async ({
     );
   } else {
     // otherwise create return
+
+    const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
+      trainrunSections,
+      netzgrafikDto.nodes,
+      baseStartTime,
+      TRAINRUN_DIRECTIONS.BACKWARD,
+      paced,
+      state
+    );
+    await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
 
     // Remove train_schedule_set_id before creating train schedule as we don't want to pass it in the payload
     const {
