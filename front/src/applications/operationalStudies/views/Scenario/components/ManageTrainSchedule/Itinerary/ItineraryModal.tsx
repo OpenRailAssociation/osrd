@@ -231,8 +231,8 @@ const ItineraryModal = ({
   }, [closeItineraryModal, setWasInitialized]);
 
   const [isWorking, setIsWorking] = useState(false);
-  const createTrain = useCreateTrainSchedule(trainState, setIsWorking, closeModal);
-  const updateTimetable = useUpdateTrainSchedule(trainState, setIsWorking, closeModal);
+  const createTrain = useCreateTrainSchedule(setIsWorking, closeModal);
+  const updateTimetable = useUpdateTrainSchedule(setIsWorking, closeModal);
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name: trainState.name,
@@ -769,7 +769,6 @@ const ItineraryModal = ({
     setPathStepsWithTrailing(reversePathSteps(filledSteps));
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const submitItinerary = (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
@@ -793,34 +792,25 @@ const ItineraryModal = ({
 
     if (pathStepsFromV2.length < 2) return;
 
-    setTrainState((oldTrainState: ItineraryModalTrainState) => ({
-      ...oldTrainState,
+    const newTrainState = {
+      ...trainState,
       name,
       category: modalFormState.category ?? null,
       rollingStockId: modalFormState.rollingStockId,
       rollingStockName: modalFormState.rollingStockName,
       speedLimitByTag: modalFormState.speedLimitTag,
       pathSteps: pathStepsFromV2,
-      editingTrainType: trainType ?? oldTrainState.editingTrainType,
-    }));
+      editingTrainType: trainType ?? trainState.editingTrainType,
+    };
+    setTrainState(newTrainState);
 
-    setIsSubmitting(true);
-  };
-
-  useEffect(() => {
-    if (isSubmitting) {
-      try {
-        if (trainScheduleToEditData) {
-          updateTimetable();
-        } else {
-          createTrain();
-        }
-        onTrainCreated();
-      } finally {
-        setIsSubmitting(false);
-      }
+    if (trainScheduleToEditData) {
+      updateTimetable(newTrainState);
+    } else {
+      createTrain(newTrainState);
     }
-  }, [isSubmitting]);
+    onTrainCreated();
+  };
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 
