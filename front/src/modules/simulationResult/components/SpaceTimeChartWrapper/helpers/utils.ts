@@ -88,6 +88,27 @@ export const getOccupancyBlocks = (trains: IndividualTrainProjection[]): Occupan
     }));
   });
 
+export const splitOccupancyBlocks = (
+  blocks: OccupancyBlock[],
+  positions: number[]
+): OccupancyBlock[] => {
+  if (positions.length === 0) return blocks;
+
+  const sortedPositions = [...positions].sort((a, b) => a - b);
+
+  return blocks.flatMap((block) => {
+    const innerPositions = sortedPositions.filter(
+      (position) => position > block.spaceStart && position < block.spaceEnd
+    );
+    if (innerPositions.length === 0) return block;
+
+    const bounds = [block.spaceStart, ...innerPositions, block.spaceEnd];
+    return bounds
+      .slice(0, -1)
+      .map((spaceStart, index) => ({ ...block, spaceStart, spaceEnd: bounds[index + 1] }));
+  });
+};
+
 export const isTrainSelected = (
   trainId: TrainId,
   chart: 'std' | 'tod',

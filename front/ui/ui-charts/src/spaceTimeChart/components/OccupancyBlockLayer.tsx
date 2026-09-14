@@ -41,7 +41,7 @@ export const OccupancyBlockLayer = ({ occupancyBlocks }: OccupancyBlockLayerProp
     (ctx, { getTimePixel, getSpacePixel }) => {
       for (const occupancyBlock of occupancyBlocks) {
         const x = getTimePixel(occupancyBlock.timeStart);
-        const y = getSpacePixel(occupancyBlock.spaceStart);
+        const y = getSpacePixel(occupancyBlock.spaceStart, true);
         const width = getTimePixel(occupancyBlock.timeEnd) - x;
         const height = getSpacePixel(occupancyBlock.spaceEnd) - y;
 
