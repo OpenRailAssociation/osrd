@@ -13,9 +13,7 @@ use crate::views::timetable::simulation::consist_train_simulation_batch;
 use authz;
 use authz::RollingStockPrivilege;
 use authz::v2;
-use authz::v2::Actor;
 use authz::v2::Authorizer as _;
-use authz::v2::Check;
 use authz::v2::Protected;
 use axum::Extension;
 use axum::extract::Json;
@@ -236,16 +234,12 @@ pub(in crate::views) async fn stdcm(
     let consist_schedule_values = &request.consist_schedule.values;
     if authn_state.user().is_some() {
         let authorizer = authn_state.authorizer(&openfga);
-        let checks = consist_schedule_values
-            .iter()
-            .map(|consist| {
-                Check::HasRollingStockPrivilege(
-                    Actor::Issuer,
-                    RollingStockPrivilege::CanRead,
-                    authz::RollingStock(consist.rolling_stock_id),
-                )
-            })
-            .map(Protected::check);
+        let checks = consist_schedule_values.iter().map(|consist| {
+            v2::rolling_stock_privilege_check(
+                authz::RollingStock(consist.rolling_stock_id),
+                RollingStockPrivilege::CanRead,
+            )
+        });
         let protected = Protected::from_iter(checks);
         authz::v2::Access::access(authorizer.authorize(protected).await?)
             .await?
