@@ -423,3 +423,16 @@ export const getOperationalPointName = (
   // Invalid step
   return getInvalidStepLabel(step.operational_point);
 };
+
+export const getOperationalPointSecondaryCode = (
+  op: RelatedOperationalPoint | PathWaypoint | undefined,
+  step: PathItemLocation
+) => {
+  // Valid op
+  if (op) return op.secondary_code;
+  // Invalid op
+  if (step.type === 'operational_point_part_reference' && step.operational_point.type !== 'id')
+    return step.operational_point.secondary_code;
+  // TrackOffset or invalid op of type id
+  return undefined;
+};
