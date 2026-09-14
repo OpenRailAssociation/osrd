@@ -46,10 +46,10 @@ import {
   formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
+import ConfirmationDialog from '../ConfirmationDialog';
 import { TRAIN_SCHEDULE_DELTA } from '../consts';
 import TrainScheduleActions from '../TrainScheduleActions';
 import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
-import ConfirmationDialog from './ConfirmationDialog';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';

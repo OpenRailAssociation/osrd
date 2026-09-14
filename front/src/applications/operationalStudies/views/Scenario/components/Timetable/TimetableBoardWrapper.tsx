@@ -1,5 +1,6 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -7,8 +8,6 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -22,6 +21,7 @@ import { mapBy } from 'utils/types';
 
 import { validateTimetableJsonPayload } from '../ImportTrainSchedule/helpers/parseJson';
 import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloads';
+import ConfirmationDialog from './ConfirmationDialog';
 import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
@@ -40,7 +40,7 @@ const TimetableBoardWrapper = ({
   selectedTrainScheduleIds,
   setSelectedTrainScheduleIds,
 }: TimetableBoardWrapperProps) => {
-  const { openModal } = useContext(ModalContext);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { scenario, sandboxId, timetableId } = useScenarioContext();
   const { trainSchedules, removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
@@ -282,15 +282,25 @@ const TimetableBoardWrapper = ({
     [selectedTrainScheduleIds, trainSchedules, selectedTrainId, getTimetableRoundTrips, timetableId]
   );
 
-  const handleDeleteTrainSchedules = () => {
-    openModal(
-      <DeleteModal
-        handleDelete={() => handleTrainsDelete(selectedTrainId)}
-        selectedPacedTrainCount={selectedPacedTrainIds.length}
-        selectedUniqueTrainCount={selectedUniqueTrainIds.length}
-      />,
-      'sm'
-    );
+  const handleDeleteTrainSchedules = () => setIsDeleteDialogOpen(true);
+
+  const deleteTrainSchedulesComputedLabel = () => {
+    if (selectedPacedTrainIds.length > 0 && selectedUniqueTrainIds.length === 0) {
+      return t('main.timetable.deletePacedTrainSelectionConfirmation', {
+        selectedPacedTrainsCount: selectedPacedTrainIds.length,
+      });
+    }
+
+    if (selectedUniqueTrainIds.length > 0 && selectedPacedTrainIds.length === 0) {
+      return t('main.timetable.deleteUniqueTrainSelectionConfirmation', {
+        selectedUniqueTrainsCount: selectedUniqueTrainIds.length,
+      });
+    }
+
+    return t('main.timetable.deletePacedTrainAndUniqueTrainSelectionConfirmation', {
+      selectedPacedTrainsCount: selectedPacedTrainIds.length,
+      selectedUniqueTrainsCount: selectedUniqueTrainIds.length,
+    });
   };
 
   useEffect(() => {
@@ -320,6 +330,21 @@ const TimetableBoardWrapper = ({
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
       />
+      {isDeleteDialogOpen &&
+        createPortal(
+          <ConfirmationDialog
+            onCancel={() => setIsDeleteDialogOpen(false)}
+            onConfirm={() => handleTrainsDelete(selectedTrainId)}
+            labels={{
+              title: t('main.timetable.delete'),
+              texts: [deleteTrainSchedulesComputedLabel()],
+              submit: t('main.timetable.delete'),
+              cancel: t('main.timetable.cancel'),
+            }}
+            submitDataTestID="confirmation-modal-delete-button"
+          />,
+          document.body
+        )}
     </BoardWrapper>
   );
 };
