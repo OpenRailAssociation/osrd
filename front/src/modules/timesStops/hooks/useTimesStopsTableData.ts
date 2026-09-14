@@ -29,6 +29,7 @@ import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
 import {
   getOperationalPointName,
+  getOperationalPointSecondaryCode,
   receptionSignalToSignalBooleans,
   truncateStartTimeToSecond,
 } from '../helpers/utils';
@@ -276,6 +277,7 @@ const useTimesStopsTableData = (
           selectedTrain.path.length,
           t
         );
+        const secondaryCode = getOperationalPointSecondaryCode(matchingOp, pathStep.location);
 
         const pathStepLocation = pathStep.location;
 
@@ -332,7 +334,7 @@ const useTimesStopsTableData = (
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
-          secondaryCode: matchingOp?.secondary_code,
+          secondaryCode,
           trackName,
           hasRequestedTrack,
           startDate,
