@@ -7337,7 +7337,7 @@ class PathProperties(BaseModel):
     """
     Electrification modes and neutral section along the path
     """
-    geometry: GeoJsonLineString
+    geometry: GeoJsonMultiLineString
     """
     Geometry of the path
     """
