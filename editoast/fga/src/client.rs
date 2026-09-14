@@ -2,6 +2,7 @@ mod api;
 mod authorization_models;
 mod error;
 mod queries;
+mod requests;
 mod stores;
 mod tuples;
 
@@ -15,6 +16,10 @@ pub use error::NotFoundErrorCode;
 pub use error::UnprocessableContentErrorCode;
 pub use queries::UserList;
 pub use stores::Store;
+use tokio::sync::mpsc;
+use tokio::sync::oneshot;
+use tokio_util::sync::CancellationToken;
+use tokio_util::sync::DropGuard;
 pub use tuples::UntypedTuple;
 pub use tuples::UntypedUserset;
 pub use tuples::UserOrUserset;
@@ -49,7 +54,8 @@ pub struct Client {
     authorization_model_id: RwLock<Option<String>>,
     settings: ConnectionSettings,
     inner: reqwest::Client,
-    semaphore: Arc<tokio::sync::Semaphore>,
+    to_send_tx: mpsc::UnboundedSender<requests::SendMessage>,
+    _drop_guard: DropGuard,
 }
 
 #[derive(Debug, Clone)]
@@ -120,13 +126,26 @@ pub enum InitializationError {
 impl Client {
     fn new(settings: ConnectionSettings) -> Arc<Self> {
         let semaphore = Arc::new(tokio::sync::Semaphore::new(MAX_CONCURRENT_REQUESTS));
-        Arc::new(Self {
+        let (to_send_tx, to_send_rx) = mpsc::unbounded_channel();
+        let (cancellation, drop_guard) = {
+            let cancellation = CancellationToken::new();
+            (cancellation.clone(), cancellation.drop_guard())
+        };
+        let client = Arc::new(Self {
             store: OnceLock::new(),
             authorization_model_id: RwLock::new(None),
             settings,
             inner: reqwest::Client::new(),
+            to_send_tx,
+            _drop_guard: drop_guard,
+        });
+        tokio::spawn(requests::request_loop(
+            Arc::downgrade(&client),
             semaphore,
-        })
+            to_send_rx,
+            cancellation,
+        ));
+        client
     }
 
     fn authorization_model_id(&self) -> Option<String> {
@@ -137,12 +156,10 @@ impl Client {
     }
 
     async fn fetch(&self, request: reqwest::Request) -> reqwest::Result<reqwest::Response> {
-        let _permit = self
-            .semaphore
-            .acquire()
-            .await
-            .expect("semaphore should never be closed");
-        self.inner.execute(request).await
+        let (tx, rx) = oneshot::channel();
+        let _ = self.to_send_tx.send((request, tx));
+        rx.await
+            .expect("this task will not be polled if the sender is dropped")
     }
 
     pub async fn is_healthy(&self) -> Result<bool, Error> {
