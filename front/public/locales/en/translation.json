@@ -208,6 +208,16 @@
         },
         "label": "Electrification tool"
       },
+      "op-edition": {
+        "create-op": "Create a new operational point",
+        "edit-op": "Edit an operational point",
+        "fields": {
+          "name": {
+            "title": "Name",
+            "description": "Operational point name"
+          }
+        }
+      },
       "point-edition": {
         "default-routes-error": "An error occurred while loading linked routes.",
         "help": {

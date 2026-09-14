@@ -10,6 +10,7 @@ import SelectionTool from './selection/tool';
 import SwitchEditionTool from './switchEdition/tool';
 import TrackEditionTool from './trackEdition/tool';
 import TrackSplitTool from './trackSplit/tool';
+import OpEditionTool from './opEdition/tool';
 
 // This const needs to stay in a separate file to avoid import cycle.
 const TOOLS = Object.freeze({
@@ -23,6 +24,7 @@ const TOOLS = Object.freeze({
   [TOOL_NAMES.DETECTOR_EDITION]: DetectorEditionTool,
   [TOOL_NAMES.BUFFER_STOP_EDITION]: BufferStopEditionTool,
   [TOOL_NAMES.ROUTE_EDITION]: RouteEditionTool,
+  [TOOL_NAMES.OP_EDITION]: OpEditionTool,
 });
 
 export default TOOLS;
