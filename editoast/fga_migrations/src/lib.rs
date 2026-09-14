@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 use std::sync::LazyLock;
 
 use fga::client::Client;
@@ -122,8 +123,8 @@ fn get_migration_index(target_migration: &TargetMigration) -> Result<usize, Migr
 
 #[instrument(name = "migration_run")]
 pub async fn run_migrations(
-    mut client_authz: Client,
-    mut client_migrations: Client,
+    client_authz: Arc<Client>,
+    client_migrations: Arc<Client>,
     target_migration: TargetMigration,
 ) -> Result<(), MigrationError> {
     // Update the migration store model
@@ -189,6 +190,8 @@ pub async fn run_migrations(
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::Migration;
     use super::MigrationError;
     use super::TargetMigration;
@@ -224,8 +227,8 @@ mod tests {
     /// with the expected migration. The function panics if the expected and actual states don't
     /// match.
     async fn check_migration_run(
-        client_authz: Client,
-        client_migrations: Client,
+        client_authz: Arc<Client>,
+        client_migrations: Arc<Client>,
         target_migration: TargetMigration,
         expected_migration: usize,
     ) {

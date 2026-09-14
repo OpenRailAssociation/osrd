@@ -283,6 +283,8 @@ pub struct Error(#[from] pub authz::v2::OpenFgaError);
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use authz::InfraGrant;
     use authz::InfraPrivilege;
     use authz::Role;
@@ -299,7 +301,7 @@ mod tests {
     use crate::fixtures::create_empty_infra;
     use crate::fixtures::create_fast_rolling_stock;
 
-    async fn openfga() -> fga::Client {
+    async fn openfga() -> Arc<fga::Client> {
         let openfga = fga::test_client!("authz@");
         fga_migrations::run_migrations(
             openfga.clone(),

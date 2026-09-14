@@ -21,12 +21,13 @@ impl Client {
         &self,
         tuple: Tuple<'_, R, U>,
     ) -> Result<bool, Error> {
+        let authorization_model_id = self.authorization_model_id();
         let (tuples, _continuation) = self
             .get_stores_read(
-                &self.store.id,
+                &self.store().id,
                 Some(RawTuple::from(&tuple)),
                 Some(1),
-                self.authorization_model_id.as_deref(),
+                authorization_model_id.as_deref(),
                 None,
                 None,
             )
@@ -37,12 +38,13 @@ impl Client {
     pub fn list_tuples(&self) -> impl stream::TryStream<Ok = UntypedTuple, Error = Error> + '_ {
         Continuation::stream(move |continuation| {
             async move {
+                let authorization_model_id = self.authorization_model_id();
                 let (tuples, continuation_str) = self
                     .get_stores_read(
-                        &self.store.id,
+                        &self.store().id,
                         None,
                         Some(100),
-                        self.authorization_model_id.as_deref(),
+                        authorization_model_id.as_deref(),
                         None,
                         continuation.as_option().map(|s| s.to_string()),
                     )
@@ -58,11 +60,12 @@ impl Client {
         &self,
         tuples: &[Tuple<'_, R, U>],
     ) -> Result<(), Error> {
+        let authorization_model_id = self.authorization_model_id();
         self.post_stores_write(
-            &self.store.id,
+            &self.store().id,
             &tuples.iter().map_into().collect::<Vec<_>>(),
             &[],
-            self.authorization_model_id.clone(),
+            authorization_model_id,
         )
         .await
     }
@@ -98,11 +101,12 @@ impl Client {
         if tuples.is_empty() {
             return Ok(());
         }
+        let authorization_model_id = self.authorization_model_id();
         self.post_stores_write(
-            &self.store.id,
+            &self.store().id,
             &[],
             &tuples.iter().map_into().collect::<Vec<_>>(),
-            self.authorization_model_id.clone(),
+            authorization_model_id,
         )
         .await
     }
@@ -158,16 +162,17 @@ impl PreparedWrites<'_> {
     /// This function also returns at the first failing request, so OpenFGA may still
     /// write some tuples **after** this function exits.
     pub async fn execute(self) -> Result<(), Error> {
+        let authorization_model_id = self.client.authorization_model_id();
         let futs = self
             .writes
             .chunks(self.client.settings.limits.max_tuples_per_write as usize)
             .map(|chunk| {
                 self.client
                     .post_stores_write(
-                        &self.client.store.id,
+                        &self.client.store().id,
                         chunk,
                         &[],
-                        self.client.authorization_model_id.clone(),
+                        authorization_model_id.clone(),
                     )
                     .in_current_span()
             })
@@ -208,16 +213,17 @@ impl PreparedDeletes<'_> {
     /// This function also returns at the first failing request, so OpenFGA may still
     /// delete some tuples **after** this function exits.
     pub async fn execute(self) -> Result<(), Error> {
+        let authorization_model_id = self.client.authorization_model_id();
         let futs = self
             .deletes
             .chunks(self.client.settings.limits.max_tuples_per_write as usize)
             .map(|chunk| {
                 self.client
                     .post_stores_write(
-                        &self.client.store.id,
+                        &self.client.store().id,
                         &[],
                         chunk,
-                        self.client.authorization_model_id.clone(),
+                        authorization_model_id.clone(),
                     )
                     .in_current_span()
             })
@@ -239,6 +245,7 @@ impl<R: Relation, U: AsUser<User = R::User>> Request for Tuple<'_, R, U> {
 
 #[cfg(test)]
 mod tests {
+    use crate::client::Client;
     use crate::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
     use crate::client::Error;
     use crate::client::ErrorCode;
@@ -255,7 +262,7 @@ mod tests {
     async fn batch_check_tuple_write_limit_success() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         let mut writes = client.prepare_writes();
         let mut infras: Vec<Infra> = vec![];
@@ -279,8 +286,14 @@ mod tests {
     async fn batch_check_tuple_write_limit_fail() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
-        client.settings.limits.max_tuples_per_write = DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE + 1;
+        let mut settings = crate::test_utilities::connection_settings();
+        settings.limits.max_tuples_per_write = DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE + 1;
+        let client = Client::try_new_store(
+            &format!("tuple-write-limit-fail-{}", uuid::Uuid::new_v4()),
+            settings,
+        )
+        .await
+        .unwrap();
         client.update_authorization_model(&model).await.unwrap();
         let mut writes = client.prepare_writes();
         let mut infras: Vec<Infra> = vec![];
@@ -311,7 +324,7 @@ mod tests {
     async fn delete_tuples() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         client
@@ -345,7 +358,7 @@ mod tests {
     async fn write_tuples_limit_fail() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         let mut entities = vec![];
@@ -371,7 +384,7 @@ mod tests {
     async fn delete_tuples_limit_fail() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         let mut entities = vec![];
@@ -397,7 +410,7 @@ mod tests {
     async fn prepare_deletes() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         client
@@ -441,7 +454,7 @@ mod tests {
     async fn tuple_exists() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         client

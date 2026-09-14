@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use clap::Args;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
@@ -36,7 +38,7 @@ impl From<OpenfgaConfig> for views::OpenfgaConfig {
 }
 
 impl OpenfgaConfig {
-    pub async fn into_client(self) -> anyhow::Result<fga::Client> {
+    pub async fn into_client(self) -> anyhow::Result<Arc<fga::Client>> {
         let config: views::OpenfgaConfig = self.into();
         tracing::info!(url = %config.url, "connecting to OpenFGA");
         match fga::Client::try_with_store(&config.store, config.as_settings()).await {

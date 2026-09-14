@@ -1,5 +1,7 @@
 pub mod cli;
 
+use std::sync::Arc;
+
 use crate::cli::ApplyArgs;
 use crate::cli::CliParser;
 use crate::cli::Commands;
@@ -48,7 +50,9 @@ fn setup_telemetry(telemetry_url: Url) {
     .init();
 }
 
-async fn setup_clients(openfga_args: OpenfgaArgs) -> Result<(Client, Client), MigrationError> {
+async fn setup_clients(
+    openfga_args: OpenfgaArgs,
+) -> Result<(Arc<Client>, Arc<Client>), MigrationError> {
     let connection_settings = &ConnectionSettings::new(
         openfga_args.openfga_url,
         fga::client::Limits {

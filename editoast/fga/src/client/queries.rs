@@ -30,15 +30,16 @@ impl Client {
         R: Relation,
         U: AsUser<User = R::User>,
     {
+        let authorization_model_id = self.authorization_model_id();
         self.post_stores_check(
-            &self.store.id,
+            &self.store().id,
             RawTuple {
                 user: user.fga_user(),
                 relation: R::NAME.to_string(),
                 object: object.fga_object(),
             },
             None,
-            self.authorization_model_id.clone(),
+            authorization_model_id,
         )
         .await
     }
@@ -74,7 +75,7 @@ impl Client {
     /// # use fga::fga;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let mut client = fga::Client::try_new_store("doctest_checks", settings()).await.unwrap();
+    /// # let client = fga::Client::try_new_store("doctest_checks", settings()).await.unwrap();
     /// # client.update_authorization_model(&fga::compile_model(include_str!("../../tests/doctest.fga"))).await.unwrap();
     /// client
     ///     .write_tuples(&[fga!(Document:"budget"#writer@Person:"alice")])
@@ -123,7 +124,7 @@ impl Client {
     ) -> Result<Vec<R::Object>, Error> {
         let objects = self
             .post_stores_list_objects(
-                &self.store.id,
+                &self.store().id,
                 R::Object::NAMESPACE,
                 R::NAME,
                 &user.fga_user(),
@@ -160,16 +161,17 @@ impl Client {
         &self,
         QueryUsers(object): QueryUsers<'_, R>,
     ) -> Result<UserList<R::User>, Error> {
+        let authorization_model_id = self.authorization_model_id();
         let raw_users = self
             .post_stores_list_users(
-                &self.store.id,
+                &self.store().id,
                 (R::Object::NAMESPACE, &object.id().to_string()),
                 R::NAME,
                 UserFilter::User {
                     r#type: R::User::NAMESPACE,
                 },
                 None,
-                self.authorization_model_id.as_deref(),
+                authorization_model_id.as_deref(),
                 None,
             )
             .await?;
@@ -214,7 +216,7 @@ impl Client {
     /// # use fga::fga;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let mut client = fga::Client::try_new_store("doctest_list_usersets", settings()).await.unwrap();
+    /// # let client = fga::Client::try_new_store("doctest_list_usersets", settings()).await.unwrap();
     /// # client.update_authorization_model(&fga::compile_model(include_str!("../../tests/doctest.fga"))).await.unwrap();
     /// // define can_read: reader or writer
     /// client.prepare_writes()
@@ -236,9 +238,10 @@ impl Client {
         &self,
         QueryUsersets(object, _): QueryUsersets<'_, R, S>,
     ) -> Result<Vec<S::Object>, Error> {
+        let authorization_model_id = self.authorization_model_id();
         let users = self
             .post_stores_list_users(
-                &self.store.id,
+                &self.store().id,
                 (R::Object::NAMESPACE, &object.id().to_string()),
                 R::NAME,
                 UserFilter::Userset {
@@ -246,7 +249,7 @@ impl Client {
                     relation: S::NAME,
                 },
                 None,
-                self.authorization_model_id.as_deref(),
+                authorization_model_id.as_deref(),
                 None,
             )
             .await?;
@@ -334,14 +337,15 @@ impl PreparedChecks<'_> {
             })
             .unzip();
 
+        let authorization_model_id = self.client.authorization_model_id();
         let futs = check_items
             .chunks(self.client.settings.limits.max_checks_per_batch_check as usize)
             .map(|checks| {
                 self.client
                     .post_stores_batch_check(
-                        &self.client.store.id,
+                        &self.client.store().id,
                         checks,
-                        self.client.authorization_model_id.as_deref(),
+                        authorization_model_id.as_deref(),
                         None,
                     )
                     .in_current_span()
@@ -476,6 +480,7 @@ mod tests {
     use crate::model::Check;
     use crate::model::Relation;
     use crate::test_client;
+    use uuid::Uuid;
 
     fn setup_tracing() {
         tracing_subscriber::fmt()
@@ -519,7 +524,7 @@ mod tests {
     async fn check() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         client
             .write_tuples(&[fga!(Infra:"france"#reader@User:"bob")])
@@ -535,7 +540,7 @@ mod tests {
     async fn batch_check() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         client
             .write_tuples(&[fga!(Infra:"france"#reader@User:"bob")])
@@ -568,7 +573,7 @@ mod tests {
     async fn check_userset() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         client
             .prepare_writes()
@@ -612,7 +617,7 @@ mod tests {
     async fn batch_check_item_error_is_propagated() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         let error = PreparedChecks {
@@ -640,7 +645,7 @@ mod tests {
     async fn batch_check_tuple_read_limit_success() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         let number_of_checks = DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK * 2;
         let mut checks = client.prepare_checks();
@@ -655,10 +660,15 @@ mod tests {
     async fn batch_check_tuple_read_limit_fail() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let mut settings = crate::test_utilities::connection_settings();
+        settings.limits.max_checks_per_batch_check = DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK + 1;
+        let client = Client::try_new_store(
+            &format!("tuple-read-limit-fail-{}", Uuid::new_v4()),
+            settings,
+        )
+        .await
+        .unwrap();
         client.update_authorization_model(&model).await.unwrap();
-        client.settings.limits.max_checks_per_batch_check =
-            DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK + 1;
         let number_of_checks = DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK * 2;
         let mut checks = client.prepare_checks();
         for _ in 1..=number_of_checks {
@@ -678,7 +688,7 @@ mod tests {
     async fn higher_order_users() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         client
@@ -700,7 +710,7 @@ mod tests {
     async fn list_objects() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         client
             .write_tuples(&[
@@ -730,7 +740,7 @@ mod tests {
     async fn list_objects_unknown_user() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         client
             .write_tuples(&[
@@ -751,7 +761,7 @@ mod tests {
     async fn list_objects_higher_order_users() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
         client
             .prepare_writes()
@@ -794,7 +804,7 @@ mod tests {
     async fn list_users() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         client
@@ -862,7 +872,7 @@ mod tests {
     async fn list_usersets() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
+        let client = test_client!();
         client.update_authorization_model(&model).await.unwrap();
 
         client

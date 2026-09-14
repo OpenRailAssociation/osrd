@@ -1,4 +1,5 @@
 use std::future;
+use std::sync::Arc;
 
 use futures::TryStreamExt as _;
 use futures::stream;
@@ -17,13 +18,17 @@ impl Client {
     pub async fn try_with_store(
         store_name: &str,
         settings: ConnectionSettings,
-    ) -> Result<Self, InitializationError> {
-        let mut client = Self::new(settings);
+    ) -> Result<Arc<Self>, InitializationError> {
+        let client = Self::new(settings);
 
-        client.store = client
+        let store = client
             .find_store(store_name)
             .await?
             .ok_or_else(|| InitializationError::NotFound(store_name.to_string()))?;
+        client
+            .store
+            .set(store)
+            .expect("client store should only be initialized once");
         client.actualize_authorization_model().await?;
 
         Ok(client)
@@ -33,15 +38,19 @@ impl Client {
     pub async fn try_new_store(
         store_name: &str,
         settings: ConnectionSettings,
-    ) -> Result<Self, InitializationError> {
-        let mut client = Self::new(settings);
+    ) -> Result<Arc<Self>, InitializationError> {
+        let client = Self::new(settings);
         if client.settings.reset_store
             && let Some(store) = client.find_store(store_name).await?
         {
             tracing::debug!(old = ?store, "removing old store for reset");
             client.delete_stores(&store.id).await?;
         }
-        client.store = client.post_stores(store_name).await?;
+        let store = client.post_stores(store_name).await?;
+        client
+            .store
+            .set(store)
+            .expect("client store should only be initialized once");
         Ok(client)
     }
 
@@ -67,7 +76,9 @@ impl Client {
     }
 
     pub fn store(&self) -> &Store {
-        &self.store
+        self.store
+            .get()
+            .expect("client store should be initialized before use")
     }
 }
 
@@ -97,7 +108,7 @@ mod tests {
         setup_tracing();
         let client = test_client!();
         assert_eq!(
-            client.store.name,
+            client.store().name,
             "fga-client-stores-tests-create_store_with_reset"
         );
     }

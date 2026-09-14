@@ -15,7 +15,11 @@ impl Client {
         Continuation::stream(move |continuation| {
             async move {
                 let (models, continuation_str) = self
-                    .get_stores_authorization_models(&self.store.id, None, continuation.as_option())
+                    .get_stores_authorization_models(
+                        &self.store().id,
+                        None,
+                        continuation.as_option(),
+                    )
                     .await?;
                 Ok((models, Continuation::from(continuation_str)))
             }
@@ -27,7 +31,7 @@ impl Client {
         &self,
     ) -> Result<Option<StoreAuthorizationModel>, Error> {
         let models = &mut self
-            .get_stores_authorization_models(&self.store.id, Some(1), None)
+            .get_stores_authorization_models(&self.store().id, Some(1), None)
             .await?
             .0;
         debug_assert!(models.len() <= 1);
@@ -35,25 +39,29 @@ impl Client {
     }
 
     #[tracing::instrument(skip(self), err)]
-    pub async fn actualize_authorization_model(&mut self) -> Result<(), Error> {
-        self.authorization_model_id = self
+    pub async fn actualize_authorization_model(&self) -> Result<(), Error> {
+        let authorization_model_id = self
             .latest_authorization_model()
             .await?
             .map(|model| model.id);
         tracing::debug!(
-            id = self.authorization_model_id,
+            id = authorization_model_id,
             "set client authorization model ID"
         );
+        *self
+            .authorization_model_id
+            .write()
+            .expect("authorization model ID lock should not be poisoned") = authorization_model_id;
         Ok(())
     }
 
     /// Pushes a new authorization model into OpenFGA and configures the client to use it from now on
     pub async fn update_authorization_model(
-        &mut self,
+        &self,
         authorization_model: &AuthorizationModel,
     ) -> Result<String, Error> {
         let model_id = self
-            .post_stores_authorization_models(&self.store.id, authorization_model)
+            .post_stores_authorization_models(&self.store().id, authorization_model)
             .await?;
         self.actualize_authorization_model().await?;
         Ok(model_id)
@@ -72,9 +80,11 @@ mod tests {
     async fn persisted_auth_model_id_in_client() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let mut client = test_client!();
-        assert_eq!(client.authorization_model_id, None);
-        let id = client.update_authorization_model(&model).await.unwrap();
-        assert_eq!(client.authorization_model_id, Some(id));
+        let client = test_client!();
+        let shared_client = client.clone();
+        assert_eq!(client.authorization_model_id(), None);
+        let id = Some(client.update_authorization_model(&model).await.unwrap());
+        assert_eq!(client.authorization_model_id(), id);
+        assert_eq!(shared_client.authorization_model_id(), id);
     }
 }

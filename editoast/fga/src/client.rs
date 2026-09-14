@@ -26,6 +26,8 @@ use url::Url;
 use std::future::Future;
 use std::future::{self};
 use std::sync::Arc;
+use std::sync::OnceLock;
+use std::sync::RwLock;
 
 use crate::client::api::healthz::Health;
 
@@ -41,10 +43,10 @@ pub const DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE: u64 = 100;
 /// 🫳 🎩: works with a large number of concurrent requests that otherwise fail locally, adjust if necessary.
 const MAX_CONCURRENT_REQUESTS: usize = 50;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Client {
-    store: Store,
-    authorization_model_id: Option<String>,
+    store: OnceLock<Store>,
+    authorization_model_id: RwLock<Option<String>>,
     settings: ConnectionSettings,
     inner: reqwest::Client,
     semaphore: Arc<tokio::sync::Semaphore>,
@@ -116,15 +118,22 @@ pub enum InitializationError {
 }
 
 impl Client {
-    fn new(settings: ConnectionSettings) -> Self {
+    fn new(settings: ConnectionSettings) -> Arc<Self> {
         let semaphore = Arc::new(tokio::sync::Semaphore::new(MAX_CONCURRENT_REQUESTS));
-        Self {
-            store: Store::default(),
-            authorization_model_id: None,
+        Arc::new(Self {
+            store: OnceLock::new(),
+            authorization_model_id: RwLock::new(None),
             settings,
             inner: reqwest::Client::new(),
             semaphore,
-        }
+        })
+    }
+
+    fn authorization_model_id(&self) -> Option<String> {
+        self.authorization_model_id
+            .read()
+            .expect("authorization model ID lock should not be poisoned")
+            .clone()
     }
 
     async fn fetch(&self, request: reqwest::RequestBuilder) -> reqwest::Result<reqwest::Response> {

@@ -107,7 +107,7 @@ pub struct AppState {
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub core_client: Arc<CoreClient>,
     pub health_check_timeout: Duration,
-    pub openfga: fga::Client,
+    pub openfga: Arc<fga::Client>,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
     pub s3_client: Option<Arc<AmazonS3>>,
 }
@@ -170,7 +170,9 @@ impl AppState {
             tokio::spawn(connect_core_client(config.core_config.clone()).in_current_span());
 
         #[tracing::instrument(skip_all, level = "info", err, name = "OpenFGA connection")]
-        async fn connect_openfga(openfga_config: OpenfgaConfig) -> anyhow::Result<fga::Client> {
+        async fn connect_openfga(
+            openfga_config: OpenfgaConfig,
+        ) -> anyhow::Result<Arc<fga::Client>> {
             let openfga = {
                 tracing::info!(url = %openfga_config.url, "connecting to OpenFGA");
                 match fga::Client::try_with_store(

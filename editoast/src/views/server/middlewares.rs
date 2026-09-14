@@ -193,8 +193,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
     };
 
     // A failed OpenFGA request does not invalidate the creation of a new user
-    let openfga = &openfga; // to remove once OpenFGA is in the AppState directly
-    let roles = special_authorizers::Authorize(openfga)
+    let roles = special_authorizers::Authorize(&openfga)
         .access_value(roles_prot)
         .await
         .map_err(AuthorizationError::from)?;
