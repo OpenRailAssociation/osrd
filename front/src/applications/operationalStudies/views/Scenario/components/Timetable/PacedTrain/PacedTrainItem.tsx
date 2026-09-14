@@ -51,10 +51,10 @@ import {
 import { TRAIN_SCHEDULE_DELTA } from '../consts';
 import TrainScheduleActions from '../TrainScheduleActions';
 import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
+import ConfirmationDialog from './ConfirmationDialog';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
-import ResetExceptionsDialog from './ResetExceptionsDialog';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -473,9 +473,9 @@ const PacedTrainItem = ({
       )}
       {isResetDialogOpen &&
         createPortal(
-          <ResetExceptionsDialog
+          <ConfirmationDialog
             onCancel={() => setIsResetExceptionsDialogOpen(false)}
-            onReset={deleteAllExceptions}
+            onConfirm={deleteAllExceptions}
             labels={{
               title: t('timetable.resetExceptions'),
               texts: [
@@ -485,6 +485,7 @@ const PacedTrainItem = ({
               submit: t('timetable.reset'),
               cancel: t('timetable.cancel'),
             }}
+            submitDataTestID="confirmation-modal-button"
           />,
           document.body
         )}
