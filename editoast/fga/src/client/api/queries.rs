@@ -11,7 +11,7 @@ use super::super::Error;
 
 use super::tuples::RawTuple;
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub(in crate::client) struct ContextualTuples {
     tuple_keys: Vec<RawTuple>,
 }
@@ -50,7 +50,7 @@ pub(in crate::client) enum RawUser {
     },
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub(in crate::client) struct BatchCheckItem {
     pub(in crate::client) correlation_id: String,
     pub(in crate::client) tuple_key: RawTuple,
@@ -58,7 +58,7 @@ pub(in crate::client) struct BatchCheckItem {
     pub(in crate::client) contextual_tuples: Option<ContextualTuples>,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub(in crate::client) enum BatchCheckSingleResult {
     Allowed(bool),
@@ -66,6 +66,13 @@ pub(in crate::client) enum BatchCheckSingleResult {
 }
 
 impl Client {
+    /// Low-level batch check request.
+    ///
+    /// Unlike other [`api`](crate::client::api) the request is immediately sent to OpenFGA.
+    /// It does not take part of the control of the number of in-flight concurrent requests the
+    /// client performs for other API calls.
+    ///
+    /// Use [`Client::concatenable_check_batch`] instead.
     #[tracing::instrument(skip(self, checks), ret(level = "debug"), err)]
     pub(in crate::client) async fn post_stores_batch_check(
         &self,
@@ -94,16 +101,14 @@ impl Client {
             .join(format!("stores/{store_id}/batch-check").as_str())
             .unwrap();
         let response = self
-            .fetch(
-                self.inner
-                    .post(url)
-                    .json(&Request {
-                        checks,
-                        authorization_model_id,
-                        consistency,
-                    })
-                    .build()?,
-            )
+            .inner
+            .post(url)
+            .json(&Request {
+                checks,
+                authorization_model_id,
+                consistency,
+            })
+            .send()
             .await?;
 
         #[derive(serde::Deserialize)]

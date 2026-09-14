@@ -11,7 +11,7 @@ use super::super::Consistency;
 use super::super::Error;
 use super::Message;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub(in crate::client) struct RawTuple {
     pub(in crate::client) user: String,
     pub(in crate::client) relation: String,

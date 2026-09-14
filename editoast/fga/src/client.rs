@@ -18,6 +18,7 @@ pub use queries::UserList;
 pub use stores::Store;
 use tokio::sync::mpsc;
 use tokio::sync::oneshot;
+use tokio::time::Duration;
 use tokio_util::sync::CancellationToken;
 use tokio_util::sync::DropGuard;
 pub use tuples::UntypedTuple;
@@ -35,6 +36,8 @@ use std::sync::OnceLock;
 use std::sync::RwLock;
 
 use crate::client::api::healthz::Health;
+use crate::client::requests::ConcatenableCheckBatch;
+use crate::client::requests::RequestMessage;
 
 pub const DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK: u32 = 50;
 pub const DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE: u64 = 100;
@@ -48,13 +51,20 @@ pub const DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE: u64 = 100;
 /// 🫳 🎩: works with a large number of concurrent requests that otherwise fail locally, adjust if necessary.
 const MAX_CONCURRENT_REQUESTS: usize = 50;
 
+/// The duration to wait before sending a batch check request when the batch is not full.
+///
+/// During this time, the held batch will be concatenated with any other batch before sending
+/// to minimize the number of requests sent.
+/// If the batch gets filled before this duration elapses, the batch will be sent immediately.
+const BATCH_STALLING_DURATION: Duration = Duration::from_millis(2);
+
 #[derive(Debug)]
 pub struct Client {
     store: OnceLock<Store>,
     authorization_model_id: RwLock<Option<String>>,
     settings: ConnectionSettings,
     inner: reqwest::Client,
-    to_send_tx: mpsc::UnboundedSender<requests::SendMessage>,
+    to_send_tx: mpsc::UnboundedSender<requests::RequestMessage>,
     _drop_guard: DropGuard,
 }
 
@@ -108,7 +118,7 @@ impl ConnectionSettings {
     }
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd, serde::Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Consistency {
     MinimizeLatency,
@@ -142,6 +152,7 @@ impl Client {
         tokio::spawn(requests::request_loop(
             Arc::downgrade(&client),
             semaphore,
+            client.settings.limits.max_checks_per_batch_check as usize,
             to_send_rx,
             cancellation,
         ));
@@ -155,9 +166,30 @@ impl Client {
             .clone()
     }
 
+    /// Send a request to OpenFGA while honoring [`MAX_CONCURRENT_REQUESTS`].
     async fn fetch(&self, request: reqwest::Request) -> reqwest::Result<reqwest::Response> {
         let (tx, rx) = oneshot::channel();
-        let _ = self.to_send_tx.send((request, tx));
+        let _ = self
+            .to_send_tx
+            .send(RequestMessage::Other(Box::new(request), tx));
+        rx.await
+            .expect("this task will not be polled if the sender is dropped")
+    }
+
+    /// Request for checks to be optimally batched and sent to OpenFGA according to [`MAX_CONCURRENT_REQUESTS`] and [`BATCH_STALLING_DURATION`].
+    async fn concatenable_check_batch(
+        &self,
+        checks: Vec<api::queries::BatchCheckItem>,
+        consistency: Option<Consistency>,
+    ) -> requests::BatchCheckResult {
+        let (tx, rx) = oneshot::channel();
+        let _ = self.to_send_tx.send(RequestMessage::CheckBatch(
+            ConcatenableCheckBatch {
+                checks,
+                consistency,
+            },
+            tx,
+        ));
         rx.await
             .expect("this task will not be polled if the sender is dropped")
     }

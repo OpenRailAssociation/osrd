@@ -337,17 +337,11 @@ impl PreparedChecks<'_> {
             })
             .unzip();
 
-        let authorization_model_id = self.client.authorization_model_id();
         let futs = check_items
             .chunks(self.client.settings.limits.max_checks_per_batch_check as usize)
             .map(|checks| {
                 self.client
-                    .post_stores_batch_check(
-                        &self.client.store().id,
-                        checks,
-                        authorization_model_id.as_deref(),
-                        None,
-                    )
+                    .concatenable_check_batch(checks.to_vec(), None)
                     .in_current_span()
             });
 
