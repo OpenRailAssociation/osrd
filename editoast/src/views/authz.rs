@@ -1537,7 +1537,7 @@ mod tests {
         // - When calling the endpoint with those missing identifiers, we expect the error response
         //   to contain infra_id_smaller, i.e. the smallest missing identifier of the highest priority
         //   resource type.
-        // - When calling the endpoint with only the missing project and rolling stock idendifiers,
+        // - When calling the endpoint with only the missing project and rolling stock identifiers,
         //   we expect the response to contain the missing rolling stock identifier.
         let app = test_app!().build();
         let owner = app
@@ -2194,7 +2194,7 @@ mod tests {
                 .await;
             }
             // The test is irrelevant for projects as they only have one grant level
-            // So the demotion cannot arise (the revokation can)
+            // So the demotion cannot arise (the revocation can)
             ResourceType::Project => (),
         }
     }
