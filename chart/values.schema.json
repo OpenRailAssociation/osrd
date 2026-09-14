@@ -607,6 +607,22 @@
               },
               "title": "tolerations",
               "type": "array"
+            },
+            "volumeMounts": {
+              "description": "extra volumes mounts on editoast and stateful_editoast",
+              "items": {
+                "required": []
+              },
+              "title": "volumeMounts",
+              "type": "array"
+            },
+            "volumes": {
+              "description": "extra volumes to mount on editoast and stateful_editoast",
+              "items": {
+                "required": []
+              },
+              "title": "volumes",
+              "type": "array"
             }
           },
           "required": [

@@ -425,6 +425,10 @@ services:
     # @schema
     # -- (string, null) storage class for permanent storage
     permanent_storage_class: null
+    # -- (array) extra volumes to mount on editoast and stateful_editoast
+    volumes: []
+    # -- (array) extra volumes mounts on editoast and stateful_editoast
+    volumeMounts: []
     # @schema
     # additionalProperties: true
     # @schema
