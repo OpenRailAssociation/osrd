@@ -10,6 +10,7 @@ import type {
   ReceptionSignal,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration, type StartTime } from 'utils/duration';
@@ -399,7 +400,7 @@ export function onStopSignalToReceptionSignal(
 }
 
 export const getOperationalPointName = (
-  op: RelatedOperationalPoint | null | undefined,
+  op: RelatedOperationalPoint | PathWaypoint | undefined,
   step: PathItemLocation,
   stepIndex: number,
   totalStepCount: number,

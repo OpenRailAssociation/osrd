@@ -269,15 +269,13 @@ const useTimesStopsTableData = (
             ? stableOPs.find((op) => op.pathItemId === pathStep.id)
             : undefined);
 
-        const name =
-          matchingOp?.name ??
-          getOperationalPointName(
-            pathStepOp,
-            pathStep.location,
-            stepIndex,
-            selectedTrain.path.length,
-            t
-          );
+        const name = getOperationalPointName(
+          matchingOp,
+          pathStep.location,
+          stepIndex,
+          selectedTrain.path.length,
+          t
+        );
 
         const pathStepLocation = pathStep.location;
 
