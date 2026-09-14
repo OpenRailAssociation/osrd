@@ -20,7 +20,6 @@ import { validateTrainSchedule } from '../helpers/validateTrainSchedule';
 import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 
 export function useCreateTrainSchedule(
-  trainState: ItineraryModalTrainState,
   setIsWorking: (isWorking: boolean) => void,
   onTrainCreated: () => void
 ) {
@@ -31,9 +30,7 @@ export function useCreateTrainSchedule(
   const { sandboxId, timetableId } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
 
-  const isPacedTrainMode = trainState.editingTrainType === 'pacedTrain';
-
-  return async () => {
+  return async (trainState: ItineraryModalTrainState) => {
     setIsWorking(true);
 
     try {
@@ -108,7 +105,8 @@ export function useCreateTrainSchedule(
 
       dispatch(
         setSuccess({
-          title: isPacedTrainMode ? t('pacedTrains.added') : t('trainAdded'),
+          title:
+            trainState.editingTrainType === 'pacedTrain' ? t('pacedTrains.added') : t('trainAdded'),
           text: `${trainState.name}: ${timeToLocaleString(trainState.startTime, dateTimeLocale)}`,
         })
       );
