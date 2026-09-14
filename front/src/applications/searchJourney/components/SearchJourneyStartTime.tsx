@@ -21,8 +21,8 @@ const SearchJourneyStartTime = ({ disabled = false }: SearchJourneyStartTimeProp
         testIdPrefix="search-journey-start-time"
         id="search-journey-start-time"
         label={t('trainPath.time')}
-        hours={startTime?.hours}
-        minutes={startTime?.minutes}
+        hours={startTime.hours}
+        minutes={startTime.minutes}
         onTimeChange={({ hours, minutes }) => {
           dispatch(updateSearchJourneyStartTime({ hours, minutes }));
         }}
