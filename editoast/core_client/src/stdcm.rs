@@ -11,7 +11,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::PathItem;
-use super::pathfinding::PathfindingResultSuccess;
+use super::pathfinding::PathfindingResult;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
 use super::simulation::SimulationSuccess;
@@ -186,13 +186,13 @@ pub struct ProgressCoordinates {
 pub enum Response {
     Success {
         simulation: SimulationSuccess,
-        path: PathfindingResultSuccess,
+        path: PathfindingResult,
         departure_time: DateTime<Utc>,
     },
     PathNotFound {
         most_blocking_work_schedules: Vec<ConflictingWorkSchedule>,
         nearest_to_destination_work_schedules: Vec<ConflictingWorkSchedule>,
-        partial_path: Option<PathfindingResultSuccess>,
+        partial_path: Option<PathfindingResult>,
         last_reached_operational_point: Option<LastReachedOperationalPoint>,
     },
 }

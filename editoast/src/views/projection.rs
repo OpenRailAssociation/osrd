@@ -1,6 +1,5 @@
 use crate::error::Result;
 use core_client::CoreClient;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
@@ -528,7 +527,7 @@ impl TrainToProjectOnOperationalPoint {
     fn new_from_invalid<T: TrainScheduleLike>(
         ts: &T,
         sim: SimulationResponseSuccess,
-        path: PathfindingResultSuccess,
+        path: core_client::pathfinding::PathfindingResult,
     ) -> Self {
         // Reuse the space-time curve from the track projection, so that scheduled
         // `PathItemLocation::TrackOffset`s are visible on the STD even for invalid trains.
@@ -859,7 +858,7 @@ pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
 fn extract_curve_for_invalid_train_with_sim<T: TrainScheduleLike>(
     train_schedule: &T,
     sim: &SimulationResponseSuccess,
-    path: &PathfindingResultSuccess,
+    path: &core_client::pathfinding::PathfindingResult,
 ) -> SpaceTimeCurve {
     let mut positions = vec![0];
     let mut times = vec![0];
