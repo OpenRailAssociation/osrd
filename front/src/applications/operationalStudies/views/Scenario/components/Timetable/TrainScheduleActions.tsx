@@ -7,7 +7,7 @@ type TrainScheduleActionsProps = {
   moveTrainSchedule: () => void;
   duplicateTrainSchedule: () => Promise<void>;
   editTrainSchedule: () => void;
-  deleteTrainSchedule: () => Promise<void>;
+  deleteTrainSchedule: () => void;
   showResetExceptionsButton?: boolean;
   resetAllExceptions?: () => void;
   showMovebutton: boolean;
