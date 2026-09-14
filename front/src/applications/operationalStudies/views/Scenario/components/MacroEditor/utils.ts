@@ -15,6 +15,7 @@ import {
   type SubCategory,
   type TrainCategory,
   type TrainScheduleResponse,
+  type TimetableType,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -142,9 +143,12 @@ export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: App
  * Return the default TrainrunFrequencies with their translated names.
  */
 export const getDefaultTrainrunFrequencies = (
+  timetableType: TimetableType,
   t: TFunction<'operational-studies'>
 ): TrainrunFrequency[] =>
-  DEFAULT_TRAINRUN_FREQUENCIES.map((freq) => ({
+  DEFAULT_TRAINRUN_FREQUENCIES.filter(
+    (freq) => timetableType !== 'HOURLY' || freq.id !== UNIQUE_TRAIN_FREQUENCY_ID
+  ).map((freq) => ({
     ...freq,
     name:
       freq.id === UNIQUE_TRAIN_FREQUENCY_ID
