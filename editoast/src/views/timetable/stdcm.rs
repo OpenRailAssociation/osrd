@@ -40,7 +40,8 @@ use core_client::stdcm::ConsistSchedule;
 use core_client::stdcm::LastReachedOperationalPoint;
 use core_client::stdcm::Request as StdcmRequest;
 use core_client::stdcm::UndirectedTrackRange;
-use database::{DbConnection, DbConnectionPoolV2};
+use database::DbConnection;
+use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use futures::StreamExt as _;
 use futures::stream;
@@ -551,13 +552,13 @@ async fn fetch_operational_point(
 
 async fn enrich_conflicting_work_schedules(
     conflicting_work_schedules: Vec<ConflictingWorkSchedule>,
-    work_shedule_map: &HashMap<&str, &WorkSchedule>,
+    work_schedule_map: &HashMap<&str, &WorkSchedule>,
     infra: &Infra,
     conn: &mut DbConnection,
 ) -> Vec<StdcmConflictingWorkSchedule> {
     let mut enriched = Vec::with_capacity(conflicting_work_schedules.len());
     for ConflictingWorkSchedule { id, last_op_id } in conflicting_work_schedules {
-        let ws = work_shedule_map.get(id.as_str()).expect(
+        let ws = work_schedule_map.get(id.as_str()).expect(
             "the work schedule ID should exist since it has been sent to `core`, and returned back",
         );
         let op: OperationalPoint = fetch_operational_point(infra, conn, &last_op_id).await;
