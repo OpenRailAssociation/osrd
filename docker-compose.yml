@@ -114,7 +114,7 @@ services:
       retries: 3
       start_period: 40s
   s3_init:
-    image: minio/mc
+    image: rustfs/rc
     container_name: s3_init
     volumes:
       - ./docker/create_bucket.sh:/create_bucket.sh

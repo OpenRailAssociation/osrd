@@ -138,7 +138,7 @@ services:
       start_period: 40s
 
   s3_init:
-    image: minio/mc
+    image: rustfs/rc
     container_name: osrd-s3-init-pr-tests
     volumes:
       - ../docker/create_bucket.sh:/create_bucket.sh
