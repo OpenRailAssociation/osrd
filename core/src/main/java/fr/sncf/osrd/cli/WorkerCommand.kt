@@ -55,6 +55,8 @@ class WorkerCommand : CliCommand {
     val WORKER_POOL: String
     val WORKER_REQUESTS_QUEUE: String
     val WORKER_ACTIVITY_EXCHANGE: String
+
+    val WORKER_AMQP_HEARTBEAT: Int
     val ALL_INFRA: Boolean
     val WORKER_THREADS: Int
     val MAX_CONCURRENT_TIMETABLE_REQUESTS: Int
@@ -78,6 +80,7 @@ class WorkerCommand : CliCommand {
             System.getenv("WORKER_REQUESTS_QUEUE") ?: "$WORKER_POOL-req-$WORKER_KEY"
         WORKER_ACTIVITY_EXCHANGE =
             System.getenv("WORKER_ACTIVITY_EXCHANGE") ?: "$WORKER_POOL-activity-xchg"
+        WORKER_AMQP_HEARTBEAT = System.getenv("WORKER_AMQP_HEARTBEAT")?.toIntOrNull() ?: 60
         WORKER_THREADS =
             System.getenv("WORKER_THREADS")?.toIntOrNull()
                 ?: Runtime.getRuntime().availableProcessors()
@@ -333,9 +336,7 @@ class WorkerCommand : CliCommand {
      */
     private fun consume(executor: ThreadPoolExecutor): Int {
         val factory = ConnectionFactory()
-        if (ALL_INFRA) {
-            factory.requestedHeartbeat = 43200 // 12 h heartbeat
-        }
+        factory.requestedHeartbeat = WORKER_AMQP_HEARTBEAT
         factory.setUri(WORKER_AMQP_URI)
         factory.setSharedExecutor(executor)
         factory.setMaxInboundMessageBodySize(WORKER_MAX_MSG_SIZE)

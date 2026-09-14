@@ -4,8 +4,8 @@ services:
       - EDITOAST_CORE_SINGLE_WORKER=true
 
   rabbitmq:
-    volumes:
-      - "./docker/rabbitmq-single-worker.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
+    environment:
+      - RABBITMQ_HEARTBEAT=43200 # 12h heartbeat
 
   osrdyne:
     volumes: !reset []
@@ -17,6 +17,7 @@ services:
     # Launch a single worker handling all infra
     environment:
       - ALL_INFRA=true
+      - WORKER_AMQP_HEARTBEAT=43200 # 12h heartbeat
     container_name: osrd-core-all-infra
     restart: unless-stopped
     command:
