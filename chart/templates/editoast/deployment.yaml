@@ -39,11 +39,16 @@ spec:
               containerPort: {{ .Values.services.editoast.service.port }}
               protocol: TCP
 
-          {{- if .Values.services.editoast.permanent_storage_size }}
+          {{- if or .Values.services.editoast.permanent_storage_size (.Values.services.editoast.volumeMounts | default list) }}
           volumeMounts:
+          {{- end }}
+          {{- if .Values.services.editoast.permanent_storage_size }}
             - mountPath: /data
               name: editoast-volume
           {{- end }}
+            {{- with (.Values.services.editoast.volumeMounts | default list) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- if not .Values.services.editoast.livenessProbe.disabled }}
           livenessProbe:
             exec:
@@ -120,12 +125,17 @@ spec:
       serviceAccountName: {{ .Values.services.editoast.service_account_name }}
       {{- end}}
 
-      {{- if .Values.services.editoast.permanent_storage_size }}
+      {{- if or .Values.services.editoast.permanent_storage_size (.Values.services.editoast.volumes | default list  ) }}
       volumes:
+      {{- end}}
+      {{- if .Values.services.editoast.permanent_storage_size }}
       - name: editoast-volume
         persistentVolumeClaim:
           claimName: editoast-volume
       {{- end}}
+      {{- with (.Values.services.editoast.volumes | default list) }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
       nodeSelector:
         {{- toYaml (merge (.Values.nodeSelector | default dict) (.Values.services.editoast.nodeSelector | default dict)) | nindent 8 }}
 

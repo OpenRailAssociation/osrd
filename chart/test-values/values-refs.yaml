@@ -145,6 +145,13 @@ services:
     service_account_name: "editoast"
     permanent_storage_size: "editoast_storage_size"
     permanent_storage_class: "editoast_storage_class"
+    volumeMounts:
+      - name: certificates
+        mountPath: /usr/local/share/ca-certificates
+    volumes:
+      - name: certificates
+        configMap:
+          name: database-cert
     labels:
       company/podname: editoast
       company/zone: traitement
