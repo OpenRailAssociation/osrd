@@ -149,22 +149,19 @@ describe('computePossibleLinkings', () => {
     expect(linkings).toEqual(new Map());
   });
 
-  it.each([undefined, null])(
-    'should not link trains whose track is unknown (%s)',
-    (localTrackName) => {
-      const linkings = computePossibleLinkings([
-        arriving({ localTrackName, editoastId: 1, startTime: 0, endTime: 10 * MINUTE }),
-        departing({
-          localTrackName,
-          editoastId: 2,
-          startTime: 30 * MINUTE,
-          endTime: 40 * MINUTE,
-        }),
-      ]);
+  it.each([undefined, null])('should link trains whose track is unknown (%s)', (localTrackName) => {
+    const linkings = computePossibleLinkings([
+      arriving({ localTrackName, editoastId: 1, startTime: 0, endTime: 10 * MINUTE }),
+      departing({
+        localTrackName,
+        editoastId: 2,
+        startTime: 30 * MINUTE,
+        endTime: 40 * MINUTE,
+      }),
+    ]);
 
-      expect(linkings).toEqual(new Map());
-    }
-  );
+    expect(linkings).toEqual(new Map([['trainSchedule_1', 'trainSchedule_2']]));
+  });
 
   it('should not link a train that does not end its path on the track', () => {
     const linkings = computePossibleLinkings([

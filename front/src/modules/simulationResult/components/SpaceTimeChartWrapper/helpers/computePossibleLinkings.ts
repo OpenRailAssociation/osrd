@@ -1,4 +1,4 @@
-import { groupBy, isNil } from 'lodash';
+import { groupBy } from 'lodash';
 
 import type { TrainId } from 'reducers/osrdconf/types';
 
@@ -68,13 +68,9 @@ export default function computePossibleLinkings(
 ): Map<TrainId, TrainId> {
   const linkings = new Map<TrainId, TrainId>();
 
-  const scannableOccupancies = occupancies.filter(
-    (occupancy) =>
-      occupancy.active &&
-      // Trains whose track is unknown cannot be proven to occupy the same one:
-      !isNil(occupancy.localTrackName)
-  );
+  const scannableOccupancies = occupancies.filter((occupancy) => occupancy.active);
 
+  // All unknown local track names will be grouped and considered as the same track
   for (const trackOccupancies of Object.values(groupBy(scannableOccupancies, 'localTrackName'))) {
     const endpoints = trackOccupancies.flatMap<BlockEndpoint>((occupancy) =>
       occupancy.startTime === occupancy.endTime
