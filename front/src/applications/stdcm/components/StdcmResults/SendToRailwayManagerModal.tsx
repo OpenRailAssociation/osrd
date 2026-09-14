@@ -122,6 +122,7 @@ const SendToRailwayManagerModal = ({
 }: SendToRailwayManagerModalProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { t: mainT, i18n } = useTranslation('translation');
+  const { t: consistT } = useTranslation('stdcm', { keyPrefix: 'consist' });
   const dateTimeLocale = useDateTimeLocale();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const dispatch = useAppDispatch();
@@ -211,7 +212,7 @@ const SendToRailwayManagerModal = ({
       },
       {
         label: t('modal.rollingStock'),
-        value: consist.towedRollingStock?.name,
+        value: consist.towedRollingStock?.name ?? consistT('noTowedRollingStock'),
       },
       {
         label: t('modal.referenceEngine'),
@@ -227,7 +228,7 @@ const SendToRailwayManagerModal = ({
       },
       { label: t('modal.gauge'), value: consist.loadingGauge ?? '-' },
     ],
-    [consist, stdcmData.rollingStock.name, t]
+    [consist, stdcmData.rollingStock.name, t, consistT]
   );
 
   const pathTypeOptions = [
