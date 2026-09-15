@@ -128,10 +128,6 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
 
 /// Compute whether the simulation response respects the margins on each path item.
 ///
-/// This function assumes items in `train_schedule.schedule()` have increasing
-/// indices in `train_schedule.path()` (a property which should uphold for all
-/// train schedule editoast produces)...
-///
 /// # Panics
 ///
 /// This function can panic in the following cases:
@@ -165,36 +161,23 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 
     let mut res = vec![true; path_item_times_final.len()];
 
+    let schedule_item_ids_set: HashSet<&NonBlankString> = train_schedule
+        .schedule()
+        .iter()
+        .filter(|schedule_item| {
+            schedule_item.arrival.is_some() || margin_boundary_set.contains(&schedule_item.at)
+        })
+        .map(|schedule_item| &schedule_item.at)
+        .chain(train_schedule.path().first().map(|path_item| &path_item.id)) // Add the first item if is not already in the schedule
+        .chain(train_schedule.path().last().map(|path_item| &path_item.id)) // Add the last item if is not already in the schedule
+        .collect();
+
     train_schedule
         .path()
-        .first() // unconditionally include, will filter later down
-        .map(|first_path_item| &first_path_item.id)
-        .into_iter()
-        .chain(
-            train_schedule
-                .schedule()
-                .iter()
-                .filter(|schedule_item| {
-                    schedule_item.arrival.is_some()
-                        || margin_boundary_set.contains(&schedule_item.at)
-                })
-                .map(|schedule_item| &schedule_item.at),
-        )
-        .chain(
-            train_schedule
-                .path()
-                .last() // unconditionally include, will filter later down
-                .map(|last_path_item| &last_path_item.id),
-        )
+        .iter()
+        .filter_map(|path_item| schedule_item_ids_set.get(&path_item.id).copied())
         .tuple_windows()
         .for_each(|(prev_path_item_id, path_item_id)| {
-            if prev_path_item_id == path_item_id {
-                // Because we unconditionally iterate over the first and last item of the path,
-                // in case they are not present in the train schedule, we might end up with
-                // prev_path_item and path_item being the same, so we filter this case here.
-                return;
-            }
-
             let path_item_index = path_item_id_to_index[path_item_id];
             let path_item_time_final =
                 i64::try_from(path_item_times_final[path_item_index]).unwrap();
@@ -1064,8 +1047,34 @@ mod tests {
     }
 
     #[test]
+    fn test_too_fast_with_unordered_schedule() {
+        let mut schedule = train_schedule_too_fast();
+        schedule.schedule.reverse();
+        let sim = shallow_sim_too_fast();
+        let respect = path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
+        assert_eq!(*respect, [false, true, true]);
+    }
+
+    #[test]
     fn test_too_fast_on_interval() {
         let schedule = train_schedule_too_fast_on_interval();
+        let sim = shallow_sim_too_fast_on_interval();
+        let respect = path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
+        assert_eq!(*respect, [true, true, false, true, true]);
+    }
+
+    #[test]
+    fn test_too_fast_on_interval_with_unordered_schedule() {
+        let mut schedule = train_schedule_too_fast_on_interval();
+        schedule.schedule.reverse();
         let sim = shallow_sim_too_fast_on_interval();
         let respect = path_item_respect_margins(
             &sim.final_output.report_train.path_item_times,
