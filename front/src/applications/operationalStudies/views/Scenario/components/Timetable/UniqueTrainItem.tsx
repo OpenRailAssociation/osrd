@@ -97,9 +97,6 @@ const UniqueTrainItem = ({
       })
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
-        if (isSelected) {
-          dispatch(updateSelectedTrain({ id: formattedTrainId, by: 'timetable' }));
-        }
       });
   };
 
