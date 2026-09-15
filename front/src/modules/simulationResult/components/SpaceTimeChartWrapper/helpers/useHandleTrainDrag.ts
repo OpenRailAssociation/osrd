@@ -1,6 +1,8 @@
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
+import { wrapHourlyStartTime } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import {
   findExceptionWithOccurrenceId,
   shiftPacedExceptions,
@@ -194,6 +196,9 @@ export default function useHandleTrainDrag({
   ...deps
 }: DragDeps & { trainScheduleProjections: TrainSpaceTimeData[] }) {
   const { updateTrainScheduleDepartureTime } = useTimetableContext();
+  const { scenario } = useScenarioContext();
+  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
+
   return async function handleTrainDrag({
     draggedTrainId,
     newDepartureTime,
@@ -217,13 +222,18 @@ export default function useHandleTrainDrag({
     const draggedTrain = trainScheduleProjections.find((train) => train.id === draggedItemId);
     if (!draggedTrain) return;
 
+    const modelDepartureTime =
+      isHourlyTimetable && draggedTrain.paced && panelSelectionMode !== 'single'
+        ? new Date(wrapHourlyStartTime(newDepartureTime.getTime(), draggedTrain.paced.interval))
+        : newDepartureTime;
+
     const context: DragContext = {
       ...deps,
       draggedTrain,
       updateTrainScheduleDepartureTime,
       replaceProjection: (updated) =>
         trainScheduleProjections.map((train) => (train.id === draggedItemId ? updated : train)),
-      newDepartureTime,
+      newDepartureTime: modelDepartureTime,
       initialDepartureTime,
       stopPanning,
       originalPacedExceptions,

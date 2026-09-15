@@ -32,3 +32,12 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
     milliseconds: pacedTrainDurationsMs.reduce((acc, ms) => lcm(acc, ms)),
   });
 }
+
+/**
+ * Wrap a start time of an hourly timetable into the range the backend accepts for a paced
+ * train model: `0 <= start_time < interval`. A start time outside that range is rejected by
+ * the database with a 500.
+ */
+export function wrapHourlyStartTime(startTimeMs: number, interval: Duration): number {
+  return ((startTimeMs % interval.ms) + interval.ms) % interval.ms;
+}
