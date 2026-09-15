@@ -223,175 +223,172 @@ const StudyView = () => {
   }, [sortOption, filter, scenarios]);
 
   return (
-    <>
+    <main className="study-view">
       <NavBar appName={<BreadCrumbs project={study?.project} study={study} />} />
-      <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="p-3 study-view">
-          {study ? (
-            <div className="study-details">
-              <div className="study-details-dates">
-                <DateBox
-                  date={study.creation_date ? new Date(study.creation_date) : null}
-                  type="creation"
-                />
-                <DateBox
-                  date={study.start_date ? new Date(study.start_date) : null}
-                  type="start"
-                  withoutTime
-                />
-                <DateBox
-                  date={study.expected_end_date ? new Date(study.expected_end_date) : null}
-                  type="expected-end"
-                  withoutTime
-                />
-                <DateBox
-                  date={study.actual_end_date ? new Date(study.actual_end_date) : null}
-                  type="real-end"
-                  withoutTime
-                />
-                <DateBox
-                  date={study.last_modification ? new Date(study.last_modification) : null}
-                  type="modified"
-                />
-              </div>
-              <div className="d-flex flex-column p-2">
-                <div className="study-details-name">
-                  <div data-testid="study-name-info" className="study-name">
-                    {study.name}
-                  </div>
-                  <button
-                    data-testid="study-modify-button"
-                    className="study-details-modify-button"
-                    type="button"
-                    onClick={openAddorEditStudyModal}
-                  >
-                    <span className="study-details-modify-button-text">
-                      {t('study.modifyStudy')}
-                    </span>
-                    <Pencil />
-                  </button>
-                </div>
-                {study.study_type && (
-                  <div className="study-details-type" data-testid="study-type">
-                    {t(`study.studyCategories.${study.study_type}`)}
-                  </div>
-                )}
-                <div className="study-details-description" data-testid="study-description">
-                  {study.description}
-                </div>
-                {study.state && (
-                  <div className="study-details-state">
-                    {studyStates.map(
-                      (state, idx) =>
-                        study.id &&
-                        study.state && (
-                          <StateStep
-                            key={state}
-                            study={study}
-                            number={idx + 1}
-                            state={state}
-                            done={idx <= studyStates.indexOf(study.state as StudyState)}
-                          />
-                        )
-                    )}
-                  </div>
-                )}
-              </div>
 
-              {(study.service_code ||
-                study.business_code ||
-                (study.budget !== 0 && study.budget !== null)) && (
-                <div className="study-details-financials">
-                  <div className="study-details-financials-infos">
-                    {study.service_code && (
-                      <div className="study-details-financials-infos-item">
-                        <h3>{t('study.study-service-code')}</h3>
-                        <div data-testid="study-service-code-info" className="code">
-                          {study.service_code}
-                        </div>
-                      </div>
-                    )}
-                    {study.business_code && (
-                      <div className="study-details-financials-infos-item">
-                        <h3>{t('study.study-business-code')}</h3>
-                        <div data-testid="study-business-code-info" className="code">
-                          {study.business_code}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {study.budget ? (
-                    <div
-                      className="study-details-financials-amount"
-                      data-testid="study-financial-amount"
-                    >
-                      <span className="study-details-financials-amount-text">
-                        {t('study.budget')}
-                      </span>
-                      {budgetFormat(study.budget)}
-                    </div>
-                  ) : null}
-                </div>
-              )}
-
-              <div className="study-details-footer">
-                <div className="study-details-tags" data-testid="study-tags">
-                  {study.tags?.map((tag) => (
-                    <div className="study-details-tags-tag" key={tag}>
-                      {tag}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <span className="mt-5">
-              <Loader position="center" />
-            </span>
-          )}
-
-          <div className="scenarios-toolbar">
-            <div>{t('scenario.count', { count: scenariosList.length })}</div>
-            <div className="flex-grow-1">
-              <FilterTextField
-                setFilter={setFilter}
-                filterChips={filterChips}
-                id="scenarios-filter"
-                sm
+      <div className="p-3">
+        {study ? (
+          <div className="study-details">
+            <div className="study-details-dates">
+              <DateBox
+                date={study.creation_date ? new Date(study.creation_date) : null}
+                type="creation"
+              />
+              <DateBox
+                date={study.start_date ? new Date(study.start_date) : null}
+                type="start"
+                withoutTime
+              />
+              <DateBox
+                date={study.expected_end_date ? new Date(study.expected_end_date) : null}
+                type="expected-end"
+                withoutTime
+              />
+              <DateBox
+                date={study.actual_end_date ? new Date(study.actual_end_date) : null}
+                type="real-end"
+                withoutTime
+              />
+              <DateBox
+                date={study.last_modification ? new Date(study.last_modification) : null}
+                type="modified"
               />
             </div>
+            <div className="d-flex flex-column p-2">
+              <div className="study-details-name">
+                <div data-testid="study-name-info" className="study-name">
+                  {study.name}
+                </div>
+                <button
+                  data-testid="study-modify-button"
+                  className="study-details-modify-button"
+                  type="button"
+                  onClick={openAddorEditStudyModal}
+                >
+                  <span className="study-details-modify-button-text">{t('study.modifyStudy')}</span>
+                  <Pencil />
+                </button>
+              </div>
+              {study.study_type && (
+                <div className="study-details-type" data-testid="study-type">
+                  {t(`study.studyCategories.${study.study_type}`)}
+                </div>
+              )}
+              <div className="study-details-description" data-testid="study-description">
+                {study.description}
+              </div>
+              {study.state && (
+                <div className="study-details-state">
+                  {studyStates.map(
+                    (state, idx) =>
+                      study.id &&
+                      study.state && (
+                        <StateStep
+                          key={state}
+                          study={study}
+                          number={idx + 1}
+                          state={state}
+                          done={idx <= studyStates.indexOf(study.state as StudyState)}
+                        />
+                      )
+                  )}
+                </div>
+              )}
+            </div>
 
-            <OptionsSNCF
-              name="projects-sort-filter"
-              onChange={handleSortOptions}
-              selectedValue={sortOption}
-              options={sortOptions}
+            {(study.service_code ||
+              study.business_code ||
+              (study.budget !== 0 && study.budget !== null)) && (
+              <div className="study-details-financials">
+                <div className="study-details-financials-infos">
+                  {study.service_code && (
+                    <div className="study-details-financials-infos-item">
+                      <h3>{t('study.study-service-code')}</h3>
+                      <div data-testid="study-service-code-info" className="code">
+                        {study.service_code}
+                      </div>
+                    </div>
+                  )}
+                  {study.business_code && (
+                    <div className="study-details-financials-infos-item">
+                      <h3>{t('study.study-business-code')}</h3>
+                      <div data-testid="study-business-code-info" className="code">
+                        {study.business_code}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {study.budget ? (
+                  <div
+                    className="study-details-financials-amount"
+                    data-testid="study-financial-amount"
+                  >
+                    <span className="study-details-financials-amount-text">
+                      {t('study.budget')}
+                    </span>
+                    {budgetFormat(study.budget)}
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            <div className="study-details-footer">
+              <div className="study-details-tags" data-testid="study-tags">
+                {study.tags?.map((tag) => (
+                  <div className="study-details-tags-tag" key={tag}>
+                    {tag}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <span className="mt-5">
+            <Loader position="center" />
+          </span>
+        )}
+
+        <div className="scenarios-toolbar">
+          <div>{t('scenario.count', { count: scenariosList.length })}</div>
+          <div className="flex-grow-1">
+            <FilterTextField
+              setFilter={setFilter}
+              filterChips={filterChips}
+              id="scenarios-filter"
               sm
             />
           </div>
-          {selectedScenarioIds.length > 0 && (
-            <SelectionToolbar
-              selectedItemCount={selectedScenarioIds.length}
-              onDeselectAll={() => setSelectedScenarioIds([])}
-              onDelete={handleDeleteScenario}
-              item="scenario"
-              dataTestId="delete-scenario-button"
-            />
-          )}
 
-          <div
-            className={cx('scenarios-list', {
-              'selection-mode': selectedScenarioIds.length > 0,
-            })}
-          >
-            {useMemo(
-              () => displayScenariosList(),
-              [scenariosList, selectedScenarioIds, openAddOrEditScenarioModal]
-            )}
-          </div>
+          <OptionsSNCF
+            name="projects-sort-filter"
+            onChange={handleSortOptions}
+            selectedValue={sortOption}
+            options={sortOptions}
+            sm
+          />
         </div>
-      </main>
-    </>
+        {selectedScenarioIds.length > 0 && (
+          <SelectionToolbar
+            selectedItemCount={selectedScenarioIds.length}
+            onDeselectAll={() => setSelectedScenarioIds([])}
+            onDelete={handleDeleteScenario}
+            item="scenario"
+            dataTestId="delete-scenario-button"
+          />
+        )}
+
+        <div
+          className={cx('scenarios-list', {
+            'selection-mode': selectedScenarioIds.length > 0,
+          })}
+        >
+          {useMemo(
+            () => displayScenariosList(),
+            [scenariosList, selectedScenarioIds, openAddOrEditScenarioModal]
+          )}
+        </div>
+      </div>
+    </main>
   );
 };
 
