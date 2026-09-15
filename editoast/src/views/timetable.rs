@@ -22,12 +22,12 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use common::unit_system::quantities::Acceleration;
+use common::unit_system::quantities::Length;
+use common::unit_system::quantities::Mass;
+use common::unit_system::quantities::Time;
+use common::unit_system::quantities::Velocity;
 use common::units::millisecond;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Offset;
-use common::units::quantities::Velocity;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
@@ -375,7 +375,7 @@ pub(in crate::views) async fn requirements(
 
 fn build_trains_requirements(
     train_ids: impl Iterator<Item = OccurrenceId>,
-    start_times: impl Iterator<Item = Offset>,
+    start_times: impl Iterator<Item = Time>,
     simulations: impl Iterator<Item = simulation::Response>,
     train_names: impl Iterator<Item = String>,
 ) -> impl Iterator<Item = TrainRequirementsById> {
@@ -408,7 +408,7 @@ fn build_trains_requirements(
 
 /// Add the start_time of the occurrence into every requirement time
 fn make_requirements_absolute(
-    start_time: Offset,
+    start_time: Time,
     spacing_requirements: Vec<SpacingRequirement>,
     routing_requirements: Vec<RoutingRequirement>,
 ) -> TrainRequirements {
@@ -689,7 +689,7 @@ impl PhysicsConsistParameters {
             let traction_engine_inertia =
                 self.traction_engine.mass * self.traction_engine.inertia_coefficient;
             let towed_inertia = towed_mass * towed_rolling_stock.inertia_coefficient;
-            ((traction_engine_inertia + towed_inertia) / total_mass).into()
+            ((traction_engine_inertia + towed_inertia) / total_mass).value
         } else {
             self.traction_engine.inertia_coefficient
         }

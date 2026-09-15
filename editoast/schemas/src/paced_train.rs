@@ -11,7 +11,7 @@ use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainOccurrence;
 use crate::train_schedule::TrainScheduleOptions;
 use chrono::Duration;
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Offset;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
