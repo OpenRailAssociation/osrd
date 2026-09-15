@@ -1,6 +1,6 @@
 //! Error codes are extracted from OpenFGA Protobuf spec: https://github.com/openfga/api/blob/main/openfga/v1/errors_ignore.proto
 
-#[derive(Debug, thiserror::Error, serde::Deserialize)]
+#[derive(Debug, Clone, thiserror::Error, serde::Deserialize)]
 #[serde(untagged)]
 pub enum Error {
     /// Standard OpenFGA error: https://github.com/openfga/api/blob/main/openfga/v1/errors_ignore.proto
@@ -66,9 +66,13 @@ pub enum Error {
     },
 
     /// The error could not be parsed as an OpenFGA error
+    ///
+    /// We cannot provide the `reqwest::Error` directly as long as
+    /// it does not implement `Clone`. [`Error`] needs to be cloneable
+    /// because of the batched checks redispatching.
     #[error("HTTP request to OpenFGA failed: {0}")]
     #[serde(skip_deserializing)]
-    Reqwest(#[source] reqwest::Error),
+    Reqwest(String),
 }
 
 impl From<reqwest::Error> for Error {
@@ -77,7 +81,7 @@ impl From<reqwest::Error> for Error {
         let error = error;
         #[cfg(all(not(debug_assertions), not(test)))]
         let error = error.without_url();
-        Self::Reqwest(error)
+        Self::Reqwest(error.to_string())
     }
 }
 
