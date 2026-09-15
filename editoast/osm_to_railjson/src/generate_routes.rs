@@ -1,10 +1,8 @@
 //! In order to build all the routes, we must do a graph search.
 //! This module provides this graph search and can be understood in three different parts
 //! - part 1: type definitions for nodes and edges
-//! - part 2: build the graph
-//! - part 3: compute the routes
-
-use std::collections::HashMap;
+//! - part 2: build the graph
+//! - part 3: compute the routes
 
 use itertools::Itertools;
 use schemas::infra::BufferStop;
@@ -19,6 +17,7 @@ use schemas::infra::Waypoint;
 use schemas::infra::builtin_node_types_list;
 use schemas::primitives::Identifier;
 use schemas::primitives::OSRDIdentified;
+use std::collections::HashMap;
 
 /* Part 1: type definitions */
 // When building the graph, a node can be a trackEndPoint, a detector or a buffer stop
@@ -58,6 +57,7 @@ enum EdgeType {
 struct Graph {
     successors: HashMap<Node, Vec<Node>>,
     edges: HashMap<(Node, Node), EdgeType>,
+    length: HashMap<(Node, Node), f64>,
 }
 
 impl Graph {
@@ -85,7 +85,18 @@ impl Graph {
             .map(|detector| (&detector.track, detector))
             .into_group_map();
 
+        let track_length: HashMap<_, _> = track_sections
+            .iter()
+            .map(|track| (track.id.clone(), track.length))
+            .collect();
+
         for (track, detectors) in &detectors_by_track {
+            let u = Node::from_track_endpoint(track, Endpoint::Begin);
+            let v = Node::from_track_endpoint(track, Endpoint::End);
+            let length = *track_length
+                .get(*track)
+                .expect("A track must have a length");
+
             // When going from start to end
             // We only consider the last detector (closest to end) that is on the same track
             // All the other can be considered as block defining
@@ -93,35 +104,50 @@ impl Graph {
                 .iter()
                 .max_by_key(|d| (d.position * 1000.0).round() as u64)
                 .expect("missing detector");
-
-            let u = Node::from_track_endpoint(track, Endpoint::Begin);
             let d = Node::Detector(detector.id.clone());
-            let v = Node::from_track_endpoint(track, Endpoint::End);
-            self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
-            self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StartToStop));
+            self.add_directed_edge(
+                u.clone(),
+                d.clone(),
+                EdgeType::ToDetector,
+                detector.position,
+            );
+            self.add_directed_edge(
+                d.clone(),
+                v.clone(),
+                EdgeType::FromDetector(Direction::StartToStop),
+                length - detector.position,
+            );
 
-            // When going from end to start,
+            // When going from end to start
             // We only consider the first detector (closest to start) that is on the same track
             // All the other can be considered as block defining
             let detector = detectors
                 .iter()
                 .min_by_key(|d| (d.position * 1000.0).round() as u64) //Because floats aren’t sortable
                 .expect("missing detector");
-            let u = Node::from_track_endpoint(track, Endpoint::End);
             let d = Node::Detector(detector.id.clone());
-            let v = Node::from_track_endpoint(track, Endpoint::Begin);
-            self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
-            self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StopToStart));
+            self.add_directed_edge(
+                v.clone(),
+                d.clone(),
+                EdgeType::ToDetector,
+                length - detector.position,
+            );
+            self.add_directed_edge(
+                d.clone(),
+                u.clone(),
+                EdgeType::FromDetector(Direction::StopToStart),
+                detector.position,
+            );
         }
 
         for buffer in buffer_stops {
             let b = Node::BufferStop(buffer.id.clone());
             if buffer.position < 0.1 {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::Begin);
-                self.add_symmetrical_edge(b, u, EdgeType::Buffer(Direction::StartToStop));
+                self.add_symmetrical_edge(b, u, EdgeType::Buffer(Direction::StartToStop), 0.0);
             } else {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::End);
-                self.add_symmetrical_edge(b, u, EdgeType::Buffer(Direction::StopToStart));
+                self.add_symmetrical_edge(b, u, EdgeType::Buffer(Direction::StopToStart), 0.0);
             }
         }
 
@@ -130,7 +156,7 @@ impl Graph {
             let u = Node::from_track_endpoint(&track.id, Endpoint::Begin);
             let v = Node::from_track_endpoint(&track.id, Endpoint::End);
             if !detectors_by_track.contains_key(&track.id) {
-                self.add_symmetrical_edge(v.clone(), u.clone(), EdgeType::Track);
+                self.add_symmetrical_edge(v.clone(), u.clone(), EdgeType::Track, track.length);
             }
         }
     }
@@ -163,45 +189,70 @@ impl Graph {
                         id: switch.id.clone(),
                         port: port_id.clone(),
                     };
-                    self.add_symmetrical_edge(u, v, edge_type);
+                    self.add_symmetrical_edge(u, v, edge_type, 0.0);
                 }
             }
         }
     }
 
-    fn add_directed_edge(&mut self, u: Node, v: Node, edge_type: EdgeType) {
+    fn add_directed_edge(&mut self, u: Node, v: Node, edge_type: EdgeType, length: f64) {
         self.edges.insert((u.clone(), v.clone()), edge_type);
+        self.length.insert((u.clone(), v.clone()), length);
         self.successors.entry(u).or_default().push(v);
     }
 
-    fn add_symmetrical_edge(&mut self, u: Node, v: Node, edge_type: EdgeType) {
-        self.add_directed_edge(u.clone(), v.clone(), edge_type.clone());
-        self.add_directed_edge(v, u, edge_type);
+    fn add_symmetrical_edge(&mut self, u: Node, v: Node, edge_type: EdgeType, length: f64) {
+        self.add_directed_edge(u.clone(), v.clone(), edge_type.clone(), length);
+        self.add_directed_edge(v, u, edge_type, length);
     }
 
     /* Part 3: compute the different routes */
 
+    // Returns the length of the edge
+    fn get_length(&self, (u, v): (Node, Node)) -> f64 {
+        *self
+            .length
+            .get(&(u, v))
+            .expect("Length of edge is undefined")
+    }
+
     // Computes all the routes from one Node (buffer stop or detector) to all others
     // The routes don’t go beyond a detector or a buffer stop
-    fn one_to_all_routes(&self, start: Node) -> Vec<Route> {
+    fn one_to_all_routes(&self, start: Node, max_route_length: Option<f64>) -> Vec<Route> {
         let mut result = vec![];
         let mut count = 0;
         let mut parent = HashMap::new();
         let mut stack = Vec::from([&start]);
+        let mut distance = HashMap::new();
+        distance.insert(&start, 0.0);
 
         while let Some(current) = stack.pop() {
+            let current_total_length = *distance
+                .get(current)
+                .expect("A node that has been reached must have a distance");
             if let Some(successors) = self.successors.get(current) {
                 for succ in successors {
-                    if self.valid_successor(&start, current, succ, &parent) {
-                        parent.insert(succ, current);
-                        match &succ {
-                            // All routes end at a buffer or detector and we build it
-                            Node::BufferStop(_) | Node::Detector(_) => {
-                                result.push(self.build_route(count, succ, &parent));
-                                count += 1;
-                            }
-                            Node::TrackEndpoint(_track_endpoint) => {
-                                stack.push(succ);
+                    // Get the distance of the current and next node from start
+                    let added_length = self.get_length((current.clone(), succ.clone()));
+                    let new_total_length = current_total_length + added_length;
+                    if max_route_length
+                        .map(|max_route_length| new_total_length <= max_route_length)
+                        .unwrap_or(true)
+                    {
+                        // Checks whether the successor is valid and add it to the stack
+                        if self.valid_successor(&start, current, succ, &parent) {
+                            // Add the successor distance computed from the current distance to the hashmap
+                            distance.insert(succ, new_total_length);
+                            parent.insert(succ, current);
+                            match &succ {
+                                // All routes end at a buffer or detector and we build it
+                                Node::BufferStop(_) | Node::Detector(_) => {
+                                    count += 1;
+                                    result.push(self.build_route(count, succ, &parent));
+                                }
+                                Node::TrackEndpoint(_track_endpoint) => {
+                                    stack.push(succ);
+                                }
                             }
                         }
                     }
@@ -297,17 +348,18 @@ pub fn routes(
     detectors: &[Detector],
     buffer_stops: &[BufferStop],
     switches: &[Switch],
+    max_route_length: Option<f64>,
 ) -> Vec<Route> {
     let mut graph = Graph::default();
     graph.load(track_sections, detectors, buffer_stops, switches);
 
     let from_buffers = buffer_stops
         .iter()
-        .flat_map(|b| graph.one_to_all_routes(Node::BufferStop(b.id.clone())));
+        .flat_map(|b| graph.one_to_all_routes(Node::BufferStop(b.id.clone()), max_route_length));
 
     let from_detectors = detectors
         .iter()
-        .flat_map(|d| graph.one_to_all_routes(Node::Detector(d.id.clone())));
+        .flat_map(|d| graph.one_to_all_routes(Node::Detector(d.id.clone()), max_route_length));
 
     from_buffers.chain(from_detectors).collect()
 }
@@ -414,6 +466,7 @@ mod tests {
             &railjson.detectors,
             &railjson.buffer_stops,
             &railjson.switches,
+            None,
         );
         assert_eq!(4, routes.len());
     }
@@ -425,12 +478,14 @@ mod tests {
     */
     fn generate_routes() {
         let railjson =
-            crate::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into(), false).unwrap();
+            crate::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into(), false, None)
+                .unwrap();
         let routes = super::routes(
             &railjson.track_sections,
             &railjson.detectors,
             &railjson.buffer_stops,
             &railjson.switches,
+            None,
         );
         assert_eq!(6, routes.len());
         let routes_with_switches_count = routes
@@ -438,5 +493,36 @@ mod tests {
             .filter(|r| r.switches_directions.len() == 1)
             .count();
         assert_eq!(4, routes_with_switches_count);
+    }
+
+    #[test]
+    fn max_route_length() {
+        //                          /---------- 10.0 --------- end 1
+        //   start ----- 1.0 ----- o ---------- 20.0 --------- end 2
+
+        // Identifiers
+        let track1 = Identifier::from("track1");
+
+        // Nodes
+        let start = Node::BufferStop("start".into());
+        let switch = Node::from_track_endpoint(&track1, Endpoint::End);
+        let end1 = Node::BufferStop("end1".into());
+        let end2 = Node::BufferStop("end2".into());
+
+        // Graph construction
+        let mut g = Graph::default();
+        g.add_symmetrical_edge(start.clone(), switch.clone(), EdgeType::Track, 1.0);
+        g.add_symmetrical_edge(switch.clone(), end1.clone(), EdgeType::Track, 10.0);
+        g.add_symmetrical_edge(switch.clone(), end2.clone(), EdgeType::Track, 20.0);
+
+        // Routes
+        let routes = g.one_to_all_routes(start.clone(), None);
+        assert_eq!(routes.len(), 2);
+
+        let routes = g.one_to_all_routes(start.clone(), Some(12.0));
+        assert_eq!(routes.len(), 1);
+
+        let routes = g.one_to_all_routes(start, Some(5.0));
+        assert_eq!(routes.len(), 0);
     }
 }
