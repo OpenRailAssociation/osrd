@@ -79,11 +79,11 @@ export const buildSteps = (
   const schedule: TrainSchedule['schedule'] = [];
   const departureTime = steps[0].departureDate;
   for (const step of steps) {
-    const id = uuidV4();
-    path.push({ id, location: step.location });
+    const key = uuidV4();
+    path.push({ key, location: step.location });
     if (path.length > 1) {
       schedule.push({
-        at: id,
+        at: key,
         arrival: Duration.subtractDate(step.arrivalDate, departureTime).toISOString(),
         stop_for: step.stopFor?.toISOString(),
       });

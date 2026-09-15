@@ -17,7 +17,7 @@ const buildMarker = (
   operationalPoint: SearchJourneyOperationalPoint,
   pointType: typeof MARKER_TYPE.ORIGIN | typeof MARKER_TYPE.DESTINATION
 ): MarkerInformation => ({
-  id: operationalPoint.id,
+  key: operationalPoint.id,
   name: operationalPoint.name,
   coordinates: operationalPoint.coordinates,
   pointType,

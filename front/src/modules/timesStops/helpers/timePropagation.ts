@@ -72,7 +72,7 @@ export const formatPropagationDeltaLabelByMode = (
  */
 const propagateFromEditedPoint = (
   delta: Duration,
-  editedPathStepId: string,
+  editedPathStepKey: string,
   selectedTrain: Train,
   direction: 'fromDeparture' | 'toDestination',
   timetableType: TimetableType
@@ -80,7 +80,7 @@ const propagateFromEditedPoint = (
   // Delta strategy by direction:
   // - fromDeparture: compare time-of-day only
   // - toDestination: compare full date-time (can produce D+1)
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === editedPathStepKey);
   if (editedPathIndex < 0) return undefined;
 
   const currentStartTime =

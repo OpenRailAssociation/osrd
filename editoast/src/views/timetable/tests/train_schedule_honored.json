@@ -1,47 +1,47 @@
 {
-    "id": "trainschedule-95",
-    "train_name": "normal",
-    "labels": [],
-    "rolling_stock_name": "TC64700",
-    "start_time": 1722600000000,
-    "path": [
-        {
-            "id": "id440",
-            "location": {
-                "type": "track_offset",
-                "track": "TA0",
-                "offset": 1299000
-            }
-        },
-        {
-            "id": "id450",
-            "location": {
-                "type": "track_offset",
-                "track": "TG1",
-                "offset": 644000
-            }
-        }
-    ],
-    "schedule": [
-        {
-            "at": "id450",
-            "arrival": null,
-            "stop_for": "P0D",
-            "reception_signal": "OPEN"
-        }
-    ],
-    "margins": {
-        "boundaries": [],
-        "values": [
-            "0%"
-        ]
+  "id": "trainschedule-95",
+  "train_name": "normal",
+  "labels": [],
+  "rolling_stock_name": "TC64700",
+  "start_time": 1722600000000,
+  "path": [
+    {
+      "key": "id440",
+      "location": {
+        "type": "track_offset",
+        "track": "TA0",
+        "offset": 1299000
+      }
     },
-    "initial_speed": 0,
-    "comfort": "STANDARD",
-    "constraint_distribution": "MARECO",
-    "speed_limit_tag": null,
-    "power_restrictions": [],
-    "options": {
-        "use_electrical_profiles": true
+    {
+      "key": "id450",
+      "location": {
+        "type": "track_offset",
+        "track": "TG1",
+        "offset": 644000
+      }
     }
+  ],
+  "schedule": [
+    {
+      "at": "id450",
+      "arrival": null,
+      "stop_for": "P0D",
+      "reception_signal": "OPEN"
+    }
+  ],
+  "margins": {
+    "boundaries": [],
+    "values": [
+      "0%"
+    ]
+  },
+  "initial_speed": 0,
+  "comfort": "STANDARD",
+  "constraint_distribution": "MARECO",
+  "speed_limit_tag": null,
+  "power_restrictions": [],
+  "options": {
+    "use_electrical_profiles": true
+  }
 }

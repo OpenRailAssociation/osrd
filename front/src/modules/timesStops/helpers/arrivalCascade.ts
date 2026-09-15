@@ -19,7 +19,7 @@ export const cascadeArrivals = ({
   fromPathIndex: number;
   shift?: (arrival: Duration) => Duration;
 }): ScheduleItem[] => {
-  const pathIndexById = new Map(path.map((step, index) => [step.id, index]));
+  const pathIndexById = new Map(path.map((step, index) => [step.key, index]));
 
   const scheduledItems = schedule
     .flatMap((item) => {

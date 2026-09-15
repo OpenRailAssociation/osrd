@@ -37,11 +37,11 @@ export function getTheoreticalMargins(
 
   train.path.forEach((step, index) => {
     let isBoundary = index === 0;
-    if (step.id === margins.boundaries[marginIndex]) {
+    if (step.key === margins.boundaries[marginIndex]) {
       marginIndex += 1;
       isBoundary = true;
     }
-    theoreticalMargins[step.id] = {
+    theoreticalMargins[step.key] = {
       theoreticalMargin: margins.values[marginIndex],
       isBoundary,
     };
@@ -59,9 +59,9 @@ function computeMarginsCore(
   pathItemTimes: PathItemTimes | undefined
 ): MarginsCore {
   const { path, margins } = train;
-  const pathStepId = path[pathStepIndex].id;
-  const schedule = scheduleByAt[pathStepId];
-  const stepTheoreticalMarginInfo = theoreticalMargins?.[pathStepId];
+  const pathStepKey = path[pathStepIndex].key;
+  const schedule = scheduleByAt[pathStepKey];
+  const stepTheoreticalMarginInfo = theoreticalMargins?.[pathStepKey];
 
   if (
     !margins ||
@@ -80,8 +80,8 @@ function computeMarginsCore(
   let nextIndex = path.length - 1;
 
   for (let index = pathStepIndex + 1; index < path.length; index += 1) {
-    const curStepId = path[index].id;
-    if (theoreticalMargins?.[curStepId]?.isBoundary || scheduleByAt[curStepId]?.arrival) {
+    const curStepKey = path[index].key;
+    if (theoreticalMargins?.[curStepKey]?.isBoundary || scheduleByAt[curStepKey]?.arrival) {
       nextIndex = index;
       break;
     }

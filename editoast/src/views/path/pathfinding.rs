@@ -110,7 +110,7 @@ impl PathfindingInput {
                 .iter()
                 .map(|path_item| PathfindingItem {
                     location: path_item.location.clone(),
-                    can_backtrack: can_backtracks.contains(&path_item.id),
+                    can_backtrack: can_backtracks.contains(&path_item.key),
                 })
                 .collect(),
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),

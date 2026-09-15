@@ -34,8 +34,9 @@ export const propagateStopDuration = (
   )
     return undefined;
 
-  const pathStepId = update.row.pathStepId;
-  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === pathStepId);
+  console.debug('First if passed !');
+  const pathStepKey = update.row.pathStepId;
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === pathStepKey);
   if (editedPathIndex < 0) return undefined;
 
   // Delta between the old and new stop duration — drives every shift below.
@@ -45,7 +46,7 @@ export const propagateStopDuration = (
 
   // The edited point's current schedule state, if it already has one.
   const currentSchedule = selectedTrain.schedule ?? [];
-  const editedItem = currentSchedule.find((item) => item.at === pathStepId);
+  const editedItem = currentSchedule.find((item) => item.at === pathStepKey);
   const currentStartTime =
     timetableType === 'CALENDAR'
       ? new Date(selectedTrain.start_time)
@@ -54,11 +55,11 @@ export const propagateStopDuration = (
   // Set the edited point's new duration (its arrival stays the same)
   const updatedScheduleStop: ScheduleItem[] = editedItem
     ? currentSchedule.map((item) =>
-        item.at === pathStepId ? { ...item, stop_for: newDuration.toISOString() } : item
+        item.at === pathStepKey ? { ...item, stop_for: newDuration.toISOString() } : item
       )
     : insertScheduleItemInOrder(
         currentSchedule,
-        { at: pathStepId, arrival: null, stop_for: newDuration.toISOString() },
+        { at: pathStepKey, arrival: null, stop_for: newDuration.toISOString() },
         selectedTrain.path
       );
 
