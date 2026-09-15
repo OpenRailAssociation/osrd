@@ -269,7 +269,7 @@ export const getTrainrunCategoryId = (
   return trainrunCategories.find((cat) => cat.colorRef === subKey)!.id;
 };
 
-export const fetchStationSecondaryCodeCountryCode = async (
+export const fetchStationInformation = async (
   operationalPoint: Extract<OperationalPointReference, { type: 'domestic' }>,
   infraId: number,
   dispatch: AppDispatch
@@ -301,6 +301,7 @@ export const fetchStationSecondaryCodeCountryCode = async (
   return {
     secondary_code: stationOp?.secondary_code,
     country_code: stationOp?.country_code,
+    fullName: stationOp?.name,
   };
 };
 

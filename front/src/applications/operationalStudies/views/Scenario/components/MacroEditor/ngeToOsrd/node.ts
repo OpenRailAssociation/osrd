@@ -8,7 +8,7 @@ import type { NodeIndexed } from '../MacroEditorState';
 import {
   createMacroNode,
   deleteMacroNodeByNgeId,
-  fetchStationSecondaryCodeCountryCode,
+  fetchStationInformation,
   updateMacroNode,
 } from '../utils';
 import { updateTrainrunsByNode } from './trainrun';
@@ -71,7 +71,7 @@ export const handleNodeOperation = async ({
             const { main_code } = decodedDomesticReference;
             let { secondary_code, country_code } = decodedDomesticReference;
             if (!secondary_code || country_code === '??') {
-              const fetched = await fetchStationSecondaryCodeCountryCode(
+              const fetched = await fetchStationInformation(
                 decodedDomesticReference,
                 state.infraId,
                 dispatch
