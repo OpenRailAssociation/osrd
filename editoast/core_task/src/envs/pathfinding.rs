@@ -15,6 +15,7 @@ use ordered_float::OrderedFloat;
 use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;
 
+use crate::Cachable;
 use crate::CoreEnv;
 use crate::Correlated;
 use crate::Task;
@@ -431,15 +432,17 @@ impl Task for core_client::pathfinding::PathfindingRequest {
     // Therefore, we can safely batch 250 to have around 1MB of data per request.
     const CACHE_READS_BATCH_SIZE: usize = 250;
 
+    async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
+        self.fetch(ctx.as_ref()).await
+    }
+}
+
+impl Cachable for core_client::pathfinding::PathfindingRequest {
     fn key(&self, app_version: &str) -> String {
         let mut hasher = DefaultHasher::new();
         self.hash(&mut hasher);
         let req_hash = hasher.finish().to_string();
         format!("editoast.{app_version}.pathfinding.{req_hash}")
-    }
-
-    async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(ctx.as_ref()).await
     }
 }
 
@@ -503,7 +506,7 @@ pub(crate) mod test_data {
         pub(crate) fn key(&self, id: usize) -> String {
             let input = self.inputs.train_input(&id).unwrap();
             let request = build_request(&self.core_env, &input);
-            use crate::Task as _;
+            use crate::Cachable as _;
             request.key("")
         }
     }

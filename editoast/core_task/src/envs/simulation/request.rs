@@ -5,6 +5,7 @@ use std::sync::Arc;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 
+use crate::Cachable;
 use crate::CoreEnv;
 use crate::Task;
 use crate::envs::pathfinding;
@@ -138,16 +139,18 @@ impl Task for core_client::simulation::Request {
     // Therefore, we can safely batch 50 to have around 1MB of data per request.
     const CACHE_READS_BATCH_SIZE: usize = 50;
 
+    async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
+        self.fetch(ctx.as_ref()).await
+    }
+}
+
+impl Cachable for core_client::simulation::Request {
     fn key(&self, app_version: &str) -> String {
         use std::hash::Hasher as _;
         let mut hasher = DefaultHasher::new();
         self.hash(&mut hasher);
         let req_hash = hasher.finish().to_string();
         format!("editoast.{app_version}.simulation.{req_hash}")
-    }
-
-    async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(ctx.as_ref()).await
     }
 }
 
