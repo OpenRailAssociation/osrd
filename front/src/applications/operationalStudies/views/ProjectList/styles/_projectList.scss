@@ -1,5 +1,10 @@
 @use './projectCard';
 
+.project-list-view {
+  min-height: 100dvh;
+  background-color: var(--ambientB10);
+}
+
 .projects-list {
   max-height: calc(100vh - 149px); // Height of the navbar + project toolbar + padding
   overflow: auto;

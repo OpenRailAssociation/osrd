@@ -1,6 +1,9 @@
 @use 'scenarioCard';
 
 .study-view {
+  min-height: 100dvh;
+  background-color: var(--ambientB10);
+
   .study-details {
     width: 100%;
     margin-bottom: 16px;
