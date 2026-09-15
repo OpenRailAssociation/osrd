@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from 'react';
 
 import { ArrowSwitch, Fold, FrameAll, Plus, Unfold } from '@osrd-project/ui-icons';
 import along from '@turf/along';
@@ -231,8 +239,8 @@ const ItineraryModal = ({
   }, [closeItineraryModal, setWasInitialized]);
 
   const [isWorking, setIsWorking] = useState(false);
-  const createTrain = useCreateTrainSchedule(trainState, setIsWorking, closeModal);
-  const updateTimetable = useUpdateTrainSchedule(trainState, setIsWorking, closeModal);
+  const createTrain = useCreateTrainSchedule(setIsWorking, closeModal);
+  const updateTimetable = useUpdateTrainSchedule(setIsWorking, closeModal);
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name: trainState.name,
@@ -282,7 +290,13 @@ const ItineraryModal = ({
   const confirmedStepIdRef = useRef<string>('');
   const focusValueRef = useRef<Record<string, string | undefined>>({});
 
-  const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
+  const [pathSteps, setPathStepsRaw] = useState<PathStepV2[]>([]);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const setPathSteps = (newPathSteps: SetStateAction<PathStepV2[]>) => {
+    setPathStepsRaw(newPathSteps);
+    setSubmitAttempted(false);
+  };
+
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
   const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
   const [bannerWiggle, setBannerWiggle] = useState(0);
@@ -622,11 +636,6 @@ const ItineraryModal = ({
   };
 
   const isNameEmpty = modalFormState.name.trim() === '';
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-
-  useEffect(() => {
-    setSubmitAttempted(false);
-  }, [pathSteps]);
 
   useEffect(() => {
     const formattedPathSteps = trainState.pathSteps
@@ -769,7 +778,6 @@ const ItineraryModal = ({
     setPathStepsWithTrailing(reversePathSteps(filledSteps));
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const submitItinerary = (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
@@ -793,34 +801,25 @@ const ItineraryModal = ({
 
     if (pathStepsFromV2.length < 2) return;
 
-    setTrainState((oldTrainState: ItineraryModalTrainState) => ({
-      ...oldTrainState,
+    const newTrainState = {
+      ...trainState,
       name,
       category: modalFormState.category ?? null,
       rollingStockId: modalFormState.rollingStockId,
       rollingStockName: modalFormState.rollingStockName,
       speedLimitByTag: modalFormState.speedLimitTag,
       pathSteps: pathStepsFromV2,
-      editingTrainType: trainType ?? oldTrainState.editingTrainType,
-    }));
+      editingTrainType: trainType ?? trainState.editingTrainType,
+    };
+    setTrainState(newTrainState);
 
-    setIsSubmitting(true);
-  };
-
-  useEffect(() => {
-    if (isSubmitting) {
-      try {
-        if (trainScheduleToEditData) {
-          updateTimetable();
-        } else {
-          createTrain();
-        }
-        onTrainCreated();
-      } finally {
-        setIsSubmitting(false);
-      }
+    if (trainScheduleToEditData) {
+      updateTimetable(newTrainState);
+    } else {
+      createTrain(newTrainState);
     }
-  }, [isSubmitting]);
+    onTrainCreated();
+  };
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 

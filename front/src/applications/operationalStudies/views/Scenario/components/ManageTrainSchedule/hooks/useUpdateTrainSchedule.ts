@@ -275,7 +275,6 @@ export async function updateTrainSchedule({
 }
 
 const useUpdateTrainSchedule = (
-  trainState: ItineraryModalTrainState,
   setIsWorking: (isWorking: boolean) => void,
   onTrainUpdated: () => void
 ) => {
@@ -292,7 +291,10 @@ const useUpdateTrainSchedule = (
   const { trainScheduleToEditData } = useItineraryModalContext();
   const { upsertTrainSchedules } = useTimetableContext();
 
-  const onUpdateSuccess = (editData: TrainScheduleToEditData) => {
+  const onUpdateSuccess = (
+    trainState: ItineraryModalTrainState,
+    editData: TrainScheduleToEditData
+  ) => {
     const { trainScheduleId } = editData;
     const editedTrainId =
       editData.occurrenceId ?? formatEditoastIdToTrainScheduleId(editData.trainScheduleId);
@@ -322,7 +324,7 @@ const useUpdateTrainSchedule = (
     onTrainUpdated();
   };
 
-  return async () => {
+  return async (trainState: ItineraryModalTrainState) => {
     if (!trainScheduleToEditData) return;
 
     setIsWorking(true);
@@ -341,7 +343,7 @@ const useUpdateTrainSchedule = (
       });
 
       if (result.success) {
-        onUpdateSuccess({
+        onUpdateSuccess(trainState, {
           trainScheduleId: result.trainScheduleId,
           originalTrainSchedule: result.originalTrainSchedule,
           occurrenceId: result.occurrenceId,
