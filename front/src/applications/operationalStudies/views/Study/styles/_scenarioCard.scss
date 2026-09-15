@@ -14,15 +14,6 @@
   &:focus,
   &:active {
     border-color: var(--coolgray11);
-
-    .scenario-card-name {
-      color: var(--coolgray3);
-      background-color: var(--coolgray11);
-    }
-
-    button {
-      opacity: 1 !important;
-    }
   }
 
   &[aria-disabled='true'] {
@@ -32,10 +23,6 @@
 
   &.selected {
     border-color: var(--purple);
-
-    .selected-mark {
-      display: block;
-    }
   }
 
   &.empty {
@@ -76,35 +63,21 @@
     }
   }
 
-  button {
-    transition: opacity 0.4s;
-    opacity: 0;
-    margin-left: auto;
-  }
-
-  .selected-mark {
-    display: none;
-    position: absolute;
-    z-index: 3;
-    color: var(--purple);
-    font-size: 2rem;
-    top: -25.6px;
-    left: -3.2px;
-  }
-
   .scenario-card-name {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
+    gap: 8px;
     color: var(--coolgray11);
     background-color: var(--coolgray3);
-    padding: 4px 4px 4px 8px;
+    padding: 4px 6px 4px 8px;
     font-size: 1.1rem;
     transition: 0.4s;
+  }
 
-    &-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  .scenario-card-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .scenario-card-description {
@@ -139,10 +112,6 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
-
-      &:hover {
-        opacity: 0.65;
-      }
     }
   }
 

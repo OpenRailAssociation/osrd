@@ -1,9 +1,10 @@
-import { Calendar, CheckCircle, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import { Checkbox } from '@osrd-project/ui-core';
+import { Calendar } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { RiFolderChartLine } from 'react-icons/ri';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import type { ScenarioCardDetails } from 'applications/operationalStudies/types';
 import infraLogo from 'assets/pictures/components/tracks.svg';
@@ -24,35 +25,23 @@ export default function ScenarioCard({
 }: ScenarioCardProps) {
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
-  const navigate = useNavigate();
 
   return (
-    <div
+    <Link
+      to={`scenarios/${scenario.id}`}
       className={cx('scenario-card', isSelected && 'selected')}
       data-testid={`scenario-card-${scenario.name}`}
       onClick={() => toggleSelect(scenario.id)}
-      role="button"
-      tabIndex={0}
     >
       <div className={cx('scenario-card-name')} data-testid={scenario.name}>
-        <span className="mr-2">
-          <span className="selected-mark">
-            <CheckCircle variant="fill" size="lg" />
-          </span>
-          <RiFolderChartLine />
-        </span>
+        <RiFolderChartLine />
         <span className="scenario-card-name-text" title={scenario.name}>
           {scenario.name}
         </span>
-        <button
-          data-testid="openScenario"
-          className="btn btn-primary btn-sm"
-          type="button"
-          onClick={() => navigate(`scenarios/${scenario.id}`)}
-        >
-          <span className="mr-2">{t('operational-studies-management.open')}</span>
-          <FileDirectoryOpen variant="fill" />
-        </button>
+        {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- This feature will disappear soon enough */}
+        <div className="scenario-card-select" onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isSelected} onChange={() => toggleSelect(scenario.id)} />
+        </div>
       </div>
       <div className="scenario-card-description">{scenario.description}</div>
 
@@ -94,6 +83,6 @@ export default function ScenarioCard({
             })}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
