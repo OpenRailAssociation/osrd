@@ -33,6 +33,7 @@ import {
   type SubCategory,
   type MacroNoteResponse,
   type TrainScheduleResponse,
+  type TimetableType,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -66,10 +67,11 @@ import {
  */
 const getNgeTrainrunFrequencies = (
   trainSchedules: TrainScheduleResponse[],
+  timetableType: TimetableType,
   t: TFunction<'operational-studies'>
 ): TrainrunFrequency[] => {
   // Get the default frequencies (TrainSchedule/30min/60min/120min)
-  const trainrunFrequencies = getDefaultTrainrunFrequencies(t);
+  const trainrunFrequencies = getDefaultTrainrunFrequencies(timetableType, t);
 
   // Add the unknown frequencies from the PacedTrains
   trainSchedules.forEach((trainSchedule) => {
@@ -374,7 +376,7 @@ export const loadAndIndexNge = async (
   });
 
   // Initialize TrainrunFrequencies
-  state.trainrunFrequencies = getNgeTrainrunFrequencies(trainSchedules, t);
+  state.trainrunFrequencies = getNgeTrainrunFrequencies(trainSchedules, state.timetableType, t);
 
   // Initialize TrainrunCategories
   state.trainrunCategories = getTrainrunCategories(t, subCategories);
