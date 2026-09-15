@@ -117,12 +117,12 @@ export async function updateExceptions(
 }
 
 export async function deleteTrainSchedules(dispatch: AppDispatch, ids: number[]) {
-  ids.forEach((id) => dispatch(unsetTrainIdsMatching(formatEditoastIdToTrainScheduleId(id))));
   await dispatch(
     osrdEditoastApi.endpoints.deleteTrainSchedules.initiate({
       body: { ids },
     })
   ).unwrap();
+  ids.forEach((id) => dispatch(unsetTrainIdsMatching(formatEditoastIdToTrainScheduleId(id))));
 }
 
 export async function deleteExceptions(dispatch: AppDispatch, ids: number[]) {

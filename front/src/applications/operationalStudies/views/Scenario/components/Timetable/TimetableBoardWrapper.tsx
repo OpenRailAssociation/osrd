@@ -151,39 +151,31 @@ const TimetableBoardWrapper = ({
         currentSelectedTrainId.includes(`${trainScheduleId}`)
       );
 
+    if (selectedTrainScheduleIds.length > 0) {
+      await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
+    }
+
     if (isSelectedTrainScheduleInSelection) {
       // we need to clear the selected train, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
       dispatch(updateSelectedTrain(undefined));
     }
 
-    try {
-      if (selectedTrainScheduleIds.length > 0) {
-        await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
-      }
+    removeTrainSchedules(selectedTrainScheduleIds);
 
-      removeTrainSchedules(selectedTrainScheduleIds);
+    if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
+      setIsSelectMode(false);
+    }
 
-      if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
-        setIsSelectMode(false);
-      }
-
-      if (!hideToast) {
-        dispatch(
-          setSuccess({
-            title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
-              count: trainSchedulesCount,
-            }),
-            text: '',
-          })
-        );
-      }
-    } catch (e) {
-      if (isSelectedTrainScheduleInSelection) {
-        dispatch(updateSelectedTrain({ id: currentSelectedTrainId, by: 'timetable' }));
-      } else {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
+    if (!hideToast) {
+      dispatch(
+        setSuccess({
+          title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
+            count: trainSchedulesCount,
+          }),
+          text: '',
+        })
+      );
     }
   };
 
