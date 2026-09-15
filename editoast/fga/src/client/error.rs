@@ -39,12 +39,16 @@ pub enum Error {
     #[error("{code}: {message}")]
     Aborted { code: String, message: String },
 
+    /// Standard OpenFGA batch check item error (internal_error variant): https://github.com/openfga/api/blob/main/openfga/v1/openfga_service.proto
+    /// It's part of a 2xx response to `/batch_check` request.
     #[error("{internal_error}[{}]: {message}", *internal_error as u16)]
     CheckInternal {
         internal_error: InternalErrorCode,
         message: String,
     },
 
+    /// Standard OpenFGA batch check item error (input_error variant): https://github.com/openfga/api/blob/main/openfga/v1/openfga_service.proto
+    /// It's part of a 2xx response to `/batch_check` request.
     #[error("{input_error}[{}]: {message}", *input_error as u16)]
     CheckInput {
         input_error: ErrorCode,

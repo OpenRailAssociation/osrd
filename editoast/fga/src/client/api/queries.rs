@@ -59,10 +59,10 @@ pub(in crate::client) struct BatchCheckItem {
 }
 
 #[derive(Debug, serde::Deserialize)]
-#[serde(untagged)]
+#[serde(rename_all = "lowercase")]
 pub(in crate::client) enum BatchCheckSingleResult {
-    Result { allowed: bool },
-    Error { error: Error },
+    Allowed(bool),
+    Error(Error),
 }
 
 impl Client {

@@ -54,6 +54,9 @@ impl Client {
     /// a tuple from 2 to 8 `bool`s respectively. Other structuring types can be supported
     /// by implementing the [StructuredChecks] trait.
     ///
+    /// If any single check of the batch returns an error, this function throws an error for the whole batch,
+    /// either [super::Error::CheckInternal] or [super::Error::CheckInput].
+    ///
     /// # Which `check` function to use?
     ///
     /// As a rule of thumb:
@@ -311,6 +314,8 @@ impl PreparedChecks<'_> {
     /// Concurrently send batch-checks requests to OpenFGA in chunks of `n` elements,
     /// with `n` the maximum number of tuple reads configured in the
     /// [super::ConnectionSettings::limits]'s [super::Limits::max_checks_per_batch_check].
+    /// If any single check of the batch returns an error, this function throws an error for the whole batch,
+    /// either [super::Error::CheckInternal] or [super::Error::CheckInput].
     pub async fn execute(self) -> Result<Vec<bool>, Error> {
         let count = self.checks.len();
 
@@ -356,11 +361,11 @@ impl PreparedChecks<'_> {
                 unreachable!("OpenFGA always returns correlation IDs we send it");
             };
             match check_single_result {
-                BatchCheckSingleResult::Error { error } => {
+                BatchCheckSingleResult::Error(error) => {
                     tracing::error!(correlation_id, index, error = ?error, "batch check item failed");
                     return Err(error);
                 }
-                BatchCheckSingleResult::Result { allowed } => {
+                BatchCheckSingleResult::Allowed(allowed) => {
                     result[*index] = allowed;
                 }
             }
