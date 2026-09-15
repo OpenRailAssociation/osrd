@@ -1,7 +1,8 @@
-import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import { Checkbox } from '@osrd-project/ui-core';
+import { Calendar, FileDirectory } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import type { StudyCardDetails } from 'applications/operationalStudies/types';
 import studyLogo from 'assets/pictures/views/study.svg';
@@ -23,35 +24,22 @@ export default function StudyCard({
 }: StudyCardProps) {
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
-  const navigate = useNavigate();
 
   return (
-    <div
-      className={cx('study-card', isSelected && 'selected')}
+    <Link
+      to={`studies/${study.id}`}
+      className={cx('study-card', { selected: isSelected })}
       data-testid={study.name}
-      onClick={() => toggleSelect(study.id)}
-      role="button"
-      tabIndex={0}
     >
-      <div className={cx('study-card-name')}>
-        <span className="mr-2">
-          <span className="selected-mark">
-            <CheckCircle variant="fill" size="lg" />
-          </span>
-          <img className="study-card-img" src={studyLogo} alt="study logo" />
-        </span>
+      <div className="study-card-name">
+        <img className="study-card-img" src={studyLogo} alt="study logo" />
         <span className="study-card-name-text" title={study.name}>
           {study.name}
         </span>
-        <button
-          data-testid="openStudy"
-          className="btn btn-primary btn-sm"
-          onClick={() => navigate(`studies/${study.id}`)}
-          type="button"
-        >
-          <span className="mr-2">{t('operational-studies-management.open')}</span>
-          <FileDirectoryOpen variant="fill" />
-        </button>
+        {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- This feature will disappear soon enough */}
+        <div className="study-card-select" onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isSelected} onChange={() => toggleSelect(study.id)} />
+        </div>
       </div>
       {study.study_type && (
         <div className="study-card-type">{t(`study.studyCategories.${study.study_type}`)}</div>
@@ -91,7 +79,11 @@ export default function StudyCard({
               key={tag}
               role="button"
               tabIndex={0}
-              onClick={() => setFilterChips(tag)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFilterChips(tag);
+              }}
               title={tag}
             >
               {tag}
@@ -118,6 +110,6 @@ export default function StudyCard({
             })}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
