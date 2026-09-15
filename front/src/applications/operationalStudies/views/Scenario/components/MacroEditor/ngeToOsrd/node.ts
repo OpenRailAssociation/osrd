@@ -65,12 +65,14 @@ export const handleNodeOperation = async ({
           // Update the key if mainCode has changed and key is based on it
           let nodeKey = indexNode.path_item_key;
           let domesticReference = node.betriebspunktName;
+          let full_name = node.fullName;
           if (nodeKey.startsWith('domestic:') && indexNode.trigram !== domesticReference) {
             const decodedDomesticReference =
               MacroEditorState.decodeDomesticReference(domesticReference);
             const { main_code } = decodedDomesticReference;
             let { secondary_code, country_code } = decodedDomesticReference;
-            if (!secondary_code || country_code === '??') {
+            const shouldFetchFullName = full_name === '' && type === 'create';
+            if (!secondary_code || country_code === '??' || shouldFetchFullName) {
               const fetched = await fetchStationInformation(
                 decodedDomesticReference,
                 state.infraId,
@@ -78,6 +80,7 @@ export const handleNodeOperation = async ({
               );
               if (fetched.secondary_code) secondary_code = fetched.secondary_code;
               if (fetched.country_code) country_code = fetched.country_code;
+              if (shouldFetchFullName) full_name = fetched.fullName ?? '';
             }
             domesticReference = MacroEditorState.encodeDomesticReference({
               main_code,
@@ -90,6 +93,7 @@ export const handleNodeOperation = async ({
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
+            full_name,
             trigram: domesticReference,
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
