@@ -10,6 +10,7 @@ import type {
   ReceptionSignal,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration, type StartTime } from 'utils/duration';
@@ -399,7 +400,7 @@ export function onStopSignalToReceptionSignal(
 }
 
 export const getOperationalPointName = (
-  op: RelatedOperationalPoint | null | undefined,
+  op: RelatedOperationalPoint | PathWaypoint | undefined,
   step: PathItemLocation,
   stepIndex: number,
   totalStepCount: number,
@@ -421,4 +422,17 @@ export const getOperationalPointName = (
 
   // Invalid step
   return getInvalidStepLabel(step.operational_point);
+};
+
+export const getOperationalPointSecondaryCode = (
+  op: RelatedOperationalPoint | PathWaypoint | undefined,
+  step: PathItemLocation
+) => {
+  // Valid op
+  if (op) return op.secondary_code;
+  // Invalid op
+  if (step.type === 'operational_point_part_reference' && step.operational_point.type !== 'id')
+    return step.operational_point.secondary_code;
+  // TrackOffset or invalid op of type id
+  return undefined;
 };
