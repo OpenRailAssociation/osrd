@@ -23,7 +23,7 @@ export const FONT = 'IBM Plex Mono, monospace';
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
   background: 'white',
-  breakpoints: [0.2, 0.4, 0.7, 2, 6, 20, 60, Infinity],
+  breakpoints: [0.2, 0.5, 1, 4, 16, 48, 72, Infinity],
   timeRanges: [
     10 * SECOND,
     30 * SECOND,
