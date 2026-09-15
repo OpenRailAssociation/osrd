@@ -42,8 +42,10 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    padding-left: 12px;
 
     .track-line {
+      flex-shrink: 0;
       margin-right: 16px;
       font-weight: 400;
       font-size: 0.75rem;
@@ -64,9 +66,15 @@
       font-size: 0.875rem;
       line-height: 20px;
       @apply text-white-100;
+
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .track-rail {
+      flex-shrink: 0;
       align-self: center;
       height: 9px;
       width: 17px;
