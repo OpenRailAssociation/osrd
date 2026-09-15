@@ -14,7 +14,7 @@ import { useAppDispatch } from 'store';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 
-type UseLazySimulateTrainsOptions = {
+export type UseLazySimulateTrainsOptions = {
   infraId: number;
   timetableId: number;
   timetableType: TimetableType;
