@@ -201,6 +201,21 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     }
   }, [activeBoards.has('macro'), i18n.language, refreshNge]);
 
+  // The macro editor updates a trainrun from `GET /train_schedules/{id}`, which never returns
+  // exceptions, so we re-attach the ones the timetable already has to keep them displayed.
+  const upsertTrainSchedulesFromNge = (updatedTrainSchedules: TrainScheduleResponse[]) => {
+    upsertTrainSchedules(
+      updatedTrainSchedules.map((trainSchedule) => {
+        const { paced } = trainSchedule;
+        const previousPaced = trainSchedulesById.get(trainSchedule.id)?.paced;
+        if (!paced || !previousPaced) {
+          return trainSchedule;
+        }
+        return { ...trainSchedule, paced: { ...paced, exceptions: previousPaced.exceptions } };
+      })
+    );
+  };
+
   const handleNGEOperation = (operation: Operation, netzgrafikDto: NetzgrafikDto) => {
     // Wait for the previous handler to complete before starting the next one
     lastNgeOperationPromise.current = lastNgeOperationPromise.current.then(async () => {
@@ -212,7 +227,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
           infraId,
           state: macroEditorState.current!,
           dispatch,
-          addUpsertedTrainSchedules: upsertTrainSchedules,
+          addUpsertedTrainSchedules: upsertTrainSchedulesFromNge,
           addDeletedTrainScheduleIds: removeTrainSchedules,
         });
       } catch (err) {
