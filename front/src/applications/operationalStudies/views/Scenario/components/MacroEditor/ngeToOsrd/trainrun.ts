@@ -31,7 +31,7 @@ import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedT
 import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import MacroEditorState from '../MacroEditorState';
 import {
-  fetchStationSecondaryCodeCountryCode,
+  fetchStationInformation,
   getFrequencyFromFrequencyId,
   getTrainCategoryFromTrainrunCategoryId,
   storeRoundTrip,
@@ -380,7 +380,7 @@ const populateSecondaryCodesInPath = async (
     ) {
       return;
     }
-    const { secondary_code, country_code } = await fetchStationSecondaryCodeCountryCode(
+    const { secondary_code, country_code } = await fetchStationInformation(
       pathItem.location.operational_point,
       infraId,
       dispatch
