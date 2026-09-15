@@ -235,156 +235,150 @@ const ProjectView = () => {
   }, [openModal, project, projectStudies]);
 
   return (
-    <>
+    <main className="project-view">
       <NavBar appName={<BreadCrumbs project={project} />} />
 
-      <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="p-3 project-view">
-          {project ? (
-            <div className="project-details">
-              <div className="project-details-title">
-                <div className="row w-100 no-gutters">
-                  <div className={'col-lg-4 col-md-4'}>
-                    <div className="project-details-title-img">
-                      <img src={imageUrl} alt={t('project.projectImage')} />
-                    </div>
-                    {/* TODO: adapt with the good resourceType when back is ready */}
-                    {projectGrantsActivated && (
-                      <GrantsManager
-                        resourceId={project.id}
-                        resourceType="project"
-                        userPrivileges={
-                          userPrivileges.type === 'ready'
-                            ? userPrivileges.data[project.id]
-                            : undefined
-                        }
-                      />
-                    )}
+      <div className="p-3">
+        {project ? (
+          <div className="project-details">
+            <div className="project-details-title">
+              <div className="row w-100 no-gutters">
+                <div className={'col-lg-4 col-md-4'}>
+                  <div className="project-details-title-img">
+                    <img src={imageUrl} alt={t('project.projectImage')} />
                   </div>
-                  <div className={'pl-md-2 col-lg-8 col-md-8'}>
-                    <div className="project-details-title-content">
-                      <div className="project-details-title-name" data-testid="project-name">
-                        {project.name}
-                        <button
-                          data-testid="project-update-button"
-                          className="project-details-title-modify-button"
-                          type="button"
-                          onClick={openAddOrEditProjectModal}
+                  {/* TODO: adapt with the good resourceType when back is ready */}
+                  {projectGrantsActivated && (
+                    <GrantsManager
+                      resourceId={project.id}
+                      resourceType="project"
+                      userPrivileges={
+                        userPrivileges.type === 'ready'
+                          ? userPrivileges.data[project.id]
+                          : undefined
+                      }
+                    />
+                  )}
+                </div>
+                <div className={'pl-md-2 col-lg-8 col-md-8'}>
+                  <div className="project-details-title-content">
+                    <div className="project-details-title-name" data-testid="project-name">
+                      {project.name}
+                      <button
+                        data-testid="project-update-button"
+                        className="project-details-title-modify-button"
+                        type="button"
+                        onClick={openAddOrEditProjectModal}
+                      >
+                        <span className="project-details-title-modify-button-text">
+                          {t('project.modifyProject')}
+                        </span>
+                        <Pencil />
+                      </button>
+                    </div>
+                    <div className="row">
+                      <div className="col-xl-6">
+                        <div
+                          className="project-details-title-description"
+                          data-testid="project-description"
                         >
-                          <span className="project-details-title-modify-button-text">
-                            {t('project.modifyProject')}
+                          {project.description}
+                        </div>
+                      </div>
+                      <div className="col-xl-6">
+                        <h3>
+                          <span className="mr-2">
+                            <BiTargetLock />
                           </span>
-                          <Pencil />
-                        </button>
-                      </div>
-                      <div className="row">
-                        <div className="col-xl-6">
-                          <div
-                            className="project-details-title-description"
-                            data-testid="project-description"
-                          >
-                            {project.description}
-                          </div>
-                        </div>
-                        <div className="col-xl-6">
-                          <h3>
-                            <span className="mr-2">
-                              <BiTargetLock />
-                            </span>
-                            {t('project.objectives')}
-                          </h3>
-                          <div
-                            className="project-details-title-objectives"
-                            data-testid="project-objectives"
-                          >
-                            {project.objectives && (
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {project.objectives}
-                              </ReactMarkdown>
-                            )}
-                          </div>
+                          {t('project.objectives')}
+                        </h3>
+                        <div
+                          className="project-details-title-objectives"
+                          data-testid="project-objectives"
+                        >
+                          {project.objectives && (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {project.objectives}
+                            </ReactMarkdown>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
-                <div className="project-details-financials">
+            </div>
+            {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
+              <div className="project-details-financials">
+                <div
+                  className="project-details-financials-infos"
+                  data-testid="project-financials-infos"
+                >
+                  <h3>{t('project.fundedBy')}</h3>
+                  {project.funders && <div>{project.funders}</div>}
+                </div>
+                {project.budget ? (
                   <div
-                    className="project-details-financials-infos"
-                    data-testid="project-financials-infos"
+                    className="project-details-financials-amount"
+                    data-testid="project-financial-amount"
                   >
-                    <h3>{t('project.fundedBy')}</h3>
-                    {project.funders && <div>{project.funders}</div>}
+                    <span className="project-details-financials-amount-text">
+                      {t('project.totalBudget')}
+                    </span>
+                    {budgetFormat(project.budget)}
                   </div>
-                  {project.budget ? (
-                    <div
-                      className="project-details-financials-amount"
-                      data-testid="project-financial-amount"
-                    >
-                      <span className="project-details-financials-amount-text">
-                        {t('project.totalBudget')}
-                      </span>
-                      {budgetFormat(project.budget)}
-                    </div>
-                  ) : null}
-                </div>
-              )}
-              <div className="project-details-tags" data-testid="project-tags">
-                {project.tags?.map((tag) => (
-                  <div className="project-details-tags-tag" key={tag}>
-                    {tag}
-                  </div>
-                ))}
+                ) : null}
               </div>
+            )}
+            <div className="project-details-tags" data-testid="project-tags">
+              {project.tags?.map((tag) => (
+                <div className="project-details-tags-tag" key={tag}>
+                  {tag}
+                </div>
+              ))}
             </div>
-          ) : (
-            <span className="mt-5">
-              <Loader position="center" />
-            </span>
-          )}
-
-          <div className="studies-toolbar">
-            <div className="h1 mb-0">
-              {t('study.count', {
-                count: studiesList ? studiesList.length : 0,
-              })}
-            </div>
-            <div className="flex-grow-1">
-              <FilterTextField
-                setFilter={setFilter}
-                filterChips={filterChips}
-                id="studies-filter"
-              />
-            </div>
-
-            <OptionsSNCF
-              name="projects-sort-filter"
-              onChange={handleSortOptions}
-              selectedValue={sortOption}
-              options={sortOptions}
-            />
           </div>
-          {selectedStudyIds.length > 0 && (
-            <SelectionToolbar
-              selectedItemCount={selectedStudyIds.length}
-              onDeselectAll={() => setSelectedStudyIds([])}
-              onDelete={handleDeleteStudy}
-              item="study"
-              dataTestId="deleteStudies"
-            />
-          )}
-          <div
-            className={cx('studies-list', {
-              'selection-mode': selectedStudyIds.length > 0,
+        ) : (
+          <span className="mt-5">
+            <Loader position="center" />
+          </span>
+        )}
+
+        <div className="studies-toolbar">
+          <div className="h1 mb-0">
+            {t('study.count', {
+              count: studiesList ? studiesList.length : 0,
             })}
-          >
-            {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
           </div>
+          <div className="flex-grow-1">
+            <FilterTextField setFilter={setFilter} filterChips={filterChips} id="studies-filter" />
+          </div>
+
+          <OptionsSNCF
+            name="projects-sort-filter"
+            onChange={handleSortOptions}
+            selectedValue={sortOption}
+            options={sortOptions}
+          />
         </div>
-      </main>
-    </>
+        {selectedStudyIds.length > 0 && (
+          <SelectionToolbar
+            selectedItemCount={selectedStudyIds.length}
+            onDeselectAll={() => setSelectedStudyIds([])}
+            onDelete={handleDeleteStudy}
+            item="study"
+            dataTestId="deleteStudies"
+          />
+        )}
+        <div
+          className={cx('studies-list', {
+            'selection-mode': selectedStudyIds.length > 0,
+          })}
+        >
+          {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
+        </div>
+      </div>
+    </main>
   );
 };
 

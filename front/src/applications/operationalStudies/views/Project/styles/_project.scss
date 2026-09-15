@@ -1,7 +1,8 @@
 @use './studyCard';
 
 .project-view {
-  max-height: calc(100vh - 40px); // Height of the navbar
+  min-height: 100dvh;
+  background-color: var(--ambientB10);
 
   .filter-selector {
     background-color: transparent;
