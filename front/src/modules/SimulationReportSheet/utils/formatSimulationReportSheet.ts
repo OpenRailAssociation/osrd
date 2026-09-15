@@ -307,6 +307,19 @@ function consolidateBacktrackSteps(
   });
 }
 
+/** Ensure stops with no durations do not report a consist change or a stop type other than PASSAGE_TIME. */
+function normalizeStopsWithoutDuration(ops: StdcmResultsOperationalPoint[]) {
+  return ops.map((op, index) => ({
+    ...op,
+    stopType:
+      // stops without a duration but with a stop type and not at an extremity should be made PASSAGE_TIME
+      op.stopDuration || !op.stopType || !index || index === ops.length - 1
+        ? op.stopType
+        : StdcmStopTypes.PASSAGE_TIME,
+    consistChange: op.stopDuration ? op.consistChange : undefined,
+  }));
+}
+
 /**
  * @param operationalPoints List of operational points
  * @param suggestedOperationalPoints List of suggested operational points to be formated and enriched
@@ -368,11 +381,7 @@ export function getOperationalPointsWithTimes({
     pathfindingResult
   );
 
-  return formattedConsolidatedOps.map((op) => ({
-    ...op,
-    stopType: op.stopDuration || !op.stopType ? op.stopType : StdcmStopTypes.PASSAGE_TIME, // no stop duration -> stoptype = undefined or PASSAGE_TIME
-    consistChange: op.stopDuration ? op.consistChange : undefined,
-  }));
+  return normalizeStopsWithoutDuration(formattedConsolidatedOps);
 }
 
 export const getArrivalTimes = (
