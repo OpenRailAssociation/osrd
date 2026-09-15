@@ -2,8 +2,8 @@ version = 1
 revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
-    "python_full_version < '3.14'",
     "python_full_version >= '3.14'",
+    "python_full_version < '3.14'",
 ]
 
 [[package]]
@@ -84,7 +84,7 @@ wheels = [
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.73.0"
+version = "0.79.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "argcomplete" },
@@ -96,9 +96,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/13/0c/dad2a83345aac91f629616af16eb57a55b0dd8af4422ef519004d15e6a94/datamodel_code_generator-0.73.0.tar.gz", hash = "sha256:c3d5b11047f5aa11705a40df23d934e202909655c8acce463401ab855c50bd0f", size = 2052552, upload-time = "2026-08-15T03:31:01.316Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/98/4b35f12e551d078e4297422e98cbc679f4792475bcf7da2e008308695d97/datamodel_code_generator-0.79.0.tar.gz", hash = "sha256:d1e4297c946cccb9c2f7f662167b5876d5554ce3884ac145042256af08f23924", size = 2661584, upload-time = "2026-09-10T17:56:30.318Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/0c/62aeaabf9df25a243fa38fdb07dbed4e021e21cd6a5c6a66d0fc1f8d254d/datamodel_code_generator-0.73.0-py3-none-any.whl", hash = "sha256:2e212d9f5a9a54618191938f14aafef75b27c365e60c792e9dcad65bb5be93a7", size = 592517, upload-time = "2026-08-15T03:30:59.562Z" },
+    { url = "https://files.pythonhosted.org/packages/80/62/c4ab81535f7fd6d46040908c535248ef96fa53d90c7379913256ddcd3f6c/datamodel_code_generator-0.79.0-py3-none-any.whl", hash = "sha256:0aa827080096844a56135eb990e69d622e79f74bad2e5f006ce797bd74477d1f", size = 695513, upload-time = "2026-09-10T17:56:27.845Z" },
 ]
 
 [[package]]
@@ -289,7 +289,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datamodel-code-generator", specifier = "==0.73.0" },
+    { name = "datamodel-code-generator", specifier = "==0.79.0" },
     { name = "geojson-pydantic", specifier = "~=2.1.1" },
     { name = "openapi-pydantic", specifier = "==0.5.1" },
     { name = "pydantic", specifier = ">=2.12.2" },
