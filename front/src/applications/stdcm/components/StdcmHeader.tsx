@@ -51,7 +51,9 @@ const StdcmHeader = ({
     );
 
   const requestsFolderUrl =
-    osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestFolderUrl.useQuery();
+    osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestFolderUrl.useQuery(
+      sendLMRAuthorizedResponse?.authorized ? undefined : skipToken
+    );
 
   const openRequestsFolder = async () => {
     try {
