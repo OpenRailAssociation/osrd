@@ -161,19 +161,15 @@ const PacedTrainItem = ({
   };
 
   const deletePacedTrain = async () => {
-    try {
-      await deleteTrainSchedules(dispatch, [pacedTrain.id]);
-      removeTrainSchedules([pacedTrain.id]);
-      setSelectedTrainScheduleIds((prev) => prev.filter((id) => id !== pacedTrain.id));
-      dispatch(
-        setSuccess({
-          title: t('timetable.pacedTrainDeleted', { name: pacedTrain.name }),
-          text: '',
-        })
-      );
-    } catch (e) {
-      dispatch(setFailure(castErrorToFailure(e)));
-    }
+    await deleteTrainSchedules(dispatch, [pacedTrain.id]);
+    removeTrainSchedules([pacedTrain.id]);
+    setSelectedTrainScheduleIds((prev) => prev.filter((id) => id !== pacedTrain.id));
+    dispatch(
+      setSuccess({
+        title: t('timetable.pacedTrainDeleted', { name: pacedTrain.name }),
+        text: '',
+      })
+    );
   };
 
   const togglePacedTrainSelection = () => {
