@@ -11,31 +11,18 @@
 
   &:hover,
   &:focus,
-  &:active {
+  &:active,
+  &.selected {
     border-color: var(--purple);
 
-    .project-card-img {
-      &::after {
-        opacity: 1;
-      }
-
-      .buttons {
-        opacity: 1 !important;
-      }
+    .project-card-select {
+      opacity: 1;
     }
   }
 
   &[aria-disabled='true'] {
     pointer-events: none;
     opacity: 0.5;
-  }
-
-  &.selected {
-    border-color: var(--purple);
-
-    .selected-mark {
-      display: block;
-    }
   }
 
   &.empty {
@@ -61,57 +48,30 @@
     }
   }
 
-  .selected-mark {
-    display: none;
-    position: absolute;
-    z-index: 2;
-    color: var(--purple);
-    font-size: 2rem;
-    top: -25.6px;
-    left: -12.8px;
-  }
-
   .project-card-img {
-    position: relative;
+    display: grid;
+    grid-template: 100% / 1fr;
     height: 160px;
     overflow: hidden;
     border-radius: 4px 4px 0 0;
 
     img {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      grid-area: 1 / 1;
       color: var(--coolgray7);
       transition: filter 0.5s;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center;
     }
+  }
 
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      transition: opacity 0.5s;
-      opacity: 0;
-      background: linear-gradient(0deg, var(--coolgray15) 0%, rgba(255, 255, 255, 0) 100%);
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: end;
-      width: 100%;
-      transition: opacity 0.4s;
-      opacity: 0;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      z-index: 1;
-      padding: 0 8px 8px;
-    }
+  .project-card-select {
+    grid-area: 1 / 1;
+    place-self: start end;
+    padding: 12px;
+    opacity: 0.3;
+    transition: opacity 0.4s;
   }
 
   .project-card-studies {
@@ -182,10 +142,6 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
-
-      &:hover {
-        opacity: 0.65;
-      }
     }
   }
 }
