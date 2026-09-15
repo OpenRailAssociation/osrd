@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 
-import { Gear, Info, Report, SignOut } from '@osrd-project/ui-icons';
+import { Gear, Report, SignOut } from '@osrd-project/ui-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +11,6 @@ import useAuth from 'utils/hooks/useAuth';
 import { languageCodeToCountryCode } from 'utils/strings';
 
 import ChangeLanguageModal, { languageName } from './ChangeLanguageModal';
-import ReleaseInformation from './ReleaseInformation';
 import UserSettings from './UserSettings';
 
 type UserActionsDropdownProps = {
@@ -32,20 +31,8 @@ const UserActionsDropdown = ({
   const openUserSettingsModal = () => openModal(<UserSettings />);
   const openChangeLanguageModal = () => openModal(<ChangeLanguageModal />, 'sm');
   const openHelpModalSNCF = () => openModal(<HelpModalSNCF />, 'lg');
-  const openReleaseInformationModal = () => openModal(<ReleaseInformation />, 'lg');
 
   const dropdownItems = [
-    {
-      node: (
-        <button type="button" className="btn-link text-reset" onClick={openReleaseInformationModal}>
-          <span className="mr-2">
-            <Info />
-          </span>
-          {t('nav-bar.about')}
-        </button>
-      ),
-      key: 'about',
-    },
     {
       node: (
         <button type="button" className="btn-link text-reset" onClick={openHelpModalSNCF}>
