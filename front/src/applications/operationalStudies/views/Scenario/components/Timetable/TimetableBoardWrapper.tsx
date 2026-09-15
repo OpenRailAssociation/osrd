@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -12,9 +11,6 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TrainId } from 'reducers/osrdconf/types';
-import { updateSelectedTrain } from 'reducers/simulationResults';
-import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
@@ -47,8 +43,6 @@ const TimetableBoardWrapper = ({
 
   const [getTimetableRoundTrips] =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useLazyQuery();
-
-  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const { t } = useTranslation('operational-studies');
 
@@ -139,26 +133,11 @@ const TimetableBoardWrapper = ({
   ]);
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
-  const handleTrainsDelete = async (
-    currentSelectedTrainId?: TrainId,
-    hideToast: boolean = false
-  ) => {
+  const handleTrainsDelete = async (hideToast: boolean = false) => {
     const trainSchedulesCount = selectedTrainScheduleIds.length;
-
-    const isSelectedTrainScheduleInSelection =
-      currentSelectedTrainId !== undefined &&
-      selectedTrainScheduleIds.some((trainScheduleId) =>
-        currentSelectedTrainId.includes(`${trainScheduleId}`)
-      );
 
     if (selectedTrainScheduleIds.length > 0) {
       await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
-    }
-
-    if (isSelectedTrainScheduleInSelection) {
-      // we need to clear the selected train, otherwise just after the delete,
-      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-      dispatch(updateSelectedTrain(undefined));
     }
 
     removeTrainSchedules(selectedTrainScheduleIds);
@@ -260,7 +239,7 @@ const TimetableBoardWrapper = ({
           trainSchedules,
           trainScheduleRoundTrips
         );
-        await handleTrainsDelete(selectedTrainId, true);
+        await handleTrainsDelete(true);
         dispatch(
           setSuccess({
             title: t('main.cutTimetable.title'),
@@ -271,7 +250,7 @@ const TimetableBoardWrapper = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     },
-    [selectedTrainScheduleIds, trainSchedules, selectedTrainId, getTimetableRoundTrips, timetableId]
+    [selectedTrainScheduleIds, trainSchedules, getTimetableRoundTrips, timetableId]
   );
 
   const handleDeleteTrainSchedules = () => setIsDeleteDialogOpen(true);
@@ -326,7 +305,7 @@ const TimetableBoardWrapper = ({
         createPortal(
           <ConfirmationDialog
             onCancel={() => setIsDeleteDialogOpen(false)}
-            onConfirm={() => handleTrainsDelete(selectedTrainId)}
+            onConfirm={() => handleTrainsDelete()}
             labels={{
               title: t('main.timetable.delete'),
               texts: [deleteTrainSchedulesComputedLabel()],
