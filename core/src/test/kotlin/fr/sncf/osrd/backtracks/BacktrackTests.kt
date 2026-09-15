@@ -657,9 +657,9 @@ class BacktrackTests {
 
         val backtrackingArrivalTime = 301.914.seconds
         val backtrackingDepartureTime = backtrackingArrivalTime + 60.seconds
-        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first())
+        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first().arrival)
         val finalTime = 731.665.seconds
-        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last())
+        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last().arrival)
         assertEquals(finalTime, resp.finalOutput.times.last())
         assertEquals(
             listOf(
@@ -825,9 +825,9 @@ class BacktrackTests {
 
         val backtrackingArrivalTime = 269.094.seconds
         val backtrackingDepartureTime = backtrackingArrivalTime + 60.seconds
-        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first())
+        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first().arrival)
         val finalTime = 748.193.seconds
-        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last())
+        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last().arrival)
         assertEquals(finalTime, resp.finalOutput.times.last())
         assertEquals(
             listOf(
@@ -939,9 +939,9 @@ class BacktrackTests {
 
         val backtrackingArrivalTime = 276.282.seconds
         val backtrackingDepartureTime = backtrackingArrivalTime + 60.seconds
-        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first())
+        assertEquals(backtrackingArrivalTime, resp.finalOutput.pathItemTimes.first().arrival)
         val finalTime = 688.374.seconds
-        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last())
+        assertEquals(finalTime, resp.finalOutput.pathItemTimes.last().arrival)
         assertEquals(finalTime, resp.finalOutput.times.last())
         assertEquals(
             listOf(

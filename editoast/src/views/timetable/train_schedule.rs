@@ -2270,6 +2270,7 @@ mod tests {
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::PathItemTime;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
@@ -2809,14 +2810,24 @@ mod tests {
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(1),
+                        PathItemTime::new(2),
+                        PathItemTime::new(3)
+                    ]
                 },
                 provisional: ReportTrain {
                     positions: vec![0, 500_000, 15_050_000],
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(1),
+                        PathItemTime::new(2),
+                        PathItemTime::new(3)
+                    ]
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
@@ -2824,7 +2835,12 @@ mod tests {
                         times: vec![0, 30_000, 100_000],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 1, 2, 3]
+                        path_item_times: vec![
+                            PathItemTime::new(0),
+                            PathItemTime::new(1),
+                            PathItemTime::new(2),
+                            PathItemTime::new(3)
+                        ]
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],
@@ -3204,14 +3220,24 @@ mod tests {
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(1),
+                        PathItemTime::new(2),
+                        PathItemTime::new(3)
+                    ]
                 },
                 provisional: ReportTrain {
                     positions: vec![0, 500_000, 15_050_000],
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![
+                        PathItemTime::new(0),
+                        PathItemTime::new(1),
+                        PathItemTime::new(2),
+                        PathItemTime::new(3)
+                    ]
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
@@ -3219,7 +3245,12 @@ mod tests {
                         times: vec![0, 30_000, 100_000],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 1, 2, 3]
+                        path_item_times: vec![
+                            PathItemTime::new(0),
+                            PathItemTime::new(1),
+                            PathItemTime::new(2),
+                            PathItemTime::new(3)
+                        ]
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],
@@ -3381,9 +3412,24 @@ mod tests {
                 length: 15_050_000,
                 time: 3,
                 energy_consumption: 0.0,
-                path_item_times_final: vec![0, 1, 2, 3],
-                path_item_times_provisional: vec![0, 1, 2, 3],
-                path_item_times_base: vec![0, 1, 2, 3],
+                path_item_times_final: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
+                path_item_times_provisional: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
+                path_item_times_base: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
                 path_item_respect_times: vec![true, false, true, false],
                 path_item_respect_margins: vec![true, true, true, true],
             }
@@ -3397,9 +3443,24 @@ mod tests {
                 length: 15_050_000,
                 time: 3,
                 energy_consumption: 0.0,
-                path_item_times_final: vec![0, 1, 2, 3],
-                path_item_times_provisional: vec![0, 1, 2, 3],
-                path_item_times_base: vec![0, 1, 2, 3],
+                path_item_times_final: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
+                path_item_times_provisional: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
+                path_item_times_base: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
                 path_item_respect_times: vec![true, false, true, false],
                 path_item_respect_margins: vec![true, true, true, true],
             }
@@ -3412,9 +3473,24 @@ mod tests {
                 length: 15_050_000,
                 time: 3,
                 energy_consumption: 0.0,
-                path_item_times_final: vec![0, 1, 2, 3],
-                path_item_times_provisional: vec![0, 1, 2, 3],
-                path_item_times_base: vec![0, 1, 2, 3],
+                path_item_times_final: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
+                path_item_times_provisional: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
+                path_item_times_base: vec![
+                    PathItemTime::new(0),
+                    PathItemTime::new(1),
+                    PathItemTime::new(2),
+                    PathItemTime::new(3)
+                ],
                 path_item_respect_times: vec![true, false, true, false],
                 path_item_respect_margins: vec![true, true, true, true],
             }

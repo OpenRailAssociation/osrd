@@ -5769,6 +5769,21 @@ components:
           description: Importance of the operational point
           maximum: 100
           minimum: 0
+    CorePathItemTime:
+      type: object
+      required:
+      - arrival
+      properties:
+        arrival:
+          type: integer
+          format: int64
+          minimum: 0
+        stop_duration:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          minimum: 0
     CorePathfindingInputError:
       oneOf:
       - type: object
@@ -5950,17 +5965,15 @@ components:
         path_item_times:
           type: array
           items:
-            type: integer
-            format: int64
-            minimum: 0
+            $ref: '#/components/schemas/CorePathItemTime'
           description: |-
-            Time in ms at which the train *arrives* at each path item given as input of the pathfinding
-            The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
+            Time in ms at which the train *arrives* and the *stop duration* at each path item given as input of the pathfinding
+            The first arriving value is always `0` (beginning of the path) and the last one, the arrival time of the simulation path's last step.
 
             In case multiple path items are at the same position, the stop duration
             of the earlier ones are added to the path item time of the next. For
             example, if A and B are at the same position, and A has a stop duration
-            of 2s, then the path item time of B will be equal to the path item time
+            of 2s, then the path item time *arrival* of B will be equal to the path item time arrival
             of A plus 2s.
         positions:
           type: array
@@ -15297,33 +15310,27 @@ components:
           path_item_times_base:
             type: array
             items:
-              type: integer
-              format: int64
-              minimum: 0
+              $ref: '#/components/schemas/CorePathItemTime'
             description: |-
               Base simulation time for each train schedule path item.
               The length of this array is the number of path items in the train schedule used as input for the simulation.
-              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+              The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
           path_item_times_final:
             type: array
             items:
-              type: integer
-              format: int64
-              minimum: 0
+              $ref: '#/components/schemas/CorePathItemTime'
             description: |-
               Final simulation time for each train schedule path item.
               The length of this array is the number of path items in the train schedule used as input for the simulation.
-              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+              The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
           path_item_times_provisional:
             type: array
             items:
-              type: integer
-              format: int64
-              minimum: 0
+              $ref: '#/components/schemas/CorePathItemTime'
             description: |-
               Provisional simulation time for each train schedule path item.
               The length of this array is the number of path items in the train schedule used as input for the simulation.
-              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+              The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
           status:
             type: string
             enum:
