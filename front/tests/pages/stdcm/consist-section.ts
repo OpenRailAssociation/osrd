@@ -84,10 +84,13 @@ class ConsistSection {
     };
   }
 
-  async verifyDefaultConsistFields(params: { defaultSpeedLimitTag: string }): Promise<void> {
+  async verifyDefaultConsistFields(params: {
+    defaultSpeedLimitTag: string;
+    defaultTowedRollingStock: string;
+  }): Promise<void> {
     await expectFieldsToHaveValues([
       [this.tractionEngineField, ''],
-      [this.towedRollingStockField, ''],
+      [this.towedRollingStockField, params.defaultTowedRollingStock],
       [this.tonnageField, ''],
       [this.lengthField, ''],
       [this.maxSpeedField, ''],
@@ -133,10 +136,13 @@ class ConsistSection {
     await this.selectSpeedLimitTag(speedLimitTag);
   }
 
-  async verifyConsistDetails(consistFields: ConsistFields): Promise<void> {
+  async verifyConsistDetails(
+    consistFields: ConsistFields,
+    defaultTowedRollingStock: string
+  ): Promise<void> {
     await expectFieldsToHaveValues([
       [this.tractionEngineField, consistFields.tractionEngine ?? ''],
-      [this.towedRollingStockField, consistFields.towedRollingStock ?? ''],
+      [this.towedRollingStockField, consistFields.towedRollingStock ?? defaultTowedRollingStock],
       [this.tonnageField, consistFields.tonnage ?? ''],
       [this.lengthField, consistFields.length ?? ''],
       [this.maxSpeedField, consistFields.maxSpeed ?? ''],
