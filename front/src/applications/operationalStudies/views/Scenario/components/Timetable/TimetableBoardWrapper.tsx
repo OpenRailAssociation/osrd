@@ -1,27 +1,23 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { TrainId } from 'reducers/osrdconf/types';
-import { updateSelectedTrain } from 'reducers/simulationResults';
-import { getSelectedTrain } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 
 import { validateTimetableJsonPayload } from '../ImportTrainSchedule/helpers/parseJson';
 import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloads';
+import ConfirmationDialog from './ConfirmationDialog';
 import Timetable from './Timetable';
 import { copyTrainSchedulesToClipboard } from './utils';
 
@@ -40,15 +36,13 @@ const TimetableBoardWrapper = ({
   selectedTrainScheduleIds,
   setSelectedTrainScheduleIds,
 }: TimetableBoardWrapperProps) => {
-  const { openModal } = useContext(ModalContext);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { scenario, sandboxId, timetableId } = useScenarioContext();
   const { trainSchedules, removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [getTimetableRoundTrips] =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTrips.useLazyQuery();
-
-  const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const { t } = useTranslation('operational-studies');
 
@@ -139,51 +133,28 @@ const TimetableBoardWrapper = ({
   ]);
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
-  const handleTrainsDelete = async (
-    currentSelectedTrainId?: TrainId,
-    hideToast: boolean = false
-  ) => {
+  const handleTrainsDelete = async (hideToast: boolean = false) => {
     const trainSchedulesCount = selectedTrainScheduleIds.length;
 
-    const isSelectedTrainScheduleInSelection =
-      currentSelectedTrainId !== undefined &&
-      selectedTrainScheduleIds.some((trainScheduleId) =>
-        currentSelectedTrainId.includes(`${trainScheduleId}`)
-      );
-
-    if (isSelectedTrainScheduleInSelection) {
-      // we need to clear the selected train, otherwise just after the delete,
-      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-      dispatch(updateSelectedTrain(undefined));
+    if (selectedTrainScheduleIds.length > 0) {
+      await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
     }
 
-    try {
-      if (selectedTrainScheduleIds.length > 0) {
-        await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
-      }
+    removeTrainSchedules(selectedTrainScheduleIds);
 
-      removeTrainSchedules(selectedTrainScheduleIds);
+    if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
+      setIsSelectMode(false);
+    }
 
-      if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
-        setIsSelectMode(false);
-      }
-
-      if (!hideToast) {
-        dispatch(
-          setSuccess({
-            title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
-              count: trainSchedulesCount,
-            }),
-            text: '',
-          })
-        );
-      }
-    } catch (e) {
-      if (isSelectedTrainScheduleInSelection) {
-        dispatch(updateSelectedTrain({ id: currentSelectedTrainId, by: 'timetable' }));
-      } else {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
+    if (!hideToast) {
+      dispatch(
+        setSuccess({
+          title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
+            count: trainSchedulesCount,
+          }),
+          text: '',
+        })
+      );
     }
   };
 
@@ -268,7 +239,7 @@ const TimetableBoardWrapper = ({
           trainSchedules,
           trainScheduleRoundTrips
         );
-        await handleTrainsDelete(selectedTrainId, true);
+        await handleTrainsDelete(true);
         dispatch(
           setSuccess({
             title: t('main.cutTimetable.title'),
@@ -279,18 +250,28 @@ const TimetableBoardWrapper = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     },
-    [selectedTrainScheduleIds, trainSchedules, selectedTrainId, getTimetableRoundTrips, timetableId]
+    [selectedTrainScheduleIds, trainSchedules, getTimetableRoundTrips, timetableId]
   );
 
-  const handleDeleteTrainSchedules = () => {
-    openModal(
-      <DeleteModal
-        handleDelete={() => handleTrainsDelete(selectedTrainId)}
-        selectedPacedTrainCount={selectedPacedTrainIds.length}
-        selectedUniqueTrainCount={selectedUniqueTrainIds.length}
-      />,
-      'sm'
-    );
+  const handleDeleteTrainSchedules = () => setIsDeleteDialogOpen(true);
+
+  const deleteTrainSchedulesComputedLabel = () => {
+    if (selectedPacedTrainIds.length > 0 && selectedUniqueTrainIds.length === 0) {
+      return t('main.timetable.deletePacedTrainSelectionConfirmation', {
+        selectedPacedTrainsCount: selectedPacedTrainIds.length,
+      });
+    }
+
+    if (selectedUniqueTrainIds.length > 0 && selectedPacedTrainIds.length === 0) {
+      return t('main.timetable.deleteUniqueTrainSelectionConfirmation', {
+        selectedUniqueTrainsCount: selectedUniqueTrainIds.length,
+      });
+    }
+
+    return t('main.timetable.deletePacedTrainAndUniqueTrainSelectionConfirmation', {
+      selectedPacedTrainsCount: selectedPacedTrainIds.length,
+      selectedUniqueTrainsCount: selectedUniqueTrainIds.length,
+    });
   };
 
   useEffect(() => {
@@ -320,6 +301,21 @@ const TimetableBoardWrapper = ({
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
       />
+      {isDeleteDialogOpen &&
+        createPortal(
+          <ConfirmationDialog
+            onCancel={() => setIsDeleteDialogOpen(false)}
+            onConfirm={() => handleTrainsDelete()}
+            labels={{
+              title: t('main.timetable.delete'),
+              texts: [deleteTrainSchedulesComputedLabel()],
+              submit: t('main.timetable.delete'),
+              cancel: t('main.timetable.cancel'),
+            }}
+            submitDataTestID="confirmation-modal-delete-button"
+          />,
+          document.body
+        )}
     </BoardWrapper>
   );
 };

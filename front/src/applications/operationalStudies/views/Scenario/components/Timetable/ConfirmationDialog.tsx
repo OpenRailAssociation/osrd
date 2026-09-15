@@ -6,25 +6,31 @@ import cx from 'classnames';
 
 import { getErrorMessage } from 'utils/error';
 
-type ResetExceptionsDialogProps = {
+type ConfirmationDialogProps = {
   onCancel: () => void;
-  onReset: () => Promise<void>;
+  onConfirm: () => Promise<void>;
   labels: {
     title: string;
     texts: string[];
     submit: string;
     cancel: string;
   };
+  submitDataTestID?: string;
 };
 
-const ResetExceptionsDialog = ({ onCancel, onReset, labels }: ResetExceptionsDialogProps) => {
+const ConfirmationDialog = ({
+  onCancel,
+  onConfirm,
+  labels,
+  submitDataTestID,
+}: ConfirmationDialogProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleReset = async () => {
+  const handleConfirm = async () => {
     setLoading(true);
     try {
-      await onReset();
+      await onConfirm();
       onCancel();
     } catch (e) {
       setError(getErrorMessage(e));
@@ -54,10 +60,10 @@ const ResetExceptionsDialog = ({ onCancel, onReset, labels }: ResetExceptionsDia
             />
             <Button
               label={labels.submit}
-              onClick={handleReset}
+              onClick={handleConfirm}
               isLoading={loading}
               variant="Destructive"
-              dataTestID="confirmation-modal-button"
+              dataTestID={submitDataTestID}
             />
           </div>
         </>
@@ -70,4 +76,4 @@ const ResetExceptionsDialog = ({ onCancel, onReset, labels }: ResetExceptionsDia
   );
 };
 
-export default ResetExceptionsDialog;
+export default ConfirmationDialog;
