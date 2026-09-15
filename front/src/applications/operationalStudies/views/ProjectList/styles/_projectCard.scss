@@ -27,25 +27,18 @@
   }
 
   &.empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    font-size: 6rem;
-    color: var(--coolgray5);
+    place-content: center;
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--grey40);
     cursor: pointer;
 
     &:hover,
     &:focus,
     &:active {
-      border-color: var(--coolgray3);
-      background-color: var(--coolgray3);
-      color: var(--coolgray7);
-    }
-
-    .legend {
-      margin-top: 16px;
-      font-size: 1.5rem;
+      border-color: var(--black25);
+      background-color: var(--grey10);
+      color: var(--grey50);
     }
   }
 
