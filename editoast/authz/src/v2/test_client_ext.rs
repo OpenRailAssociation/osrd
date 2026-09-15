@@ -46,6 +46,7 @@ pub trait TestClientExt {
     async fn subject_roles(&self, subject: &Subject) -> HashSet<Role>;
     async fn add_roles(&self, subject: Subject, roles: HashSet<Role>);
     async fn remove_roles(&self, subject: Subject, roles: HashSet<Role>);
+
     async fn group_members(&self, group: &Group) -> HashSet<User>;
     async fn user_groups(&self, user: User) -> HashSet<Group>;
     async fn add_members(&self, group: Group, members: HashSet<User>);
@@ -62,16 +63,7 @@ pub trait TestClientExt {
     async fn infra_privileges(&self, user: User, infra: Infra) -> HashSet<InfraPrivilege>;
     async fn infra_granted_subjects(&self, infra: Infra, grant: InfraGrant) -> Vec<Subject>;
     async fn infra_list(&self, user: User, privilege: InfraPrivilege) -> ResourcesList<Infra>;
-    async fn rolling_stock_revoke_grant(
-        &self,
-        subject: Subject,
-        rolling_stock: RollingStock,
-    ) -> bool;
-    async fn rolling_stock_privileges(
-        &self,
-        user: User,
-        rolling_stock: RollingStock,
-    ) -> HashSet<RollingStockPrivilege>;
+
     async fn rolling_stock_effective_grant(
         &self,
         subject: Subject,
@@ -82,11 +74,6 @@ pub trait TestClientExt {
         subject: Subject,
         rolling_stock: RollingStock,
     ) -> Option<RollingStockGrant>;
-    async fn rolling_stock_granted_subjects(
-        &self,
-        rolling_stock: RollingStock,
-        grant: RollingStockGrant,
-    ) -> Vec<Subject>;
     // TODO use the protected operation once authz::v2 has a proper way to give grants on rolling stocks
     async fn rolling_stock_set_grant(
         &self,
@@ -94,27 +81,43 @@ pub trait TestClientExt {
         subject: Subject,
         grant: RollingStockGrant,
     );
-    async fn project_direct_grant(
+    async fn rolling_stock_revoke_grant(
         &self,
         subject: Subject,
-        project: Project,
-    ) -> Option<ProjectGrant>;
-    async fn project_effective_grant(
+        rolling_stock: RollingStock,
+    ) -> bool;
+    async fn rolling_stock_privileges(
         &self,
-        subject: Subject,
-        project: Project,
-    ) -> Option<ProjectGrant>;
-    async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool;
-    async fn project_set_grant(&self, subject: Subject, project: Project) -> ();
-    async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege>;
-    async fn project_list(&self, user: User) -> ResourcesList<Project>;
-    async fn project_granted_subjects(&self, project: Project, grant: ProjectGrant)
-    -> Vec<Subject>;
+        user: User,
+        rolling_stock: RollingStock,
+    ) -> HashSet<RollingStockPrivilege>;
+    async fn rolling_stock_granted_subjects(
+        &self,
+        rolling_stock: RollingStock,
+        grant: RollingStockGrant,
+    ) -> Vec<Subject>;
     async fn rolling_stock_list(
         &self,
         user: User,
         privilege: RollingStockPrivilege,
     ) -> ResourcesList<RollingStock>;
+
+    async fn project_effective_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant>;
+    async fn project_direct_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant>;
+    async fn project_set_grant(&self, subject: Subject, project: Project) -> ();
+    async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool;
+    async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege>;
+    async fn project_granted_subjects(&self, project: Project, grant: ProjectGrant)
+    -> Vec<Subject>;
+    async fn project_list(&self, user: User) -> ResourcesList<Project>;
 }
 
 impl TestClientExt for fga::Client {
@@ -127,6 +130,7 @@ impl TestClientExt for fga::Client {
         .into_iter()
         .collect()
     }
+
     async fn add_roles(&self, subject: Subject, roles: HashSet<Role>) {
         let authorize = special_authorizers::Authorize(self);
         authorize
@@ -186,18 +190,6 @@ impl TestClientExt for fga::Client {
             .unwrap()
     }
 
-    async fn rolling_stock_direct_grant(
-        &self,
-        subject: Subject,
-        rolling_stock: RollingStock,
-    ) -> Option<RollingStockGrant> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(rolling_stock_direct_grant(subject, rolling_stock))
-            .await
-            .unwrap()
-    }
-
     async fn infra_direct_grant(
         &self,
         subject: impl Into<Subject>,
@@ -242,17 +234,14 @@ impl TestClientExt for fga::Client {
             .unwrap()
     }
 
-    async fn rolling_stock_privileges(
-        &self,
-        user: User,
-        rolling_stock: RollingStock,
-    ) -> HashSet<RollingStockPrivilege> {
+    async fn infra_list(&self, user: User, privilege: InfraPrivilege) -> ResourcesList<Infra> {
         let authorize = special_authorizers::Authorize(self);
         authorize
-            .access_value(rolling_stock_privileges(user, rolling_stock))
+            .access_value(crate::v2::infra::infra_list(user, privilege))
             .await
             .unwrap()
     }
+
     async fn rolling_stock_effective_grant(
         &self,
         subject: Subject,
@@ -264,28 +253,19 @@ impl TestClientExt for fga::Client {
             .await
             .unwrap()
     }
-    async fn rolling_stock_granted_subjects(
-        &self,
-        rolling_stock: RollingStock,
-        grant: RollingStockGrant,
-    ) -> Vec<Subject> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(rolling_stock_granted_subjects(rolling_stock, grant))
-            .await
-            .unwrap()
-    }
-    async fn rolling_stock_revoke_grant(
+
+    async fn rolling_stock_direct_grant(
         &self,
         subject: Subject,
         rolling_stock: RollingStock,
-    ) -> bool {
+    ) -> Option<RollingStockGrant> {
         let authorize = special_authorizers::Authorize(self);
         authorize
-            .access_value(rolling_stock_revoke_grant(subject, rolling_stock))
+            .access_value(rolling_stock_direct_grant(subject, rolling_stock))
             .await
             .unwrap()
     }
+
     async fn rolling_stock_set_grant(
         &self,
         rolling_stock: RollingStock,
@@ -299,73 +279,38 @@ impl TestClientExt for fga::Client {
             .unwrap()
     }
 
-    async fn infra_list(&self, user: User, privilege: InfraPrivilege) -> ResourcesList<Infra> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(crate::v2::infra::infra_list(user, privilege))
-            .await
-            .unwrap()
-    }
-
-    async fn project_direct_grant(
+    async fn rolling_stock_revoke_grant(
         &self,
         subject: Subject,
-        project: Project,
-    ) -> Option<ProjectGrant> {
+        rolling_stock: RollingStock,
+    ) -> bool {
         let authorize = special_authorizers::Authorize(self);
         authorize
-            .access_value(project_direct_grant(subject, project))
+            .access_value(rolling_stock_revoke_grant(subject, rolling_stock))
             .await
             .unwrap()
     }
 
-    async fn project_effective_grant(
+    async fn rolling_stock_privileges(
         &self,
-        subject: Subject,
-        project: Project,
-    ) -> Option<ProjectGrant> {
+        user: User,
+        rolling_stock: RollingStock,
+    ) -> HashSet<RollingStockPrivilege> {
         let authorize = special_authorizers::Authorize(self);
         authorize
-            .access_value(project_effective_grant(subject, project))
+            .access_value(rolling_stock_privileges(user, rolling_stock))
             .await
             .unwrap()
     }
 
-    async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(project_revoke_grant(subject, project))
-            .await
-            .unwrap()
-    }
-
-    async fn project_set_grant(&self, subject: Subject, project: Project) -> () {
-        let authorize = special_authorizers::Authorize(self);
-        authorize
-            .access_value(project_set_grant(subject, project))
-            .await
-            .unwrap()
-    }
-
-    async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege> {
-        special_authorizers::Authorize(self)
-            .access_value(project_privileges(user, project))
-            .await
-            .unwrap()
-    }
-
-    async fn project_list(&self, user: User) -> ResourcesList<Project> {
-        let authorize = special_authorizers::Authorize(self);
-        authorize.access_value(project_list(user)).await.unwrap()
-    }
-
-    async fn project_granted_subjects(
+    async fn rolling_stock_granted_subjects(
         &self,
-        project: Project,
-        grant: ProjectGrant,
+        rolling_stock: RollingStock,
+        grant: RollingStockGrant,
     ) -> Vec<Subject> {
-        special_authorizers::Authorize(self)
-            .access_value(project_granted_subjects(project, grant))
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(rolling_stock_granted_subjects(rolling_stock, grant))
             .await
             .unwrap()
     }
@@ -382,5 +327,68 @@ impl TestClientExt for fga::Client {
             ))
             .await
             .unwrap()
+    }
+
+    async fn project_effective_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_effective_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_direct_grant(
+        &self,
+        subject: Subject,
+        project: Project,
+    ) -> Option<ProjectGrant> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_direct_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_set_grant(&self, subject: Subject, project: Project) -> () {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_set_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_revoke_grant(&self, subject: Subject, project: Project) -> bool {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(project_revoke_grant(subject, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_privileges(&self, user: User, project: Project) -> HashSet<ProjectPrivilege> {
+        special_authorizers::Authorize(self)
+            .access_value(project_privileges(user, project))
+            .await
+            .unwrap()
+    }
+
+    async fn project_granted_subjects(
+        &self,
+        project: Project,
+        grant: ProjectGrant,
+    ) -> Vec<Subject> {
+        special_authorizers::Authorize(self)
+            .access_value(project_granted_subjects(project, grant))
+            .await
+            .unwrap()
+    }
+
+    async fn project_list(&self, user: User) -> ResourcesList<Project> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize.access_value(project_list(user)).await.unwrap()
     }
 }
