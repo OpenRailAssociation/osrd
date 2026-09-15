@@ -678,7 +678,6 @@
     "zone": "Zone"
   },
   "nav-bar": {
-    "about": "À propos",
     "disconnect": "Déconnexion",
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",

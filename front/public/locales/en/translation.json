@@ -678,7 +678,6 @@
     "zone": "Zone"
   },
   "nav-bar": {
-    "about": "About",
     "disconnect": "Sign out",
     "featureFlags": {
       "hourlyTimetables": "Enable hourly timetables",
