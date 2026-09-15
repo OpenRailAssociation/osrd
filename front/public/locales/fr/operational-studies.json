@@ -533,7 +533,6 @@
   "operational-studies-management": {
     "delete": "Supprimer",
     "filter-placeholder": "Rechercher…",
-    "open": "Ouvrir",
     "sort-by-latest": "Plus récents",
     "sort-by-name": "Tri par nom",
     "unselect-all": "Désélectionner"

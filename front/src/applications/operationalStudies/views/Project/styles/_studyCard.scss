@@ -15,10 +15,6 @@
   &:focus,
   &:active {
     border-color: var(--primary);
-
-    button {
-      opacity: 1 !important;
-    }
   }
 
   &[aria-disabled='true'] {
@@ -28,10 +24,15 @@
 
   &.selected {
     border-color: var(--purple);
+  }
 
-    .selected-mark {
-      display: block;
-    }
+  .study-card-select {
+    opacity: 0.3;
+    transition: opacity 0.4s;
+  }
+
+  &:is(:hover, :focus, :active, .selected) .study-card-select {
+    opacity: 1;
   }
 
   &.empty {
@@ -71,35 +72,22 @@
     }
   }
 
-  button {
-    transition: opacity 0.4s;
-    opacity: 0;
-    margin-left: auto;
-  }
-
-  .selected-mark {
-    display: none;
-    position: absolute;
-    z-index: 3;
-    color: var(--purple);
-    font-size: 2rem;
-    top: -25.6px;
-    left: -12.8px;
-  }
-
   .study-card-name {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
     transition: 0.4s;
     font-size: 1.25rem;
     font-weight: 500;
-    padding: 8px 8px 8px;
+    padding: 8px 12px 8px 8px;
     background-color: var(--coolgray3);
     color: var(--secondary);
+  }
 
-    &-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  .study-card-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .study-card-type {
