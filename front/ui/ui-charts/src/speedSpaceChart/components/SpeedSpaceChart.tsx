@@ -41,6 +41,13 @@ export type SpeedSpaceChartProps = {
       etcs: string;
       electricalProfiles: string;
       powerRestrictions: string;
+      reticleValues: {
+        incompatible: string;
+        electric: string;
+        accelerating: string;
+        decelerating: string;
+        coasting: string;
+      };
     };
     layersDisplay: {
       context: string;
