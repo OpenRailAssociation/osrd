@@ -292,15 +292,15 @@ const TimesStopsTable = ({
       isScheduledOP(row) || !!row.requestedTheoreticalMargin
         ? row.requestedTheoreticalMargin
         : null;
-    const isInherited = !row.isTheoreticalMarginBoundary || !row.requestedTheoreticalMargin;
-
+    const isSpecifiedMargin =
+      (isFirstRow || row.isTheoreticalMarginBoundary) && row.requestedTheoreticalMargin;
     return (
       <div data-testid="requested-theoretical-margin">
         <MarginCell
           data-testid="margin-cell-editable"
           marginValue={marginValue ?? null}
           editable={!isLastRow}
-          isInherited={isFirstRow ? false : isInherited}
+          isInherited={!isSpecifiedMargin}
           isFirstRow={isFirstRow}
           onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
         />
