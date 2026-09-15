@@ -39,11 +39,12 @@ const MINUTES_FORMATTER = (t: number) => {
   return `:${minutes}`;
 };
 
-const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
-  new Date(t).toLocaleTimeString(
-    undefined,
-    pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
-  );
+const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) => {
+  if (pixelsPerMinute > 1) return new Date(t).toLocaleTimeString(undefined, HOUR_OPTIONS_LONG);
+
+  const parts = new Intl.DateTimeFormat(undefined, HOUR_OPTIONS_SHORT).formatToParts(t);
+  return parts.find((part) => part.type === 'hour')?.value ?? '';
+};
 
 // Signed time relative to time origin 0, used for the hourly pattern mode
 // (e.g. hourly timetables): …, -02:00, -01:00, 00:00, 01:00, 02:00, …
