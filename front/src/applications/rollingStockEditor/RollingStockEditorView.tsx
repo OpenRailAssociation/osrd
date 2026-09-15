@@ -21,6 +21,7 @@ import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingSt
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import {
   RollingStockEditorForm,
@@ -59,15 +60,29 @@ const RollingStockEditor = () => {
     selectCategoryFilter,
     isLoading,
     resetFilters,
-    userPrivilegesByRollingStockId,
   } = useFilterRollingStock();
 
-  const isUserPrivilegesByRollingStockIdReady = userPrivilegesByRollingStockId.type === 'ready';
+  const { getUserPrivileges } = useAuthz();
+  const selectedRollingStockPrivilegesState = useAsyncMemo(async () => {
+    if (selectedRollingStockId === undefined) return undefined;
+    const data = await getUserPrivileges({ rolling_stock: [selectedRollingStockId] });
+    return { id: selectedRollingStockId, privileges: data.rolling_stock?.[selectedRollingStockId] };
+  }, [getUserPrivileges, selectedRollingStockId]);
+
+  // Guard against the id/privileges pair from a previous selection still being 'ready'
+  // in the render right after selectedRollingStockId changes (state resets in an effect,
+  // which runs after that render), which would apply another rolling stock's privileges.
+  const readyPrivileges =
+    selectedRollingStockPrivilegesState.type === 'ready'
+      ? selectedRollingStockPrivilegesState.data
+      : undefined;
+  const selectedRollingStockPrivileges =
+    readyPrivileges !== undefined && readyPrivileges.id === selectedRollingStockId
+      ? readyPrivileges.privileges
+      : undefined;
 
   const canRead =
-    selectedRollingStockId !== undefined &&
-    isUserPrivilegesByRollingStockIdReady &&
-    userPrivilegesByRollingStockId.data[selectedRollingStockId]?.has('can_read');
+    selectedRollingStockId !== undefined && selectedRollingStockPrivileges?.has('can_read');
 
   const fullQuery = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
     canRead ? { rollingStockId: selectedRollingStockId } : skipToken
@@ -221,10 +236,8 @@ const RollingStockEditor = () => {
             resetFilters={resetFilters}
             data={filteredRollingStockList}
             selectedRollingStock={selectedRollingStock}
+            selectedRollingStockPrivileges={selectedRollingStockPrivileges}
             ref2scroll={ref2scroll}
-            userPrivilegesByRollingStockId={
-              isUserPrivilegesByRollingStockIdReady ? userPrivilegesByRollingStockId.data : {}
-            }
           />
         </div>
 
@@ -257,11 +270,7 @@ const RollingStockEditor = () => {
                   <GrantsManager
                     resourceId={selectedRollingStock.id}
                     resourceType="rolling_stock"
-                    userPrivileges={
-                      isUserPrivilegesByRollingStockIdReady
-                        ? userPrivilegesByRollingStockId.data[selectedRollingStock.id]
-                        : undefined
-                    }
+                    userPrivileges={selectedRollingStockPrivileges}
                   />
                 </div>
               )}

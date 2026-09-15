@@ -21,7 +21,7 @@ type RollingStockEditorListProps = {
   resetFilters: () => void;
   ref2scroll: RefObject<HTMLInputElement | null>;
   selectedRollingStock?: RollingStockWithLiveries | LightRollingStockWithLiveries;
-  userPrivilegesByRollingStockId: Record<number, Set<Privilege>>;
+  selectedRollingStockPrivileges?: Set<Privilege>;
 };
 
 export const RollingStockEditorList = ({
@@ -32,7 +32,7 @@ export const RollingStockEditorList = ({
   resetFilters,
   ref2scroll,
   selectedRollingStock,
-  userPrivilegesByRollingStockId,
+  selectedRollingStockPrivileges,
 }: RollingStockEditorListProps) => {
   const { t } = useTranslation();
 
@@ -63,7 +63,7 @@ export const RollingStockEditorList = ({
                     isCondensed
                     rollingStock={selectedRollingStock}
                     resetFilters={resetFilters}
-                    userPrivileges={userPrivilegesByRollingStockId[rs.id] || new Set()}
+                    userPrivileges={selectedRollingStockPrivileges || new Set()}
                   />
                 )}
               </div>
