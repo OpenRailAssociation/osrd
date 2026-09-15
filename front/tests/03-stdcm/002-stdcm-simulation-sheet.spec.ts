@@ -147,6 +147,7 @@ test.describe('STDCM simulation sheet', { tag: ['@stdcm, @stdcm-sheet'] }, () =>
 
         await newConsistSection.verifyDefaultConsistFields({
           defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+          defaultTowedRollingStock: STDCM_TRANSLATIONS.consist.noTowedRollingStock,
         });
 
         await newOriginSection.verifyDefaultOriginFields({
