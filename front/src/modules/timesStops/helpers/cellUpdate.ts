@@ -18,7 +18,7 @@ import {
 } from 'utils/duration';
 
 import type { OptimisticEdit, PendingEdit, TimesStopsRowNew } from '../types';
-import { receptionSignalToSignalBooleans, truncateStartTimeToSecond } from './utils';
+import { receptionSignalToSignalBooleans, getTruncatedToSecondOffset } from './utils';
 
 /** Compute the insertion index for a new PathStep using row opOnPathIndex values. */
 const computeInsertIndex = (
@@ -77,7 +77,7 @@ export type ScheduleState = {
  */
 export const applyScheduleEdit = (
   current: ScheduleState,
-  edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>
+  edit: OptimisticEdit
 ): ScheduleState & { departure: StartTime | null } => {
   const { arrival, stop } = current;
 
@@ -149,12 +149,7 @@ export const scheduleStateToApiFields = (
   startTime: StartTime
 ): { arrival: string | null; stop_for: string | null } => ({
   arrival:
-    state.arrival !== null
-      ? subtractStartTime(
-          truncateStartTimeToSecond(state.arrival),
-          truncateStartTimeToSecond(startTime)
-        ).toISOString()
-      : null,
+    state.arrival !== null ? subtractStartTime(state.arrival, startTime).toISOString() : null,
   stop_for: state.stop !== null ? state.stop.toISOString() : null,
 });
 
@@ -248,7 +243,7 @@ export const propagationToEdits = (
     if (!item?.arrival) return [];
     const newArrival = addDurationToStartTime(
       result.updatedStartTime,
-      Duration.parse(item.arrival)
+      getTruncatedToSecondOffset(item.arrival)
     );
     if (row.requestedArrival && startTimeToMs(newArrival) === startTimeToMs(row.requestedArrival))
       return [];
@@ -289,20 +284,8 @@ export const buildPowerRestrictionsFromRows = (
   return result;
 };
 
-/** Build a TrainSchedule object from a Train with updated path and schedule. */
-export const buildUpdatedOccurrence = ({
-  selectedTrain,
-  updatedPath,
-  updatedSchedule,
-  trainName,
-  powerRestrictions,
-}: {
-  selectedTrain: Train;
-  updatedPath: PathItem[];
-  updatedSchedule: ScheduleItem[];
-  trainName: string;
-  powerRestrictions?: PowerRestrictionItem[];
-}): TrainSchedule => ({
+/** Build a TrainSchedule object from a Train. */
+export const buildUpdatedOccurrence = (selectedTrain: Train, trainName: string): TrainSchedule => ({
   category: selectedTrain.category,
   comfort: selectedTrain.comfort,
   constraint_distribution: selectedTrain.constraint_distribution,
@@ -310,10 +293,10 @@ export const buildUpdatedOccurrence = ({
   labels: selectedTrain.labels,
   margins: selectedTrain.margins,
   options: selectedTrain.options,
-  path: updatedPath,
-  power_restrictions: powerRestrictions ?? selectedTrain.power_restrictions,
+  path: selectedTrain.path,
+  power_restrictions: selectedTrain.power_restrictions,
   rolling_stock_name: selectedTrain.rolling_stock_name,
-  schedule: updatedSchedule,
+  schedule: selectedTrain.schedule,
   speed_limit_tag: selectedTrain.speed_limit_tag,
   start_time: selectedTrain.start_time,
   train_name: trainName,

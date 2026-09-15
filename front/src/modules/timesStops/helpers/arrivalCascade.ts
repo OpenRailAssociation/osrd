@@ -2,6 +2,7 @@ import type { PathItem, ScheduleItem } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import { ONE_DAY } from '../consts';
+import { getTruncatedToSecondOffset } from './utils';
 
 /**
  * Shift the scheduled arrivals from fromPathIndex on.
@@ -32,12 +33,12 @@ export const cascadeArrivals = ({
   const adjustments = new Map<string, string>();
 
   for (const { item, pathIndex } of scheduledItems) {
-    const stop = item.stop_for ? Duration.parse(item.stop_for) : Duration.zero;
+    const stop = item.stop_for ? getTruncatedToSecondOffset(item.stop_for) : Duration.zero;
     if (!item.arrival) {
       lastOffset = lastOffset.add(stop);
       continue;
     }
-    const arrival = Duration.parse(item.arrival);
+    const arrival = getTruncatedToSecondOffset(item.arrival);
 
     // Points before fromPathIndex are only used to find the lastOffset to use.
     if (pathIndex < fromPathIndex) {
