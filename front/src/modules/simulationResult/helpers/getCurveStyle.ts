@@ -14,7 +14,7 @@ import type { CurveVisualState } from 'modules/simulationResult/types';
 export const INVALID_OUTLINE: CurveOutline = {
   offset: 4,
   color: 'transparent',
-  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  backgroundColor: 'rgba(0, 0, 0, 0.1)',
 };
 
 const FONT_WEIGHT_REGULAR = 400;
