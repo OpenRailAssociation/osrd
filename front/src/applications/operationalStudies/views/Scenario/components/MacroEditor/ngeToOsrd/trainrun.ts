@@ -591,7 +591,7 @@ export const handleUpdateTrainSchedule = async ({
     train_name: trainrun.name,
     labels,
     // Reset margins and power restrictions because they contain references to path items
-    margins: undefined,
+    margins: { boundaries: [], values: ['0%'] },
     power_restrictions: undefined,
     paced,
     category,
@@ -650,7 +650,7 @@ export const handleUpdateTrainSchedule = async ({
       train_name: trainrun.name,
       labels,
       // Reset margins and power restrictions because they contain references to path items
-      margins: undefined,
+      margins: { boundaries: [], values: ['0%'] },
       power_restrictions: undefined,
       paced: returnPaced,
       category,
