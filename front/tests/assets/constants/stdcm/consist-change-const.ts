@@ -21,7 +21,7 @@ export const INITIAL_CONSIST_DETAILS: ConsistFields = {
 
 export const CONSIST_CHANGE_INITIAL_PREFILL: ConsistChangeFields = {
   tractionEngine: electricRollingStockName,
-  towedRollingStock: '',
+  towedRollingStock: STDCM_TRANSLATIONS.consist.noTowedRollingStock,
   tonnage: INITIAL_CONSIST_DETAILS.tonnage ?? '0',
   length: INITIAL_CONSIST_DETAILS.length ?? '0',
 };

@@ -124,14 +124,17 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
         destinationSection: newDestinationSection,
       } = createStdcmTab(newPage);
 
-      await newConsistSection.verifyConsistDetails({
-        tractionEngine: fastRollingStockName,
-        towedRollingStock: createdTowedRollingStock.name,
-        tonnage: `${Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage) + Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage)}`,
-        length: `${Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.length) + Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.length)}`,
-        maxSpeed: DEFAULT_DETAILS.maxSpeed,
-        speedLimitTag: DEFAULT_DETAILS.speedLimitTag,
-      });
+      await newConsistSection.verifyConsistDetails(
+        {
+          tractionEngine: fastRollingStockName,
+          towedRollingStock: createdTowedRollingStock.name,
+          tonnage: `${Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage) + Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage)}`,
+          length: `${Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.length) + Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.length)}`,
+          maxSpeed: DEFAULT_DETAILS.maxSpeed,
+          speedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+        },
+        STDCM_TRANSLATIONS.consist.noTowedRollingStock
+      );
 
       await newOriginSection.verifyOriginDetails({
         originCi: LINKED_TRAIN_DETAILS.anterior.originCi,

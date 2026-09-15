@@ -61,6 +61,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
       await test.step('Verify default input values', async () => {
         await consistSection.verifyDefaultConsistFields({
           defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+          defaultTowedRollingStock: STDCM_TRANSLATIONS.consist.noTowedRollingStock,
         });
 
         await originSection.verifyDefaultOriginFields({
@@ -179,6 +180,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
 
         await newConsistSection.verifyDefaultConsistFields({
           defaultSpeedLimitTag: DEFAULT_DETAILS.speedLimitTag,
+          defaultTowedRollingStock: STDCM_TRANSLATIONS.consist.noTowedRollingStock,
         });
 
         await newOriginSection.verifyDefaultOriginFields({
