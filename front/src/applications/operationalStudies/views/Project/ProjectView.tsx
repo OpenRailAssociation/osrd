@@ -176,27 +176,26 @@ const ProjectView = () => {
 
   function displayStudiesList() {
     return !isLoading ? (
-      <div className="row no-gutters mt-2">
-        <div className="col-hdp-3 col-hd-4 col-lg-6">
-          <AddNewCard
-            testId="add-study-button"
-            className="study-card empty"
-            modalComponent={<AddOrEditStudyModal />}
-            item="study"
-          />
-        </div>
+      <div
+        className={cx('studies-list', {
+          'selection-mode': selectedStudyIds.length > 0,
+        })}
+      >
+        <AddNewCard
+          testId="add-study-button"
+          className="study-card empty"
+          modalComponent={<AddOrEditStudyModal />}
+          item="study"
+        />
+
         {studiesList.map((study) => (
-          <div
-            className="col-hdp-3 col-hd-4 col-lg-6"
+          <StudyCard
+            setFilterChips={setFilterChips}
+            study={study}
+            isSelected={study.id !== undefined && selectedStudyIds.includes(study.id)}
+            toggleSelect={toggleStudySelection}
             key={`project-displayStudiesList-${study.id}`}
-          >
-            <StudyCard
-              setFilterChips={setFilterChips}
-              study={study}
-              isSelected={study.id !== undefined && selectedStudyIds.includes(study.id)}
-              toggleSelect={toggleStudySelection}
-            />
-          </div>
+          />
         ))}
       </div>
     ) : (
@@ -370,13 +369,7 @@ const ProjectView = () => {
             dataTestId="deleteStudies"
           />
         )}
-        <div
-          className={cx('studies-list', {
-            'selection-mode': selectedStudyIds.length > 0,
-          })}
-        >
-          {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
-        </div>
+        {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
       </div>
     </main>
   );

@@ -79,6 +79,7 @@
   .study-card-name-text {
     overflow: hidden;
     text-overflow: ellipsis;
+    text-wrap: nowrap;
   }
 
   .study-card-type {

@@ -217,6 +217,9 @@
     max-height: 50vh;
     margin-inline: -8px;
     padding: 16px 8px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 450px);
+    gap: 40px;
 
     &.selection-mode {
       max-height: calc(50vh - var(--selection-toolbar-height));
