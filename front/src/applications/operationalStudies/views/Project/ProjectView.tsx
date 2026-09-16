@@ -262,7 +262,7 @@ const ProjectView = () => {
                 <div className={'pl-md-2 col-lg-8 col-md-8'}>
                   <div className="project-details-title-content">
                     <div className="project-details-title-name" data-testid="project-name">
-                      {project.name}
+                      <span className="project-details-title-name-text">{project.name}</span>
                       <button
                         data-testid="project-update-button"
                         className="project-details-title-modify-button"
