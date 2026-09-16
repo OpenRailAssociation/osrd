@@ -19,13 +19,18 @@ const ReleaseInformation = () => {
   const osrdWebSite = 'https://osrd.fr/';
 
   function serviceRow(name: string, version?: string | number | null) {
+    const versionText = version?.toString();
     return (
       <tr>
         <th scope="row">
-          <div className="cell-inner">{name}</div>
+          <div className="cell-inner">
+            <span title={name}>{name}</span>
+          </div>
         </th>
         <td>
-          <div className="cell-inner">{version}</div>
+          <div className="cell-inner">
+            <span title={versionText}>{version}</span>
+          </div>
         </td>
       </tr>
     );
