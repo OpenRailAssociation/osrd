@@ -334,6 +334,7 @@ const useTrackOccupancy = ({
         const virtualTracks: Track[] = [...virtualTrackIds].map((id) => ({
           id,
           name: id,
+          disabled: id === NO_TRACK_SPECIFIED_SYMBOL,
         }));
 
         res.push({
