@@ -1,9 +1,12 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
+import { Duration } from 'utils/duration';
+
 import useOccurrences from '../useOccurrences';
 import {
   BASE_OCCURRENCE,
+  hourlyPacedTrainWithWrappedOccurrence,
   occurrence1,
   occurrence2,
   occurrence3,
@@ -129,5 +132,23 @@ describe('useOccurrences', () => {
         occurrence3,
       ],
     });
+  });
+
+  it('should keep hourly occurrences in index order when one wrapped around the repetition range', () => {
+    const { result } = renderHook(() =>
+      useOccurrences(hourlyPacedTrainWithWrappedOccurrence, [rollingStock])
+    );
+
+    // Sorting by start time would put the wrapped occurrence (1h55) last, away from its number.
+    expect(
+      result.current.occurrences.map(({ occurrenceIndex, startTime }) => [
+        occurrenceIndex,
+        startTime.valueOf(),
+      ])
+    ).toEqual([
+      [0, new Duration({ hours: 1, minutes: 55 }).ms],
+      [1, new Duration({ minutes: 45 }).ms],
+      [2, new Duration({ minutes: 90 }).ms],
+    ]);
   });
 });

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { omit, sortBy } from 'lodash';
+import { isNumber, omit, partition, sortBy } from 'lodash';
 
 import { generateBareOccurrences } from 'applications/operationalStudies/helpers/generateBareOccurrences';
 import { intermediateStopsCount } from 'applications/operationalStudies/utils';
@@ -11,6 +11,7 @@ import type {
   PacedTrainWithDetails,
   SimulatedException,
 } from 'modules/trainSchedule/types';
+import { Duration } from 'utils/duration';
 import { isIndexedOccurrenceId, extractOccurrenceIndexFromOccurrenceId } from 'utils/trainId';
 
 export const returnOccurrenceExceptionRollingStock = ({
@@ -53,6 +54,8 @@ const useOccurrences = (
     category: pacedTrainCategory,
   } = pacedTrain;
   const { exceptions } = paced;
+
+  const isHourlyTimetable = pacedTrain.startTime instanceof Duration;
 
   const occurrences = useMemo(() => {
     const computedOccurrences = generateBareOccurrences(pacedTrain).map(
@@ -102,8 +105,19 @@ const useOccurrences = (
       }
     );
 
+    // In an hourly timetable an occurrence dragged out of the repetition range is wrapped back
+    // into it, which would send it to the other end of a chronologically sorted list. Keep the
+    // occurrences in index order there, so a dragged occurrence keeps its place and its number;
+    // added exceptions have no index and stay at the end, ordered between themselves.
+    if (isHourlyTimetable) {
+      const [indexed, added] = partition(computedOccurrences, ({ occurrenceIndex }) =>
+        isNumber(occurrenceIndex)
+      );
+      return [...sortBy(indexed, 'occurrenceIndex'), ...sortBy(added, 'startTime')];
+    }
+
     return sortBy(computedOccurrences, 'startTime');
-  }, [pacedTrain, rollingStockList]);
+  }, [pacedTrain, rollingStockList, isHourlyTimetable]);
 
   // Add to the count the added exceptions and substract the disabled ones
   const occurrenceCountLabel = useMemo(
