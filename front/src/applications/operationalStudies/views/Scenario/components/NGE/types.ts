@@ -226,18 +226,49 @@ export type NetzgrafikDto = {
   };
 };
 
-export type NGEEvent = {
-  type: 'create' | 'delete' | 'update';
-} & (
+export type TrainrunUpdateTag =
+  | 'nodes'
+  | 'times'
+  | 'numberOfStops'
+  | 'name'
+  | 'categoryId'
+  | 'frequencyId'
+  | 'timeCategoryId'
+  | 'labelIds'
+  | 'direction';
+
+export type NGETrainrunEvent =
   | {
+      type: 'create';
       objectType: 'trainrun';
       trainrun: TrainrunDto;
+      duplicatedTrainrunId?: number;
     }
-  | { objectType: 'node'; node: NodeDto }
-  | { objectType: 'label'; label: LabelDto }
-  | { objectType: 'note'; note: FreeFloatingTextDto }
-  | { objectType: 'metadata'; metadata: Partial<NetzgrafikDto['metadata']> }
-);
+  | {
+      type: 'update';
+      objectType: 'trainrun';
+      trainrun: TrainrunDto;
+      tags: TrainrunUpdateTag[];
+      oneWayDirection?: 'forward' | 'backward';
+    }
+  | {
+      type: 'delete';
+      objectType: 'trainrun';
+      trainrun: TrainrunDto;
+    };
+
+export type NGEEvent =
+  | NGETrainrunEvent
+  | (
+      | ({
+          type: 'create' | 'delete' | 'update';
+        } & (
+          | { objectType: 'node'; node: NodeDto }
+          | { objectType: 'label'; label: LabelDto }
+          | { objectType: 'note'; note: FreeFloatingTextDto }
+        ))
+      | { objectType: 'metadata'; metadata: Partial<NetzgrafikDto['metadata']> }
+    );
 
 export type LabelDto = {
   id: number | string;
