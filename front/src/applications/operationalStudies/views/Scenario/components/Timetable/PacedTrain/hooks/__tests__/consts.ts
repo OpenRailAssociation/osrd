@@ -148,3 +148,25 @@ export const pacedTrainWithAddedException: PacedTrainWithDetails = {
     ],
   },
 };
+
+/**
+ * Hourly paced train (start times are offsets from the timetable start) whose first occurrence
+ * has been dragged back out of the repetition range, and so wrapped to the end of it: its start
+ * time (1h55) is now later than the one of the next occurrence (45min).
+ */
+export const hourlyPacedTrainWithWrappedOccurrence: PacedTrainWithDetails = {
+  ...pacedTrainSchedule,
+  startTime: Duration.zero,
+  paced: {
+    ...pacedTrainSchedule.paced,
+    exceptions: [
+      {
+        key: 'occurrence_1_0',
+        id: 42,
+        occurrence_index: 0,
+        start_time: { value: new Duration({ hours: 1, minutes: 55 }).ms },
+        disabled: false,
+      },
+    ],
+  },
+};
