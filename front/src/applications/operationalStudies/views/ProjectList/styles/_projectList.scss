@@ -4,16 +4,29 @@
   min-height: 100dvh;
   background-color: var(--ambientB10);
   font-family: 'IBM Plex Sans', sans-serif;
+
+  --project-list-padding: 40px;
+
+  @media screen and (1840px <= width) {
+    --project-list-padding: 80px;
+  }
+
+  .selection-toolbar {
+    padding-inline: var(--project-list-padding);
+    margin-top: -20px;
+    padding-bottom: 20px;
+    position: sticky;
+    z-index: 10;
+  }
 }
 
 .projects-list {
   max-height: calc(100vh - 149px); // Height of the navbar + project toolbar + padding
   overflow: auto;
-
-  &.selection-mode {
-    padding-top: 11px;
-    max-height: calc(100vh - 149px - var(--selection-toolbar-height));
-  }
+  padding-inline: var(--project-list-padding);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 250px);
+  gap: 40px;
 }
 
 .projects-toolbar {
@@ -21,7 +34,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  padding: 16px 0;
+  padding: 16px var(--project-list-padding);
+  margin-block: var(--project-list-padding);
 }
 
 .confirm-modal {
