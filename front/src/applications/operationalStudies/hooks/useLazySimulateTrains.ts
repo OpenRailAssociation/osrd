@@ -11,6 +11,7 @@ import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/forma
 import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useAppDispatch } from 'store';
+import { msToStartTime } from 'utils/duration';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 
@@ -120,9 +121,16 @@ export default function useLazySimulateTrains({
           return prev;
         }
         const next = new Map(prev);
+        // `newDeparture` is a Date even in an hourly timetable, where a start time is an offset
+        // from the timetable start held as a Duration. Assigning it as-is would silently turn the
+        // start time into a Date, which is then formatted as a wall clock time in the browser
+        // timezone — showing 01:58 for an offset of 58min. Keep the type the entry already has.
         next.set(
           id,
-          withPacedExceptions({ ...result, startTime: newDeparture }, shiftedExceptions)
+          withPacedExceptions(
+            { ...result, startTime: msToStartTime(newDeparture.getTime(), result.startTime) },
+            shiftedExceptions
+          )
         );
         return next;
       });
