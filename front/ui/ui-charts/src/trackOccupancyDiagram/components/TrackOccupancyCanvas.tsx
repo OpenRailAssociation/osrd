@@ -93,7 +93,8 @@ const TrackOccupancyCanvas = ({
     ) {
       return undefined;
     }
-    return tracks[index].id;
+    const track = tracks[index];
+    return track.disabled ? undefined : track.id;
   }, [
     mouseContext.position.y,
     draggingOccupancyZones,
