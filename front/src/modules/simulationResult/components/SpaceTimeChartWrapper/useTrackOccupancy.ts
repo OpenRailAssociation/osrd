@@ -220,7 +220,9 @@ const useTrackOccupancy = ({
                   occupation,
                   train.spaceTimeCurves,
                   train.name,
-                  train.departureTime
+                  train.departureTime,
+                  train.paced,
+                  undefined
                 ),
                 ...getLinkableOccupancyData(occupation.path_item_relative_location, train),
                 localTrackName,
@@ -279,6 +281,7 @@ const useTrackOccupancy = ({
                 spaceTimeCurves,
                 trainName,
                 startTime,
+                train.paced,
                 exception
               ),
               ...getLinkableOccupancyData(occupation.path_item_relative_location, train, exception),
