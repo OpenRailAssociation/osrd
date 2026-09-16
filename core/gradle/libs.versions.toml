@@ -21,7 +21,7 @@ logback = '1.5.+'
 moshi = '1.15.2'
 junit = '6.0.+'
 mockito = '5.2.+'
-otel = '1.65.0'
+otel = '1.66.0'
 otel-agent = '2.31.1'
 
 [libraries]
