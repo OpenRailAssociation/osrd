@@ -96,7 +96,11 @@
           color: var(--purple);
           font-size: 2rem;
           font-weight: 500;
-          overflow: auto;
+
+          .project-details-title-name-text {
+            overflow: hidden;
+            overflow-wrap: break-word;
+          }
 
           .project-details-title-modify-button {
             background-color: transparent;

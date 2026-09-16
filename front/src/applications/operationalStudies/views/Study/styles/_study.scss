@@ -16,10 +16,10 @@
   }
 
   .study-details {
-    width: 100%;
+    max-width: 100%;
     margin-bottom: 16px;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
 
     .study-metadata {
       display: flex;
@@ -67,6 +67,11 @@
       font-weight: 500;
       color: var(--primary);
       overflow: auto;
+
+      .study-name {
+        overflow: hidden;
+        overflow-wrap: break-word;
+      }
 
       .study-details-modify-button {
         background-color: transparent;
