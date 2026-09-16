@@ -91,14 +91,6 @@ const ComboBox = <T,>({
     resetSuggestions();
   }, [resetSuggestions]);
 
-  const focusInput = useCallback(() => {
-    if (isInputFocused) {
-      removeFocus();
-    } else {
-      inputRef.current?.focus();
-    }
-  }, [inputRef, isInputFocused, removeFocus]);
-
   const normalizedInputValue = useMemo(() => inputValue.trim().toLowerCase(), [inputValue]);
 
   const suggestionsByLabel = useMemo(() => {
@@ -139,12 +131,12 @@ const ComboBox = <T,>({
     removeFocus();
   };
 
-  const closeSuggestions = () => {
+  const closeSuggestions = useCallback(() => {
     setInputValue(value ? getSuggestionLabel(value) : '');
     removeFocus();
-  };
+  }, [value, getSuggestionLabel, removeFocus]);
 
-  const onFieldBlur = () => {
+  const onFieldBlur = useCallback(() => {
     const exactSuggestion = suggestionsByLabel.get(normalizedInputValue);
     if (activeSuggestionIndex === -1 && !showAddCustomValue) {
       if (normalizedInputValue === '') {
@@ -156,7 +148,24 @@ const ComboBox = <T,>({
       }
     }
     closeSuggestions();
-  };
+  }, [
+    suggestionsByLabel,
+    normalizedInputValue,
+    inputValue,
+    activeSuggestionIndex,
+    showAddCustomValue,
+    onSelectSuggestion,
+    onAddCustomValue,
+    closeSuggestions,
+  ]);
+
+  const focusInput = useCallback(() => {
+    if (isInputFocused) {
+      onFieldBlur();
+    } else {
+      inputRef.current?.focus();
+    }
+  }, [isInputFocused, onFieldBlur]);
 
   const totalItems = suggestions.length + (showAddCustomValue ? 1 : 0);
   const customValueIndex = showAddCustomValue ? suggestions.length : -1;
@@ -234,10 +243,10 @@ const ComboBox = <T,>({
   const clearInput = useCallback(() => {
     setInputValue('');
     onChange?.('');
-    onSelectSuggestion(undefined);
     resetSuggestions();
-    focusInput();
-  }, [resetSuggestions, onChange, onSelectSuggestion, focusInput]);
+    setIsInputFocused(true);
+    inputRef.current?.focus();
+  }, [resetSuggestions, onChange]);
 
   useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
