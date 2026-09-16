@@ -227,32 +227,7 @@ const StudyView = () => {
       <div className="study-view-content">
         {study ? (
           <div className="study-details">
-            <div className="study-details-dates">
-              <DateBox
-                date={study.creation_date ? new Date(study.creation_date) : null}
-                type="creation"
-              />
-              <DateBox
-                date={study.start_date ? new Date(study.start_date) : null}
-                type="start"
-                withoutTime
-              />
-              <DateBox
-                date={study.expected_end_date ? new Date(study.expected_end_date) : null}
-                type="expected-end"
-                withoutTime
-              />
-              <DateBox
-                date={study.actual_end_date ? new Date(study.actual_end_date) : null}
-                type="real-end"
-                withoutTime
-              />
-              <DateBox
-                date={study.last_modification ? new Date(study.last_modification) : null}
-                type="modified"
-              />
-            </div>
-            <div className="d-flex flex-column p-2">
+            <div className="study-main-details">
               <div className="study-details-name">
                 <div data-testid="study-name-info" className="study-name">
                   {study.name}
@@ -275,6 +250,15 @@ const StudyView = () => {
               <div className="study-details-description" data-testid="study-description">
                 {study.description}
               </div>
+              <div className="study-details-tags" data-testid="study-tags">
+                {study.tags?.map((tag) => (
+                  <div className="study-details-tags-tag" key={tag}>
+                    {tag}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="study-metadata">
               {study.state && (
                 <div className="study-details-state">
                   {studyStates.map(
@@ -292,6 +276,32 @@ const StudyView = () => {
                   )}
                 </div>
               )}
+
+              <div className="study-details-dates">
+                <DateBox
+                  date={study.creation_date ? new Date(study.creation_date) : null}
+                  type="creation"
+                />
+                <DateBox
+                  date={study.start_date ? new Date(study.start_date) : null}
+                  type="start"
+                  withoutTime
+                />
+                <DateBox
+                  date={study.expected_end_date ? new Date(study.expected_end_date) : null}
+                  type="expected-end"
+                  withoutTime
+                />
+                <DateBox
+                  date={study.actual_end_date ? new Date(study.actual_end_date) : null}
+                  type="real-end"
+                  withoutTime
+                />
+                <DateBox
+                  date={study.last_modification ? new Date(study.last_modification) : null}
+                  type="modified"
+                />
+              </div>
             </div>
 
             {(study.service_code ||
@@ -329,16 +339,6 @@ const StudyView = () => {
                 ) : null}
               </div>
             )}
-
-            <div className="study-details-footer">
-              <div className="study-details-tags" data-testid="study-tags">
-                {study.tags?.map((tag) => (
-                  <div className="study-details-tags-tag" key={tag}>
-                    {tag}
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         ) : (
           <span className="mt-5">
