@@ -283,58 +283,60 @@ const ProjectView = () => {
                         >
                           {project.description}
                         </div>
-                      </div>
-                      <div className="col-xl-6">
-                        <h3>
-                          <span className="mr-2">
-                            <BiTargetLock />
-                          </span>
-                          {t('project.objectives')}
-                        </h3>
-                        <div
-                          className="project-details-title-objectives"
-                          data-testid="project-objectives"
-                        >
-                          {project.objectives && (
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {project.objectives}
-                            </ReactMarkdown>
-                          )}
+                        <div className="project-details-tags" data-testid="project-tags">
+                          {project.tags?.map((tag) => (
+                            <div className="project-details-tags-tag" key={tag}>
+                              {tag}
+                            </div>
+                          ))}
                         </div>
+                        {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
+                          <div className="project-details-financials">
+                            <div
+                              className="project-details-financials-infos"
+                              data-testid="project-financials-infos"
+                            >
+                              <h3>{t('project.fundedBy')}</h3>
+                              {project.funders && <div>{project.funders}</div>}
+                            </div>
+                            {project.budget ? (
+                              <div
+                                className="project-details-financials-amount"
+                                data-testid="project-financial-amount"
+                              >
+                                <span className="project-details-financials-amount-text">
+                                  {t('project.totalBudget')}
+                                </span>
+                                {budgetFormat(project.budget)}
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
                       </div>
+                      {project.objectives && (
+                        <div className="col-xl-6">
+                          <h3>
+                            <span className="mr-2">
+                              <BiTargetLock />
+                            </span>
+                            {t('project.objectives')}
+                          </h3>
+                          <div
+                            className="project-details-title-objectives"
+                            data-testid="project-objectives"
+                          >
+                            {project.objectives && (
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {project.objectives}
+                              </ReactMarkdown>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
-              <div className="project-details-financials">
-                <div
-                  className="project-details-financials-infos"
-                  data-testid="project-financials-infos"
-                >
-                  <h3>{t('project.fundedBy')}</h3>
-                  {project.funders && <div>{project.funders}</div>}
-                </div>
-                {project.budget ? (
-                  <div
-                    className="project-details-financials-amount"
-                    data-testid="project-financial-amount"
-                  >
-                    <span className="project-details-financials-amount-text">
-                      {t('project.totalBudget')}
-                    </span>
-                    {budgetFormat(project.budget)}
-                  </div>
-                ) : null}
-              </div>
-            )}
-            <div className="project-details-tags" data-testid="project-tags">
-              {project.tags?.map((tag) => (
-                <div className="project-details-tags-tag" key={tag}>
-                  {tag}
-                </div>
-              ))}
             </div>
           </div>
         ) : (
