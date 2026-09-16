@@ -296,25 +296,22 @@
   }
 
   .scenarios-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--ambientB10);
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
-    padding: 16px 8px;
-    margin-top: 32px;
+    padding: var(--study-view-padding) 8px;
   }
 
   .scenarios-list {
-    overflow: auto;
-    max-height: 50vh;
     margin-inline: -8px;
     padding: 16px 8px 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, 400px);
     gap: 40px;
-
-    &.selection-mode {
-      max-height: calc(50vh - var(--selection-toolbar-height));
-    }
   }
 }

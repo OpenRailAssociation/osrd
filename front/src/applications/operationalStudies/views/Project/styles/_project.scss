@@ -52,8 +52,6 @@
   }
 
   .project-details {
-    padding-bottom: var(--project-view-padding);
-
     .project-details-title {
       display: flex;
       position: relative;
@@ -217,25 +215,22 @@
   }
 
   .studies-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--ambientB10);
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
-    padding-inline: 8px;
-    padding-bottom: var(--project-view-padding);
+    padding: var(--project-view-padding) 8px;
   }
 
   .studies-list {
-    overflow: auto;
-    max-height: 50vh;
     margin-inline: -8px;
     padding: 16px 8px 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, 450px);
     gap: 40px;
-
-    &.selection-mode {
-      max-height: calc(50vh - var(--selection-toolbar-height));
-    }
   }
 }
