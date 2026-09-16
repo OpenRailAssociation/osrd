@@ -73,12 +73,13 @@ class StudyPage extends CommonPage {
   private getStudyByName(name: string): Locator {
     return this.page.getByTestId(name);
   }
-  private openStudyButton(name: string): Locator {
-    return this.getStudyByName(name).getByTestId('openStudy');
-  }
 
   private getScenarioCardLocator(scenarioName: string): Locator {
     return this.page.getByTestId(`scenario-card-${scenarioName}`);
+  }
+
+  private getScenarioCardCheckbox(scenarioName: string): Locator {
+    return this.getScenarioCardLocator(scenarioName).getByTestId('scenario-card-select');
   }
 
   private getScenarioTrainCount(scenarioName: string): Locator {
@@ -87,8 +88,7 @@ class StudyPage extends CommonPage {
 
   private async openStudyByName(studyName: string) {
     await expect(this.getStudyByName(studyName)).toBeVisible();
-    await this.getStudyByName(studyName).hover();
-    await this.openStudyButton(studyName).click();
+    await this.getStudyByName(studyName).click();
   }
 
   private async setStudyTypeByText(type: string) {
@@ -206,7 +206,7 @@ class StudyPage extends CommonPage {
   }
 
   async deleteScenario(scenarioName: string) {
-    await this.getScenarioCardLocator(scenarioName).click();
+    await this.getScenarioCardCheckbox(scenarioName).click();
     await this.deleteScenarioButton.click();
     await this.confirmDeleteScenarioButton.click();
     await expect(this.getScenarioCardLocator(scenarioName)).not.toBeVisible();
