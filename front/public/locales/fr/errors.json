@@ -295,6 +295,7 @@
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",
       "Timeout": "Le serveur n'a pas répondu à temps",
+      "TrainScheduleNotFound": "Circulation '{{id}}' non trouvée",
       "TrainScheduleSetsNotFound": "'{{ids}}' paquets de circulation non trouvés",
       "similar_trains": {
         "Database": "Erreur interne (base de données)",

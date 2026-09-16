@@ -295,6 +295,7 @@
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
       "Timeout": "Request timed out",
+      "TrainScheduleNotFound": "Train schedule '{{id}}' could not be found",
       "TrainScheduleSetsNotFound": "'{{ids}}' train schedule sets not found",
       "similar_trains": {
         "Database": "Internal error (database)",

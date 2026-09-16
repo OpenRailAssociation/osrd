@@ -2404,6 +2404,22 @@ class EditoastTimetableErrorTimeout(BaseModel):
     type: Literal["editoast:timetable:Timeout"] = "editoast:timetable:Timeout"
 
 
+class EditoastTimetableErrorTrainScheduleNotFoundContext(BaseModel):
+    id: int
+
+
+class EditoastTimetableErrorTrainScheduleNotFound(BaseModel):
+    context: Annotated[
+        EditoastTimetableErrorTrainScheduleNotFoundContext | None,
+        Field(title="EditoastTimetableErrorTrainScheduleNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404] = 404
+    type: Literal["editoast:timetable:TrainScheduleNotFound"] = (
+        "editoast:timetable:TrainScheduleNotFound"
+    )
+
+
 class EditoastTimetableErrorTrainScheduleSetsNotFoundContext(BaseModel):
     ids: dict[str, Any]
 
@@ -5093,6 +5109,7 @@ class EditoastError(
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
         | EditoastTimetableErrorTimeout
+        | EditoastTimetableErrorTrainScheduleNotFound
         | EditoastTimetableErrorTrainScheduleSetsNotFound
         | EditoastTowedRollingStockErrorDatabase
         | EditoastTowedRollingStockErrorIdNotFound
@@ -5272,6 +5289,7 @@ class EditoastError(
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
         | EditoastTimetableErrorTimeout
+        | EditoastTimetableErrorTrainScheduleNotFound
         | EditoastTimetableErrorTrainScheduleSetsNotFound
         | EditoastTowedRollingStockErrorDatabase
         | EditoastTowedRollingStockErrorIdNotFound

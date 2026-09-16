@@ -1237,6 +1237,15 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
+      getTimetableByIdTrainSchedulesAndTrainScheduleId: build.query<
+        GetTimetableByIdTrainSchedulesAndTrainScheduleIdApiResponse,
+        GetTimetableByIdTrainSchedulesAndTrainScheduleIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedules/${queryArg.trainScheduleId}`,
+        }),
+        providesTags: ['timetable', 'train_schedule'],
+      }),
       getTowedRollingStock: build.query<
         GetTowedRollingStockApiResponse,
         GetTowedRollingStockApiArg
@@ -2637,6 +2646,13 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   id: number;
   page?: number;
   pageSize?: number;
+};
+export type GetTimetableByIdTrainSchedulesAndTrainScheduleIdApiResponse =
+  /** status 200 Train schedule */ TrainScheduleResponse;
+export type GetTimetableByIdTrainSchedulesAndTrainScheduleIdApiArg = {
+  /** A timetable ID */
+  id: number;
+  trainScheduleId: number;
 };
 export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: TowedRollingStock[];
