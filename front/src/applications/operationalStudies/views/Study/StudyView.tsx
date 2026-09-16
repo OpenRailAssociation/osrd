@@ -261,19 +261,15 @@ const StudyView = () => {
             <div className="study-metadata">
               {study.state && (
                 <div className="study-details-state">
-                  {studyStates.map(
-                    (state, idx) =>
-                      study.id &&
-                      study.state && (
-                        <StateStep
-                          key={state}
-                          study={study}
-                          number={idx + 1}
-                          state={state}
-                          done={idx <= studyStates.indexOf(study.state as StudyState)}
-                        />
-                      )
-                  )}
+                  {studyStates.map((state, idx) => (
+                    <StateStep
+                      key={state}
+                      study={study}
+                      number={idx + 1}
+                      state={state}
+                      done={idx <= studyStates.indexOf(study.state as StudyState)}
+                    />
+                  ))}
                 </div>
               )}
 
