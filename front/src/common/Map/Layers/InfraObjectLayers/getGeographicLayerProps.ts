@@ -33,7 +33,7 @@ export default function geoMainLayer(
   return {
     id: 'geoMainLayer',
     type: 'line',
-    minzoom: 5,
+    minzoom: 4,
     paint: {
       'line-color': getColorByHighlighted({
         highlightedArea,

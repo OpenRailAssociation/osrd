@@ -133,7 +133,7 @@ pub(in crate::views) async fn layer_view(
         scheme: "xyz".to_owned(),
         tiles: vec![tiles_url_pattern],
         attribution: layer.attribution.map(|s| s.to_string()).unwrap_or_default(),
-        minzoom: 5,
+        minzoom: 4,
         maxzoom: config.map_layers_max_zoom as u64,
     }))
 }
@@ -271,7 +271,7 @@ mod tests {
             scheme: "xyz".to_string(),
             tiles: vec![tiles],
             attribution: "".to_string(),
-            minzoom: 5,
+            minzoom: 4,
             maxzoom: 18,
         };
 
