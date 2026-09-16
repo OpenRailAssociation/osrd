@@ -10,7 +10,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
+import { Duration, type StartTime } from 'utils/duration';
 
 import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
@@ -197,16 +197,6 @@ const TimeStopsTableWrapper = ({
       });
   };
 
-  // Origin arrival = start_time (not in schedule), so propagationToEdits misses it.
-  const computeOriginEdits = (updatedStartTime: StartTime): PendingEdit[] => {
-    const originRow = rows.at(0);
-    return originRow &&
-      (!originRow.requestedArrival ||
-        startTimeToMs(originRow.requestedArrival) !== startTimeToMs(updatedStartTime))
-      ? [{ rowId: originRow.id, field: 'requestedArrival', value: updatedStartTime }]
-      : [];
-  };
-
   const buildEditsForUpdate = (
     singleEdit: PendingEdit,
     update: Exclude<CellUpdate, BatchTimesUpdate> & { propagationMode: PropagationMode }
@@ -215,22 +205,15 @@ const TimeStopsTableWrapper = ({
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
-    const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
 
-    // When editing the origin, originEdits already has the correct date.
+    // When editing the origin, or when shifting all waypoints, propagationEdits already has the correct date.
     // singleEdit must be skipped because the typed value can carry the
     // wrong calendar day (the input only captures HH:mm:ss, not the date).
-    const editedRowIsOrigin = originEdits.some((e) => e.rowId === singleEdit.rowId);
-
-    if (update.propagationMode === 'shiftAllWaypoints' || editedRowIsOrigin) {
-      return [...originEdits, ...propagationEdits];
+    if (update.propagationMode === 'shiftAllWaypoints' || update.row.opOnPathIndex === 0) {
+      return propagationEdits;
     }
 
-    return [
-      ...originEdits,
-      singleEdit,
-      ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
-    ];
+    return [singleEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
   };
 
   const buildEditsForStopDurationUpdate = (
@@ -241,7 +224,6 @@ const TimeStopsTableWrapper = ({
     if (!propagationResult) return [singleEdit];
 
     const propagationEdits = propagationToEdits(propagationResult, rows);
-    const originEdits = computeOriginEdits(propagationResult.updatedStartTime);
 
     const editedRowArrivalEdit = propagationEdits.find(
       (edit): edit is PendingEdit & { field: 'requestedArrival' } =>
@@ -258,11 +240,7 @@ const TimeStopsTableWrapper = ({
         }
       : singleEdit;
 
-    return [
-      ...originEdits,
-      editedRowEdit,
-      ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId),
-    ];
+    return [editedRowEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
   };
 
   const buildEditsForMarginUpdate = (
