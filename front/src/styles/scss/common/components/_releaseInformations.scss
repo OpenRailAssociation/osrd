@@ -14,6 +14,16 @@
       min-height: 192px;
     }
 
+    .table {
+      table-layout: fixed;
+
+      .cell-inner > span {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
     .license-attributions {
       background-color: var(--coolgray1);
       padding: 8px;
