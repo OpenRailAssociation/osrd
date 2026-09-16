@@ -53,7 +53,7 @@ import {
   isPacedTrainWithDetails,
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import {
   getHoveredTrainId,
@@ -69,6 +69,7 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   extractTrainScheduleIdFromOccurrenceId,
   extractTrainScheduleIdFromTrainId,
+  formatEditoastIdToTrainScheduleId,
   formatTrainScheduleIdToIndexedOccurrenceId,
   isAddedExceptionId,
   isOccurrenceId,
@@ -336,6 +337,17 @@ const SpaceTimeChartWrapper = ({
     [trainScheduleProjections, repeatTimeRange]
   );
 
+  // Each paced train repeats on its own time window, not on the whole timetable duration.
+  const pacedTrainPeriods = useMemo(() => {
+    const periods = new Map<TrainScheduleId, Duration>();
+    for (const train of trainScheduleProjections) {
+      if (train.paced) {
+        periods.set(formatEditoastIdToTrainScheduleId(train.id), train.paced.timeWindow);
+      }
+    }
+    return periods;
+  }, [trainScheduleProjections]);
+
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { cutProjectedTrains, cutConflicts: cutBaseConflicts } = useMemo(
     () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
@@ -488,7 +500,7 @@ const SpaceTimeChartWrapper = ({
           showSuggestions: linkingMode,
         },
         repeatTimeRange,
-        hourlyTimetableDuration,
+        pacedTrainPeriods,
       }),
     [
       trackOccupancyDiagramsData,
@@ -510,7 +522,7 @@ const SpaceTimeChartWrapper = ({
       hoveredLinking,
       linkingMode,
       repeatTimeRange,
-      hourlyTimetableDuration,
+      pacedTrainPeriods,
     ]
   );
 

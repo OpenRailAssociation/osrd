@@ -19,7 +19,7 @@ import { Spinner } from 'common/Loaders';
 import getPathStyleV2 from 'modules/simulationResult/helpers/getPathStyleV2';
 import type { TimeRange } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
 import type { CurveStyleInput } from 'modules/simulationResult/types';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
 import type { Duration } from 'utils/duration';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
@@ -61,7 +61,8 @@ type BuildSplitPointsProps = {
     showSuggestions: boolean;
   };
   repeatTimeRange?: TimeRange;
-  hourlyTimetableDuration?: Duration;
+  /** Repetition period of each paced train, by train schedule ID. */
+  pacedTrainPeriods?: Map<TrainScheduleId, Duration>;
 };
 
 export function buildSplitPoints({
@@ -81,7 +82,7 @@ export function buildSplitPoints({
   onTrackDragOver,
   linkings,
   repeatTimeRange,
-  hourlyTimetableDuration,
+  pacedTrainPeriods,
 }: BuildSplitPointsProps): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -166,10 +167,10 @@ export function buildSplitPoints({
         ];
       });
 
-      if (hourlyTimetableDuration && repeatTimeRange) {
+      if (pacedTrainPeriods && repeatTimeRange) {
         occupancyZones = repeatOccupancyZonesInRange(
           occupancyZones,
-          hourlyTimetableDuration,
+          pacedTrainPeriods,
           repeatTimeRange
         );
       }

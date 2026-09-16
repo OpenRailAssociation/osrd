@@ -1,4 +1,5 @@
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
+import { groupBy } from 'lodash';
 
 import {
   type PacedTrainException,
@@ -9,9 +10,9 @@ import {
   getTimetableRepeatOffsets,
   type TimeRange,
 } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import { isTrainId } from 'utils/trainId';
+import { extractTrainScheduleIdFromTrainId, isTrainId } from 'utils/trainId';
 
 import type { BaseTrainProjection, CurveStyleExceptionType } from '../../../types';
 import type { LinkableOccupancy } from './computePossibleLinkings';
@@ -167,33 +168,52 @@ export function getMovableOccupancyZone(
   };
 }
 
+/**
+ * Repeat occupancy zones across a visible time range for hourly timetables.
+ *
+ * Each train is repeated on its own period (its paced train time window), just like its
+ * curves in the space time chart: a 1h paced train gets twice as many occurrences as a 2h
+ * one. Zones of trains without a period (unique trains) are left as they are.
+ */
 export const repeatOccupancyZonesInRange = (
   occupancyZones: (OccupancyZone & MovableOccupancyZone)[],
-  period: Duration,
+  periods: Map<TrainScheduleId, Duration>,
   range: TimeRange
 ): (OccupancyZone & MovableOccupancyZone)[] => {
-  // Note, occupancy zones are relative to their train's start time, so we need
-  // to *not* subtract the zone's own startTime here
-  const maxItemDuration = new Duration({
-    milliseconds: Math.max(...occupancyZones.map((zone) => zone.endTime)),
-  });
-
-  const repeatOffsets = getTimetableRepeatOffsets({
-    period,
-    maxItemDuration,
-    range,
-  });
+  const zonesByTrainScheduleId = groupBy(occupancyZones, (zone) =>
+    extractTrainScheduleIdFromTrainId(zone.trainId)
+  );
 
   const repeatedOccupancyZones: (OccupancyZone & MovableOccupancyZone)[] = [];
-  for (const offset of repeatOffsets) {
-    for (const zone of occupancyZones) {
-      repeatedOccupancyZones.push({
-        ...zone,
-        startTime: zone.startTime + offset.ms,
-        endTime: zone.endTime + offset.ms,
-        dbStartTime: zone.dbStartTime + offset.ms,
-        dbEndTime: zone.dbEndTime + offset.ms,
-      });
+  for (const [trainScheduleId, zones] of Object.entries(zonesByTrainScheduleId)) {
+    const period = periods.get(trainScheduleId as TrainScheduleId);
+    if (!period) {
+      repeatedOccupancyZones.push(...zones);
+      continue;
+    }
+
+    // Note, occupancy zones are relative to their train's start time, so we need
+    // to *not* subtract the zone's own startTime here
+    const maxItemDuration = new Duration({
+      milliseconds: Math.max(...zones.map((zone) => zone.endTime)),
+    });
+
+    const repeatOffsets = getTimetableRepeatOffsets({
+      period,
+      maxItemDuration,
+      range,
+    });
+
+    for (const offset of repeatOffsets) {
+      for (const zone of zones) {
+        repeatedOccupancyZones.push({
+          ...zone,
+          startTime: zone.startTime + offset.ms,
+          endTime: zone.endTime + offset.ms,
+          dbStartTime: zone.dbStartTime + offset.ms,
+          dbEndTime: zone.dbEndTime + offset.ms,
+        });
+      }
     }
   }
 
