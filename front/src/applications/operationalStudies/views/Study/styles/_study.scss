@@ -5,6 +5,16 @@
   background-color: var(--ambientB10);
   font-family: 'IBM Plex Sans', sans-serif;
 
+  --study-view-padding: 40px;
+
+  @media screen and (1840px <= width) {
+    --study-view-padding: 80px;
+  }
+
+  .study-view-content {
+    padding: var(--study-view-padding);
+  }
+
   .study-details {
     width: 100%;
     margin-bottom: 16px;
@@ -318,6 +328,9 @@
     max-height: 50vh;
     margin-inline: -8px;
     padding: 16px 8px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 400px);
+    gap: 40px;
 
     &.selection-mode {
       max-height: calc(50vh - var(--selection-toolbar-height));

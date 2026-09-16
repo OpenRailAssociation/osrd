@@ -185,30 +185,28 @@ const StudyView = () => {
 
   function displayScenariosList() {
     return !isLoading ? (
-      <div className="row no-gutters">
-        <div className="col-hdp-3 col-hd-4 col-lg-6">
-          <AddNewCard
-            testId="add-scenario-button"
-            className="scenario-card empty"
-            item="scenario"
-            onOpenModal={() => setOpenAddOrEditScenarioModal(true)}
-          />
-          {openAddOrEditScenarioModal ? (
-            <AddOrEditScenarioModal onCancel={() => setOpenAddOrEditScenarioModal(false)} />
-          ) : undefined}
-        </div>
+      <div
+        className={cx('scenarios-list', {
+          'selection-mode': selectedScenarioIds.length > 0,
+        })}
+      >
+        <AddNewCard
+          testId="add-scenario-button"
+          className="scenario-card empty"
+          item="scenario"
+          onOpenModal={() => setOpenAddOrEditScenarioModal(true)}
+        />
+        {openAddOrEditScenarioModal ? (
+          <AddOrEditScenarioModal onCancel={() => setOpenAddOrEditScenarioModal(false)} />
+        ) : undefined}
         {scenariosList.map((scenario) => (
-          <div
-            className="col-hdp-3 col-hd-4 col-lg-6"
+          <ScenarioCard
+            setFilterChips={setFilterChips}
+            scenario={scenario}
+            isSelected={scenario.id !== undefined && selectedScenarioIds.includes(scenario.id)}
+            toggleSelect={toggleScenarioSelection}
             key={`study-displayScenariosList-${scenario.id}`}
-          >
-            <ScenarioCard
-              setFilterChips={setFilterChips}
-              scenario={scenario}
-              isSelected={scenario.id !== undefined && selectedScenarioIds.includes(scenario.id)}
-              toggleSelect={toggleScenarioSelection}
-            />
-          </div>
+          />
         ))}
       </div>
     ) : (
@@ -226,7 +224,7 @@ const StudyView = () => {
     <main className="study-view">
       <NavBar appName={<BreadCrumbs project={study?.project} study={study} />} />
 
-      <div className="p-3">
+      <div className="study-view-content">
         {study ? (
           <div className="study-details">
             <div className="study-details-dates">
@@ -377,16 +375,10 @@ const StudyView = () => {
           />
         )}
 
-        <div
-          className={cx('scenarios-list', {
-            'selection-mode': selectedScenarioIds.length > 0,
-          })}
-        >
-          {useMemo(
-            () => displayScenariosList(),
-            [scenariosList, selectedScenarioIds, openAddOrEditScenarioModal]
-          )}
-        </div>
+        {useMemo(
+          () => displayScenariosList(),
+          [scenariosList, selectedScenarioIds, openAddOrEditScenarioModal]
+        )}
       </div>
     </main>
   );
