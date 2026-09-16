@@ -5,6 +5,8 @@ export type Track = {
   id: string;
   name?: string;
   line?: string;
+  /** Prevents highlighting and dropping on this track */
+  disabled?: boolean;
 };
 
 export type OccupancyZone = {
