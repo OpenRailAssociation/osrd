@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import type { StudyCardDetails } from 'applications/operationalStudies/types';
-import studyLogo from 'assets/pictures/views/study.svg';
 import { useDateTimeLocale } from 'utils/date';
 import { budgetFormat } from 'utils/numbers';
 
@@ -32,7 +31,6 @@ export default function StudyCard({
       data-testid={study.name}
     >
       <div className="study-card-name">
-        <img className="study-card-img" src={studyLogo} alt="study logo" />
         <span className="study-card-name-text" title={study.name}>
           {study.name}
         </span>

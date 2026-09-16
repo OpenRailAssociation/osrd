@@ -63,13 +63,13 @@
 
   .study-card-name {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 1fr auto;
     gap: 8px;
     align-items: center;
     transition: 0.4s;
     font-size: 1.25rem;
     font-weight: 500;
-    padding: 8px 12px 8px 8px;
+    padding: 8px 12px;
     background-color: var(--grey10);
     color: var(--grey80);
     border-top-left-radius: 8px;
