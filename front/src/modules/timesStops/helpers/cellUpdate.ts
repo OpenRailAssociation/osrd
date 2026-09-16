@@ -232,19 +232,25 @@ export const computeOptimisticRow = (
 
 /**
  * Converts a propagation result into PendingEdits for all affected rows.
- * Each affected row gets a new requestedArrival computed from updatedSchedule + updatedStartTime.
+ * Each affected row gets a new requestedArrival computed from updatedSchedule + updatedStartTime,
+ * except the origin, whose arrival is start_time.
  */
 export const propagationToEdits = (
   result: { updatedSchedule: ScheduleItem[]; updatedStartTime: StartTime },
   rows: TimesStopsRow[]
 ): PendingEdit[] =>
   rows.flatMap((row) => {
-    const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
-    if (!item?.arrival) return [];
-    const newArrival = addDurationToStartTime(
-      result.updatedStartTime,
-      getTruncatedToSecondSchedule(item.arrival)
-    );
+    let newArrival: StartTime;
+    if (row.opOnPathIndex === 0) {
+      newArrival = result.updatedStartTime;
+    } else {
+      const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
+      if (!item?.arrival) return [];
+      newArrival = addDurationToStartTime(
+        result.updatedStartTime,
+        getTruncatedToSecondSchedule(item.arrival)
+      );
+    }
     if (row.requestedArrival && startTimeToMs(newArrival) === startTimeToMs(row.requestedArrival))
       return [];
     return [{ rowId: row.id, field: 'requestedArrival' as const, value: newArrival }];
