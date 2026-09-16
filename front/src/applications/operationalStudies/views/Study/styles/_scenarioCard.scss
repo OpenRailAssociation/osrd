@@ -70,9 +70,11 @@
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 8px;
-    color: var(--coolgray11);
-    background-color: var(--coolgray3);
+    color: var(--grey80);
+    background-color: var(--grey10);
     padding: 4px 6px 4px 8px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
     font-size: 1.1rem;
     transition: 0.4s;
   }
@@ -138,7 +140,7 @@
       align-items: baseline;
       height: 16px;
       white-space: nowrap;
-      color: var(--coolgray9);
+      color: var(--grey50);
       font-size: 0.6rem;
       text-transform: uppercase;
       text-align: right;
