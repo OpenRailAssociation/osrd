@@ -25,16 +25,10 @@ const ALL_MISSING_FIELDS: MissingFields[] = [
   'viasCh',
   'destination',
   'destinationCh',
-  'viaConsistTotalMass',
-  'viaConsistTotalLength',
 ];
 
 const filterMissingFields = ({
   missingFields,
-  rollingStockID,
-  totalMass,
-  totalLength,
-  maxSpeed,
   origin,
   vias,
   destination,
@@ -45,13 +39,13 @@ const filterMissingFields = ({
   return fieldsToCheck.filter((field) => {
     switch (field) {
       case 'tractionEngine':
-        return !rollingStockID;
+        return vias?.some((via) => via.consist && via.consist?.rollingStockID === undefined);
       case 'totalMass':
-        return totalMass === undefined;
+        return vias?.some((via) => via.consist && via.consist?.totalMass === undefined);
       case 'totalLength':
-        return totalLength === undefined;
+        return vias?.some((via) => via.consist && via.consist?.totalLength === undefined);
       case 'maxSpeed':
-        return maxSpeed === undefined;
+        return vias && vias[0].consist?.maxSpeed === undefined;
       case 'origin':
         return !origin?.operationalPoint;
       case 'originCh':
@@ -64,14 +58,6 @@ const filterMissingFields = ({
         return !destination?.operationalPoint;
       case 'destinationCh':
         return !!destination?.operationalPoint && !destination.operationalPoint.secondaryCode;
-      case 'viaConsistTotalMass':
-        return vias?.some(
-          (via) => via.isVia && via.consistChange && via.consistChange?.totalMass === undefined
-        );
-      case 'viaConsistTotalLength':
-        return vias?.some(
-          (via) => via.isVia && via.consistChange && via.consistChange?.totalLength === undefined
-        );
       default:
         return false;
     }

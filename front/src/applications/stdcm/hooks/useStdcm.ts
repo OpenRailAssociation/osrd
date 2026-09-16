@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 
-import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
@@ -38,6 +37,7 @@ import fetchPathProperties from '../utils/fetchPathProperties';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
 import computeChartData from '../utils/stdcmComputeChartData';
 import useStdcmForm from './useStdcmForm';
+import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 
 /**
  * Hook to manage the stdcm request with integrated results and chart data handling.
@@ -93,10 +93,7 @@ const useStdcm = ({
       });
     });
 
-  const { data: stdcmRollingStock } =
-    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
-      osrdconf.rollingStockID ? { rollingStockId: osrdconf.rollingStockID } : skipToken
-    );
+  const stdcmRollingStock = useStdcmLightRollingStock();
 
   const resetStdcmState = () => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.idle);
@@ -122,7 +119,7 @@ const useStdcm = ({
         ...response,
         rollingStock: stdcmRollingStock,
         creationDate,
-        speedLimitByTag: osrdconf.speedLimitByTag,
+        speedLimitByTag: osrdconf.stdcmPathSteps[0].consist?.speedLimitByTag,
         simulationPathSteps: osrdconf.stdcmPathSteps,
       } as StdcmSuccessResponse;
       const pathProperties = await fetchPathProperties(

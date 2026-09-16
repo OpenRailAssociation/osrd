@@ -4,7 +4,6 @@ import {
   ArrivalTimeTypes,
   StdcmStopTypes,
   MarginType,
-  type ConsistData,
   type LinkedTrains,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
@@ -12,20 +11,13 @@ import type { LoadingGaugeType } from 'common/api/osrdEditoastApi';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
-  resetStdcmConfig,
   updateGridMarginAfter,
   updateGridMarginBefore,
-  updateInitialConsist,
-  updateMaxSpeed,
   updateStandardAllowance,
   updateStdcmPathStep,
-  updateTotalLength,
-  updateTotalMass,
-  updateTowedRollingStockID,
   retainSimulation,
   selectSimulation,
   addStdcmSimulations,
-  updateLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -108,7 +100,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     id: '1',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
-    consistChange: undefined,
+    consist: undefined,
   },
   {
     operationalPoint: {
@@ -123,7 +115,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     id: '2',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
-    consistChange: undefined,
+    consist: undefined,
   },
   {
     operationalPoint: {
@@ -138,7 +130,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     id: '3',
     isVia: true,
     stopType: StdcmStopTypes.PASSAGE_TIME,
-    consistChange: undefined,
+    consist: undefined,
   },
   {
     operationalPoint: {
@@ -204,111 +196,6 @@ describe('stdcmConfReducers', () => {
       store.dispatch(updateGridMarginAfter(newGridMarginAfter));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.margins.gridMarginAfter).toStrictEqual(newGridMarginAfter);
-    });
-  });
-
-  it('should handle resetStdcmConfig', () => {
-    const store = createStore(initialStateSTDCMConfig);
-    store.dispatch(resetStdcmConfig());
-
-    const state = store.getState()[stdcmConfSlice.name];
-    expect(state.rollingStockID).toBe(stdcmConfInitialState.rollingStockID);
-    expect(state.stdcmPathSteps).toBe(stdcmConfInitialState.stdcmPathSteps);
-    expect(state.speedLimitByTag).toBe(stdcmConfInitialState.speedLimitByTag);
-  });
-
-  describe('Consist updates', () => {
-    const store = createStore();
-    it('should handle totalMass', () => {
-      store.dispatch(updateTotalMass(345));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.totalMass).toEqual(345);
-    });
-
-    it('should handle totalLength', () => {
-      store.dispatch(updateTotalLength(345));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.totalLength).toEqual(345);
-    });
-    it('should handle maxSpeed', () => {
-      store.dispatch(updateMaxSpeed(110));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.maxSpeed).toEqual(110);
-    });
-    it('should handle towedRollingStockID', () => {
-      store.dispatch(updateTowedRollingStockID(11));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.towedRollingStockID).toEqual(11);
-    });
-    it('should handle loadingGauge', () => {
-      store.dispatch(updateLoadingGauge('GB'));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.loadingGauge).toEqual('GB');
-    });
-  });
-
-  describe('should handle updateInitialConsist', () => {
-    it('should update all consist fields', () => {
-      const consist: ConsistData = {
-        rollingStockID: 1,
-        towedRollingStockID: 2,
-        totalMass: 500,
-        totalLength: 400,
-        maxSpeed: 160,
-        loadingGauge: 'GB',
-        speedLimitByTag: 'some-tag',
-      };
-      const store = createStore();
-      store.dispatch(updateInitialConsist(consist));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.rollingStockID).toBe(1);
-      expect(state.towedRollingStockID).toBe(2);
-      expect(state.totalMass).toBe(500);
-      expect(state.totalLength).toBe(400);
-      expect(state.maxSpeed).toBe(160);
-      expect(state.loadingGauge).toBe('GB');
-      expect(state.speedLimitByTag).toBe('some-tag');
-    });
-
-    it('should reset consist fields to undefined when payload fields are undefined', () => {
-      const store = createStore({
-        rollingStockID: 10,
-        towedRollingStockID: 20,
-        totalMass: 500,
-        totalLength: 400,
-        maxSpeed: 160,
-        speedLimitByTag: 'old-tag',
-      });
-      store.dispatch(
-        updateInitialConsist({
-          rollingStockID: undefined,
-          towedRollingStockID: undefined,
-          totalMass: undefined,
-          totalLength: undefined,
-          maxSpeed: undefined,
-          loadingGauge: undefined,
-          speedLimitByTag: undefined,
-        })
-      );
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.rollingStockID).toBeUndefined();
-      expect(state.towedRollingStockID).toBeUndefined();
-      expect(state.totalMass).toBeUndefined();
-      expect(state.totalLength).toBeUndefined();
-      expect(state.maxSpeed).toBeUndefined();
-      expect(state.loadingGauge).toBeUndefined();
-      expect(state.speedLimitByTag).toBeUndefined();
-    });
-
-    it('should not affect pathSteps or margins', () => {
-      const store = createStore(initialStateSTDCMConfig);
-      const stateBefore = store.getState()[stdcmConfSlice.name];
-      store.dispatch(
-        updateInitialConsist({ rollingStockID: 99, totalMass: 200, totalLength: 150 })
-      );
-      const stateAfter = store.getState()[stdcmConfSlice.name];
-      expect(stateAfter.stdcmPathSteps).toEqual(stateBefore.stdcmPathSteps);
-      expect(stateAfter.margins).toEqual(stateBefore.margins);
     });
   });
 
@@ -413,10 +300,6 @@ describe('stdcmConfReducers', () => {
       store.dispatch(selectSimulation(0));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.selectedSimulationIndex).toEqual(0);
-      expect(state.totalLength).toEqual(simulation.inputs.consist.totalLength);
-      expect(state.totalMass).toEqual(simulation.inputs.consist.totalMass);
-      expect(state.maxSpeed).toEqual(simulation.inputs.consist.maxSpeed);
-      expect(state.speedLimitByTag).toEqual(simulation.inputs.consist.speedLimitByTag);
       expect(state.stdcmPathSteps).toEqual(simulation.inputs.pathSteps);
     });
 

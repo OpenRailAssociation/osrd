@@ -39,23 +39,17 @@ export const checkStdcmConf = (
   const {
     stdcmPathSteps: pathSteps,
     timetableID,
-    speedLimitByTag,
     infraID,
-    rollingStockID,
-    towedRollingStockID,
     margins: { standardAllowance, gridMarginBefore, gridMarginAfter },
     searchDatetimeWindow,
     workScheduleGroupId,
     temporarySpeedLimitGroupId,
     electricalProfileSetId,
-    totalLength,
-    totalMass,
-    maxSpeed,
-    loadingGauge,
     trackSectionIdsByLoadingGauge,
   } = osrdconf;
   let error = false;
 
+  const loadingGauge = pathSteps[0].consist?.loadingGauge;
   const allowedTrackSections =
     trackSectionIdsByLoadingGauge && loadingGauge
       ? trackSectionIdsByLoadingGauge[loadingGauge]
@@ -88,7 +82,7 @@ export const checkStdcmConf = (
       })
     );
   }
-  if (!rollingStockID) {
+  if (!pathSteps[0].consist?.rollingStockID) {
     error = true;
     dispatch(
       setFailure({
@@ -189,22 +183,12 @@ export const checkStdcmConf = (
     };
   });
 
-  const initialConsist = {
-    rolling_stock_id: rollingStockID!,
-    towed_rolling_stock_id: towedRollingStockID,
-    total_mass: totalMass ? tToKg(totalMass) : undefined,
-    total_length: totalLength,
-    max_speed: maxSpeed ? kmhToMs(maxSpeed) : undefined,
-    loading_gauge_type: loadingGauge,
-    speed_limit_tag: speedLimitByTag,
-  };
-
   const boundaries: number[] = [];
-  const consistValues = [initialConsist];
+  const consistValues = [];
 
   for (const [index, step] of pathSteps.entries()) {
-    if (!step.isVia || !step.consistChange) continue;
-    if (!step.consistChange.rollingStockID) {
+    if (!step.consist) continue;
+    if (!step.consist.rollingStockID) {
       error = true;
       dispatch(
         setFailure({
@@ -216,15 +200,17 @@ export const checkStdcmConf = (
       break;
     }
 
-    boundaries.push(index);
+    if (index !== 0) {
+      boundaries.push(index);
+    }
     consistValues.push({
-      rolling_stock_id: step.consistChange.rollingStockID,
-      towed_rolling_stock_id: step.consistChange.towedRollingStockID,
-      total_mass: step.consistChange.totalMass ? tToKg(step.consistChange.totalMass) : undefined,
-      total_length: step.consistChange.totalLength,
-      max_speed: step.consistChange.maxSpeed ? kmhToMs(step.consistChange.maxSpeed) : undefined,
-      speed_limit_tag: step.consistChange.speedLimitByTag,
-      loading_gauge_type: step.consistChange.loadingGauge,
+      rolling_stock_id: step.consist.rollingStockID,
+      towed_rolling_stock_id: step.consist.towedRollingStockID,
+      total_mass: step.consist.totalMass ? tToKg(step.consist.totalMass) : undefined,
+      total_length: step.consist.totalLength,
+      max_speed: step.consist.maxSpeed ? kmhToMs(step.consist.maxSpeed) : undefined,
+      speed_limit_tag: step.consist.speedLimitByTag,
+      loading_gauge_type: step.consist.loadingGauge,
     });
   }
 

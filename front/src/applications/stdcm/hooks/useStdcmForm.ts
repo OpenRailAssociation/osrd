@@ -5,13 +5,8 @@ import { useSelector } from 'react-redux';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import {
   getLinkedTrains,
-  getMaxSpeed,
-  getLoadingGauge,
   getStdcmOrigin,
   getStdcmPathSteps,
-  getStdcmSpeedLimitByTag,
-  getTotalLength,
-  getTotalMass,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 
 import type { StdcmSimulationInputs } from '../types';
@@ -20,11 +15,11 @@ import useStdcmLightRollingStock from './useStdcmLightRollingStock';
 
 const useStdcmForm = (): StdcmSimulationInputs => {
   const pathSteps = useSelector(getStdcmPathSteps);
-  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
-  const totalMass = useSelector(getTotalMass);
-  const totalLength = useSelector(getTotalLength);
-  const maxSpeed = useSelector(getMaxSpeed);
-  const loadingGauge = useSelector(getLoadingGauge);
+  const speedLimitByTag = pathSteps[0].consist?.speedLimitByTag;
+  const totalMass = pathSteps[0].consist?.totalMass;
+  const totalLength = pathSteps[0].consist?.totalLength;
+  const maxSpeed = pathSteps[0].consist?.maxSpeed;
+  const loadingGauge = pathSteps[0].consist?.loadingGauge;
   const linkedTrains = useSelector(getLinkedTrains);
   const origin = useSelector(getStdcmOrigin);
   const rollingStock = useStdcmLightRollingStock();

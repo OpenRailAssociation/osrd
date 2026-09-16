@@ -191,8 +191,6 @@ export enum StdcmConfigErrorTypes {
 
 export type MissingFields =
   | 'tractionEngine'
-  | 'totalMass'
-  | 'totalLength'
   | 'maxSpeed'
   | 'origin'
   | 'originCh'
@@ -200,8 +198,8 @@ export type MissingFields =
   | 'viasCh'
   | 'destination'
   | 'destinationCh'
-  | 'viaConsistTotalMass'
-  | 'viaConsistTotalLength';
+  | 'totalMass'
+  | 'totalLength';
 
 export type InvalidFields = {
   fieldName: 'totalMass' | 'totalLength' | 'maxSpeed' | 'originDate' | 'destinationDate';

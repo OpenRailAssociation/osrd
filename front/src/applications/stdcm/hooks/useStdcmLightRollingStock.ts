@@ -2,10 +2,11 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { getStdcmRollingStockID } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 
 export const useStdcmLightRollingStock = () => {
-  const rollingStockId = useSelector(getStdcmRollingStockID);
+  const pathSteps = useSelector(getStdcmPathSteps);
+  const rollingStockId = pathSteps[0].consist?.rollingStockID;
 
   const { data: rollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(

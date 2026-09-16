@@ -6,7 +6,6 @@ import {
   ArrivalTimeTypes,
   MarginType,
   StdcmStopTypes,
-  type ConsistData,
   type ExtremityPathStepType,
   type StdcmLinkedTrainExtremity,
   type StdcmSimulation,
@@ -30,6 +29,7 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
       isVia: false,
       arrivalType: ArrivalTimeTypes.PRECISE_TIME,
       tolerances: { before: DEFAULT_TOLERANCE, after: DEFAULT_TOLERANCE },
+      consist: { loadingGauge: 'GA' },
     },
     {
       id: uuidV4(),
@@ -43,11 +43,6 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
     gridMarginBefore: new Duration({ seconds: 0 }),
     gridMarginAfter: new Duration({ seconds: 0 }),
   },
-  totalMass: undefined,
-  totalLength: undefined,
-  maxSpeed: undefined,
-  loadingGauge: 'GA',
-  towedRollingStockID: undefined,
   linkedTrains: {
     anteriorTrain: undefined,
     posteriorTrain: undefined,
@@ -57,15 +52,8 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
 
 const updateSimulationState = (state: Draft<OsrdStdcmConfState>, simulation: StdcmSimulation) => {
   const {
-    inputs: { consist, pathSteps },
+    inputs: { pathSteps },
   } = simulation;
-  state.rollingStockID = consist?.tractionEngine?.id;
-  state.towedRollingStockID = consist?.towedRollingStock?.id;
-  state.totalLength = consist?.totalLength;
-  state.totalMass = consist?.totalMass;
-  state.maxSpeed = consist?.maxSpeed;
-  state.loadingGauge = consist?.loadingGauge ?? 'GA';
-  state.speedLimitByTag = consist?.speedLimitByTag;
   state.stdcmPathSteps = pathSteps;
 };
 
@@ -76,63 +64,11 @@ export const stdcmConfSlice = createSlice({
     ...buildCommonConfReducers<OsrdStdcmConfState>(),
     ...buildMapStateReducer<OsrdStdcmConfState>(),
 
-    resetStdcmConfig(state: Draft<OsrdStdcmConfState>) {
-      state.rollingStockID = stdcmConfInitialState.rollingStockID;
-      state.stdcmPathSteps = stdcmConfInitialState.stdcmPathSteps;
-      state.towedRollingStockID = stdcmConfInitialState.towedRollingStockID;
-      state.totalLength = stdcmConfInitialState.totalLength;
-      state.totalMass = stdcmConfInitialState.totalMass;
-      state.maxSpeed = stdcmConfInitialState.maxSpeed;
-      state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
-      state.linkedTrains = stdcmConfInitialState.linkedTrains;
-      state.retainedSimulationIndex = stdcmConfInitialState.retainedSimulationIndex;
-      state.selectedSimulationIndex = stdcmConfInitialState.selectedSimulationIndex;
-      state.simulations = stdcmConfInitialState.simulations;
-    },
     restoreStdcmConfig(
       _state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<OsrdStdcmConfState>
     ) {
       return action.payload;
-    },
-    updateTotalMass(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['totalMass']>
-    ) {
-      state.totalMass = action.payload;
-    },
-    updateTotalLength(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['totalLength']>
-    ) {
-      state.totalLength = action.payload;
-    },
-    updateMaxSpeed(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['maxSpeed']>
-    ) {
-      state.maxSpeed = action.payload;
-    },
-    updateLoadingGauge(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['loadingGauge']>
-    ) {
-      state.loadingGauge = action.payload;
-    },
-    updateTowedRollingStockID(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['towedRollingStockID']>
-    ) {
-      state.towedRollingStockID = action.payload;
-    },
-    updateInitialConsist(state: Draft<OsrdStdcmConfState>, action: PayloadAction<ConsistData>) {
-      state.rollingStockID = action.payload.rollingStockID;
-      state.towedRollingStockID = action.payload.towedRollingStockID;
-      state.totalMass = action.payload.totalMass;
-      state.totalLength = action.payload.totalLength;
-      state.maxSpeed = action.payload.maxSpeed;
-      state.loadingGauge = action.payload.loadingGauge;
-      state.speedLimitByTag = action.payload.speedLimitByTag;
     },
     resetMargins(state: Draft<OsrdStdcmConfState>) {
       state.margins = {
@@ -199,11 +135,25 @@ export const stdcmConfSlice = createSlice({
 
       // check if a speedLimitTag is already defined, and if not, use the defaultSpeedLimitTag
       const speedLimitTags = Object.keys(speedLimitsByTag);
-      if (!state.speedLimitByTag || !speedLimitTags.includes(state.speedLimitByTag)) {
-        state.speedLimitByTag =
-          defaultSpeedLimitTag && speedLimitTags.includes(defaultSpeedLimitTag)
-            ? defaultSpeedLimitTag
-            : speedLimitTags.at(0);
+      const originPathStep = state.stdcmPathSteps[0];
+      if (
+        originPathStep &&
+        (!originPathStep.consist?.speedLimitByTag ||
+          !speedLimitTags.includes(originPathStep.consist.speedLimitByTag))
+      ) {
+        originPathStep.consist = {
+          ...originPathStep.consist,
+          speedLimitByTag:
+            defaultSpeedLimitTag && speedLimitTags.includes(defaultSpeedLimitTag)
+              ? defaultSpeedLimitTag
+              : speedLimitTags.at(0),
+        };
+      }
+      if (originPathStep && !originPathStep.consist?.loadingGauge) {
+        originPathStep.consist = {
+          ...originPathStep.consist,
+          loadingGauge: 'GA',
+        };
       }
 
       // check that the arrival dates are in the search time window
@@ -255,7 +205,7 @@ export const stdcmConfSlice = createSlice({
         id: uuidV4(),
         stopType: StdcmStopTypes.PASSAGE_TIME,
         isVia: true,
-        consistChange: undefined,
+        consist: undefined,
       });
     },
     deleteStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<string>) {
@@ -355,14 +305,7 @@ export const stdcmConfSlice = createSlice({
 });
 
 export const {
-  resetStdcmConfig,
   restoreStdcmConfig,
-  updateTotalMass,
-  updateTotalLength,
-  updateMaxSpeed,
-  updateLoadingGauge,
-  updateTowedRollingStockID,
-  updateInitialConsist,
   resetMargins,
   updateGridMarginAfter,
   updateGridMarginBefore,

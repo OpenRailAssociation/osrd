@@ -164,10 +164,10 @@ function formatOperationalPointWithTimesAndWeight(
   let consistChange;
   if (correspondingStep) {
     if (correspondingStep.isVia) {
-      stopType = correspondingStep.consistChange
+      stopType = correspondingStep.consist
         ? StdcmStopTypes.CONSIST_CHANGE
         : correspondingStep.stopType;
-      consistChange = correspondingStep.consistChange;
+      consistChange = correspondingStep.consist;
     } else {
       stopType = StdcmStopTypes.SERVICE_STOP;
     }
@@ -410,12 +410,12 @@ export const transformStepsToApiFormat = (
     };
 
     if (step.isVia) {
-      const formatedConsistChange: ConsistChange | undefined = step.consistChange
+      const formatedConsistChange: ConsistChange | undefined = step.consist
         ? {
-            rolling_stock: step.consistChange.rollingStockName!,
-            towed_rolling_stock: step.consistChange.towedRollingStockName,
-            total_mass: tToKg(step.consistChange.totalMass!),
-            total_length: step.consistChange.totalLength!,
+            rolling_stock: step.consist.rollingStockName!,
+            towed_rolling_stock: step.consist.towedRollingStockName,
+            total_mass: tToKg(step.consist.totalMass!),
+            total_length: step.consist.totalLength!,
           }
         : undefined;
 
