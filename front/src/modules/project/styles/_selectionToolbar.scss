@@ -6,4 +6,17 @@
   height: var(--selection-toolbar-height);
   color: var(--purple);
   font-weight: 500;
+
+  .btn {
+    display: flex;
+
+    // TODO: Maybe remove those wrapping spans altogether
+    span:has(> svg) {
+      display: contents;
+    }
+
+    svg {
+      align-self: center;
+    }
+  }
 }

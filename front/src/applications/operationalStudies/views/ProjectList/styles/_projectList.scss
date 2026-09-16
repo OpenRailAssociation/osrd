@@ -21,8 +21,6 @@
 }
 
 .projects-list {
-  max-height: calc(100vh - 149px); // Height of the navbar + project toolbar + padding
-  overflow: auto;
   padding-inline: var(--project-list-padding);
   display: grid;
   grid-template-columns: repeat(auto-fit, 250px);
@@ -30,12 +28,15 @@
 }
 
 .projects-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--ambientB10);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  padding: 16px var(--project-list-padding);
-  margin-block: var(--project-list-padding);
+  padding: var(--project-list-padding);
 }
 
 .confirm-modal {
