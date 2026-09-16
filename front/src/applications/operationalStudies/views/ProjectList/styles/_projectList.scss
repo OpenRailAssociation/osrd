@@ -54,3 +54,12 @@
     max-width: 640px;
   }
 }
+
+// TODO: Replace this component with our own OSRD segmented control
+#projects-sort-filter {
+  background-color: var(--black10);
+}
+
+:where(#projects-sort-filter) .options-item .options-btn {
+  color: var(--grey50);
+}
