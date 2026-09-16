@@ -234,10 +234,10 @@ const ComboBox = <T,>({
   const clearInput = useCallback(() => {
     setInputValue('');
     onChange?.('');
-    onSelectSuggestion(undefined);
     resetSuggestions();
-    focusInput();
-  }, [resetSuggestions, onChange, onSelectSuggestion, focusInput]);
+    setIsInputFocused(true);
+    inputRef.current?.focus();
+  }, [resetSuggestions, onChange]);
 
   useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
