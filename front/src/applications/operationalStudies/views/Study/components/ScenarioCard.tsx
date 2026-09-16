@@ -40,7 +40,11 @@ export default function ScenarioCard({
         </span>
         {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- This feature will disappear soon enough */}
         <div className="scenario-card-select" onClick={(e) => e.stopPropagation()}>
-          <Checkbox checked={isSelected} onChange={() => toggleSelect(scenario.id)} />
+          <Checkbox
+            checked={isSelected}
+            onChange={() => toggleSelect(scenario.id)}
+            data-testid="scenario-card-select"
+          />
         </div>
       </div>
       <div className="scenario-card-description">{scenario.description}</div>

@@ -67,9 +67,6 @@ class ScenarioPage extends CommonPage {
     return this.page.getByTestId(scenarioName);
   }
 
-  private openScenarioButton(scenarioName: string): Locator {
-    return this.getScenarioByName(scenarioName).getByTestId('openScenario');
-  }
   private getScenarioTags(id: string): Locator {
     return this.page.getByTestId(`scenario-card-${id}`).getByTestId('scenario-card-tags');
   }
@@ -130,8 +127,7 @@ class ScenarioPage extends CommonPage {
 
   async openScenarioByName(scenarioName: string) {
     await expect(this.getScenarioByName(scenarioName)).toBeVisible();
-    await this.getScenarioByName(scenarioName).hover();
-    await this.openScenarioButton(scenarioName).click();
+    await this.getScenarioByName(scenarioName).click();
   }
 
   async openScenarioEditForm() {
