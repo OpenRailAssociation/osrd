@@ -462,11 +462,13 @@ impl<R: Relation, S: Relation> Request for QueryUsersets<'_, R, S> {
 
 #[cfg(test)]
 mod tests {
+    use super::PreparedChecks;
     use crate::client::Client;
     use crate::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
     use crate::client::Error;
     use crate::client::ErrorCode;
     use crate::client::Request as _;
+    use crate::client::tuples::RawTuple;
     use crate::compile_model;
     use crate::defs::*;
     use crate::fga;
@@ -604,6 +606,34 @@ mod tests {
             .assert_check_not(Infra::can_read().check(&fga!(User:"alice"), &fga!(Infra:"france")))
             .assert_check(Infra::can_read().check(&fga!(User:"bob"), &fga!(Infra:"france")))
             .assert_check(Infra::can_write().check(&fga!(User:"bob"), &fga!(Infra:"france")));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn batch_check_item_error_is_propagated() {
+        setup_tracing();
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
+
+        let error = PreparedChecks {
+            checks: vec![RawTuple {
+                user: "bob".to_string(),
+                relation: "reader".to_string(),
+                object: "infra:france".to_string(),
+            }],
+            client: &client,
+        }
+        .execute()
+        .await
+        .unwrap_err();
+
+        assert!(matches!(
+            error,
+            Error::CheckInput {
+                input_error: ErrorCode::ValidationError,
+                ..
+            }
+        ));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
