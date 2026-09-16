@@ -70,8 +70,10 @@
     font-size: 1.25rem;
     font-weight: 500;
     padding: 8px 12px 8px 8px;
-    background-color: var(--coolgray3);
-    color: var(--secondary);
+    background-color: var(--grey10);
+    color: var(--grey80);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
   }
 
   .study-card-name-text {
@@ -177,10 +179,7 @@
   }
 
   .study-card-footer {
-    padding-top: 8px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+    padding: 8px 0;
 
     .study-card-scenarios-count,
     .study-card-date {
@@ -191,9 +190,8 @@
       padding: 0 8px;
       font-size: 0.7rem;
       text-transform: uppercase;
-      text-align: right;
-      font-weight: 500;
-      color: var(--coolgray9);
+      font-weight: 600;
+      color: var(--grey50);
 
       svg {
         height: 8.8px;

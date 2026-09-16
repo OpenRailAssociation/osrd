@@ -9,6 +9,7 @@
   border: 1px solid var(--coolgray3);
   height: 336px;
   cursor: pointer;
+  color: var(--grey60);
 
   &:hover,
   &:focus,
@@ -74,12 +75,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-style: italic;
-    background-color: var(--coolgray3);
-    padding: 4px 8px;
+    background-color: var(--ambientB15);
+    padding: 4px 12px;
     text-align: right;
     font-size: 0.7rem;
-    color: var(--coolgray11);
+    color: var(--grey50);
     height: 24px;
 
     div {
@@ -92,10 +92,10 @@
   }
 
   .project-card-name {
-    color: var(--purple);
-    font-weight: 500;
+    color: var(--grey80);
+    font-weight: 600;
     font-size: 0.9rem;
-    padding: 0 8px;
+    padding: 0 12px;
     margin: 8px 0 4px;
     white-space: nowrap;
     overflow: hidden;
@@ -103,7 +103,7 @@
   }
 
   .project-card-description {
-    padding: 0 8px;
+    padding: 0 12px;
     margin-bottom: 8px;
     flex: 1;
     overflow-y: auto;
@@ -121,8 +121,8 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 4px;
-    padding: 4px 8px;
-    height: 43.2px;
+    padding: 4px 12px;
+    height: 43px;
     overflow: auto;
     font-weight: 500;
     font-size: 0.8rem;
