@@ -5,6 +5,16 @@
   background-color: var(--ambientB10);
   font-family: 'IBM Plex Sans', sans-serif;
 
+  --project-view-padding: 40px;
+
+  @media screen and (1840px <= width) {
+    --project-view-padding: 80px;
+  }
+
+  .project-view-content {
+    padding: var(--project-view-padding);
+  }
+
   .filter-selector {
     background-color: transparent;
     border: none;
@@ -42,12 +52,13 @@
   }
 
   .project-details {
+    padding-bottom: var(--project-view-padding);
+
     .project-details-title {
       display: flex;
       position: relative;
       gap: 16px;
       margin-bottom: 8px;
-      min-height: 240px;
 
       .project-details-title-img {
         overflow: hidden;
@@ -78,6 +89,8 @@
       }
 
       .project-details-title-content {
+        margin-left: 16px;
+
         .project-details-title-name {
           display: flex;
           align-items: center;
@@ -209,7 +222,7 @@
     flex-wrap: wrap;
     gap: 16px;
     padding-inline: 8px;
-    padding-bottom: 16px;
+    padding-bottom: var(--project-view-padding);
   }
 
   .studies-list {

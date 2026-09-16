@@ -237,7 +237,7 @@ const ProjectView = () => {
     <main className="project-view">
       <NavBar appName={<BreadCrumbs project={project} />} />
 
-      <div className="p-3">
+      <div className="project-view-content">
         {project ? (
           <div className="project-details">
             <div className="project-details-title">
