@@ -539,6 +539,8 @@
           .invalid-step-message {
             color: var(--grey60);
             padding-left: calc(51px - var(--path-step-wrapper-padding-left));
+            margin-top: -10px;
+            display: block;
           }
         }
       }
