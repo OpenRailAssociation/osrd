@@ -101,6 +101,9 @@ enum TimetableError {
     #[error("Hourly timetable period is '{timetable_period}' h but should be under 24h")]
     #[editoast_error(status = 422)]
     InvalidPeriod { timetable_period: i64 },
+    #[error("Train schedule '{id}' could not be found")]
+    #[editoast_error(status = 404)]
+    TrainScheduleNotFound { id: i64 },
 }
 
 /// Creation result for a Timetable
@@ -181,6 +184,58 @@ pub(in crate::views) async fn delete(
     })
     .await?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Debug, IntoParams, Deserialize)]
+pub(in crate::views) struct TrainScheduleIdParam {
+    train_schedule_id: i64,
+}
+
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    get, path = "",
+    tags = ["timetable", "train_schedule"],
+    params(TimetableIdParam, TrainScheduleIdParam),
+    responses(
+        (status = 200, description = "Train schedule", body = TrainScheduleResponse),
+        (status = 404, description = "Timetable or train schedule not found"),
+    ),
+)]
+pub(in crate::views) async fn get_train_schedule_by_id(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Path(TrainScheduleIdParam { train_schedule_id }): Path<TrainScheduleIdParam>,
+) -> Result<Json<TrainScheduleResponse>> {
+    let conn = &mut db_pool.get().await?;
+
+    let timetable_exists = Timetable::exists(conn, timetable_id).await?;
+    if !timetable_exists {
+        return Err(TimetableError::NotFound { timetable_id }.into());
+    }
+
+    let train_schedule =
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+            TimetableError::TrainScheduleNotFound {
+                id: train_schedule_id,
+            }
+        })
+        .await?;
+
+    let exceptions_settings = SelectionSettings::new()
+        .filter(move || models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
+        .filter(move || models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq(train_schedule.id));
+
+    let exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
+        .await?
+        .into_iter()
+        .map_into()
+        .collect();
+
+    Ok(Json(TrainScheduleResponse {
+        id: train_schedule.id,
+        train_schedule_set_id: train_schedule.train_schedule_set_id,
+        train_schedule: train_schedule_schema_from_model(train_schedule, exceptions),
+    }))
 }
 
 #[derive(Serialize, ToSchema, Debug)]

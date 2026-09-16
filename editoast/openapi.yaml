@@ -3929,6 +3929,34 @@ paths:
                         $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Timetable not found
+  /timetable/{id}/train_schedules/{train_schedule_id}:
+    get:
+      tags:
+      - timetable
+      - train_schedule
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: train_schedule_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Train schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainScheduleResponse'
+        '404':
+          description: Timetable or train schedule not found
   /towed_rolling_stock:
     get:
       tags:
@@ -7452,6 +7480,7 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
       - $ref: '#/components/schemas/EditoastTimetableErrorTimeout'
+      - $ref: '#/components/schemas/EditoastTimetableErrorTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorTrainScheduleSetsNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
@@ -9959,6 +9988,31 @@ components:
           type: string
           enum:
           - editoast:timetable:Timeout
+    EditoastTimetableErrorTrainScheduleNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorTrainScheduleNotFoundContext
+          required:
+          - id
+          properties:
+            id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:TrainScheduleNotFound
     EditoastTimetableErrorTrainScheduleSetsNotFound:
       type: object
       required:

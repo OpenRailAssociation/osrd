@@ -203,7 +203,9 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/round_trips", get!(round_trips::list))
                             .route("/stdcm", post!(timetable::stdcm::stdcm))
                             .nests("/train_schedules", |path| {
-                                path.route("/", get!(timetable::get_train_schedules))
+                                path
+                                    .route("/", get!(timetable::get_train_schedules))
+                                    .route("/{train_schedule_id}", get!(timetable::get_train_schedule_by_id))
                             })
                             .nests("/path_steps", |path| {
                                 path.route("/local_track_names", post!(timetable::get_local_track_names))
