@@ -30,8 +30,8 @@
     "file-saver": "^2.0.5",
     "lodash": "^4.18.1",
     "maplibre-gl": "^6.2.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "react-map-gl": "^8.1.3"
   }
 }
