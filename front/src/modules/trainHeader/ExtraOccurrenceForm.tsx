@@ -16,7 +16,7 @@ const ExtraOccurrenceForm = ({
   setAddedExceptionDate,
   onCreateAddedException,
 }: ExtraOccurrenceFormProps) => {
-  const { t } = useTranslation(['operational-studies']);
+  const { t, i18n } = useTranslation(['operational-studies']);
 
   return (
     <div className="train-add-extra-occurrence-form">
@@ -42,6 +42,7 @@ const ExtraOccurrenceForm = ({
               label: t('manageTrainSchedule.trainHeader.form.departureDate'),
               small: true,
             }}
+            calendarPickerProps={{ locale: i18n.language }}
           />
           <TimePicker
             id={'train-add-extra-occurrence-time'}

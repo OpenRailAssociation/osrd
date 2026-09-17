@@ -24,7 +24,7 @@ type StdcmOpScheduleProps = {
 };
 
 const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOpScheduleProps) => {
-  const { t } = useTranslation('stdcm');
+  const { t, i18n } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
@@ -136,6 +136,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
               });
             }}
             errorMessages={datePickerErrorMessages}
+            calendarPickerProps={{ locale: i18n.language }}
           />
           <TimePicker
             testIdPrefix={`time-${opId}`}

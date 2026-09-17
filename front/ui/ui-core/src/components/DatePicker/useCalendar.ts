@@ -10,12 +10,23 @@ import {
   normalizeDate,
 } from './utils';
 
+const getLocalizedWeekdays = (locale: string = navigator.language) => {
+  const formatter = new Intl.DateTimeFormat(locale, { weekday: 'narrow' });
+  return [...Array(7).keys()].map((dayIndex) => {
+    // January 1st 2024 is a Monday, so dayIndex 0 → Monday ... dayIndex 6 → Sunday.
+    const date = new Date(Date.UTC(2024, 0, 1 + dayIndex));
+    return formatter.format(date);
+  });
+};
+
 export default function useCalendar({
   displayedMonthStartDate,
   selectableSlot,
   selectedSlot,
+  locale,
 }: CalendarProps) {
   const now = new Date();
+  const weekDays = getLocalizedWeekdays(locale);
   now.setHours(0, 0, 0, 0);
   const referenceDate = selectableSlot?.start ?? now;
   referenceDate.setHours(0, 0, 0, 0);
@@ -61,5 +72,6 @@ export default function useCalendar({
     isToday: (date: Date) => normalizeDate(date).getTime() === normalizeDate(now).getTime(),
     buildDayWrapperClassName,
     isDateSelectable,
+    weekDays,
   };
 }

@@ -3,13 +3,12 @@ import React from 'react';
 import { type CalendarSlot } from './type';
 import useCalendar from './useCalendar';
 
-const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 export type CalendarProps = {
   selectedSlot?: CalendarSlot;
   selectableSlot?: CalendarSlot;
   displayedMonthStartDate: Date;
   onDayClick: (date: Date) => void;
+  locale?: string;
 };
 
 type DayProps = {
@@ -35,17 +34,18 @@ const Day = ({ date, isToday, isSelectable, dayWrapperClassName, onClick }: DayP
 );
 
 const Calendar = (props: CalendarProps) => {
-  const { days, isToday, isDateSelectable, buildDayWrapperClassName } = useCalendar(props);
-  const { displayedMonthStartDate, onDayClick } = props;
+  const { days, isToday, isDateSelectable, buildDayWrapperClassName, weekDays } =
+    useCalendar(props);
+  const { displayedMonthStartDate, onDayClick, locale } = props;
   return (
     <div className="calendar-wrapper">
       <div className="calendar-anatomy">
         <p className="calendar-month-label">
-          {displayedMonthStartDate.toLocaleString('en-GB', { month: 'short' })}
+          {displayedMonthStartDate.toLocaleString(locale || navigator.language, { month: 'short' })}
         </p>
         <div className="calendar-grid-wrapper">
           <div className="calendar-weekday-labels">
-            {WEEKDAY_LABELS.map((label, index) => (
+            {weekDays.map((label, index) => (
               <p key={`${label}-${index}`}>{label}</p>
             ))}
           </div>

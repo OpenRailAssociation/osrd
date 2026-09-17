@@ -253,7 +253,7 @@ const ExpandedTrainForm = ({
   onPersistTrain,
   onItineraryOpened,
 }: ExpandedTrainFormProps) => {
-  const { t } = useTranslation(['operational-studies', 'translation']);
+  const { t, i18n } = useTranslation(['operational-studies', 'translation']);
   const infraID = useInfraID();
   const { scenario } = useScenarioContext();
   const timetableType = scenario.timetable_type;
@@ -464,6 +464,7 @@ const ExpandedTrainForm = ({
                 onFieldImmediateChange('departure_date', departureDate);
               }}
               selectableSlot={ANY_DATE_SLOT}
+              calendarPickerProps={{ locale: i18n.language }}
             />
           </div>
         )}
