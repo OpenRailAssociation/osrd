@@ -355,6 +355,13 @@
                     "null"
                   ]
                 },
+                "labels": {
+                  "additionalProperties": true,
+                  "description": "labels to add to cronjob pod",
+                  "required": [],
+                  "title": "labels",
+                  "type": "object"
+                },
                 "schedule": {
                   "default": "3 1 * * mon-fri",
                   "description": "cronjob format time of execution. Set to null to disable",

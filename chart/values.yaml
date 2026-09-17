@@ -415,6 +415,11 @@ services:
       extend: ""
       # -- (list) list of env variable to pass to cronjob script. Editoast default service variables are already set
       env: []
+      # @schema
+      # additionalProperties: true
+      # @schema
+      # -- (object) labels to add to cronjob pod
+      labels: {}
     # @schema
     # type: [string, null]
     # @schema
