@@ -166,12 +166,7 @@ const useUpdateTimesStopsTable = (
       if (propagatedResult)
         return {
           path: propagatedResult.updatedPath,
-          // The days must be right before saving
-          schedule: cascadeArrivals({
-            schedule: propagatedResult.updatedSchedule,
-            path: propagatedResult.updatedPath,
-            fromPathIndex: 1,
-          }),
+          schedule: propagatedResult.updatedSchedule,
           start_time: startTimeToMs(propagatedResult.updatedStartTime),
         };
 
