@@ -22,7 +22,8 @@ import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
 import {
-  type CellUpdate,
+  type ArrivalUpdate,
+  type DepartureUpdate,
   type PendingEdit,
   type PropagationMode,
   type StopDurationUpdate,
@@ -32,7 +33,6 @@ import {
   type UpdateCellStatus,
   type TimeFillMode,
   type RequestedTimeField,
-  type BatchTimesUpdate,
 } from './types';
 
 type TimeStopsTableWrapperProps = {
@@ -197,34 +197,28 @@ const TimeStopsTableWrapper = ({
       });
   };
 
-  const buildEditsForUpdate = (
-    singleEdit: PendingEdit,
-    update: Exclude<CellUpdate, BatchTimesUpdate> & { propagationMode: PropagationMode }
+  const buildEditsForRequestedTimesUpdate = (
+    update: ArrivalUpdate | DepartureUpdate
   ): PendingEdit[] => {
     const propagationResult = propagateTime(update, selectedTrain, scenario.timetable_type);
-    if (!propagationResult) return [singleEdit];
-
-    const propagationEdits = propagationToEdits(propagationResult, rows);
-
-    // When editing the origin, or when shifting all waypoints, propagationEdits already has the correct date.
-    // singleEdit must be skipped because the typed value can carry the
-    // wrong calendar day (the input only captures HH:mm:ss, not the date).
-    if (update.propagationMode === 'shiftAllWaypoints' || update.row.opOnPathIndex === 0) {
-      return propagationEdits;
-    }
-
-    return [singleEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
+    // If there is nothing to propagate, the typed value is the only edit
+    return propagationResult
+      ? propagationToEdits(propagationResult, rows)
+      : [{ rowId: update.row.id, field: update.field, value: update.value }];
   };
 
-  const buildEditsForStopDurationUpdate = (
-    singleEdit: PendingEdit,
-    update: StopDurationUpdate
-  ): PendingEdit[] => {
+  const buildEditsForStopDurationUpdate = (update: StopDurationUpdate): PendingEdit[] => {
     const propagationResult = propagateStopDuration(update, selectedTrain, scenario.timetable_type);
-    if (!propagationResult) return [singleEdit];
-
-    // The propagation result describes the edited row too.
-    return propagationToEdits(propagationResult, rows);
+    // If there is nothing to propagate, the typed value is the only edit
+    return propagationResult
+      ? propagationToEdits(propagationResult, rows)
+      : [
+          {
+            rowId: update.row.id,
+            field: update.field,
+            value: update.value !== null ? new Duration({ seconds: update.value }) : null,
+          },
+        ];
   };
 
   const buildEditsForMarginUpdate = (
@@ -256,9 +250,8 @@ const TimeStopsTableWrapper = ({
     arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => {
-    const singleEdit: PendingEdit = { rowId: row.id, field: 'requestedArrival', value: arrival };
     commitEdit(
-      buildEditsForUpdate(singleEdit, {
+      buildEditsForRequestedTimesUpdate({
         row,
         field: 'requestedArrival',
         value: arrival,
@@ -273,13 +266,8 @@ const TimeStopsTableWrapper = ({
     departure: StartTime | null,
     propagationMode: PropagationMode
   ) => {
-    const singleEdit: PendingEdit = {
-      rowId: row.id,
-      field: 'requestedDeparture',
-      value: departure,
-    };
     commitEdit(
-      buildEditsForUpdate(singleEdit, {
+      buildEditsForRequestedTimesUpdate({
         row,
         field: 'requestedDeparture',
         value: departure,
@@ -294,13 +282,8 @@ const TimeStopsTableWrapper = ({
     durationSeconds: number | null,
     propagationMode: StopPropagationMode
   ) => {
-    const singleEdit: PendingEdit = {
-      rowId: row.id,
-      field: 'stopDuration',
-      value: durationSeconds !== null ? new Duration({ seconds: durationSeconds }) : null,
-    };
     commitEdit(
-      buildEditsForStopDurationUpdate(singleEdit, {
+      buildEditsForStopDurationUpdate({
         row,
         field: 'stopDuration',
         value: durationSeconds,
