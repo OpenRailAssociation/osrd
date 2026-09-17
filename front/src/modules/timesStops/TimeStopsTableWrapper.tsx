@@ -10,13 +10,11 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { Duration, type StartTime } from 'utils/duration';
+import { msToStartTime, type StartTime } from 'utils/duration';
 
-import { computeOptimisticRow, propagationToEdits } from './helpers/cellUpdate';
+import { computeOptimisticRow, computePendingEditsFromSchedule } from './helpers/cellUpdate';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
-import { propagateStopDuration } from './helpers/stopDurationPropagation';
-import { propagateTime } from './helpers/timePropagation';
 import { getTruncatedToSecondStartTime } from './helpers/utils';
 import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
@@ -143,9 +141,8 @@ const TimeStopsTableWrapper = ({
   );
 
   const {
-    updateArrival,
-    updateStopDuration,
-    updateDeparture,
+    computeTrainUpdate,
+    persistTrainPatch,
     updateReceptionSignal,
     updateRequestedMargin,
     updatePowerRestrictions,
@@ -197,28 +194,26 @@ const TimeStopsTableWrapper = ({
       });
   };
 
-  const buildEditsForRequestedTimesUpdate = (
-    update: ArrivalUpdate | DepartureUpdate
-  ): PendingEdit[] => {
-    const propagationResult = propagateTime(update, selectedTrain, scenario.timetable_type);
-    // If there is nothing to propagate, the typed value is the only edit
-    return propagationResult
-      ? propagationToEdits(propagationResult, rows)
-      : [{ rowId: update.row.id, field: update.field, value: update.value }];
-  };
-
-  const buildEditsForStopDurationUpdate = (update: StopDurationUpdate): PendingEdit[] => {
-    const propagationResult = propagateStopDuration(update, selectedTrain, scenario.timetable_type);
-    // If there is nothing to propagate, the typed value is the only edit
-    return propagationResult
-      ? propagationToEdits(propagationResult, rows)
-      : [
-          {
-            rowId: update.row.id,
-            field: update.field,
-            value: update.value !== null ? new Duration({ seconds: update.value }) : null,
-          },
-        ];
+  const commitTimesUpdate = (update: ArrivalUpdate | DepartureUpdate | StopDurationUpdate) => {
+    const patch = computeTrainUpdate(update);
+    // Editing a row that is not a path step yet creates one
+    const addedPathStepId = patch?.path?.find(
+      (step) => !selectedTrain.path.some((current) => current.id === step.id)
+    )?.id;
+    const patchedRows = addedPathStepId
+      ? rows.map((row) =>
+          row.id === update.row.id ? { ...row, pathStepId: addedPathStepId } : row
+        )
+      : rows;
+    const edits =
+      patch?.schedule && patch.start_time !== undefined
+        ? computePendingEditsFromSchedule(
+            patch.schedule,
+            msToStartTime(patch.start_time, startTime),
+            patchedRows
+          )
+        : [];
+    commitEdit(edits, () => persistTrainPatch(patch));
   };
 
   const buildEditsForMarginUpdate = (
@@ -250,15 +245,7 @@ const TimeStopsTableWrapper = ({
     arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => {
-    commitEdit(
-      buildEditsForRequestedTimesUpdate({
-        row,
-        field: 'requestedArrival',
-        value: arrival,
-        propagationMode,
-      }),
-      () => updateArrival(row, arrival, propagationMode)
-    );
+    commitTimesUpdate({ row, field: 'requestedArrival', value: arrival, propagationMode });
   };
 
   const handleDepartureChange = (
@@ -266,15 +253,7 @@ const TimeStopsTableWrapper = ({
     departure: StartTime | null,
     propagationMode: PropagationMode
   ) => {
-    commitEdit(
-      buildEditsForRequestedTimesUpdate({
-        row,
-        field: 'requestedDeparture',
-        value: departure,
-        propagationMode,
-      }),
-      () => updateDeparture(row, departure, propagationMode)
-    );
+    commitTimesUpdate({ row, field: 'requestedDeparture', value: departure, propagationMode });
   };
 
   const handleStopDurationChange = (
@@ -282,15 +261,7 @@ const TimeStopsTableWrapper = ({
     durationSeconds: number | null,
     propagationMode: StopPropagationMode
   ) => {
-    commitEdit(
-      buildEditsForStopDurationUpdate({
-        row,
-        field: 'stopDuration',
-        value: durationSeconds,
-        propagationMode,
-      }),
-      () => updateStopDuration(row, durationSeconds, propagationMode)
-    );
+    commitTimesUpdate({ row, field: 'stopDuration', value: durationSeconds, propagationMode });
   };
 
   const handleReceptionSignalChange = (row: TimesStopsRow, signal: ReceptionSignal | undefined) =>

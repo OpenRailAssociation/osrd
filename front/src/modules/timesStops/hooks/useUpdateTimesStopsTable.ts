@@ -27,7 +27,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
-import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
+import { Duration, startTimeToMs } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -57,8 +57,6 @@ import type {
   ReceptionSignalUpdate,
   RequestedMarginUpdate,
   StopDurationUpdate,
-  PropagationMode,
-  StopPropagationMode,
   MarginValue,
   TimesStopsRow,
   UpdateCellStatus,
@@ -342,7 +340,7 @@ const useUpdateTimesStopsTable = (
    * Uses exception-specific endpoints instead of updating the full paced train.
    */
   const updateOccurrence = useCallback(
-    async (occurrenceId: OccurrenceId, update: CellUpdate): Promise<UpdateCellStatus> => {
+    async (occurrenceId: OccurrenceId, patch: TrainPatch): Promise<UpdateCellStatus> => {
       const trainScheduleId = extractEditoastIdFromTrainScheduleId(
         extractTrainScheduleIdFromOccurrenceId(occurrenceId)
       );
@@ -377,9 +375,6 @@ const useUpdateTimesStopsTable = (
       // selectedTrain.train_name is the paced train's BASE name, but the
       // exception diff expects the occurrence's computed name.
       const occurrenceTrainName = getOccurrenceTrainName(originalPacedTrain, occurrenceId);
-
-      const patch = computeTrainUpdate(update);
-      if (!patch) return 'skipped';
 
       const updatedOccurrence: TrainSchedule = {
         ...buildUpdatedOccurrence(selectedTrain, occurrenceTrainName),
@@ -425,30 +420,27 @@ const useUpdateTimesStopsTable = (
    * Handle update when the selected train is a TrainSchedule (not an occurrence).
    */
   const handleUpdateTrainSchedule = useCallback(
-    async (trainId: TrainScheduleId, update: CellUpdate): Promise<UpdateCellStatus> => {
-      const patch = computeTrainUpdate(update);
-      if (!patch) return 'skipped';
-
-      return persistTrain({
+    async (trainId: TrainScheduleId, patch: TrainPatch): Promise<UpdateCellStatus> =>
+      persistTrain({
         ...selectedTrain,
         id: extractEditoastIdFromTrainScheduleId(trainId),
         ...patch,
-      });
-    },
-    [selectedTrain, computeTrainUpdate, persistTrain]
+      }),
+    [selectedTrain, persistTrain]
   );
 
   /**
-   * Main update function that routes to the appropriate handler.
+   * Persist a patch, routing to the appropriate handler.
    */
-  const updateCell = useCallback(
-    async (update: CellUpdate): Promise<UpdateCellStatus> => {
+  const persistTrainPatch = useCallback(
+    async (patch: TrainPatch | undefined): Promise<UpdateCellStatus> => {
+      if (!patch) return 'skipped';
       const { id: trainId } = selectedTrain;
 
       if (isOccurrenceId(trainId)) {
-        return updateOccurrence(trainId, update);
+        return updateOccurrence(trainId, patch);
       } else if (isTrainScheduleId(trainId)) {
-        return handleUpdateTrainSchedule(trainId, update);
+        return handleUpdateTrainSchedule(trainId, patch);
       } else {
         throw new Error('TrainSchedules are not handled anymore.');
       }
@@ -456,32 +448,9 @@ const useUpdateTimesStopsTable = (
     [selectedTrain, updateOccurrence, handleUpdateTrainSchedule]
   );
 
-  const updateArrival = useCallback(
-    (row: TimesStopsRow, arrival: StartTime | null, propagationMode: PropagationMode) =>
-      updateCell({
-        row,
-        field: 'requestedArrival',
-        value: arrival,
-        propagationMode,
-      }),
-    [updateCell]
-  );
-
-  const updateStopDuration = useCallback(
-    (row: TimesStopsRow, durationSeconds: number | null, propagationMode: StopPropagationMode) =>
-      updateCell({ row, field: 'stopDuration', value: durationSeconds, propagationMode }),
-    [updateCell]
-  );
-
-  const updateDeparture = useCallback(
-    (row: TimesStopsRow, departure: StartTime | null, propagationMode: PropagationMode) =>
-      updateCell({
-        row,
-        field: 'requestedDeparture',
-        value: departure,
-        propagationMode,
-      }),
-    [updateCell]
+  const updateCell = useCallback(
+    (update: CellUpdate) => persistTrainPatch(computeTrainUpdate(update)),
+    [persistTrainPatch, computeTrainUpdate]
   );
 
   const updateReceptionSignal = useCallback(
@@ -512,9 +481,8 @@ const useUpdateTimesStopsTable = (
   );
 
   return {
-    updateArrival,
-    updateStopDuration,
-    updateDeparture,
+    computeTrainUpdate,
+    persistTrainPatch,
     updateReceptionSignal,
     updateRequestedMargin,
     updatePowerRestrictions,
