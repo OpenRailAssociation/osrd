@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import useCalendar from '../useCalendar';
+import useCalendar, { getLocalizedWeekdays } from '../useCalendar';
 
 export const january = 0;
 export const february = 1;
@@ -157,5 +157,15 @@ describe('useCalendar', () => {
       const today = new Date();
       expect(defaultResult.current.isToday(today)).toBe(true);
     });
+  });
+});
+
+describe('getLocalizedWeekdays', () => {
+  it.each([
+    ['en-US', ['M', 'T', 'W', 'T', 'F', 'S', 'S']],
+    ['fr-FR', ['L', 'M', 'M', 'J', 'V', 'S', 'D']],
+    ['de-DE', ['M', 'D', 'M', 'D', 'F', 'S', 'S']],
+  ])('should return localized weekday labels for %s', (locale, expected) => {
+    expect(getLocalizedWeekdays(locale)).toEqual(expected);
   });
 });
