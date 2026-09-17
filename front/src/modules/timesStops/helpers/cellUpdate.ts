@@ -231,39 +231,38 @@ export const computeOptimisticRow = (
 };
 
 /**
- * Converts a propagation result into PendingEdits for all affected rows.
- * Each affected row gets its new requestedArrival and/or stopDuration.
- * Arrivals are computed from updatedSchedule + updatedStartTime,
- * except for the origin, whose arrival is start_time.
+ * Lists the edits needed for the rows to display the given schedule.
+ * Each changed row gets its new requestedArrival and/or stopDuration.
+ * Arrivals are rebuilt from the schedule offsets, which are relative to startTime,
+ * except for the origin, whose arrival is startTime itself.
  */
-export const propagationToEdits = (
-  result: { updatedSchedule: ScheduleItem[]; updatedStartTime: StartTime },
+export const computePendingEditsFromSchedule = (
+  schedule: ScheduleItem[],
+  startTime: StartTime,
   rows: TimesStopsRow[]
 ): PendingEdit[] =>
   rows.flatMap((row): PendingEdit[] => {
-    const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
+    const item = schedule.find((s) => s.at === row.pathStepId);
 
     let newArrival: StartTime | null = null;
     if (row.opOnPathIndex === 0) {
-      newArrival = result.updatedStartTime;
+      newArrival = startTime;
     } else if (item?.arrival) {
-      newArrival = addDurationToStartTime(
-        result.updatedStartTime,
-        getTruncatedToSecondSchedule(item.arrival)
-      );
+      newArrival = addDurationToStartTime(startTime, getTruncatedToSecondSchedule(item.arrival));
     }
-
-    const arrivalChanged =
-      newArrival &&
-      (!row.requestedArrival || startTimeToMs(newArrival) !== startTimeToMs(row.requestedArrival));
+    // A missing value counts as a change
+    const arrivalChanged = newArrival
+      ? !row.requestedArrival || startTimeToMs(newArrival) !== startTimeToMs(row.requestedArrival)
+      : !!row.requestedArrival;
 
     const newStop = item?.stop_for ? getTruncatedToSecondSchedule(item.stop_for) : null;
-    const stopChanged = item && newStop?.ms !== row.stopDuration?.ms;
+    const stopChanged = newStop?.ms !== row.stopDuration?.ms;
 
-    if (!newArrival || !arrivalChanged)
+    if (!arrivalChanged)
       return stopChanged ? [{ rowId: row.id, field: 'stopDuration', value: newStop }] : [];
 
-    if (!stopChanged) return [{ rowId: row.id, field: 'requestedArrival', value: newArrival }];
+    if (!stopChanged || !newArrival)
+      return [{ rowId: row.id, field: 'requestedArrival', value: newArrival }];
 
     return [
       {
