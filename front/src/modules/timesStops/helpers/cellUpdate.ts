@@ -232,28 +232,46 @@ export const computeOptimisticRow = (
 
 /**
  * Converts a propagation result into PendingEdits for all affected rows.
- * Each affected row gets a new requestedArrival computed from updatedSchedule + updatedStartTime,
- * except the origin, whose arrival is start_time.
+ * Each affected row gets its new requestedArrival and/or stopDuration.
+ * Arrivals are computed from updatedSchedule + updatedStartTime,
+ * except for the origin, whose arrival is start_time.
  */
 export const propagationToEdits = (
   result: { updatedSchedule: ScheduleItem[]; updatedStartTime: StartTime },
   rows: TimesStopsRow[]
 ): PendingEdit[] =>
-  rows.flatMap((row) => {
-    let newArrival: StartTime;
+  rows.flatMap((row): PendingEdit[] => {
+    const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
+
+    let newArrival: StartTime | null = null;
     if (row.opOnPathIndex === 0) {
       newArrival = result.updatedStartTime;
-    } else {
-      const item = result.updatedSchedule.find((s) => s.at === row.pathStepId);
-      if (!item?.arrival) return [];
+    } else if (item?.arrival) {
       newArrival = addDurationToStartTime(
         result.updatedStartTime,
         getTruncatedToSecondSchedule(item.arrival)
       );
     }
-    if (row.requestedArrival && startTimeToMs(newArrival) === startTimeToMs(row.requestedArrival))
-      return [];
-    return [{ rowId: row.id, field: 'requestedArrival' as const, value: newArrival }];
+
+    const arrivalChanged =
+      newArrival &&
+      (!row.requestedArrival || startTimeToMs(newArrival) !== startTimeToMs(row.requestedArrival));
+
+    const newStop = item?.stop_for ? getTruncatedToSecondSchedule(item.stop_for) : null;
+    const stopChanged = item && newStop?.ms !== row.stopDuration?.ms;
+
+    if (!newArrival || !arrivalChanged)
+      return stopChanged ? [{ rowId: row.id, field: 'stopDuration', value: newStop }] : [];
+
+    if (!stopChanged) return [{ rowId: row.id, field: 'requestedArrival', value: newArrival }];
+
+    return [
+      {
+        rowId: row.id,
+        field: 'stopDurationWithArrival',
+        value: { stop: newStop, arrival: newArrival },
+      },
+    ];
   });
 
 /**

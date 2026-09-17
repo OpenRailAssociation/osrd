@@ -223,24 +223,8 @@ const TimeStopsTableWrapper = ({
     const propagationResult = propagateStopDuration(update, selectedTrain, scenario.timetable_type);
     if (!propagationResult) return [singleEdit];
 
-    const propagationEdits = propagationToEdits(propagationResult, rows);
-
-    const editedRowArrivalEdit = propagationEdits.find(
-      (edit): edit is PendingEdit & { field: 'requestedArrival' } =>
-        edit.rowId === singleEdit.rowId && edit.field === 'requestedArrival'
-    );
-    const editedRowEdit: PendingEdit = editedRowArrivalEdit
-      ? {
-          rowId: singleEdit.rowId,
-          field: 'stopDurationWithArrival',
-          value: {
-            stop: update.value !== null ? new Duration({ seconds: update.value }) : null,
-            arrival: editedRowArrivalEdit.value ?? propagationResult.updatedStartTime,
-          },
-        }
-      : singleEdit;
-
-    return [editedRowEdit, ...propagationEdits.filter((e) => e.rowId !== singleEdit.rowId)];
+    // The propagation result describes the edited row too.
+    return propagationToEdits(propagationResult, rows);
   };
 
   const buildEditsForMarginUpdate = (
