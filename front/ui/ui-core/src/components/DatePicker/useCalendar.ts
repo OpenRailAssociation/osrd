@@ -10,7 +10,7 @@ import {
   normalizeDate,
 } from './utils';
 
-const getLocalizedWeekdays = (locale: string = navigator.language) => {
+export const getLocalizedWeekdays = (locale: string = navigator.language) => {
   const formatter = new Intl.DateTimeFormat(locale, { weekday: 'narrow' });
   return [...Array(7).keys()].map((dayIndex) => {
     // January 1st 2024 is a Monday, so dayIndex 0 → Monday ... dayIndex 6 → Sunday.
