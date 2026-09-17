@@ -17,6 +17,7 @@ export type CalendarPickerPrivateProps = {
 export type CalendarPickerPublicProps = {
   initialDate?: Date;
   numberOfMonths?: 1 | 2 | 3;
+  locale?: string;
 };
 
 export type CalendarPickerProps = CalendarPickerPrivateProps & CalendarPickerPublicProps;
@@ -28,6 +29,7 @@ const CalendarPicker = ({
   numberOfMonths = 1,
   onDayClick,
   calendarPickerRef,
+  locale,
 }: CalendarPickerProps) => {
   const {
     displayedMonthsStartDates,
@@ -63,6 +65,7 @@ const CalendarPicker = ({
             selectableSlot={selectableSlot}
             selectedSlot={selectedSlot}
             onDayClick={onDayClick}
+            locale={locale}
           />
         ))}
       </div>

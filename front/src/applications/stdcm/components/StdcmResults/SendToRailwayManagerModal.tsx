@@ -116,7 +116,7 @@ const SendToRailwayManagerModal = ({
   pdfBlob,
 }: SendToRailwayManagerModalProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
-  const { t: mainT } = useTranslation('translation');
+  const { t: mainT, i18n } = useTranslation('translation');
   const dateTimeLocale = useDateTimeLocale();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const dispatch = useAppDispatch();
@@ -620,6 +620,7 @@ const SendToRailwayManagerModal = ({
                     });
                   }
                 }}
+                calendarPickerProps={{ locale: i18n.language }}
               />
             </div>
             <div className="linked-trains">

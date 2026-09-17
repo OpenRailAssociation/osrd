@@ -22,7 +22,7 @@ const StdcmLinkedTrainSearch = ({
   linkedTrainType,
   linkedOpId,
 }: StdcmLinkedTrainSearchProps) => {
-  const { t } = useTranslation('stdcm');
+  const { t, i18n } = useTranslation('stdcm');
   const [displayLinkedTrainSearch, setShowLinkedTrainSearch] = useState(false);
   const [isLinkedTrainDateValid, setIsLinkedTrainDateValid] = useState(true);
 
@@ -104,6 +104,7 @@ const StdcmLinkedTrainSearch = ({
                   setLinkedTrainDate(date);
                 }
               }}
+              calendarPickerProps={{ locale: i18n.language }}
             />
           </div>
           {displaySearchButton && (
