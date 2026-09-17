@@ -580,10 +580,10 @@ const PathStepItem = ({
             />
           </button>
         </div>
+        {shouldShowInvalidMessage && (
+          <div className="invalid-step-message">{getInvalidMessage()}</div>
+        )}
       </div>
-      {shouldShowInvalidMessage && (
-        <span className="invalid-step-message">{getInvalidMessage()}</span>
-      )}
     </div>
   );
 };
