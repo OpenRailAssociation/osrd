@@ -40,7 +40,7 @@ const MINUTES_FORMATTER = (t: number) => {
 };
 
 const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) => {
-  if (pixelsPerMinute > 1) return new Date(t).toLocaleTimeString(undefined, HOUR_OPTIONS_LONG);
+  if (pixelsPerMinute >= 1) return new Date(t).toLocaleTimeString(undefined, HOUR_OPTIONS_LONG);
 
   const parts = new Intl.DateTimeFormat(undefined, HOUR_OPTIONS_SHORT).formatToParts(t);
   return parts.find((part) => part.type === 'hour')?.value ?? '';
