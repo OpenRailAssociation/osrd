@@ -80,9 +80,15 @@ spec:
               - name: config
                 mountPath: /crons/cronjob.sh
                 subPath: cronjob.sh
+             {{- with (.Values.services.editoast.volumeMounts | default list) }}
+             {{- toYaml . | nindent 14 }}
+             {{- end }}
           volumes:
             - name: config
               configMap:
                 name: {{ include "osrd.fullname" . }}-editoast-cronjob
+          {{- with (.Values.services.editoast.volumes | default list) }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
           restartPolicy: Never
 {{- end }}
