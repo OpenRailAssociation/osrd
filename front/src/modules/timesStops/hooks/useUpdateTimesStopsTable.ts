@@ -12,7 +12,6 @@ import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/oper
 import {
   osrdEditoastApi,
   type TrainSchedule,
-  type PathItem,
   type ReceptionSignal,
   type ScheduleItem,
   type TrainScheduleResponse,
@@ -48,10 +47,16 @@ import {
 } from '../helpers/cellUpdate';
 import { propagateStopDuration } from '../helpers/stopDurationPropagation';
 import { propagateTime } from '../helpers/timePropagation';
+import { getTruncatedToSecondStartTime } from '../helpers/utils';
 import type {
+  ArrivalUpdate,
   CellUpdate,
+  DepartureUpdate,
   OptimisticEdit,
   PowerRestrictionUpdate,
+  ReceptionSignalUpdate,
+  RequestedMarginUpdate,
+  StopDurationUpdate,
   PropagationMode,
   StopPropagationMode,
   MarginValue,
@@ -60,6 +65,11 @@ import type {
   BatchTimesUpdate,
   RequestedTimeField,
 } from '../types';
+
+/** The train fields an edit can change. */
+type TrainPatch = Partial<
+  Pick<TrainSchedule, 'path' | 'schedule' | 'margins' | 'power_restrictions' | 'start_time'>
+>;
 
 const formatRequestedMargin = (requestedMargin: MarginValue | null) => {
   if (!requestedMargin) return null;
@@ -93,64 +103,76 @@ const useUpdateTimesStopsTable = (
   const { upsertTrainSchedules } = useTimetableContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
-  const computeUpdatedMargins = useCallback(
-    (updatedPath: PathItem[], requestedMargin: MarginValue | null, pathStepId: string) => {
+  const persistTrain = useCallback(
+    async (train: TrainScheduleResponse): Promise<'updated'> => {
+      await updateTrainSchedule({
+        id: train.id,
+        trainSchedule: train,
+      }).unwrap();
+      upsertTrainSchedules([train]);
+      return 'updated';
+    },
+    [updateTrainSchedule, upsertTrainSchedules]
+  );
+
+  const computeMarginUpdate = useCallback(
+    (update: RequestedMarginUpdate): TrainPatch => {
+      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+
       const baseTrainInputs: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'> = {
         path: updatedPath,
         schedule: selectedTrain.schedule,
         margins: selectedTrain.margins,
       };
-
       const updatedPathSteps = updatedPath.map((_, index) =>
         computeBasePathStep(baseTrainInputs, index)
       );
+
       const targetedStep = updatedPathSteps.find((step) => step.id === pathStepId);
 
-      if (!targetedStep) return selectedTrain.margins;
+      if (!targetedStep) return { path: updatedPath };
 
-      targetedStep.theoreticalMargin = formatRequestedMargin(requestedMargin) ?? undefined;
-      return formatMargin(updatedPathSteps);
+      targetedStep.theoreticalMargin = formatRequestedMargin(update.value) ?? undefined;
+      return { path: updatedPath, margins: formatMargin(updatedPathSteps) };
     },
-    [selectedTrain]
+    [selectedTrain, allRows]
   );
 
-  const persistTrain = async (train: TrainScheduleResponse): Promise<'updated'> => {
-    await updateTrainSchedule({
-      id: train.id,
-      trainSchedule: train,
-    }).unwrap();
-    upsertTrainSchedules([train]);
-    return 'updated';
-  };
+  /** A stop is always required to edit a reception signal, so its schedule item must exist. */
+  const computeReceptionSignalUpdate = useCallback(
+    (update: ReceptionSignalUpdate): TrainPatch | undefined => {
+      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const currentSchedule = selectedTrain.schedule ?? [];
+      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
+      if (existingItemIndex < 0) return undefined;
 
-  /**
-   * Compute the updated path and schedule based on the cell update.
-   */
-  const computeUpdatedPathAndSchedule = useCallback(
-    (
-      update: Exclude<CellUpdate, PowerRestrictionUpdate | BatchTimesUpdate>
-    ):
-      | {
-          updatedPath: PathItem[];
-          updatedSchedule: ScheduleItem[];
-          updatedMargins: TrainSchedule['margins'];
-          updatedStartTime?: StartTime;
-        }
-      | undefined => {
+      return {
+        path: updatedPath,
+        schedule: replaceElementAtIndex(currentSchedule, existingItemIndex, {
+          ...currentSchedule[existingItemIndex],
+          reception_signal: update.value,
+        }),
+      };
+    },
+    [selectedTrain, allRows]
+  );
+
+  const computeTimesUpdate = useCallback(
+    (update: ArrivalUpdate | DepartureUpdate | StopDurationUpdate): TrainPatch | undefined => {
       const propagatedResult =
         update.field === 'stopDuration'
           ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
           : propagateTime(update, selectedTrain, scenario.timetable_type);
       if (propagatedResult)
         return {
-          ...propagatedResult,
+          path: propagatedResult.updatedPath,
           // The days must be right before saving
-          updatedSchedule: cascadeArrivals({
+          schedule: cascadeArrivals({
             schedule: propagatedResult.updatedSchedule,
             path: propagatedResult.updatedPath,
             fromPathIndex: 1,
           }),
-          updatedMargins: selectedTrain.margins,
+          start_time: startTimeToMs(propagatedResult.updatedStartTime),
         };
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
@@ -158,31 +180,8 @@ const useUpdateTimesStopsTable = (
       const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
       const isOrigin = pathStepId === updatedPath[0].id;
 
-      if (update.field === 'requestedTheoreticalMargin') {
-        return {
-          updatedPath,
-          updatedSchedule: currentSchedule,
-          updatedMargins: computeUpdatedMargins(updatedPath, update.value, pathStepId),
-        };
-      }
-
-      // receptionSignal: directly update the schedule item's reception_signal field.
-      // A stop is always required to edit reception signal
-      if (update.field === 'receptionSignal') {
-        if (existingItemIndex < 0) return undefined;
-        const updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
-          ...currentSchedule[existingItemIndex],
-          reception_signal: update.value,
-        });
-        return {
-          updatedPath,
-          updatedSchedule,
-          updatedMargins: selectedTrain.margins,
-        };
-      }
-
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
-      let edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }>;
+      let edit: OptimisticEdit;
       if (update.field === 'stopDuration') {
         edit = {
           field: 'stopDuration',
@@ -197,10 +196,7 @@ const useUpdateTimesStopsTable = (
         edit
       );
 
-      const startTime =
-        scenario.timetable_type === 'CALENDAR'
-          ? new Date(selectedTrain.start_time)
-          : new Duration({ milliseconds: selectedTrain.start_time });
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
       const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
         newState,
         startTime
@@ -231,17 +227,18 @@ const useUpdateTimesStopsTable = (
       }
 
       return {
-        updatedPath,
+        path: updatedPath,
         // The days must be right before saving
-        updatedSchedule: cascadeArrivals({
+        schedule: cascadeArrivals({
           schedule: updatedSchedule,
           path: updatedPath,
           fromPathIndex: 1,
         }),
-        updatedMargins: selectedTrain.margins,
+        // The offsets above are rebuilt from the truncated start time, so it must be saved with them.
+        start_time: startTimeToMs(startTime),
       };
     },
-    [selectedTrain, allRows, computeUpdatedMargins, scenario.timetable_type]
+    [selectedTrain, allRows, scenario.timetable_type]
   );
 
   /**
@@ -249,26 +246,27 @@ const useUpdateTimesStopsTable = (
    * cell is edited. The edited row is upserted as a path step (so a new restriction can
    * be set on a non-path-step waypoint).
    */
-  const computePowerRestrictionUpdate = (update: PowerRestrictionUpdate) => {
-    const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
-    const modifiedRows = allRows.map((r) =>
-      r.id === update.row.id ? { ...r, pathStepId, powerRestriction: update.value } : r
-    );
-    return {
-      updatedPath,
-      powerRestrictions: buildPowerRestrictionsFromRows(modifiedRows),
-    };
-  };
+  const computePowerRestrictionUpdate = useCallback(
+    (update: PowerRestrictionUpdate): TrainPatch => {
+      const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const modifiedRows = allRows.map((r) =>
+        r.id === update.row.id ? { ...r, pathStepId, powerRestriction: update.value } : r
+      );
+      return {
+        path: updatedPath,
+        power_restrictions: buildPowerRestrictionsFromRows(modifiedRows),
+      };
+    },
+    [selectedTrain, allRows]
+  );
 
-  const computeUpdateWithBatch = (update: Exclude<CellUpdate, PowerRestrictionUpdate>) => {
-    if ('rows' in update) {
+  /** Fill several rows at once with the times computed by the simulation. */
+  const computeBatchTimesUpdate = useCallback(
+    (update: BatchTimesUpdate): TrainPatch => {
       let updatedSchedule = selectedTrain.schedule ?? [];
       let currentPath = selectedTrain.path;
 
-      const startTime =
-        scenario.timetable_type === 'CALENDAR'
-          ? new Date(selectedTrain.start_time)
-          : new Duration({ milliseconds: selectedTrain.start_time });
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
 
       for (const row of update.rows) {
         const { pathStepId, updatedPath: updatedPathForRow } = upsertPathStep(
@@ -279,7 +277,7 @@ const useUpdateTimesStopsTable = (
         currentPath = updatedPathForRow;
         const existingItemIndex = updatedSchedule.findIndex((item) => item.at === pathStepId);
 
-        const edit: Exclude<OptimisticEdit, { field: 'powerRestriction' }> =
+        const edit: OptimisticEdit =
           update.field === 'requestedArrival'
             ? {
                 field: 'requestedArrival',
@@ -316,11 +314,33 @@ const useUpdateTimesStopsTable = (
         }
       }
 
-      return { updatedPath: currentPath, updatedSchedule, updatedMargins: selectedTrain.margins };
-    } else {
-      return computeUpdatedPathAndSchedule(update);
-    }
-  };
+      return {
+        path: currentPath,
+        schedule: updatedSchedule,
+        // The offsets above are rebuilt from the truncated start time, so it must be saved with them.
+        start_time: startTimeToMs(startTime),
+      };
+    },
+    [selectedTrain, allRows, scenario.timetable_type]
+  );
+
+  /** Compute the updated train fields for a cell update. */
+  const computeTrainUpdate = useCallback(
+    (update: CellUpdate): TrainPatch | undefined => {
+      if ('rows' in update) return computeBatchTimesUpdate(update);
+      if (update.field === 'powerRestriction') return computePowerRestrictionUpdate(update);
+      if (update.field === 'requestedTheoreticalMargin') return computeMarginUpdate(update);
+      if (update.field === 'receptionSignal') return computeReceptionSignalUpdate(update);
+      return computeTimesUpdate(update);
+    },
+    [
+      computeBatchTimesUpdate,
+      computePowerRestrictionUpdate,
+      computeMarginUpdate,
+      computeReceptionSignalUpdate,
+      computeTimesUpdate,
+    ]
+  );
 
   /**
    * Handle update when the selected train is an occurrence of a PacedTrain.
@@ -363,36 +383,13 @@ const useUpdateTimesStopsTable = (
       // exception diff expects the occurrence's computed name.
       const occurrenceTrainName = getOccurrenceTrainName(originalPacedTrain, occurrenceId);
 
-      let updatedOccurrence: TrainSchedule;
-      if (update.field === 'powerRestriction') {
-        const { updatedPath, powerRestrictions } = computePowerRestrictionUpdate(update);
-        updatedOccurrence = buildUpdatedOccurrence({
-          selectedTrain,
-          updatedPath,
-          updatedSchedule: selectedTrain.schedule ?? [],
-          trainName: occurrenceTrainName,
-          powerRestrictions,
-        });
-      } else {
-        const result = computeUpdateWithBatch(update);
-        if (!result) return 'skipped';
+      const patch = computeTrainUpdate(update);
+      if (!patch) return 'skipped';
 
-        const trainWithUpdatedMargins = {
-          ...selectedTrain,
-          margins: result.updatedMargins,
-        };
-        updatedOccurrence = {
-          ...buildUpdatedOccurrence({
-            selectedTrain: trainWithUpdatedMargins,
-            updatedPath: result.updatedPath,
-            updatedSchedule: result.updatedSchedule,
-            trainName: occurrenceTrainName,
-          }),
-          start_time: result.updatedStartTime
-            ? startTimeToMs(result.updatedStartTime)
-            : selectedTrain.start_time,
-        };
-      }
+      const updatedOccurrence: TrainSchedule = {
+        ...buildUpdatedOccurrence(selectedTrain, occurrenceTrainName),
+        ...patch,
+      };
 
       const { generatedException, existingException, occurrenceIndex } =
         buildOccurrenceExceptionData(originalPacedTrain, updatedOccurrence, occurrenceId);
@@ -419,7 +416,14 @@ const useUpdateTimesStopsTable = (
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
     },
-    [selectedTrain, trainSchedulesWithDetails, computeUpdatedPathAndSchedule, timetableId, dispatch]
+    [
+      selectedTrain,
+      trainSchedulesWithDetails,
+      computeTrainUpdate,
+      timetableId,
+      dispatch,
+      persistTrain,
+    ]
   );
 
   /**
@@ -427,33 +431,16 @@ const useUpdateTimesStopsTable = (
    */
   const handleUpdateTrainSchedule = useCallback(
     async (trainId: TrainScheduleId, update: CellUpdate): Promise<UpdateCellStatus> => {
-      const editoastId = extractEditoastIdFromTrainScheduleId(trainId);
-
-      if (update.field === 'powerRestriction') {
-        const { updatedPath, powerRestrictions } = computePowerRestrictionUpdate(update);
-        return persistTrain({
-          ...selectedTrain,
-          id: editoastId,
-          path: updatedPath,
-          power_restrictions: powerRestrictions,
-        });
-      }
-
-      const result = computeUpdateWithBatch(update);
-      if (!result) return 'skipped';
+      const patch = computeTrainUpdate(update);
+      if (!patch) return 'skipped';
 
       return persistTrain({
         ...selectedTrain,
-        id: editoastId,
-        path: result.updatedPath,
-        schedule: result.updatedSchedule,
-        margins: result.updatedMargins,
-        start_time: result.updatedStartTime
-          ? startTimeToMs(result.updatedStartTime)
-          : selectedTrain.start_time,
+        id: extractEditoastIdFromTrainScheduleId(trainId),
+        ...patch,
       });
     },
-    [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
+    [selectedTrain, computeTrainUpdate, persistTrain]
   );
 
   /**
@@ -474,8 +461,6 @@ const useUpdateTimesStopsTable = (
     [selectedTrain, updateOccurrence, handleUpdateTrainSchedule]
   );
 
-  // Functions are included in deps (exception to the project convention) to propagate
-  // allRows updates through the entire callback chain.
   const updateArrival = useCallback(
     (row: TimesStopsRowNew, arrival: StartTime | null, propagationMode: PropagationMode) =>
       updateCell({

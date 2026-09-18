@@ -28,7 +28,7 @@ const _18H50_MIDNIGHT_CROSSING = new Date('2026-01-02T18:50:00.000Z');
 // Mocked train — only op11 (index 10) and op17 (index 16) have a scheduled arrival.
 const makeTrain = (): Train =>
   ({
-    start_time: _18H00.toISOString(),
+    start_time: _18H00.getTime(),
     // op1 at index 0 through op20 at index 19
     path: Array.from({ length: 20 }, (_, i) => ({ id: `op${i + 1}`, location: {} })),
     schedule: [
@@ -348,49 +348,32 @@ describe('Scenario 4 — +40 min at origin (OP1)', () => {
   });
 
   describe('propagateTime', () => {
-    // atThisWaypoint at origin shifts start_time only.
+    // At origin, atThisWaypoint and fromDeparture both shift start_time only.
     // OP11: 30min - 40min = -10min → midnight crossing → PT23H50M.
     // OP17: 50min - 40min = 10min → midnight crossing → PT24H10M.
-    it('atThisWaypoint — should shift start_time → 18:40, OP11 and OP17 midnight crossing, absolute times preserved', () => {
-      const result = propagateTime(
-        {
-          field: 'requestedArrival',
-          row: originRow,
-          value: _18H40,
-          propagationMode: 'atThisWaypoint',
-        },
-        train,
-        'CALENDAR'
-      );
-      expect(result).toBeDefined();
-      const { updatedStartTime, updatedSchedule } = result!;
-      const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
-
-      expect(updatedStartTime).toEqual(_18H40);
-      expect(scheduleByAt['op11']?.arrival).toBe('PT23H50M'); // 30min - 40min = -10min → midnight crossing
-      expect(scheduleByAt['op17']?.arrival).toBe('PT24H10M'); // 10min < PT23H50M (cascade) → midnight crossing
-      expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(
-        _18H30_MIDNIGHT_CROSSING
-      );
-      expect(toComputedArrival(updatedStartTime, scheduleByAt['op17'].arrival!)).toEqual(
-        _18H50_MIDNIGHT_CROSSING
-      );
-    });
-
-    it('fromDeparture — should return undefined (not applicable at origin)', () => {
-      expect(
-        propagateTime(
-          {
-            field: 'requestedArrival',
-            row: originRow,
-            value: _18H40,
-            propagationMode: 'fromDeparture',
-          },
+    it.each<PropagationMode>(['atThisWaypoint', 'fromDeparture'])(
+      '%s — should shift start_time → 18:40, OP11 and OP17 midnight crossing, absolute times preserved',
+      (mode) => {
+        const result = propagateTime(
+          { field: 'requestedArrival', row: originRow, value: _18H40, propagationMode: mode },
           train,
           'CALENDAR'
-        )
-      ).toBeUndefined();
-    });
+        );
+        expect(result).toBeDefined();
+        const { updatedStartTime, updatedSchedule } = result!;
+        const scheduleByAt = Object.fromEntries(updatedSchedule.map((item) => [item.at, item]));
+
+        expect(updatedStartTime).toEqual(_18H40);
+        expect(scheduleByAt['op11']?.arrival).toBe('PT23H50M'); // 30min - 40min = -10min → midnight crossing
+        expect(scheduleByAt['op17']?.arrival).toBe('PT24H10M'); // 10min < PT23H50M (cascade) → midnight crossing
+        expect(toComputedArrival(updatedStartTime, scheduleByAt['op11'].arrival!)).toEqual(
+          _18H30_MIDNIGHT_CROSSING
+        );
+        expect(toComputedArrival(updatedStartTime, scheduleByAt['op17'].arrival!)).toEqual(
+          _18H50_MIDNIGHT_CROSSING
+        );
+      }
+    );
 
     // At origin, toDestination and shiftAllWaypoints both call propagateShiftAll — same result.
     it.each<PropagationMode>(['toDestination', 'shiftAllWaypoints'])(

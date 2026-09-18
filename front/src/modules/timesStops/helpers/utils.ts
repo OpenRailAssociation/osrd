@@ -8,11 +8,12 @@ import type {
   RelatedOperationalPoint,
   PathItemLocation,
   ReceptionSignal,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { PathStep, Train } from 'reducers/osrdconf/types';
 import { Duration, type StartTime } from 'utils/duration';
 import { msToS } from 'utils/physics';
 import { NO_BREAK_SPACE } from 'utils/strings';
@@ -26,14 +27,21 @@ import {
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
 
-export const truncateStartTimeToSecond = (date: StartTime): StartTime => {
-  if (date instanceof Date) {
-    const truncated = new Date(date);
-    truncated.setMilliseconds(0);
-    return truncated;
-  } else {
-    return new Duration({ seconds: Math.floor(date.total('second')) });
-  }
+/** Truncated to the second, the only granularity the table reads and writes. */
+export const getTruncatedToSecondStartTime = (
+  train: Train,
+  timetableType: TimetableType
+): StartTime => {
+  const seconds = Math.floor(train.start_time / 1000);
+  return timetableType === 'CALENDAR' ? new Date(seconds * 1000) : new Duration({ seconds });
+};
+
+/** Truncated to the second, the only granularity the table reads and writes. */
+export const getTruncatedToSecondSchedule = (offset: string | number): Duration => {
+  let ms: number;
+  if (typeof offset === 'string') ms = Duration.parse(offset).ms;
+  else ms = offset;
+  return new Duration({ seconds: Math.floor(ms / 1000) });
 };
 
 export const truncateStartTimeToDay = (date: StartTime): StartTime => {
@@ -172,10 +180,7 @@ export function formatDigitsAndUnit(fullValue: string | number | undefined, unit
 
 export const formatSignedDelta = (delta: Duration) => {
   const sign = delta.ms >= 0 ? '+' : '-';
-  const label = delta
-    .abs()
-    .round('second')
-    .toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
+  const label = delta.abs().toLocaleString(undefined, { style: 'digital', hours: '2-digit' });
   return `${sign}${label}`;
 };
 
