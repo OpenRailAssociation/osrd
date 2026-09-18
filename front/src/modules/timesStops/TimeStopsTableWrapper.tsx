@@ -10,9 +10,9 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { msToStartTime, type StartTime } from 'utils/duration';
+import type { StartTime } from 'utils/duration';
 
-import { computeOptimisticRow, computePendingEditsFromSchedule } from './helpers/cellUpdate';
+import { computeOptimisticRow } from './helpers/cellUpdate';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import { computePowerRestrictionWarnings } from './helpers/powerRestrictionIncompatibility';
 import { getTruncatedToSecondStartTime } from './helpers/utils';
@@ -20,11 +20,9 @@ import useTimesStopsTableData from './hooks/useTimesStopsTableData';
 import useUpdateTimesStopsTable from './hooks/useUpdateTimesStopsTable';
 import TimesStopsTable from './TimesStopsTable';
 import {
-  type ArrivalUpdate,
-  type DepartureUpdate,
+  type CellUpdate,
   type PendingEdit,
   type PropagationMode,
-  type StopDurationUpdate,
   type StopPropagationMode,
   type MarginValue,
   type TimesStopsRow,
@@ -140,14 +138,11 @@ const TimeStopsTableWrapper = ({
     [allRows, voltages, selectedTrain.path, operationalPointsOnPath, rollingStock]
   );
 
-  const {
-    computeTrainUpdate,
-    persistTrainPatch,
-    updateReceptionSignal,
-    updateRequestedMargin,
-    updatePowerRestrictions,
-    updateMultipleTimes,
-  } = useUpdateTimesStopsTable(selectedTrain, rows, trainSchedulesWithDetails);
+  const { computeTrainUpdate, persistTrainPatch } = useUpdateTimesStopsTable(
+    selectedTrain,
+    rows,
+    trainSchedulesWithDetails
+  );
 
   // True if we are still waiting for fresh simulation data after a user edit.
   // Both conditions must be false before we clear the loading state:
@@ -194,50 +189,9 @@ const TimeStopsTableWrapper = ({
       });
   };
 
-  const commitTimesUpdate = (update: ArrivalUpdate | DepartureUpdate | StopDurationUpdate) => {
-    const patch = computeTrainUpdate(update);
-    // Editing a row that is not a path step yet creates one
-    const addedPathStepId = patch?.path?.find(
-      (step) => !selectedTrain.path.some((current) => current.id === step.id)
-    )?.id;
-    const patchedRows = addedPathStepId
-      ? rows.map((row) =>
-          row.id === update.row.id ? { ...row, pathStepId: addedPathStepId } : row
-        )
-      : rows;
-    const edits =
-      patch?.schedule && patch.start_time !== undefined
-        ? computePendingEditsFromSchedule(
-            patch.schedule,
-            msToStartTime(patch.start_time, startTime),
-            patchedRows
-          )
-        : [];
+  const commitUpdate = (update: CellUpdate) => {
+    const { patch, edits } = computeTrainUpdate(update);
     commitEdit(edits, () => persistTrainPatch(patch));
-  };
-
-  const buildEditsForMarginUpdate = (
-    editedRow: TimesStopsRow,
-    requestedMargin: MarginValue | null
-  ): PendingEdit[] => {
-    const edits: PendingEdit[] = [
-      { rowId: editedRow.id, field: 'requestedTheoreticalMargin', value: requestedMargin },
-    ];
-
-    const editedIndex = rows.findIndex((r) => r.id === editedRow.id);
-    if (editedIndex === -1) return edits;
-
-    for (let i = editedIndex + 1; i < rows.length; i++) {
-      const row = rows[i];
-      if (row.isTheoreticalMarginBoundary) break;
-      edits.push({
-        rowId: row.id,
-        field: 'requestedTheoreticalMargin',
-        value: requestedMargin,
-      });
-    }
-
-    return edits;
   };
 
   const handleArrivalChange = (
@@ -245,7 +199,7 @@ const TimeStopsTableWrapper = ({
     arrival: StartTime | null,
     propagationMode: PropagationMode
   ) => {
-    commitTimesUpdate({ row, field: 'requestedArrival', value: arrival, propagationMode });
+    commitUpdate({ row, field: 'requestedArrival', value: arrival, propagationMode });
   };
 
   const handleDepartureChange = (
@@ -253,7 +207,7 @@ const TimeStopsTableWrapper = ({
     departure: StartTime | null,
     propagationMode: PropagationMode
   ) => {
-    commitTimesUpdate({ row, field: 'requestedDeparture', value: departure, propagationMode });
+    commitUpdate({ row, field: 'requestedDeparture', value: departure, propagationMode });
   };
 
   const handleStopDurationChange = (
@@ -261,33 +215,20 @@ const TimeStopsTableWrapper = ({
     durationSeconds: number | null,
     propagationMode: StopPropagationMode
   ) => {
-    commitTimesUpdate({ row, field: 'stopDuration', value: durationSeconds, propagationMode });
+    commitUpdate({ row, field: 'stopDuration', value: durationSeconds, propagationMode });
   };
 
   const handleReceptionSignalChange = (row: TimesStopsRow, signal: ReceptionSignal | undefined) =>
-    commitEdit([{ rowId: row.id, field: 'receptionSignal', value: signal }], () =>
-      updateReceptionSignal(row, signal)
-    );
+    commitUpdate({ row, field: 'receptionSignal', value: signal });
 
   const handleRequestedMarginChange = (row: TimesStopsRow, requestedMargin: MarginValue | null) =>
-    commitEdit(buildEditsForMarginUpdate(row, requestedMargin), () =>
-      updateRequestedMargin(row, requestedMargin)
-    );
+    commitUpdate({ row, field: 'requestedTheoreticalMargin', value: requestedMargin });
 
   const handlePowerRestrictionChange = (row: TimesStopsRow, value: string | null) =>
-    commitEdit([{ rowId: row.id, field: 'powerRestriction', value }], () =>
-      updatePowerRestrictions(row, value)
-    );
+    commitUpdate({ row, field: 'powerRestriction', value });
 
   const handleApplyTimesFromSimulation = (field: RequestedTimeField, mode: TimeFillMode): void => {
-    const computedField = field === 'requestedArrival' ? 'computedArrival' : 'computedDeparture';
-    const targetRows = getRowsToUpdateFromSimulation(rows, field, mode);
-    const edits: PendingEdit[] = targetRows.map((row) => ({
-      rowId: row.id,
-      field,
-      value: row[computedField],
-    }));
-    commitEdit(edits, () => updateMultipleTimes(targetRows, field));
+    commitUpdate({ rows: getRowsToUpdateFromSimulation(rows, field, mode), field });
   };
 
   return (
