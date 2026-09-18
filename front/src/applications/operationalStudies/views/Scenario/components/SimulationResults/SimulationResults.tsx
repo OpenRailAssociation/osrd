@@ -143,6 +143,7 @@ const SimulationResults = ({
     toggleWaypoint,
     deployedWaypoints,
     updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
+    scheduleWaypointReopen,
   } = useTrackOccupancy({
     infraId,
     timetableId,
@@ -198,6 +199,7 @@ const SimulationResults = ({
     trainSchedulesWithDetails,
     pathOperationalPoints: filteredOperationalPoints,
     deployedWaypoints,
+    scheduleWaypointReopen,
   });
 
   const isEtcs = useMemo(

@@ -77,6 +77,9 @@ function getTrackOccupancyOperationalPointReference(
  * - handleTrainDrag:
  *   A function to call when a train is dragged in the SpaceTimeChart, so that its related
  *   occupancy zones are updated accordingly
+ * - scheduleWaypointReopen:
+ *   A function to call with a waypoint ID that doesn't exist yet, so it gets reopened as soon
+ *   as it shows up in pathOperationalPoints
  */
 const useTrackOccupancy = ({
   infraId,
@@ -98,6 +101,7 @@ const useTrackOccupancy = ({
     newTrainData: TrainSpaceTimeData;
     stopPanning: boolean;
   }) => Promise<void>;
+  scheduleWaypointReopen: (waypointId: string) => void;
 } => {
   const { t, i18n } = useTranslation('operational-studies');
   const draggedTrainScheduleIds = useRef(new Set<number>());
@@ -128,6 +132,9 @@ const useTrackOccupancy = ({
     Record<string, { origin?: StationLabel; destination?: StationLabel } | undefined>
   >({});
   const localTrackNameToTrackIdRef = useRef<Map<string, Map<string, string>>>(new Map());
+  // Waypoint IDs whose OP got promoted to an explicit path item (new ID) by a
+  // drag: reopen them as soon as their new waypoint ID appears.
+  const pendingWaypointReopensRef = useRef(new Set<string>());
   const updatePathOperationalPointState = useCallback(
     (
       waypointId: string,
@@ -446,6 +453,21 @@ const useTrackOccupancy = ({
       trainScheduleProjectionsById,
     ]
   );
+
+  // Reopens waypointId once it shows up in pathOperationalPoints.
+  const scheduleWaypointReopen = useCallback((waypointId: string) => {
+    pendingWaypointReopensRef.current.add(waypointId);
+  }, []);
+
+  useEffect(() => {
+    const pendingWaypointReopens = pendingWaypointReopensRef.current;
+    pendingWaypointReopens.forEach((waypointId) => {
+      if (pathOpsByWaypointId.has(waypointId)) {
+        pendingWaypointReopens.delete(waypointId);
+        toggleWaypoint(waypointId, true);
+      }
+    });
+  }, [pathOpsByWaypointId, toggleWaypoint]);
 
   const updateTrackOccupanciesOnDrag = useCallback(
     async ({
@@ -803,7 +825,7 @@ const useTrackOccupancy = ({
     fetchOperationalPoints();
   }, [trainScheduleProjections, i18n.language]);
 
-  return { deployedWaypoints, toggleWaypoint, updateTrackOccupanciesOnDrag };
+  return { deployedWaypoints, toggleWaypoint, updateTrackOccupanciesOnDrag, scheduleWaypointReopen };
 };
 
 export default useTrackOccupancy;
