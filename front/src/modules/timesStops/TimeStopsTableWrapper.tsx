@@ -26,7 +26,6 @@ import {
   type StopPropagationMode,
   type MarginValue,
   type TimesStopsRow,
-  type UpdateCellStatus,
   type TimeFillMode,
   type RequestedTimeField,
 } from './types';
@@ -170,8 +169,9 @@ const TimeStopsTableWrapper = ({
     isTrainSimulationPendingRef.current = false;
   };
 
-  const commitEdit = (edits: PendingEdit[], updateFn: () => Promise<UpdateCellStatus>) => {
+  const commitUpdate = (update: CellUpdate) => {
     if (isAwaitingSimulation) return;
+    const { patch, edits } = computeTrainUpdate(update);
     setPinnedState({
       edits,
       forSchedule: selectedTrain.schedule,
@@ -180,18 +180,13 @@ const TimeStopsTableWrapper = ({
     });
     preEditPathItemTimesRef.current = simulatedPathItemTimes;
     isTrainSimulationPendingRef.current = true;
-    updateFn()
+    persistTrainPatch(patch)
       .then((status) => {
         if (status === 'skipped') resetPendingState();
       })
       .catch(() => {
         resetPendingState();
       });
-  };
-
-  const commitUpdate = (update: CellUpdate) => {
-    const { patch, edits } = computeTrainUpdate(update);
-    commitEdit(edits, () => persistTrainPatch(patch));
   };
 
   const handleArrivalChange = (
