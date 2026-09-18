@@ -136,13 +136,13 @@ impl Client {
             .clone()
     }
 
-    async fn fetch(&self, request: reqwest::RequestBuilder) -> reqwest::Result<reqwest::Response> {
+    async fn fetch(&self, request: reqwest::Request) -> reqwest::Result<reqwest::Response> {
         let _permit = self
             .semaphore
             .acquire()
             .await
             .expect("semaphore should never be closed");
-        request.send().await
+        self.inner.execute(request).await
     }
 
     pub async fn is_healthy(&self) -> Result<bool, Error> {
