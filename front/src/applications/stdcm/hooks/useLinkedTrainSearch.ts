@@ -161,7 +161,7 @@ const useLinkedTrainSearch = () => {
           const resultSummary = filteredResultsSummaries[result.id].train_schedule;
           if (resultSummary.status !== 'success') return undefined;
           const durationFromStartTime = new Duration({
-            milliseconds: resultSummary.path_item_times_final.at(-1)!,
+            milliseconds: resultSummary.path_item_times_final.at(-1)!.arrival,
           });
 
           const originDetails = await getExtremityDetails(result.path.at(0)!);

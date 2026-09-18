@@ -204,6 +204,11 @@ class SecondaryName(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
+class CorePathItemTime(BaseModel):
+    arrival: Annotated[int, Field(ge=0)]
+    stop_duration: Annotated[int | None, Field(ge=0)] = None
+
+
 class PathfindingInputErrorNotEnoughPathItems(BaseModel):
     error_type: Literal["not_enough_path_items"] = "not_enough_path_items"
 
@@ -234,10 +239,6 @@ class PathItemPosition(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
 
-class PathItemTime(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
 class Position(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
@@ -251,15 +252,15 @@ class CoreReportTrain(BaseModel):
     """
     Total energy consumption
     """
-    path_item_times: list[PathItemTime]
+    path_item_times: list[CorePathItemTime]
     """
-    Time in ms at which the train *arrives* at each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
+    Time in ms at which the train *arrives* and the *stop duration* at each path item given as input of the pathfinding
+    The first arriving value is always `0` (beginning of the path) and the last one, the arrival time of the simulation path's last step.
 
     In case multiple path items are at the same position, the stop duration
     of the earlier ones are added to the path item time of the next. For
     example, if A and B are at the same position, and A has a stop duration
-    of 2s, then the path item time of B will be equal to the path item time
+    of 2s, then the path item time *arrival* of B will be equal to the path item time arrival
     of A plus 2s.
     """
     positions: list[Position]
@@ -3968,18 +3969,6 @@ class ElectricalProfiles(BaseModel):
     """
 
 
-class PathItemTimesBaseItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
-class PathItemTimesFinalItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
-class PathItemTimesProvisionalItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
-
-
 class SummaryResponseSuccess(BaseModel):
     """
     Minimal information on a simulation's result
@@ -4005,23 +3994,23 @@ class SummaryResponseSuccess(BaseModel):
     The length of this array is the number of path items in the train schedule used as input for the simulation.
     Important: `true` doesn't mean the path item has been reached *precisely* at the requested time. Instead, it means it reached the path item at an acceptable time.
     """
-    path_item_times_base: list[PathItemTimesBaseItem]
+    path_item_times_base: list[CorePathItemTime]
     """
     Base simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+    The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
     """
-    path_item_times_final: list[PathItemTimesFinalItem]
+    path_item_times_final: list[CorePathItemTime]
     """
     Final simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+    The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
     """
-    path_item_times_provisional: list[PathItemTimesProvisionalItem]
+    path_item_times_provisional: list[CorePathItemTime]
     """
     Provisional simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+    The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
     """
     status: Literal["success"] = "success"
     time: Annotated[int, Field(ge=0)]

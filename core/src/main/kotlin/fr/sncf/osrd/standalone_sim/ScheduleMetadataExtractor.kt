@@ -3,6 +3,7 @@ package fr.sncf.osrd.standalone_sim
 import com.google.common.collect.Comparators.min
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.standalone_sim.CompleteReportTrain
+import fr.sncf.osrd.api.standalone_sim.PathItemTime
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.*
@@ -277,20 +278,26 @@ fun makeSimpleReportTrain(
             }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
-    val pathItemTimes = schedule.mapIndexed { i: Int, item: SimulationScheduleItem ->
-        var time =
-            TimeDelta.fromSeconds(envelopeStopWrapper.interpolateArrivalAt(item.pathOffset.meters))
-        var i = i
-        while (i > 0 && schedule[i - 1].pathOffset == item.pathOffset) {
-            time += (schedule[i - 1].stopDetails?.duration ?: Duration.ZERO)
-            i--
-        }
-        val departureTimeFromOp =
-            TimeDelta.fromSeconds(
-                envelopeStopWrapper.interpolateDepartureFrom(item.pathOffset.meters)
-            )
-        min(time, departureTimeFromOp)
-    }
+    val pathItemTimes =
+        schedule
+            .mapIndexed { i: Int, item: SimulationScheduleItem ->
+                var time =
+                    TimeDelta.fromSeconds(
+                        envelopeStopWrapper.interpolateArrivalAt(item.pathOffset.meters)
+                    )
+                var i = i
+                while (i > 0 && schedule[i - 1].pathOffset == item.pathOffset) {
+                    time += (schedule[i - 1].stopDetails?.duration ?: Duration.ZERO)
+                    i--
+                }
+                val departureTimeFromOp =
+                    TimeDelta.fromSeconds(
+                        envelopeStopWrapper.interpolateDepartureFrom(item.pathOffset.meters)
+                    )
+                PathItemTime(min(time, departureTimeFromOp), item.stopDetails?.duration)
+            }
+            // Remove the short stop at the end that was added to avoid signal propagation
+            .dropLastWhile { i -> i.stopDuration == (0.1).seconds }
 
     // Iterate over the points and simplify the results
     val points = envelopeStopWrapper.iteratePoints()

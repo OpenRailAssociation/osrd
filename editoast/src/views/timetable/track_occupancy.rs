@@ -141,7 +141,7 @@ fn get_arrival_time(
             .or_else(|| {
                 context
                     .report_train
-                    .map(|report_train| report_train.path_item_times[idx] as i64)
+                    .map(|report_train| report_train.path_item_times[idx].arrival as i64)
             })
             .or_else(|| {
                 context
@@ -327,6 +327,7 @@ pub mod tests {
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::PathItemTime;
     use core_client::simulation::ReportTrain;
     use models::OperationalPointModel;
     use pretty_assertions::assert_eq;
@@ -344,7 +345,7 @@ pub mod tests {
 
     use super::*;
 
-    fn make_simulation_success(path_item_times: Vec<u64>) -> simulation::Response {
+    fn make_simulation_success(path_item_times: Vec<PathItemTime>) -> simulation::Response {
         let report_train = ReportTrain {
             positions: vec![0, 25, 50, 75, 100],
             times: vec![0, 1000, 2000, 3000, 5000],
@@ -509,7 +510,11 @@ pub mod tests {
 
         // Call the function
         let simulation = if has_simulation {
-            make_simulation_success(vec![0, expected_time, 5000])
+            make_simulation_success(vec![
+                PathItemTime::new(0),
+                PathItemTime::new(expected_time),
+                PathItemTime::new(5000),
+            ])
         } else {
             simulation::Response::SimulationFailed {
                 core_error: InternalError {
@@ -660,7 +665,8 @@ pub mod tests {
         };
 
         // simulation arrival_time: 10min, input arrival_time: 5min
-        let simulation = make_simulation_success(vec![0, 600_000]);
+        let simulation =
+            make_simulation_success(vec![PathItemTime::new(0), PathItemTime::new(600_000)]);
         let pathfinding = make_pathfinding_success(Identifier::from("T2"), vec![0, 100]);
 
         let op_cache = OperationalPointCache::new(
@@ -775,7 +781,11 @@ pub mod tests {
             ..Default::default()
         };
 
-        let simulation = make_simulation_success(vec![0, 2000, 5000]);
+        let simulation = make_simulation_success(vec![
+            PathItemTime::new(0),
+            PathItemTime::new(2000),
+            PathItemTime::new(5000),
+        ]);
         let pathfinding = make_pathfinding_success(track_section.clone(), path_item_positions);
         let results = find_track_occupancy_for_operational_point(
             op_id,

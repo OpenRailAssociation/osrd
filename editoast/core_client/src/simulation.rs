@@ -161,15 +161,15 @@ pub struct ReportTrain {
     pub speeds: Vec<f64>,
     /// Total energy consumption
     pub energy_consumption: f64,
-    /// Time in ms at which the train *arrives* at each path item given as input of the pathfinding
-    /// The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
+    /// Time in ms at which the train *arrives* and the *stop duration* at each path item given as input of the pathfinding
+    /// The first arriving value is always `0` (beginning of the path) and the last one, the arrival time of the simulation path's last step.
     ///
     /// In case multiple path items are at the same position, the stop duration
     /// of the earlier ones are added to the path item time of the next. For
     /// example, if A and B are at the same position, and A has a stop duration
-    /// of 2s, then the path item time of B will be equal to the path item time
+    /// of 2s, then the path item time *arrival* of B will be equal to the path item time arrival
     /// of A plus 2s.
-    pub path_item_times: Vec<u64>,
+    pub path_item_times: Vec<PathItemTime>,
 }
 
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
@@ -223,6 +223,13 @@ pub struct RoutingRequirement {
     /// - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     pub begin_time: u64,
     pub zones: Vec<RoutingZoneRequirement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[schema(as = CorePathItemTime)]
+pub struct PathItemTime {
+    pub arrival: u64,
+    pub stop_duration: Option<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -350,5 +357,14 @@ impl AsCoreRequest<Json<Response>> for Request {
 
     fn worker_key(&self) -> WorkerKey {
         WorkerKey::Infra(self.infra)
+    }
+}
+
+impl PathItemTime {
+    pub fn new(arrival: u64) -> Self {
+        Self {
+            arrival,
+            stop_duration: None,
+        }
     }
 }

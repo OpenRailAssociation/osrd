@@ -4580,18 +4580,22 @@ export type SimDebugTrainZoneRequirement = {
   source?: null | RequirementId;
   zone_name: string;
 };
+export type CorePathItemTime = {
+  arrival: number;
+  stop_duration?: number | null;
+};
 export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
-  /** Time in ms at which the train *arrives* at each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
+  /** Time in ms at which the train *arrives* and the *stop duration* at each path item given as input of the pathfinding
+    The first arriving value is always `0` (beginning of the path) and the last one, the arrival time of the simulation path's last step.
     
     In case multiple path items are at the same position, the stop duration
     of the earlier ones are added to the path item time of the next. For
     example, if A and B are at the same position, and A has a stop duration
-    of 2s, then the path item time of B will be equal to the path item time
+    of 2s, then the path item time *arrival* of B will be equal to the path item time arrival
     of A plus 2s. */
-  path_item_times: number[];
+  path_item_times: CorePathItemTime[];
   /** List of positions of a train
     Both positions (in mm) and times (in ms) must have the same length
     The length of positions and times is arbitrary and comes from a curve simplification
@@ -5311,16 +5315,16 @@ export type SimulationSummaryResult =
       path_item_respect_times: boolean[];
       /** Base simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-      path_item_times_base: number[];
+    The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_base: CorePathItemTime[];
       /** Final simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-      path_item_times_final: number[];
+    The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_final: CorePathItemTime[];
       /** Provisional simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
-    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
-      path_item_times_provisional: number[];
+    The first path item arrival value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_provisional: CorePathItemTime[];
       status: 'success';
       /** Travel time in ms */
       time: number;
