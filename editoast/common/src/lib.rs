@@ -35,8 +35,18 @@ pub struct Version {
 /// Allows implementing Eq for floats considering all NaN values to be equal
 ///
 /// Tip: provide this to Educe.
-pub fn float_eq(a: &f64, b: &f64) -> bool {
-    (a.is_nan() && b.is_nan()) || (a == b)
+pub fn float_eq<V>(a: &V, b: &V) -> bool
+where
+    V: uom::num_traits::Num + uom::num_traits::float::TotalOrder + uom::Conversion<V>,
+{
+    matches!(a.total_cmp(b), std::cmp::Ordering::Equal)
+}
+
+/// Allows implementing Eq for slice of floats
+///
+/// Tip: provide this to Educe.
+pub fn slice_float_eq(a: &[f64], b: &[f64]) -> bool {
+    a.iter().zip(b).all(|(a, b)| float_eq(a, b))
 }
 
 pub fn hashing_hash_set_string<H>(set: &HashSet<String>, state: &mut H)

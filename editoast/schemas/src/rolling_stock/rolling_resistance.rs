@@ -13,8 +13,8 @@ use utoipa::ToSchema;
 pub trait RollingResistance: Serialize + for<'de> Deserialize<'de> {}
 
 #[editoast_derive::annotate_units]
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
-#[educe(Hash)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, ToSchema, Educe)]
+#[educe(Hash, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 #[allow(non_snake_case)]
 pub struct RollingResistanceRaw {
@@ -22,14 +22,17 @@ pub struct RollingResistanceRaw {
     pub rolling_resistance_type: String,
     /// Solid friction
     #[educe(Hash(method(units::newton::hash)))]
+    #[educe(PartialEq(method(units::newton::eq)))]
     #[serde(with = "units::newton")]
     pub A: SolidFriction,
     /// Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
     #[educe(Hash(method(units::kilogram_per_second::hash)))]
+    #[educe(PartialEq(method(units::kilogram_per_second::eq)))]
     #[serde(with = "units::kilogram_per_second")]
     pub B: ViscosityFriction,
     /// Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
     #[educe(Hash(method(units::kilogram_per_meter::hash)))]
+    #[educe(PartialEq(method(units::kilogram_per_meter::eq)))]
     #[serde(with = "units::kilogram_per_meter")]
     pub C: AerodynamicDrag,
 }

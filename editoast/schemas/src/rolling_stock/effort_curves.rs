@@ -8,7 +8,7 @@ use utoipa::ToSchema;
 
 use crate::train_schedule::Comfort;
 
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
     pub modes: BTreeMap<String, ModeEffortCurves>,
@@ -37,7 +37,7 @@ impl EffortCurves {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ModeEffortCurves {
     curves: Vec<ConditionalEffortCurve>,
@@ -45,14 +45,14 @@ pub struct ModeEffortCurves {
     pub is_electric: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ConditionalEffortCurve {
     cond: EffortCurveConditions,
     curve: EffortCurve,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurveConditions {
     #[schema(required)]
@@ -63,16 +63,18 @@ pub struct EffortCurveConditions {
     power_restriction_code: Option<String>,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema, Educe)]
-#[educe(Hash)]
+#[derive(Clone, Debug, Serialize, Deserialize, ToSchema, Educe)]
+#[educe(Hash, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 #[serde(remote = "Self")]
 pub struct EffortCurve {
     #[educe(Hash(method(common::hash_float_slice::<3,_>)))]
+    #[educe(PartialEq(method(common::slice_float_eq)))]
     #[schema(min_items = 2, example = json!([0.0, 2.958, 46.719]))]
     /// Speeds in m/s. Must contains the same number of elements as `max_efforts`
     speeds: Vec<f64>,
     #[educe(Hash(method(common::hash_float_slice::<3,_>)))]
+    #[educe(PartialEq(method(common::slice_float_eq)))]
     #[schema(min_items = 2, example = json!([23500.0, 23200.0, 21200.0]))]
     /// Max efforts in N. Must contains the same number of elements as `speeds`.
     max_efforts: Vec<f64>,

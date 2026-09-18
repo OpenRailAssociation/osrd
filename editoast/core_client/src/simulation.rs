@@ -37,6 +37,7 @@ pub struct PhysicsConsist {
     pub base_power_class: Option<String>,
 
     #[educe(Hash(method(units::millimeter::hash)))]
+    #[educe(PartialEq(method(units::millimeter::eq)))]
     #[serde(with = "units::millimeter::u64")]
     #[schema(value_type = u64)]
     pub length: Length,
@@ -47,6 +48,7 @@ pub struct PhysicsConsist {
     pub max_speed: Velocity,
 
     #[educe(Hash(method(units::millisecond::hash)))]
+    #[educe(PartialEq(method(units::millisecond::eq)))]
     #[serde(with = "units::millisecond::u64")]
     #[schema(value_type = u64)]
     pub startup_time: Time,
@@ -75,6 +77,7 @@ pub struct PhysicsConsist {
     pub inertia_coefficient: f64,
 
     #[educe(Hash(method(units::kilogram::hash)))]
+    #[educe(PartialEq(method(units::kilogram::eq)))]
     #[serde(with = "units::kilogram::u64")]
     #[schema(value_type = u64)]
     pub mass: Mass,
@@ -88,6 +91,7 @@ pub struct PhysicsConsist {
     /// The time the train takes before actually using electrical power.
     /// Is null if the train is not electric or the value not specified.
     #[educe(Hash(method(units::millisecond::option::hash)))]
+    #[educe(PartialEq(method(units::millisecond::option::eq)))]
     #[serde(default, with = "units::millisecond::u64::option")]
     #[schema(value_type = Option<u64>)]
     pub electrical_power_startup_time: Option<Time>,
@@ -95,6 +99,7 @@ pub struct PhysicsConsist {
     /// The time it takes to raise this train's pantograph.
     /// Is null if the train is not electric or the value not specified.
     #[educe(Hash(method(units::millisecond::option::hash)))]
+    #[educe(PartialEq(method(units::millisecond::option::eq)))]
     #[serde(default, with = "units::millisecond::u64::option")]
     #[schema(value_type = Option<u64>)]
     pub raise_pantograph_time: Option<Time>,
