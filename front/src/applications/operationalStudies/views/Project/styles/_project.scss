@@ -1,7 +1,19 @@
 @use './studyCard';
 
 .project-view {
-  max-height: calc(100vh - 40px); // Height of the navbar
+  min-height: 100dvh;
+  background-color: var(--ambientB10);
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  --project-view-padding: 40px;
+
+  @media screen and (1840px <= width) {
+    --project-view-padding: 80px;
+  }
+
+  .project-view-content {
+    padding: var(--project-view-padding);
+  }
 
   .filter-selector {
     background-color: transparent;
@@ -45,7 +57,6 @@
       position: relative;
       gap: 16px;
       margin-bottom: 8px;
-      min-height: 240px;
 
       .project-details-title-img {
         overflow: hidden;
@@ -76,6 +87,8 @@
       }
 
       .project-details-title-content {
+        margin-left: 16px;
+
         .project-details-title-name {
           display: flex;
           align-items: center;
@@ -83,7 +96,11 @@
           color: var(--purple);
           font-size: 2rem;
           font-weight: 500;
-          overflow: auto;
+
+          .project-details-title-name-text {
+            overflow: hidden;
+            overflow-wrap: break-word;
+          }
 
           .project-details-title-modify-button {
             background-color: transparent;
@@ -140,7 +157,7 @@
     .project-details-financials {
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
+      margin-block: 8px;
       border-radius: 4px;
       padding: 8px;
       background-color: var(--purple);
@@ -202,22 +219,22 @@
   }
 
   .studies-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--ambientB10);
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
-    padding-inline: 8px;
-    padding-bottom: 16px;
+    padding: var(--project-view-padding) 8px;
   }
 
   .studies-list {
-    overflow: auto;
-    max-height: 50vh;
     margin-inline: -8px;
     padding: 16px 8px 0;
-
-    &.selection-mode {
-      max-height: calc(50vh - var(--selection-toolbar-height));
-    }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 450px);
+    gap: 40px;
   }
 }

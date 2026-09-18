@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { FaPlus } from 'react-icons/fa';
 
 import useCheckUserRole from '../../../common/authorization/hooks/useCheckUserRole';
 import { REQUIRED_USER_ROLES_FOR } from '../../../common/authorization/roleBaseAccessControl';
@@ -39,7 +38,6 @@ const AddNewCard = ({ testId, className, modalComponent, item, onOpenModal }: Ad
         }
       }}
     >
-      <FaPlus />
       <div className="legend">{t(`${item}.create`)}</div>
     </div>
   );

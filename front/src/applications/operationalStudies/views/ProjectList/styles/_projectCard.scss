@@ -2,26 +2,23 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-bottom: 16px;
   transition: 0.4s;
+  background-color: var(--ambientB5);
   border: 1px solid var(--coolgray3);
   height: 336px;
   cursor: pointer;
+  color: var(--grey60);
 
   &:hover,
   &:focus,
-  &:active {
+  &:active,
+  &.selected {
     border-color: var(--purple);
 
-    .project-card-img {
-      &::after {
-        opacity: 1;
-      }
-
-      .buttons {
-        opacity: 1 !important;
-      }
+    .project-card-select {
+      opacity: 1;
     }
   }
 
@@ -30,100 +27,59 @@
     opacity: 0.5;
   }
 
-  &.selected {
-    border-color: var(--purple);
-
-    .selected-mark {
-      display: block;
-    }
-  }
-
   &.empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    font-size: 6rem;
-    color: var(--coolgray5);
+    place-content: center;
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--grey40);
     cursor: pointer;
 
     &:hover,
     &:focus,
     &:active {
-      border-color: var(--coolgray3);
-      background-color: var(--coolgray3);
-      color: var(--coolgray7);
+      border-color: var(--black25);
+      background-color: var(--grey10);
+      color: var(--grey50);
     }
-
-    .legend {
-      margin-top: 16px;
-      font-size: 1.5rem;
-    }
-  }
-
-  .selected-mark {
-    display: none;
-    position: absolute;
-    z-index: 2;
-    color: var(--purple);
-    font-size: 2rem;
-    top: -25.6px;
-    left: -12.8px;
   }
 
   .project-card-img {
-    position: relative;
+    display: grid;
+    grid-template: 100% / 1fr;
     height: 160px;
     overflow: hidden;
     border-radius: 4px 4px 0 0;
 
     img {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      grid-area: 1 / 1;
       color: var(--coolgray7);
       transition: filter 0.5s;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: center;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
     }
+  }
 
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      transition: opacity 0.5s;
-      opacity: 0;
-      background: linear-gradient(0deg, var(--coolgray15) 0%, rgba(255, 255, 255, 0) 100%);
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: end;
-      width: 100%;
-      transition: opacity 0.4s;
-      opacity: 0;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      z-index: 1;
-      padding: 0 8px 8px;
-    }
+  .project-card-select {
+    grid-area: 1 / 1;
+    place-self: start end;
+    padding: 12px;
+    opacity: 0.3;
+    transition: opacity 0.4s;
   }
 
   .project-card-studies {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-style: italic;
-    background-color: var(--coolgray3);
-    padding: 4px 8px;
+    background-color: var(--ambientB15);
+    padding: 4px 12px;
     text-align: right;
     font-size: 0.7rem;
-    color: var(--coolgray11);
+    color: var(--grey50);
     height: 24px;
 
     div {
@@ -136,10 +92,10 @@
   }
 
   .project-card-name {
-    color: var(--purple);
-    font-weight: 500;
+    color: var(--grey80);
+    font-weight: 600;
     font-size: 0.9rem;
-    padding: 0 8px;
+    padding: 0 12px;
     margin: 8px 0 4px;
     white-space: nowrap;
     overflow: hidden;
@@ -147,7 +103,7 @@
   }
 
   .project-card-description {
-    padding: 0 8px;
+    padding: 0 12px;
     margin-bottom: 8px;
     flex: 1;
     overflow-y: auto;
@@ -165,8 +121,8 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 4px;
-    padding: 4px 8px;
-    height: 43.2px;
+    padding: 4px 12px;
+    height: 43px;
     overflow: auto;
     font-weight: 500;
     font-size: 0.8rem;
@@ -182,10 +138,6 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       cursor: pointer;
-
-      &:hover {
-        opacity: 0.65;
-      }
     }
   }
 }

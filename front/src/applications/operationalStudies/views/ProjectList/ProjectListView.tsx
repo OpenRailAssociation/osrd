@@ -130,30 +130,24 @@ const ProjectListView = () => {
   function displayCards() {
     return !isLoading ? (
       <div
-        className={cx('projects-list row', {
+        className={cx('projects-list', {
           'selection-mode': selectedProjectIds.length > 0,
         })}
       >
-        <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
-          <AddNewCard
-            testId="add-project"
-            className="project-card empty"
-            modalComponent={<AddOrEditProjectModal />}
-            item="project"
-          />
-        </div>
+        <AddNewCard
+          testId="add-project"
+          className="project-card empty"
+          modalComponent={<AddOrEditProjectModal />}
+          item="project"
+        />
         {projectsList.map((project) => (
-          <div
-            className="col-hdp-2 col-lg-3 col-md-4 col-sm-6"
+          <ProjectCard
+            project={project}
+            setFilterChips={setFilterChips}
+            isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
+            toggleSelect={toggleProjectSelection}
             key={`home-projectsList-${project.id}`}
-          >
-            <ProjectCard
-              project={project}
-              setFilterChips={setFilterChips}
-              isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
-              toggleSelect={toggleProjectSelection}
-            />
-          </div>
+          />
         ))}
       </div>
     ) : (
@@ -168,43 +162,37 @@ const ProjectListView = () => {
   }, [sortOption, filter, safeWord, allProjects]);
 
   return (
-    <>
+    <main className="project-list-view">
       <NavBar appName={<div className="navbar-breadcrumbs">{t('project.projects')}</div>} />
-      <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="p-3">
-          <div className="projects-toolbar">
-            <div className="h1 mb-0">
-              {t('project.count', { count: projectsList ? projectsList.length : 0 })}
-            </div>
-            <div className="flex-grow-1">
-              <FilterTextField
-                id="projects-filter"
-                setFilter={setFilter}
-                filterChips={filterChips}
-              />
-            </div>
-            <OptionsSNCF
-              name="projects-sort-filter"
-              onChange={handleSortOptions}
-              selectedValue={sortOption}
-              options={sortOptions}
-            />
+      <div className="project-list-content">
+        <div className="projects-toolbar">
+          <div className="h1 mb-0">
+            {t('project.count', { count: projectsList ? projectsList.length : 0 })}
           </div>
-
-          {selectedProjectIds.length > 0 && (
-            <SelectionToolbar
-              selectedItemCount={selectedProjectIds.length}
-              onDeselectAll={() => setSelectedProjectIds([])}
-              onDelete={handleDeleteProjects}
-              item="project"
-              dataTestId="deleteProjects"
-            />
-          )}
-
-          {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
+          <div className="flex-grow-1">
+            <FilterTextField id="projects-filter" setFilter={setFilter} filterChips={filterChips} />
+          </div>
+          <OptionsSNCF
+            name="projects-sort-filter"
+            onChange={handleSortOptions}
+            selectedValue={sortOption}
+            options={sortOptions}
+          />
         </div>
-      </main>
-    </>
+
+        {selectedProjectIds.length > 0 && (
+          <SelectionToolbar
+            selectedItemCount={selectedProjectIds.length}
+            onDeselectAll={() => setSelectedProjectIds([])}
+            onDelete={handleDeleteProjects}
+            item="project"
+            dataTestId="deleteProjects"
+          />
+        )}
+
+        {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
+      </div>
+    </main>
   );
 };
 

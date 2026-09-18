@@ -1,4 +1,5 @@
-import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import { Checkbox } from '@osrd-project/ui-core';
+import { Calendar, FileDirectory } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -24,29 +25,16 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
   const imageUrl = useProjectImage(project.image);
 
   return (
-    <div
+    <Link
+      to={`/operational-studies/projects/${project.id}`}
       className={cx('project-card', isSelected && 'selected')}
       data-testid={project.name}
-      onClick={() => toggleSelect(project.id)}
-      role="button"
-      tabIndex={0}
     >
-      <span className="selected-mark">
-        <CheckCircle variant="fill" size="lg" />
-      </span>
       <div className="project-card-img">
         <img src={imageUrl} alt="project logo" loading="lazy" />
-        <div className="buttons">
-          <Link to={`/operational-studies/projects/${project.id}`}>
-            <button
-              data-testid="openProject"
-              className="btn btn-primary btn-sm ml-auto"
-              type="button"
-            >
-              <span className="mr-2">{t('operational-studies-management.open')}</span>
-              <FileDirectoryOpen variant="fill" />
-            </button>
-          </Link>
+        {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- This feature will disappear soon enough */}
+        <div className="project-card-select" onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isSelected} onChange={() => toggleSelect(project.id)} />
         </div>
       </div>
       <div className="project-card-studies">
@@ -77,7 +65,11 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
                 key={tag}
                 role="button"
                 tabIndex={0}
-                onClick={() => setFilterChips(tag)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setFilterChips(tag);
+                }}
                 title={tag}
               >
                 {tag}
@@ -85,6 +77,6 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
             ))}
         </div>
       )}
-    </div>
+    </Link>
   );
 }

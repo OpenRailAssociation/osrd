@@ -49,10 +49,6 @@ class ProjectPage extends HomePage {
     return this.page.getByTestId(name);
   }
 
-  private openProjectButton(name: string): Locator {
-    return this.getProjectByName(name).getByTestId('openProject');
-  }
-
   private async fillProjectDetails(details: ProjectDetails) {
     const { name, description, objectives, funders, budget, tags } = details;
 
@@ -106,8 +102,7 @@ class ProjectPage extends HomePage {
     const project = this.getProjectByName(projectName);
     await expect(project).toBeVisible();
     await project.scrollIntoViewIfNeeded();
-    await project.hover();
-    await this.openProjectButton(projectName).click();
+    await project.click();
   }
 
   async deleteProject(name: string) {
