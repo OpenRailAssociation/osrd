@@ -46,7 +46,6 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
 
   const activeElement = document.activeElement as HTMLInputElement;
   const cursorIndex = activeElement.selectionStart || 0;
-  const sortedSearchResults = [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
   const [initialCursorPositionRem, setInitialCursorPositionRem] = useState(0);
   const [mainCodeCount, setMainCodeCount] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
@@ -65,11 +64,11 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
   };
 
   const searchOperationalPoints = async () => {
-    const searchQuery = ['or', ['search', ['name'], debouncedSearchTerm]];
+    const searchQuery = ['or', ['ilike', ['main_code'], `${debouncedSearchTerm}%`], ['search', ['name'], debouncedSearchTerm]];
 
     const payload: SearchPayload = {
       object: 'operationalpoint',
-      query: ['and', searchQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
+      query: ['and', searchQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true, ['=', ['is_passenger_station'], true]],
     };
 
     await postSearch({
@@ -206,12 +205,6 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
     setInitialCursorPositionRem(0);
   }, []);
 
-  const isSortedSearchResultsDisplayed = useMemo(() => {
-    const mainCodes = debouncedInputText.split(' ');
-    const opListFiltered = opList.filter((op) => op.name !== undefined);
-    return mainCodes.length !== opListFiltered.length;
-  }, [debouncedInputText, opList]);
-
   return (
     <div
       className="type-and-path mb-2 quick-entry-visual"
@@ -250,10 +243,10 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
           </button>
         </div>
       </div>
-      {searchResults.length > 0 && isSortedSearchResultsDisplayed && (
+      {searchResults.length > 0 && (
         <div className="results-container">
           <div className="station-results p-2 quick-entry-visual">
-            {sortedSearchResults.map((result) => (
+            {searchResults.map((result) => (
               <button
                 id={`main-code-button-${result.name}`}
                 type="button"
@@ -266,7 +259,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
                 <span className="op-suggestion-name">{result.name}</span>
               </button>
             ))}
-            {sortedSearchResults.length > 8 && (
+            {searchResults.length > 8 && (
               <div className="ellipsis-placeholder" title={t('refineSearchForMoreResults')}>
                 ...
               </div>
