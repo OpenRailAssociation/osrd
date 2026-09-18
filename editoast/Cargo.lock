@@ -478,7 +478,7 @@ dependencies = [
  "bytes",
  "bytesize",
  "cookie",
- "educe",
+ "educe 0.7.6",
  "expect-json",
  "http",
  "http-body-util",
@@ -787,7 +787,7 @@ version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "faf9468729b8cbcea668e36183cb69d317348c2e08e994829fb56ebfdfbaac34"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -928,7 +928,7 @@ dependencies = [
  "dashmap",
  "deadpool",
  "editoast_derive",
- "educe",
+ "educe 0.8.1",
  "futures 0.3.34",
  "futures-util",
  "geos",
@@ -961,7 +961,7 @@ dependencies = [
  "core_client",
  "dashmap",
  "deadpool-redis",
- "educe",
+ "educe 0.8.1",
  "futures 0.3.34",
  "http",
  "itertools 0.15.0",
@@ -1480,7 +1480,7 @@ dependencies = [
  "diesel-async",
  "diesel_json",
  "editoast_derive",
- "educe",
+ "educe 0.8.1",
  "enum-map",
  "fga",
  "fga_migrations",
@@ -1552,6 +1552,18 @@ name = "educe"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e451fac8dd8dece16234604bf1efce6e90fddd8ab6ad4d66eec0eca5160959dd"
+dependencies = [
+ "enum-ordinalize",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
+]
+
+[[package]]
+name = "educe"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ebdb1f8f8d2815bbe7b369a7da10343c82026a4503b68bd1279ba557611e96d"
 dependencies = [
  "enum-ordinalize",
  "proc-macro2",
@@ -1653,7 +1665,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -3109,7 +3121,7 @@ dependencies = [
  "diesel-async",
  "diesel_json",
  "editoast_derive",
- "educe",
+ "educe 0.8.1",
  "fga",
  "futures 0.3.34",
  "futures-util",
@@ -3228,7 +3240,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4445,7 +4457,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4503,7 +4515,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4561,7 +4573,7 @@ dependencies = [
  "chrono",
  "common",
  "editoast_derive",
- "educe",
+ "educe 0.8.1",
  "enum-map",
  "geos",
  "iso8601",
@@ -5031,10 +5043,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5947,7 +5959,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

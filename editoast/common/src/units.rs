@@ -49,6 +49,18 @@ pub mod quantities {
     pub type AerodynamicDragPerWeight = uom::si::f64::LinearNumberDensity;
     pub type Deceleration = uom::si::f64::Acceleration;
     pub type Offset = uom::si::f64::Time;
+
+    pub fn quantity_eq<D, U, V>(
+        a: &uom::si::Quantity<D, U, V>,
+        b: &uom::si::Quantity<D, U, V>,
+    ) -> bool
+    where
+        D: uom::si::Dimension + ?Sized,
+        U: uom::si::Units<V> + ?Sized,
+        V: uom::num_traits::Num + uom::num_traits::float::TotalOrder + uom::Conversion<V>,
+    {
+        crate::float_eq(&a.value, &b.value)
+    }
 }
 
 macro_rules! quantity_to_path {
