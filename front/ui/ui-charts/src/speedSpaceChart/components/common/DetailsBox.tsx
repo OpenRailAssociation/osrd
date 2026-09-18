@@ -69,6 +69,18 @@ const DetailsBox = ({
   const speedDifference = Number(speedText) - Number(ecoSpeedText);
   const speedDifferenceText = speedDifference !== 0 ? `-${speedDifference.toFixed(1)}` : null;
 
+  const reticleValues = translations?.detailsBoxDisplay.reticleValues;
+  const translatedModeText =
+    modeText === '--'
+      ? modeText
+      : (reticleValues?.[modeText as keyof typeof reticleValues] ?? modeText);
+  const translatedEffortText =
+    reticleValues?.[effortText as keyof typeof reticleValues] ?? effortText;
+  const translatedElectricalProfileText =
+    electricalProfileText === 'incompatible'
+      ? (reticleValues?.incompatible ?? electricalProfileText)
+      : electricalProfileText;
+
   const activeEtcsBrakingTypes = getActiveEtcsBrakingTypes(store.etcsLayersDisplay);
   const activeEtcsBrakingCurveTypes = getActiveEtcsBrakingCurveTypes(store.etcsLayersDisplay);
   const etcsEndOfCurves = etcsSpeedValues
@@ -102,12 +114,14 @@ const DetailsBox = ({
           {speedDifferenceText && <span id="speed-difference-text">{speedDifferenceText}</span>}
         </div>
         {(energySource || tractionStatus || modeText || effortText) && <hr />}
-        {energySource && <span id="mode-text">{modeText || '--'}</span>}
-        {tractionStatus && <span id="effort-text">{effortText || '--'}</span>}
+        {energySource && <span id="mode-text">{translatedModeText || '--'}</span>}
+        {tractionStatus && <span id="effort-text">{translatedEffortText || '--'}</span>}
         {electricalModeText && (
           <div id="electrical-mode-text">
             <span>{electricalModeText || '--'}</span>
-            {electricalProfiles && <span className="ml-2">{electricalProfileText || '--'}</span>}
+            {electricalProfiles && (
+              <span className="ml-2">{translatedElectricalProfileText || '--'}</span>
+            )}
           </div>
         )}
         {powerRestrictions && (
