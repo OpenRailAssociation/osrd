@@ -128,10 +128,6 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
 
 /// Compute whether the simulation response respects the margins on each path item.
 ///
-/// This function assumes items in `train_schedule.schedule()` have increasing
-/// indices in `train_schedule.path()` (a property which should uphold for all
-/// train schedule editoast produces)...
-///
 /// # Panics
 ///
 /// This function can panic in the following cases:
@@ -165,24 +161,27 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 
     let mut res = vec![true; path_item_times_final.len()];
 
-    train_schedule
-        .path()
+    let schedule_item_ids_set: HashSet<&NonBlankString> = train_schedule
+        .schedule()
+        .iter()
+        .filter(|schedule_item| {
+            schedule_item.arrival.is_some() || margin_boundary_set.contains(&schedule_item.at)
+        })
+        .map(|schedule_item| &schedule_item.at)
+        .collect();
+    let train_schedule_path = train_schedule.path();
+
+    train_schedule_path
         .first() // unconditionally include, will filter later down
         .map(|first_path_item| &first_path_item.id)
         .into_iter()
         .chain(
-            train_schedule
-                .schedule()
-                .iter()
-                .filter(|schedule_item| {
-                    schedule_item.arrival.is_some()
-                        || margin_boundary_set.contains(&schedule_item.at)
-                })
-                .map(|schedule_item| &schedule_item.at),
+            train_schedule_path
+                .iter() // match the path item with its schedule item if it exists
+                .filter_map(|path_item| schedule_item_ids_set.get(&path_item.id).copied()),
         )
         .chain(
-            train_schedule
-                .path()
+            train_schedule_path
                 .last() // unconditionally include, will filter later down
                 .map(|last_path_item| &last_path_item.id),
         )
@@ -1051,9 +1050,31 @@ mod tests {
         }
     }
 
+    fn train_occ_shuffle_schedule(train_schedule: &mut TrainOccurrence) {
+        use rand::seq::SliceRandom;
+        let rng = &mut rand::rng();
+
+        let mut schedule = train_schedule.schedule.clone();
+        schedule.shuffle(rng);
+        train_schedule.schedule = schedule;
+    }
+
     #[test]
     fn test_too_fast() {
         let schedule = train_schedule_too_fast();
+        let sim = shallow_sim_too_fast();
+        let respect = path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
+        assert_eq!(*respect, [false, true, true]);
+    }
+
+    #[test]
+    fn test_too_fast_with_unordered_schedule() {
+        let mut schedule = train_schedule_too_fast();
+        train_occ_shuffle_schedule(&mut schedule);
         let sim = shallow_sim_too_fast();
         let respect = path_item_respect_margins(
             &sim.final_output.report_train.path_item_times,
@@ -1076,8 +1097,34 @@ mod tests {
     }
 
     #[test]
+    fn test_too_fast_on_interval_with_unordered_schedule() {
+        let mut schedule = train_schedule_too_fast_on_interval();
+        train_occ_shuffle_schedule(&mut schedule);
+        let sim = shallow_sim_too_fast_on_interval();
+        let respect = path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
+        assert_eq!(*respect, [true, true, false, true, true]);
+    }
+
+    #[test]
     fn test_not_too_fast_if_honored() {
         let schedule = train_schedule_honored();
+        let sim = shallow_sim_honored();
+        let respect = path_item_respect_margins(
+            &sim.final_output.report_train.path_item_times,
+            &sim.provisional.path_item_times,
+            &schedule,
+        );
+        assert_eq!(*respect, [true, true]);
+    }
+
+    #[test]
+    fn test_not_too_fast_if_honored_with_unordered_schedule() {
+        let mut schedule = train_schedule_honored();
+        train_occ_shuffle_schedule(&mut schedule);
         let sim = shallow_sim_honored();
         let respect = path_item_respect_margins(
             &sim.final_output.report_train.path_item_times,
