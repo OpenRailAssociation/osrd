@@ -516,6 +516,7 @@ const PathStepItem = ({
                     onTrackNameChange(value);
                     onAddCustomTrack({ trackId: value, trackName: value });
                   }}
+                  addCustomValueLabel={t('addTrack')}
                   small
                   narrow
                   data-testid="track-name"
