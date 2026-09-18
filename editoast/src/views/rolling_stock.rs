@@ -961,7 +961,6 @@ pub mod tests {
 
     mod get_rolling_stock_usage {
         use super::*;
-        use authz::v2::TestClientExt as _;
         use pretty_assertions::assert_eq;
 
         mod authorization {
@@ -1047,16 +1046,6 @@ pub mod tests {
                 .assert_status_ok()
                 .json();
 
-            // TODO remove me once `POST:/rolling_stock` setups the grants on the created rolling
-            // stock
-            app.openfga()
-                .rolling_stock_set_grant(
-                    authz::RollingStock(id),
-                    authz::Subject::user(user.clone()),
-                    RollingStockGrant::Reader,
-                )
-                .await;
-
             let related_schedules: Vec<ScenarioReference> = app
                 .get(&format!("/rolling_stock/{id}/usage"))
                 .by_user(user.as_ref())
@@ -1092,23 +1081,6 @@ pub mod tests {
                 .await
                 .assert_status_ok()
                 .json();
-
-            // TODO remove me once `POST:/rolling_stock` setups the grants on the created rolling
-            // stock
-            app.openfga()
-                .rolling_stock_set_grant(
-                    authz::RollingStock(rolling_stock.id),
-                    authz::Subject::user(user.clone()),
-                    RollingStockGrant::Reader,
-                )
-                .await;
-            app.openfga()
-                .rolling_stock_set_grant(
-                    authz::RollingStock(other_rolling_stock.id),
-                    authz::Subject::user(user.clone()),
-                    RollingStockGrant::Reader,
-                )
-                .await;
 
             let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
             let study = create_study(
