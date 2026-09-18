@@ -425,8 +425,8 @@ pub(in crate::views) async fn simulation_summary(
 
     // Check user privilege on the rolling stocks used by the train occurrences.
     // Those the user cannot read are kept aside to be reported per occurrence below.
-    let unauthorized_rolling_stocks = match authn_state.user() {
-        Some(user) => {
+    let unauthorized_rolling_stocks = match authn_state {
+        authentication::State::Authenticated { user, .. } => {
             let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
             let Ok(authorized_rolling_stocks) = system_authorizer
                 .authorize(authz::v2::rolling_stock_list(
@@ -453,7 +453,7 @@ pub(in crate::views) async fn simulation_summary(
                 }
             }
         }
-        None => HashMap::new(),
+        authentication::State::Skip => HashMap::new(),
     };
 
     let consists = rolling_stocks

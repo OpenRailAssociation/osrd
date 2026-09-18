@@ -98,30 +98,31 @@ pub(in crate::views) async fn list(
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
     let conn = &mut db_pool.get().await?;
     let default_settings = page_settings.into_selection_settings();
-    let settings = if let Some(user) = authn_state.user() {
-        let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
-        let Ok(authorized_rolling_stocks) = system_authorizer
-            .authorize(authz::v2::rolling_stock_list(
-                user,
-                RollingStockPrivilege::CanRestrictedRead,
-            ))
-            .await?
-            .access()
-            .await?;
-        match authorized_rolling_stocks {
-            authz::v2::ResourcesList::All => default_settings,
-            authz::v2::ResourcesList::Privileged(authorized_rolling_stocks) => default_settings
-                .filter(move || {
-                    RollingStock::ID.eq_any(
-                        authorized_rolling_stocks
-                            .iter()
-                            .map(|rolling_stock| rolling_stock.0)
-                            .collect(),
-                    )
-                }),
+    let settings = match authn_state {
+        crate::authentication::State::Skip => default_settings,
+        crate::authentication::State::Authenticated { user, .. } => {
+            let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+            let Ok(authorized_rolling_stocks) = system_authorizer
+                .authorize(authz::v2::rolling_stock_list(
+                    user,
+                    RollingStockPrivilege::CanRestrictedRead,
+                ))
+                .await?
+                .access()
+                .await?;
+            match authorized_rolling_stocks {
+                authz::v2::ResourcesList::All => default_settings,
+                authz::v2::ResourcesList::Privileged(authorized_rolling_stocks) => default_settings
+                    .filter(move || {
+                        RollingStock::ID.eq_any(
+                            authorized_rolling_stocks
+                                .iter()
+                                .map(|rolling_stock| rolling_stock.0)
+                                .collect(),
+                        )
+                    }),
+            }
         }
-    } else {
-        default_settings
     };
 
     let (rolling_stocks, stats) =
