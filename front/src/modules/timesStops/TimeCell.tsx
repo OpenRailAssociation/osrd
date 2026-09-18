@@ -8,7 +8,7 @@ import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
 import TimePropagationMenu from './TimePropagationMenu';
 import type { TimesStopsTableFeatures } from './TimesStopsTable';
-import type { PropagationMode, TimesStopsRowNew } from './types';
+import type { PropagationMode, TimesStopsRow } from './types';
 
 // Types
 
@@ -476,7 +476,7 @@ const renderTimeSection = (value: string, focused: boolean, hasTyped: boolean) =
   </span>
 );
 
-type TimeCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRowNew, Date | null> &
+type TimeCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRow, Date | null> &
   React.InputHTMLAttributes<HTMLInputElement> & {
     /** Reference date used as the calendar day base. If the entered time is before this date, the next day is assumed. */
     referenceDate?: Date;

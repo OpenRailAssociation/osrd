@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
-import type { TimesStopsRowNew } from '../../types';
+import type { TimesStopsRow } from '../../types';
 import { formatStopDurationDeltaLabel, propagateStopDuration } from '../stopDurationPropagation';
 
 const _18H00 = new Date('2026-01-01T18:00:00.000Z');
@@ -32,12 +32,12 @@ const makeTrainWithoutOp11 = (): Train =>
     ],
   }) as unknown as Train;
 
-const makeRow = (stopDurationIso: string | null): TimesStopsRowNew =>
+const makeRow = (stopDurationIso: string | null): TimesStopsRow =>
   ({
     pathStepId: 'op11',
     opOnPathIndex: 10,
     stopDuration: stopDurationIso ? Duration.parse(stopDurationIso) : null,
-  }) as unknown as TimesStopsRowNew;
+  }) as unknown as TimesStopsRow;
 
 describe('formatStopDurationDeltaLabel', () => {
   it('computes a signed delta between old and new duration', () => {
