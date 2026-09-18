@@ -13,3 +13,5 @@ class RJSLineString(var type: String, var coordinates: List<List<Double>>) {
         }
     }
 }
+
+class RJSMultiLineString(var type: String, var coordinates: List<List<List<Double>>>) {}

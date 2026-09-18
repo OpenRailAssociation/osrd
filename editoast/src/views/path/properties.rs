@@ -11,7 +11,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use common::geometry::GeoJsonLineString;
+use common::geometry::GeoJsonMultiLineString;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PropertyElectrificationValues;
@@ -49,7 +49,7 @@ pub(in crate::views) struct PathProperties {
     #[schema(inline)]
     electrifications: PropertyElectrificationValues,
     /// Geometry of the path
-    #[schema(value_type = GeoJsonLineString)]
+    #[schema(value_type = GeoJsonMultiLineString)]
     geometry: Geometry,
     /// Operational points along the path
     operational_points: Vec<OperationalPointOnPath>,
@@ -145,9 +145,9 @@ mod tests {
                 vec![0, 1],
                 vec![PropertyElectrificationValue::NonElectrified],
             ),
-            geometry: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![vec![
-                0.0, 0.0,
-            ]])),
+            geometry: geos::geojson::Geometry::new(geos::geojson::Value::MultiLineString(vec![
+                vec![vec![0.0, 0.0]],
+            ])),
             operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
         }
