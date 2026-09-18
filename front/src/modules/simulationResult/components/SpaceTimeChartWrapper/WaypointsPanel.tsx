@@ -11,6 +11,9 @@ import { mmToKm } from 'utils/physics';
 
 import { getWaypointsLocalStorageKey } from './helpers/utils';
 
+const formatPositionInKM = (position: number) =>
+  mmToKm(position) % 1 === 0 ? mmToKm(position).toFixed(1) : mmToKm(position).toFixed(2);
+
 type WaypointsPanelProps = {
   waypointsPanelIsOpen: boolean;
   setWaypointsPanelIsOpen: (open: boolean) => void;
@@ -18,6 +21,50 @@ type WaypointsPanelProps = {
   waypointsPanelData: WaypointsPanelData;
   hideOffsets?: boolean;
 };
+
+const Waypoint = ({
+  waypoint,
+  index,
+  selectedWaypoints,
+  handleWaypointClick,
+  hideOffsets,
+}: {
+  waypoint: ProjectionWaypoint;
+  index: number;
+  selectedWaypoints: Set<number>;
+  handleWaypointClick: (e: React.MouseEvent<HTMLInputElement>, index: number) => void;
+  hideOffsets: boolean;
+}) => (
+  <div
+    className={cx('waypoint-item', { 'waypoint-selected': selectedWaypoints.has(index) })}
+    key={waypoint.waypointId}
+    data-testid="waypoint-item"
+  >
+    <Checkbox
+      small
+      data-testid="waypoint-checkbox"
+      checked={selectedWaypoints.has(index)}
+      // onChange needs to be there to avoid a warning in console but the event doesn't provide
+      // an event listening for shift click so we have to use onClick anyway
+      onChange={() => {}}
+      onClick={(e) => {
+        handleWaypointClick(e, index);
+      }}
+    />
+    {!hideOffsets && (
+      <span data-testid="waypoint-point-offset" className="path-offset">
+        {/* If an offset ends with .00, we want do display only one 0 */}
+        {formatPositionInKM(waypoint.position)}
+      </span>
+    )}
+    <span className="name" data-testid="waypoint-name">
+      {waypoint.name}
+    </span>
+    <span className="secondary-code" data-testid="waypoint-secondary-code">
+      {waypoint.secondary_code}
+    </span>
+  </div>
+);
 
 const WaypointsPanel = ({
   waypointsPanelIsOpen,
@@ -27,7 +74,6 @@ const WaypointsPanel = ({
   hideOffsets = false,
 }: WaypointsPanelProps) => {
   const { t } = useTranslation();
-
   const modalRef = useRef<HTMLDialogElement>(null);
 
   const [selectedWaypoints, setSelectedWaypoints] = useState<Set<number>>(
@@ -150,33 +196,14 @@ const WaypointsPanel = ({
           />
         </div>
         {waypoints.map((waypoint, index) => (
-          <div className="waypoint-item" key={waypoint.waypointId} data-testid="waypoint-item">
-            <Checkbox
-              small
-              data-testid="waypoint-checkbox"
-              checked={selectedWaypoints.has(index)}
-              // onChange needs to be there to avoid a warning in console but the event doesn't provide
-              // an event listening for shift click so we have to use onClick anyway
-              onChange={() => {}}
-              onClick={(e) => {
-                handleWaypointClick(e, index);
-              }}
-            />
-            {!hideOffsets && (
-              <span data-testid="waypoint-point-offset" className="path-offset">
-                {/* If an offset ends with .00, we want do display only one 0 */}
-                {mmToKm(waypoint.position) % 1 === 0
-                  ? mmToKm(waypoint.position).toFixed(1)
-                  : mmToKm(waypoint.position).toFixed(2)}
-              </span>
-            )}
-            <span className="name" data-testid="waypoint-name">
-              {waypoint.name}
-            </span>
-            <span className="secondary-code" data-testid="waypoint-secondary-code">
-              {waypoint.secondary_code}
-            </span>
-          </div>
+          <Waypoint
+            key={waypoint.waypointId}
+            waypoint={waypoint}
+            index={index}
+            selectedWaypoints={selectedWaypoints}
+            handleWaypointClick={handleWaypointClick}
+            hideOffsets={hideOffsets}
+          />
         ))}
       </div>
       <div
