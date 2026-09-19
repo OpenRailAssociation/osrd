@@ -22,12 +22,12 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use common::unit_system::quantities::Acceleration;
+use common::unit_system::quantities::Length;
+use common::unit_system::quantities::Mass;
+use common::unit_system::quantities::Time;
+use common::unit_system::quantities::Velocity;
 use common::units::millisecond;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Offset;
-use common::units::quantities::Velocity;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
@@ -744,7 +744,7 @@ impl PhysicsConsistParameters {
             let traction_engine_inertia =
                 self.traction_engine.mass * self.traction_engine.inertia_coefficient;
             let towed_inertia = towed_mass * towed_rolling_stock.inertia_coefficient;
-            ((traction_engine_inertia + towed_inertia) / total_mass).into()
+            ((traction_engine_inertia + towed_inertia) / total_mass).value
         } else {
             self.traction_engine.inertia_coefficient
         }

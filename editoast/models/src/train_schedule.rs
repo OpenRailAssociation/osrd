@@ -2,8 +2,8 @@ use crate::prelude::*;
 use crate::rolling_stock::TrainMainCategory;
 use crate::tags::Tags;
 use chrono::Duration as ChronoDuration;
+use common::unit_system::quantities::Offset;
 use common::units::millisecond;
-use common::units::quantities::Offset;
 use derive_more::Display;
 use editoast_derive::Model;
 use itertools::Itertools;
@@ -504,7 +504,7 @@ mod tests {
 
     use super::OccurrenceId;
     use super::TrainSchedule;
-    use common::units::quantities::Offset;
+    use common::unit_system::quantities::Offset;
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
