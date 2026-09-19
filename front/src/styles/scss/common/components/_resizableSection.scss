@@ -1,3 +1,7 @@
+body.resizing-section iframe {
+  pointer-events: none;
+}
+
 .resizable-section {
   position: relative;
 
