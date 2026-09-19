@@ -9,6 +9,7 @@ import {
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
+import { updateTrainSchedule as updatePacedTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import {
   osrdEditoastApi,
   type TrainSchedule,
@@ -442,7 +443,7 @@ const useUpdateTimesStopsTable = (
       const result = computeUpdateWithBatch(update);
       if (!result) return 'skipped';
 
-      return persistTrain({
+      const updatedTrain: TrainScheduleResponse = {
         ...selectedTrain,
         id: editoastId,
         path: result.updatedPath,
@@ -451,9 +452,39 @@ const useUpdateTimesStopsTable = (
         start_time: result.updatedStartTime
           ? startTimeToMs(result.updatedStartTime)
           : selectedTrain.start_time,
+      };
+
+      const originalPacedTrainWithDetails = trainSchedulesWithDetails.find(
+        (trainSchedule) => trainSchedule.id === editoastId
+      );
+
+      if (
+        !originalPacedTrainWithDetails ||
+        !isPacedTrainWithDetails(originalPacedTrainWithDetails)
+      ) {
+        return persistTrain(updatedTrain);
+      }
+
+      const updateResult = await updatePacedTrainSchedule({
+        timetableId,
+        trainScheduleId: editoastId,
+        originalTrainSchedule: originalPacedTrainWithDetails,
+        updatedTrainSchedule: updatedTrain,
+        addedExceptions: [],
+        upsertTrainSchedules,
+        dispatch,
       });
+
+      return updateResult.success ? 'updated' : 'skipped';
     },
-    [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
+    [
+      selectedTrain,
+      trainSchedulesWithDetails,
+      computeUpdatedPathAndSchedule,
+      timetableId,
+      upsertTrainSchedules,
+      dispatch,
+    ]
   );
 
   /**
