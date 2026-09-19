@@ -29,7 +29,7 @@ describe('filterMissingFields', () => {
     id: 'via',
     isVia: true,
     stopType: StdcmStopTypes.SERVICE_STOP,
-    consistChange: { totalMass, totalLength },
+    consist: { totalMass, totalLength },
     ...(hasOP && {
       operationalPoint: {
         id: 'op2',
@@ -50,15 +50,22 @@ describe('filterMissingFields', () => {
     });
 
     it('returns only the missingFields entries that are actually missing', () => {
+      const pathStep = makePathStep();
+
+      pathStep.consist = { rollingStockID: 1 };
+
       const result = filterMissingFields({
         missingFields: ['tractionEngine', 'totalMass'],
-        rollingStockID: 1,
+        vias: [pathStep],
       });
       expect(result).toEqual(['totalMass']);
     });
 
     it('returns all fields when checkAllFields is true and nothing is provided', () => {
-      const result = filterMissingFields({ checkAllFields: true });
+      const pathStep = makePathStep();
+      pathStep.consist = {};
+
+      const result = filterMissingFields({ checkAllFields: true, vias: [pathStep] });
       expect(result).toEqual([
         'tractionEngine',
         'totalMass',
@@ -70,14 +77,19 @@ describe('filterMissingFields', () => {
     });
 
     it('returns [] when checkAllFields is true and all fields are valid', () => {
-      const result = filterMissingFields({
-        checkAllFields: true,
+      const pathStep = makePathStep();
+
+      pathStep.consist = {
         rollingStockID: 1,
         totalMass: 100,
         totalLength: 200,
         maxSpeed: 80,
+      };
+
+      const result = filterMissingFields({
+        checkAllFields: true,
         origin: makePathStep(),
-        vias: [],
+        vias: [pathStep],
         destination: makePathStep(),
       });
       expect(result).toEqual([]);
@@ -86,14 +98,12 @@ describe('filterMissingFields', () => {
 
   describe('tractionEngine', () => {
     it('is missing when rollingStockID is undefined', () => {
-      const result = filterMissingFields({ missingFields: ['tractionEngine'] });
-      expect(result).toEqual(['tractionEngine']);
-    });
+      const pathStep = makePathStep();
+      pathStep.consist = {};
 
-    it('is missing when rollingStockID is 0 (falsy)', () => {
       const result = filterMissingFields({
         missingFields: ['tractionEngine'],
-        rollingStockID: 0,
+        vias: [pathStep],
       });
       expect(result).toEqual(['tractionEngine']);
     });
@@ -109,8 +119,12 @@ describe('filterMissingFields', () => {
 
   describe('totalMass / totalLength / maxSpeed (strict undefined check)', () => {
     it('are missing when values are undefined', () => {
+      const pathStep = makePathStep();
+      pathStep.consist = {};
+
       const result = filterMissingFields({
         missingFields: ['totalMass', 'totalLength', 'maxSpeed'],
+        vias: [pathStep],
       });
       expect(result).toEqual(['totalMass', 'totalLength', 'maxSpeed']);
     });
@@ -195,15 +209,15 @@ describe('filterMissingFields', () => {
     });
   });
 
-  describe('viaConsistTotalMass', () => {
+  describe('totalMass on via', () => {
     it('is not flagged when vias is undefined', () => {
-      const result = filterMissingFields({ missingFields: ['viaConsistTotalMass'] });
+      const result = filterMissingFields({ missingFields: ['totalMass'] });
       expect(result).toEqual([]);
     });
 
     it('is not missing when all isVia steps have totalMass set (including 0)', () => {
       const result = filterMissingFields({
-        missingFields: ['viaConsistTotalMass'],
+        missingFields: ['totalMass'],
         vias: [makeViaStep(0, 200)],
       });
       expect(result).toEqual([]);
@@ -211,30 +225,22 @@ describe('filterMissingFields', () => {
 
     it('is missing when any isVia step has totalMass undefined', () => {
       const result = filterMissingFields({
-        missingFields: ['viaConsistTotalMass'],
+        missingFields: ['totalMass'],
         vias: [makeViaStep(undefined, 200)],
       });
-      expect(result).toEqual(['viaConsistTotalMass']);
-    });
-
-    it('is not triggered by non-isVia path steps', () => {
-      const result = filterMissingFields({
-        missingFields: ['viaConsistTotalMass'],
-        vias: [makePathStep()],
-      });
-      expect(result).toEqual([]);
+      expect(result).toEqual(['totalMass']);
     });
   });
 
-  describe('viaConsistTotalLength', () => {
+  describe('totalLength on via', () => {
     it('is not flagged when vias is undefined', () => {
-      const result = filterMissingFields({ missingFields: ['viaConsistTotalLength'] });
+      const result = filterMissingFields({ missingFields: ['totalLength'] });
       expect(result).toEqual([]);
     });
 
     it('is not missing when all isVia steps have totalLength set (including 0)', () => {
       const result = filterMissingFields({
-        missingFields: ['viaConsistTotalLength'],
+        missingFields: ['totalLength'],
         vias: [makeViaStep(100, 0)],
       });
       expect(result).toEqual([]);
@@ -242,18 +248,10 @@ describe('filterMissingFields', () => {
 
     it('is missing when any isVia step has totalLength undefined', () => {
       const result = filterMissingFields({
-        missingFields: ['viaConsistTotalLength'],
+        missingFields: ['totalLength'],
         vias: [makeViaStep(100, undefined)],
       });
-      expect(result).toEqual(['viaConsistTotalLength']);
-    });
-
-    it('is not triggered by non-isVia path steps', () => {
-      const result = filterMissingFields({
-        missingFields: ['viaConsistTotalLength'],
-        vias: [makePathStep()],
-      });
-      expect(result).toEqual([]);
+      expect(result).toEqual(['totalLength']);
     });
   });
 });

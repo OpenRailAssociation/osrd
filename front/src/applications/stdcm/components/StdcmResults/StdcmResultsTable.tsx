@@ -41,7 +41,7 @@ const StdcmResultsTable = ({
   const intermediatePathSteps = stdcmData.simulationPathSteps.slice(1, -1) as StdcmViaPathStep[];
   const lastDefinedConsistChange = intermediatePathSteps
     .toReversed()
-    .find((pathStep) => pathStep.consistChange)?.consistChange;
+    .find((pathStep) => pathStep.consist)?.consist;
 
   const [showAllOP, setShowAllOP] = useState(false);
   const toggleShowAllOP = () => setShowAllOP((prevState) => !prevState);

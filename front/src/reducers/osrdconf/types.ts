@@ -11,7 +11,6 @@ import type {
 } from 'applications/stdcm/types';
 import type {
   TrainCategory,
-  LoadingGaugeType,
   RelatedOperationalPoint,
   PathItemLocation,
   ReceptionSignal,
@@ -57,12 +56,6 @@ export type OsrdStdcmConfState = OsrdConfState & {
     gridMarginBefore?: Duration;
     gridMarginAfter?: Duration;
   };
-  totalMass?: number;
-  totalLength?: number;
-  maxSpeed?: number;
-  loadingGauge?: LoadingGaugeType;
-  lightRollingStockID?: number;
-  towedRollingStockID?: number;
   linkedTrains: LinkedTrains;
   simulations: StdcmSimulation[];
   selectedSimulationIndex?: number;
@@ -157,6 +150,7 @@ export type PathStepMetadata =
 
 export type StdcmPathStep = {
   id: string;
+  consist?: ConsistData;
   operationalPoint?: {
     id: string;
     mainCode: string;
@@ -171,7 +165,6 @@ export type StdcmPathStep = {
       isVia: true;
       stopType: StdcmStopTypes;
       stopFor?: Duration;
-      consistChange?: ConsistData;
     }
   | {
       isVia: false;

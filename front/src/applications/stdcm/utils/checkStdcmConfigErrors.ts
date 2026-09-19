@@ -30,9 +30,9 @@ const checkStdcmConfigErrors = ({
   consistErrors?: ConsistErrors[];
   shouldCheckMandatoryFields?: boolean;
 }): StdcmConfigErrors | undefined => {
-  const { stdcmPathSteps, rollingStockID, totalMass, totalLength, maxSpeed } = stdcmConf!;
+  const { stdcmPathSteps } = stdcmConf!;
   const origin = stdcmPathSteps.at(0)!;
-  const vias = stdcmPathSteps.slice(1, -1);
+  const vias = stdcmPathSteps;
   const destination = stdcmPathSteps.at(-1)!;
 
   const missingFields: MissingFields[] = [];
@@ -40,10 +40,6 @@ const checkStdcmConfigErrors = ({
   missingFields.push(
     ...filterMissingFields({
       missingFields: prevFormErrors?.errorDetails?.missingFields,
-      rollingStockID,
-      totalMass,
-      totalLength,
-      maxSpeed,
       origin,
       vias,
       destination,

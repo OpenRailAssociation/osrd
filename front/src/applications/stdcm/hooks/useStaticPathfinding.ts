@@ -13,8 +13,6 @@ import {
 } from 'common/api/osrdEditoastApi';
 import {
   getStdcmPathSteps,
-  getLoadingGauge,
-  getStdcmSpeedLimitByTag,
   getTrackSectionIdsByLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
@@ -52,9 +50,9 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
   const [consistChanges, setConsistChanges] = useState(() => getConsistChanges(pathSteps));
 
-  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const speedLimitByTag = pathSteps[0].consist?.speedLimitByTag;
   const rollingStock = useStdcmLightRollingStock();
-  const loadingGauge = useSelector(getLoadingGauge);
+  const loadingGauge = pathSteps[0].consist?.loadingGauge;
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();

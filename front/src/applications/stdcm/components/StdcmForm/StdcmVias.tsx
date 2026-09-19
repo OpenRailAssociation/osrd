@@ -26,7 +26,6 @@ import StopDurationInput from './StopDurationInput';
 type StdcmViasProps = StdcmItineraryProps & {
   isDebugMode: boolean;
   skipAnimation: boolean;
-  initialConsist: ConsistData;
   initialConsistErrors: ConsistErrors;
   onHasViaConsistErrorsChange: (errors: ConsistErrors[]) => void;
 };
@@ -36,13 +35,13 @@ const StdcmVias = ({
   isDebugMode,
   skipAnimation,
   onItineraryChange,
-  initialConsist,
   initialConsistErrors,
   onHasViaConsistErrorsChange,
 }: StdcmViasProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getStdcmPathSteps);
+  const initialConsist = pathSteps[0]?.consist;
 
   const [newIntermediateOpIndex, setNewIntermediateOpIndex] = useState<number>();
 
@@ -66,8 +65,8 @@ const StdcmVias = ({
       defaultStopTime = Duration.zero;
     }
 
-    let newConsistChange = pathStep.consistChange;
-    if (newStopType !== StdcmStopTypes.SERVICE_STOP && pathStep.consistChange) {
+    let newConsistChange = pathStep.consist;
+    if (newStopType !== StdcmStopTypes.SERVICE_STOP && pathStep.consist) {
       // Disable consist change
       newConsistChange = undefined;
 
@@ -80,7 +79,7 @@ const StdcmVias = ({
         updates: {
           stopType: newStopType,
           stopFor: defaultStopTime,
-          consistChange: newConsistChange,
+          consist: newConsistChange,
         },
       })
     );
@@ -145,12 +144,11 @@ const StdcmVias = ({
 
   const getPreviousConsistChange = (index: number): ConsistData => {
     for (let i = index - 1; i >= 0; i--) {
-      if (intermediatePoints[i].consistChange) {
-        return { ...intermediatePoints[i].consistChange };
+      if (intermediatePoints[i].consist) {
+        return { ...intermediatePoints[i].consist };
       }
     }
-    const { maxSpeed: _maxSpeed, ...initialConsistChange } = initialConsist;
-    return initialConsistChange;
+    return initialConsist ?? {};
   };
 
   const addConsistChange = (viaPathStep: StdcmViaPathStep, index: number) => {
@@ -159,7 +157,7 @@ const StdcmVias = ({
       updateStdcmPathStep({
         id: viaPathStep.id,
         updates: {
-          consistChange: previousConsistChange,
+          consist: previousConsistChange,
         },
       })
     );
@@ -172,7 +170,7 @@ const StdcmVias = ({
       updateStdcmPathStep({
         id: viaPathStep.id,
         updates: {
-          consistChange: undefined,
+          consist: undefined,
         },
       })
     );
@@ -189,17 +187,8 @@ const StdcmVias = ({
       ...Object.values(consistErrorsByStep.current),
     ]);
     const missingConsistsFields = filterMissingFields({
-      totalMass: initialConsist.totalMass,
-      totalLength: initialConsist.totalLength,
-      maxSpeed: initialConsist.maxSpeed,
       vias: pathSteps,
-      missingFields: [
-        'totalMass',
-        'totalLength',
-        'maxSpeed',
-        'viaConsistTotalMass',
-        'viaConsistTotalLength',
-      ],
+      missingFields: ['maxSpeed', 'totalMass', 'totalLength'],
     });
 
     return invalidConsistsFields.length !== 0 || missingConsistsFields.length !== 0;
@@ -228,7 +217,7 @@ const StdcmVias = ({
               disabled={disabled}
             />
             {pathStep.stopType === StdcmStopTypes.SERVICE_STOP &&
-              (!pathStep.consistChange ? (
+              (!pathStep.consist ? (
                 <StdcmDefaultCard
                   testId="edit-consist"
                   className="edit-consist"
@@ -247,12 +236,12 @@ const StdcmVias = ({
                     disabled={disabled}
                     isDebugMode={isDebugMode}
                     onConsistErrorsChange={(errors) => handleConsistErrors(pathStep.id, errors)}
-                    consist={pathStep.consistChange ?? {}}
+                    consist={pathStep.consist ?? {}}
                     onConsistChange={(newConsist) =>
                       dispatch(
                         updateStdcmPathStep({
                           id: pathStep.id,
-                          updates: { consistChange: newConsist },
+                          updates: { consist: newConsist },
                         })
                       )
                     }

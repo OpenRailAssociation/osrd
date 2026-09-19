@@ -14,19 +14,13 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
-import useStdcmLightRollingStock from 'applications/stdcm/hooks/useStdcmLightRollingStock';
-import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
-import {
-  restoreStdcmConfig,
-  updateInitialConsist,
-  updateStdcmPathStep,
-} from 'reducers/osrdconf/stdcmConf';
+import { restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getOperationalPoints,
   getTrackSectionIdsByLoadingGauge,
@@ -39,13 +33,6 @@ import {
   getStdcmScenarioID,
   getStdcmStudyID,
   getStdcmTimetableID,
-  getLoadingGauge,
-  getStdcmRollingStockID,
-  getTotalMass,
-  getTotalLength,
-  getMaxSpeed,
-  getTowedRollingStockID,
-  getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -53,7 +40,6 @@ import { useDateTimeLocale } from 'utils/date';
 
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
 import type {
-  ConsistData,
   StdcmConfigErrors,
   ConsistErrors,
   StdcmProgressPoints,
@@ -130,38 +116,12 @@ const StdcmConfig = ({
   const origin = useSelector(getStdcmOrigin);
   const pathSteps = useSelector(getStdcmPathSteps);
   const destination = useSelector(getStdcmDestination);
-  const rollingStockID = useSelector(getStdcmRollingStockID);
-  const towedRollingStockID = useSelector(getTowedRollingStockID);
-  const totalMass = useSelector(getTotalMass);
-  const totalLength = useSelector(getTotalLength);
-  const maxSpeed = useSelector(getMaxSpeed);
-  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
   const operationalPoints = useSelector(getOperationalPoints);
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
-  const loadingGaugeType = useSelector(getLoadingGauge);
-
-  const rollingStock = useStdcmLightRollingStock();
-  const towedRollingStock = useStdcmTowedRollingStock();
-
-  const initialConsist: ConsistData = {
-    rollingStockID,
-    rollingStockName: rollingStock?.name,
-    towedRollingStockID,
-    towedRollingStockName: towedRollingStock?.name,
-    totalMass,
-    totalLength,
-    maxSpeed,
-  };
-
-  const onInitialConsistChange = useCallback(
-    (newConsist: ConsistData) => {
-      dispatch(updateInitialConsist(newConsist));
-    },
-    [dispatch]
-  );
+  const loadingGaugeType = pathSteps[0].consist?.loadingGauge;
 
   const mapSettings = useMapSettings();
 
@@ -339,16 +299,15 @@ const StdcmConfig = ({
             disabled={disabled}
             isDebugMode={isDebugMode}
             onConsistErrorsChange={setInitialConsistErrors}
-            consist={{
-              rollingStockID,
-              towedRollingStockID,
-              totalMass,
-              totalLength,
-              maxSpeed,
-              loadingGauge: loadingGaugeType,
-              speedLimitByTag,
-            }}
-            onConsistChange={onInitialConsistChange}
+            consist={pathSteps[0].consist ?? {}}
+            onConsistChange={(newConsist) =>
+              dispatch(
+                updateStdcmPathStep({
+                  id: pathSteps[0].id,
+                  updates: { consist: newConsist },
+                })
+              )
+            }
           />
           <div className="stdcm__separator" />
           <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
@@ -357,7 +316,6 @@ const StdcmConfig = ({
             isDebugMode={isDebugMode}
             skipAnimation={skipPathfindingStatusMessage}
             onItineraryChange={onItineraryChange}
-            initialConsist={initialConsist}
             initialConsistErrors={initialConsistErrors}
             onHasViaConsistErrorsChange={setViaConsistErrors}
           />
