@@ -19,14 +19,14 @@ const baseTrainScheduleWithSummary: TrainScheduleWithDetails = {
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [
     {
-      id: 'id1',
+      key: 'id1',
       location: {
         type: 'operational_point_part_reference',
         operational_point: { uic: 123, type: 'uic' },
       },
     },
     {
-      id: 'id2',
+      key: 'id2',
       location: {
         type: 'operational_point_part_reference',
         operational_point: { uic: 234, type: 'uic' },
@@ -80,7 +80,7 @@ describe('setupStateWithTrainSchedule', () => {
         name: 'train1',
         pathSteps: [
           {
-            id: 'id1',
+            key: 'id1',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 123, type: 'uic' },
@@ -92,7 +92,7 @@ describe('setupStateWithTrainSchedule', () => {
             receptionSignal: 'OPEN',
           },
           {
-            id: 'id2',
+            key: 'id2',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 234, type: 'uic' },

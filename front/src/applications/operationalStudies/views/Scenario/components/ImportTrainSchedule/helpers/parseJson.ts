@@ -93,7 +93,7 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
     ) {
       return true;
     }
-    const hasInvalidSteps = trainSchedule.path.some((step) => !('id' in step));
+    const hasInvalidSteps = trainSchedule.path.some((step) => !('key' in step));
     return hasInvalidSteps;
   });
 

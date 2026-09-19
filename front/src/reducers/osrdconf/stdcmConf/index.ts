@@ -269,10 +269,10 @@ export const stdcmConfSlice = createSlice({
         linkedTrainExtremity: ExtremityPathStepType;
         trainName: string;
         pathStep: StdcmLinkedTrainExtremity;
-        pathStepId: string;
+        pathStepKey: string;
       }>
     ) {
-      const { linkedTrainExtremity, trainName, pathStep, pathStepId } = action.payload;
+      const { linkedTrainExtremity, trainName, pathStep, pathStepKey } = action.payload;
       const {
         name,
         secondary_code,
@@ -302,7 +302,7 @@ export const stdcmConfSlice = createSlice({
           countryCode: country_code,
           uic,
         },
-        id: pathStepId,
+        id: pathStepKey,
         arrival: arrivalDate,
         ...(linkedTrainExtremity === 'origin' && {
           arrivalType: ArrivalTimeTypes.PRECISE_TIME,
@@ -317,7 +317,7 @@ export const stdcmConfSlice = createSlice({
         state.linkedTrains.posteriorTrain = newLinkedTrain;
       }
       const newPathSteps = state.stdcmPathSteps.map((step) => {
-        if (step.id === action.payload.pathStepId) {
+        if (step.id === action.payload.pathStepKey) {
           return { ...step, ...newPathStep };
         }
         return step;

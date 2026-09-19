@@ -95,7 +95,7 @@ const SimulationResultMap = ({
           acc.push(step.location.track);
         }
         // Get the track ids from the computed ops
-        const matchedOp = pathPropertiesOps?.find((op) => step.id === op.pathItemId);
+        const matchedOp = pathPropertiesOps?.find((op) => step.key === op.pathItemId);
         if (matchedOp) {
           acc.push(matchedOp.part.track);
         }
@@ -145,7 +145,7 @@ const SimulationResultMap = ({
           }
 
           return {
-            id: step.id,
+            id: step.key,
             markerIndicator,
             name,
             coordinates,
@@ -153,7 +153,7 @@ const SimulationResultMap = ({
         }
 
         if (pathPropertiesOps) {
-          const matchedOp = pathPropertiesOps.find((op) => step.id === op.pathItemId);
+          const matchedOp = pathPropertiesOps.find((op) => step.key === op.pathItemId);
 
           if (!matchedOp) return null;
 
@@ -163,13 +163,13 @@ const SimulationResultMap = ({
             );
 
           return {
-            id: step.id,
+            id: step.key,
             markerIndicator,
             name: matchedOp.name,
             coordinates: simulatedCoordinates,
           };
         } else {
-          const matchedOp = matchedOps.get(step.id);
+          const matchedOp = matchedOps.get(step.key);
 
           const { local_track_name } = location;
           const coordinates = local_track_name
@@ -183,7 +183,7 @@ const SimulationResultMap = ({
           }
 
           return {
-            id: step.id,
+            id: step.key,
             markerIndicator,
             name: matchedOp.name,
             coordinates: simulatedCoordinates ?? coordinates,

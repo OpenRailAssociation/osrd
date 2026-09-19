@@ -33,34 +33,38 @@ const IntermediateWaypointsPanel = ({
   // (PathStepItem). The last located step is the destination; the trailing
   // placeholder has no location and is skipped.
   const { t: tMain } = useTranslation('operational-studies', { keyPrefix: 'main' });
-  const lastLocatedStepId = pathSteps.filter((step) => step.location !== null).at(-1)?.id;
+  const lastLocatedStepKey = pathSteps.filter((step) => step.location !== null).at(-1)?.key;
   const getRequestedLabel = (step: PathStepV2) => {
-    const index = pathSteps.findIndex((s) => s.id === step.id);
+    const index = pathSteps.findIndex((s) => s.key === step.key);
     if (index === 0) return tMain('requestedOrigin');
-    if (step.id === lastLocatedStepId) return tMain('requestedDestination');
+    if (step.key === lastLocatedStepKey) return tMain('requestedDestination');
     return tMain('requestedPoint', { count: index + 1 });
   };
 
   // path_item_positions lines up with the located steps, in order. Pair them
   // here so the grouping can look a step's position up by id.
-  const positionByStepId = useMemo(() => {
+  const positionByStepKey = useMemo(() => {
     const locatedSteps = pathSteps.filter((step) => step.location !== null);
     const positions = pathProperties?.pathItemPositions;
     if (positions?.length !== locatedSteps.length) return undefined;
-    return new Map(locatedSteps.map((step, i) => [step.id, positions[i]]));
+    return new Map(locatedSteps.map((step, i) => [step.key, positions[i]]));
   }, [pathSteps, pathProperties]);
 
   const groups = useMemo(
     () =>
-      groupOperationalPoints(pathProperties?.operational_points ?? [], pathSteps, positionByStepId),
-    [pathProperties, pathSteps, positionByStepId]
+      groupOperationalPoints(
+        pathProperties?.operational_points ?? [],
+        pathSteps,
+        positionByStepKey
+      ),
+    [pathProperties, pathSteps, positionByStepKey]
   );
 
-  const [collapsedStepIds, setCollapsedStepIds] = useState<Set<string>>(new Set());
-  const toggleGroup = (stepId: string) =>
-    setCollapsedStepIds((prev) => {
+  const [collapsedStepKeys, setCollapsedStepKeys] = useState<Set<string>>(new Set());
+  const toggleGroup = (stepKey: string) =>
+    setCollapsedStepKeys((prev) => {
       const next = new Set(prev);
-      if (!next.delete(stepId)) next.add(stepId);
+      if (!next.delete(stepKey)) next.add(stepKey);
       return next;
     });
 
@@ -78,12 +82,12 @@ const IntermediateWaypointsPanel = ({
         <div className="intermediate-waypoints-panel__list">
           {groups.map((group) => (
             <WaypointGroup
-              key={group.requestedStep.id}
+              key={group.requestedStep.key}
               group={group}
               requestedLabel={getRequestedLabel(group.requestedStep)}
-              onAdd={(op) => onAddWaypoint(op, group.requestedStep.id)}
-              expanded={!collapsedStepIds.has(group.requestedStep.id)}
-              onToggle={() => toggleGroup(group.requestedStep.id)}
+              onAdd={(op) => onAddWaypoint(op, group.requestedStep.key)}
+              expanded={!collapsedStepKeys.has(group.requestedStep.key)}
+              onToggle={() => toggleGroup(group.requestedStep.key)}
             />
           ))}
         </div>

@@ -110,7 +110,7 @@ export const upsertPathStepsInOPs = (
         stepName = t('main.requestedDestination');
       }
       const formattedStep: SuggestedOP = {
-        pathStepId: step.id,
+        pathStepId: step.key,
         opId: undefined,
         positionOnPath: step.positionOnPath!,
         offsetOnTrack: step.location.offset,
@@ -138,13 +138,13 @@ export const upsertPathStepsInOPs = (
         updatedOPs.push(formattedStep);
       }
     } else {
-      const index = updatedOPs.findIndex((op) => op.pathStepId === step.id);
+      const index = updatedOPs.findIndex((op) => op.pathStepId === step.key);
       if (index < 0) {
-        throw new Error(`Could not find path step "${step.id}" in OP list`);
+        throw new Error(`Could not find path step "${step.key}" in OP list`);
       }
       updatedOPs[index] = {
         ...updatedOPs[index],
-        pathStepId: step.id,
+        pathStepId: step.key,
         stopFor,
         arrival,
         receptionSignal,

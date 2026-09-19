@@ -35,7 +35,7 @@ function upsertPathStepTrack(
   // First check if the OP is already an explicit path step, if so update it
   if (pathItemRelativeLocation.type === 'exact_path_item') {
     const pathStepIndex = newPath.findIndex(
-      (step) => step.id === pathItemRelativeLocation.path_item_id
+      (step) => step.key === pathItemRelativeLocation.path_item_key
     );
     if (pathStepIndex < 0) {
       throw new Error('Could not find path step to update');
@@ -56,7 +56,7 @@ function upsertPathStepTrack(
     // Path step needs to be inserted
 
     const beforeIndex = newPath.findIndex(
-      (step) => step.id === pathItemRelativeLocation.following_path_item_id
+      (step) => step.key === pathItemRelativeLocation.following_path_item_key
     );
     if (beforeIndex < 0) {
       throw new Error('Could not find where to insert new path step');
@@ -65,7 +65,7 @@ function upsertPathStepTrack(
     }
 
     newPath.splice(beforeIndex, 0, {
-      id: uuidV4(),
+      key: uuidV4(),
       location: {
         type: 'operational_point_part_reference',
         operational_point: {

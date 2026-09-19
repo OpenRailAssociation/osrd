@@ -3,7 +3,7 @@ import { v4 as uuidV4 } from 'uuid';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 export const createEmptyPathStep = (): PathStepV2 => ({
-  id: uuidV4(),
+  key: uuidV4(),
   location: null,
   arrival: null,
   stopFor: null,
@@ -23,5 +23,5 @@ export const ensureTrailingEmptyStep = (steps: PathStepV2[]): PathStepV2[] => {
   return [...trimmed, existingEmpty ?? createEmptyPathStep()];
 };
 
-export const deletePathStep = (steps: PathStepV2[], stepId: string): PathStepV2[] =>
-  steps.filter((s) => s.id !== stepId);
+export const deletePathStep = (steps: PathStepV2[], stepKey: string): PathStepV2[] =>
+  steps.filter((s) => s.key !== stepKey);

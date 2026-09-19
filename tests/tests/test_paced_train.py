@@ -85,7 +85,7 @@ def test_get_paced_train_with_exception_path(
                 "schedule": [],
                 "path": [
                     {
-                        "id": "id1",
+                        "key": "id1",
                         "deleted": False,
                         "location": {
                             "type": "track_offset",
@@ -94,7 +94,7 @@ def test_get_paced_train_with_exception_path(
                         },
                     },
                     {
-                        "id": "id2",
+                        "key": "id2",
                         "deleted": False,
                         "location": {
                             "type": "track_offset",
@@ -178,7 +178,7 @@ def test_get_paced_train_with_exception_simulation(
             "path_and_schedule": {
                 "path": [
                     {
-                        "id": "id1",
+                        "key": "id1",
                         "deleted": False,
                         "location": {
                             "type": "track_offset",
@@ -187,7 +187,7 @@ def test_get_paced_train_with_exception_simulation(
                         },
                     },
                     {
-                        "id": "id2",
+                        "key": "id2",
                         "deleted": False,
                         "location": {
                             "type": "track_offset",
