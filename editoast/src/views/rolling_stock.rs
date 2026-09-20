@@ -1173,29 +1173,17 @@ pub mod tests {
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn get_invalid_rolling_stock_id_returns_404_not_found() {
-            // TODO: skipping authz here is not trivial because the checks execution order is
-            // undefined. It could indifferently return a 403 Forbidden or a 404 not found if the
-            // rolling stock does not exist.
-            // Not: in practice, it seems to always return 404 not found as that check future executes
-            // faster than the 403 one.
-            // => do we:
-            //   - keep skipping authz here for the time being ?
-            //   - update `Authorizer::authorize` implementations to define a check order ?
-            //      1. FuturesUnordered => FuturesOrdered in `authorize`
-            //      2. #[derive(PartialOrd, Ord)] on Check
-            //      3. use an ordered collection in `Protected.checks` that uses the PartialOrd
-            //         trait
-            //   - update the protected ops to insert the checks in the correct order
-            //      1. FuturesUnordered => FuturesOrdered in `authorize`
-            //      2. use an ordered collection in `Protected.checks` that keeps insertion order
-            //      3. make sure when we create protected ops that we insert the checks in the
-            //         correct order
-            //  github discussion ref: https://github.com/OpenRailAssociation/osrd/pull/17383#issuecomment-4868190929
-            let app = test_app!().skip_authz().build();
-            let db_pool = app.db_pool();
-            let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
+            let app = test_app!().build();
+            // The grant is set on a rolling stock that doesn't exist: the privilege check passes
+            // and the endpoint fails to retrieve the rolling stock.
+            let user = app
+                .user(Uuid::new_v4().to_string(), "name")
+                .with_rolling_stock_grant(i64::MAX, RollingStockGrant::RestrictedReader)
+                .create()
+                .await;
 
-            app.get("/rolling_stock/1/usage")
+            app.get(&format!("/rolling_stock/{}/usage", i64::MAX))
+                .by_user(user.as_ref())
                 .await
                 .assert_status_not_found();
         }
