@@ -18,6 +18,13 @@ type TimePropagationMenuProps = {
   isOriginArrival?: boolean;
 };
 
+const MODE_ITEMS: { mode: PropagationMode; icon: React.ReactNode; className?: string }[] = [
+  { mode: 'shiftAllWaypoints', icon: <ArrowBoth /> },
+  { mode: 'fromDeparture', icon: <ArrowUp /> },
+  { mode: 'atThisWaypoint', icon: <Dot variant="base" />, className: 'selected' },
+  { mode: 'toDestination', icon: <ArrowDown /> },
+];
+
 const TimePropagationMenu = ({
   isOpen,
   anchorRef,
@@ -29,55 +36,18 @@ const TimePropagationMenu = ({
   isOriginArrival = false,
 }: TimePropagationMenuProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable.propagationMenu' });
-  const shiftAllWaypointsDeltaLabel = formatPropagationDeltaLabelByMode(
-    oldValue,
-    newValue,
-    'shiftAllWaypoints'
-  );
-  const fromDepartureDeltaLabel = formatPropagationDeltaLabelByMode(
-    oldValue,
-    newValue,
-    'fromDeparture'
-  );
-  const atThisWaypointDeltaLabel = formatPropagationDeltaLabelByMode(
-    oldValue,
-    newValue,
-    'atThisWaypoint',
-    isOriginArrival
-  );
-  const toDestinationDeltaLabel = formatPropagationDeltaLabelByMode(
-    oldValue,
-    newValue,
-    'toDestination',
-    isOriginArrival
-  );
-  const selectMode = (mode: PropagationMode) => () => onSelectMode(mode);
+  const disabledByMode: Partial<Record<PropagationMode, boolean>> = {
+    fromDeparture: disableFromDeparture,
+    toDestination: disableToDestination,
+  };
 
-  const items: OSRDMenuItem[] = [
-    {
-      title: `${shiftAllWaypointsDeltaLabel} ${t('shiftAllWaypoints')}`,
-      icon: <ArrowBoth />,
-      onClick: selectMode('shiftAllWaypoints'),
-    },
-    {
-      title: `${fromDepartureDeltaLabel} ${t('fromDeparture')}`,
-      icon: <ArrowUp />,
-      disabled: disableFromDeparture,
-      onClick: selectMode('fromDeparture'),
-    },
-    {
-      title: `${atThisWaypointDeltaLabel} ${t('atThisWaypoint')}`,
-      icon: <Dot variant="base" />,
-      className: 'selected',
-      onClick: selectMode('atThisWaypoint'),
-    },
-    {
-      title: `${toDestinationDeltaLabel} ${t('toDestination')}`,
-      icon: <ArrowDown />,
-      disabled: disableToDestination,
-      onClick: selectMode('toDestination'),
-    },
-  ];
+  const items: OSRDMenuItem[] = MODE_ITEMS.map(({ mode, icon, className }) => ({
+    title: `${formatPropagationDeltaLabelByMode(oldValue, newValue, mode, isOriginArrival)} ${t(mode)}`,
+    icon,
+    className,
+    disabled: disabledByMode[mode],
+    onClick: () => onSelectMode(mode),
+  }));
 
   return (
     <PropagationMenu
