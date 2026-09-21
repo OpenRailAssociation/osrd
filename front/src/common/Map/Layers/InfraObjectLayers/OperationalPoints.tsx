@@ -67,6 +67,7 @@ function getFilterHighlighted(
 type OperationalPointsProps = {
   colors: Theme;
   layerOrder: number;
+  mutedLayerOrder: number;
   operationnalPointId?: string;
   highlightedArea?: Geometry;
 };
@@ -74,6 +75,7 @@ type OperationalPointsProps = {
 const OperationalPointsLayer = ({
   colors,
   layerOrder,
+  mutedLayerOrder,
   operationnalPointId,
   highlightedArea,
 }: OperationalPointsProps) => {
@@ -309,7 +311,7 @@ const OperationalPointsLayer = ({
         <OrderedLayer
           {...nameMuted}
           id="chartis/osrd_operational_point_name_muted/geo"
-          layerOrder={layerOrder}
+          layerOrder={mutedLayerOrder}
         />
       )}
     </Source>
