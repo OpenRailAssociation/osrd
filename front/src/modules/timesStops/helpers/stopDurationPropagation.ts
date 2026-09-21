@@ -2,10 +2,27 @@ import type { ScheduleItem, TimetableType } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, subtractDurationFromStartTime } from 'utils/duration';
 
+import { ONE_DAY } from '../consts';
 import type { StopDurationUpdate, PropagationResult } from '../types';
 import { cascadeArrivals } from './arrivalCascade';
 import { insertScheduleItemInOrder } from './cellUpdate';
-import { formatSignedDelta, getTruncatedToSecondStartTime } from './utils';
+import {
+  formatSignedDelta,
+  getTruncatedToSecondSchedule,
+  getTruncatedToSecondStartTime,
+} from './utils';
+
+/** Bring negative stop durations back within a day. */
+const normalizeStopDurations = (schedule: ScheduleItem[]): ScheduleItem[] =>
+  schedule.map((item) => {
+    const stop = item.stop_for ? getTruncatedToSecondSchedule(item.stop_for) : null;
+    if (!stop || stop.ms >= 0) return item;
+
+    return {
+      ...item,
+      stop_for: new Duration({ milliseconds: stop.ms + ONE_DAY.ms }).toISOString(),
+    };
+  });
 
 export const formatStopDurationDeltaLabel = (
   oldValue: Duration | null,
@@ -62,7 +79,7 @@ export const propagateStopDuration = (
   // Shift every scheduled arrival after the edited point by +delta, in path order. Bump +24h
   // if a shifted arrival ends up before the previous departure.
   const updatedSchedule = cascadeArrivals({
-    schedule: updatedScheduleStop,
+    schedule: normalizeStopDurations(updatedScheduleStop),
     path: selectedTrain.path,
     fromPathIndex: editedPathIndex + 1,
     shift: (arrival) => arrival.add(delta),
