@@ -39,7 +39,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
     }
 
     return undefined;
-  }, [pathStep.stopType, pathStep.stopFor, pathStep.consistChange]);
+  }, [pathStep.stopType, pathStep.stopFor, pathStep.consist]);
 
   useEffect(() => {
     setStopDuration(pathStep.stopFor !== undefined ? `${pathStep.stopFor.total('minute')}` : '');

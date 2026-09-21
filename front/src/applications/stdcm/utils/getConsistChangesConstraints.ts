@@ -53,13 +53,13 @@ type PostPathfindingBlocks = ReturnType<
 
 export const getConsistChanges = (pathSteps: StdcmPathStep[]): ConsistChange[] =>
   pathSteps.flatMap((step, index) => {
-    if (!step.isVia || !step.consistChange?.rollingStockID) return [];
+    if (!step.isVia || !step.consist?.rollingStockID) return [];
     return [
       {
         index,
-        rollingStockID: step.consistChange.rollingStockID,
-        loadingGauge: step.consistChange.loadingGauge,
-        speedLimitByTag: step.consistChange.speedLimitByTag,
+        rollingStockID: step.consist.rollingStockID,
+        loadingGauge: step.consist.loadingGauge,
+        speedLimitByTag: step.consist.speedLimitByTag,
       },
     ];
   });

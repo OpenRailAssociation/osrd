@@ -40,11 +40,6 @@ const buildStdcmConfSelectors = () => {
     getStdcmConf,
 
     getMargins: makeOsrdConfSelector('margins'),
-    getTotalMass: makeOsrdConfSelector('totalMass'),
-    getTotalLength: makeOsrdConfSelector('totalLength'),
-    getMaxSpeed: makeOsrdConfSelector('maxSpeed'),
-    getLoadingGauge: makeOsrdConfSelector('loadingGauge'),
-    getTowedRollingStockID: makeOsrdConfSelector('towedRollingStockID'),
 
     getStdcmPathSteps,
     getStdcmOrigin: (state: RootState) => {
@@ -97,17 +92,10 @@ export const {
   getScenarioID: getStdcmScenarioID,
   getTimetableID: getStdcmTimetableID,
   getElectricalProfileSetId: getStdcmElectricalProfileSetId,
-  getRollingStockID: getStdcmRollingStockID,
-  getSpeedLimitByTag: getStdcmSpeedLimitByTag,
 
   getStdcmConf,
 
   getMargins,
-  getTotalMass,
-  getTotalLength,
-  getMaxSpeed,
-  getLoadingGauge,
-  getTowedRollingStockID,
   getStdcmPathSteps,
   getStdcmOrigin,
   getStdcmDestination,

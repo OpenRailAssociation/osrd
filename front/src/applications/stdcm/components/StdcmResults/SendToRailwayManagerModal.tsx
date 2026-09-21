@@ -426,7 +426,7 @@ const SendToRailwayManagerModal = ({
 
               {intermediatePoints.map((step) => {
                 if (!step.isVia) return null;
-                const stopType = step.consistChange ? StdcmStopTypes.CONSIST_CHANGE : step.stopType;
+                const stopType = step.consist ? StdcmStopTypes.CONSIST_CHANGE : step.stopType;
                 return (
                   <li key={step.id}>
                     {t('modal.stop', {
@@ -434,26 +434,26 @@ const SendToRailwayManagerModal = ({
                       stopAt: `${step.operationalPoint?.name} ${step.operationalPoint?.secondaryCode}`,
                       stopType: t(`modal.stopType.${stopType}`),
                     })}
-                    {step.consistChange && (
+                    {step.consist && (
                       <ul className="consist-change">
                         <li>
                           {t('modal.consistChange.rsEngine', {
-                            rsEngine: step.consistChange?.rollingStockName,
+                            rsEngine: step.consist?.rollingStockName,
                           })}
                         </li>
                         <li>
                           {t('modal.consistChange.towedRs', {
-                            towedRs: step.consistChange?.towedRollingStockName,
+                            towedRs: step.consist?.towedRollingStockName,
                           })}
                         </li>
                         <li>
                           {t('modal.consistChange.mass', {
-                            mass: step.consistChange?.totalMass,
+                            mass: step.consist?.totalMass,
                           })}
                         </li>
                         <li>
                           {t('modal.consistChange.length', {
-                            length: step.consistChange?.totalLength,
+                            length: step.consist?.totalLength,
                           })}
                         </li>
                       </ul>
