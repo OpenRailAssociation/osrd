@@ -13,7 +13,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    height: 52px;
+    height: 48px;
     font-size: 0.875rem;
     color: var(--grey50);
     background-color: var(--ambientB15);
@@ -39,7 +39,7 @@
   }
 
   .waypoints-panel-body {
-    height: calc(100% - 34px - 105px);
+    height: calc(100% - 48px - 105px);
     background-color: var(--ambientB10);
     padding-top: calc(11px - 2px); // 2px > checkbox border
     padding-left: calc(18px - 2px); // 2px > checkbox border
