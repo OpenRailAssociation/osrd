@@ -5,7 +5,7 @@ import type { Geometry } from 'geojson';
 import { compact } from 'lodash';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { GeoJsonMultiLineString } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import ItineraryLayer from 'common/Map/components/ItineraryLayer';
@@ -20,7 +20,7 @@ import { MapContextProvider } from './useMapContext';
 type DefaultBaseMapProps = {
   mapId: string;
   infraId?: number;
-  geometry?: GeoJsonLineString;
+  geometry?: GeoJsonMultiLineString;
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
   mapSettings: MapSettings;
@@ -91,7 +91,7 @@ const DefaultBaseMap = ({
     // computed, the geometry alone doesn't cover all the requested path steps.
     const points = {
       coordinates: [
-        ...(geometry?.coordinates ?? []),
+        ...(geometry?.coordinates.flat() ?? []),
         ...compact(pathStepMarkers.map((step) => step.coordinates)),
       ],
       type: 'LineString' as const,
