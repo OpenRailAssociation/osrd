@@ -208,7 +208,7 @@ const useUpdateTimesStopsTable = (
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
-      const isOrigin = pathStepId === updatedPath[0].id;
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
       let edit: OptimisticEdit;
@@ -221,21 +221,17 @@ const useUpdateTimesStopsTable = (
         edit = update;
       }
 
-      const newState = applyScheduleEdit(
-        { arrival: update.row.requestedArrival, stop: update.row.stopDuration },
-        edit
-      );
-
-      const startTime = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
-      const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
-        newState,
+      const { arrival, stop_for } = scheduleStateToApiFields(
+        applyScheduleEdit(
+          { arrival: update.row.requestedArrival, stop: update.row.stopDuration },
+          edit
+        ),
         startTime
       );
-
       const updatedSchedule = upsertScheduleItem(currentSchedule, updatedPath, {
         at: pathStepId,
-        arrival: isOrigin ? null : newArrival,
-        stop_for: newStopFor,
+        arrival,
+        stop_for,
       });
       if (!updatedSchedule) return { patch: undefined, edits: [] };
 
@@ -315,23 +311,14 @@ const useUpdateTimesStopsTable = (
               };
         edits.push({ rowId: row.id, ...edit });
 
-        const newState = applyScheduleEdit(
-          { arrival: row.requestedArrival, stop: row.stopDuration },
-          edit
-        );
-
-        const { arrival: newArrival, stop_for: newStopFor } = scheduleStateToApiFields(
-          newState,
+        const { arrival, stop_for } = scheduleStateToApiFields(
+          applyScheduleEdit({ arrival: row.requestedArrival, stop: row.stopDuration }, edit),
           startTime
         );
-
         // A row with no time to fill leaves the schedule untouched
         updatedSchedule =
-          upsertScheduleItem(updatedSchedule, currentPath, {
-            at: pathStepId,
-            arrival: newArrival,
-            stop_for: newStopFor,
-          }) ?? updatedSchedule;
+          upsertScheduleItem(updatedSchedule, currentPath, { at: pathStepId, arrival, stop_for }) ??
+          updatedSchedule;
       }
 
       return {
