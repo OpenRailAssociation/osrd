@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,7 @@ import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTyp
 import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
-import type { ObjectType } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ObjectType } from 'common/api/osrdEditoastApi';
 import useCheckUserPrivileges from 'common/authorization/hooks/useCheckUserPrivileges';
 import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -28,6 +29,7 @@ import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { MapContextProvider } from 'common/Map/useMapContext';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
 import useInfra from 'modules/infra/useInfra';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
@@ -309,6 +311,20 @@ const Editor = () => {
       dispatch(updateTotalsIssue(infradID));
     }
   }, [urlInfra]);
+
+  const { data: infraBbox } = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useQuery(
+    infraID ? { infraId: infraID } : skipToken
+  );
+  useMemo(() => {
+    if (infraBbox === undefined) return;
+    const { min_lat, min_lon, max_lat, max_lon } = infraBbox!;
+
+    const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+      padding: 64,
+    });
+
+    setViewport(newViewport);
+  }, [infraBbox]);
 
   // Lifecycle events on tools:
   useEffect(() => {
