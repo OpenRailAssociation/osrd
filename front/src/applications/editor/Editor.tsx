@@ -323,7 +323,7 @@ const Editor = () => {
       });
       (incompatibleLayers ?? []).forEach((editorLayer) => {
         const layer = getLayerSettingNameFromEditorLayer(editorLayer);
-        if (layer && layer !== 'speedlimittag') newLayersSettings[layer] = true;
+        if (layer && layer !== 'speedlimittag') newLayersSettings[layer] = false;
       });
       updateMapSettings({ layersSettings: newLayersSettings });
     }
