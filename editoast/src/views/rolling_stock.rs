@@ -821,7 +821,6 @@ pub mod tests {
     use models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
     use serde_json::json;
-    use strum::IntoEnumIterator as _;
     use uuid::Uuid;
 
     use super::*;
@@ -964,55 +963,54 @@ pub mod tests {
         use pretty_assertions::assert_eq;
 
         mod authorization {
-            use std::iter::once;
+            use rstest::rstest;
 
             use super::*;
 
+            #[rstest]
+            #[case::restricted_reader(RollingStockGrant::RestrictedReader)]
+            #[case::reader(RollingStockGrant::Reader)]
+            #[case::writer(RollingStockGrant::Writer)]
+            #[case::owner(RollingStockGrant::Owner)]
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-            async fn all_grant_levels_should_allow_usage() {
+            async fn all_grant_levels_should_allow_usage(#[case] grant: RollingStockGrant) {
                 let app = test_app!().build();
                 let rolling_stock_id =
                     create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock")
                         .await
                         .id;
-                for grant in RollingStockGrant::iter() {
-                    let user = app
-                        .user(uuid::Uuid::new_v4().to_string(), "name")
-                        .with_rolling_stock_grant(rolling_stock_id, grant)
-                        .create()
-                        .await;
-                    app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
-                        .by_user(user.as_ref())
-                        .await
-                        .assert_status_ok();
-                }
-            }
-
-            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-            async fn roles_should_not_authorize_user() {
-                let app = test_app!().build();
-                let rolling_stock_id =
-                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock")
-                        .await
-                        .id;
-                for role in authz::Role::iter().map(Option::Some).chain(once(None)) {
-                    let user_builder = app.user(uuid::Uuid::new_v4().to_string(), "name");
-                    match role {
-                        Some(Role::Admin) => continue, // admins should be authorized
-                        Some(role) => user_builder.with_roles(vec![role]),
-                        None => user_builder,
-                    }
+                let user = app
+                    .user(uuid::Uuid::new_v4().to_string(), "name")
+                    .with_rolling_stock_grant(rolling_stock_id, grant)
                     .create()
                     .await;
-                    let user = app
-                        .user(uuid::Uuid::new_v4().to_string(), "name")
-                        .create()
-                        .await;
-                    app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
-                        .by_user(user.as_ref())
+                app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
+                    .by_user(user.as_ref())
+                    .await
+                    .assert_status_ok();
+            }
+
+            // Role::Admin is left out on purpose: admins should be authorized
+            #[rstest]
+            #[case::no_role(None)]
+            #[case::stdcm(Some(Role::Stdcm))]
+            #[case::operational_studies(Some(Role::OperationalStudies))]
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+            async fn roles_should_not_authorize_user(#[case] role: Option<Role>) {
+                let app = test_app!().build();
+                let rolling_stock_id =
+                    create_fast_rolling_stock(&mut app.db_pool().get_ok(), "rolling_stock")
                         .await
-                        .assert_status_forbidden();
-                }
+                        .id;
+                let user = app
+                    .user(uuid::Uuid::new_v4().to_string(), "name")
+                    .with_roles(role)
+                    .create()
+                    .await;
+                app.get(&format!("/rolling_stock/{rolling_stock_id}/usage"))
+                    .by_user(user.as_ref())
+                    .await
+                    .assert_status_forbidden();
             }
 
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
