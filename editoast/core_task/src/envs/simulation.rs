@@ -330,6 +330,7 @@ pub(crate) mod test_data {
 
     use super::*;
     use crate::PathItemConstraint;
+    use core_client::simulation::PathItemTime;
 
     /// We use the length field to identify it since the content doesn't matter
     pub(crate) fn path(id: usize, positions_count: u64) -> serde_json::Value {
@@ -359,14 +360,14 @@ pub(crate) mod test_data {
                     times: vec![],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 10],
+                    path_item_times: vec![PathItemTime::new(0), PathItemTime::new(10)],
                 },
                 provisional: core_client::simulation::ReportTrain {
                     positions: vec![],
                     times: vec![0, 10],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 10],
+                    path_item_times: vec![PathItemTime::new(0), PathItemTime::new(10)],
                 },
                 final_output: core_client::simulation::CompleteReportTrain {
                     report_train: core_client::simulation::ReportTrain {
@@ -374,7 +375,7 @@ pub(crate) mod test_data {
                         times: vec![],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 10],
+                        path_item_times: vec![PathItemTime::new(0), PathItemTime::new(10)],
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],

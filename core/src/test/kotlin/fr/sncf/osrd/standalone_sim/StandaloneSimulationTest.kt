@@ -547,8 +547,13 @@ class StandaloneSimulationTest {
         assertEquals(schedule.size, report.pathItemTimes.size)
         for (i in 0..schedule.size - 2) {
             assertEquals(
-                report.pathItemTimes[i] + (schedule[i].stopDetails?.duration ?: Duration.ZERO),
-                report.pathItemTimes[i + 1],
+                report.pathItemTimes[i].arrival +
+                    (schedule[i].stopDetails?.duration ?: Duration.ZERO),
+                report.pathItemTimes[i + 1].arrival,
+            )
+            assertEquals(
+                report.pathItemTimes[i].stopDuration ?: Duration.ZERO,
+                schedule[i].stopDetails?.duration ?: Duration.ZERO,
             )
         }
     }

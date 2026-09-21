@@ -305,7 +305,7 @@ const useTimesStopsTableData = (
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
             ? new Duration({
-                milliseconds: stablePathItemTimes.final[stepIndex],
+                milliseconds: stablePathItemTimes.final[stepIndex].arrival,
               })
             : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];

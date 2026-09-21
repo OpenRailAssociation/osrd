@@ -11,6 +11,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
+import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 
@@ -50,7 +51,7 @@ class CompleteReportTrain(
     times: List<TimeDelta>, // Times are compared to the departure time
     speeds: List<Double>,
     @Json(name = "energy_consumption") energyConsumption: Double,
-    @Json(name = "path_item_times") pathItemTimes: List<TimeDelta>,
+    @Json(name = "path_item_times") pathItemTimes: List<PathItemTime>,
     @Json(name = "signal_critical_positions")
     val signalCriticalPositions: List<SignalCriticalPosition>,
     @Json(name = "zone_updates") val zoneUpdates: List<ZoneUpdate>,
@@ -72,16 +73,21 @@ open class ReportTrain(
     val speeds: List<Double>,
     @Json(name = "energy_consumption") val energyConsumption: Double,
     /**
-     * Times at which the train *arrives* at each path item.
+     * Times at which the train *arrives* and the *stop duration* at each path item.
      *
      * If two path items have the same position, but the first one has a stop duration, the second
-     * path item time will be offset by the stop duration of the first.
+     * path item time *arrival* will be offset by the stop duration of the first.
      *
      * For example, in a simulation going through four path items A, B, B' and C. If B and B' are at
-     * the same position, then the path item time of B' will be equal to the path item time of B
-     * plus the stop duration of B.
+     * the same position, then the path item time *arrival* of B' will be equal to the path item
+     * time *arrival* of B plus the *stop duration* of B.
      */
-    @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
+    @Json(name = "path_item_times") val pathItemTimes: List<PathItemTime>,
+)
+
+class PathItemTime(
+    val arrival: TimeDelta,
+    @Json(name = "stop_duration") val stopDuration: Duration?,
 )
 
 class SimulationFailed(@Json(name = "core_error") val coreError: OSRDError) : SimulationResponse
