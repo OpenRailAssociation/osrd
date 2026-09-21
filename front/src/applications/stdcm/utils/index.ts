@@ -36,7 +36,7 @@ export const extractMarkersInfo = (
     }
 
     acc.push({
-      id: step.id,
+      key: step.id,
       pointType,
       location: {
         type: 'operational_point_part_reference',

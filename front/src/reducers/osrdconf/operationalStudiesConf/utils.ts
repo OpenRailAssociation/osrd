@@ -14,7 +14,7 @@ export const canRemovePathStep = (
   powerRestrictionRanges: PowerRestriction[]
 ) => {
   const pathStepIsUsed = powerRestrictionRanges.some(
-    (restriction) => restriction.from === pathStep.id || restriction.to === pathStep.id
+    (restriction) => restriction.from === pathStep.key || restriction.to === pathStep.key
   );
   return !pathStepIsUsed && !pathStep.arrival && !pathStep.stopFor && !pathStep.theoreticalMargin;
 };
@@ -25,7 +25,7 @@ export const updateRestrictions = (
   restrictionsToRemove: PowerRestriction[],
   firstRestriction?: PowerRestriction,
   secondRestriction?: PowerRestriction,
-  newPathStepId?: string
+  newPathStepKey?: string
 ) => {
   const newPowerRestrictions: PowerRestriction[] = [];
 
@@ -42,11 +42,11 @@ export const updateRestrictions = (
 
     let newRestriction = restriction;
     // update the restriction if it is the first or second restriction
-    if (newPathStepId) {
+    if (newPathStepKey) {
       if (restriction.to === firstRestriction?.to) {
-        newRestriction = { ...restriction, to: newPathStepId };
+        newRestriction = { ...restriction, to: newPathStepKey };
       } else if (restriction.from === secondRestriction?.from) {
-        newRestriction = { ...restriction, from: newPathStepId };
+        newRestriction = { ...restriction, from: newPathStepKey };
       }
     }
     newPowerRestrictions.push(newRestriction);
@@ -61,8 +61,8 @@ export const isRangeCovered = (
   positionMin: number,
   positionMax: number
 ): boolean => {
-  const pathStepFrom = pathSteps.find((pathStep) => pathStep.id === powerRestrictionRange.from);
-  const pathStepTo = pathSteps.find((pathStep) => pathStep.id === powerRestrictionRange.to);
+  const pathStepFrom = pathSteps.find((pathStep) => pathStep.key === powerRestrictionRange.from);
+  const pathStepTo = pathSteps.find((pathStep) => pathStep.key === powerRestrictionRange.to);
 
   if (pathStepFrom?.positionOnPath === undefined || pathStepTo?.positionOnPath === undefined) {
     throw new Error('Path step has no position on path');
@@ -72,7 +72,7 @@ export const isRangeCovered = (
 };
 
 export const addPathStep = (pathSteps: PathStep[], newPathStep: PathStep): PathStep[] => {
-  const newPathStepExists = pathSteps.some((pathStep) => pathStep.id === newPathStep.id);
+  const newPathStepExists = pathSteps.some((pathStep) => pathStep.key === newPathStep.key);
   if (!newPathStepExists) {
     const index = pathSteps.findIndex(
       (step) => step.positionOnPath && step.positionOnPath > newPathStep.positionOnPath!

@@ -413,7 +413,7 @@ const PathStepItem = ({
               }}
             >
               <ComboBox
-                id={`pathStep-name-${pathStep.id}`}
+                id={`pathStep-name-${pathStep.key}`}
                 data-testid="path-step-combo-box"
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
@@ -503,7 +503,7 @@ const PathStepItem = ({
                 })}
               >
                 <ComboBox
-                  id={`pathStep-status-${pathStep.id}`}
+                  id={`pathStep-status-${pathStep.key}`}
                   value={selectedTrackNameOption}
                   suggestions={filteredTrackSuggestions}
                   getSuggestionLabel={(option) => option.label}

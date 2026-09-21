@@ -487,26 +487,26 @@ impl TrainToProjectOnOperationalPoint {
 
         let mut refs = ts.path().iter().map(|path_item| match &path_item.location {
             PathItemLocation::OperationalPointPartReference(op_ref) => {
-                Some((&op_ref.operational_point, &path_item.id))
+                Some((&op_ref.operational_point, &path_item.key))
             }
             PathItemLocation::TrackOffset(_) => None,
         });
 
         let first_path_item = refs.next().flatten();
 
-        let refs = refs.flatten().map(|(op_ref, id)| {
+        let refs = refs.flatten().map(|(op_ref, key)| {
             arrival_inputs
-                .get(&id)
+                .get(&key)
                 .map(|&arrival_time| OperationalPointRefAndTime {
                     arrival_time,
-                    stop_for: stops_input.get(&id).copied().unwrap_or_default(),
+                    stop_for: stops_input.get(&key).copied().unwrap_or_default(),
                     op_ref: op_ref.clone(),
                 })
         });
 
-        let first_op_ref = first_path_item.map(|(op_ref, id)| OperationalPointRefAndTime {
+        let first_op_ref = first_path_item.map(|(op_ref, key)| OperationalPointRefAndTime {
             arrival_time: 0,
-            stop_for: stops_input.get(&id).copied().unwrap_or_default(),
+            stop_for: stops_input.get(&key).copied().unwrap_or_default(),
             op_ref: op_ref.clone(),
         });
 
@@ -534,16 +534,16 @@ impl TrainToProjectOnOperationalPoint {
         // `PathItemLocation::TrackOffset`s are visible on the STD even for invalid trains.
         let space_time_curve = extract_curve_for_invalid_train_with_sim(ts, &sim, &path);
 
-        let last_path_item_id = &ts.path().last().unwrap().id;
-        let first_path_item_id = &ts.path().first().unwrap().id;
+        let last_path_item_key = &ts.path().last().unwrap().key;
+        let first_path_item_key = &ts.path().first().unwrap().key;
 
         // Contrary to the input-only projection, we only want to take into account all stops.
         let stops_input: HashMap<_, _> = ts
             .schedule()
             .iter()
             .filter(|schedule| {
-                &schedule.at == last_path_item_id
-                    || &schedule.at == first_path_item_id
+                &schedule.at == last_path_item_key
+                    || &schedule.at == first_path_item_key
                     || schedule.arrival.is_some()
             })
             .filter_map(|schedule| {
@@ -562,7 +562,7 @@ impl TrainToProjectOnOperationalPoint {
                             space_time_curve.linear_interpolate_position(path_item_position);
                         Some(OperationalPointRefAndTime {
                             arrival_time,
-                            stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
+                            stop_for: stops_input.get(&path_item.key).copied().unwrap_or_default(),
                             op_ref: op_ref.operational_point.clone(),
                         })
                     }
@@ -620,7 +620,7 @@ impl TrainToProjectOnOperationalPoint {
                 PathItemLocation::OperationalPointPartReference(op_ref) => {
                     Some(OperationalPointRefAndTime {
                         arrival_time,
-                        stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
+                        stop_for: stops_input.get(&path_item.key).copied().unwrap_or_default(),
                         op_ref: op_ref.operational_point.clone(),
                     })
                 }
@@ -877,7 +877,7 @@ fn extract_curve_for_invalid_train_with_sim<T: TrainScheduleLike>(
             arrival: Some(arrival),
             stop_for,
             ..
-        }) = schedule_map.get(&path_item.id)
+        }) = schedule_map.get(&path_item.key)
         else {
             continue;
         };

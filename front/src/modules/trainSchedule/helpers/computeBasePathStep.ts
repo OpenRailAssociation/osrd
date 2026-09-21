@@ -3,14 +3,14 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 const findCorrespondingMargin = (
-  stepId: string,
+  stepKey: string,
   stepIndex: number,
   margins: { boundaries: string[]; values: string[] }
 ) => {
   // The first pathStep will never have its id in boundaries
   if (stepIndex === 0) return margins.values[0] === 'none' ? undefined : margins.values[0];
 
-  const marginIndex = margins.boundaries.findIndex((boundaryId) => boundaryId === stepId);
+  const marginIndex = margins.boundaries.findIndex((boundaryId) => boundaryId === stepKey);
 
   return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
 };
@@ -22,8 +22,8 @@ const computeBasePathStep = (
   trainSchedule: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const { id, location } = trainSchedule.path[pathItemIndex];
-  const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === id);
+  const { key, location } = trainSchedule.path[pathItemIndex];
+  const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === key);
 
   const {
     arrival,
@@ -48,11 +48,11 @@ const computeBasePathStep = (
 
   let theoreticalMargin;
   if (trainSchedule.margins && pathItemIndex !== trainSchedule.path.length - 1) {
-    theoreticalMargin = findCorrespondingMargin(id, pathItemIndex, trainSchedule.margins);
+    theoreticalMargin = findCorrespondingMargin(key, pathItemIndex, trainSchedule.margins);
   }
 
   return {
-    id,
+    key: key,
     name,
     location,
     arrival: arrival ? Duration.parse(arrival) : null,
