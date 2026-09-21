@@ -21,13 +21,14 @@ pub fn osm_to_railjson(
     osm_pbf_in: PathBuf,
     railjson_out: PathBuf,
     generate_signals: bool,
+    max_route_length: Option<f64>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!(
         "🗺️ Converting {} to {}",
         osm_pbf_in.display(),
         railjson_out.display()
     );
-    let railjson = parse_osm(osm_pbf_in, generate_signals)?;
+    let railjson = parse_osm(osm_pbf_in, generate_signals, max_route_length)?;
 
     info!("Writing RailJson to {} with:", railjson_out.display());
     info!(
@@ -57,6 +58,7 @@ pub fn osm_to_railjson(
 pub fn parse_osm(
     osm_pbf_in: PathBuf,
     generate_signals: bool,
+    max_route_length: Option<f64>,
 ) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
     let (nodes, edges) = osm4routing::Reader::new()
         .require("railway", "rail")
@@ -102,7 +104,13 @@ pub fn parse_osm(
     let detectors = signals.iter().map(detector).collect_vec();
 
     debug!("Start generating routes");
-    let routes = generate_routes::routes(&track_sections, &detectors, &buffer_stops, &switches);
+    let routes = generate_routes::routes(
+        &track_sections,
+        &detectors,
+        &buffer_stops,
+        &switches,
+        max_route_length,
+    );
     debug!("Done, got {} routes", routes.len());
 
     Ok(RailJson {
@@ -137,6 +145,7 @@ mod tests {
                 "src/tests/minimal_rail.osm.pbf".into(),
                 output.path().into(),
                 false,
+                None,
             )
             .is_ok()
         );
@@ -151,7 +160,7 @@ mod tests {
         fn port_eq(ports: &HashMap<Identifier, TrackEndpoint>, name: &str, expected: &str) -> bool {
             ports.get(&name.into()).unwrap().track.0 == expected
         }
-        let mut railjson = parse_osm("src/tests/switches.osm.pbf".into(), false).unwrap();
+        let mut railjson = parse_osm("src/tests/switches.osm.pbf".into(), false, None).unwrap();
         assert_eq!(4, railjson.switches.len());
         assert_eq!(18, railjson.buffer_stops.len());
 
@@ -205,21 +214,26 @@ mod tests {
 
     #[test]
     fn parse_signals() {
-        let railjson = parse_osm("src/tests/signals.osm.pbf".into(), false).unwrap();
+        let railjson = parse_osm("src/tests/signals.osm.pbf".into(), false, None).unwrap();
         assert_eq!(1, railjson.signals.len());
         assert_eq!(1, railjson.detectors.len());
     }
 
     #[test]
     fn ignore_signals_at_end_of_line() {
-        let railjson = parse_osm("src/tests/signal_at_end_of_line.osm.pbf".into(), false).unwrap();
+        let railjson = parse_osm(
+            "src/tests/signal_at_end_of_line.osm.pbf".into(),
+            false,
+            None,
+        )
+        .unwrap();
         assert!(railjson.signals.is_empty());
         assert_eq!(2, railjson.buffer_stops.len());
     }
 
     #[test]
     fn parse_speed() {
-        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into(), false).unwrap();
+        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into(), false, None).unwrap();
         assert_eq!(2, rj.speed_sections.len());
         let forward = rj
             .speed_sections
@@ -237,14 +251,14 @@ mod tests {
 
     #[test]
     fn parse_electrifications() {
-        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into(), false).unwrap();
+        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into(), false, None).unwrap();
         assert_eq!(1, rj.electrifications.len());
         assert_eq!("15000V", rj.electrifications[0].voltage);
     }
 
     #[test]
     fn parse_stations() {
-        let rj = parse_osm("src/tests/station.osm.pbf".into(), false).unwrap();
+        let rj = parse_osm("src/tests/station.osm.pbf".into(), false, None).unwrap();
         assert_eq!(1, rj.operational_points.len());
         let op = &rj.operational_points[0];
         assert_eq!(2, op.parts.len());
