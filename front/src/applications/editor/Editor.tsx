@@ -45,6 +45,30 @@ import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } 
 import type { EditorEntity } from './typesEditorEntity';
 import { getLayerSettingNameFromEditorLayer } from './utils';
 
+/**
+ * Decode a map position+zoom in the OpenStreetMap format (zoom/lat/lon, e.g. 10/48.7847/2.0002)
+ */
+function decodeMapHash(raw: string): Pick<Viewport, 'longitude' | 'latitude' | 'zoom'> | undefined {
+  const split = raw.split('/', 3);
+
+  const zoom = parseFloat(split[0]);
+  if (isNaN(zoom)) {
+    return undefined;
+  }
+
+  const latitude = parseFloat(split[1]);
+  if (isNaN(latitude)) {
+    return undefined;
+  }
+
+  const longitude = parseFloat(split[2]);
+  if (isNaN(longitude)) {
+    return undefined;
+  }
+
+  return { zoom, latitude, longitude };
+}
+
 const Editor = () => {
   const [showPanelContainer, setShowPanelContainer] = useState(true);
   const { t } = useTranslation();
@@ -294,6 +318,23 @@ const Editor = () => {
         selectObjectsAndFocus(selectedEntities);
       }
     }
+  }, []);
+
+  // Decode the #map= hash param (uses the OpenStreetMap format #map=zoom/lat/lon)
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash;
+      if (!hash.startsWith('#map=')) {
+        return;
+      }
+      const mapHashParam = decodeMapHash(hash.slice('#map='.length));
+      if (mapHashParam) {
+        setViewport(mapHashParam);
+      }
+    };
+    onHashChange();
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
   /**
