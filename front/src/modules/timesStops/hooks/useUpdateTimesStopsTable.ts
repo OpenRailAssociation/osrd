@@ -12,7 +12,6 @@ import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/oper
 import {
   osrdEditoastApi,
   type TrainSchedule,
-  type ScheduleItem,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
@@ -25,7 +24,7 @@ import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTra
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { replaceElementAtIndex } from 'utils/array';
 import { Duration, startTimeToMs } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
@@ -42,7 +41,7 @@ import {
   scheduleStateToApiFields,
   buildUpdatedOccurrence,
   buildPowerRestrictionsFromRows,
-  insertScheduleItemInOrder,
+  upsertScheduleItem,
   computePendingEditsFromSchedule,
 } from '../helpers/cellUpdate';
 import { propagateStopDuration } from '../helpers/stopDurationPropagation';
@@ -209,7 +208,6 @@ const useUpdateTimesStopsTable = (
 
       const { pathStepId, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
-      const existingItemIndex = currentSchedule.findIndex((item) => item.at === pathStepId);
       const isOrigin = pathStepId === updatedPath[0].id;
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
@@ -234,29 +232,12 @@ const useUpdateTimesStopsTable = (
         startTime
       );
 
-      const shouldRemove = newArrival === null && newStopFor === null;
-      let updatedSchedule: ScheduleItem[];
-
-      if (shouldRemove) {
-        // Both fields cleared: remove the schedule item entirely
-        if (existingItemIndex < 0) return { patch: undefined, edits: [] };
-        updatedSchedule = removeElementAtIndex(currentSchedule, existingItemIndex);
-      } else if (existingItemIndex >= 0) {
-        // Update existing schedule item
-        updatedSchedule = replaceElementAtIndex(currentSchedule, existingItemIndex, {
-          ...currentSchedule[existingItemIndex],
-          arrival: isOrigin ? null : newArrival,
-          stop_for: newStopFor,
-        });
-      } else {
-        // Insert new schedule item in path order
-        const newItem: ScheduleItem = {
-          at: pathStepId,
-          arrival: isOrigin ? null : newArrival,
-          stop_for: newStopFor,
-        };
-        updatedSchedule = insertScheduleItemInOrder(currentSchedule, newItem, updatedPath);
-      }
+      const updatedSchedule = upsertScheduleItem(currentSchedule, updatedPath, {
+        at: pathStepId,
+        arrival: isOrigin ? null : newArrival,
+        stop_for: newStopFor,
+      });
+      if (!updatedSchedule) return { patch: undefined, edits: [] };
 
       // The days must be right before saving
       const cascadedSchedule = cascadeArrivals({
@@ -321,7 +302,6 @@ const useUpdateTimesStopsTable = (
           allRows
         );
         currentPath = updatedPathForRow;
-        const existingItemIndex = updatedSchedule.findIndex((item) => item.at === pathStepId);
 
         const edit: OptimisticEdit =
           update.field === 'requestedArrival'
@@ -345,20 +325,13 @@ const useUpdateTimesStopsTable = (
           startTime
         );
 
-        if (existingItemIndex >= 0) {
-          // Update existing schedule item
-          updatedSchedule = replaceElementAtIndex(updatedSchedule, existingItemIndex, {
-            ...updatedSchedule[existingItemIndex],
+        // A row with no time to fill leaves the schedule untouched
+        updatedSchedule =
+          upsertScheduleItem(updatedSchedule, currentPath, {
+            at: pathStepId,
             arrival: newArrival,
             stop_for: newStopFor,
-          });
-        } else {
-          // Insert new schedule item in path order
-          const newItem: ScheduleItem = { at: pathStepId };
-          if (newArrival !== null) newItem.arrival = newArrival;
-          if (newStopFor !== null) newItem.stop_for = newStopFor;
-          updatedSchedule = insertScheduleItemInOrder(updatedSchedule, newItem, currentPath);
-        }
+          }) ?? updatedSchedule;
       }
 
       return {
