@@ -33,11 +33,20 @@ const usePathfindingV2 = () => {
       pathStepsMetadataById,
       rollingStockId,
       speedLimitTag,
+      signal,
     }: {
       pathSteps: PathStepV2['location'][];
       pathStepsMetadataById: Map<string, PathStepMetadata>;
       rollingStockId: number;
       speedLimitTag?: string | null;
+      /**
+       * Aborted by the caller when the result is no longer wanted (e.g. the
+       * itinerary changed while the pathfinding was running). The requests
+       * themselves are not cancelled, only their result is ignored, so a
+       * stale response cannot overwrite the state of a newer one.
+       * TODO also pass the signal to rtk query
+       */
+      signal: AbortSignal;
     }) => {
       setPathfindingError('');
 
@@ -77,6 +86,10 @@ const usePathfindingV2 = () => {
 
       const pathfindingResult = await postPathfindingBlocks(pathFindingPayload).unwrap();
 
+      if (signal.aborted) {
+        return;
+      }
+
       if (pathfindingResult.status === 'success') {
         const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
           infraId,
@@ -85,6 +98,10 @@ const usePathfindingV2 = () => {
           },
         };
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();
+
+        if (signal.aborted) {
+          return;
+        }
 
         setPathProperties({
           ...pathPropertiesResult,
@@ -107,6 +124,10 @@ const usePathfindingV2 = () => {
           },
         };
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();
+
+        if (signal.aborted) {
+          return;
+        }
 
         setPathProperties({
           ...pathPropertiesResult,
