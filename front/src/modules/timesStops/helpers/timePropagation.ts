@@ -152,6 +152,24 @@ export const propagateTime = (
         );
   }
 
+  // An arrival update propagated fromDeparture is the opposite delta applied to the stop duration if it exists.
+  if (
+    update.field === 'requestedArrival' &&
+    update.propagationMode === 'fromDeparture' &&
+    update.row.stopDuration
+  ) {
+    return propagateStopDuration(
+      {
+        row: update.row,
+        field: 'stopDuration',
+        value: update.row.stopDuration.sub(delta).total('second'),
+        propagationMode: 'fromDeparture',
+      },
+      selectedTrain,
+      timetableType
+    );
+  }
+
   if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
   return propagateFromEditedPoint(
     delta,
