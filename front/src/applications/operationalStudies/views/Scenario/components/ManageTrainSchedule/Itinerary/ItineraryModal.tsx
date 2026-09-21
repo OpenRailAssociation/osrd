@@ -679,12 +679,16 @@ const ItineraryModal = ({
       pathfindingSteps.map((s) => [s.id, pathStepsMetadataById.get(s.id)!])
     );
 
+    const controller = new AbortController();
     launchPathfindingV2({
       pathSteps: pathfindingLocations,
       pathStepsMetadataById: metadataByPathStepId,
       rollingStockId: modalFormState.rollingStockId,
       speedLimitTag: modalFormState.speedLimitTag ?? null,
+      signal: controller.signal,
     });
+
+    return () => controller.abort();
   }, [workerStatus, modalFormState.rollingStockId, modalFormState.speedLimitTag, pathfindingSteps]);
 
   const onPathfindingLoad = useEffectEvent((geometry: PathProperties['geometry']) => {
