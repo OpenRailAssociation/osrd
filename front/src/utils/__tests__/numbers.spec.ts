@@ -82,6 +82,10 @@ describe('isInvalidFloatNumber', () => {
   it('should return false if the number is NaN and decimal number is NaN', () => {
     expect(isInvalidFloatNumber(NaN, NaN)).toBe(false);
   });
+
+  it('should return false for floating-point round-trip noise (e.g. 120 km/h from 33.333333333333336 m/s)', () => {
+    expect(isInvalidFloatNumber(120.00000000000001, 1)).toBe(false);
+  });
 });
 
 describe('linearScaleInterpolation', () => {

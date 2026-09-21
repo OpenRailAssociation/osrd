@@ -88,6 +88,7 @@ export async function updateTrainSchedule({
   upsertTrainSchedules,
   dispatch,
 }: UpdateTrainScheduleParams): Promise<UpdateTrainScheduleResult> {
+  // TODO: extract the validation check to only use it in the table header
   const validationErrors = validateTrainSchedule(updatedTrainSchedule);
   if (validationErrors.length) {
     return { success: false, errorCodes: validationErrors };
