@@ -7,20 +7,13 @@ import {
   subtractStartTime,
 } from 'utils/duration';
 
-import type {
-  ArrivalUpdate,
-  BatchTimesUpdate,
-  CellUpdate,
-  PropagationMode,
-  PropagationResult,
-} from '../types';
+import type { BatchTimesUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
 import { cascadeArrivals } from './arrivalCascade';
 import { propagateStopDuration } from './stopDurationPropagation';
 import { formatSignedDelta, getTruncatedToSecondStartTime } from './utils';
 
-const isOriginArrivalUpdate = (
-  update: Exclude<CellUpdate, BatchTimesUpdate>
-): update is ArrivalUpdate => update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
+const isOriginArrivalUpdate = (update: Exclude<CellUpdate, BatchTimesUpdate>): boolean =>
+  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
 
 const toHmsDuration = (date: StartTime) =>
   date instanceof Date
