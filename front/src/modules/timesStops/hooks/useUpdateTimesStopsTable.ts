@@ -5,6 +5,7 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import {
   buildOccurrenceExceptionData,
+  checkChangeGroups,
   updatePacedTrainExceptionsList,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import formatMargin from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatMargin';
@@ -23,7 +24,11 @@ import {
   isPacedTrainBase,
   isPacedTrainWithDetails,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
+import {
+  deleteExceptions,
+  syncOccurrenceException,
+  updateExceptions,
+} from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -120,6 +125,49 @@ const useUpdateTimesStopsTable = (
       trainSchedule: train,
     }).unwrap();
     upsertTrainSchedules([train]);
+    return 'updated';
+  };
+
+  const persistTrainAndReconcileExceptions = async (
+    train: TrainScheduleResponse
+  ): Promise<'updated'> => {
+    const originalWithDetails = trainSchedulesWithDetails.find(({ id }) => id === train.id);
+
+    if (
+      !originalWithDetails ||
+      !isPacedTrainWithDetails(originalWithDetails) ||
+      !isPacedTrainBase(train)
+    ) {
+      return persistTrain(train);
+    }
+
+    const originalExceptions = originalWithDetails.paced.exceptions;
+    if (originalExceptions.length === 0) {
+      return persistTrain(train);
+    }
+
+    const {
+      exceptions: reconciledExceptions,
+      modifiedExceptions,
+      exceptionsToDeleteIds,
+    } = checkChangeGroups(train, train.paced, originalExceptions);
+
+    if (exceptionsToDeleteIds.length > 0) {
+      await deleteExceptions(dispatch, exceptionsToDeleteIds);
+    }
+    if (modifiedExceptions.length > 0) {
+      await updateExceptions(dispatch, modifiedExceptions, train.id);
+    }
+
+    await updateTrainSchedule({
+      id: train.id,
+      trainSchedule: train,
+    }).unwrap();
+
+    upsertTrainSchedules([
+      { ...train, paced: { ...train.paced, exceptions: reconciledExceptions } },
+    ]);
+
     return 'updated';
   };
 
@@ -431,7 +479,7 @@ const useUpdateTimesStopsTable = (
 
       if (update.field === 'powerRestriction') {
         const { updatedPath, powerRestrictions } = computePowerRestrictionUpdate(update);
-        return persistTrain({
+        return persistTrainAndReconcileExceptions({
           ...selectedTrain,
           id: editoastId,
           path: updatedPath,
@@ -442,7 +490,7 @@ const useUpdateTimesStopsTable = (
       const result = computeUpdateWithBatch(update);
       if (!result) return 'skipped';
 
-      return persistTrain({
+      return persistTrainAndReconcileExceptions({
         ...selectedTrain,
         id: editoastId,
         path: result.updatedPath,
@@ -453,7 +501,13 @@ const useUpdateTimesStopsTable = (
           : selectedTrain.start_time,
       });
     },
-    [selectedTrain, computeUpdatedPathAndSchedule, updateTrainSchedule]
+    [
+      selectedTrain,
+      computeUpdatedPathAndSchedule,
+      updateTrainSchedule,
+      trainSchedulesWithDetails,
+      dispatch,
+    ]
   );
 
   /**
