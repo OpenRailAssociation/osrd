@@ -56,7 +56,9 @@ export function lcm(a: number, b: number): number {
  */
 export const isInvalidFloatNumber = (value: number, numberOfDecimal: number): boolean => {
   if (!isFloat(value)) return false;
-  const stringifyValue = value.toString();
+  const roundedValue = Number(value.toPrecision(12));
+  if (!isFloat(roundedValue)) return false;
+  const stringifyValue = roundedValue.toString();
   return stringifyValue.split('.')[1].length > numberOfDecimal;
 };
 
