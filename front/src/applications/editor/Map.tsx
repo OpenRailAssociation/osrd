@@ -4,7 +4,12 @@ import type { Geometry } from 'geojson';
 import type { TFunction } from 'i18next';
 import { isEmpty, isNil } from 'lodash';
 import { withTranslation } from 'react-i18next';
-import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
+import ReactMapGL, {
+  AttributionControl,
+  ScaleControl,
+  type MapRef,
+  type ViewState,
+} from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import getInfraErrorFromTileProperties from 'applications/editor/components/InfraErrors/utils';
@@ -35,6 +40,19 @@ import type { MapStyle, Viewport } from 'reducers/commonMap/types';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+
+/**
+ * Update the #map= hash in the browser address
+ */
+function setMapHash(viewState: ViewState) {
+  // OpenStreetMap doesn't use decimals for zoom but also doesn't let the user
+  // zoom precisely. Google Maps' zoom is granular like ours and uses 2 decimals
+  // for it, which is precise enough without cluttering the URL too much.
+  const zoom = Number(viewState.zoom.toFixed(2));
+  const latitude = Number(viewState.latitude.toFixed(7));
+  const longitude = Number(viewState.longitude.toFixed(7));
+  history.replaceState(null, '', `#map=${zoom}/${latitude}/${longitude}`);
+}
 
 type MapProps<S extends CommonToolState = CommonToolState> = {
   t: TFunction;
@@ -125,7 +143,11 @@ const MapUnplugged = ({
           mapStyle={mapBlankStyle}
           onMove={(e) => setViewport(e.viewState)}
           onDragStart={() => setIsDraggingState(true)}
-          onDragEnd={() => setIsDraggingState(false)}
+          onDragEnd={(e) => {
+            setIsDraggingState(false);
+            setMapHash(e.viewState);
+          }}
+          onZoomEnd={(e) => setMapHash(e.viewState)}
           onMouseOut={() => {
             setToolState({ hovered: null });
           }}
