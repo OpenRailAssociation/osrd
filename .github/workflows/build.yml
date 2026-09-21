@@ -309,7 +309,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install taplo
-        uses: baptiste0928/cargo-install@v3.4.0
+        uses: baptiste0928/cargo-install@v3.5.0
         with:
           crate: taplo-cli
           locked: true
