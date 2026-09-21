@@ -70,6 +70,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::mpsc;
+use tracing::Instrument;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -406,7 +407,7 @@ pub(in crate::views) async fn stdcm(
     };
 
     let (response_tx, response_rx) = mpsc::unbounded_channel();
-    tokio::spawn(async move {
+    let stdcm_task = async move {
         let stdcm_stream = stdcm_request.fetch(core_client.as_ref()).await;
 
         match stdcm_stream {
@@ -516,7 +517,8 @@ pub(in crate::views) async fn stdcm(
                     .await;
             }
         }
-    });
+    };
+    tokio::spawn(stdcm_task.in_current_span());
 
     // Set `Content-Encoding` header to `identity` to not compress the payloads
     // This made the lmr live search progress display very laggy because the compression
