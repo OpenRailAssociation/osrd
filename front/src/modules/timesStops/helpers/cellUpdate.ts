@@ -7,7 +7,7 @@ import type {
   ScheduleItem,
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
-import { addElementAtIndex } from 'utils/array';
+import { addElementAtIndex, removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import {
   Duration,
   type StartTime,
@@ -171,6 +171,25 @@ export const insertScheduleItemInOrder = (
   const insertIndex = foundIndex === -1 ? schedule.length : foundIndex;
 
   return addElementAtIndex(schedule, insertIndex, newItem);
+};
+
+/**
+ * Insert, replace or remove the schedule item of a path step.
+ */
+export const upsertScheduleItem = (
+  schedule: ScheduleItem[],
+  path: PathItem[],
+  item: ScheduleItem
+): ScheduleItem[] | undefined => {
+  const index = schedule.findIndex((i) => i.at === item.at);
+
+  // Nothing left to schedule: remove the item entirely
+  if (!item.arrival && !item.stop_for)
+    return index < 0 ? undefined : removeElementAtIndex(schedule, index);
+
+  return index >= 0
+    ? replaceElementAtIndex(schedule, index, { ...schedule[index], ...item })
+    : insertScheduleItemInOrder(schedule, item, path);
 };
 
 /**
