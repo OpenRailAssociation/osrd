@@ -65,6 +65,7 @@ dependencies {
 
     // HTTP client
     implementation libs.okhttp
+    implementation libs.okhttp.zstd
 
     // the logging API stub
     implementation libs.slf4j

@@ -26,7 +26,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 import kotlin.use
 import kotlinx.serialization.ExperimentalSerializationApi
+import okhttp3.CompressionInterceptor
 import okhttp3.OkHttpClient
+import okhttp3.zstd.Zstd
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -124,7 +126,11 @@ class WorkerCommand : CliCommand {
             WORKER_THREADS,
         )
 
-        val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
+        val httpClient =
+            OkHttpClient.Builder()
+                .readTimeout(120, TimeUnit.SECONDS)
+                .addInterceptor(CompressionInterceptor(Zstd))
+                .build()
         val valkeyConnection = VALKEY_URL?.let {
             RedisClient.create(it).connect(ByteArrayCodec.INSTANCE)
         }
