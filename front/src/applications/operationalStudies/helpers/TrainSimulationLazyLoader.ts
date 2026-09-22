@@ -5,7 +5,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-const BATCH_SIZE = 20;
+const BATCH_SIZE = 200;
 
 type TrainSimulationLazyLoaderOptions = {
   dispatch: AppDispatch;
