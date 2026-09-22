@@ -95,7 +95,7 @@
       "NotFound": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
     },
     "fonts": {
-      "FileNotFound": "File for the requested font not found"
+      "file_not_found": "File for the requested font not found"
     },
     "geometry": {
       "UnexpectedGeometry": "Expected geometry {{expected}} but got {{actual}}"

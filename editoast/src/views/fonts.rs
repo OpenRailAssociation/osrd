@@ -2,7 +2,7 @@ use axum::extract::Path;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use thiserror::Error;
 use tower::ServiceExt as _;
 use tower_http::services::ServeFile;
@@ -10,12 +10,11 @@ use tower_http::services::ServeFile;
 use crate::AppState;
 use crate::error::Result;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "fonts")]
-enum FontErrors {
-    #[error("File '{file}' not found")]
-    #[editoast_error(status = 404)]
-    FileNotFound { file: String },
+#[derive(Debug, Error, ViewError)]
+#[error("File '{file}' not found")]
+#[view_error(status = NOT_FOUND, context, path = fonts::file_not_found)]
+pub(in crate::views) struct FileNotFound {
+    file: String,
 }
 
 /// This endpoint is used by map libre to retrieve the fonts. They are separated by font and unicode block
@@ -29,27 +28,27 @@ enum FontErrors {
     ),
     responses(
         (status = 200, description = "Glyphs in PBF format of the font at the requested unicode block"),
-        (status = 404, description = "Font not found"),
+        FileNotFound,
     ),
 )]
 pub(in crate::views) async fn fonts(
     Path((font, file_name)): Path<(String, String)>,
     State(AppState { config, .. }): State<AppState>,
     request: Request,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, FileNotFound> {
     let path = config
         .dynamic_assets_path
         .join(format!("fonts/glyphs/{font}/{file_name}"));
 
     if !path.is_file() {
-        return Err(FontErrors::FileNotFound { file: file_name }.into());
+        return Err(FileNotFound { file: file_name });
     }
 
     // Avoid path traversal attack by ensuring the path is within the dynamic assets directory
     let canonical_path = path.canonicalize().unwrap();
     let canonical_assets_path = config.dynamic_assets_path.canonicalize().unwrap();
     if !canonical_path.starts_with(&canonical_assets_path) {
-        return Err(FontErrors::FileNotFound { file: file_name }.into());
+        return Err(FileNotFound { file: file_name });
     }
 
     Ok(ServeFile::new(&path).oneshot(request).await)
