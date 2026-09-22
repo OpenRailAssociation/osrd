@@ -347,7 +347,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
         ))}
       </div>
       <div
-        id="linear-metadata-dataviz-content"
         ref={wrapper}
         role="presentation"
         onMouseLeave={(e) => {

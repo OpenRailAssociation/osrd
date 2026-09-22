@@ -172,7 +172,6 @@ const LayersModal = ({
         <div>
           <h4>{t('map.layers-modal.speed-limits')}</h4>
           <select
-            id="speedLimitTag"
             className="form-control"
             disabled={!selectedLayers.speed_limits}
             value={selectedLayers.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
