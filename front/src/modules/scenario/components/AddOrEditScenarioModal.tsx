@@ -344,6 +344,8 @@ const AddOrEditScenarioModal = ({
             type="text"
             name="scenarioInputName"
             label={t('main.scenarioName')}
+            /* eslint-disable-next-line jsx-a11y/no-autofocus */
+            autoFocus
             value={currentScenario.name || ''}
             onChange={(e) => handleScenarioInputChange('name', e.target.value)}
             statusWithMessage={
