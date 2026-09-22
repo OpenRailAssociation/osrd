@@ -822,7 +822,37 @@ paths:
         '200':
           description: Glyphs in PBF format of the font at the requested unicode block
         '404':
-          description: Font not found
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: File '{file}' not found
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - file
+                      properties:
+                        file:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:fonts:file_not_found
   /health:
     get:
       responses:
@@ -7547,7 +7577,6 @@ components:
       - $ref: '#/components/schemas/EditoastErrorDatabase'
       - $ref: '#/components/schemas/EditoastErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastErrorInvalidInput'
-      - $ref: '#/components/schemas/EditoastFontErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
@@ -7755,31 +7784,6 @@ components:
           type: string
           enum:
           - editoast:search_journeys:InvalidInput
-    EditoastFontErrorsFileNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastFontErrorsFileNotFoundContext
-          required:
-          - file
-          properties:
-            file:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:fonts:FileNotFound
     EditoastGeometryErrorUnexpectedGeometry:
       type: object
       required:

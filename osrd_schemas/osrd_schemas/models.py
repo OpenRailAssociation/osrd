@@ -984,20 +984,6 @@ class EditoastErrorInvalidInput(BaseModel):
     )
 
 
-class EditoastFontErrorsFileNotFoundContext(BaseModel):
-    file: str
-
-
-class EditoastFontErrorsFileNotFound(BaseModel):
-    context: Annotated[
-        EditoastFontErrorsFileNotFoundContext | None,
-        Field(title="EditoastFontErrorsFileNotFoundContext"),
-    ] = None
-    message: str
-    status: Literal[404] = 404
-    type: Literal["editoast:fonts:FileNotFound"] = "editoast:fonts:FileNotFound"
-
-
 class EditoastGeometryErrorUnexpectedGeometryContext(BaseModel):
     actual: str
     expected: str
@@ -4994,7 +4980,6 @@ class EditoastError(
         | EditoastErrorDatabase
         | EditoastErrorInfraNotFound
         | EditoastErrorInvalidInput
-        | EditoastFontErrorsFileNotFound
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
         | EditoastGetObjectsErrorsObjectIdNotFound
@@ -5172,7 +5157,6 @@ class EditoastError(
         | EditoastErrorDatabase
         | EditoastErrorInfraNotFound
         | EditoastErrorInvalidInput
-        | EditoastFontErrorsFileNotFound
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
         | EditoastGetObjectsErrorsObjectIdNotFound
