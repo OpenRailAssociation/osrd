@@ -39,8 +39,6 @@ data class InfraExplorerWithEnvelopeImpl(
 
     // Soft references tell the JVM that the values may be cleared when running out of memory
     private var envelopeCache: SoftReference<EnvelopeInterpolate>? = null,
-    private var rollingStockRangeMapCache: SoftReference<DistanceRangeMap<PhysicsRollingStock>>? =
-        null,
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -124,9 +122,15 @@ data class InfraExplorerWithEnvelopeImpl(
         return getFullEnvelope().interpolateDepartureFromClamp(pathOffset.meters)
     }
 
+    /**
+     * Returns the range map with rolling stocks used at each point (handling rolling stock
+     * changes).
+     *
+     * Note: it could be cached to avoid repeated calls, but cache invalidation isn't entirely
+     * trivial as it needs to happen (at least) when `stepTracker.seenSteps` increases. It could be
+     * an future improvement, but we'd need to be careful on tests and measurements.
+     */
     override fun getFullRollingStockRangeMap(): DistanceRangeMap<PhysicsRollingStock> {
-        val cache = rollingStockRangeMapCache?.get()
-        if (cache != null) return cache
         var previousStepPos = 0.meters
         return distanceRangeMapOf(
             getStepTracker()
