@@ -35,7 +35,9 @@ import kotlin.time.measureTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import okhttp3.CompressionInterceptor
 import okhttp3.OkHttpClient
+import okhttp3.zstd.Zstd
 import okio.buffer
 import okio.source
 import org.slf4j.Logger
@@ -105,7 +107,11 @@ class ReproduceRequest : CliCommand {
     @ExcludeFromGeneratedCodeCoverage
     override fun run(): Int {
         try {
-            val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
+            val httpClient =
+                OkHttpClient.Builder()
+                    .readTimeout(120, TimeUnit.SECONDS)
+                    .addInterceptor(CompressionInterceptor(Zstd))
+                    .build()
             val infraManager =
                 if (railjson != null) {
                     val rjs = parseRailJSONFromFile(railjson)
