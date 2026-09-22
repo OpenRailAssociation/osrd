@@ -18,7 +18,7 @@ export function getLineErrorsLayerProps(context: LayerContext): OmitLayer<LineLa
     filter: [
       'all',
       ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]],
-      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+      ['in', ['get', 'sub_type_error_type'], ['literal', enableErrorTypes]],
     ],
     paint: {
       'line-color': [
@@ -45,14 +45,14 @@ export function getLineTextErrorsLayerProps(
     filter: [
       'all',
       ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]],
-      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+      ['in', ['get', 'sub_type_error_type'], ['literal', enableErrorTypes]],
     ],
     layout: {
       'symbol-placement': 'line',
       'text-font': ['IBMPlexSansCondensed-Regular'],
       'text-size': getDynamicTextSize({ fromSize: 12, toSize: 18 }),
       'text-offset': [0, -0.75],
-      'text-field': '{error_type}',
+      'text-field': '{sub_type_error_type}',
     },
     paint: {
       'text-color': [
@@ -77,7 +77,7 @@ export function getPointErrorsLayerProps(
     filter: [
       'all',
       ['!', ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]]],
-      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+      ['in', ['get', 'sub_type_error_type'], ['literal', enableErrorTypes]],
     ],
     paint: {
       'circle-color': [
@@ -103,12 +103,12 @@ export function getPointTextErrorsLayerProps(
     filter: [
       'all',
       ['!', ['in', ['get', 'obj_type'], ['literal', LINE_OBJECT]]],
-      ['in', ['get', 'error_type'], ['literal', enableErrorTypes]],
+      ['in', ['get', 'sub_type_error_type'], ['literal', enableErrorTypes]],
     ],
     layout: {
       'symbol-placement': 'point',
       'text-font': ['IBMPlexSansCondensed-Regular'],
-      'text-field': '{error_type}',
+      'text-field': '{sub_type_error_type}',
       'text-size': getDynamicTextSize({ fromSize: 12, toSize: 18 }),
       'text-offset': [0, -0.75],
     },
