@@ -2,6 +2,7 @@ mod authz;
 mod catalog_entry;
 mod documents;
 pub mod electrical_profiles;
+mod error;
 pub mod fonts;
 pub mod health;
 pub mod icons;
