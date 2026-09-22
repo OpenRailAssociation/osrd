@@ -114,7 +114,6 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
         <div className="col-md-6">
           <select
             aria-label={t('Editor.infra-errors.list.filter-type')}
-            id="filterType"
             className="form-control"
             value={filterType || 'all'}
             onChange={(e) => {

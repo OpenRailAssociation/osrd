@@ -66,7 +66,7 @@ const ReleaseInformation = () => {
                     <th scope="col">
                       <div className="cell-inner">{t('nav-bar.information.application')}</div>
                     </th>
-                    <th scope="col" id="cellfirst-t5">
+                    <th scope="col">
                       <div className="cell-inner">{t('nav-bar.information.version')}</div>
                     </th>
                   </tr>

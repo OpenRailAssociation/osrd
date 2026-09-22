@@ -38,7 +38,6 @@ const TrackRangeApplicableDirections = ({
   if (entityIsSpeedSection && !speedRestrictionTool) {
     return (
       <select
-        id="filterLevel"
         className="form-control"
         value={range.applicable_directions}
         onChange={(e) => {

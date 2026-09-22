@@ -102,9 +102,7 @@ const UserSettings = () => {
             </span>
           }
         />
-        <small id="safeWordHelpBlock" className="form-text text-muted">
-          {t('nav-bar.safeWordHelp')}
-        </small>
+        <small className="form-text text-muted">{t('nav-bar.safeWordHelp')}</small>
         {FEATURE_FLAGS.map((flag) => (
           <div className="my-4" key={flag}>
             <Switch

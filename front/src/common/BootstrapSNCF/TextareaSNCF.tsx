@@ -43,11 +43,7 @@ const TextareaSNCF = (props: TextareaSNCFProps) => {
   let invalidMsg = null;
   if (isInvalid) {
     invalidClass = 'is-invalid';
-    invalidMsg = (
-      <div className="invalid-feedback d-block" id="inputGroupPrepend">
-        {errorMsg}
-      </div>
-    );
+    invalidMsg = <div className="invalid-feedback d-block">{errorMsg}</div>;
   }
 
   return (
