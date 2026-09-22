@@ -33,9 +33,11 @@ data class InfraExplorerWithEnvelopeImpl(
     private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
     private var stopTimeData: List<StopTimeData> = listOf(),
+    // Can't be a soft reference: spacingRequirementAutomaton is stateful and only generates new
+    // requirements (result would be nothing on second identical call).
+    private var spacingRequirementsCache: List<SpacingRequirement>? = null,
 
     // Soft references tell the JVM that the values may be cleared when running out of memory
-    private var spacingRequirementsCache: SoftReference<List<SpacingRequirement>>? = null,
     private var envelopeCache: SoftReference<EnvelopeInterpolate>? = null,
     private var rollingStockRangeMapCache: SoftReference<DistanceRangeMap<PhysicsRollingStock>>? =
         null,
@@ -158,7 +160,7 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getSpacingRequirements(): List<SpacingRequirement> {
-        val cached = spacingRequirementsCache?.get()
+        val cached = spacingRequirementsCache
         if (cached != null) return cached
         if (getFullEnvelope().endPos == 0.0) {
             // This case can happen when we start right at the end of a block
@@ -166,7 +168,7 @@ data class InfraExplorerWithEnvelopeImpl(
         }
 
         val spacingRequirements = getSpacingRequirements(needFullRequirements = false)
-        spacingRequirementsCache = SoftReference(spacingRequirements)
+        spacingRequirementsCache = spacingRequirements
         return spacingRequirements
     }
 
