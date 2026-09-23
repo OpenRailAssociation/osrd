@@ -645,7 +645,7 @@ const SendToRailwayManagerModal = ({
                 onChange={handleCommentChange}
                 placeholder={t('modal.addComment')}
                 label={t('modal.comment')}
-                maxLength={200}
+                maxLength={800}
               />
             </div>
           </div>
