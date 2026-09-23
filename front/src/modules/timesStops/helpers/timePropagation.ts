@@ -10,7 +10,11 @@ import {
 import type { BatchTimesUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
 import { cascadeArrivals } from './arrivalCascade';
 import { propagateStopDuration } from './stopDurationPropagation';
-import { formatSignedDelta, getTruncatedToSecondStartTime } from './utils';
+import {
+  formatSignedDelta,
+  getTruncatedToSecondSchedule,
+  getTruncatedToSecondStartTime,
+} from './utils';
 
 const toHmsDuration = (date: StartTime) =>
   date instanceof Date
@@ -83,6 +87,35 @@ const propagateFromEditedPoint = (
     updatedPath: selectedTrain.path,
     updatedSchedule,
     updatedStartTime: newStartTime,
+  };
+};
+
+/**
+ * Move the waypoint as a block: arrival and departure move, stop duration is kept.
+ */
+const applyAtThisWaypoint = (
+  delta: Duration,
+  editedPathStepId: string,
+  selectedTrain: Train,
+  timetableType: TimetableType
+): PropagationResult | undefined => {
+  const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
+  if (editedPathIndex < 0) return undefined;
+
+  const editedSchedule = (selectedTrain.schedule ?? []).map((item) =>
+    item.at === editedPathStepId && item.arrival
+      ? { ...item, arrival: getTruncatedToSecondSchedule(item.arrival).add(delta).toISOString() }
+      : item
+  );
+
+  return {
+    updatedPath: selectedTrain.path,
+    updatedSchedule: cascadeArrivals({
+      schedule: editedSchedule,
+      path: selectedTrain.path,
+      fromPathIndex: editedPathIndex,
+    }),
+    updatedStartTime: getTruncatedToSecondStartTime(selectedTrain, timetableType),
   };
 };
 
@@ -169,11 +202,21 @@ export const propagateTime = (
           );
 
     case 'atThisWaypoint':
-      // At origin, the arrival only moves start_time. Following offsets are compensated so their
+      // At origin, the point only moves start_time. Following offsets are compensated so their
       // absolute times stay the same — which is exactly what fromDeparture does.
-      // Anywhere else, only the edited cell changes: left to the generic single-row edit.
-      return isOrigin && isArrivalUpdate
-        ? propagateFromEditedPoint(delta, pathStepId, selectedTrain, 'fromDeparture', timetableType)
-        : undefined;
+      if (isOrigin)
+        return propagateFromEditedPoint(
+          delta,
+          pathStepId,
+          selectedTrain,
+          'fromDeparture',
+          timetableType
+        );
+
+      // Anywhere else, an arrival update changes nothing but its own cell, so it is left to the
+      // generic single-row edit, while a departure update takes the arrival along with it.
+      return isArrivalUpdate
+        ? undefined
+        : applyAtThisWaypoint(delta, pathStepId, selectedTrain, timetableType);
   }
 };
