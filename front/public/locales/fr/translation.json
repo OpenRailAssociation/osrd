@@ -871,6 +871,7 @@
     "powerRestrictionIncompatibility_one": "{{count}} code de restriction de puissance n'est pas compatible avec l'électrification.",
     "powerRestrictionIncompatibility_other": "{{count}} codes de restriction de puissance ne sont pas compatibles avec l'électrification.",
     "propagationMenu": {
+      "atThisTime": "appliquer à cet horaire",
       "atThisWaypoint": "appliquer à ce point",
       "fromDeparture": "propager vers le début",
       "shiftAllWaypoints": "décaler tout le sillon",

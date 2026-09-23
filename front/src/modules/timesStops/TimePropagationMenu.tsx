@@ -14,6 +14,7 @@ type TimePropagationMenuProps = {
   newValue: Date | null;
   onSelectMode: (mode: PropagationMode) => void;
   disableFromDeparture?: boolean;
+  disableAtThisTime?: boolean;
   disableToDestination?: boolean;
   isOriginArrival?: boolean;
 };
@@ -22,6 +23,7 @@ const MODE_ITEMS: { mode: PropagationMode; icon: React.ReactNode; className?: st
   { mode: 'shiftAllWaypoints', icon: <ArrowBoth /> },
   { mode: 'fromDeparture', icon: <ArrowUp /> },
   { mode: 'atThisWaypoint', icon: <Dot variant="base" />, className: 'selected' },
+  { mode: 'atThisTime', icon: <Dot variant="base" /> },
   { mode: 'toDestination', icon: <ArrowDown /> },
 ];
 
@@ -32,12 +34,14 @@ const TimePropagationMenu = ({
   newValue,
   onSelectMode,
   disableFromDeparture = false,
+  disableAtThisTime = false,
   disableToDestination = false,
   isOriginArrival = false,
 }: TimePropagationMenuProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable.propagationMenu' });
   const disabledByMode: Partial<Record<PropagationMode, boolean>> = {
     fromDeparture: disableFromDeparture,
+    atThisTime: disableAtThisTime,
     toDestination: disableToDestination,
   };
 
