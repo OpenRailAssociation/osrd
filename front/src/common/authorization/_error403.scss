@@ -1,0 +1,9 @@
+.error403 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - var(--nav-bar-height));
+  text-align: center;
+  padding: 12px;
+}
