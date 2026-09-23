@@ -79,6 +79,7 @@ export type PropagationMode =
   | 'shiftAllWaypoints'
   | 'fromDeparture'
   | 'atThisWaypoint'
+  | 'atThisTime'
   | 'toDestination';
 
 export type PropagationResult = {
@@ -87,7 +88,7 @@ export type PropagationResult = {
   updatedStartTime: StartTime;
 };
 
-export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints'>;
+export type StopPropagationMode = Exclude<PropagationMode, 'shiftAllWaypoints' | 'atThisTime'>;
 
 export type UpdateCellStatus = 'updated' | 'skipped';
 

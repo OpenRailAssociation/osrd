@@ -7,9 +7,15 @@ import {
   subtractStartTime,
 } from 'utils/duration';
 
-import type { BatchTimesUpdate, CellUpdate, PropagationMode, PropagationResult } from '../types';
+import type {
+  BatchTimesUpdate,
+  CellUpdate,
+  PropagationMode,
+  PropagationResult,
+  RequestedTimeField,
+} from '../types';
 import { cascadeArrivals } from './arrivalCascade';
-import { propagateStopDuration } from './stopDurationPropagation';
+import { normalizeStopDurations, propagateStopDuration } from './stopDurationPropagation';
 import {
   formatSignedDelta,
   getTruncatedToSecondSchedule,
@@ -33,7 +39,7 @@ const computeDeltaForPropagationMode = (
 ): Duration | null => {
   if (!oldValue || !newValue) return null;
   // At the origin arrival, or for shiftAll and fromDeparture, only HH:mm:ss is compared (start_time absorbs the shift).
-  // For atThisWaypoint and toDestination, full date-times are compared, so it can produce a D+1.
+  // For atThisTime, atThisWaypoint and toDestination, full date-times are compared, so it can produce a D+1.
   return isOriginArrival || mode === 'shiftAllWaypoints' || mode === 'fromDeparture'
     ? toHmsDuration(newValue).sub(toHmsDuration(oldValue))
     : subtractStartTime(newValue, oldValue);
@@ -91,27 +97,42 @@ const propagateFromEditedPoint = (
 };
 
 /**
- * Move the waypoint as a block: arrival and departure move, stop duration is kept.
+ * Apply an update to the edited point alone.
+ * - atThisWaypoint: the waypoint moves as a block, arrival and departure move, stop duration is kept.
+ * - atThisTime: only the edited time moves, the stop duration absorbs the change.
  */
-const applyAtThisWaypoint = (
+const applyAtThisPoint = (
   delta: Duration,
   editedPathStepId: string,
+  field: RequestedTimeField,
+  mode: 'atThisWaypoint' | 'atThisTime',
   selectedTrain: Train,
   timetableType: TimetableType
 ): PropagationResult | undefined => {
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.id === editedPathStepId);
   if (editedPathIndex < 0) return undefined;
 
-  const editedSchedule = (selectedTrain.schedule ?? []).map((item) =>
-    item.at === editedPathStepId && item.arrival
-      ? { ...item, arrival: getTruncatedToSecondSchedule(item.arrival).add(delta).toISOString() }
-      : item
-  );
+  const editedSchedule = (selectedTrain.schedule ?? []).map((item) => {
+    if (item.at !== editedPathStepId) return item;
+    const stop = item.stop_for ? getTruncatedToSecondSchedule(item.stop_for) : null;
+
+    // An edited departure atThisTime is the stop moving by +delta, the arrival doesn't move.
+    if (field === 'requestedDeparture' && mode === 'atThisTime')
+      return stop ? { ...item, stop_for: stop.add(delta).toISOString() } : item;
+
+    // Otherwise the arrival moves by +delta, either alone — the waypoint moves as a block and its
+    // departure follows — or against a stop moving by -delta, which keeps that departure in place.
+    if (!item.arrival) return item;
+    const arrival = getTruncatedToSecondSchedule(item.arrival).add(delta).toISOString();
+    return mode === 'atThisTime' && stop
+      ? { ...item, arrival, stop_for: stop.sub(delta).toISOString() }
+      : { ...item, arrival };
+  });
 
   return {
     updatedPath: selectedTrain.path,
     updatedSchedule: cascadeArrivals({
-      schedule: editedSchedule,
+      schedule: normalizeStopDurations(editedSchedule),
       path: selectedTrain.path,
       fromPathIndex: editedPathIndex,
     }),
@@ -201,6 +222,32 @@ export const propagateTime = (
             timetableType
           );
 
+    case 'atThisTime':
+      // The stop duration absorbs the change, so a point without one is left to the
+      // generic single-row edit.
+      if (!stopDuration) return undefined;
+
+      // At origin arrival, it means moving start_time and compensating the offsets after it, which a stop duration update does.
+      return isOrigin && isArrivalUpdate
+        ? propagateStopDuration(
+            {
+              row: update.row,
+              field: 'stopDuration',
+              value: stopDuration.sub(delta).total('second'),
+              propagationMode: 'fromDeparture',
+            },
+            selectedTrain,
+            timetableType
+          )
+        : applyAtThisPoint(
+            delta,
+            pathStepId,
+            update.field,
+            'atThisTime',
+            selectedTrain,
+            timetableType
+          );
+
     case 'atThisWaypoint':
       // At origin, the point only moves start_time. Following offsets are compensated so their
       // absolute times stay the same — which is exactly what fromDeparture does.
@@ -217,6 +264,13 @@ export const propagateTime = (
       // generic single-row edit, while a departure update takes the arrival along with it.
       return isArrivalUpdate
         ? undefined
-        : applyAtThisWaypoint(delta, pathStepId, selectedTrain, timetableType);
+        : applyAtThisPoint(
+            delta,
+            pathStepId,
+            update.field,
+            'atThisWaypoint',
+            selectedTrain,
+            timetableType
+          );
   }
 };

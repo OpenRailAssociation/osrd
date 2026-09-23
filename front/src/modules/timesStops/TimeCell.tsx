@@ -731,6 +731,7 @@ const TimeCell = ({
           newValue={editedDate}
           onSelectMode={handleSelectPropagationMode}
           disableFromDeparture={column.id === 'requestedArrival' && isFirstRow}
+          disableAtThisTime={row.original.stopDuration === null}
           disableToDestination={isLastRow}
           isOriginArrival={column.id === 'requestedArrival' && isFirstRow}
         />

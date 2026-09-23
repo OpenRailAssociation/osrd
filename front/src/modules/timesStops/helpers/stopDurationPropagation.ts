@@ -13,7 +13,7 @@ import {
 } from './utils';
 
 /** Bring negative stop durations back within a day. */
-const normalizeStopDurations = (schedule: ScheduleItem[]): ScheduleItem[] =>
+export const normalizeStopDurations = (schedule: ScheduleItem[]): ScheduleItem[] =>
   schedule.map((item) => {
     const stop = item.stop_for ? getTruncatedToSecondSchedule(item.stop_for) : null;
     if (!stop || stop.ms >= 0) return item;
