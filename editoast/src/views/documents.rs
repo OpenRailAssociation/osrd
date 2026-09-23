@@ -29,7 +29,7 @@ pub(in crate::views) enum DatabaseError {
 
 #[derive(Debug, thiserror::Error, ViewError)]
 #[error("Document '{document_key}' not found")]
-#[view_error(status = NOT_FOUND, context, name = "document::not_found")]
+#[view_error(status = NOT_FOUND, context, name = "document:NotFound")]
 pub(in crate::views) struct DocumentNotFound {
     document_key: i64,
 }
