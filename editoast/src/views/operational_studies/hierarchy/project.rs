@@ -1,7 +1,6 @@
 use super::OperationalStudiesOrderingParam;
 use crate::AppState;
 use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
@@ -10,6 +9,7 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use authz::ProjectPrivilege;
 use authz::Role;
+use authz::authorizers::SystemAuthorizer;
 use authz::v2::project_privilege_check;
 use axum::Extension;
 use axum::extract::Json;

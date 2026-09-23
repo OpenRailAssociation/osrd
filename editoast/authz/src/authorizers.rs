@@ -2,15 +2,22 @@ use std::convert::Infallible;
 use std::marker::PhantomData;
 use std::ops::Not as _;
 
-use authz::ProjectGrant;
-use authz::v2::Access;
-use authz::v2::Actor;
-use authz::v2::Authorizer;
-use authz::v2::Check;
-use authz::v2::Protected;
 use futures::StreamExt as _;
 use futures::stream::FuturesUnordered;
 use tracing::Instrument as _;
+
+use crate::InfraGrant;
+use crate::ProjectGrant;
+use crate::Role;
+use crate::RollingStockGrant;
+use crate::Subject;
+use crate::User;
+use crate::v2;
+use crate::v2::Access;
+use crate::v2::Actor;
+use crate::v2::Authorizer;
+use crate::v2::Check;
+use crate::v2::Protected;
 
 /// An authorizer that represents editoast's authorization decisions
 ///
@@ -61,13 +68,13 @@ impl<R> Authorizer for SystemAuthorizer<'_, R> {
 }
 
 pub struct UserAuthorizer<'c> {
-    pub user: authz::User,
-    pub roles: Vec<authz::Role>, // TODO: use a SmallVec
+    pub user: User,
+    pub roles: Vec<Role>, // TODO: use a SmallVec
     pub openfga: &'c fga::Client,
 }
 
 impl<'c> UserAuthorizer<'c> {
-    pub fn new(user: authz::User, roles: Vec<authz::Role>, openfga: &'c fga::Client) -> Self {
+    pub fn new(user: User, roles: Vec<Role>, openfga: &'c fga::Client) -> Self {
         Self {
             user,
             roles,
@@ -75,15 +82,15 @@ impl<'c> UserAuthorizer<'c> {
         }
     }
 
-    fn actor_user<'a>(&'a self, actor: &'a Actor) -> &'a authz::User {
+    fn actor_user<'a>(&'a self, actor: &'a Actor) -> &'a User {
         match actor {
             Actor::Issuer => &self.user,
             Actor::User(user) => user,
         }
     }
 
-    fn issuer(&self) -> authz::Subject {
-        authz::Subject::User(self.user)
+    fn issuer(&self) -> Subject {
+        Subject::User(self.user)
     }
 
     #[tracing::instrument(target = "UserAutorizer::check", skip_all, fields(?check, issuer = ?self.user, roles = ?self.roles), ret(level = "trace"), err)]
@@ -92,7 +99,7 @@ impl<'c> UserAuthorizer<'c> {
             Check::HasRole(Actor::Issuer, role) if !self.roles.contains(role) => Some(check),
             Check::HasRole(Actor::Issuer, _) => None,
             Check::HasRole(Actor::User(user), role) => {
-                let Ok(roles) = authz::v2::subject_roles(authz::Subject::User(*user))
+                let Ok(roles) = v2::subject_roles(Subject::User(*user))
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
@@ -100,7 +107,7 @@ impl<'c> UserAuthorizer<'c> {
             }
 
             Check::HasInfraPrivilege(actor, privilege, infra) => {
-                let Ok(privileges) = authz::v2::infra_privileges(*self.actor_user(actor), *infra)
+                let Ok(privileges) = v2::infra_privileges(*self.actor_user(actor), *infra)
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
@@ -108,33 +115,27 @@ impl<'c> UserAuthorizer<'c> {
             }
             Check::HasRollingStockPrivilege(actor, privilege, rolling_stock) => {
                 let Ok(privileges) =
-                    authz::v2::rolling_stock_privileges(*self.actor_user(actor), *rolling_stock)
+                    v2::rolling_stock_privileges(*self.actor_user(actor), *rolling_stock)
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
                         .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
             Check::HasProjectPrivilege(actor, privilege, project) => {
-                let Ok(privileges) =
-                    authz::v2::project_privileges(*self.actor_user(actor), *project)
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
-                        .await?;
+                let Ok(privileges) = v2::project_privileges(*self.actor_user(actor), *project)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
                 (!privileges.contains(privilege)).then_some(check)
             }
 
-            Check::CanAlterSubjectInfraGrant(
-                subject @ authz::Subject::User(_),
-                infra,
-                new_grant,
-            ) => {
+            Check::CanAlterSubjectInfraGrant(subject @ Subject::User(_), infra, new_grant) => {
                 let issuer = self.issuer();
-                let Ok((issuer_grant, current_grant)) =
-                    authz::v2::infra_effective_grant(issuer, *infra)
-                        .zip(authz::v2::infra_effective_grant(*subject, *infra))
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
-                        .await?;
+                let Ok((issuer_grant, current_grant)) = v2::infra_effective_grant(issuer, *infra)
+                    .zip(v2::infra_effective_grant(*subject, *infra))
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
                 let Some(issuer_grant) = issuer_grant else {
                     // According to the authorization model, non-Admin users must have a grant to share
                     return Ok(Some(check));
@@ -150,16 +151,16 @@ impl<'c> UserAuthorizer<'c> {
                         .then_some(check)
                 })
             }
-            Check::CanAlterSubjectInfraGrant(authz::Subject::Group(_), _, _) => {
+            Check::CanAlterSubjectInfraGrant(Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
                 // verification function.
                 Some(check)
             }
 
-            Check::CanGiveSubjectProjectGrant(authz::Subject::User(_), project) => {
+            Check::CanGiveSubjectProjectGrant(Subject::User(_), project) => {
                 // There is only one level of grant. The issuer must own a grant on the project to
                 // share it to other users.
-                let Ok(grant) = authz::v2::project_effective_grant(self.issuer(), *project)
+                let Ok(grant) = v2::project_effective_grant(self.issuer(), *project)
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
@@ -169,7 +170,7 @@ impl<'c> UserAuthorizer<'c> {
                     None => Some(check),
                 }
             }
-            Check::CanGiveSubjectProjectGrant(authz::Subject::Group(_), _) => {
+            Check::CanGiveSubjectProjectGrant(Subject::Group(_), _) => {
                 // The only users to allowed to alter group grants are admins who bypass this entire
                 // verification function: trying to give a grant to a group in the UserAuthorizer should
                 // always be rejected
@@ -177,24 +178,21 @@ impl<'c> UserAuthorizer<'c> {
             }
 
             Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
-                let Ok(subject_grant) = authz::v2::infra_effective_grant(*subject, *infra)
+                let Ok(subject_grant) = v2::infra_effective_grant(*subject, *infra)
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
             Check::CanAlterSubjectRollingStockGrant(
-                subject @ authz::Subject::User(_),
+                subject @ Subject::User(_),
                 rolling_stock,
                 new_grant,
             ) => {
                 let issuer = self.issuer();
                 let Ok((issuer_grant, current_grant)) =
-                    authz::v2::rolling_stock_effective_grant(issuer, *rolling_stock)
-                        .zip(authz::v2::rolling_stock_effective_grant(
-                            *subject,
-                            *rolling_stock,
-                        ))
+                    v2::rolling_stock_effective_grant(issuer, *rolling_stock)
+                        .zip(v2::rolling_stock_effective_grant(*subject, *rolling_stock))
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
                         .await?;
@@ -213,35 +211,31 @@ impl<'c> UserAuthorizer<'c> {
                         .then_some(check)
                 })
             }
-            Check::CanAlterSubjectRollingStockGrant(authz::Subject::Group(_), _, _) => {
+            Check::CanAlterSubjectRollingStockGrant(Subject::Group(_), _, _) => {
                 // The only users allowed to alter groups grants are admins who bypass this entire
                 // verification function.
                 Some(check)
             }
             Check::SubjectEffectiveRollingStockGrantIsNot(grant, subject, rolling_stock) => {
-                let Ok(subject_grant) =
-                    authz::v2::rolling_stock_effective_grant(*subject, *rolling_stock)
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
-                        .await?;
+                let Ok(subject_grant) = v2::rolling_stock_effective_grant(*subject, *rolling_stock)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
             Check::IsNotLastInfraOwner(subject, infra) => {
-                let Ok(owners) =
-                    authz::v2::infra_granted_subjects(*infra, authz::InfraGrant::Owner)
-                        .access_authorized::<Infallible>(self.openfga)
-                        .access()
-                        .await?;
+                let Ok(owners) = v2::infra_granted_subjects(*infra, InfraGrant::Owner)
+                    .access_authorized::<Infallible>(self.openfga)
+                    .access()
+                    .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
             Check::IsNotLastRollingStockOwner(subject, rolling_stock) => {
-                let Ok(owners) = authz::v2::rolling_stock_granted_subjects(
-                    *rolling_stock,
-                    authz::RollingStockGrant::Owner,
-                )
-                .access_authorized::<Infallible>(self.openfga)
-                .access()
-                .await?;
+                let Ok(owners) =
+                    v2::rolling_stock_granted_subjects(*rolling_stock, RollingStockGrant::Owner)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
         })
@@ -261,7 +255,7 @@ impl Authorizer for UserAuthorizer<'_> {
             // scoping to tell the borrow checker that checks is consumed before returning
             // access_authorized which takes ownership of data
             let mut checks = FuturesUnordered::new();
-            if !self.roles.contains(&authz::Role::Admin) {
+            if !self.roles.contains(&Role::Admin) {
                 for check in &data.checks {
                     checks.push(self.check(check).in_current_span());
                 }
@@ -279,20 +273,23 @@ impl Authorizer for UserAuthorizer<'_> {
 
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
-pub struct Error(#[from] pub authz::v2::OpenFgaError);
+pub struct Error(#[from] pub v2::OpenFgaError);
 
 #[cfg(test)]
 mod tests {
-    use authz::InfraGrant;
-    use authz::InfraPrivilege;
-    use authz::Role;
-    use authz::RollingStockGrant;
-    use authz::RollingStockPrivilege;
-    use authz::v2::Actor;
-    use authz::v2::Check;
-    use authz::v2::Protected;
     use fga::model::Relation as _;
     use rstest::rstest;
+    use v2::Actor;
+    use v2::Check;
+    use v2::Protected;
+
+    use crate::Group;
+    use crate::Infra;
+    use crate::InfraGrant;
+    use crate::InfraPrivilege;
+    use crate::RollingStock;
+    use crate::RollingStockGrant;
+    use crate::RollingStockPrivilege;
 
     use super::*;
 
@@ -327,37 +324,37 @@ mod tests {
     #[case::has_infra_privilege(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanDelete,
-        authz::Infra(i64::MAX)
+        Infra(i64::MAX)
     ))]
     #[case::can_alter_subject_infra_grant(Check::CanAlterSubjectInfraGrant(
-        authz::Subject::User(authz::User(i64::MAX)),
-        authz::Infra(i64::MAX),
+        Subject::User(User(i64::MAX)),
+        Infra(i64::MAX),
         InfraGrant::Reader,
     ))]
     #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
         InfraGrant::Owner,
-        authz::Subject::User(authz::User(i64::MAX)),
-        authz::Infra(i64::MAX)
+        Subject::User(User(i64::MAX)),
+        Infra(i64::MAX)
     ))]
     #[case::is_not_last_infra_owner(Check::IsNotLastInfraOwner(
-        authz::Subject::User(authz::User(i64::MAX)),
-        authz::Infra(i64::MAX)
+        Subject::User(User(i64::MAX)),
+        Infra(i64::MAX)
     ))]
     #[case::can_alter_subject_rolling_stock_grant(Check::CanAlterSubjectRollingStockGrant(
-        authz::Subject::User(authz::User(i64::MAX)),
-        authz::RollingStock(i64::MAX),
+        Subject::User(User(i64::MAX)),
+        RollingStock(i64::MAX),
         RollingStockGrant::Reader,
     ))]
     #[case::subject_effective_rolling_stock_grant_is_not(
         Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
-            authz::Subject::User(authz::User(i64::MAX)),
-            authz::RollingStock(i64::MAX)
+            Subject::User(User(i64::MAX)),
+            RollingStock(i64::MAX)
         )
     )]
     #[case::is_not_last_rolling_stock_owner(Check::IsNotLastRollingStockOwner(
-        authz::Subject::User(authz::User(i64::MAX)),
-        authz::RollingStock(i64::MAX)
+        Subject::User(User(i64::MAX)),
+        RollingStock(i64::MAX)
     ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn system_authorizer_ignores_non_sanity_checks(#[case] check: Check) {
@@ -370,7 +367,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_role() {
         let openfga = openfga().await;
-        let user = authz::User(1);
+        let user = User(1);
         let user_authorizer = UserAuthorizer::new(user, vec![Role::OperationalStudies], &openfga);
 
         let check = Check::HasRole(Actor::Issuer, Role::OperationalStudies);
@@ -383,10 +380,10 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_role() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
+        let issuer = User(1);
+        let target = User(2);
         openfga
-            .write_tuples(&[authz::User::role().tuple(&Role::Stdcm, &target)])
+            .write_tuples(&[User::role().tuple(&Role::Stdcm, &target)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
@@ -401,11 +398,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_infra_privilege() {
         let openfga = openfga().await;
-        let owner = authz::User(1);
-        let no_grant = authz::User(2);
-        let infra = authz::Infra(1);
+        let owner = User(1);
+        let no_grant = User(2);
+        let infra = Infra(1);
         openfga
-            .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
+            .write_tuples(&[Infra::owner().tuple(&owner, &infra)])
             .await
             .unwrap();
 
@@ -421,11 +418,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_issuer_rolling_stock_privilege() {
         let openfga = openfga().await;
-        let owner = authz::User(1);
-        let no_grant = authz::User(2);
-        let rolling_stock = authz::RollingStock(1);
+        let owner = User(1);
+        let no_grant = User(2);
+        let rolling_stock = RollingStock(1);
         openfga
-            .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
+            .write_tuples(&[RollingStock::owner().tuple(&owner, &rolling_stock)])
             .await
             .unwrap();
 
@@ -449,11 +446,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_infra_privilege() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
-        let infra = authz::Infra(1);
+        let issuer = User(1);
+        let target = User(2);
+        let infra = Infra(1);
         openfga
-            .write_tuples(&[authz::Infra::writer().tuple(&target, &infra)])
+            .write_tuples(&[Infra::writer().tuple(&target, &infra)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
@@ -466,20 +463,22 @@ mod tests {
     }
 
     mod can_alter_subject_infra_grant {
+        use crate::Group;
+
         use super::*;
 
-        const ISSUER_NOTHING: authz::User = authz::User(0);
-        const ISSUER_READER: authz::User = authz::User(1);
-        const ISSUER_WRITER: authz::User = authz::User(2);
-        const ISSUER_OWNER: authz::User = authz::User(3);
-        const USER_NOTHING: authz::Subject = authz::Subject::User(authz::User(4));
-        const USER_READER: authz::Subject = authz::Subject::User(authz::User(5));
-        const USER_WRITER: authz::Subject = authz::Subject::User(authz::User(6));
-        const USER_OWNER: authz::Subject = authz::Subject::User(authz::User(7));
-        const GROUP_NOTHING: authz::Subject = authz::Subject::Group(authz::Group(8));
-        const GROUP_READER: authz::Subject = authz::Subject::Group(authz::Group(9));
-        const GROUP_WRITER: authz::Subject = authz::Subject::Group(authz::Group(10));
-        const GROUP_OWNER: authz::Subject = authz::Subject::Group(authz::Group(11));
+        const ISSUER_NOTHING: User = User(0);
+        const ISSUER_READER: User = User(1);
+        const ISSUER_WRITER: User = User(2);
+        const ISSUER_OWNER: User = User(3);
+        const USER_NOTHING: Subject = Subject::User(User(4));
+        const USER_READER: Subject = Subject::User(User(5));
+        const USER_WRITER: Subject = Subject::User(User(6));
+        const USER_OWNER: Subject = Subject::User(User(7));
+        const GROUP_NOTHING: Subject = Subject::Group(Group(8));
+        const GROUP_READER: Subject = Subject::Group(Group(9));
+        const GROUP_WRITER: Subject = Subject::Group(Group(10));
+        const GROUP_OWNER: Subject = Subject::Group(Group(11));
 
         #[rstest]
         // a user grants another user
@@ -511,22 +510,17 @@ mod tests {
         // targeting self is allowed within privilege limits
         #[case::target_self_1(
             ISSUER_READER,
-            authz::Subject::User(ISSUER_READER),
+            Subject::User(ISSUER_READER),
             InfraGrant::Reader,
             true
         )]
         #[case::target_self_2(
             ISSUER_WRITER,
-            authz::Subject::User(ISSUER_WRITER),
+            Subject::User(ISSUER_WRITER),
             InfraGrant::Writer,
             true
         )]
-        #[case::target_self_3(
-            ISSUER_OWNER,
-            authz::Subject::User(ISSUER_OWNER),
-            InfraGrant::Owner,
-            true
-        )]
+        #[case::target_self_3(ISSUER_OWNER, Subject::User(ISSUER_OWNER), InfraGrant::Owner, true)]
         // a user with no grant do not have the privilege to share grants
         #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, InfraGrant::Reader, false)]
         #[case::noop_1(ISSUER_READER, USER_READER, InfraGrant::Reader, true)]
@@ -541,8 +535,8 @@ mod tests {
         // -----
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn test(
-            #[case] issuer: authz::User,
-            #[case] target: authz::Subject,
+            #[case] issuer: User,
+            #[case] target: Subject,
             #[case] grant: InfraGrant,
             #[case] ok: bool,
         ) {
@@ -551,35 +545,29 @@ mod tests {
 
             openfga
                 .prepare_writes()
-                .write(&authz::Infra::reader().tuple(&ISSUER_READER, &authz::Infra(1)))
-                .write(&authz::Infra::writer().tuple(&ISSUER_WRITER, &authz::Infra(1)))
-                .write(&authz::Infra::owner().tuple(&ISSUER_OWNER, &authz::Infra(1)))
-                .write(
-                    &authz::Infra::reader().tuple(&authz::User(USER_READER.id()), &authz::Infra(1)),
-                )
-                .write(
-                    &authz::Infra::writer().tuple(&authz::User(USER_WRITER.id()), &authz::Infra(1)),
-                )
-                .write(
-                    &authz::Infra::owner().tuple(&authz::User(USER_OWNER.id()), &authz::Infra(1)),
-                )
-                .write(&authz::Infra::reader().tuple(
-                    authz::Group::member().userset(&authz::Group(GROUP_READER.id())),
-                    &authz::Infra(1),
+                .write(&Infra::reader().tuple(&ISSUER_READER, &Infra(1)))
+                .write(&Infra::writer().tuple(&ISSUER_WRITER, &Infra(1)))
+                .write(&Infra::owner().tuple(&ISSUER_OWNER, &Infra(1)))
+                .write(&Infra::reader().tuple(&User(USER_READER.id()), &Infra(1)))
+                .write(&Infra::writer().tuple(&User(USER_WRITER.id()), &Infra(1)))
+                .write(&Infra::owner().tuple(&User(USER_OWNER.id()), &Infra(1)))
+                .write(&Infra::reader().tuple(
+                    Group::member().userset(&Group(GROUP_READER.id())),
+                    &Infra(1),
                 ))
-                .write(&authz::Infra::writer().tuple(
-                    authz::Group::member().userset(&authz::Group(GROUP_WRITER.id())),
-                    &authz::Infra(1),
+                .write(&Infra::writer().tuple(
+                    Group::member().userset(&Group(GROUP_WRITER.id())),
+                    &Infra(1),
                 ))
-                .write(&authz::Infra::owner().tuple(
-                    authz::Group::member().userset(&authz::Group(GROUP_OWNER.id())),
-                    &authz::Infra(1),
-                ))
+                .write(
+                    &Infra::owner()
+                        .tuple(Group::member().userset(&Group(GROUP_OWNER.id())), &Infra(1)),
+                )
                 .execute()
                 .await
                 .unwrap();
 
-            let check = Check::CanAlterSubjectInfraGrant(target, authz::Infra(1), grant);
+            let check = Check::CanAlterSubjectInfraGrant(target, Infra(1), grant);
             let result = authorize(&user_authorizer, check).await;
             let expected = ok.then_some(()).ok_or(check);
             assert_eq!(result, expected);
@@ -587,20 +575,22 @@ mod tests {
     }
 
     mod can_alter_subject_rolling_stock_grant {
+        use crate::Group;
+
         use super::*;
 
-        const ISSUER_NOTHING: authz::User = authz::User(0);
-        const ISSUER_READER: authz::User = authz::User(1);
-        const ISSUER_WRITER: authz::User = authz::User(2);
-        const ISSUER_OWNER: authz::User = authz::User(3);
-        const USER_NOTHING: authz::Subject = authz::Subject::User(authz::User(4));
-        const USER_READER: authz::Subject = authz::Subject::User(authz::User(5));
-        const USER_WRITER: authz::Subject = authz::Subject::User(authz::User(6));
-        const USER_OWNER: authz::Subject = authz::Subject::User(authz::User(7));
-        const GROUP_NOTHING: authz::Subject = authz::Subject::Group(authz::Group(8));
-        const GROUP_READER: authz::Subject = authz::Subject::Group(authz::Group(9));
-        const GROUP_WRITER: authz::Subject = authz::Subject::Group(authz::Group(10));
-        const GROUP_OWNER: authz::Subject = authz::Subject::Group(authz::Group(11));
+        const ISSUER_NOTHING: User = User(0);
+        const ISSUER_READER: User = User(1);
+        const ISSUER_WRITER: User = User(2);
+        const ISSUER_OWNER: User = User(3);
+        const USER_NOTHING: Subject = Subject::User(User(4));
+        const USER_READER: Subject = Subject::User(User(5));
+        const USER_WRITER: Subject = Subject::User(User(6));
+        const USER_OWNER: Subject = Subject::User(User(7));
+        const GROUP_NOTHING: Subject = Subject::Group(Group(8));
+        const GROUP_READER: Subject = Subject::Group(Group(9));
+        const GROUP_WRITER: Subject = Subject::Group(Group(10));
+        const GROUP_OWNER: Subject = Subject::Group(Group(11));
 
         #[rstest]
         // a user grants another user
@@ -632,19 +622,19 @@ mod tests {
         // targeting self is allowed within privilege limits
         #[case::target_self_1(
             ISSUER_READER,
-            authz::Subject::User(ISSUER_READER),
+            Subject::User(ISSUER_READER),
             RollingStockGrant::Reader,
             true
         )]
         #[case::target_self_2(
             ISSUER_WRITER,
-            authz::Subject::User(ISSUER_WRITER),
+            Subject::User(ISSUER_WRITER),
             RollingStockGrant::Writer,
             true
         )]
         #[case::target_self_3(
             ISSUER_OWNER,
-            authz::Subject::User(ISSUER_OWNER),
+            Subject::User(ISSUER_OWNER),
             RollingStockGrant::Owner,
             true
         )]
@@ -662,8 +652,8 @@ mod tests {
         // -----
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn test(
-            #[case] issuer: authz::User,
-            #[case] target: authz::Subject,
+            #[case] issuer: User,
+            #[case] target: Subject,
             #[case] grant: RollingStockGrant,
             #[case] ok: bool,
         ) {
@@ -672,43 +662,29 @@ mod tests {
 
             openfga
                 .prepare_writes()
-                .write(
-                    &authz::RollingStock::reader().tuple(&ISSUER_READER, &authz::RollingStock(1)),
-                )
-                .write(
-                    &authz::RollingStock::writer().tuple(&ISSUER_WRITER, &authz::RollingStock(1)),
-                )
-                .write(&authz::RollingStock::owner().tuple(&ISSUER_OWNER, &authz::RollingStock(1)))
-                .write(
-                    &authz::RollingStock::reader()
-                        .tuple(&authz::User(USER_READER.id()), &authz::RollingStock(1)),
-                )
-                .write(
-                    &authz::RollingStock::writer()
-                        .tuple(&authz::User(USER_WRITER.id()), &authz::RollingStock(1)),
-                )
-                .write(
-                    &authz::RollingStock::owner()
-                        .tuple(&authz::User(USER_OWNER.id()), &authz::RollingStock(1)),
-                )
-                .write(&authz::RollingStock::reader().tuple(
-                    authz::Group::member().userset(&authz::Group(GROUP_READER.id())),
-                    &authz::RollingStock(1),
+                .write(&RollingStock::reader().tuple(&ISSUER_READER, &RollingStock(1)))
+                .write(&RollingStock::writer().tuple(&ISSUER_WRITER, &RollingStock(1)))
+                .write(&RollingStock::owner().tuple(&ISSUER_OWNER, &RollingStock(1)))
+                .write(&RollingStock::reader().tuple(&User(USER_READER.id()), &RollingStock(1)))
+                .write(&RollingStock::writer().tuple(&User(USER_WRITER.id()), &RollingStock(1)))
+                .write(&RollingStock::owner().tuple(&User(USER_OWNER.id()), &RollingStock(1)))
+                .write(&RollingStock::reader().tuple(
+                    Group::member().userset(&Group(GROUP_READER.id())),
+                    &RollingStock(1),
                 ))
-                .write(&authz::RollingStock::writer().tuple(
-                    authz::Group::member().userset(&authz::Group(GROUP_WRITER.id())),
-                    &authz::RollingStock(1),
+                .write(&RollingStock::writer().tuple(
+                    Group::member().userset(&Group(GROUP_WRITER.id())),
+                    &RollingStock(1),
                 ))
-                .write(&authz::RollingStock::owner().tuple(
-                    authz::Group::member().userset(&authz::Group(GROUP_OWNER.id())),
-                    &authz::RollingStock(1),
+                .write(&RollingStock::owner().tuple(
+                    Group::member().userset(&Group(GROUP_OWNER.id())),
+                    &RollingStock(1),
                 ))
                 .execute()
                 .await
                 .unwrap();
 
-            let check =
-                Check::CanAlterSubjectRollingStockGrant(target, authz::RollingStock(1), grant);
+            let check = Check::CanAlterSubjectRollingStockGrant(target, RollingStock(1), grant);
             let result = authorize(&user_authorizer, check).await;
             let expected = ok.then_some(()).ok_or(check);
             assert_eq!(result, expected);
@@ -718,11 +694,11 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_user_rolling_stock_privilege() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
-        let rolling_stock = authz::RollingStock(1);
+        let issuer = User(1);
+        let target = User(2);
+        let rolling_stock = RollingStock(1);
         openfga
-            .write_tuples(&[authz::RollingStock::writer().tuple(&target, &rolling_stock)])
+            .write_tuples(&[RollingStock::writer().tuple(&target, &rolling_stock)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
@@ -745,25 +721,22 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
-        let infra = authz::Infra(1);
+        let issuer = User(1);
+        let target = User(2);
+        let infra = Infra(1);
         openfga
-            .write_tuples(&[authz::Infra::owner().tuple(&target, &infra)])
+            .write_tuples(&[Infra::owner().tuple(&target, &infra)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
-        let check = Check::SubjectEffectiveInfraGrantIsNot(
-            InfraGrant::Owner,
-            authz::Subject::User(target),
-            infra,
-        );
+        let check =
+            Check::SubjectEffectiveInfraGrantIsNot(InfraGrant::Owner, Subject::User(target), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
 
         let check = Check::SubjectEffectiveInfraGrantIsNot(
             InfraGrant::Writer,
-            authz::Subject::User(target),
+            Subject::User(target),
             infra,
         );
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
@@ -772,25 +745,25 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_rolling_stock_grant_is_not() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
-        let rolling_stock = authz::RollingStock(1);
+        let issuer = User(1);
+        let target = User(2);
+        let rolling_stock = RollingStock(1);
         openfga
-            .write_tuples(&[authz::RollingStock::owner().tuple(&target, &rolling_stock)])
+            .write_tuples(&[RollingStock::owner().tuple(&target, &rolling_stock)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
         let check = Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
-            authz::Subject::User(target),
+            Subject::User(target),
             rolling_stock,
         );
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
 
         let check = Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Writer,
-            authz::Subject::User(target),
+            Subject::User(target),
             rolling_stock,
         );
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
@@ -799,41 +772,35 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_infra_grant_is_not_checks_inherited_grant() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
-        let group = authz::Group(1);
-        let infra = authz::Infra(1);
+        let issuer = User(1);
+        let target = User(2);
+        let group = Group(1);
+        let infra = Infra(1);
         openfga
             .prepare_writes()
-            .write(&authz::Group::member().tuple(&target, &group))
-            .write(&authz::Infra::owner().tuple(authz::Group::member().userset(&group), &infra))
+            .write(&Group::member().tuple(&target, &group))
+            .write(&Infra::owner().tuple(Group::member().userset(&group), &infra))
             .execute()
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
-        let check = Check::SubjectEffectiveInfraGrantIsNot(
-            InfraGrant::Owner,
-            authz::Subject::User(target),
-            infra,
-        );
+        let check =
+            Check::SubjectEffectiveInfraGrantIsNot(InfraGrant::Owner, Subject::User(target), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_subject_effective_rolling_stock_grant_is_not_checks_inherited_grant() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let target = authz::User(2);
-        let group = authz::Group(1);
-        let rolling_stock = authz::RollingStock(1);
+        let issuer = User(1);
+        let target = User(2);
+        let group = Group(1);
+        let rolling_stock = RollingStock(1);
         openfga
             .prepare_writes()
-            .write(&authz::Group::member().tuple(&target, &group))
-            .write(
-                &authz::RollingStock::owner()
-                    .tuple(authz::Group::member().userset(&group), &rolling_stock),
-            )
+            .write(&Group::member().tuple(&target, &group))
+            .write(&RollingStock::owner().tuple(Group::member().userset(&group), &rolling_stock))
             .execute()
             .await
             .unwrap();
@@ -841,7 +808,7 @@ mod tests {
 
         let check = Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
-            authz::Subject::User(target),
+            Subject::User(target),
             rolling_stock,
         );
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
@@ -850,92 +817,90 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_user() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let owner = authz::User(2);
-        let other_owner = authz::User(3);
-        let no_grant = authz::User(4);
-        let infra = authz::Infra(1);
+        let issuer = User(1);
+        let owner = User(2);
+        let other_owner = User(3);
+        let no_grant = User(4);
+        let infra = Infra(1);
         openfga
-            .write_tuples(&[authz::Infra::owner().tuple(&owner, &infra)])
+            .write_tuples(&[Infra::owner().tuple(&owner, &infra)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
-        let check = Check::IsNotLastInfraOwner(authz::Subject::User(owner), infra);
+        let check = Check::IsNotLastInfraOwner(Subject::User(owner), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
 
-        let check = Check::IsNotLastInfraOwner(authz::Subject::User(no_grant), infra);
+        let check = Check::IsNotLastInfraOwner(Subject::User(no_grant), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
 
         openfga
-            .write_tuples(&[authz::Infra::owner().tuple(&other_owner, &infra)])
+            .write_tuples(&[Infra::owner().tuple(&other_owner, &infra)])
             .await
             .unwrap();
-        let check = Check::IsNotLastInfraOwner(authz::Subject::User(owner), infra);
+        let check = Check::IsNotLastInfraOwner(Subject::User(owner), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_rolling_stock_owner_user() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let owner = authz::User(2);
-        let other_owner = authz::User(3);
-        let no_grant = authz::User(4);
-        let rolling_stock = authz::RollingStock(1);
+        let issuer = User(1);
+        let owner = User(2);
+        let other_owner = User(3);
+        let no_grant = User(4);
+        let rolling_stock = RollingStock(1);
         openfga
-            .write_tuples(&[authz::RollingStock::owner().tuple(&owner, &rolling_stock)])
+            .write_tuples(&[RollingStock::owner().tuple(&owner, &rolling_stock)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
-        let check = Check::IsNotLastRollingStockOwner(authz::Subject::User(owner), rolling_stock);
+        let check = Check::IsNotLastRollingStockOwner(Subject::User(owner), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
 
-        let check =
-            Check::IsNotLastRollingStockOwner(authz::Subject::User(no_grant), rolling_stock);
+        let check = Check::IsNotLastRollingStockOwner(Subject::User(no_grant), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
 
         openfga
-            .write_tuples(&[authz::RollingStock::owner().tuple(&other_owner, &rolling_stock)])
+            .write_tuples(&[RollingStock::owner().tuple(&other_owner, &rolling_stock)])
             .await
             .unwrap();
-        let check = Check::IsNotLastRollingStockOwner(authz::Subject::User(owner), rolling_stock);
+        let check = Check::IsNotLastRollingStockOwner(Subject::User(owner), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_infra_owner_group() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let group = authz::Group(1);
-        let infra = authz::Infra(1);
+        let issuer = User(1);
+        let group = Group(1);
+        let infra = Infra(1);
         openfga
-            .write_tuples(&[
-                authz::Infra::owner().tuple(authz::Group::member().userset(&group), &infra)
-            ])
+            .write_tuples(&[Infra::owner().tuple(Group::member().userset(&group), &infra)])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
-        let check = Check::IsNotLastInfraOwner(authz::Subject::Group(group), infra);
+        let check = Check::IsNotLastInfraOwner(Subject::Group(group), infra);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_is_not_last_rolling_stock_owner_group() {
         let openfga = openfga().await;
-        let issuer = authz::User(1);
-        let group = authz::Group(1);
-        let rolling_stock = authz::RollingStock(1);
+        let issuer = User(1);
+        let group = Group(1);
+        let rolling_stock = RollingStock(1);
         openfga
-            .write_tuples(&[authz::RollingStock::owner()
-                .tuple(authz::Group::member().userset(&group), &rolling_stock)])
+            .write_tuples(&[
+                RollingStock::owner().tuple(Group::member().userset(&group), &rolling_stock)
+            ])
             .await
             .unwrap();
         let user_authorizer = UserAuthorizer::new(issuer, vec![], &openfga);
 
-        let check = Check::IsNotLastRollingStockOwner(authz::Subject::Group(group), rolling_stock);
+        let check = Check::IsNotLastRollingStockOwner(Subject::Group(group), rolling_stock);
         assert_eq!(authorize(&user_authorizer, check).await, Err(check));
     }
 
@@ -944,42 +909,42 @@ mod tests {
     #[case::has_infra_privilege(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanWrite,
-        authz::Infra(i64::MAX)
+        Infra(i64::MAX)
     ))]
     #[case::can_alter_subject_infra_grant(Check::CanAlterSubjectInfraGrant(
-        authz::Subject::user(i64::MAX),
-        authz::Infra(i64::MAX),
+        Subject::user(i64::MAX),
+        Infra(i64::MAX),
         InfraGrant::Reader,
     ))]
     #[case::subject_effective_infra_grant_is_not(Check::SubjectEffectiveInfraGrantIsNot(
         InfraGrant::Owner,
-        authz::Subject::user(i64::MAX),
-        authz::Infra(i64::MAX)
+        Subject::user(i64::MAX),
+        Infra(i64::MAX)
     ))]
     #[case::is_not_last_infra_owner(Check::IsNotLastInfraOwner(
-        authz::Subject::user(i64::MAX),
-        authz::Infra(i64::MAX)
+        Subject::user(i64::MAX),
+        Infra(i64::MAX)
     ))]
     #[case::can_alter_subject_rolling_stock_grant(Check::CanAlterSubjectRollingStockGrant(
-        authz::Subject::user(i64::MAX),
-        authz::RollingStock(i64::MAX),
+        Subject::user(i64::MAX),
+        RollingStock(i64::MAX),
         RollingStockGrant::Reader,
     ))]
     #[case::subject_effective_rolling_stock_grant_is_not(
         Check::SubjectEffectiveRollingStockGrantIsNot(
             RollingStockGrant::Owner,
-            authz::Subject::user(i64::MAX),
-            authz::RollingStock(i64::MAX)
+            Subject::user(i64::MAX),
+            RollingStock(i64::MAX)
         )
     )]
     #[case::is_not_last_infra_owner(Check::IsNotLastRollingStockOwner(
-        authz::Subject::user(i64::MAX),
-        authz::RollingStock(i64::MAX)
+        Subject::user(i64::MAX),
+        RollingStock(i64::MAX)
     ))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_authorizer_admin_bypass(#[case] check: Check) {
         let openfga = openfga().await;
-        let user = authz::User(1);
+        let user = User(1);
         let user_authorizer = UserAuthorizer::new(user, vec![Role::Admin], &openfga);
 
         assert_eq!(authorize(&user_authorizer, check).await, Ok(()));
