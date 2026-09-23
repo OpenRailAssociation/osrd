@@ -311,7 +311,7 @@ const useTimesStopsTableData = (
           stablePathItemTimes
         );
 
-        const { shortSlipDistance, onStopSignal } = receptionSignalToSignalBooleans(
+        const { shortSlipDistance, closedSignal } = receptionSignalToSignalBooleans(
           schedule?.reception_signal
         );
 
@@ -341,7 +341,7 @@ const useTimesStopsTableData = (
           powerRestriction,
           location: pathStep.location,
           shortSlipDistance,
-          closedSignal: onStopSignal,
+          closedSignal,
           margins,
         });
 
@@ -384,7 +384,7 @@ const useTimesStopsTableData = (
             ? scheduleByAt[op.pathItemId]?.reception_signal
             : undefined;
 
-          const { shortSlipDistance, onStopSignal } =
+          const { shortSlipDistance, closedSignal } =
             receptionSignalToSignalBooleans(receptionSignal);
 
           formattedRows.push({
@@ -398,7 +398,7 @@ const useTimesStopsTableData = (
               startDate,
               computedArrival,
               shortSlipDistance,
-              closedSignal: onStopSignal,
+              closedSignal,
               location: {
                 type: 'operational_point_part_reference',
                 operational_point: {

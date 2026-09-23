@@ -43,29 +43,29 @@ export const formatSignedDelta = (delta: Duration) => {
   return `${sign}${label}`;
 };
 
-/** Convert receptionSignal enum to onStopSignal boolean */
+/** Convert receptionSignal enum to closedSignal boolean */
 export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSignal) {
   if (isNil(receptionSignal)) {
-    return { shortSlipDistance: undefined, onStopSignal: undefined };
+    return { shortSlipDistance: undefined, closedSignal: undefined };
   }
   if (receptionSignal === 'STOP') {
-    return { shortSlipDistance: false, onStopSignal: true };
+    return { shortSlipDistance: false, closedSignal: true };
   }
   if (receptionSignal === 'SHORT_SLIP_STOP') {
-    return { shortSlipDistance: true, onStopSignal: true };
+    return { shortSlipDistance: true, closedSignal: true };
   }
-  return { shortSlipDistance: false, onStopSignal: false };
+  return { shortSlipDistance: false, closedSignal: false };
 }
 
-/** Convert onStopSignal boolean to receptionSignal enum */
-export function onStopSignalToReceptionSignal(
-  onStopSignal?: boolean,
+/** Convert closedSignal boolean to receptionSignal enum */
+export function closedSignalToReceptionSignal(
+  closedSignal?: boolean,
   shortSlipDistance?: boolean
 ): ReceptionSignal | undefined {
-  if (isNil(onStopSignal)) {
+  if (isNil(closedSignal)) {
     return undefined;
   }
-  if (onStopSignal) {
+  if (closedSignal) {
     return shortSlipDistance ? 'SHORT_SLIP_STOP' : 'STOP';
   }
   return 'OPEN';
