@@ -671,7 +671,6 @@
       "signalsStates": "Signals states",
       "trackProjection": "Onto track"
     },
-    "toggleManchetteMenu": "Toggle manchette menu",
     "toggleWarpedMap": "Toggle the warped map",
     "warpedMapUnavailable": "The warped map is not available for trains that are not calculated",
     "waypointMenu": {
