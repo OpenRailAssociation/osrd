@@ -131,9 +131,8 @@ data class InfraExplorerWithEnvelopeImpl(
                 .getSeenSteps()
                 .toList()
                 .asSequence()
-                .filter { it.isPlanned }
-                .withIndex()
-                .map { (stepIndex, step) ->
+                .mapIndexedNotNull { stepIndex, step ->
+                    if (!step.isPlanned) return@mapIndexedNotNull null
                     val rollingStock: PhysicsRollingStock = consistSchedule.rollingStocks[stepIndex]
                     val stepPos = step.travelledPathOffset.distance
                     val res = DistanceRangeMap.RangeMapEntry(previousStepPos, stepPos, rollingStock)
