@@ -11,5 +11,5 @@ export const applyPathStepWeight = <T extends PathWaypoint | ProjectionWaypoint>
 ): T[] =>
   waypoints.map((waypoint) => ({
     ...waypoint,
-    weight: waypoint.pathItemId ? HIGHEST_PRIORITY_WEIGHT : waypoint.weight,
+    weight: waypoint.pathItemKey ? HIGHEST_PRIORITY_WEIGHT : waypoint.weight,
   }));

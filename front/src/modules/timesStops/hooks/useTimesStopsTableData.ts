@@ -106,7 +106,7 @@ const buildTableRow = ({
   const isOnTime =
     requestedArrival && rawComputedArrivalDate
       ? subtractStartTime(requestedArrival, rawComputedArrivalDate).abs() <=
-        ARRIVAL_TIME_ACCEPTABLE_ERROR
+      ARRIVAL_TIME_ACCEPTABLE_ERROR
       : false;
   const computedArrivalDate = isOnTime ? requestedArrival : rawComputedArrivalDate;
 
@@ -266,7 +266,7 @@ const useTimesStopsTableData = (
         const matchingOp =
           pathStepOp ??
           (pathStep.location.type === 'operational_point_part_reference' && stableOPs
-            ? stableOPs.find((op) => op.pathItemId === pathStep.key)
+            ? stableOPs.find((op) => op.pathItemKey === pathStep.key)
             : undefined);
 
         const name =
@@ -305,8 +305,8 @@ const useTimesStopsTableData = (
         const computedArrival =
           stablePathItemTimes?.final[stepIndex] !== undefined
             ? new Duration({
-                milliseconds: stablePathItemTimes.final[stepIndex],
-              })
+              milliseconds: stablePathItemTimes.final[stepIndex],
+            })
             : undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         const marginNotHonored = stableIsValid && !stablePathItemRespect?.margins[stepIndex];
@@ -363,7 +363,7 @@ const useTimesStopsTableData = (
     if (stableOPs) {
       stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
-        const matchingPathStepRow = op.pathItemId ? pathStepRowsById.get(op.pathItemId) : undefined;
+        const matchingPathStepRow = op.pathItemKey ? pathStepRowsById.get(op.pathItemKey) : undefined;
 
         if (matchingPathStepRow) {
           formattedRows.push({
@@ -387,8 +387,8 @@ const useTimesStopsTableData = (
                 : undefined;
           }
 
-          const receptionSignal = op.pathItemId
-            ? scheduleByAt[op.pathItemId]?.reception_signal
+          const receptionSignal = op.pathItemKey
+            ? scheduleByAt[op.pathItemKey]?.reception_signal
             : undefined;
 
           const { shortSlipDistance, onStopSignal } =

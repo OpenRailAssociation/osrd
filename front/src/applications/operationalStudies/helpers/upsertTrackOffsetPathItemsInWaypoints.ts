@@ -48,7 +48,7 @@ export function upsertTrackOffsetPathItemsInWaypoints(
       const baseFormattedStep = {
         waypointId: `pathitem-${step.key}`,
         opId: null,
-        pathItemId: step.key,
+        pathItemKey: step.key,
         name: stepName,
         uic: 0,
         country_code: '??',
@@ -62,9 +62,9 @@ export function upsertTrackOffsetPathItemsInWaypoints(
         type === 'projection'
           ? baseFormattedStep
           : {
-              ...baseFormattedStep,
-              part: { track: location.track, position: location.offset, local_track_name: 'V1' },
-            };
+            ...baseFormattedStep,
+            part: { track: location.track, position: location.offset, local_track_name: 'V1' },
+          };
 
       // If we can't find any op position greater than the current step position, we add it at the end
       if (indexToInsert === -1) {

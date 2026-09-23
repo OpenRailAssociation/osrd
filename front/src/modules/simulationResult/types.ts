@@ -36,7 +36,7 @@ import type { ArrayElement } from 'utils/types';
 export type PathWaypoint = Omit<PathProperties['operational_points'][number], 'id'> & {
   waypointId: string;
   opId: string | null;
-  pathItemId: string | null;
+  pathItemKey: string | null;
   location: PathItemLocation;
 };
 
@@ -82,14 +82,14 @@ export type IndividualTrainProjection = {
   (
     | { id: TrainScheduleId; type: 'trainSchedule' }
     | {
-        id: IndexedOccurrenceId;
-        type: 'occurrence';
-      }
+      id: IndexedOccurrenceId;
+      type: 'occurrence';
+    }
     | {
-        id: OccurrenceId;
-        type: 'exception';
-        exception: PacedTrainException;
-      }
+      id: OccurrenceId;
+      type: 'exception';
+      exception: PacedTrainException;
+    }
   );
 
 // Speed Space Chart
@@ -181,15 +181,15 @@ export type CurveStyleExceptionType = keyof Pick<
 export type CurveStyleInput = {
   chart: 'std' | 'tod';
   train:
-    | {
-        id: OccurrenceId;
-        /**
-         * The relevant exception types (start_time / path_and_schedule) this occurrence
-         * carries (it can cumulate several). Only occurrences can carry exceptions.
-         */
-        relevantExceptionTypes: CurveStyleExceptionType[];
-      }
-    | { id: TrainScheduleId };
+  | {
+    id: OccurrenceId;
+    /**
+     * The relevant exception types (start_time / path_and_schedule) this occurrence
+     * carries (it can cumulate several). Only occurrences can carry exceptions.
+     */
+    relevantExceptionTypes: CurveStyleExceptionType[];
+  }
+  | { id: TrainScheduleId };
   selection: SelectedTrain | undefined;
   panelMode?: 'compliant' | 'all' | 'single';
   hover?: {

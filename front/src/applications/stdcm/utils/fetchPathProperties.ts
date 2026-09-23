@@ -47,11 +47,11 @@ const fetchPathProperties = async (
       const metadata =
         sncf && Object.values(sncf).every((value) => value !== undefined)
           ? {
-              lineCode: sncf.line_code!,
-              lineName: sncf.line_name!,
-              trackName: op.part.local_track_name,
-              trackNumber: sncf.track_number!,
-            }
+            lineCode: sncf.line_code!,
+            lineName: sncf.line_name!,
+            trackName: op.part.local_track_name,
+            trackNumber: sncf.track_number!,
+          }
           : undefined;
       return { ...op, metadata };
     });
@@ -60,7 +60,7 @@ const fetchPathProperties = async (
       ...omit(op, 'id'),
       waypointId: `op-${op.id}-${op.position}`,
       opId: op.id,
-      pathItemId: null,
+      pathItemKey: null,
       location: {
         type: 'operational_point_part_reference' as const,
         operational_point: { type: 'id' as const, operational_point: op.id },

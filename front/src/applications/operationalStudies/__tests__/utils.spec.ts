@@ -174,13 +174,13 @@ describe('buildPathWaypointsFromRawOPs', () => {
       makePathItem('step3', 'op6'),
     ];
     const result = buildPathWaypointsFromRawOPs(ops, path);
-    expect(result.map(({ opId, pathItemId }) => ({ opId, pathItemId }))).toEqual([
-      { opId: 'op1', pathItemId: 'step1' },
-      { opId: 'op2', pathItemId: null },
-      { opId: 'op3', pathItemId: 'step2' },
-      { opId: 'op4', pathItemId: null },
-      { opId: 'op5', pathItemId: null },
-      { opId: 'op6', pathItemId: 'step3' },
+    expect(result.map(({ opId, pathItemKey }) => ({ opId, pathItemKey }))).toEqual([
+      { opId: 'op1', pathItemKey: 'step1' },
+      { opId: 'op2', pathItemKey: null },
+      { opId: 'op3', pathItemKey: 'step2' },
+      { opId: 'op4', pathItemKey: null },
+      { opId: 'op5', pathItemKey: null },
+      { opId: 'op6', pathItemKey: 'step3' },
     ]);
   });
 
@@ -198,19 +198,19 @@ describe('buildPathWaypointsFromRawOPs', () => {
       makePathItem('step3', 'op1'),
     ];
     const result = buildPathWaypointsFromRawOPs(ops, path);
-    expect(result.map(({ opId, pathItemId }) => ({ opId, pathItemId }))).toEqual([
-      { opId: 'op1', pathItemId: 'step1' },
-      { opId: 'op2', pathItemId: null },
-      { opId: 'op3', pathItemId: 'step2' },
-      { opId: 'op2', pathItemId: null },
-      { opId: 'op1', pathItemId: 'step3' },
+    expect(result.map(({ opId, pathItemKey }) => ({ opId, pathItemKey }))).toEqual([
+      { opId: 'op1', pathItemKey: 'step1' },
+      { opId: 'op2', pathItemKey: null },
+      { opId: 'op3', pathItemKey: 'step2' },
+      { opId: 'op2', pathItemKey: null },
+      { opId: 'op1', pathItemKey: 'step3' },
     ]);
   });
 });
 
 describe('sortPathOperationalPoints', () => {
-  const makeOp = (pathItemId: string, position: number) =>
-    ({ waypointId: uuidV4(), pathItemId, position }) as PathWaypoint;
+  const makeOp = (pathItemKey: string, position: number) =>
+    ({ waypointId: uuidV4(), pathItemKey, position }) as PathWaypoint;
 
   const makePathItem = (key: string): PathItem => ({
     key,
@@ -224,14 +224,14 @@ describe('sortPathOperationalPoints', () => {
     const ops = [makeOp('A', 0), makeOp('B', 100), makeOp('C', 200)];
     const path = [makePathItem('A'), makePathItem('B'), makePathItem('C')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.pathItemId)).toEqual(['A', 'B', 'C']);
+    expect(result.map((op) => op.pathItemKey)).toEqual(['A', 'B', 'C']);
   });
 
   it('should put the path origin first in the list when its position matches the one of other waypoints', () => {
     const ops = [makeOp('A', 0), makeOp('C', 0), makeOp('B', 0), makeOp('D', 200)];
     const path = [makePathItem('C'), makePathItem('A'), makePathItem('D')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.pathItemId)).toEqual(['C', 'A', 'B', 'D']);
+    expect(result.map((op) => op.pathItemKey)).toEqual(['C', 'A', 'B', 'D']);
   });
 
   it('should sort two path items based on their index in the path if they are next to each other in ops when they are neither the origin or destination)', () => {
@@ -245,13 +245,13 @@ describe('sortPathOperationalPoints', () => {
     ];
     const path = [makePathItem('A'), makePathItem('B'), makePathItem('D'), makePathItem('F')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.pathItemId)).toEqual(['A', 'C', 'B', 'D', 'E', 'F']);
+    expect(result.map((op) => op.pathItemKey)).toEqual(['A', 'C', 'B', 'D', 'E', 'F']);
   });
 
   it('should put the path destination at the end of the list when its position matches the one of other waypoints', () => {
     const ops = [makeOp('A', 0), makeOp('D', 100), makeOp('B', 100), makeOp('C', 100)];
     const path = [makePathItem('A'), makePathItem('C'), makePathItem('D')];
     const result = sortPathOperationalPoints(ops, path);
-    expect(result.map((op) => op.pathItemId)).toEqual(['A', 'B', 'C', 'D']);
+    expect(result.map((op) => op.pathItemKey)).toEqual(['A', 'B', 'C', 'D']);
   });
 });

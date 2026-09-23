@@ -24,7 +24,7 @@ const getOperationalPoints = (inputs: Op[]): PathWaypoint[] =>
   inputs.map((op) => ({
     waypointId: op.name,
     opId: null,
-    pathItemId: null,
+    pathItemKey: null,
     name: op.name,
     uic: op.uic,
     country_code: '??',
@@ -118,7 +118,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'West_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'West_station',
         uic: 2,
         country_code: '??',
@@ -142,7 +142,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'pathitem-2',
-        pathItemId: '2',
+        pathItemKey: '2',
         name: 't_requestedPoint',
         uic: 0,
         country_code: '??',
@@ -164,7 +164,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'Mid_West_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'Mid_West_station',
         uic: 3,
         country_code: '??',
@@ -188,7 +188,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'Mid_East_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'Mid_East_station',
         uic: 4,
         country_code: '??',
@@ -263,7 +263,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'pathitem-1',
-        pathItemId: '1',
+        pathItemKey: '1',
         name: 't_requestedOrigin',
         uic: 0,
         country_code: '??',
@@ -285,7 +285,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'Mid_West_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'Mid_West_station',
         uic: 3,
         country_code: '??',
@@ -309,7 +309,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'pathitem-2',
-        pathItemId: '2',
+        pathItemKey: '2',
         name: 't_requestedPoint',
         uic: 0,
         country_code: '??',
@@ -331,7 +331,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'pathitem-3',
-        pathItemId: '3',
+        pathItemKey: '3',
         name: 't_requestedDestination',
         uic: 0,
         country_code: '??',
@@ -388,7 +388,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'pathitem-1',
-        pathItemId: '1',
+        pathItemKey: '1',
         name: 't_requestedOrigin',
         uic: 0,
         country_code: '??',
@@ -410,7 +410,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'pathitem-2',
-        pathItemId: '2',
+        pathItemKey: '2',
         name: 't_requestedDestination',
         uic: 0,
         country_code: '??',
@@ -484,7 +484,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'West_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'West_station',
         uic: 2,
         country_code: '??',
@@ -508,7 +508,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'Mid_West_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'Mid_West_station',
         uic: 3,
         country_code: '??',
@@ -532,7 +532,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         opId: null,
         waypointId: 'Mid_East_station',
-        pathItemId: null,
+        pathItemKey: null,
         name: 'Mid_East_station',
         uic: 4,
         country_code: '??',

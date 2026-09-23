@@ -40,7 +40,7 @@ describe('formatStops', () => {
         country_code: 'country_code',
         opId: null,
         waypointId: 'id',
-        pathItemId: null,
+        pathItemKey: null,
         is_passenger_station: false,
         main_code: 'main_code',
         name: 'name',

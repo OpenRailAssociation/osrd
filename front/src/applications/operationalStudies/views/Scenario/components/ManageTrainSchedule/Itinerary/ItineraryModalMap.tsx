@@ -364,7 +364,7 @@ const ItineraryModalMap = ({
                 coordinates = pathStepMetadata.coordinates;
               } else {
                 const matchedOp = pathWaypoints.find(
-                  (waypoint) => waypoint.pathItemId === step.key
+                  (waypoint) => waypoint.pathItemKey === step.key
                 );
                 const trackMetadata = pathStepMetadata.parts.find(
                   (part) => part.type === 'valid' && part.trackId === matchedOp?.part.track

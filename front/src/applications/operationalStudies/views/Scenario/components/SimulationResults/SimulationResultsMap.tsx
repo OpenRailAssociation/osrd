@@ -95,7 +95,7 @@ const SimulationResultMap = ({
           acc.push(step.location.track);
         }
         // Get the track ids from the computed ops
-        const matchedOp = pathPropertiesOps?.find((op) => step.key === op.pathItemId);
+        const matchedOp = pathPropertiesOps?.find((op) => step.key === op.pathItemKey);
         if (matchedOp) {
           acc.push(matchedOp.part.track);
         }
@@ -153,7 +153,7 @@ const SimulationResultMap = ({
         }
 
         if (pathPropertiesOps) {
-          const matchedOp = pathPropertiesOps.find((op) => step.key === op.pathItemId);
+          const matchedOp = pathPropertiesOps.find((op) => step.key === op.pathItemKey);
 
           if (!matchedOp) return null;
 

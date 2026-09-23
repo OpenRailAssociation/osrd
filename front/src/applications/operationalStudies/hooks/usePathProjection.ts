@@ -69,7 +69,7 @@ const createVirtualOp = (
   return {
     waypointId: virtualId,
     opId: null,
-    pathItemId,
+    pathItemKey: pathItemId,
     name: virtualName,
     uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
@@ -135,9 +135,9 @@ const usePathProjection = (
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
         ? {
-            infraId,
-            pathPropertiesInput: { track_section_ranges: pathfinding.path.track_section_ranges },
-          }
+          infraId,
+          pathPropertiesInput: { track_section_ranges: pathfinding.path.track_section_ranges },
+        }
         : skipToken
     );
 
@@ -177,11 +177,11 @@ const usePathProjection = (
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
       opRefs.length > 0
         ? {
-            infraId,
-            body: {
-              operational_point_references: opRefs,
-            },
-          }
+          infraId,
+          body: {
+            operational_point_references: opRefs,
+          },
+        }
         : skipToken
     );
 
@@ -264,7 +264,7 @@ const usePathProjection = (
           country_code: matchedOp.country_code,
           waypointId: `op-${matchedOp.id}-${position}`,
           opId: matchedOp.id,
-          pathItemId,
+          pathItemKey: pathItemId,
           is_passenger_station: matchedOp.is_passenger_station,
           main_code: matchedOp.main_code,
           name: matchedOp.name,
