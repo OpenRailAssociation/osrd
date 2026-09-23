@@ -9,6 +9,7 @@
 @use './NavBar/LicenseAttributions';
 @use './authorization/error403';
 @use './authorization/grantsManager';
+@use './errorBoundary';
 @use './DotsLoader/DotsLoader';
 @use './Grid/Grid';
 @use './IntervalsDataViz/style';
