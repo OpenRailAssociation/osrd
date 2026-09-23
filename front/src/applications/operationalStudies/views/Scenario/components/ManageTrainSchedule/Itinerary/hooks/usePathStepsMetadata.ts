@@ -10,7 +10,7 @@ import {
   type OperationalPointReference,
   type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
-import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 
@@ -35,7 +35,7 @@ const getOpRefKey = (opRef: OperationalPointReference): string => {
  * and update the pathStepsMetadataById state.
  */
 export const usePathStepsMetadata = (
-  pathSteps: PathStepV2[],
+  pathSteps: PathStep[],
   pendingStepIdRef: RefObject<string>
 ) => {
   const { infraId, timetableId, getTrackSectionsByIds } = useScenarioContext();

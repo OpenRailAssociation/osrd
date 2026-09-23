@@ -53,10 +53,9 @@ export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState)
       use_speed_limits_for_simulation: trainState.usingSpeedLimits,
       stops_at_end_of_block: false,
     },
-    path: pathSteps.map((step) => ({
-      id: step.id,
-      location: step.location,
-    })),
+    path: pathSteps
+      .map((step) => (step.location !== null ? { id: step.id, location: step.location } : null))
+      .filter((pathItem) => pathItem !== null),
     paced:
       trainState.editingTrainType !== 'uniqueTrain'
         ? {
