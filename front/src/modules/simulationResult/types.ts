@@ -29,14 +29,14 @@ import type { ArrayElement } from 'utils/types';
 
 /**
  * This type refers to a waypoint, modified to carry its own unique ID (waypointId), and
- * optionally an actual opId and pathStepId (for its corresponding path item), which can be repeated along a path when a train crosses multiple time
+ * optionally an actual opId and pathStepKey (for its corresponding path item), which can be repeated along a path when a train crosses multiple time
  * the same operational point.
  * Can hold an OP found in infra, or a track-offset
  */
 export type PathWaypoint = Omit<PathProperties['operational_points'][number], 'id'> & {
   waypointId: string;
   opId: string | null;
-  pathItemId: string | null;
+  pathItemKey: string | null;
   location: PathItemLocation;
 };
 

@@ -226,7 +226,7 @@ export const buildPathWaypointsFromRawOPs = (
       ...omit(op, 'id'),
       waypointId: buildOpWaypointId(op.id, occurrenceCount),
       opId: op.id,
-      pathItemId: null,
+      pathItemKey: null,
       location: {
         type: 'operational_point_part_reference',
         operational_point: { type: 'id', operational_point: op.id },
@@ -247,7 +247,7 @@ export const buildPathWaypointsFromRawOPs = (
 
     return {
       ...waypoint,
-      pathItemId: pathItem.key,
+      pathItemKey: pathItem.key,
       location: pathItem.location,
     };
   });
@@ -270,8 +270,8 @@ export const buildPathWaypointsFromRawOPs = (
 export const sortPathOperationalPoints = (ops: PathWaypoint[], path: PathItem[]): PathWaypoint[] =>
   ops.toSorted((a, b) => {
     if (a.position !== b.position) return a.position - b.position;
-    const aPathIndex = path.findIndex((pathItem) => pathItem.key === a.pathItemId);
-    const bPathIndex = path.findIndex((pathItem) => pathItem.key === b.pathItemId);
+    const aPathIndex = path.findIndex((pathItem) => pathItem.key === a.pathItemKey);
+    const bPathIndex = path.findIndex((pathItem) => pathItem.key === b.pathItemKey);
     const lastIndex = path.length - 1;
     const aIsOrigin = aPathIndex === 0;
     const bIsOrigin = bPathIndex === 0;
