@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
-      react(),
+      react({ compiler: { compilationMode: 'annotation' } }),
       {
         ...checker({
           oxlint: {
