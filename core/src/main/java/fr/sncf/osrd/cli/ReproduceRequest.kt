@@ -88,7 +88,7 @@ class ReproduceRequest : CliCommand {
     @Parameter(
         names = ["--cache-timetable"],
         description =
-            "Path to a json file containing the requirements, can be cached by `TimetableCacheManager` or fetched from the s3",
+            "Path to a json.gz file containing the requirements, can be cached by `TimetableCacheManager` or fetched from the s3",
     )
     private var cacheTimetable: String? = null
     @Parameter(
