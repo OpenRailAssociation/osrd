@@ -92,7 +92,7 @@ export const formatOperationalPoints = (
 
     // Get duration
     let stepDuration: Duration | undefined;
-    const correspondingStep = trainSchedule.path.find((step) => op.pathItemId === step.key);
+    const correspondingStep = trainSchedule.path.find((step) => op.pathItemKey === step.key);
     if (correspondingStep) {
       const correspondingSchedule = trainSchedule.schedule?.find(
         (step) => step.at === correspondingStep.key

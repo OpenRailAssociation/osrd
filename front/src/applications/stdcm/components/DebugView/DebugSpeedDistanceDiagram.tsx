@@ -35,7 +35,7 @@ const DebugSpeedDistanceDiagram = ({ simData }: { simData: SimDebugData }) => {
       ...omit(op, 'id'),
       opId: op.id,
       waypointId: `${op.id}-${op.position}`,
-      pathItemId: null,
+      pathItemKey: null,
       location: {
         type: 'operational_point_part_reference',
         operational_point: { type: 'id', operational_point: op.id },

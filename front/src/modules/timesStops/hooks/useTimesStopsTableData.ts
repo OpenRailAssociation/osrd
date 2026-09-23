@@ -262,7 +262,7 @@ const useTimesStopsTableData = (
         const matchingOp =
           pathStepOp ??
           (pathStep.location.type === 'operational_point_part_reference' && stableOPs
-            ? stableOPs.find((op) => op.pathItemId === pathStep.key)
+            ? stableOPs.find((op) => op.pathItemKey === pathStep.key)
             : undefined);
 
         const name = getOperationalPointName(
@@ -356,8 +356,8 @@ const useTimesStopsTableData = (
     if (stableOPs) {
       stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
-        const matchingPathStepRow = op.pathItemId
-          ? pathStepRowsByKey.get(op.pathItemId)
+        const matchingPathStepRow = op.pathItemKey
+          ? pathStepRowsByKey.get(op.pathItemKey)
           : undefined;
 
         if (matchingPathStepRow) {
@@ -382,8 +382,8 @@ const useTimesStopsTableData = (
                 : undefined;
           }
 
-          const receptionSignal = op.pathItemId
-            ? scheduleByAt[op.pathItemId]?.reception_signal
+          const receptionSignal = op.pathItemKey
+            ? scheduleByAt[op.pathItemKey]?.reception_signal
             : undefined;
 
           const { shortSlipDistance, closedSignal } =

@@ -69,7 +69,7 @@ const createVirtualOp = (
   return {
     waypointId: virtualId,
     opId: null,
-    pathItemId,
+    pathItemKey: pathItemId,
     name: virtualName,
     uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
@@ -267,7 +267,7 @@ const usePathProjection = (
           country_code: matchedOp.country_code,
           waypointId: buildOpWaypointId(matchedOp.id, occurrenceCount),
           opId: matchedOp.id,
-          pathItemId,
+          pathItemKey: pathItemId,
           is_passenger_station: matchedOp.is_passenger_station,
           main_code: matchedOp.main_code,
           name: matchedOp.name,
