@@ -2,19 +2,17 @@ use axum::extract::Path;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use editoast_derive::EditoastError;
-use thiserror::Error;
+use editoast_derive::ViewError;
 use tower::ServiceExt;
 use tower_http::services::ServeFile;
 
 use crate::AppState;
 use crate::error::Result;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "icons")]
-enum IconErrors {
+#[derive(Debug, thiserror::Error, ViewError)]
+enum IconError {
     #[error("File '{file}' not found")]
-    #[editoast_error(status = 404)]
+    #[view_error(status = NOT_FOUND, context, name = "icons")]
     FileNotFound { file: String },
 }
 
@@ -40,14 +38,14 @@ pub(in crate::views) async fn icons(
         .join(format!("icons/{signaling_system}/{file_name}"));
 
     if !path.is_file() {
-        return Err(IconErrors::FileNotFound { file: file_name }.into());
+        return Err(IconError::FileNotFound { file: file_name });
     }
 
     // Avoid path traversal attack by ensuring the path is within the dynamic assets directory
     let canonical_path = path.canonicalize().unwrap();
     let canonical_assets_path = config.dynamic_assets_path.canonicalize().unwrap();
     if !canonical_path.starts_with(&canonical_assets_path) {
-        return Err(IconErrors::FileNotFound { file: file_name }.into());
+        return Err(IconError::FileNotFound { file: file_name });
     }
 
     Ok(ServeFile::new(&path).oneshot(request).await)
