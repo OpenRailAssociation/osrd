@@ -20,9 +20,6 @@ impl crate::views::error::ViewError for Unit {
             Self => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
-    fn sub_label(&self) -> Option<&'static str> {
-        None
-    }
     fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
         match self {
             Self => std::collections::HashMap::from([]),
@@ -32,7 +29,6 @@ impl crate::views::error::ViewError for Unit {
         let responses = Vec::from([
             crate::views::error::OpenApiResponse {
                 label: "unit",
-                sub_label: None,
                 message_template: None,
                 status: axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 context: Vec::from([]),

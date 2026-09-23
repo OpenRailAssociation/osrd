@@ -31,10 +31,8 @@ impl ToTokens for Codegen {
 
 pub(super) struct ViewErrorImpl {
     implementor: syn::Ident,
-    label: String,
     label_impl: Vec<(syn::Pat, OrForwarded<String>)>,
     status_impl: Vec<(syn::Pat, OrForwarded<args::StatusCodeArg>)>,
-    variant_label_impl: Option<Vec<(syn::Pat, OrForwarded<String>)>>,
     context_impl: Vec<(syn::Pat, OrForwarded<Context>)>,
     responses_impl: ResponsesImpl,
 }
@@ -68,7 +66,6 @@ pub(super) struct ContextEntry {
 
 pub(super) struct OpenApiResponse {
     pub(super) label: String,
-    pub(super) sub_label: Option<String>,
     pub(super) status: args::StatusCodeArg,
     pub(super) message_template: Option<String>,
     pub(super) context: Vec<ContextEntrySpec>,
@@ -80,13 +77,11 @@ pub(super) struct ContextEntrySpec {
 }
 
 impl ViewErrorImpl {
-    pub(super) fn new(implementor: syn::Ident, label: String) -> Self {
+    pub(super) fn new(implementor: syn::Ident) -> Self {
         Self {
             implementor,
-            label,
             label_impl: Vec::new(),
             status_impl: Vec::new(),
-            variant_label_impl: None,
             context_impl: Vec::new(),
             responses_impl: ResponsesImpl {
                 openapi: Vec::new(),
@@ -97,14 +92,9 @@ impl ViewErrorImpl {
 
     pub(super) fn push_error(&mut self, pat: syn::Pat, context: Context, openapi: OpenApiResponse) {
         self.label_impl
-            .push((pat.clone(), OrForwarded::Value(self.label.clone())));
+            .push((pat.clone(), OrForwarded::Value(openapi.label.clone())));
         self.status_impl
             .push((pat.clone(), OrForwarded::Value(openapi.status.clone())));
-        if let Some(sub_label) = openapi.sub_label.clone() {
-            self.variant_label_impl
-                .get_or_insert_default()
-                .push((pat.clone(), OrForwarded::Value(sub_label)));
-        }
         self.context_impl.push((pat, OrForwarded::Value(context)));
         self.responses_impl.openapi.push(openapi);
     }
@@ -127,12 +117,6 @@ impl ViewErrorImpl {
                 binding: binding.clone(),
             },
         ));
-        self.variant_label_impl.get_or_insert_default().push((
-            pat.clone(),
-            OrForwarded::Forwarded {
-                binding: binding.clone(),
-            },
-        ));
         self.context_impl
             .push((pat, OrForwarded::Forwarded { binding }));
         self.responses_impl.forwarded_view_errors.push(fwd_ty);
@@ -143,10 +127,8 @@ impl ToTokens for ViewErrorImpl {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self {
             implementor,
-            label: _,
             label_impl,
             status_impl,
-            variant_label_impl,
             context_impl,
             responses_impl:
                 ResponsesImpl {
@@ -164,25 +146,6 @@ impl ToTokens for ViewErrorImpl {
         let (context_pat, context_entry): (Vec<_>, Vec<_>) = context_impl.iter().cloned().unzip();
         let context_entry = OrForwarded::apply(context_entry, &syn::parse_quote! { context });
 
-        let sub_label = syn::parse_quote! { sub_label };
-        let variant_label_impl = variant_label_impl
-            .as_ref()
-            .map(|variant_label_impl| {
-                let arms = variant_label_impl.iter().map(|(pattern, value)| {
-                    let value = match value {
-                        OrForwarded::Value(value) => quote::quote! { Some(#value) },
-                        OrForwarded::Forwarded { binding: _ } => value.as_tokens(&sub_label),
-                    };
-                    quote::quote! { #pattern => #value }
-                });
-                quote::quote! {
-                    match self {
-                        #(#arms),*
-                    }
-                }
-            })
-            .unwrap_or_else(|| quote::quote! { None });
-
         let maybe_mut = (!forwarded_view_errors.is_empty()).then_some(quote::quote! { mut });
         tokens.extend(quote::quote! {
             impl crate::views::error::ViewError for #implementor {
@@ -196,10 +159,6 @@ impl ToTokens for ViewErrorImpl {
                     match self {
                         #(#status_pat => #status_code),*
                     }
-                }
-
-                fn sub_label(&self) -> Option<&'static str> {
-                    #variant_label_impl
                 }
 
                 fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
@@ -247,15 +206,10 @@ impl ToTokens for OpenApiResponse {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self {
             label,
-            sub_label,
             message_template,
             status,
             context,
         } = self;
-        let sub_label = sub_label
-            .as_ref()
-            .map(|label| quote::quote! { Some(#label) })
-            .unwrap_or_else(|| quote::quote! { None });
         let message_template = message_template
             .as_ref()
             .map(|message| quote::quote! { Some(#message) })
@@ -263,7 +217,6 @@ impl ToTokens for OpenApiResponse {
         tokens.extend(quote::quote! {
             crate::views::error::OpenApiResponse {
                 label: #label,
-                sub_label: #sub_label,
                 message_template: #message_template,
                 status: #status,
                 context: Vec::from([#(#context),*]),
