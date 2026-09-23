@@ -16,10 +16,14 @@ async def download_work_schedules(
     page_size: int,
     gateway_cookie: str,
 ) -> List[Dict]:
-    url = f"{gateway_url}api/work_schedules/group/{group_id}/?page=$page&{page_size=}"
+    url = f"{gateway_url}work_schedules/group/{group_id}/?page=$page&{page_size=}"
     cookies, connector = make_connector(gateway_cookie)
     async with aiohttp.ClientSession(
-        trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
+        trust_env=True,
+        raise_for_status=True,
+        cookies=cookies,
+        connector=connector,
+        headers={"x-osrd-skip-authz": "true"},
     ) as session:
         return await get_paginated(url, session)
 
@@ -29,7 +33,7 @@ async def download_work_schedules(
 Downloads a full work schedule group.
 """
 )
-@click.option("--gateway-url", "-u", default="https://demo.osrd.fr/")
+@click.option("--gateway-url", "-u", default="https://demo.osrd.fr/api/")
 @click.option("--group-id", "-g", required=True, type=int)
 @click.option("--path", "-p", default="work_schedules.json")
 @click.option("--gateway-cookie", "-c", envvar="GATEWAY_COOKIE")
