@@ -14,19 +14,19 @@ export default function ErrorBoundary() {
   return (
     <ModalProvider>
       <NavBar appName="OSRD" />
-      <main className="mastcontainer mastcontainer-no-mastnav d-flex align-items-center justify-content-center vh-100">
-        <div className="p-3">
-          {error ? (
-            <>
-              <h1>
-                {t(`errors:${(error as ApiError).status ? (error as ApiError).status : 'default'}`)}
-              </h1>
-              <p>{getErrorMessage(error)}</p>
-            </>
-          ) : (
-            <h1>{t('errors:pageNotFound')}</h1>
-          )}
+      <main className="error-boundary">
+        {error ? (
+          <>
+            <h1>
+              {t(`errors:${(error as ApiError).status ? (error as ApiError).status : 'default'}`)}
+            </h1>
+            <p>{getErrorMessage(error)}</p>
+          </>
+        ) : (
+          <h1>{t('errors:pageNotFound')}</h1>
+        )}
 
+        <div className="error-boundary-actions">
           <Link to="/">
             <button
               data-testid="navigation-to-home-button"
