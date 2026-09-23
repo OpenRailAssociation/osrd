@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::authz::resources::IncompatibleGrant;
 use crate::views::authz::resources::Resource;
@@ -16,6 +15,7 @@ use authz::ProjectGrant;
 use authz::ProjectPrivilege;
 use authz::RollingStockGrant;
 use authz::RollingStockPrivilege;
+use authz::authorizers::SystemAuthorizer;
 use authz::v2;
 use authz::v2::Actor;
 use authz::v2::Authorizer as _;
