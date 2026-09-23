@@ -68,12 +68,11 @@ def main(
         s3_cache,
     )
     railjson_path = uncompress_gzip(gzipped_railjson_path)
-    cache_timetable = uncompress_gzip(gzipped_json_timetable)
 
     # Copying the files in a stable place makes it easier to keep a stable IDE "run" config,
     # as the end goal is generally to debug that process in an IDE.
     payload_copy = payload_path.copy("input-payload.json")
-    timetable_copy = cache_timetable.copy("timetable.json.gz")
+    timetable_copy = gzipped_json_timetable.copy("timetable.json.gz")
     railjson_copy = railjson_path.copy("infra.railjson")
 
     command = [
