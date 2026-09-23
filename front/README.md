@@ -81,3 +81,9 @@ To fix this, follow these steps:
    dependencies.
 
 This ensures developers can run the app with the latest dependencies using Docker.
+
+## React Compiler
+
+We are currently incrementally adopting [React Compiler](https://react.dev/learn/react-compiler). Using it for new components and hooks is encouraged.
+We use annotation mode, meaning to enable it you need to add 'use memo' at the beginning of the component definition.
+This will automatically optimize React code removing the need for manual memoization (useMemo, useCallback). 
