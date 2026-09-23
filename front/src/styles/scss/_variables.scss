@@ -183,6 +183,7 @@ $colors: (
 :root {
   --border-radius: 4px;
   --breakpoint-lg: 1024px;
+  --nav-bar-height: 40px;
 
   @each $color, $value in $colors {
     --#{$color}: #{$value};
