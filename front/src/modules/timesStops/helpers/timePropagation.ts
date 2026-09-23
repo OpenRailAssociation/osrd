@@ -12,9 +12,6 @@ import { cascadeArrivals } from './arrivalCascade';
 import { propagateStopDuration } from './stopDurationPropagation';
 import { formatSignedDelta, getTruncatedToSecondStartTime } from './utils';
 
-const isOriginArrivalUpdate = (update: Exclude<CellUpdate, BatchTimesUpdate>): boolean =>
-  update.field === 'requestedArrival' && update.row.opOnPathIndex === 0;
-
 const toHmsDuration = (date: StartTime) =>
   date instanceof Date
     ? new Duration({
@@ -110,72 +107,73 @@ export const propagateTime = (
   if (update.field !== 'requestedArrival' && update.field !== 'requestedDeparture')
     return undefined;
 
-  const oldValue = update.row[update.field];
-  const newValue = update.value;
-  const isOriginArrival = isOriginArrivalUpdate(update);
+  const { pathStepId, stopDuration, opOnPathIndex } = update.row;
+  const isArrivalUpdate = update.field === 'requestedArrival';
+  const isOrigin = opOnPathIndex === 0;
   const delta = computeDeltaForPropagationMode(
-    oldValue,
-    newValue,
+    update.row[update.field],
+    update.value,
     update.propagationMode,
-    isOriginArrival
+    isArrivalUpdate && isOrigin
   );
-  if (delta === null) return undefined;
+  if (delta === null || !pathStepId) return undefined;
 
-  // A departure update propagated toDestination is the same delta applied to the stop duration.
-  if (update.field === 'requestedDeparture' && update.propagationMode === 'toDestination') {
-    return propagateStopDuration(
-      {
-        row: update.row,
-        field: 'stopDuration',
-        value: (update.row.stopDuration ?? Duration.zero).add(delta).total('second'),
-        propagationMode: 'toDestination',
-      },
-      selectedTrain,
-      timetableType
-    );
-  }
+  switch (update.propagationMode) {
+    case 'shiftAllWaypoints':
+      return propagateShiftAll(delta, selectedTrain, timetableType);
 
-  if (update.propagationMode === 'shiftAllWaypoints')
-    return propagateShiftAll(delta, selectedTrain, timetableType);
-
-  if (isOriginArrival) {
-    // At origin, every mode but toDestination only moves start_time. Following offsets are compensated so
-    // their absolute times stay the same — which is exactly what fromDeparture does.
-    return update.propagationMode === 'toDestination'
-      ? propagateShiftAll(delta, selectedTrain, timetableType)
-      : propagateFromEditedPoint(
-          delta,
-          update.row.pathStepId!,
+    case 'toDestination':
+      // A departure update propagated toDestination is the same delta applied to the stop duration.
+      if (!isArrivalUpdate)
+        return propagateStopDuration(
+          {
+            row: update.row,
+            field: 'stopDuration',
+            value: (stopDuration ?? Duration.zero).add(delta).total('second'),
+            propagationMode: 'toDestination',
+          },
           selectedTrain,
-          'fromDeparture',
           timetableType
         );
-  }
 
-  // An arrival update propagated fromDeparture is the opposite delta applied to the stop duration if it exists.
-  if (
-    update.field === 'requestedArrival' &&
-    update.propagationMode === 'fromDeparture' &&
-    update.row.stopDuration
-  ) {
-    return propagateStopDuration(
-      {
-        row: update.row,
-        field: 'stopDuration',
-        value: update.row.stopDuration.sub(delta).total('second'),
-        propagationMode: 'fromDeparture',
-      },
-      selectedTrain,
-      timetableType
-    );
-  }
+      // At the origin the arrival is start_time, so moving it along with everything after it moves the whole train.
+      return isOrigin
+        ? propagateShiftAll(delta, selectedTrain, timetableType)
+        : propagateFromEditedPoint(
+            delta,
+            pathStepId,
+            selectedTrain,
+            'toDestination',
+            timetableType
+          );
 
-  if (update.propagationMode === 'atThisWaypoint' || !update.row.pathStepId) return undefined;
-  return propagateFromEditedPoint(
-    delta,
-    update.row.pathStepId,
-    selectedTrain,
-    update.propagationMode,
-    timetableType
-  );
+    case 'fromDeparture':
+      // An arrival update propagated fromDeparture is the opposite delta applied to the stop duration if it exists.
+      return isArrivalUpdate && !isOrigin && stopDuration
+        ? propagateStopDuration(
+            {
+              row: update.row,
+              field: 'stopDuration',
+              value: stopDuration.sub(delta).total('second'),
+              propagationMode: 'fromDeparture',
+            },
+            selectedTrain,
+            timetableType
+          )
+        : propagateFromEditedPoint(
+            delta,
+            pathStepId,
+            selectedTrain,
+            'fromDeparture',
+            timetableType
+          );
+
+    case 'atThisWaypoint':
+      // At origin, the arrival only moves start_time. Following offsets are compensated so their
+      // absolute times stay the same — which is exactly what fromDeparture does.
+      // Anywhere else, only the edited cell changes: left to the generic single-row edit.
+      return isOrigin && isArrivalUpdate
+        ? propagateFromEditedPoint(delta, pathStepId, selectedTrain, 'fromDeparture', timetableType)
+        : undefined;
+  }
 };
