@@ -1598,7 +1598,6 @@ const injectedRtkApi = api
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
-            ordering: queryArg.ordering,
           },
         }),
         providesTags: ['work_schedules'],
@@ -2943,13 +2942,6 @@ export type GetWorkSchedulesGroupByIdApiArg = {
   pageSize?: number;
   /** A work schedule group ID */
   id: number;
-  ordering?:
-    | 'NameAsc'
-    | 'NameDesc'
-    | 'CreationDateAsc'
-    | 'CreationDateDesc'
-    | 'LastModifiedDesc'
-    | 'LastModifiedAsc';
 };
 export type PutWorkSchedulesGroupByIdApiResponse =
   /** status 200 The work schedules have been created */ WorkSchedule[];

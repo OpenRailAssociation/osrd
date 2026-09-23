@@ -5073,18 +5073,6 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: ordering
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-          - NameAsc
-          - NameDesc
-          - CreationDateAsc
-          - CreationDateDesc
-          - LastModifiedDesc
-          - LastModifiedAsc
       responses:
         '200':
           description: The work schedules in the group

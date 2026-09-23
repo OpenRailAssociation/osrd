@@ -1,6 +1,5 @@
 use super::pagination::PaginatedList;
 use crate::error::Result;
-use crate::views::operational_studies::hierarchy::Ordering;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::path::projection::Intersection;
@@ -391,19 +390,11 @@ pub(in crate::views) struct GroupContentResponse {
     stats: PaginationStats,
 }
 
-#[derive(Debug, Clone, serde::Deserialize, utoipa::IntoParams)]
-#[into_params(parameter_in = Query)]
-pub struct WorkScheduleOrderingParam {
-    #[serde(default)]
-    #[param(inline)]
-    pub ordering: Ordering, // FIXME: use a dedicated enum, that one is for projects/studies/scenarios and has superfluous variants
-}
-
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "work_schedules",
-    params(PaginationQueryParams<100>, WorkScheduleGroupIdParam, WorkScheduleOrderingParam),
+    params(PaginationQueryParams<100>, WorkScheduleGroupIdParam),
     responses(
         (status = 200, description = "The work schedules in the group", body = inline(GroupContentResponse)),
         (status = 404, description = "Work schedule group not found"),
@@ -413,13 +404,11 @@ pub(in crate::views) async fn get_group(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
-    Query(ordering_params): Query<WorkScheduleOrderingParam>,
 ) -> Result<Json<GroupContentResponse>> {
-    let ordering = ordering_params.ordering;
     let settings = pagination_params
         .into_selection_settings()
         .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(group_id))
-        .order_by(move || ordering.as_work_schedule_ordering());
+        .order_by(move || WorkSchedule::ID.asc());
 
     let conn = &mut db_pool.get().await?;
 
