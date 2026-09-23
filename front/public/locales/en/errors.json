@@ -83,12 +83,14 @@
       "MqClientError": "Core: MQ client error",
       "UnparsableErrorOutput": "Core returned an error in an unknown format"
     },
+    "database": {
+      "internal": "Internal error (database)"
+    },
     "delimited_area": {
       "InvalidLocations": "Some locations are invalid"
     },
     "document": {
-      "Database": "Internal error (database)",
-      "NotFound": "Document '{{document_key}}' not found"
+      "not_found": "Document '{{document_key}}' not found"
     },
     "electrical_profiles": {
       "Database": "Internal error (database)",

@@ -83,12 +83,14 @@
       "MqClientError": "Core : erreur du client MQ",
       "UnparsableErrorOutput": "Core : a renvoyé une erreur dans un format inconnu"
     },
+    "database": {
+      "internal": "Erreur interne (base de données)"
+    },
     "delimited_area": {
       "InvalidLocations": "Certaines localisations sont invalides"
     },
     "document": {
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Document '{{document_key}}' non trouvé"
+      "not_found": "Document '{{document_key}}' non trouvé"
     },
     "electrical_profiles": {
       "Database": "Erreur interne (base de données)",
