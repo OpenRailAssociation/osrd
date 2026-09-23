@@ -493,7 +493,14 @@ const ExpandedTrainForm = ({
             />
           </div>
         )}
-        <div className="train-initial-velocity" data-testid="train-header-initial-velocity-field">
+        <form
+          className="train-initial-velocity"
+          data-testid="train-header-initial-velocity-field"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onFieldBlur('initial_speed');
+          }}
+        >
           <Input
             id="train-header-initial-velocity-input"
             testIdPrefix="train-header-initial-velocity"
@@ -527,7 +534,7 @@ const ExpandedTrainForm = ({
               }
             })()}
           />
-        </div>
+        </form>
         <div className="train-category">
           <Select
             id="train-header-category-select"
