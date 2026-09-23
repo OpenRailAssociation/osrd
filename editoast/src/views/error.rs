@@ -25,15 +25,9 @@ pub(in crate::views) trait ViewError:
     fn label(&self) -> &'static str;
     fn status(&self) -> http::StatusCode;
     fn context(self) -> HashMap<String, serde_json::Value>;
-    /// If the error type is an enum, return the error label of each error variant, or `None` otherwise
-    fn sub_label(&self) -> Option<&'static str>;
 
     fn unique_label(&self) -> String {
-        if let Some(variant_label) = self.sub_label() {
-            format!("editoast:{}:{}", self.label(), variant_label)
-        } else {
-            format!("editoast:{}", self.label())
-        }
+        format!("editoast:{}", self.label())
     }
 
     fn utoipa_responses() -> utoipa::openapi::Responses {
@@ -94,7 +88,6 @@ impl axum::response::IntoResponse for EditoastError {
 
 pub(in crate::views) struct OpenApiResponse {
     pub(in crate::views) label: &'static str,
-    pub(in crate::views) sub_label: Option<&'static str>,
     pub(in crate::views) status: http::StatusCode,
     pub(in crate::views) message_template: Option<&'static str>,
     pub(in crate::views) context: Vec<ContextEntry>,
@@ -116,13 +109,7 @@ impl OpenApiResponse {
                     .required(entry.key.to_owned())
             })
             .build();
-        let unique_label = format!(
-            "editoast:{}{}",
-            self.label,
-            self.sub_label
-                .map(|label| format!(":{label}"))
-                .unwrap_or_default()
-        );
+        let unique_label = format!("editoast:{}", self.label);
         RefOr::T(Schema::Object(
             ObjectBuilder::new()
                 .description(self.message_template)
@@ -261,7 +248,7 @@ mod tests {
         }
 
         #[test]
-        fn forwarded_view_error_preserves_sub_label() {
+        fn forwarded_view_error_preserves_variant_label() {
             #[derive(Debug, thiserror::Error, ViewError)]
             enum Inner {
                 #[error("inner variant")]

@@ -126,7 +126,7 @@ impl Args {
             args: TypeArgs { status },
         } = self;
         let label = name.unwrap_or_else(|| normalize_label(&ident));
-        let mut view_error_impl = ViewErrorImpl::new(ident, label.clone());
+        let mut view_error_impl = ViewErrorImpl::new(ident);
 
         match data {
             ast::Data::Struct(fields) => {
@@ -151,7 +151,6 @@ impl Args {
                         },
                         OpenApiResponse {
                             label,
-                            sub_label: None,
                             status,
                             message_template: thiserror.message().cloned(),
                             context: openapi_context,
@@ -169,7 +168,7 @@ impl Args {
                         context: context_on_variant,
                         name,
                     } = variant;
-                    let sub_label = name.unwrap_or_else(|| normalize_label(&variant_ident));
+                    let variant_label = name.unwrap_or_else(|| normalize_label(&variant_ident));
                     let pattern = fields.pattern(Some(&variant_ident));
                     if let Some(ForwardedField { binding, ty }) = fields.forwarded_view_error() {
                         view_error_impl.forward_view_error(pattern, binding, ty);
@@ -194,8 +193,7 @@ impl Args {
                                 entries: context_entries,
                             },
                             OpenApiResponse {
-                                label: label.clone(),
-                                sub_label: Some(sub_label),
+                                label: format!("{label}:{variant_label}"),
                                 status,
                                 message_template: thiserror.message().cloned(),
                                 context: openapi_context,
