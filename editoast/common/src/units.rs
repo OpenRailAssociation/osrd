@@ -173,10 +173,11 @@ macro_rules! define_unit {
                 }
 
                 pub fn eq(a: &Option<$quantity>, b: &Option<$quantity>) -> bool {
-                    a.as_ref()
-                        .zip(b.as_ref())
-                        .map(|(a, b)| $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>()))
-                        .unwrap_or(false)
+                    match (a, b) {
+                        (Some(a), Some(b)) => $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>()),
+                        (None, None) => true,
+                        _ => false,
+                    }
                 }
             }
 
