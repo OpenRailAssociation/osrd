@@ -357,10 +357,12 @@ mod tests {
                 result.is_ok(),
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
+            println!("Going to retrieve");
             let rolling_stock =
                 RollingStock::retrieve(db_pool.get_ok(), existing_rolling_stock_name.to_string())
                     .await
                     .unwrap();
+            println!("Done retrieving");
             assert!(rolling_stock.is_some());
             assert!(rolling_stock.unwrap().length == units::meter::new(100.0));
         }
