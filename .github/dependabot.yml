@@ -86,7 +86,7 @@ updates:
         patterns:
           - "oxlint"
           - "oxlint-*"
-      oxc:
+      tsdown:
         patterns:
           - "tsdown"
           - "@tsdown/css"
