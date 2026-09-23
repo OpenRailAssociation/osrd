@@ -1,5 +1,5 @@
 .nav-bar {
-  height: 40px;
+  height: var(--nav-bar-height);
   display: flex;
   justify-content: center;
   align-items: center;
