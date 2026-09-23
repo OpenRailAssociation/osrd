@@ -1,9 +1,9 @@
 use authz::Role;
 use authz::v2::Check;
 
-use crate::authorizers::SystemAuthorizer;
-use crate::authorizers::UserAuthorizer;
 use crate::views::AuthorizationError;
+use authz::authorizers::SystemAuthorizer;
+use authz::authorizers::UserAuthorizer;
 
 /// Editoast authentication states
 ///

@@ -3,7 +3,6 @@
 extern crate diesel;
 
 mod authentication;
-mod authorizers;
 mod client;
 mod error;
 #[cfg(test)]
