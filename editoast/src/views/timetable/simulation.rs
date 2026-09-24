@@ -220,9 +220,10 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-// We accepted the difference of memory size taken by variants
-// Since there is only on success and others are error cases
-#[allow(clippy::large_enum_variant)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "We accepted the difference of memory size taken by variants since there is only one success and others are error cases"
+)]
 #[schema(as = SimulationResponse, title_variants)]
 pub enum Response {
     Success(SimulationResponseSuccess),
