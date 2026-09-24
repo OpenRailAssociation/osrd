@@ -101,7 +101,7 @@ pub struct Group(pub i64);
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
+#[allow(clippy::enum_variant_names, reason = "needed due to 'Can' prefix")]
 pub enum InfraPrivilege {
     CanRestrictedRead,
     CanRead,
@@ -176,7 +176,7 @@ pub struct Infra(pub i64);
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[allow(clippy::enum_variant_names)]
+#[allow(clippy::enum_variant_names, reason = "needed due to 'Can' prefix")]
 pub enum RollingStockPrivilege {
     CanRestrictedRead,
     CanRead,
