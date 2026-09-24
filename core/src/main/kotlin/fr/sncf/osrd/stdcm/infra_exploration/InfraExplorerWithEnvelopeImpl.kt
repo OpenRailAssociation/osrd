@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
+import fr.sncf.osrd.conflicts.extendAutomatonsPath
 import fr.sncf.osrd.conflicts.sortAndMergeRequirements
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
@@ -171,126 +172,62 @@ data class InfraExplorerWithEnvelopeImpl(
             return listOf()
         }
 
-        val spacingRequirements = getSpacingRequirements(needFullRequirements = false)
+        val startOffset = spacingRequirementAutomatons.last().getCurrentPathEndOffset()
+        val backtrackingLocations = infraExplorer.getBacktrackLocationsInRange(startOffset)
+        // Generating partial requirement along the building of the path: use (and populate)
+        // automatons of the InfraExplorer itself, and generate only what's changed.
+        val spacingAutomatons = spacingRequirementAutomatons
+        val spacingRequirements =
+            getSubPathSpacingRequirements(
+                startOffset,
+                endOffset = getLookaheadEndOffset(),
+                backtrackingLocations,
+                spacingAutomatons,
+            )
         spacingRequirementsCache = spacingRequirements
         return spacingRequirements
     }
 
     override fun getFullSpacingRequirements(): List<SpacingRequirement> {
-        return getSpacingRequirements(needFullRequirements = true)
-    }
-
-    private fun getSpacingRequirements(needFullRequirements: Boolean): List<SpacingRequirement> {
-        val lookaheadEndOffset = getLookaheadEndOffset()
-        val start =
-            if (needFullRequirements) Offset(0.meters)
-            else spacingRequirementAutomatons.last().getCurrentPathEndOffset()
-        val backtrackingLocations = infraExplorer.getBacktrackLocationsInRange(start)
-
-        // Split the path so that we generate spacing resources just as if it was a succession of
-        // trains ending on a backtracking location/the final destination.
-        val subpathExtremities = backtrackingLocations.toMutableList()
-        if (backtrackingLocations.firstOrNull() != start) {
-            subpathExtremities.addFirst(start)
-        }
-        if (
-            backtrackingLocations.lastOrNull() != lookaheadEndOffset || subpathExtremities.size < 2
-        ) {
-            subpathExtremities.addLast(lookaheadEndOffset)
-        }
-
+        val startOffset = Offset.zero<PhysicsPath>()
+        val backtrackingLocations = infraExplorer.getBacktrackLocationsInRange(startOffset)
+        // Since we're generating the full requirements, we need to work on fresh automatons
+        // (created on the go).
+        val spacingAutomatons = mutableListOf<SpacingResourceGenerator>()
         return getSubPathSpacingRequirements(
-            subpathExtremities,
+            startOffset,
+            endOffset = getLookaheadEndOffset(),
             backtrackingLocations,
-            needFullRequirements,
+            spacingAutomatons,
         )
     }
 
-    /** Generate either the full or partial spacing requirements of a sub-path. */
+    /** Generate the spacing requirements between [startOffset] and [endOffset]. */
     private fun getSubPathSpacingRequirements(
-        subpathExtremities: List<Offset<PhysicsPath>>,
+        startOffset: Offset<PhysicsPath>,
+        endOffset: Offset<PhysicsPath>,
         backtrackingLocations: List<Offset<PhysicsPath>>,
-        needFullRequirements: Boolean,
+        spacingAutomatons: MutableList<SpacingResourceGenerator>,
     ): List<SpacingRequirement> {
-        val referenceAutomaton = spacingRequirementAutomatons.first()
-        // Working on fresh automatons (created on the go) if generating full requirements.
-        // Otherwise, using (and populating) automatons of the InfraExplorer itself, as they live
-        // along the building of the path (and generate only what's changed).
-        val spacingAutomatons =
-            if (needFullRequirements) mutableListOf() else spacingRequirementAutomatons
-        val lookaheadEndOffset = getLookaheadEndOffset()
         val simulatedEndOffset = Offset<PhysicsPath>(getFullEnvelope().endPos.meters)
-        for ((subPathBegin, subPathEnd) in subpathExtremities.zipWithNext()) {
-            val blockRanges =
-                infraExplorer.getBlocksInRange(subPathBegin, subPathEnd).toMutableList()
-            if (blockRanges.size > 1 && blockRanges.first().length == 0.meters) {
-                blockRanges.removeFirst()
-            }
-            if (blockRanges.size > 1 && blockRanges.last().length == 0.meters) {
-                blockRanges.removeLast()
-            }
-            val routeRanges =
-                infraExplorer.getRoutesInRange(subPathBegin, subPathEnd).toMutableList()
-            if (routeRanges.size > 1 && routeRanges.first().length == 0.meters) {
-                routeRanges.removeFirst()
-            }
-            if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
-                routeRanges.removeLast()
-            }
-
-            val spacingRequirementAutomaton =
-                if (
-                    subPathBegin == Offset.zero<PhysicsPath>() ||
-                        subPathBegin in backtrackingLocations
-                ) {
-                    // There should either be an existing automaton starting at this offset OR
-                    // we need to create one.
-                    val subSpacingAutomaton = spacingAutomatons.lastOrNull {
-                        it.startOffset == subPathBegin
-                    }
-                    if (subSpacingAutomaton != null) subSpacingAutomaton
-                    else {
-                        val lastAutomatonStartOffset =
-                            spacingAutomatons.lastOrNull()?.startOffset
-                                ?: Offset(Int.MIN_VALUE.meters)
-                        require(lastAutomatonStartOffset < subPathBegin)
-                        spacingAutomatons.add(
-                            SpacingResourceGenerator(
-                                referenceAutomaton.rawInfra,
-                                referenceAutomaton.blockInfra,
-                                referenceAutomaton.loadedSignalInfra,
-                                referenceAutomaton.simulator,
-                                subPathBegin,
-                                referenceAutomaton.context,
-                            ),
-                        )
-                        spacingAutomatons.last()
-                    }
-                } else {
-                    // Nominal case: we take the last automaton starting before the
-                    // subPathBegin, and it SHOULD exist.
-                    spacingAutomatons.last {
-                        it.startOffset <= subPathBegin && it.startOffset < subPathEnd
-                    }
-                }
-            val endsAtDifferentBacktracking =
-                (subPathEnd in backtrackingLocations) &&
-                    subPathEnd != spacingRequirementAutomaton.startOffset
-            val endsAtDestination = isPathComplete && (subPathEnd == lookaheadEndOffset)
-            val isSubpathComplete = endsAtDifferentBacktracking || endsAtDestination
-            spacingRequirementAutomaton.extendPath(
-                blockRanges,
-                routeRanges,
-                infraExplorer.getStopsInRange(subPathBegin, subPathEnd),
-                isSubpathComplete,
-            )
-        }
+        val blocksInRange = infraExplorer.getBlocksInRange(startOffset, endOffset)
+        val routesInRange = infraExplorer.getRoutesInRange(startOffset, endOffset)
+        val stopsInRange = infraExplorer.getStopsInRange(startOffset, endOffset)
+        extendAutomatonsPath(
+            spacingAutomatons,
+            startOffset,
+            endOffset,
+            backtrackingLocations,
+            referenceAutomaton = spacingRequirementAutomatons.first(),
+            blocksInRange,
+            routesInRange,
+            stopsInRange,
+            isPathComplete,
+        )
         val spacingRequirements = mutableListOf<SpacingRequirement>()
         for (automatonIdx in spacingAutomatons.indices) {
             // Subpath is complete and has been completely simulated
-            val subPathEnd =
-                spacingAutomatons.getOrNull(automatonIdx + 1)?.startOffset
-                    ?: subpathExtremities.last()
+            val subPathEnd = spacingAutomatons.getOrNull(automatonIdx + 1)?.startOffset ?: endOffset
             val endsAtBacktracking = automatonIdx < spacingAutomatons.size - 1
             val subSimulationComplete =
                 (endsAtBacktracking && subPathEnd <= simulatedEndOffset) ||
