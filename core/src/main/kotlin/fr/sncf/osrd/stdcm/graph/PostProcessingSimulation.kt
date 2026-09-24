@@ -314,7 +314,9 @@ private fun makeFixedPoint(
     // take "valid intervals", just scheduled points.
     // This is a "best effort" guess, were we assume that the allowance is mostly distributed
     // linearly. TODO: find a more robust algorithm.
-    val currentAllowances = allowanceRanges.filter { conflictOffset in it.from..<it.to }
+    // The filter must use the rounded offset: at the end of a range, the reference time already
+    // includes the allowance.
+    val currentAllowances = allowanceRanges.filter { offset in it.from..<it.to }
     for (currentAllowance in currentAllowances) {
         val relativeAllowancePosition =
             (offset - currentAllowance.from) / (currentAllowance.to - currentAllowance.from)
