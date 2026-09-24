@@ -153,6 +153,10 @@ const StdcmOperationalPoint = ({
     }
   }, [searchResults, operationalPoint, chSuggestions]);
 
+  useEffect(() => {
+    if (chSuggestions.length === 1) handleChSelect(chSuggestions[0]);
+  }, [chSuggestions]);
+
   return (
     <div className="location-line">
       <div className="ci-input">

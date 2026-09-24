@@ -93,6 +93,7 @@ test.describe('STDCM simulation sheet', { tag: ['@stdcm, @stdcm-sheet'] }, () =>
           viaNumber: 1,
           ciSearchText: 'mid_west',
           expectedChValue: DEFAULT_DETAILS.chValue,
+          expectAutofilledCh: true,
           stopTypes: StdcmStopTypes,
           stopTimes: VIA_STOP_TIMES,
           suggestionTextBySearch: {

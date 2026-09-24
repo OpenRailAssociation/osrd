@@ -88,12 +88,14 @@ class ViaSection extends STDCMPage {
     viaNumber,
     ciSearchText,
     expectedChValue,
+    expectAutofilledCh,
     selectedSuggestionText,
     defaultViaType,
   }: {
     viaNumber: number;
     ciSearchText: ViaSearchText;
     expectedChValue: string;
+    expectAutofilledCh: boolean;
     selectedSuggestionText: string;
     defaultViaType: string;
   }): Promise<void> {
@@ -109,8 +111,10 @@ class ViaSection extends STDCMPage {
     await expect(selectedSuggestion).toBeVisible();
     await selectedSuggestion.click();
 
-    await expect(secondaryCode).toHaveValue(EMPTY_SELECT_VALUE);
-    await secondaryCode.selectOption(expectedChValue);
+    if (!expectAutofilledCh) {
+      await expect(secondaryCode).toHaveValue(EMPTY_SELECT_VALUE);
+      await secondaryCode.selectOption(expectedChValue);
+    }
     await expect(secondaryCode).toHaveValue(expectedChValue);
     await expect(type).toHaveValue(defaultViaType);
   }
@@ -141,6 +145,7 @@ class ViaSection extends STDCMPage {
     viaNumber,
     ciSearchText,
     expectedChValue,
+    expectAutofilledCh,
     stopTypes,
     stopTimes,
     suggestionTextBySearch,
@@ -153,6 +158,7 @@ class ViaSection extends STDCMPage {
       viaNumber,
       ciSearchText,
       expectedChValue,
+      expectAutofilledCh,
       selectedSuggestionText,
       defaultViaType: stopTypes.PASSAGE_TIME,
     });
@@ -195,6 +201,7 @@ class ViaSection extends STDCMPage {
     viaNumber,
     ciSearchText,
     expectedChValue,
+    expectAutofilledCh,
     selectedSuggestionText,
     defaultViaType,
     stopType,
@@ -203,6 +210,7 @@ class ViaSection extends STDCMPage {
     viaNumber: number;
     ciSearchText: ViaSearchText;
     expectedChValue: string;
+    expectAutofilledCh: boolean;
     selectedSuggestionText: string;
     defaultViaType: string;
     stopType: string;
@@ -212,6 +220,7 @@ class ViaSection extends STDCMPage {
       viaNumber,
       ciSearchText,
       expectedChValue,
+      expectAutofilledCh,
       selectedSuggestionText,
       defaultViaType,
     });

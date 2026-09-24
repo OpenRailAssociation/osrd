@@ -109,6 +109,7 @@ export type FillAndVerifyViaDetailsParams = {
   viaNumber: number;
   ciSearchText: ViaSearchText;
   expectedChValue: string;
+  expectAutofilledCh: boolean;
   stopTypes: ViaStopTypes;
   stopTimes: ViaStopTimes;
   suggestionTextBySearch: Record<ViaSearchText, string>;
