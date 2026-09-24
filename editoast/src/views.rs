@@ -38,6 +38,10 @@ mod test_app;
 
 use ::core::str;
 
+use axum::extract::FromRequestParts;
+use axum::http::StatusCode;
+use axum::http::header;
+use axum::http::request::Parts;
 use core_client::CoreClient;
 use editoast_derive::EditoastError;
 use thiserror::Error;
@@ -479,6 +483,27 @@ pub enum AuthorizationError {
 impl From<crate::authorizers::Error> for AuthorizationError {
     fn from(crate::authorizers::Error(fga_error): crate::authorizers::Error) -> Self {
         Self::from(fga_error)
+    }
+}
+
+/// Extractor for the Content-Type header.
+/// Fails with a 400 status code if the header is not present or if it's not UTF-8.
+struct ContentType(String);
+
+impl<S> FromRequestParts<S> for ContentType
+where
+    S: Send + Sync,
+{
+    type Rejection = StatusCode;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let Some(header_value) = parts.headers.get(header::CONTENT_TYPE) else {
+            return Err(StatusCode::BAD_REQUEST);
+        };
+        match header_value.to_str() {
+            Ok(s) => Ok(Self(s.to_owned())),
+            Err(_) => Err(StatusCode::BAD_REQUEST),
+        }
     }
 }
 

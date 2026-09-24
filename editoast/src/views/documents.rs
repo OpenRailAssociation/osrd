@@ -13,6 +13,7 @@ use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
+use crate::views::ContentType;
 use database::DbConnectionPoolV2;
 use models::Document;
 use models::prelude::*;
@@ -107,11 +108,9 @@ struct NewDocumentResponse {
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
+    ContentType(content_type): ContentType,
     bytes: Bytes,
 ) -> Result<impl IntoResponse, DatabaseError> {
-    let content_type = content_type.to_string();
-
     // Create document
     let conn = &mut db_pool.get().await?;
     let doc = Document::changeset()
