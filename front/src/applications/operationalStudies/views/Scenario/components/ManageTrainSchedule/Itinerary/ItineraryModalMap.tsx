@@ -355,7 +355,8 @@ const ItineraryModalMap = ({
             const pathStepMetadata = pathStepsMetadata?.get(step.id);
             const pathStepLocation = step.location;
 
-            if (!pathStepMetadata || !pathStepLocation || pathStepMetadata.isInvalid) return null;
+            if (!pathStepMetadata || !pathStepLocation || pathStepMetadata.isInvalid !== false)
+              return null;
 
             let coordinates: Position | undefined;
             if (pathWaypoints) {

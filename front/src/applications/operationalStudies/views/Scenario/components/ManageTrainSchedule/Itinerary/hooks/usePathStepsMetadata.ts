@@ -156,7 +156,7 @@ export const usePathStepsMetadata = (
           // A just-added step has no match until /match_operational_points
           // answers; keep its pre-filled metadata instead of flagging it
           const previous = pathStepsMetadataById.get(pathStep.id);
-          if (previous && !previous.isInvalid && previous.type === 'opRef') {
+          if (previous && previous.isInvalid === false && previous.type === 'opRef') {
             newPathStepsMetadataById.set(pathStep.id, previous);
             return;
           }
@@ -165,7 +165,7 @@ export const usePathStepsMetadata = (
           const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
 
           newPathStepsMetadataById.set(pathStep.id, {
-            isInvalid: true,
+            isInvalid: matchedOp === null ? true : undefined,
             localTrackName: local_track_name ?? undefined,
             customTrackNames: timetableTrackNames.length > 0 ? timetableTrackNames : undefined,
           });
