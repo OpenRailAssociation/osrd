@@ -33,12 +33,10 @@ export default function HomeEditorUnplugged() {
           </>
         }
       />
-      <div className="no-mastnav">
-        <Routes>
-          <Route path="/" element={<Editor />} />
-          <Route path="/:urlInfra" element={<Editor />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Editor />} />
+        <Route path="/:urlInfra" element={<Editor />} />
+      </Routes>
     </ModalProvider>
   );
 }

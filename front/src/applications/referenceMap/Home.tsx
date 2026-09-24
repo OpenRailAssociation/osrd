@@ -53,12 +53,10 @@ const HomeReferenceMap = () => {
           </>
         }
       />
-      <div className="no-mastnav">
-        <Routes>
-          <Route path="/" element={<Map />} />
-          <Route path="/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch" element={<Map />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Map />} />
+        <Route path="/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch" element={<Map />} />
+      </Routes>
     </ModalProvider>
   );
 };
