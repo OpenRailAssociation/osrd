@@ -727,8 +727,8 @@ const ItineraryModal = ({
           receptionSignal: step.receptionSignal ?? undefined,
         };
 
-        if (!metadata || metadata.isInvalid) {
-          return { ...baseStep, isInvalid: true };
+        if (!metadata || metadata.isInvalid !== false) {
+          return { ...baseStep, isInvalid: metadata?.isInvalid };
         }
 
         return {
@@ -989,7 +989,7 @@ const ItineraryModal = ({
                       focusValueRef.current[pathStep.id] =
                         getInputForStep(pathStep.id) ??
                         (pathStepMetadata &&
-                        !pathStepMetadata.isInvalid &&
+                        pathStepMetadata.isInvalid === false &&
                         pathStepMetadata.type === 'opRef'
                           ? `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`
                           : '');
