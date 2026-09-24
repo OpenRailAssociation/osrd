@@ -367,7 +367,6 @@ impl RabbitMQClient {
     // its not making the maintenance more complex since it is small
     // and the API is complete with it since it is part of the API
     // we designed around RMQ.
-    #[allow(dead_code)]
     pub async fn call<T>(
         &self,
         routing_key: String,
