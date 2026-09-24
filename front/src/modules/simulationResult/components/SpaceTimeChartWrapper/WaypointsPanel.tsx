@@ -48,12 +48,14 @@ const WaypointsPanel = ({
 
   const openModal = () => {
     modalRef.current?.showModal();
-    // Use opId instead of waypointId for comparison to handle position changes
-    const filteredOpIds = new Set(
-      filteredWaypoints.map((waypoint) => waypoint.opId).filter((id): id is string => id !== null)
+    // Prefer opId over waypointId for comparison to handle position changes, fallback on waypointId for non-op position on tracks
+    const filteredWaypointOpIds = new Set(
+      filteredWaypoints.map((waypoint) => waypoint.opId ?? waypoint.waypointId)
     );
     const filteredWaypointsIndexes = waypoints
-      .map((waypoint, index) => (filteredOpIds.has(waypoint.opId || '') ? index : -1))
+      .map((waypoint, index) =>
+        filteredWaypointOpIds.has(waypoint.opId ?? waypoint.waypointId) ? index : -1
+      )
       .filter((index) => index !== -1);
 
     setSelectedWaypoints(new Set(filteredWaypointsIndexes));
