@@ -1,6 +1,7 @@
 use std::convert::Infallible;
 
 use authz::Role;
+use authz::SystemAuthorizer;
 use authz::v2::special_authorizers;
 use axum::Extension;
 use axum::extract::Request;
@@ -8,6 +9,7 @@ use axum::extract::State;
 use axum::middleware::Next;
 use axum::response::Response;
 use models::authn::user::AddIdentitiesError;
+use tracing::Instrument;
 
 use crate::AppState;
 use crate::authentication::AuthenticationParameters;
@@ -129,7 +131,8 @@ pub(in crate::views) async fn authentication_validation_middleware(
         user: &models::User,
     ) -> Result<()> {
         let Ok(roles) = ::authz::v2::subject_roles(::authz::Subject::user(user.id))
-            .access_authorized::<Infallible>(openfga)
+            .authorize(&SystemAuthorizer::<Infallible>::new(openfga))
+            .await?
             .access()
             .await?;
         if roles.contains(&Role::Admin) {
@@ -216,4 +219,15 @@ pub(in crate::views) async fn authentication_validation_middleware(
     req.extensions_mut().insert(user);
     req.extensions_mut().remove::<crate::authentication::Mode>();
     Ok(next.run(req).await)
+}
+
+pub(in crate::views) async fn handler_span_middleware(req: Request, next: Next) -> Response {
+    let span = tracing::info_span!(
+        "handler",
+        method = %req.method(),
+        uri = %req.uri().path(),
+        // Change the OpenTelemetry span name to improve timeline legibility.
+        otel.name = format!("{} {}", req.method(), req.uri().path()),
+    );
+    next.run(req).instrument(span).await
 }
