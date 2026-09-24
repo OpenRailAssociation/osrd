@@ -188,6 +188,88 @@ function createFakeLinkWithData(trainName: string, csvData: CSVData[]) {
   document.body.removeChild(fakeLink);
 }
 
+function exportTrainCSVEvery50m(
+  simulatedTrain: SimulationResponseSuccess,
+  operationalPoints: OperationalPointWithTimeAndSpeed[],
+  speedLimits: SpeedRanges,
+  electrificationRanges: ElectrificationRange[],
+  train: Train
+) {
+  const trainRegimeWithAccurateTime: ReportTrain = {
+    ...simulatedTrain.final_output,
+    times: simulatedTrain.final_output.times.map(
+      (time) => new Date(train.start_time).getTime() + time
+    ),
+  };
+
+  const lastMm =
+    trainRegimeWithAccurateTime.positions[trainRegimeWithAccurateTime.positions.length - 1];
+  const maxPosition = mmToM(lastMm);
+
+  const csvData: CSVData[] = [];
+
+  const findLastOpBeforeOrAt = (pos: number) => {
+    const opsBefore = operationalPoints.filter((op) => (op.position ?? Infinity) <= pos);
+    return opsBefore.length ? opsBefore[opsBefore.length - 1] : undefined;
+  };
+
+  const electrificationAt = (pos: number) =>
+    electrificationRanges.find((r) => r.start <= pos && pos <= r.stop);
+  for (let pos = 0; pos <= Math.ceil(maxPosition); pos += 50) {
+    const speedInterpolated = interpolateValue(trainRegimeWithAccurateTime, mToMm(pos), 'speeds');
+    const timeInterpolated = interpolateValue(trainRegimeWithAccurateTime, mToMm(pos), 'times');
+
+    const actualVmaxs = getActualVmaxs(pos, speedLimits);
+
+    const lastOp = findLastOpBeforeOrAt(pos);
+
+    const elecRange = electrificationAt(pos);
+    let electrificationType = '';
+    let electrificationMode = '';
+    let electrificationProfile = '';
+    if (elecRange) {
+      const electrificationUsage = elecRange.electrificationUsage || {};
+      const eType = electrificationUsage.type;
+      electrificationType = eType || '';
+      electrificationMode = eType === 'electrification' ? (electrificationUsage.voltage ?? '') : '';
+      const electricalProfileType = electrificationUsage.electrical_profile_type;
+      electrificationProfile =
+        eType === 'electrification' &&
+        electricalProfileType === 'profile' &&
+        electrificationUsage.profile
+          ? electrificationUsage.profile
+          : '';
+    }
+
+    const newStep: CSVData = {
+      op: lastOp?.name || '',
+      ch: lastOp?.ch || '',
+      trackName: lastOp?.track_name || '',
+      time: formatLocalTime(new Date(timeInterpolated)),
+      seconds: pointToComma(+ms2sec(timeInterpolated).toFixed(1)),
+      position: pointToComma(+(pos / 1000).toFixed(3)), // km
+      speed: pointToComma(+(speedInterpolated * 3.6).toFixed(3)), // m/s -> km/h
+      speedLimit: pointToComma(actualVmaxs[0]),
+      lineCode: lastOp?.line_code !== undefined ? String(lastOp.line_code) : '',
+      electrificationType,
+      electrificationMode,
+      electrificationProfile,
+    };
+
+    csvData.push(newStep);
+
+    if (actualVmaxs.length > 1) {
+      csvData.push({
+        ...newStep,
+        speedLimit: pointToComma(actualVmaxs[1]),
+      });
+    }
+  }
+  const filled = spreadDataBetweenSteps(csvData);
+
+  createFakeLinkWithData(`${train.train_name}-every-50m`, filled);
+}
+
 export default function exportTrainCSV(
   simulatedTrain: SimulationResponseSuccess,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
@@ -243,5 +325,14 @@ export default function exportTrainCSV(
     }
   });
 
-  if (steps) createFakeLinkWithData(train.train_name, spreadDataBetweenSteps(steps));
+  if (steps) {
+    createFakeLinkWithData(train.train_name, spreadDataBetweenSteps(steps));
+    exportTrainCSVEvery50m(
+      simulatedTrain,
+      operationalPoints,
+      formattedMrsp,
+      electrificationRanges,
+      train
+    );
+  }
 }
