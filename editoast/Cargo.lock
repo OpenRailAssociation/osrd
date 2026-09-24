@@ -955,7 +955,6 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tracing",
- "uom",
  "zstd 0.14.0",
 ]
 
@@ -1493,7 +1492,6 @@ dependencies = [
  "tower-http 0.7.1",
  "tracing",
  "tracing-subscriber",
- "uom",
  "url",
  "utoipa",
  "uuid",
@@ -3084,7 +3082,6 @@ dependencies = [
  "tokio",
  "tokio-postgres",
  "tracing",
- "uom",
  "url",
  "utoipa",
  "uuid",
