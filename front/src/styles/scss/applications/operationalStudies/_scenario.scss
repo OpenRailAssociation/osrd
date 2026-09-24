@@ -258,6 +258,7 @@
 .scenario {
   background-color: var(--ambientB15);
   font-family: 'IBM Plex Sans', sans-serif;
+  padding-bottom: 0;
 
   @keyframes fadein {
     from {
