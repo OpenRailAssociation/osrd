@@ -5,7 +5,7 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-test_utilities = ["dep:derive_more", "dep:stdext", "dep:tracing-subscriber"]
+test_utilities = ["dep:derive_more", "dep:tracing-subscriber"]
 
 [dependencies]
 derive_more = { workspace = true, optional = true }
@@ -16,7 +16,6 @@ itertools.workspace = true
 reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-stdext = { workspace = true, optional = true }
 strum.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true

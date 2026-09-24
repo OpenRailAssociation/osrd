@@ -517,12 +517,16 @@ pub mod test_utilities {
         () => {
             $crate::test_client!("")
         };
-        ($store_prefix:literal) => {
+        ($store_prefix:literal) => {{
+            fn f() {}
+            let function_name = std::any::type_name_of_val(&f);
+            let function_name = function_name.strip_suffix("::f").unwrap();
+
             $crate::client::Client::try_new_store(
                 &$crate::test_utilities::sanitize_store_name_length(&format!(
                     "{}{}",
                     $store_prefix.to_string(),
-                    stdext::function_name!()
+                    function_name
                         .split("::")
                         .filter(|x| *x != "{{closure}}")
                         .collect::<Vec<_>>()
@@ -532,7 +536,7 @@ pub mod test_utilities {
             )
             .await
             .expect("Failed to initialize client")
-        };
+        }};
     }
 
     pub fn sanitize_store_name_length(store_name: &str) -> String {
