@@ -205,7 +205,7 @@ data class LineString(
             for (i in 0..<bufferLon.size - 1) {
                 cumulativeLength +=
                     Point(bufferLat[i], bufferLon[i])
-                        .distanceAsMeters(Point(bufferLat[i + 1], bufferLon[i + 1]))
+                        .haversineDistanceAsMeters(Point(bufferLat[i + 1], bufferLon[i + 1]))
                 cumulativeLengths[i] = cumulativeLength
             }
             return LineString(bufferLat, bufferLon, cumulativeLengths)
@@ -236,7 +236,7 @@ data class LineString(
                                 newBufferLat.get(newBufferLat.size() - 1),
                                 newBufferLon.get(newBufferLon.size() - 1),
                             )
-                            .distanceAsMeters(
+                            .haversineDistanceAsMeters(
                                 Point(lineString.bufferLat[0], lineString.bufferLon[0])
                             )
 

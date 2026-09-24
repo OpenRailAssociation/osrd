@@ -3715,7 +3715,7 @@ export type PathProperties = {
         }
     )[];
   };
-  /** Curve to map topologic offset to geometric offset on the path */
+  /** Curve to map topological offset to geometric offset on the path */
   geom_projection: CorePropertyGeometryProjection;
   /** Geometry of the path */
   geometry: GeoJsonLineString;
