@@ -19,20 +19,6 @@ body {
   z-index: 9999;
 }
 
-.mastcontainer-map {
-  height: calc(100vh - var(--header-height));
-}
-
-.no-mastnav {
-  .actionbar {
-    width: 100%;
-  }
-
-  .mastcontainer {
-    padding-left: 0;
-  }
-}
-
 .loader {
   text-align: center;
 }
