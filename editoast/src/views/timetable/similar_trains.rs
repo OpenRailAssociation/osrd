@@ -22,8 +22,8 @@ pub mod trains_traffic;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ops::Deref as _;
+use std::sync::Arc;
 
-use arcstr::ArcStr;
 use authz::Role;
 use axum::Json;
 use axum::extract::State;
@@ -49,7 +49,7 @@ use super::AppState;
 
 // Simulation layer struct, not a view struct, to move in some mod.rs when the simulation crate will be there
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Display, Deref)]
-struct OperationalPoint(ArcStr);
+struct OperationalPoint(Arc<str>);
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize, PartialEq))]
@@ -91,7 +91,7 @@ impl Serialize for RollingStockCharacteristics {
 #[schema(as = SimilarTrainWaypoint)]
 struct Waypoint {
     #[schema(value_type = String)]
-    id: ArcStr,
+    id: Arc<str>,
     stop: bool,
 }
 
@@ -117,9 +117,9 @@ struct SimilarTrainItem {
     /// was found for the segment; otherwise, it is `Some`.
     train: Option<TrainInfo>,
     #[schema(value_type = String)]
-    begin: ArcStr,
+    begin: Arc<str>,
     #[schema(value_type = String)]
-    end: ArcStr,
+    end: Arc<str>,
 }
 
 #[derive(Debug, Serialize, ToSchema, Clone)]

@@ -8,7 +8,6 @@ edition.workspace = true
 mock = ["redis-test"]
 
 [dependencies]
-arcstr.workspace = true
 deadpool-redis.workspace = true
 futures.workspace = true
 itertools.workspace = true

@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
+use std::sync::Arc;
 
-use arcstr::ArcStr;
 use itertools::Itertools as _;
 
 use super::OperationalPoint;
@@ -20,14 +20,14 @@ pub(super) enum Kind {
 }
 
 impl Waypoint {
-    pub(super) fn passing_by(op: ArcStr) -> Self {
+    pub(super) fn passing_by(op: Arc<str>) -> Self {
         Self {
             op: OperationalPoint(op),
             kind: Kind::PassingBy,
         }
     }
 
-    pub(super) fn stop(op: ArcStr) -> Self {
+    pub(super) fn stop(op: Arc<str>) -> Self {
         Self {
             op: OperationalPoint(op),
             kind: Kind::Stop,

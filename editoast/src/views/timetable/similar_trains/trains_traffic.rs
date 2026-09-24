@@ -2,7 +2,6 @@ use crate::error::Result;
 use crate::views::timetable::similar_trains::OperationalPoint;
 use crate::views::timetable::similar_trains::PastTrain;
 use crate::views::timetable::similar_trains::past_train::Id;
-use arcstr::ArcStr;
 use chrono::DateTime;
 use chrono::Months;
 
@@ -11,6 +10,7 @@ use itertools::Itertools as _;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use super::graph;
 
@@ -48,7 +48,7 @@ impl TrainTraffic {
                 continue;
             }
             waypoints_graph.push(graph::Waypoint {
-                op: OperationalPoint(ArcStr::from(waypoint.id.clone())),
+                op: OperationalPoint(Arc::from(waypoint.id.as_str())),
                 stop: if index == 0 || index == (nb_waypoints - 1) {
                     true
                 } else {
