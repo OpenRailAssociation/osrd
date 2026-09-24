@@ -75,7 +75,10 @@ impl ScenarioCreateForm {
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "scenario")]
-#[allow(clippy::enum_variant_names)]
+#[allow(
+    clippy::enum_variant_names,
+    reason = "Multiple errors have the suffix “Found” because we have multiple case of not found information."
+)]
 pub enum ScenarioError {
     #[error("Study '{study_id}', could not be found")]
     #[editoast_error(status = 404)]
