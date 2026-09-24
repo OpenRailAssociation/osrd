@@ -407,9 +407,7 @@ const Editor = () => {
 
   return (
     <EditorContext.Provider value={extendedContext}>
-      <main
-        className={cx('editor-root mastcontainer mastcontainer-map', infraID && 'infra-selected')}
-      >
+      <main className={cx('editor-root', infraID && 'infra-selected')}>
         <div className="layout">
           <div className="tool-box bg-primary">
             {Object.values(TOOL_NAMES).map((toolType: TOOL_NAMES) => {
