@@ -53,7 +53,7 @@ pub(super) enum StandardGrant {
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[allow(clippy::enum_variant_names)] // needed due to "Can" prefix
+#[allow(clippy::enum_variant_names, reason = "needed due to ‘Can’ prefix")]
 pub(super) enum StandardPrivilege {
     CanRestrictedRead,
     CanRead,
