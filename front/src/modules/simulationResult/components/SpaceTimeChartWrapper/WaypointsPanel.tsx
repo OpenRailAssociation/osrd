@@ -30,9 +30,7 @@ const WaypointsPanel = ({
 
   const modalRef = useRef<HTMLDialogElement>(null);
 
-  const [selectedWaypoints, setSelectedWaypoints] = useState<Set<number>>(
-    new Set(filteredWaypoints.map((_, i) => i))
-  );
+  const [selectedWaypoints, setSelectedWaypoints] = useState<Set<number>>(() => new Set());
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number>();
   const [isNotEnoughSelectedWaypoints, setIsNotEnoughSelectedWaypoints] = useState(false);
 
