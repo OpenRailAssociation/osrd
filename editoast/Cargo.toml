@@ -203,7 +203,6 @@ flate2.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
-headers = "0.4.1"
 image = { version = "0.25.9", default-features = false, features = [
   "bmp",
   "gif",

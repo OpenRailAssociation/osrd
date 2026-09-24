@@ -121,7 +121,7 @@ pub(in crate::views) async fn get_railjson(
         [
             (
                 header::CONTENT_TYPE.as_str(),
-                headers::ContentType::json().to_string(),
+                "application/json".to_string(),
             ),
             ("x-infra-version", infra_meta.version.to_string()),
         ],
