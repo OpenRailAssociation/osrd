@@ -541,7 +541,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:document::not_found
+                      - editoast:document:not_found
         '500':
           description: ''
           content:
@@ -643,7 +643,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:document::not_found
+                      - editoast:document:not_found
         '500':
           description: ''
           content:
