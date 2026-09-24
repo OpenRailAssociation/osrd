@@ -59,7 +59,7 @@ const Map = () => {
   );
 
   return (
-    <main className="mastcontainer mastcontainer-map">
+    <main className="map-container">
       <MapContextProvider
         infraId={infraID}
         mapSettings={mapSettings}
