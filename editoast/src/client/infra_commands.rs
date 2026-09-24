@@ -156,7 +156,7 @@ pub async fn clear_infra(
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut db_pool.get().await?).await {
+        for infra in Infra::list(&mut db_pool.get().await?, Default::default()).await? {
             infras.push(infra);
         }
     } else {
@@ -189,7 +189,7 @@ pub async fn generate_infra(
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut db_pool.get().await?).await {
+        for infra in Infra::list(&mut db_pool.get().await?, Default::default()).await? {
             infras.push(infra);
         }
     } else {

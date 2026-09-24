@@ -44,15 +44,6 @@ pub enum Error {
 }
 
 impl Study {
-    pub async fn update_last_modified(
-        &mut self,
-        conn: &mut DbConnection,
-    ) -> Result<(), crate::Error> {
-        self.last_modification = Utc::now();
-        self.save(conn).await?;
-        Ok(())
-    }
-
     pub async fn scenarios_count(&self, conn: DbConnection) -> Result<u64, crate::Error> {
         use database::tables::scenario::dsl;
         use diesel::dsl::*;
