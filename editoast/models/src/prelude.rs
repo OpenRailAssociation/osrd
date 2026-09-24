@@ -47,7 +47,6 @@ pub trait Model: std::fmt::Debug + Clone + Sized + Send {
 /// A type alias for the [Model::Row] associated type
 ///
 /// Helps silent compiler errors about type ambiguity.
-#[allow(unused)]
 pub type Row<M> = <M as Model>::Row;
 
 /// A type alias for the [Model::Changeset] associated type
