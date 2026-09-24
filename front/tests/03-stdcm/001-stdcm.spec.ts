@@ -135,6 +135,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
           await viaSection.fillAndVerifyViaDetails({
             ...viaDetail,
             expectedChValue: DEFAULT_DETAILS.chValue,
+            expectAutofilledCh: true,
             stopTypes: StdcmStopTypes,
             stopTimes: VIA_STOP_TIMES,
             suggestionTextBySearch: {
@@ -246,6 +247,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
         viaNumber: 1,
         ciSearchText: 'mid_west',
         expectedChValue: DEFAULT_DETAILS.chValue,
+        expectAutofilledCh: true,
         stopTypes: StdcmStopTypes,
         stopTimes: VIA_STOP_TIMES,
         suggestionTextBySearch: {
