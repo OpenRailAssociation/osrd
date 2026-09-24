@@ -37,9 +37,9 @@ pub(super) struct Args {
     #[darling(with = ErrorAttrs::parse)]
     attrs: ErrorAttrs,
 
-    /// Changes the base name of the error label
+    /// Changes the base path of the error label
     #[darling(default)]
-    name: Option<String>,
+    path: Option<syn::Path>,
 
     /// Whether to include type data into the error `context` field
     ///
@@ -71,7 +71,7 @@ struct VariantArgs {
     #[darling(default)]
     context: bool,
     #[darling(default)]
-    name: Option<String>,
+    path: Option<syn::Path>,
 }
 
 #[derive(Debug, FromField)]
@@ -121,11 +121,14 @@ impl Args {
             ident,
             data,
             attrs: ErrorAttrs { thiserror },
-            name,
+            path,
             context: context_on_type,
             args: TypeArgs { status },
         } = self;
-        let label = name.unwrap_or_else(|| normalize_label(&ident));
+        let label = path
+            .as_ref()
+            .map(normalize_path)
+            .unwrap_or_else(|| normalize_label(&ident));
         let mut view_error_impl = ViewErrorImpl::new(ident);
 
         match data {
@@ -166,9 +169,12 @@ impl Args {
                         attrs: ErrorAttrs { thiserror },
                         status,
                         context: context_on_variant,
-                        name,
+                        path,
                     } = variant;
-                    let variant_label = name.unwrap_or_else(|| normalize_label(&variant_ident));
+                    let variant_label = path
+                        .as_ref()
+                        .map(normalize_path)
+                        .unwrap_or_else(|| normalize_label(&variant_ident));
                     let pattern = fields.pattern(Some(&variant_ident));
                     if let Some(ForwardedField { binding, ty }) = fields.forwarded_view_error() {
                         view_error_impl.forward_view_error(pattern, binding, ty);
@@ -206,6 +212,14 @@ impl Args {
 
         Ok(Codegen(view_error_impl))
     }
+}
+
+fn normalize_path(path: &syn::Path) -> String {
+    path.segments
+        .iter()
+        .map(|segment| normalize_label(&segment.ident))
+        .collect::<Vec<_>>()
+        .join(":")
 }
 
 /// Converts to snake_case, stripping any `_errors` or `_error` suffix
@@ -412,4 +426,17 @@ fn reject_unsupported_from(attrs: &[syn::Attribute]) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn path_normalization() {
+        assert_eq!(
+            normalize_path(&syn::parse_quote! { DocumentErrors::NotFoundError }),
+            "document:not_found"
+        );
+    }
 }

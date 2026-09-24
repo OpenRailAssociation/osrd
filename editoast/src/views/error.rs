@@ -184,7 +184,7 @@ mod tests {
         fn attributes() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("ohno")]
-            #[view_error(name = "custom", status = NOT_FOUND, context)]
+            #[view_error(path = custom, status = NOT_FOUND, context)]
             struct Unit;
 
             assert_eq!(
@@ -203,7 +203,7 @@ mod tests {
         fn attributes_and_context() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("value: {0}")]
-            #[view_error(name = "custom", status = UNAUTHORIZED, context)]
+            #[view_error(path = custom, status = UNAUTHORIZED, context)]
             struct Newtype(String);
 
             assert_eq!(
@@ -229,7 +229,7 @@ mod tests {
         fn forwarded_view_error() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("inner error: {detail}")]
-            #[view_error(name = "inner", status = IM_A_TEAPOT, context)]
+            #[view_error(path = inner, status = IM_A_TEAPOT, context)]
             struct InnerError {
                 detail: String,
             }
@@ -275,7 +275,7 @@ mod tests {
         fn context() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("tuple: {0}, {1}")]
-            #[view_error(name = "custom", status = BAD_REQUEST, context)]
+            #[view_error(path = custom, status = BAD_REQUEST, context)]
             struct Tuple(String, u32);
 
             assert_eq!(
@@ -307,7 +307,7 @@ mod tests {
         fn forwarded_view_error_with_additional_field() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("inner error: {detail}")]
-            #[view_error(name = "inner", status = IM_A_TEAPOT, context)]
+            #[view_error(path = inner, status = IM_A_TEAPOT, context)]
             struct InnerError {
                 detail: String,
             }
@@ -338,7 +338,7 @@ mod tests {
         fn attributes_and_context() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("incident {incident_id}: {cause}; fix: {fix}")]
-            #[view_error(name = "custom", status = SERVICE_UNAVAILABLE, context)]
+            #[view_error(path = custom, status = SERVICE_UNAVAILABLE, context)]
             struct Named {
                 cause: String,
                 fix: String,
@@ -382,7 +382,7 @@ mod tests {
         fn forwarded_view_error_with_additional_field() {
             #[derive(Debug, thiserror::Error, ViewError)]
             #[error("inner error: {detail}")]
-            #[view_error(name = "inner", status = IM_A_TEAPOT, context)]
+            #[view_error(path = inner, status = IM_A_TEAPOT, context)]
             struct InnerError {
                 detail: String,
             }
@@ -419,10 +419,10 @@ mod tests {
             #[test]
             fn variants() {
                 #[derive(Debug, thiserror::Error, ViewError)]
-                #[view_error(name = "ColorErrors")]
+                #[view_error(path = ColorErrors)]
                 enum Color {
                     #[error("red")]
-                    #[view_error(name = "RED_ERROR")]
+                    #[view_error(path = RED_ERROR)]
                     Red,
                     #[error("green")]
                     Green,
@@ -432,15 +432,15 @@ mod tests {
 
                 assert_eq!(
                     EditoastError::from(Color::Red),
-                    EditoastError::new("editoast:ColorErrors:RED_ERROR", 500, "red")
+                    EditoastError::new("editoast:color:red", 500, "red")
                 );
                 assert_eq!(
                     EditoastError::from(Color::Green),
-                    EditoastError::new("editoast:ColorErrors:green", 500, "green")
+                    EditoastError::new("editoast:color:green", 500, "green")
                 );
                 assert_eq!(
                     EditoastError::from(Color::BlueError),
-                    EditoastError::new("editoast:ColorErrors:blue", 500, "blue")
+                    EditoastError::new("editoast:color:blue", 500, "blue")
                 );
             }
         }
@@ -453,10 +453,10 @@ mod tests {
             #[test]
             fn variants() {
                 #[derive(Debug, thiserror::Error, ViewError)]
-                #[view_error(name = "mixed", context)]
+                #[view_error(path = mixed, context)]
                 enum Mixed {
                     #[error("unit")]
-                    #[view_error(name = "custom_unit")]
+                    #[view_error(path = custom_unit)]
                     Unit,
                     #[error("newtype: {0}")]
                     #[view_error(status = BAD_REQUEST)]
@@ -578,7 +578,7 @@ mod tests {
             fn forwarded_view_errors() {
                 #[derive(Debug, thiserror::Error, ViewError)]
                 #[error("inner error: {detail}")]
-                #[view_error(name = "inner", status = IM_A_TEAPOT, context)]
+                #[view_error(path = inner, status = IM_A_TEAPOT, context)]
                 struct InnerError {
                     detail: String,
                 }
