@@ -154,8 +154,7 @@ impl ModelField {
         self.transform.is_some()
     }
 
-    #[allow(clippy::wrong_self_convention)]
-    pub(crate) fn into_transformed(&self, expr: syn::Expr) -> syn::Expr {
+    pub(crate) fn to_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
             Some(FieldTransformation::Remote(_)) => parse_quote! { #expr.into() },
             Some(FieldTransformation::Json) => parse_quote! { diesel_json::Json(#expr) },
@@ -174,8 +173,7 @@ impl ModelField {
         }
     }
 
-    #[allow(clippy::wrong_self_convention)]
-    pub(crate) fn from_transformed(&self, expr: syn::Expr) -> syn::Expr {
+    pub(crate) fn as_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
             Some(FieldTransformation::Remote(_)) => parse_quote! { #expr.into() },
             Some(FieldTransformation::Json) => parse_quote! { #expr.0 },

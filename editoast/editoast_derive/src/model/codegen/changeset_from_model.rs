@@ -21,7 +21,7 @@ impl ToTokens for ChangesetFromModelImpl {
             .iter()
             .map(|field| {
                 let ident = &field.ident;
-                let expr = field.into_transformed(parse_quote! { model.#ident });
+                let expr = field.to_transformed(parse_quote! { model.#ident });
                 (ident, expr)
             })
             .unzip();

@@ -17,7 +17,7 @@ impl ToTokens for ModelFromRowImpl {
             .iter()
             .map(|field| {
                 let ident = &field.ident;
-                let expr = field.from_transformed(parse_quote! { row.#ident });
+                let expr = field.as_transformed(parse_quote! { row.#ident });
                 (ident, expr)
             })
             .unzip();

@@ -19,9 +19,9 @@ impl ToTokens for ModelFieldApiImplBlock {
         let ModelField { ty, column, .. } = &field;
         let (transform, map_transform) = if field.has_transformation() {
             let transform_ty = field.transform_type();
-            let into_transformed = field.into_transformed(parse_quote! { value });
-            let transform = quote! { let value: #transform_ty = #into_transformed };
-            let map_transform = quote! { let values: Vec<#transform_ty> = values.into_iter().map(|value| #into_transformed).collect() };
+            let transformed = field.to_transformed(parse_quote! { value });
+            let transform = quote! { let value: #transform_ty = #transformed };
+            let map_transform = quote! { let values: Vec<#transform_ty> = values.into_iter().map(|value| #transformed).collect() };
             (transform, map_transform)
         } else {
             (quote! {}, quote! {})
