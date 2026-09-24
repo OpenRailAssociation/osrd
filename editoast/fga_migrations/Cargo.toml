@@ -29,7 +29,6 @@ url.workspace = true
 
 [dev-dependencies]
 fga = { workspace = true, features = ["test_utilities"] }
-stdext.workspace = true
 uuid.workspace = true
 
 [lints]

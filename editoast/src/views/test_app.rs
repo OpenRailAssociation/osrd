@@ -287,18 +287,20 @@ impl TestAppBuilder {
 /// Returns a default [TestAppBuilder] with the [TestAppBuilder::test_name] set to the current test name
 ///
 /// This **has** to be used in the test function directly to ensure that the test name is correctly set.
-///
-/// The crate `stdext` is required.
 macro_rules! test_app {
-    () => {
+    () => {{
+        fn f() {}
+        let function_name = std::any::type_name_of_val(&f);
+        let function_name = function_name.strip_suffix("::f").unwrap();
+
         $crate::views::test_app::TestAppBuilder::new(
-            stdext::function_name!()
+            function_name
                 .split("::")
                 .filter(|x| *x != "{{closure}}")
                 .collect::<Vec<_>>()
                 .join("-"),
         )
-    };
+    }};
 }
 
 pub(crate) use test_app;

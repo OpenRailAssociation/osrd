@@ -133,7 +133,6 @@ serde_with = { version = "3.21.0", default-features = false, features = [
   "macros",
 ] }
 sha1 = "0.11"
-stdext = "0.3.3"
 strum = { version = "0.28.0", features = ["derive"] }
 syn = "3.0"
 tempfile = "3.20.0" # redis-test (crate cache) isn't up to date
@@ -273,7 +272,6 @@ models = { workspace = true, features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 schemas = { workspace = true, features = ["testing"] }
-stdext.workspace = true
 tempfile.workspace = true
 
 [patch.crates-io]

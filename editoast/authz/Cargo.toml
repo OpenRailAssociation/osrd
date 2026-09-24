@@ -23,7 +23,6 @@ common.workspace = true
 fga = { workspace = true, features = ["test_utilities"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
-stdext.workspace = true
 tokio.workspace = true
 
 [lints]
