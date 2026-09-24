@@ -47,7 +47,7 @@ type PathStepProps = {
   onSelectOpSuggestion: (suggestion: OperationalPointSuggestion, secondaryCode?: string) => void;
   resetOpSuggestions: () => void;
   onChevronClick: (queryValue: string) => void;
-  isInvalidAndFinal: boolean;
+  isInvalid: boolean;
   connectorLong: boolean;
   onDelete: () => void;
   onOpClear: () => void;
@@ -77,7 +77,7 @@ const PathStepItem = ({
   onSelectOpSuggestion,
   resetOpSuggestions,
   onChevronClick,
-  isInvalidAndFinal,
+  isInvalid,
   connectorLong,
   onDelete,
   onOpClear,
@@ -105,7 +105,7 @@ const PathStepItem = ({
   };
   const isIndexed = !isTrailingPlaceHolder;
 
-  const shouldShowInvalidMessage = !!isInvalidAndFinal && !isMapSelectionMode;
+  const shouldShowInvalidMessage = !!isInvalid && !isMapSelectionMode;
 
   const getInvalidMessage = () => {
     let message = t('invalidOP');
@@ -332,7 +332,7 @@ const PathStepItem = ({
       className={cx('path-step-wrapper', {
         'is-placeholder': isTrailingPlaceHolder,
         'map-selection-active': isMapSelectionMode,
-        'is-invalid': isInvalidAndFinal,
+        'is-invalid': isInvalid,
         'unknown-track': isUnknownTrack,
       })}
       data-testid={isTrailingPlaceHolder ? 'trailing-placeholder' : 'path-step-wrapper'}
@@ -346,7 +346,7 @@ const PathStepItem = ({
         <button
           type="button"
           className={cx('path-step-counter', {
-            invalid: isInvalidAndFinal || isUnknownTrack,
+            invalid: isInvalid || isUnknownTrack,
             'is-only-step': isOnlyStep,
             'is-trailing-placeholder': isTrailingPlaceHolder,
             index: isIndexed,
@@ -355,7 +355,7 @@ const PathStepItem = ({
             empty: !pathStep.location,
           })}
           style={{
-            borderColor: !isInvalidAndFinal
+            borderColor: !isInvalid
               ? isIndexed
                 ? categoryColors.surface
                 : categoryColors.base
@@ -401,7 +401,7 @@ const PathStepItem = ({
               role="button"
               tabIndex={0}
               className={cx('path-step-op-name', {
-                invalid: isInvalidAndFinal,
+                invalid: isInvalid,
               })}
               data-testid="path-step-op-name"
               onKeyDownCapture={handleKeyDown}
@@ -498,7 +498,7 @@ const PathStepItem = ({
             ) : (
               <div
                 className={cx('track-name', {
-                  invalid: isInvalidAndFinal,
+                  invalid: isInvalid,
                   'unknown-track': isUnknownTrack,
                 })}
               >
