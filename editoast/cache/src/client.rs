@@ -1,6 +1,6 @@
+use std::sync::Arc;
 use std::time::Duration;
 
-use arcstr::ArcStr;
 use deadpool_redis::Pool;
 use deadpool_redis::PoolError;
 use deadpool_redis::Runtime;
@@ -13,7 +13,7 @@ use crate::connection::ConnectionInner;
 
 pub struct Client {
     inner: ClientInner,
-    app_version: ArcStr,
+    app_version: Arc<str>,
 }
 
 pub enum ClientInner {
@@ -42,7 +42,7 @@ impl Client {
 
     pub fn new(config: Config, app_version: &str) -> Self {
         Self {
-            app_version: ArcStr::from(app_version),
+            app_version: Arc::from(app_version),
             inner: match config {
                 Config::NoCache => ClientInner::NoCache,
                 Config::Valkey {
@@ -67,7 +67,7 @@ impl Client {
     #[cfg(feature = "mock")]
     pub fn new_mock(commands: Vec<crate::MockCmd>, app_version: &str) -> Self {
         Self {
-            app_version: ArcStr::from(app_version),
+            app_version: Arc::from(app_version),
             inner: ClientInner::Mock(redis_test::MockRedisConnection::new(commands)),
         }
     }

@@ -1,6 +1,6 @@
 use std::fmt::Debug;
+use std::sync::Arc;
 
-use arcstr::ArcStr;
 use deadpool_redis::redis::Arg;
 use deadpool_redis::redis::AsyncCommands;
 use deadpool_redis::redis::Cmd;
@@ -26,7 +26,7 @@ use tracing::span;
 
 pub struct Connection {
     inner: ConnectionInner,
-    app_version: ArcStr,
+    app_version: Arc<str>,
 }
 
 pub(crate) enum ConnectionInner {
@@ -143,7 +143,7 @@ struct ZrangebyscoreWrapper<M> {
 }
 
 impl Connection {
-    pub(crate) fn new(inner: ConnectionInner, app_version: ArcStr) -> Self {
+    pub(crate) fn new(inner: ConnectionInner, app_version: Arc<str>) -> Self {
         Self { inner, app_version }
     }
 

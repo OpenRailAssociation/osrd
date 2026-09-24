@@ -174,9 +174,6 @@ name = "arcstr"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03918c3dbd7701a85c6b9887732e2921175f26c350b4563841d0958c21d57e6d"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "as-slice"
@@ -636,7 +633,6 @@ checksum = "49e78e506b9d7633710dab98996f22f95f3d0f488e8f1aa162830556ed9fc14d"
 name = "cache"
 version = "0.1.0"
 dependencies = [
- "arcstr",
  "deadpool-redis",
  "futures 0.3.34",
  "itertools 0.15.0",
@@ -1432,7 +1428,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "approx",
- "arcstr",
  "authz",
  "axum",
  "axum-streams",
