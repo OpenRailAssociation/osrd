@@ -24,7 +24,10 @@ use crate::rolling_stock::EtcsBrakeParams;
 #[educe(Hash, Eq, PartialEq)]
 #[serde(tag = "type")]
 #[schema(title_variants)]
-#[allow(clippy::large_enum_variant)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "we could `Box`, but API will be harder to use, compared to the lost memory, which is related to Rolling Stocks, not a lot of them."
+)]
 #[strum_discriminants(
     name(SupportedSignalingSystemVariant),
     derive(Deserialize, Serialize, Display, Hash, ToSchema, strum::IntoStaticStr)
