@@ -271,7 +271,10 @@ pub enum ElectricalProfileValue {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[schema(as = CoreSpeedLimitSource, title_variants)]
 #[serde(tag = "speed_limit_source_type", rename_all = "snake_case")]
-#[allow(clippy::enum_variant_names)]
+#[allow(
+    clippy::enum_variant_names,
+    reason = "part of the external API, let’s keep the `Tag` suffix"
+)]
 pub enum SpeedLimitSource {
     GivenTrainTag { tag: String },
     FallbackTag { tag: String },
