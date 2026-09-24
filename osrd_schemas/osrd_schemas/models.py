@@ -7383,7 +7383,7 @@ class PathProperties(BaseModel):
     """
     geom_projection: CorePropertyGeometryProjection
     """
-    Curve to map topologic offset to geometric offset on the path
+    Curve to map topological offset to geometric offset on the path
     """
     geometry: GeoJsonLineString
     """

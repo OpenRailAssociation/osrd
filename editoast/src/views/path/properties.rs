@@ -57,7 +57,7 @@ pub(in crate::views) struct PathProperties {
     /// Zones along the path
     #[schema(inline)]
     zones: PropertyZoneValues,
-    /// Curve to map topologic offset to geometric offset on the path
+    /// Curve to map topological offset to geometric offset on the path
     geom_projection: GeometryProjection,
 }
 

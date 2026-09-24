@@ -24,6 +24,11 @@ data class Point(@JvmField val lat: Double, @JvmField val lon: Double) {
         return WGS84Interpolator.EARTH_RADIUS * sqrt(xDiff * xDiff + yDiff * yDiff)
     }
 
+    /**
+     * Returns the distance between this point and another point in meters, using the
+     * [haversine formula](https://en.wikipedia.org/wiki/Haversine_formula), to match the distances
+     * used in the frontend.
+     */
     fun haversineDistanceAsMeters(other: Point): Double {
         val dLon = Math.toRadians(other.lon - lon)
         val dLat = Math.toRadians(other.lat - lat)

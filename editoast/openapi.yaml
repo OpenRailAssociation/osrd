@@ -13091,7 +13091,7 @@ components:
           description: Electrification modes and neutral section along the path
         geom_projection:
           $ref: '#/components/schemas/CorePropertyGeometryProjection'
-          description: Curve to map topologic offset to geometric offset on the path
+          description: Curve to map topological offset to geometric offset on the path
         geometry:
           $ref: '#/components/schemas/GeoJsonLineString'
           description: Geometry of the path

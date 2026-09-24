@@ -67,10 +67,8 @@ data class GeometricProjection(
         // Each list must start by 0
         assert(topoOffsets[0].distance == Distance.ZERO && geomOffsets[0].distance == Distance.ZERO)
         // Each list must be increasing (not strictly)
-        for (i in 0..<(topoOffsets.size - 1)) {
-            assert(topoOffsets[i] <= topoOffsets[i + 1])
-            assert(geomOffsets[i] <= geomOffsets[i + 1])
-        }
+        topoOffsets.zipWithNext().all { it.first <= it.second }
+        geomOffsets.zipWithNext().all { it.first <= it.second }
     }
 }
 
