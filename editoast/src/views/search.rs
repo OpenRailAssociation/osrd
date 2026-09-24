@@ -1,5 +1,7 @@
-// Clippy doesn't seem to understand the `Search` derive macro
-#![allow(clippy::duplicated_attributes)]
+#![allow(
+    clippy::duplicated_attributes,
+    reason = "False positive, Clippy doesn't seem to understand the `Search` derive macro"
+)]
 
 //! Defines the route [search()] that can efficiently search all objects declared
 //! in `search.yml` in a generic way

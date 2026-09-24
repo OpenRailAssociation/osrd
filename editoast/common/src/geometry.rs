@@ -1,4 +1,7 @@
-#![expect(unused)] // None of these types are supposed to be used directly: use geos::geojson instead.
+#![expect(
+    unused,
+    reason = "None of these types are supposed to be used directly: use geos::geojson instead."
+)]
 
 use utoipa::ToSchema;
 
