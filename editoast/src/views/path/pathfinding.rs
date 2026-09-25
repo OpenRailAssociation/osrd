@@ -12,7 +12,6 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use common::units;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingCoreResult;
@@ -33,6 +32,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use tracing::debug;
 use tracing::info;
+use unit_system::units;
 use utoipa::ToSchema;
 
 use crate::AppState;

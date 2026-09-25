@@ -1,5 +1,3 @@
-use common::unit_system::quantities::Offset;
-use common::units::millisecond;
 use database::DatabaseError;
 use database::tables::sql_types;
 use diesel::prelude::*;
@@ -15,6 +13,8 @@ use editoast_derive::Model;
 use itertools::Itertools as _;
 use std::collections::HashSet;
 use std::ops::DerefMut as _;
+use unit_system::quantities::Offset;
+use unit_system::units::millisecond;
 
 use database::DbConnection;
 

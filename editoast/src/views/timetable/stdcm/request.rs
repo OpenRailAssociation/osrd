@@ -3,14 +3,9 @@ use std::collections::HashSet;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
-use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 
-use common::unit_system::length::meter;
-use common::unit_system::mass::kilogram;
-use common::unit_system::quantities;
-use common::unit_system::velocity::meter_per_second;
 use schemas::RollingStock;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
@@ -21,6 +16,8 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
+use unit_system::quantities;
+use unit_system::units;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -351,7 +348,7 @@ impl ConsistConfiguration {
                 .as_ref()
                 .map(|t| t.mass)
                 .unwrap_or_default();
-        let consist_mass = consist_mass.floor::<kilogram>();
+        let consist_mass = consist_mass.floor::<quantities::mass::kilogram>();
 
         if let Some(request_total_mass) = self.total_mass
             && request_total_mass < consist_mass
@@ -373,7 +370,7 @@ impl ConsistConfiguration {
     ) -> Result<()> {
         let consist_length =
             traction_engine.length + towed_rolling_stock.map(|t| t.length).unwrap_or_default();
-        let consist_length = consist_length.floor::<meter>();
+        let consist_length = consist_length.floor::<quantities::length::meter>();
 
         if let Some(request_total_length) = self.total_length
             && request_total_length < consist_length
@@ -397,12 +394,12 @@ impl ConsistConfiguration {
             traction_engine.max_speed,
             towed_rolling_stock
                 .and_then(|t| t.max_speed)
-                .unwrap_or(quantities::Velocity::new::<meter_per_second>(f64::INFINITY)),
+                .unwrap_or(units::meter_per_second::new(f64::INFINITY)),
         );
-        let consist_max_speed = consist_max_speed.ceil::<meter_per_second>();
+        let consist_max_speed = consist_max_speed.ceil::<quantities::velocity::meter_per_second>();
 
         if let Some(request_max_speed) = self.max_speed
-            && (request_max_speed < quantities::Velocity::new::<meter_per_second>(0.0)
+            && (request_max_speed < units::meter_per_second::new(0.0)
                 || request_max_speed > consist_max_speed)
         {
             return Err(StdcmError::InvalidConsistMaxSpeed {
