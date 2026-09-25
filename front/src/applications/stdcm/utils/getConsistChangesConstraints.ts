@@ -11,12 +11,14 @@ import type { StdcmPathStep } from 'reducers/osrdconf/types';
 type PathfindingConsistChange = {
   index: number;
   rollingStockID: number;
+  totalLength: number;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
 };
 
 type SegmentConstraints = {
   segmentRollingStock: LightRollingStock;
+  segmentTotalLength: number;
   segmentLoadingGauge?: LoadingGaugeType;
   segmentSpeedLimitByTag?: string | null;
 };
@@ -26,6 +28,7 @@ type getSegmentConstraintsOptions = {
   consistChanges: PathfindingConsistChange[];
   getLightRollingStockById: GetLightRollingStockById;
   rollingStock: LightRollingStock;
+  totalLength: number;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
 };
@@ -38,6 +41,7 @@ type LaunchSegmentedPathfindingOptions = {
   postPathfindingBlocks: PostPathfindingBlocks;
   infraId: number;
   rollingStock: LightRollingStock;
+  totalLength: number;
   loadingGauge?: LoadingGaugeType;
   speedLimitByTag?: string | null;
   allowedTrackSections?: string[];
@@ -53,11 +57,13 @@ type PostPathfindingBlocks = ReturnType<
 
 export const getConsistChanges = (pathSteps: StdcmPathStep[]): PathfindingConsistChange[] =>
   pathSteps.flatMap((step, index) => {
-    if (!step.isVia || !step.consistChange?.rollingStockID) return [];
+    if (!step.isVia || !step.consistChange?.rollingStockID || !step.consistChange?.totalLength)
+      return [];
     return [
       {
         index,
         rollingStockID: step.consistChange.rollingStockID,
+        totalLength: step.consistChange.totalLength,
         loadingGauge: step.consistChange.loadingGauge,
         speedLimitByTag: step.consistChange.speedLimitByTag,
       },
@@ -74,12 +80,14 @@ export const getSegmentConstraints = async ({
   consistChanges,
   getLightRollingStockById,
   rollingStock,
+  totalLength,
   loadingGauge,
   speedLimitByTag,
 }: getSegmentConstraintsOptions): Promise<SegmentConstraints> => {
   if (segmentIndex === 0) {
     return {
       segmentRollingStock: rollingStock,
+      segmentTotalLength: totalLength,
       segmentLoadingGauge: loadingGauge,
       segmentSpeedLimitByTag: speedLimitByTag,
     };
@@ -92,6 +100,7 @@ export const getSegmentConstraints = async ({
 
   return {
     segmentRollingStock,
+    segmentTotalLength: previousStep.totalLength,
     segmentLoadingGauge: previousStep.loadingGauge ?? loadingGauge,
     segmentSpeedLimitByTag: previousStep.speedLimitByTag ?? speedLimitByTag,
   };
@@ -112,6 +121,7 @@ export const launchSegmentedPathfinding = async ({
   postPathfindingBlocks,
   infraId,
   rollingStock,
+  totalLength,
   loadingGauge,
   speedLimitByTag,
   allowedTrackSections,
@@ -123,12 +133,13 @@ export const launchSegmentedPathfinding = async ({
     const endSliceIndex = pathSegmentsIndexes[i + 1] + 1;
     const segmentSteps = stdcmPathSteps.slice(pathSegmentsIndexes[i], endSliceIndex);
 
-    const { segmentRollingStock, segmentLoadingGauge, segmentSpeedLimitByTag } =
+    const { segmentRollingStock, segmentTotalLength, segmentLoadingGauge, segmentSpeedLimitByTag } =
       await getSegmentConstraints({
         segmentIndex: i,
         consistChanges,
         getLightRollingStockById,
         rollingStock,
+        totalLength,
         loadingGauge,
         speedLimitByTag,
       });
@@ -136,6 +147,7 @@ export const launchSegmentedPathfinding = async ({
     const payload = getPathfindingQuery({
       infraId,
       rollingStock: segmentRollingStock,
+      totalLength: segmentTotalLength,
       pathSteps: segmentSteps,
       loadingGauge: segmentLoadingGauge,
       speedLimitByTag: segmentSpeedLimitByTag,
