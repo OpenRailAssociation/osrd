@@ -13,7 +13,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    height: 52px;
+    height: 48px;
     font-size: 0.875rem;
     color: var(--grey50);
     background-color: var(--ambientB15);
@@ -39,7 +39,7 @@
   }
 
   .waypoints-panel-body {
-    height: calc(100% - 34px - 105px);
+    height: calc(100% - 48px - 105px);
     background-color: var(--ambientB10);
     padding-top: calc(11px - 2px); // 2px > checkbox border
     padding-left: calc(18px - 2px); // 2px > checkbox border
@@ -69,7 +69,7 @@
         text-align: end;
         color: var(--grey30);
         line-height: 20px;
-        margin: 9px 16px 10px 7px;
+        margin: 9px 16px 10px 13px;
       }
 
       .name {
@@ -77,15 +77,32 @@
         line-height: 24px;
         flex-grow: 1;
         margin-block: 6px 8px; // to align with the path offset
+        color: var(--grey50);
+      }
+
+      &:not(:has(.path-offset)) {
+        .name {
+          margin-left: 84px;
+        }
       }
 
       .secondary-code {
         width: 19px;
         font-size: 0.875rem;
         line-height: 20px;
-        color: var(--grey80);
+        color: var(--grey50);
         margin-right: 24px;
         margin-block: 9px 11px; // to align with the path offset
+      }
+
+      &.waypoint-selected {
+        .name {
+          color: var(--black100);
+        }
+
+        .secondary-code {
+          color: var(--grey80);
+        }
       }
     }
   }
