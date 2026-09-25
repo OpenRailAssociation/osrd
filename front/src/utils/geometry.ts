@@ -13,7 +13,7 @@ import type {
 } from 'geojson';
 import { minBy } from 'lodash';
 
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import type { CorePropertyGeometryProjection, GeoJsonLineString } from 'common/api/osrdEditoastApi';
 
 export function getTangent(
   tangentPoint: Position,
@@ -172,4 +172,49 @@ export function getBarycenter(coords: Position[]): Position {
   if (n === 0) throw new Error('No coordinates provided');
   const sum = coords.reduce((acc, [lon, lat]) => [acc[0] + lon, acc[1] + lat], [0, 0]);
   return [sum[0] / n, sum[1] / n];
+}
+
+export function convertGeomTopoTrackOffset(
+  geomProjection: CorePropertyGeometryProjection,
+  offset: number,
+  conversionDirection: 'topo_to_geom' | 'geom_to_topo'
+): number {
+  const inputOffsets =
+    conversionDirection === 'topo_to_geom'
+      ? geomProjection.topo_offsets
+      : geomProjection.geom_offsets;
+  const outputOffsets =
+    conversionDirection === 'topo_to_geom'
+      ? geomProjection.geom_offsets
+      : geomProjection.topo_offsets;
+
+  if (offset < 0) throw new Error('Offset cannot be negative');
+
+  const index = inputOffsets.findIndex((value) => value >= offset);
+  if (index === -1) throw new Error('Offset is out of bounds');
+
+  if (inputOffsets[index] === offset) {
+    // counting all the identic input offsets
+    let upperIndex = index;
+    while (upperIndex + 1 < inputOffsets.length && inputOffsets[upperIndex + 1] === offset) {
+      upperIndex += 1;
+    }
+    // case with several identic input offsets
+    if (upperIndex !== index) {
+      // we return the middle between the lower value and the upper value of the output offsets
+      return Math.floor((outputOffsets[index] + outputOffsets[upperIndex]) / 2);
+    }
+  }
+
+  if (index > 0) {
+    const relativeInputOffset = offset - inputOffsets[index - 1];
+    const inputTrackLength = inputOffsets[index] - inputOffsets[index - 1];
+    const outputTrackLength = outputOffsets[index] - outputOffsets[index - 1];
+    const relativeOutputOffset = Math.floor(
+      (relativeInputOffset / inputTrackLength) * outputTrackLength
+    );
+    return outputOffsets[index - 1] + relativeOutputOffset;
+  } else {
+    return inputOffsets[index];
+  }
 }
