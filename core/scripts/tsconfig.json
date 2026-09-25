@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "lib": ["dom", "es2024"],
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true,
+    "target": "es2024"
+  },
+  "files": [
+    "trainsim-chart.ts"
+  ]
+}

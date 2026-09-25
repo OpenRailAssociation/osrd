@@ -61,7 +61,7 @@ constructor(
     @JvmField val basePowerClass: String?,
     @JvmField val powerRestrictions: Map<String, String> = mapOf(),
     val electricalPowerStartUpTime: Double? = 0.0,
-    val raisePantographTime: Double? = 0.0,
+    override val raisePantographTime: Double? = 0.0,
     val supportedSignalingSystems: Array<String>,
 ) : PhysicsRollingStock {
     /** Defined as mass * inertiaCoefficient */
@@ -242,8 +242,7 @@ constructor(
     val modeNames: Set<String>
         get() = modes.keys
 
-    val isThermal: Boolean
-        /** Return whether this rolling stock's default mode is thermal */
+    override val isThermal: Boolean
         get() = !modes[defaultMode]!!.isElectric
 
     val isElectric: Boolean
