@@ -258,7 +258,7 @@ enum SearchApiError {
 #[derive(ToSchema, Serialize)]
 #[schema(example = json!(["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]), title_variants)]
 #[serde(untagged)]
-#[allow(unused)] // only used as an OpenAPI schema
+#[allow(unused, reason = "only used as an OpenAPI schema")]
 enum SearchQuery {
     Boolean(bool),
     Number(f64),

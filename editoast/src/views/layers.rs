@@ -65,7 +65,7 @@ pub(in crate::views) struct InfraQueryParam {
 }
 
 #[derive(Deserialize, IntoParams)]
-#[allow(unused)]
+#[allow(unused, reason = "only used as an OpenAPI schema")]
 struct LayerViewParams {
     layer_slug: String,
     view_slug: String,
@@ -139,7 +139,7 @@ pub(in crate::views) async fn layer_view(
 }
 
 #[derive(Deserialize, IntoParams)]
-#[allow(unused)]
+#[allow(unused, reason = "only used as an OpenAPI schema")]
 struct TileParams {
     layer_slug: String,
     view_slug: String,
