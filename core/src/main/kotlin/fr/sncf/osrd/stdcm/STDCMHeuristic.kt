@@ -34,52 +34,54 @@ data class STDCMAStarHeuristic(
     /**
      * Defines a function that can be used as a heuristic for an A* pathfinding. It takes an edge,
      * and offset on this edge, and a step tracker as input, and returns an estimation of the
-     * remaining time needed to get to the end. // TODO: we might need to call getBlockTime with the
-     * actual offset of the backtracking locations if any.
+     * remaining time needed to get to the end.
+     *
+     * TODO: we might need to call getBlockTime with the actual offset of the backtracking locations
+     *   if any.
      */
     fun invoke(edge: STDCMEdge, offset: Offset<Block>?, stepTracker: StepTracker): Double {
         val lookahead = edge.infraExplorer.getLookahead()
         val currentBlock = edge.block
-        val allBlocks = mutableListOf(currentBlock)
-        for (blockRange in lookahead) allBlocks.add(blockRange.value)
 
+        val currentAndLookaheadBlocksExceptLast = mutableListOf(currentBlock)
+        for (blockRange in lookahead) currentAndLookaheadBlocksExceptLast.add(blockRange.value)
         // We don't consider the time of the last lookahead block to avoid issues
         // if it contains the destination, and we don't need it (the destination is
         // already locked-in).
-        val lastBlock = allBlocks.removeLast()
+        val lastBlock = currentAndLookaheadBlocksExceptLast.removeLast()
 
         // Account for the steps that will be passed in the lookahead
-        val expectedIndex = getExpectedStepIndex(allBlocks, stepTracker)
+        val expectedIndex = getExpectedStepIndex(currentAndLookaheadBlocksExceptLast, stepTracker)
         if (expectedIndex >= remainingTimeEstimations.size) return 0.0
 
-        val timeAfterStartOfLastBlock =
+        val estimatedTimeAfterStartOfLastBlock =
             remainingTimeEstimations[expectedIndex][lastBlock] ?: return Double.POSITIVE_INFINITY
 
         // Compute the time it takes from the current point until the start
         // of the last block of the lookahead, then from that point to the destination.
-        var timeUntilStartOfLastBlock = 0.0
+        var startTimeOfLastLookaheadBlock = 0.0
         // If we're at the destination, endSpeed should be 0.0 rather than null. However, if we are
         // at the destination, there'll be a stop which is taken into account in MaxSpeedEnvBuilder,
         // so it's fine as is.
         var endSpeed =
             maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock, expectedIndex, null).beginSpeed
-        for (block in allBlocks.asReversed()) {
-            timeUntilStartOfLastBlock +=
+        for (block in currentAndLookaheadBlocksExceptLast.asReversed()) {
+            startTimeOfLastLookaheadBlock +=
                 maxSpeedEnvBuilder.getBlockTime(block, expectedIndex, endSpeed, allowanceValue)
             endSpeed =
                 maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, expectedIndex, endSpeed).beginSpeed
         }
-        val timeSinceFirstBlock =
+        val timeAtCurrentOffset =
             maxSpeedEnvBuilder.getBlockTime(
-                edge.block,
+                currentBlock,
                 expectedIndex,
                 null,
                 allowanceValue,
-                offset ?: blockInfra.getBlockLength(edge.block),
+                offset ?: blockInfra.getBlockLength(currentBlock),
             )
-        timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
-        val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
+        val remainingTime =
+            startTimeOfLastLookaheadBlock - timeAtCurrentOffset + estimatedTimeAfterStartOfLastBlock
 
         return remainingTime
     }
