@@ -1148,6 +1148,7 @@ const ItineraryModal = ({
             geometry={pathProperties?.geometry}
             pathLength={pathProperties?.length}
             incompatibleConstraints={pathProperties?.incompatibleConstraints}
+            geometryProjection={pathProperties?.geom_projection}
           />
         </ItineraryModalMap>
       </div>
