@@ -84,6 +84,7 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
         viaNumber: 1,
         ciSearchText: 'nS',
         expectedChValue: DEFAULT_DETAILS.chValue,
+        expectAutofilledCh: true,
         stopTypes: StdcmStopTypes,
         stopTimes: VIA_STOP_TIMES,
         suggestionTextBySearch: {
@@ -182,6 +183,7 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
         viaNumber: 1,
         ciSearchText: 'mid_east',
         expectedChValue: DEFAULT_DETAILS.chValue,
+        expectAutofilledCh: true,
         stopTypes: StdcmStopTypes,
         stopTimes: VIA_STOP_TIMES,
         suggestionTextBySearch: {
