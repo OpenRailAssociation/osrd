@@ -302,7 +302,7 @@ impl EditoastError for core_client::Error {
     fn get_status(&self) -> StatusCode {
         match self {
             core_client::Error::UnparsableErrorOutput => StatusCode::BAD_REQUEST,
-            core_client::Error::RawError(error) => match error.cause {
+            core_client::Error::Raw(error) => match error.cause {
                 core_client::ErrorCause::Internal => StatusCode::INTERNAL_SERVER_ERROR,
                 core_client::ErrorCause::User => StatusCode::BAD_REQUEST,
             },
@@ -311,21 +311,21 @@ impl EditoastError for core_client::Error {
     }
     fn get_type(&self) -> &'static str {
         match self {
-            core_client::Error::CoreResponseFormatError { .. } => {
+            core_client::Error::CoreResponseFormat { .. } => {
                 "editoast:coreclient:CoreResponseFormatError"
             }
             core_client::Error::UnparsableErrorOutput => {
                 "editoast:coreclient:UnparsableErrorOutput"
             }
             core_client::Error::BrokenPipe => "editoast:coreclient:BrokenPipe",
-            core_client::Error::MqClientError(_) => "editoast:coreclient:MqClientError",
-            core_client::Error::RawError(_) => "editoast:coreclient:RawError",
+            core_client::Error::MqClient(_) => "editoast:coreclient:MqClientError",
+            core_client::Error::Raw(_) => "editoast:coreclient:RawError",
             core_client::Error::NoResponseContent => "editoast:coreclient:NoResponseContent",
         }
     }
     fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
         match self {
-            core_client::Error::CoreResponseFormatError { msg } => {
+            core_client::Error::CoreResponseFormat { msg } => {
                 [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
             }
             _ => Default::default(),

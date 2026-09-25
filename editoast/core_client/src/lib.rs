@@ -63,7 +63,7 @@ impl CoreClient {
     pub async fn new_mq(options: mq_client::Options) -> Result<Self, Error> {
         let client = RabbitMQClient::new(options)
             .await
-            .map_err(Error::MqClientError)?;
+            .map_err(Error::MqClient)?;
 
         Ok(Self::MessageQueue(client))
     }
@@ -152,12 +152,12 @@ impl CoreClient {
                         override_timeout,
                     )
                     .await
-                    .map_err(Error::MqClientError)?;
+                    .map_err(Error::MqClient)?;
 
                 let owned_path = path.to_string();
 
                 Ok(Either::Left(stream.map(move |result| {
-                    let response = result.map_err(Error::MqClientError)?;
+                    let response = result.map_err(Error::MqClient)?;
 
                     if response.status == b"ok" {
                         return R::from_bytes(&response.payload);
@@ -337,7 +337,7 @@ where
             };
             let _ = sender.send(event);
         }
-        Err(Error::MqClientError(MqClientError::ResponseChannelClosed))
+        Err(Error::MqClient(MqClientError::ResponseChannelClosed))
     }
 }
 
@@ -360,7 +360,7 @@ impl<T: DeserializeOwned> CoreResponse for Json<T> {
     type Response = T;
 
     fn from_bytes(bytes: &[u8]) -> Result<Self::Response, Error> {
-        serde_json::from_slice(bytes).map_err(|err| Error::CoreResponseFormatError {
+        serde_json::from_slice(bytes).map_err(|err| Error::CoreResponseFormat {
             msg: err.to_string(),
         })
     }
@@ -393,11 +393,10 @@ where
     }
 }
 
-#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, PartialEq)]
 pub enum Error {
     #[error("Cannot parse Core response: {msg}")]
-    CoreResponseFormatError { msg: String },
+    CoreResponseFormat { msg: String },
 
     #[error("Core returned an error in an unknown format")]
     UnparsableErrorOutput,
@@ -406,10 +405,10 @@ pub enum Error {
     BrokenPipe,
 
     #[error(transparent)]
-    MqClientError(#[from] MqClientError),
+    MqClient(#[from] MqClientError),
 
     #[error(transparent)]
-    RawError(#[from] RawError),
+    Raw(#[from] RawError),
 
     #[error(
         "The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected"
@@ -422,7 +421,7 @@ impl Error {
         // We try to deserialize the response as an RawError in order to retain the context of the core error
         if let Ok(mut core_error) = <Json<RawError>>::from_bytes(bytes) {
             core_error.context.insert("url".to_owned(), url.into());
-            return Error::RawError(core_error);
+            return Error::Raw(core_error);
         }
         Error::UnparsableErrorOutput
     }
@@ -432,14 +431,12 @@ impl Error {
 impl Clone for Error {
     fn clone(&self) -> Self {
         match self {
-            Self::CoreResponseFormatError { msg } => {
-                Self::CoreResponseFormatError { msg: msg.clone() }
-            }
+            Self::CoreResponseFormat { msg } => Self::CoreResponseFormat { msg: msg.clone() },
             Self::UnparsableErrorOutput => Self::UnparsableErrorOutput,
             Self::BrokenPipe => Self::BrokenPipe,
-            Self::RawError(err) => Self::RawError(err.clone()),
+            Self::Raw(err) => Self::Raw(err.clone()),
             Self::NoResponseContent => Self::NoResponseContent,
-            Self::MqClientError(err) => Self::MqClientError(match err {
+            Self::MqClient(err) => Self::MqClient(match err {
                 MqClientError::Lapin(error) => MqClientError::Lapin(error.clone()),
                 MqClientError::Serialization(error) => MqClientError::Serialization(
                     // This is actually a supported behavior of serde_json that is forced to parse

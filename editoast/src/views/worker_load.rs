@@ -118,7 +118,7 @@ pub(in crate::views) async fn worker_load(
     let status = match status {
         Ok(WorkerLoadResponse { loaded: true }) => WorkerStatus::Ready,
         Ok(WorkerLoadResponse { loaded: false }) => WorkerStatus::NotReady,
-        Err(CoreClientError::MqClientError(MqClientError::ResponseTimeout)) => {
+        Err(CoreClientError::MqClient(MqClientError::ResponseTimeout)) => {
             // Treat timeout as NotReady
             WorkerStatus::NotReady
         }
