@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type EffectCallback, type DependencyList } from 'react';
 
 /**
  * Debounce input fields
@@ -32,4 +32,18 @@ export const useDebouncedFunc = <T = number | string | null>(
       clearTimeout(handler);
     };
   }, [value, delay]);
+};
+
+/**
+ * Debounce an effect (usage identical to react useEffect)
+ */
+export const useDebouncedEffect = (effect: EffectCallback, deps: DependencyList, delay: number) => {
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      effect();
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [...deps, delay]);
 };
