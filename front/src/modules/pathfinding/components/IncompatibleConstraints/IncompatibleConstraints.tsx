@@ -11,10 +11,12 @@ import { useTranslation } from 'react-i18next';
 import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
 import type {
+  CorePropertyGeometryProjection,
   GeoJsonLineString,
   CoreIncompatibleConstraints as IncompatibleConstraintsType,
 } from 'common/api/osrdEditoastApi';
 import Collapsable from 'common/Collapsable';
+import { convertGeomTopoTrackOffset } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import IncompatibleConstraintsFilters from './IncompatibleConstrainstFilters';
@@ -32,12 +34,14 @@ type IncompatibleConstraintsProps = {
   geometry?: GeoJsonLineString;
   pathLength?: number;
   incompatibleConstraints?: IncompatibleConstraintsType;
+  geometryProjection?: CorePropertyGeometryProjection;
 };
 
 const IncompatibleConstraints = ({
   geometry,
   pathLength,
   incompatibleConstraints,
+  geometryProjection,
 }: IncompatibleConstraintsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const map = useMap();
@@ -139,7 +143,10 @@ const IncompatibleConstraints = ({
   // When pathProperties changes
   //  => reset state
   useEffect(() => {
-    const data = geometry && incompatibleConstraints ? incompatibleConstraints : undefined;
+    const data =
+      geometry && incompatibleConstraints && geometryProjection
+        ? incompatibleConstraints
+        : undefined;
 
     const dataPairs = Object.entries(data || {});
 
@@ -161,11 +168,17 @@ const IncompatibleConstraints = ({
       .map(([key, value]) =>
         value.map((e) => {
           const id = `${key}-${e.range.start}-${e.range.end}`;
+          const start = geometryProjection
+            ? convertGeomTopoTrackOffset(geometryProjection, e.range.start, 'topo_to_geom')
+            : e.range.start * ratio;
+          const end = geometryProjection
+            ? convertGeomTopoTrackOffset(geometryProjection, e.range.end, 'topo_to_geom')
+            : e.range.end * ratio;
           return {
             id,
             type: key as IncompatibleConstraintType,
-            start: e.range.start * ratio,
-            end: e.range.end * ratio,
+            start,
+            end,
             value: 'value' in e ? e.value : undefined,
             bbox: bbox(
               lineSliceAlong(geometry as LineString, e.range.start * ratio, e.range.end * ratio, {
