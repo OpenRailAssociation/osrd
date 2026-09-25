@@ -9,7 +9,8 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use schemas::infra::ElectricalProfileSetData;
 use schemas::infra::LevelValues;
 use serde::Deserialize;
@@ -17,6 +18,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 
 use crate::error::Result;
+use crate::views::DatabaseError;
 use models::ElectricalProfileSet;
 use models::LightElectricalProfileSet;
 use models::prelude::*;
@@ -51,17 +53,20 @@ pub(in crate::views) async fn list(
     params(ElectricalProfileSetId),
     responses(
         (status = 200, body = ElectricalProfileSetData, description = "The list of electrical profiles in the set"),
+        ElectricalProfilesError
     )
 )]
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(electrical_profile_set_id): Path<i64>,
-) -> Result<Json<ElectricalProfileSetData>> {
+) -> Result<Json<ElectricalProfileSetData>, ElectricalProfilesError> {
     let ep_set = ElectricalProfileSet::retrieve_or_fail(
         db_pool.get().await?,
         electrical_profile_set_id,
-        || ElectricalProfilesError::NotFound {
-            electrical_profile_set_id,
+        || {
+            ElectricalProfilesError::NotFound(ElectricalProfileNotFound {
+                electrical_profile_set_id,
+            })
         },
     )
     .await?;
@@ -83,17 +88,20 @@ pub(in crate::views) async fn get(
                 "25000V": ["25000V", "22500V", "20000V"]
             })
         ),
+        ElectricalProfilesError
     )
 )]
 pub(in crate::views) async fn get_level_order(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(electrical_profile_set_id): Path<i64>,
-) -> Result<Json<HashMap<String, LevelValues>>> {
+) -> Result<Json<HashMap<String, LevelValues>>, ElectricalProfilesError> {
     let ep_set = ElectricalProfileSet::retrieve_or_fail(
         db_pool.get().await?,
         electrical_profile_set_id,
-        || ElectricalProfilesError::NotFound {
-            electrical_profile_set_id,
+        || {
+            ElectricalProfilesError::NotFound(ElectricalProfileNotFound {
+                electrical_profile_set_id,
+            })
         },
     )
     .await?;
@@ -108,12 +116,13 @@ pub(in crate::views) async fn get_level_order(
     params(ElectricalProfileSetId),
     responses(
         (status = 204, description = "The electrical profile was deleted successfully"),
+        DatabaseError
     )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(electrical_profile_set_id): Path<i64>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let conn = &mut db_pool.get().await?;
     let deleted = ElectricalProfileSet::delete_static(conn, electrical_profile_set_id).await?;
     if deleted {
@@ -138,13 +147,14 @@ pub(in crate::views) struct ElectricalProfileQueryArgs {
     request_body = ElectricalProfileSetData,
     responses(
         (status = 200, body = ElectricalProfileSet, description = "The list of ids and names of electrical profile sets available"),
+        DatabaseError
     )
 )]
 pub(in crate::views) async fn post_electrical_profile(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
     Json(ep_data): Json<ElectricalProfileSetData>,
-) -> Result<Json<ElectricalProfileSet>> {
+) -> Result<Json<ElectricalProfileSet>, DatabaseError> {
     let ep_set = ElectricalProfileSet::changeset()
         .name(ep_set_name.name)
         .data(ep_data);
@@ -152,16 +162,24 @@ pub(in crate::views) async fn post_electrical_profile(
     Ok(Json(ep_set.create(conn).await?))
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "electrical_profiles")]
-pub enum ElectricalProfilesError {
-    /// Couldn't find the electrical profile set with the given id
-    #[error("Electrical Profile Set '{electrical_profile_set_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { electrical_profile_set_id: i64 },
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("Electrical Profile Set '{electrical_profile_set_id}', could not be found")]
+#[view_error(status = NOT_FOUND, context, path = document::not_found)]
+pub(in crate::views) struct ElectricalProfileNotFound {
+    electrical_profile_set_id: i64,
+}
+
+#[derive(Debug, Error, ViewError, From)]
+pub(in crate::views) enum ElectricalProfilesError {
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] models::Error),
+    NotFound(
+        #[from]
+        #[view_error]
+        ElectricalProfileNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[cfg(test)]
