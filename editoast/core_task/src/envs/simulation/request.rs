@@ -114,9 +114,7 @@ pub(super) fn build_request(
             values: margin_values,
         },
         power_restrictions,
-        initial_speed: params
-            .initial_speed()
-            .get::<common::unit_system::velocity::meter_per_second>(),
+        initial_speed: unit_system::units::meter_per_second::from(params.initial_speed()),
         comfort: params.comfort(),
         constraint_distribution: params.constraint_distribution(),
         speed_limit_tag: params.speed_limit_tag().map(|s| s.to_owned()),

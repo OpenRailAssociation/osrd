@@ -273,7 +273,6 @@ pub(in crate::views) async fn update(
 
 #[cfg(test)]
 mod tests {
-    use common::units::millisecond;
     use models;
     use models::TrainScheduleException;
     use models::prelude::Retrieve as _;
@@ -283,6 +282,7 @@ mod tests {
     use schemas::paced_train::StartTimeChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
     use serde_json::json;
+    use unit_system::units::millisecond;
 
     use crate::error::InternalError;
     use crate::fixtures::create_timetable_with_simple_paced_train;

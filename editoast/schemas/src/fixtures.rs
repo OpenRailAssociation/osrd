@@ -4,8 +4,8 @@ use std::str::FromStr as _;
 
 use chrono::DateTime;
 use chrono::Utc;
-use common::unit_system;
-use common::units;
+use unit_system;
+use unit_system::units;
 
 use crate::RollingStock;
 use crate::rolling_stock::EffortCurves;

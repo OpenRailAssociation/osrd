@@ -1,4 +1,3 @@
-use common::units::millisecond;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::ReportTrain;
 use schemas::infra::TrackOffset;
@@ -9,6 +8,7 @@ use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::ScheduleItem;
 use serde::Deserialize;
 use serde::Serialize;
+use unit_system::units::millisecond;
 use utoipa::ToSchema;
 
 use crate::views::path::operational_point_cache::OperationalPointCache;
@@ -323,7 +323,6 @@ pub mod tests {
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use chrono::Duration;
-    use common::units::millisecond;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
@@ -341,6 +340,7 @@ pub mod tests {
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
+    use unit_system::units::millisecond;
 
     use super::*;
 

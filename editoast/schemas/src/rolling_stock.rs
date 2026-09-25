@@ -46,15 +46,6 @@ pub use sub_category::SubCategory;
 pub use sub_category::SubCategoryColor;
 
 mod train_category;
-pub use train_category::TrainCategory;
-
-use common::unit_system::quantities::Acceleration;
-use common::unit_system::quantities::Deceleration;
-use common::unit_system::quantities::Length;
-use common::unit_system::quantities::Mass;
-use common::unit_system::quantities::Time;
-use common::unit_system::quantities::Velocity;
-use common::units;
 use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Deserializer;
@@ -62,6 +53,14 @@ use serde::Serialize;
 use serde::Serializer;
 use std::collections::HashMap;
 use std::collections::HashSet;
+pub use train_category::TrainCategory;
+use unit_system::quantities::Acceleration;
+use unit_system::quantities::Deceleration;
+use unit_system::quantities::Length;
+use unit_system::quantities::Mass;
+use unit_system::quantities::Time;
+use unit_system::quantities::Velocity;
+use unit_system::units;
 use utoipa::ToSchema;
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.4";

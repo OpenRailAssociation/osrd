@@ -22,12 +22,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use common::unit_system::quantities::Acceleration;
-use common::unit_system::quantities::Length;
-use common::unit_system::quantities::Mass;
-use common::unit_system::quantities::Offset;
-use common::unit_system::quantities::Velocity;
-use common::units::millisecond;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
@@ -57,6 +51,12 @@ use simulation::train_simulation_ordered_batch;
 use thiserror::Error;
 use tokio::time::timeout;
 use train_schedule::TrainScheduleResponse;
+use unit_system::quantities::Acceleration;
+use unit_system::quantities::Length;
+use unit_system::quantities::Mass;
+use unit_system::quantities::Offset;
+use unit_system::quantities::Velocity;
+use unit_system::units::millisecond;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -988,7 +988,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::Duration;
-    use common::units;
     use core_client::simulation::RoutingZoneRequirement;
     use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
@@ -998,6 +997,7 @@ mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
+    use unit_system::units;
 
     use super::*;
     use crate::error::InternalError;

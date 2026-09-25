@@ -2,8 +2,6 @@ use crate::prelude::*;
 use crate::rolling_stock::TrainMainCategory;
 use crate::tags::Tags;
 use chrono::Duration as ChronoDuration;
-use common::unit_system::quantities::Offset;
-use common::units::millisecond;
 use derive_more::Display;
 use editoast_derive::Model;
 use itertools::Itertools as _;
@@ -24,6 +22,8 @@ use schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
 use std::fmt::Display;
+use unit_system::quantities::Offset;
+use unit_system::units::millisecond;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Model)]
@@ -37,7 +37,7 @@ pub struct TrainSchedule {
     pub labels: Tags,
     pub rolling_stock_name: String,
     pub train_schedule_set_id: i64,
-    #[model(uom_unit = "common::units::millisecond::i64")]
+    #[model(uom_unit = "unit_system::units::millisecond::i64")]
     /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     /// For hourly timetables: elapsed ms since the timetable start.
     pub start_time: Offset,
@@ -504,7 +504,6 @@ mod tests {
 
     use super::OccurrenceId;
     use super::TrainSchedule;
-    use common::unit_system::quantities::Offset;
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -512,6 +511,7 @@ mod tests {
     use schemas::fixtures::ms_since_epoch;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
+    use unit_system::quantities::Offset;
 
     use crate::prelude::*;
     use schemas::train_schedule::Comfort;

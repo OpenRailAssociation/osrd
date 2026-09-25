@@ -12,7 +12,6 @@ quantity! {
         N1>;    // time
 
     units {
-        /// The hertz is one cycle per second.
         @hertz: 1.0; "Hz", "hertz", "hertz";
         @newton_per_meter_per_second_per_kilogram: 1.0; "N·(m/s)⁻¹·kg⁻¹", "newton per meter per second per kilogram", "newtons per meter per second per kilogram";
     }

@@ -1,13 +1,13 @@
-use common::unit_system::quantities::AerodynamicDrag;
-use common::unit_system::quantities::AerodynamicDragPerWeight;
-use common::unit_system::quantities::SolidFriction;
-use common::unit_system::quantities::SolidFrictionPerWeight;
-use common::unit_system::quantities::ViscosityFriction;
-use common::unit_system::quantities::ViscosityFrictionPerWeight;
-use common::units;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
+use unit_system::quantities::AerodynamicDrag;
+use unit_system::quantities::AerodynamicDragPerWeight;
+use unit_system::quantities::SolidFriction;
+use unit_system::quantities::SolidFrictionPerWeight;
+use unit_system::quantities::ViscosityFriction;
+use unit_system::quantities::ViscosityFrictionPerWeight;
+use unit_system::units;
 use utoipa::ToSchema;
 
 pub trait RollingResistance: Serialize + for<'de> Deserialize<'de> {}

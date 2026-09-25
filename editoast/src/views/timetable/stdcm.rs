@@ -28,7 +28,6 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use common::geometry::GeoJsonPoint;
-use common::units::millisecond;
 use core_client::AsCoreStreaming as _;
 use core_client::CoreClient;
 use core_client::Progress;
@@ -71,6 +70,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::mpsc;
 use tracing::Instrument as _;
+use unit_system::units::millisecond;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -734,8 +734,6 @@ mod tests {
     use authz::RollingStockGrant;
     use axum::http::StatusCode;
     use chrono::DateTime;
-    use common::units;
-    use common::units::*;
     use core_client;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrainPath;
@@ -752,6 +750,8 @@ mod tests {
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
     use std::str::FromStr as _;
+    use unit_system::units;
+    use unit_system::units::*;
     use uuid::Uuid;
 
     use crate::error::InternalError;

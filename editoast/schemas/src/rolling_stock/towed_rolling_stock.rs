@@ -1,12 +1,12 @@
 use crate::rolling_stock::default_rolling_stock_railjson_version;
 
 use super::RollingResistancePerWeight;
-use common::unit_system::quantities::Acceleration;
-use common::unit_system::quantities::Deceleration;
-use common::unit_system::quantities::Length;
-use common::unit_system::quantities::Mass;
-use common::unit_system::quantities::Velocity;
-use common::units;
+use unit_system::quantities::Acceleration;
+use unit_system::quantities::Deceleration;
+use unit_system::quantities::Length;
+use unit_system::quantities::Mass;
+use unit_system::quantities::Velocity;
+use unit_system::units;
 
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]

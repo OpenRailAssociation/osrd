@@ -13,7 +13,6 @@ quantity! {
         N2>;    // time
 
     units {
-        /// Derived unit of force.
         @newton: 1.0; "N", "newton", "newtons";
         @kilonewton: 1.0E3; "kN", "kilonewton", "kilonewtons";
     }

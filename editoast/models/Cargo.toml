@@ -38,6 +38,7 @@ thiserror.workspace = true
 tokio.workspace = true
 tokio-postgres.workspace = true
 tracing.workspace = true
+unit_system.workspace = true
 url.workspace = true
 utoipa.workspace = true
 uuid.workspace = true

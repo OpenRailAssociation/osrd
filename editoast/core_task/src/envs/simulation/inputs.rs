@@ -47,9 +47,9 @@ pub struct SimulationTrainParameters {
     power_restrictions: rangemap::RangeMap<ScheduleItemIndex, String>,
     margins: rangemap::RangeMap<ScheduleItemIndex, MarginValue>,
 
-    #[educe(Hash(method(common::units::meter_per_second::hash)))]
-    #[educe(PartialEq(method(common::units::meter_per_second::eq)))]
-    initial_speed: common::unit_system::quantities::Velocity,
+    #[educe(Hash(method(unit_system::units::meter_per_second::hash)))]
+    #[educe(PartialEq(method(unit_system::units::meter_per_second::eq)))]
+    initial_speed: unit_system::quantities::Velocity,
     constraint_distribution: Distribution,
     comfort: Comfort,
     speed_limit_tag: Option<String>,
@@ -73,7 +73,7 @@ impl ScheduleItem {
 
 impl SimulationTrainParameters {
     pub fn new(
-        initial_speed: common::unit_system::quantities::Velocity,
+        initial_speed: unit_system::quantities::Velocity,
         constraint_distribution: Distribution,
         comfort: Comfort,
         speed_limit_tag: Option<String>,
@@ -103,7 +103,7 @@ impl SimulationTrainParameters {
         &self.margins
     }
 
-    pub fn initial_speed(&self) -> common::unit_system::quantities::Velocity {
+    pub fn initial_speed(&self) -> unit_system::quantities::Velocity {
         self.initial_speed
     }
 

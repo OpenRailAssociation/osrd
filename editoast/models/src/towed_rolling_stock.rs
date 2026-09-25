@@ -1,13 +1,13 @@
-use common::unit_system::quantities::Acceleration;
-use common::unit_system::quantities::Deceleration;
-use common::unit_system::quantities::Length;
-use common::unit_system::quantities::Mass;
-use common::unit_system::quantities::Velocity;
-use common::units;
 use editoast_derive::Model;
 use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
 use serde::Serialize;
+use unit_system::quantities::Acceleration;
+use unit_system::quantities::Deceleration;
+use unit_system::quantities::Length;
+use unit_system::quantities::Mass;
+use unit_system::quantities::Velocity;
+use unit_system::units;
 
 use crate::prelude::*;
 

@@ -36,34 +36,34 @@
 
 macro_rules! quantity_to_path {
     (Length, $unit:ident) => {
-        crate::unit_system::length::$unit
+        crate::quantities::length::$unit
     };
     (Velocity, $unit:ident) => {
-        crate::unit_system::velocity::$unit
+        crate::quantities::velocity::$unit
     };
     (Acceleration, $unit:ident) => {
-        crate::unit_system::acceleration::$unit
+        crate::quantities::acceleration::$unit
     };
     (Mass, $unit:ident) => {
-        crate::unit_system::mass::$unit
+        crate::quantities::mass::$unit
     };
     (SolidFriction, $unit:ident) => {
-        crate::unit_system::force::$unit
+        crate::quantities::force::$unit
     };
     (ViscosityFriction, $unit:ident) => {
-        crate::unit_system::mass_rate::$unit
+        crate::quantities::mass_rate::$unit
     };
     (ViscosityFrictionPerWeight, $unit:ident) => {
-        crate::unit_system::frequency::$unit
+        crate::quantities::frequency::$unit
     };
     (AerodynamicDrag, $unit:ident) => {
-        crate::unit_system::linear_mass_density::$unit
+        crate::quantities::linear_mass_density::$unit
     };
     (AerodynamicDragPerWeight, $unit:ident) => {
-        crate::unit_system::linear_number_density::$unit
+        crate::quantities::linear_number_density::$unit
     };
     (Time, $unit:ident) => {
-        crate::unit_system::time::$unit
+        crate::quantities::time::$unit
     };
 }
 
@@ -74,7 +74,7 @@ macro_rules! define_unit {
             use serde::Deserializer;
             use serde::Serialize;
             use serde::Serializer;
-            pub type Quantity = crate::unit_system::quantities::$quantity;
+            pub type Quantity = $crate::quantities::$quantity;
             type Unit = quantity_to_path!($quantity, $unit);
             pub type ReprType = f64;
 
@@ -102,11 +102,11 @@ macro_rules! define_unit {
             }
 
             pub fn hash<H: std::hash::Hasher>(value: &Quantity, state: &mut H) {
-                crate::hash_float::<5, H>(&from(*value), state);
+                common::hash_float::<5, H>(&from(*value), state);
             }
 
             pub fn eq(a: &Quantity, b: &Quantity) -> bool {
-                $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>())
+                common::float_eq(&a.get::<Unit>(), &b.get::<Unit>())
             }
 
             pub mod option {
@@ -145,7 +145,7 @@ macro_rules! define_unit {
 
                 pub fn eq(a: &Option<Quantity>, b: &Option<Quantity>) -> bool {
                     match (a, b) {
-                        (Some(a), Some(b)) => $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>()),
+                        (Some(a), Some(b)) => a == b,
                         (None, None) => true,
                         _ => false,
                     }
@@ -253,8 +253,8 @@ macro_rules! define_unit {
 }
 
 // Any new value here must also be added in editoast_derive/src/annotate_units.rs
-define_unit!(millimeter, Length);
 define_unit!(meter, Length);
+define_unit!(millimeter, Length);
 define_unit!(meter_per_second, Velocity);
 define_unit!(kilometer_per_hour, Velocity);
 define_unit!(meter_per_second_squared, Acceleration);
