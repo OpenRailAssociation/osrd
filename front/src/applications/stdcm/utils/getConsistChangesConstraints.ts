@@ -8,7 +8,7 @@ import type {
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
-type ConsistChange = {
+type PathfindingConsistChange = {
   index: number;
   rollingStockID: number;
   loadingGauge?: LoadingGaugeType;
@@ -23,7 +23,7 @@ type SegmentConstraints = {
 
 type getSegmentConstraintsOptions = {
   segmentIndex: number;
-  consistChanges: ConsistChange[];
+  consistChanges: PathfindingConsistChange[];
   getLightRollingStockById: GetLightRollingStockById;
   rollingStock: LightRollingStock;
   loadingGauge?: LoadingGaugeType;
@@ -33,7 +33,7 @@ type getSegmentConstraintsOptions = {
 type LaunchSegmentedPathfindingOptions = {
   pathSegmentsIndexes: number[];
   stdcmPathSteps: PathfindingItem[];
-  consistChanges: ConsistChange[];
+  consistChanges: PathfindingConsistChange[];
   getLightRollingStockById: GetLightRollingStockById;
   postPathfindingBlocks: PostPathfindingBlocks;
   infraId: number;
@@ -51,7 +51,7 @@ type PostPathfindingBlocks = ReturnType<
   typeof osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery
 >[0];
 
-export const getConsistChanges = (pathSteps: StdcmPathStep[]): ConsistChange[] =>
+export const getConsistChanges = (pathSteps: StdcmPathStep[]): PathfindingConsistChange[] =>
   pathSteps.flatMap((step, index) => {
     if (!step.isVia || !step.consistChange?.rollingStockID) return [];
     return [
@@ -65,7 +65,7 @@ export const getConsistChanges = (pathSteps: StdcmPathStep[]): ConsistChange[] =
   });
 
 export const getPathSegmentsIndexes = (
-  consistChanges: ConsistChange[],
+  consistChanges: PathfindingConsistChange[],
   totalSteps: number
 ): number[] => [0, ...consistChanges.map((change) => change.index), totalSteps - 1];
 
