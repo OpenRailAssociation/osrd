@@ -93,8 +93,7 @@
       "not_found": "Document '{{document_key}}' not found"
     },
     "electrical_profiles": {
-      "Database": "Internal error (database)",
-      "NotFound": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
+      "not_found": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
     },
     "fonts": {
       "file_not_found": "File for the requested font not found"

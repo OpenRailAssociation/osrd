@@ -14,19 +14,10 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::ContentType;
+use crate::views::DatabaseError;
 use database::DbConnectionPoolV2;
 use models::Document;
 use models::prelude::*;
-
-#[derive(Debug, thiserror::Error, ViewError)]
-pub(in crate::views) enum DatabaseError {
-    #[error("database error: {0}")]
-    #[view_error(status = INTERNAL_SERVER_ERROR)]
-    Internal(#[from] models::Error),
-    #[error("database unavailable: {0}")]
-    #[view_error(status = SERVICE_UNAVAILABLE)]
-    Unavailable(#[from] database::DatabasePoolError),
-}
 
 #[derive(Debug, thiserror::Error, ViewError)]
 #[error("Document '{document_key}' not found")]
