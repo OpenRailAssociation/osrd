@@ -222,6 +222,7 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
         via2Row,
         COMPUTED_THEORETICAL_MARGIN_VIA_B_AFTER_MARGIN_EDIT
       );
+
       await timesStopsTablePage.verifyMarginsDifferenceText(
         via2Row,
         MARGINS_DIFFERENCE_VIA_B_AFTER_MARGIN_EDIT
@@ -229,7 +230,15 @@ test.describe('Times Stops Table — Edits', { tag: ['@op', '@times-stops'] }, (
       await timesStopsTablePage.verifyRealMarginText(via2Row, REAL_MARGIN_VIA_B);
     });
 
+    // margin per 100 km feature is disabled when there is no simulation this is temporary
+    // it will be added in the distance column PR
+    // TODO: enable this test when we add margin per 100 km without simulation
     await test.step(`Switching unit to ${MARGIN_MIN_PER_100KM_DISPLAY} and committing updates the display accordingly`, async () => {
+      test.skip(
+        true,
+        "margin per 100 km is disabled when we don't have simulation until we add distance column"
+      );
+
       await timesStopsTablePage.startEditingRequestedMargin(waypointRow);
       await timesStopsTablePage.verifyActiveMarginUnit(waypointRow, MARGIN_UNIT_PERCENT);
       await timesStopsTablePage.switchMarginUnit(waypointRow, MARGIN_UNIT_MIN_PER_100KM);

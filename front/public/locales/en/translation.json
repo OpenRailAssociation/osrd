@@ -837,8 +837,10 @@
   },
   "timeStopTable": {
     "calculatedArrivalTime": "calculated arrival time",
+    "calculatedBaseArrival": "calculated base arrival",
     "calculatedDepartureTime": "calculated departure time",
     "clearRequestedArrivalTime": "Clear the requested arrival time",
+    "clearRequestedBaseArrival": "Clear requested base arrival",
     "clearRequestedDepartureTime": "Clear the requested departure time",
     "clearStopDuration": "Clear the stopping time",
     "columnHeader": {
@@ -883,6 +885,7 @@
     "receptionOnClosedSignal": "closed signal",
     "receptionOnClosedSignalFull": "reception on closed signal",
     "requestedArrival": "requested arrival time",
+    "requestedBaseArrival": "requested base arrival",
     "requestedDeparture": "requested depart. time",
     "requestedTheoreticalMargin": "requested theoretical margin",
     "shortSlipDistance": "short slip distance",

@@ -68,6 +68,8 @@ export type TimesStopsRow = {
   // Travel Times
   timeFromPreviousOp: Duration | null;
   totalTravelTime: Duration | null;
+
+  baseArrival: StartTime | null;
 };
 
 export type TheoreticalMarginsRecord = Record<
@@ -135,6 +137,12 @@ export type BatchTimesUpdate = {
   field: RequestedTimeField;
 };
 
+export type ReferenceBaseArrivalUpdate = {
+  row: TimesStopsRow;
+  field: 'referenceBaseArrival';
+  value: StartTime | null;
+};
+
 export type CellUpdate =
   | ArrivalUpdate
   | StopDurationUpdate
@@ -142,7 +150,8 @@ export type CellUpdate =
   | ReceptionSignalUpdate
   | RequestedMarginUpdate
   | PowerRestrictionUpdate
-  | BatchTimesUpdate;
+  | BatchTimesUpdate
+  | ReferenceBaseArrivalUpdate;
 
 export type OptimisticEdit =
   | { field: 'requestedArrival'; value: StartTime | null }
@@ -151,7 +160,8 @@ export type OptimisticEdit =
   | { field: 'stopDurationWithArrival'; value: { stop: Duration | null; arrival: StartTime } }
   | { field: 'receptionSignal'; value: ReceptionSignal | undefined }
   | { field: 'requestedTheoreticalMargin'; value: MarginValue | null }
-  | { field: 'powerRestriction'; value: string | null };
+  | { field: 'powerRestriction'; value: string | null }
+  | { field: 'referenceBaseArrival'; value: StartTime | null };
 
 export type PendingEdit = OptimisticEdit & { rowId: string };
 
@@ -169,8 +179,8 @@ type MarginsCoreBase = {
 };
 
 export type MarginsCoreComputed = MarginsCoreBase & {
-  provisionalLostTime: number;
-  finalLostTime: number;
+  provisionalLostTime: number | undefined;
+  finalLostTime: number | undefined;
 };
 
 export type MarginsCore = null | MarginsCoreBase | MarginsCoreComputed;
