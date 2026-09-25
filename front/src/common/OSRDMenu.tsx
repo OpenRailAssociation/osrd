@@ -36,11 +36,14 @@ const OSRDMenu = ({ menuRef, items, className }: OSRDMenuProps) => (
       }) => (
         <button
           key={title}
-          disabled={disabled}
+          // `aria-disabled` (rather than the native `disabled` attribute) keeps the button
+          // reacting to mouse events, so the menu wrapper's mousedown handler can still
+          // preventDefault() and avoid stealing focus from the input that opened the menu.
+          aria-disabled={disabled || undefined}
           title={disabled ? disabledMessage : undefined}
           type="button"
           className={cx('menu-item', itemClassName)}
-          onClick={onClick}
+          onClick={disabled ? undefined : onClick}
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           data-testid={dataTestID}
