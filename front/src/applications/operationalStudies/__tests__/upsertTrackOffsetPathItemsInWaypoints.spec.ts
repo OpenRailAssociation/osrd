@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { describe, it, expect } from 'vitest';
 
-import type { PathItem } from 'common/api/osrdEditoastApi';
+import type { PathItem, TrackSection } from 'common/api/osrdEditoastApi';
 import type { PathWaypoint } from 'modules/simulationResult/types';
 
 import { upsertTrackOffsetPathItemsInWaypoints } from '../helpers/upsertTrackOffsetPathItemsInWaypoints';
@@ -11,6 +11,20 @@ Mocks the translation t function by stripping the namespace prefixes of the pass
 Example: tMock('main.requestedPoint') => 't_requestedPoint'
 */
 const tMock = ((key: string, _options?: unknown) => `t_${key.split('.').at(-1)}`) as TFunction;
+
+const buildTrackSection = (id: string, trackName: string): TrackSection => ({
+  id,
+  length: 0,
+  curves: [],
+  slopes: [],
+  geo: { type: 'LineString', coordinates: [] },
+  extensions: { sncf: { line_code: 1, line_name: '1', track_name: trackName, track_number: 1 } },
+});
+
+const TRACK_SECTIONS_BY_ID: Record<string, TrackSection> = {
+  TA6: buildTrackSection('TA6', 'V2'),
+  TC0: buildTrackSection('TC0', 'V3'),
+};
 
 type Op = {
   name: string;
@@ -111,7 +125,8 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       pathSteps,
       pathItemPositions,
       OPERATIONAL_POINTS,
-      tMock
+      tMock,
+      TRACK_SECTIONS_BY_ID
     );
 
     const expectedOps: PathWaypoint[] = [
@@ -151,7 +166,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 7746000,
-          local_track_name: 'V1',
+          local_track_name: 'V2',
         },
         position: 9246000,
         weight: null,
@@ -256,7 +271,8 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           positionOnPath: 4069000,
         },
       ]),
-      tMock
+      tMock,
+      TRACK_SECTIONS_BY_ID
     );
 
     const expectedOps: PathWaypoint[] = [
@@ -272,7 +288,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 6481000,
-          local_track_name: 'V1',
+          local_track_name: 'V2',
         },
         position: 0,
         weight: null,
@@ -318,7 +334,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC0',
           position: 679000,
-          local_track_name: 'V1',
+          local_track_name: 'V3',
         },
         position: 4198000,
         weight: null,
@@ -340,7 +356,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC0',
           position: 883000,
-          local_track_name: 'V1',
+          local_track_name: 'V3',
         },
         position: 4402000,
         weight: null,
@@ -381,7 +397,8 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       pathSteps,
       pathItemPositions,
       [],
-      tMock
+      tMock,
+      TRACK_SECTIONS_BY_ID
     );
 
     const expectedOps: PathWaypoint[] = [
@@ -397,7 +414,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 6481000,
-          local_track_name: 'V1',
+          local_track_name: 'V2',
         },
         position: 0,
         weight: null,
@@ -419,7 +436,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 4733000,
-          local_track_name: 'V1',
+          local_track_name: 'V2',
         },
         position: 1748000,
         weight: null,
