@@ -50,18 +50,18 @@ export const getPathfindingQuery = ({
   allowedTrackSections,
 }: {
   infraId?: number;
-  rollingStock?: Pick<
+  rollingStock: Pick<
     LightRollingStock,
     'effort_curves' | 'loading_gauge' | 'max_speed' | 'length' | 'supported_signaling_systems'
   >;
   pathSteps: (PathfindingItem | null)[];
-  loadingGauge?: LoadingGaugeType;
-  speedLimitByTag?: string | null;
-  allowedTrackSections?: string[];
+  loadingGauge: LoadingGaugeType | undefined;
+  speedLimitByTag: string | null | undefined;
+  allowedTrackSections: string[] | undefined;
 }): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
   const origin = pathSteps.at(0);
   const destination = pathSteps.at(-1);
-  if (infraId && rollingStock && origin && destination) {
+  if (infraId && origin && destination) {
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
     const pathItems: PathfindingInput['path_items'] = compact(pathSteps);
 
