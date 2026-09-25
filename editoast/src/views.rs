@@ -31,6 +31,7 @@ mod version;
 pub mod work_schedules;
 mod worker_load;
 
+use editoast_derive::ViewError;
 pub use server::*;
 
 #[cfg(test)]
@@ -505,6 +506,16 @@ where
             Err(_) => Err(StatusCode::BAD_REQUEST),
         }
     }
+}
+
+#[derive(Debug, thiserror::Error, ViewError)]
+pub(in crate::views) enum DatabaseError {
+    #[error("database error: {0}")]
+    #[view_error(status = INTERNAL_SERVER_ERROR)]
+    Internal(#[from] models::Error),
+    #[error("database unavailable: {0}")]
+    #[view_error(status = SERVICE_UNAVAILABLE)]
+    Unavailable(#[from] database::DatabasePoolError),
 }
 
 #[cfg(test)]

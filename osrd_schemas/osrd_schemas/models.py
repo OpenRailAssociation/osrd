@@ -913,34 +913,6 @@ class EditoastEditionErrorSplitTrackSectionBadOffset(BaseModel):
     )
 
 
-class EditoastElectricalProfilesErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastElectricalProfilesErrorDatabaseContext"),
-    ] = None
-    message: str
-    status: Literal[500] = 500
-    type: Literal["editoast:electrical_profiles:Database"] = (
-        "editoast:electrical_profiles:Database"
-    )
-
-
-class EditoastElectricalProfilesErrorNotFoundContext(BaseModel):
-    electrical_profile_set_id: int
-
-
-class EditoastElectricalProfilesErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastElectricalProfilesErrorNotFoundContext | None,
-        Field(title="EditoastElectricalProfilesErrorNotFoundContext"),
-    ] = None
-    message: str
-    status: Literal[404] = 404
-    type: Literal["editoast:electrical_profiles:NotFound"] = (
-        "editoast:electrical_profiles:NotFound"
-    )
-
-
 class EditoastErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastErrorDatabaseContext")
@@ -4989,8 +4961,6 @@ class EditoastError(
         | EditoastDelimitedAreaErrorInvalidLocations
         | EditoastEditionErrorInfraIsLocked
         | EditoastEditionErrorSplitTrackSectionBadOffset
-        | EditoastElectricalProfilesErrorDatabase
-        | EditoastElectricalProfilesErrorNotFound
         | EditoastErrorDatabase
         | EditoastErrorInfraNotFound
         | EditoastErrorInvalidInput
@@ -5167,8 +5137,6 @@ class EditoastError(
         | EditoastDelimitedAreaErrorInvalidLocations
         | EditoastEditionErrorInfraIsLocked
         | EditoastEditionErrorSplitTrackSectionBadOffset
-        | EditoastElectricalProfilesErrorDatabase
-        | EditoastElectricalProfilesErrorNotFound
         | EditoastErrorDatabase
         | EditoastErrorInfraNotFound
         | EditoastErrorInvalidInput
