@@ -16,6 +16,7 @@ import {
   getLoadingGauge,
   getStdcmSpeedLimitByTag,
   getTrackSectionIdsByLoadingGauge,
+  getTotalLength,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useDebouncedEffect } from 'utils/hooks/useDebounce';
@@ -58,6 +59,7 @@ const useStaticPathfinding = (
   const [consistChanges, setConsistChanges] = useState(() => getConsistChanges(pathSteps));
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const totalLength = useSelector(getTotalLength);
   const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
@@ -96,7 +98,13 @@ const useStaticPathfinding = (
         setPathfinding(undefined);
         setShowPathfindingStatusMessage(false);
 
-        if (!infra || workerStatus !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
+        if (
+          !infra ||
+          workerStatus !== 'READY' ||
+          !rollingStock ||
+          !totalLength ||
+          pathStepsLocations.length < 2
+        ) {
           return;
         }
 
@@ -139,6 +147,7 @@ const useStaticPathfinding = (
           postPathfindingBlocks,
           infraId: infra.id,
           rollingStock,
+          totalLength,
           loadingGauge,
           speedLimitByTag,
           allowedTrackSections,
@@ -164,6 +173,7 @@ const useStaticPathfinding = (
     [
       pathStepsLocations,
       rollingStock,
+      totalLength,
       speedLimitByTag,
       loadingGauge,
       trackSectionIdsByLoadingGauge,

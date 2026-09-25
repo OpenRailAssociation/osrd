@@ -44,6 +44,7 @@ export const formatSuggestedOperationalPoints = (
 export const getPathfindingQuery = ({
   infraId,
   rollingStock,
+  totalLength,
   pathSteps,
   loadingGauge,
   speedLimitByTag,
@@ -54,6 +55,7 @@ export const getPathfindingQuery = ({
     LightRollingStock,
     'effort_curves' | 'loading_gauge' | 'max_speed' | 'length' | 'supported_signaling_systems'
   >;
+  totalLength: number;
   pathSteps: (PathfindingItem | null)[];
   loadingGauge: LoadingGaugeType | undefined;
   speedLimitByTag: string | null | undefined;
@@ -78,7 +80,7 @@ export const getPathfindingQuery = ({
           (s) => s.type
         ),
         rolling_stock_maximum_speed: rollingStock.max_speed,
-        rolling_stock_length: Math.round(mToMm(rollingStock.length)),
+        rolling_stock_length: Math.round(mToMm(totalLength)),
         speed_limit_tag: speedLimitByTag,
         allowed_track_sections: allowedTrackSections,
       },
