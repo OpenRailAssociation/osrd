@@ -232,7 +232,7 @@ pub(in crate::views) async fn retrieve_latest(
 }
 
 #[derive(IntoParams, Deserialize)]
-#[allow(unused)]
+#[allow(unused, reason = "only used as an OpenAPI schema")]
 pub(in crate::views) struct StdcmSearchEnvIdParam {
     /// An stdcm search environment ID
     env_id: i64,
