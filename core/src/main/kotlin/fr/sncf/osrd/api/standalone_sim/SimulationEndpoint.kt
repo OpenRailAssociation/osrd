@@ -69,26 +69,26 @@ class SimulationEndpoint(
                 )
 
             val res =
-            okio.FileSystem.SYSTEM.write("/tmp/sim.log".toPath()) {
-                val tracer = Tracer(this)
+                okio.FileSystem.SYSTEM.write("/tmp/sim.log".toPath()) {
+                    val tracer = Tracer(this)
 
-                runSimulation(
-                    infra,
-                    trainPath,
-                    rollingStock,
-                    request.comfort,
-                    request.constraintDistribution.toRJS(),
-                    request.speedLimitTag,
-                    parsePowerRestrictions(request.powerRestrictions),
-                    request.options.useElectricalProfiles,
-                    request.options.useSpeedLimits ?: true,
-                    2.0,
-                    request.schedule,
-                    request.initialSpeed,
-                    request.margins,
-                    tracer = tracer,
-                )
-            }
+                    runSimulation(
+                        infra,
+                        trainPath,
+                        rollingStock,
+                        request.comfort,
+                        request.constraintDistribution.toRJS(),
+                        request.speedLimitTag,
+                        parsePowerRestrictions(request.powerRestrictions),
+                        request.options.useElectricalProfiles,
+                        request.options.useSpeedLimits ?: true,
+                        2.0,
+                        request.schedule,
+                        request.initialSpeed,
+                        request.margins,
+                        tracer = tracer,
+                    )
+                }
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
             if (ex is OSRDError && ex.osrdErrorType.isRecoverable) {
