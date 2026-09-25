@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils.units
 
+import fr.sncf.osrd.utils.toGroupedString
 import kotlin.math.absoluteValue
 
 /**
@@ -28,10 +29,30 @@ value class Duration(val milliseconds: Long) : Comparable<Duration> {
     }
 
     override fun toString(): String {
-        val seconds = milliseconds / 1000
-        val decimal = (milliseconds % 1000).absoluteValue
-        return if (decimal == 0L) "${seconds}s"
-        else "${seconds}.${decimal.toString().padStart(3, '0')}s"
+        val sign = if (milliseconds < 0) "-" else ""
+        val abs = milliseconds.absoluteValue
+
+        val days = abs / 86_400_000
+        val hours = abs / 3_600_000 % 24
+        val minutes = abs / 60_000 % 60
+        val seconds = abs / 1_000 % 60
+        val ms = abs % 1_000
+
+        return buildString {
+            append(sign)
+
+            if (days > 0) {
+                append("${days.toGroupedString()}T")
+            }
+
+            append("$hours".padStart(2, '0') + ":")
+            append("$minutes".padStart(2, '0') + ":")
+            append("$seconds".padStart(2, '0'))
+
+            if (ms > 0) {
+                append("." + "$ms".padStart(3, '0'))
+            }
+        }
     }
 
     companion object {
