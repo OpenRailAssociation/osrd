@@ -17,6 +17,7 @@ package fr.sncf.osrd.utils.units
 
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
+import fr.sncf.osrd.utils.toGroupedString
 import kotlin.jvm.JvmInline
 import kotlin.math.absoluteValue
 import kotlin.math.round
@@ -71,35 +72,36 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
 
     /** This is just used for clearer display in debugging windows */
     override fun toString(): String {
-        val isNegative = millimeters < 0
-        val absolute = millimeters.absoluteValue
+        val sign = if (millimeters < 0) "-" else ""
+        val abs = millimeters.absoluteValue
 
-        val kilometers = absolute / 1_000_000
+        val km = abs / 1_000_000
+        val m = (abs % 1_000_000) / 1_000
+        val mm = abs % 1_000
 
-        val decimalKm = absolute % 1_000_000
-        val meters = decimalKm / 1_000
-
-        val decimalM = decimalKm % 1_000
-
-        if (kilometers >= 1 || kilometers <= -1) {
-            var s = "$kilometers".reversed().chunked(3).joinToString("_").reversed()
-            if (decimalKm != 0L) {
-                s += "." + "$meters".padStart(3, '0')
-                if (decimalM != 0L) {
-                    s += "_" + "$decimalM".padStart(3, '0')
+        return when {
+            km > 0 ->
+                buildString {
+                    append("$sign${km.toGroupedString()}")
+                    if (m != 0L || mm != 0L) {
+                        append("." + "$m".padStart(3, '0'))
+                        if (mm != 0L) {
+                            append("_" + "$mm".padStart(3, '0'))
+                        }
+                    }
+                    append("km")
                 }
-            }
-            if (isNegative) s = "-$s"
-            return "${s}km"
-        } else if (meters >= 1 || meters <= -1) {
-            var s = "$meters"
-            if (decimalM != 0L) {
-                s += "." + "$decimalM".padStart(3, '0')
-            }
-            if (isNegative) s = "-$s"
-            return "${s}m"
-        } else {
-            return "${millimeters}mm"
+
+            m > 0 ->
+                buildString {
+                    append("$sign$m")
+                    if (mm != 0L) {
+                        append("." + "$mm".padStart(3, '0'))
+                    }
+                    append("m")
+                }
+
+            else -> "${millimeters}mm"
         }
     }
 
