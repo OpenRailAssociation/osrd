@@ -265,7 +265,8 @@ pub(in crate::views) async fn search_journeys(
             .enumerate()
             .flat_map(|(train_schedule_index, train_schedule)| {
                 // Timetables are only Calendar so we can use the raw start_time
-                let offset_ms = common::units::millisecond::i64::from(train_schedule.start_time);
+                let offset_ms =
+                    unit_system::units::millisecond::i64::from(train_schedule.start_time);
 
                 // avoid moving them into the filter_map closure
                 let op_index_by_id = &op_index_by_id;

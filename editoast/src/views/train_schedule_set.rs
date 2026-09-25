@@ -360,12 +360,12 @@ mod tests {
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use crate::views::train_schedule_set::TrainScheduleSetUpdateForm;
     use chrono::Duration;
-    use common::units::second;
     use database::DbConnection;
     use models::CatalogEntry;
     use models::TrainScheduleSet;
     use models::prelude::*;
     use reqwest::StatusCode;
+    use unit_system::units::second;
 
     async fn create_train_schedule_set_linked_to_catalog_entry(
         conn: &mut DbConnection,

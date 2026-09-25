@@ -16,7 +16,6 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use common::units::millisecond;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingInputError;
@@ -55,6 +54,7 @@ use schemas::train_schedule::TrainScheduleLike as _;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use unit_system::units::millisecond;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 

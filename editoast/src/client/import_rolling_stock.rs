@@ -123,7 +123,6 @@ mod tests {
 
         use crate::client::generate_temp_file;
 
-        use common::units;
         use database::DbConnectionPool;
 
         fn get_fast_rolling_stock_schema(
@@ -300,7 +299,7 @@ mod tests {
 
             // second rolling stock with same values except length (100.0 instead of 400.0)
             let mut updated_rolling_stock_form = existing_rolling_stock_form.clone();
-            updated_rolling_stock_form.length = units::meter::new(100.0);
+            updated_rolling_stock_form.length = unit_system::units::meter::new(100.0);
             let file = generate_temp_file(&updated_rolling_stock_form);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
@@ -320,7 +319,7 @@ mod tests {
                     .await
                     .unwrap();
             assert!(rolling_stock.is_some());
-            assert!(rolling_stock.unwrap().length == units::meter::new(400.0));
+            assert!(rolling_stock.unwrap().length == unit_system::units::meter::new(400.0));
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -342,7 +341,7 @@ mod tests {
 
             // second rolling stock with same values except length (100.0 instead of 400.0)
             let mut updated_rolling_stock_form = existing_rolling_stock_form.clone();
-            updated_rolling_stock_form.length = units::meter::new(100.0);
+            updated_rolling_stock_form.length = unit_system::units::meter::new(100.0);
             let file = generate_temp_file(&updated_rolling_stock_form);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
@@ -362,7 +361,7 @@ mod tests {
                     .await
                     .unwrap();
             assert!(rolling_stock.is_some());
-            assert!(rolling_stock.unwrap().length == units::meter::new(100.0));
+            assert!(rolling_stock.unwrap().length == unit_system::units::meter::new(100.0));
         }
     }
 

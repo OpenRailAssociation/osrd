@@ -54,24 +54,13 @@ system! {
     }
 }
 
-pub mod quantities {
-    ESQ!(self::super, f64);
-    // Editoast aliases for existing units
-    pub type Offset = Time;
-    pub type SolidFriction = Force;
-    pub type SolidFrictionPerWeight = Acceleration;
-    pub type Deceleration = Acceleration;
-    pub type ViscosityFriction = MassRate;
-    pub type ViscosityFrictionPerWeight = Frequency;
-    pub type AerodynamicDrag = LinearMassDensity;
-    pub type AerodynamicDragPerWeight = LinearNumberDensity;
-}
-
-pub fn quantity_eq<D, U, V>(a: &Quantity<D, U, V>, b: &Quantity<D, U, V>) -> bool
-where
-    D: Dimension + ?Sized,
-    U: Units<V> + ?Sized,
-    V: uom::num_traits::Num + uom::num_traits::float::TotalOrder + uom::Conversion<V>,
-{
-    crate::float_eq(&a.value, &b.value)
-}
+ESQ!(self, f64);
+// Editoast aliases for existing units
+pub type Offset = Time;
+pub type SolidFriction = Force;
+pub type SolidFrictionPerWeight = Acceleration;
+pub type Deceleration = Acceleration;
+pub type ViscosityFriction = MassRate;
+pub type ViscosityFrictionPerWeight = Frequency;
+pub type AerodynamicDrag = LinearMassDensity;
+pub type AerodynamicDragPerWeight = LinearNumberDensity;
