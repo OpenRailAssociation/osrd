@@ -170,7 +170,6 @@ impl TestAppBuilder {
             },
             trains_traffic: Arc::new(RwLock::new(self.trains_traffic)),
             s3_config: None,
-            enable_project_permissions: true,
         };
 
         // Setup tracing

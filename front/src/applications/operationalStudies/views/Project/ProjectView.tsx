@@ -6,7 +6,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import ReactMarkdown from 'react-markdown';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 
@@ -30,7 +29,6 @@ import NavBar from 'common/NavBar';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
-import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useProjectImage } from 'utils/hooks/useProjectImage';
 import { budgetFormat } from 'utils/numbers';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
@@ -52,7 +50,6 @@ type ProjectParams = {
 const ProjectView = () => {
   const { t } = useTranslation('operational-studies');
   const { openModal } = useModal();
-  const projectGrantsActivated = useSelector(getFeatureFlag('projectGrants'));
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
@@ -80,9 +77,9 @@ const ProjectView = () => {
   const { getUserPrivileges } = useAuthz();
   // Get the user privileges for the project
   const userPrivileges = useAsyncMemo(async () => {
-    const data = projectGrantsActivated ? await getUserPrivileges({ project: [projectId!] }) : {};
+    const data = await getUserPrivileges({ project: [projectId!] });
     return data.project || {};
-  }, [getUserPrivileges, projectId, projectGrantsActivated]);
+  }, [getUserPrivileges, projectId]);
 
   const imageUrl = useProjectImage(project?.image);
 
@@ -247,17 +244,13 @@ const ProjectView = () => {
                     <img src={imageUrl} alt={t('project.projectImage')} />
                   </div>
                   {/* TODO: adapt with the good resourceType when back is ready */}
-                  {projectGrantsActivated && (
-                    <GrantsManager
-                      resourceId={project.id}
-                      resourceType="project"
-                      userPrivileges={
-                        userPrivileges.type === 'ready'
-                          ? userPrivileges.data[project.id]
-                          : undefined
-                      }
-                    />
-                  )}
+                  <GrantsManager
+                    resourceId={project.id}
+                    resourceType="project"
+                    userPrivileges={
+                      userPrivileges.type === 'ready' ? userPrivileges.data[project.id] : undefined
+                    }
+                  />
                 </div>
                 <div className={'pl-md-2 col-lg-8 col-md-8'}>
                   <div className="project-details-title-content">
