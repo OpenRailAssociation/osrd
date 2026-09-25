@@ -18,6 +18,7 @@ import {
   getTrackSectionIdsByLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { useDebouncedEffect } from 'utils/hooks/useDebounce';
 
 import {
   getConsistChanges,
@@ -47,7 +48,11 @@ function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
   );
 }
 
-const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
+const useStaticPathfinding = (
+  workerStatus: WorkerStatus,
+  infra: Infra | undefined,
+  debounceMs = 400
+) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
   const [consistChanges, setConsistChanges] = useState(() => getConsistChanges(pathSteps));
@@ -83,7 +88,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     });
   }, [pathSteps]);
 
-  useEffect(() => {
+  useDebouncedEffect(debounceMs, () => {
     let dependenciesUpToDate = true;
 
     const launchPathfinding = async () => {
