@@ -83,19 +83,21 @@
       "MqClientError": "Core: MQ client error",
       "UnparsableErrorOutput": "Core returned an error in an unknown format"
     },
+    "database": {
+      "internal": "Internal error (database)"
+    },
     "delimited_area": {
       "InvalidLocations": "Some locations are invalid"
     },
     "document": {
-      "Database": "Internal error (database)",
-      "NotFound": "Document '{{document_key}}' not found"
+      "not_found": "Document '{{document_key}}' not found"
     },
     "electrical_profiles": {
       "Database": "Internal error (database)",
       "NotFound": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
     },
     "fonts": {
-      "FileNotFound": "File for the requested font not found"
+      "file_not_found": "File for the requested font not found"
     },
     "geometry": {
       "UnexpectedGeometry": "Expected geometry {{expected}} but got {{actual}}"

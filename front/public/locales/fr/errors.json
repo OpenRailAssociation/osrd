@@ -83,19 +83,21 @@
       "MqClientError": "Core : erreur du client MQ",
       "UnparsableErrorOutput": "Core : a renvoyé une erreur dans un format inconnu"
     },
+    "database": {
+      "internal": "Erreur interne (base de données)"
+    },
     "delimited_area": {
       "InvalidLocations": "Certaines localisations sont invalides"
     },
     "document": {
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Document '{{document_key}}' non trouvé"
+      "not_found": "Document '{{document_key}}' non trouvé"
     },
     "electrical_profiles": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé"
     },
     "fonts": {
-      "FileNotFound": "Fichier pour la police de charactère demandée non trouvé"
+      "file_not_found": "Fichier pour la police de caractères demandée non trouvé"
     },
     "geometry": {
       "UnexpectedGeometry": "Géometrie {{expected}} attendue mais {{actual}} reçue"
