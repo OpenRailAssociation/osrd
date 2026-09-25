@@ -37,13 +37,15 @@ export const useDebouncedFunc = <T = number | string | null>(
 /**
  * Debounce an effect (usage identical to react useEffect)
  */
-export const useDebouncedEffect = (effect: EffectCallback, deps: DependencyList, delay: number) => {
+export const useDebouncedEffect = (delay: number, effect: EffectCallback, deps: DependencyList) => {
   useEffect(() => {
+    let destructor: (() => void) | void = undefined;
     const handler = setTimeout(() => {
-      effect();
+      destructor = effect();
     }, delay);
     return () => {
       clearTimeout(handler);
+      if (destructor) destructor();
     };
   }, [...deps, delay]);
 };

@@ -126,7 +126,7 @@ describe('useDebouncedEffect', () => {
   it('should debounce an effect', () => {
     const mockFunc = vi.fn<(dep1: number, dep2: string) => void>();
     const { rerender } = renderHook(
-      ({ dep1, dep2 }) => useDebouncedEffect(() => mockFunc(dep1, dep2), [dep1, dep2], 500),
+      ({ dep1, dep2 }) => useDebouncedEffect(500, () => mockFunc(dep1, dep2), [dep1, dep2]),
       { initialProps: { dep1: 0, dep2: '' } }
     );
 
@@ -156,5 +156,72 @@ describe('useDebouncedEffect', () => {
     });
     expect(mockFunc).toHaveBeenCalledTimes(2);
     expect(mockFunc).toHaveBeenLastCalledWith(4, 'c');
+  });
+
+  it('should invoke the eventual returned destuctor on dependency change or unmount', () => {
+    const mockFunc = vi.fn<(dep1: number, dep2: string) => () => void>();
+    const mockDestructor = vi.fn();
+    mockFunc.mockReturnValue(mockDestructor);
+    const { rerender, unmount } = renderHook(
+      ({ dep1, dep2 }) => useDebouncedEffect(500, () => mockFunc(dep1, dep2), [dep1, dep2]),
+      { initialProps: { dep1: 0, dep2: '' } }
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    rerender({ dep1: 0, dep2: 'a' });
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    expect(mockFunc).not.toHaveBeenCalled();
+    expect(mockDestructor).not.toHaveBeenCalled();
+
+    rerender({ dep1: 0, dep2: 'a' });
+    act(() => {
+      vi.advanceTimersByTime(101);
+    });
+    expect(mockFunc).toHaveBeenCalledOnce();
+    expect(mockDestructor).not.toHaveBeenCalled();
+
+    rerender({ dep1: 3, dep2: 'a' });
+    expect(mockFunc).toHaveBeenCalledOnce();
+    expect(mockDestructor).toHaveBeenCalledOnce();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(mockFunc).toHaveBeenCalledTimes(2);
+    expect(mockDestructor).toHaveBeenCalledOnce();
+
+    unmount();
+    expect(mockFunc).toHaveBeenCalledTimes(2);
+    expect(mockDestructor).toHaveBeenCalledTimes(2);
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(mockFunc).toHaveBeenCalledTimes(2);
+    expect(mockDestructor).toHaveBeenCalledTimes(2);
+  });
+
+  it('should clear the timeout on unmount before the timeout finishes', () => {
+    const mockFunc = vi.fn<(dep1: number, dep2: string) => () => void>();
+    const mockDestructor = vi.fn();
+    mockFunc.mockReturnValue(mockDestructor);
+    const { unmount } = renderHook(
+      ({ dep1, dep2 }) => useDebouncedEffect(500, () => mockFunc(dep1, dep2), [dep1, dep2]),
+      { initialProps: { dep1: 0, dep2: '' } }
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    unmount();
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(mockFunc).not.toHaveBeenCalled();
+    expect(mockDestructor).not.toHaveBeenCalled();
   });
 });
