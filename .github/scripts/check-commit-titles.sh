@@ -14,7 +14,7 @@ if [ -z "$NOCOLOR" ]; then
 fi
 
 
-checks='check_fixup check_forbidden_chars check_structure'
+checks='check_fixup check_forbidden_chars check_structure check_issue_number'
 
 # shellcheck disable=SC2329 # Called indirectly
 check_fixup() {
@@ -25,8 +25,15 @@ check_fixup() {
 
 # shellcheck disable=SC2329 # Called indirectly
 check_forbidden_chars() {
-    if grep -q -P -v '^[^#[:cntrl:]]*$'; then
-        echo 'Forbidden character found ("#" or control character)'
+    if grep -q -P -v '^[^[:cntrl:]]*$'; then
+        echo 'Forbidden character found (control character)'
+    fi
+}
+
+# shellcheck disable=SC2329 # Called indirectly
+check_issue_number() {
+    if grep -q -E '# *[0-9]+'; then
+        echo 'Found a GitHub issue or pull request mentioned by counter'
     fi
 }
 
@@ -84,7 +91,7 @@ If the involved module are bound by a hierarchical relationship, use ": " instea
 The following characters are forbidden:
   - anything outside of the ascii range
   - non-printable ascii (which includes tabs)
-  - #
+  - GitHub issues or pull requests mentioned by counter like ${BLUE}#4321${RESET}
 
 Commit title structure has to be as follows:
   - one or more module names ([-_.a-z0-9]+), separated by ", ", terminated by ": "
