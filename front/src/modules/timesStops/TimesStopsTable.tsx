@@ -28,7 +28,7 @@ import { type Duration, type StartTime, startTimeToMs, subtractStartTime } from 
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
-import { onStopSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
+import { closedSignalToReceptionSignal, truncateStartTimeToDay } from './helpers/utils';
 import MarginCell from './MarginCell';
 import RequestedTimeColumnHeader from './RequestedTimeColumnHeader';
 import StartTimeCell from './StartTimeCell';
@@ -320,7 +320,7 @@ const TimesStopsTable = ({
         disabled={isDisabled}
         onChange={() => {
           if (!isDisabled) {
-            const signal = onStopSignalToReceptionSignal(closedSignal, !shortSlipDistance);
+            const signal = closedSignalToReceptionSignal(closedSignal, !shortSlipDistance);
             info.table.options.meta!.onReceptionSignalChange(info.row.original, signal);
           }
         }}
@@ -419,7 +419,7 @@ const TimesStopsTable = ({
           if (!isDisabled) {
             const newClosedSignal = !closedSignal;
             // When unchecking closedSignal, also reset shortSlipDistance to false
-            const signal = onStopSignalToReceptionSignal(
+            const signal = closedSignalToReceptionSignal(
               newClosedSignal,
               newClosedSignal ? shortSlipDistance : false
             );
