@@ -670,8 +670,7 @@
     "disconnect": "Déconnexion",
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",
-      "linkings": "Activer les enchaînements",
-      "projectGrants": "Activer la gestion des permissions projets"
+      "linkings": "Activer les enchaînements"
     },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",

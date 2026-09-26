@@ -193,10 +193,7 @@ pub(in crate::views) struct ProjectWithStudyCountList {
 )]
 pub(in crate::views) async fn list(
     State(AppState {
-        db_pool,
-        openfga,
-        config,
-        ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
@@ -206,29 +203,25 @@ pub(in crate::views) async fn list(
     let default_settings = pagination_params
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
-    let settings = if config.enable_project_permissions {
-        match &authn_state {
-            crate::authentication::State::Skip => default_settings,
-            crate::authentication::State::Authenticated { user, .. } => {
-                let authorized_projects = authz::v2::project_list(*user)
-                    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-                    .await?;
-                match authorized_projects {
-                    authz::v2::ResourcesList::All => default_settings,
-                    authz::v2::ResourcesList::Privileged(authorized_projects) => default_settings
-                        .filter(move || {
-                            Project::ID.eq_any(
-                                authorized_projects
-                                    .iter()
-                                    .map(|project| project.0)
-                                    .collect(),
-                            )
-                        }),
-                }
+    let settings = match &authn_state {
+        crate::authentication::State::Skip => default_settings,
+        crate::authentication::State::Authenticated { user, .. } => {
+            let authorized_projects = authz::v2::project_list(*user)
+                .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+                .await?;
+            match authorized_projects {
+                authz::v2::ResourcesList::All => default_settings,
+                authz::v2::ResourcesList::Privileged(authorized_projects) => default_settings
+                    .filter(move || {
+                        Project::ID.eq_any(
+                            authorized_projects
+                                .iter()
+                                .map(|project| project.0)
+                                .collect(),
+                        )
+                    }),
             }
         }
-    } else {
-        default_settings
     };
 
     let (projects, stats) = Project::list_paginated(&mut db_pool.get().await?, settings).await?;
@@ -265,10 +258,7 @@ pub(in crate::views) struct ProjectIdParam {
 )]
 pub(in crate::views) async fn get(
     State(AppState {
-        db_pool,
-        openfga,
-        config,
-        ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(project_id): Path<i64>,
@@ -279,11 +269,9 @@ pub(in crate::views) async fn get(
     })
     .await?;
 
-    if config.enable_project_permissions {
-        project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await?;
-    }
+    project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }

@@ -336,10 +336,7 @@ pub(in crate::views) async fn patch(
 )]
 pub(in crate::views) async fn get(
     State(AppState {
-        db_pool,
-        openfga,
-        config,
-        ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
@@ -372,11 +369,9 @@ pub(in crate::views) async fn get(
         })
         .await?;
 
-    if config.enable_project_permissions {
-        project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await?;
-    }
+    project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     Ok(Json(ScenarioResponse::new(details, project, study)))
 }
@@ -409,10 +404,7 @@ pub(in crate::views) struct ListScenariosQueryParams {
 )]
 pub(in crate::views) async fn list(
     State(AppState {
-        db_pool,
-        openfga,
-        config,
-        ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Query(ListScenariosQueryParams { study_id }): Query<ListScenariosQueryParams>,
@@ -431,11 +423,9 @@ pub(in crate::views) async fn list(
             .await?
             .project_id;
 
-    if config.enable_project_permissions {
-        authz::v2::project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await?;
-    }
+    authz::v2::project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let (scenarios, stats) = Scenario::list_paginated(conn, settings).await?;
 

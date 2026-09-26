@@ -251,10 +251,7 @@ pub(in crate::views) async fn delete(
 )]
 pub(in crate::views) async fn get(
     State(AppState {
-        db_pool,
-        openfga,
-        config,
-        ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
@@ -279,11 +276,9 @@ pub(in crate::views) async fn get(
         })
         .await?;
 
-    if config.enable_project_permissions {
-        project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await?;
-    }
+    project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
@@ -433,10 +428,7 @@ pub(in crate::views) struct ListStudiesQueryParams {
 )]
 pub(in crate::views) async fn list(
     State(AppState {
-        db_pool,
-        openfga,
-        config,
-        ..
+        db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Query(ListStudiesQueryParams { project_id }): Query<ListStudiesQueryParams>,
@@ -454,11 +446,9 @@ pub(in crate::views) async fn list(
         .into_selection_settings()
         .filter(move || Study::PROJECT_ID.eq(project_id))
         .order_by(move || ordering.as_study_ordering());
-    if config.enable_project_permissions {
-        authz::v2::project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
-            .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-            .await?;
-    }
+    authz::v2::project_privilege_check(authz::Project(project_id), ProjectPrivilege::HasAccess)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
     let (studies, stats) = {
         let conn = &mut db_pool.get().await?;
