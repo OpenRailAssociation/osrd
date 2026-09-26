@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrackSection } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -35,7 +35,7 @@ const useSimulationResults = (): {
 } => {
   const { t } = useTranslation('operational-studies');
 
-  const { infraId, electricalProfileSetId } = useScenarioContext();
+  const { infraId, electricalProfileSetId, getTrackSectionsByIds } = useScenarioContext();
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
   const trainSchedule = useSelectedTrainSchedule();
@@ -83,6 +83,28 @@ const useSimulationResults = (): {
       return undefined;
     return findExceptionWithOccurrenceId(trainSchedule.paced.exceptions, selectedTrainId);
   }, [selectedTrainId, trainSchedule]);
+
+  // Get track sections data for all path items of type 'track_offset'
+  const trackOffsetIds = useMemo(
+    () =>
+      train?.path.reduce<string[]>((acc, pathItem) => {
+        if (pathItem.location.type !== 'track_offset') return acc;
+        acc.push(pathItem.location.track);
+        return acc;
+      }, []) ?? [],
+    [train]
+  );
+
+  const [trackSectionsById, setTrackSectionsById] = useState<Record<string, TrackSection>>({});
+
+  useEffect(() => {
+    const fetchTrackSections = async () => {
+      const trackSections = await getTrackSectionsByIds(trackOffsetIds);
+      setTrackSectionsById(trackSections);
+    };
+    if (trackOffsetIds.length === 0) return;
+    fetchTrackSections();
+  }, [trackOffsetIds, getTrackSectionsByIds]);
 
   const { currentData: pathfinding, isFetching: isPathfindingFetching } =
     osrdEditoastApi.endpoints.getTrainPath.useQuery(
@@ -149,7 +171,8 @@ const useSimulationResults = (): {
     rawPathProperties,
     pathfinding,
     train.path,
-    t
+    t,
+    trackSectionsById
   );
 
   if (simulation?.status !== 'success') {
