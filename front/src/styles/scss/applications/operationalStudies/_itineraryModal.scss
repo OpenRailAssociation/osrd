@@ -373,7 +373,7 @@
               24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
               auto;
             align-items: center;
-            gap: 8px;
+            column-gap: 8px;
             padding-block: 8px;
 
             &.map-selection-mode {
@@ -488,6 +488,12 @@
               }
             }
 
+            .invalid-step-message {
+              grid-column: 2 / -2;
+              padding-left: 7px;
+              color: var(--grey60);
+            }
+
             .requested-point-block {
               height: 28px;
               background-color: var(--ambientB5);
@@ -544,11 +550,6 @@
                 }
               }
             }
-          }
-
-          .invalid-step-message {
-            color: var(--grey60);
-            padding-left: calc(51px - var(--path-step-wrapper-padding-left));
           }
         }
       }
