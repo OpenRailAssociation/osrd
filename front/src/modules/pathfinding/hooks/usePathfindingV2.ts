@@ -52,7 +52,7 @@ const usePathfindingV2 = () => {
 
       if (
         !pathSteps.every((step) => !!step) ||
-        Array.from(pathStepsMetadataById.values()).some((metadata) => metadata.isInvalid)
+        Array.from(pathStepsMetadataById.values()).some((metadata) => metadata.isInvalid !== false)
       ) {
         return;
       }
