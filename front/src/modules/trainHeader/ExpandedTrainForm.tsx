@@ -441,7 +441,14 @@ const ExpandedTrainForm = ({
           'calendar-timetable': timetableType === 'CALENDAR',
         })}
       >
-        <div className="train-name" data-testid="train-name">
+        <form
+          className="train-name"
+          data-testid="train-name"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onFieldBlur('train_name');
+          }}
+        >
           <Input
             id="train-header-name-input"
             testIdPrefix="train-header-name"
@@ -459,7 +466,7 @@ const ExpandedTrainForm = ({
                 : undefined
             }
           />
-        </div>
+        </form>
         {fields.departure_date instanceof Date && (
           <div className="train-departure-date">
             <DatePicker
@@ -486,7 +493,14 @@ const ExpandedTrainForm = ({
             />
           </div>
         )}
-        <div className="train-initial-velocity" data-testid="train-header-initial-velocity-field">
+        <form
+          className="train-initial-velocity"
+          data-testid="train-header-initial-velocity-field"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onFieldBlur('initial_speed');
+          }}
+        >
           <Input
             id="train-header-initial-velocity-input"
             testIdPrefix="train-header-initial-velocity"
@@ -520,7 +534,7 @@ const ExpandedTrainForm = ({
               }
             })()}
           />
-        </div>
+        </form>
         <div className="train-category">
           <Select
             id="train-header-category-select"
