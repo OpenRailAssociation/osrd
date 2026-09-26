@@ -34,6 +34,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.toOffset
 import kotlin.collections.iterator
@@ -636,4 +637,83 @@ fun sortAndMergeRequirements(
         compareBy({ it.beginTime }, { it.endTime }, { it.zone.index }, { it.isComplete })
     )
     return resultRequirements
+}
+
+/**
+ * Extend/create corresponding automatons for all the sub-paths of the sub-path extremities,
+ * using/enriching the existing list of spacing automatons given as a parameter.
+ */
+fun extendAutomatonsPath(
+    subpathExtremities: List<Offset<PhysicsPath>>,
+    backtrackingLocations: List<Offset<PhysicsPath>>,
+    spacingAutomatons: MutableList<SpacingResourceGenerator>,
+    referenceAutomaton: SpacingResourceGenerator,
+    lookaheadEndOffset: Offset<PhysicsPath>,
+    blockRanges: List<BlockRange>,
+    routeRanges: List<RouteRange>,
+    stops: List<PathStop>,
+    isPathComplete: Boolean,
+) {
+    for ((subPathBegin, subPathEnd) in subpathExtremities.zipWithNext()) {
+        val subBlockRanges = blockRanges.subRange(subPathBegin, subPathEnd).toMutableList()
+        val subRouteRanges = routeRanges.subRange(subPathBegin, subPathEnd).toMutableList()
+        val subStops = stops.filter { it.pathOffset in subPathBegin..subPathEnd }
+        if (subBlockRanges.size > 1 && subBlockRanges.first().length == 0.meters) {
+            subBlockRanges.removeFirst()
+        }
+        if (subBlockRanges.size > 1 && subBlockRanges.last().length == 0.meters) {
+            subBlockRanges.removeLast()
+        }
+        if (subRouteRanges.size > 1 && subRouteRanges.first().length == 0.meters) {
+            subRouteRanges.removeFirst()
+        }
+        if (subRouteRanges.size > 1 && subRouteRanges.last().length == 0.meters) {
+            subRouteRanges.removeLast()
+        }
+
+        val subSpacingRequirementAutomaton =
+            if (
+                subPathBegin == Offset.zero<PhysicsPath>() || subPathBegin in backtrackingLocations
+            ) {
+                // There should either be an existing automaton starting at this offset OR
+                // we need to create one.
+                val subSpacingAutomaton = spacingAutomatons.lastOrNull {
+                    it.startOffset == subPathBegin
+                }
+                if (subSpacingAutomaton != null) subSpacingAutomaton
+                else {
+                    val lastAutomatonStartOffset =
+                        spacingAutomatons.lastOrNull()?.startOffset ?: Offset(Int.MIN_VALUE.meters)
+                    require(lastAutomatonStartOffset < subPathBegin)
+                    spacingAutomatons.add(
+                        SpacingResourceGenerator(
+                            referenceAutomaton.rawInfra,
+                            referenceAutomaton.blockInfra,
+                            referenceAutomaton.loadedSignalInfra,
+                            referenceAutomaton.simulator,
+                            subPathBegin,
+                            referenceAutomaton.context,
+                        )
+                    )
+                    spacingAutomatons.last()
+                }
+            } else {
+                // Nominal case: we take the last automaton starting before the
+                // subPathBegin, and it SHOULD exist.
+                spacingAutomatons.last {
+                    it.startOffset <= subPathBegin && it.startOffset < subPathEnd
+                }
+            }
+        val endsAtDifferentBacktracking =
+            (subPathEnd in backtrackingLocations) &&
+                subPathEnd != subSpacingRequirementAutomaton.startOffset
+        val endsAtDestination = isPathComplete && (subPathEnd == lookaheadEndOffset)
+        val isSubpathComplete = endsAtDifferentBacktracking || endsAtDestination
+        subSpacingRequirementAutomaton.extendPath(
+            subBlockRanges,
+            subRouteRanges,
+            subStops,
+            isSubpathComplete,
+        )
+    }
 }
