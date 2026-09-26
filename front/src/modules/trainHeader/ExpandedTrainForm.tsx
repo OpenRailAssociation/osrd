@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Button,
@@ -258,6 +258,8 @@ const ExpandedTrainForm = ({
   onPersistTrain,
   onItineraryOpened,
 }: ExpandedTrainFormProps) => {
+  'use memo';
+
   const { t, i18n } = useTranslation(['operational-studies', 'translation']);
   const infraID = useInfraID();
   const { scenario } = useScenarioContext();
@@ -279,10 +281,7 @@ const ExpandedTrainForm = ({
   );
   const hasLinkings = !!linkings?.length;
 
-  const fieldsFromTrain = useMemo(
-    () => getFieldsFromTrain(train, rollingStocks, timetableType, hasLinkings),
-    [train, rollingStocks, timetableType, hasLinkings]
-  );
+  const fieldsFromTrain = getFieldsFromTrain(train, rollingStocks, timetableType, hasLinkings);
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
 
   // Reset fields values if they changed outside of the form (e.g., because it was an
@@ -304,101 +303,75 @@ const ExpandedTrainForm = ({
     setPathChanged(true);
   }
 
-  const resetPathJustChanged = useCallback(() => {
+  const resetPathJustChanged = () => {
     setPathChanged(false);
-  }, [setPathChanged]);
+  };
 
-  const persistTrainIfNeeded = useCallback(
-    (newFields: TrainFieldsState) => {
-      const updatedTrain = applyFieldsToTrain(newFields, train, timetableType);
+  const persistTrainIfNeeded = (newFields: TrainFieldsState) => {
+    const updatedTrain = applyFieldsToTrain(newFields, train, timetableType);
 
-      if (trainPayloadChanged(updatedTrain, train)) {
-        onPersistTrain(updatedTrain);
-      }
+    if (trainPayloadChanged(updatedTrain, train)) {
+      onPersistTrain(updatedTrain);
+    }
+  };
+
+  const onFieldChange = (
+    fieldName: keyof TrainFieldsState,
+    newValue: TrainFieldsState[typeof fieldName]
+  ) => {
+    setFields({ ...fields, [fieldName]: newValue });
+  };
+
+  const onFieldBlur = (_fieldName: keyof TrainFieldsState) => {
+    persistTrainIfNeeded(fields);
+  };
+
+  const onFieldImmediateChange = (
+    fieldName: keyof TrainFieldsState,
+    newValue: TrainFieldsState[typeof fieldName]
+  ) => {
+    const newFields = { ...fields, [fieldName]: newValue };
+
+    persistTrainIfNeeded(newFields);
+    setFields(newFields);
+  };
+
+  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = [
+    {
+      id: 'STANDARD',
+      label: t('manageTrainSchedule.allowances.distribution-linear'),
     },
-    [train, onPersistTrain, timetableType]
-  );
-
-  const onFieldChange = useCallback(
-    (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
-      setFields({ ...fields, [fieldName]: newValue });
+    {
+      id: 'MARECO',
+      label: t('manageTrainSchedule.allowances.distribution-mareco'),
     },
-    [fields]
+  ];
+  const selectedConstraintDistributionOption = constraintDistributionsOptions.find(
+    (constraint) => constraint.id === fields.constraint_distribution
   );
 
-  const onFieldBlur = useCallback(
-    (_fieldName: keyof TrainFieldsState) => {
-      persistTrainIfNeeded(fields);
+  const comfortOptions: { id: Comfort; label: string }[] = [
+    {
+      id: 'STANDARD',
+      label: t('translation:rollingStock.comfortTypes.STANDARD'),
     },
-    [fields, persistTrainIfNeeded]
-  );
-
-  const onFieldImmediateChange = useCallback(
-    (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
-      const newFields = { ...fields, [fieldName]: newValue };
-
-      persistTrainIfNeeded(newFields);
-      setFields(newFields);
+    {
+      id: 'AIR_CONDITIONING',
+      label: t('translation:rollingStock.comfortTypes.AIR_CONDITIONING'),
     },
-    [fields, persistTrainIfNeeded]
-  );
-
-  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = useMemo(
-    () => [
-      {
-        id: 'STANDARD',
-        label: t('manageTrainSchedule.allowances.distribution-linear'),
-      },
-      {
-        id: 'MARECO',
-        label: t('manageTrainSchedule.allowances.distribution-mareco'),
-      },
-    ],
-    [t]
-  );
-  const selectedConstraintDistributionOption = useMemo(
-    () =>
-      constraintDistributionsOptions.find(
-        (constraint) => constraint.id === fields.constraint_distribution
-      ),
-    [fields.constraint_distribution, constraintDistributionsOptions]
-  );
-
-  const comfortOptions: { id: Comfort; label: string }[] = useMemo(
-    () => [
-      {
-        id: 'STANDARD',
-        label: t('translation:rollingStock.comfortTypes.STANDARD'),
-      },
-      {
-        id: 'AIR_CONDITIONING',
-        label: t('translation:rollingStock.comfortTypes.AIR_CONDITIONING'),
-      },
-      {
-        id: 'HEATING',
-        label: t('translation:rollingStock.comfortTypes.HEATING'),
-      },
-    ],
-    [t]
-  );
-  const selectedComfortOption = useMemo(
-    () => comfortOptions.find((comfort) => comfort.id === fields.comfort),
-    [comfortOptions, fields.comfort]
-  );
-  const selectedCategoryId = useMemo(
-    () => (fields.category ? categoryOptionId(fields.category) : null),
-    [fields.category]
-  );
-  const selectedCategoryOption = useMemo(
-    () => categoryOptions.find((category) => category.id === selectedCategoryId),
-    [categoryOptions, selectedCategoryId]
+    {
+      id: 'HEATING',
+      label: t('translation:rollingStock.comfortTypes.HEATING'),
+    },
+  ];
+  const selectedComfortOption = comfortOptions.find((comfort) => comfort.id === fields.comfort);
+  const selectedCategoryId = fields.category ? categoryOptionId(fields.category) : null;
+  const selectedCategoryOption = categoryOptions.find(
+    (category) => category.id === selectedCategoryId
   );
 
   const subCategories = useSubCategoryContext();
-  const currentSubCategory = useMemo(
-    () => findSubCategory(subCategories, fields.category),
-    [fields.category, subCategories]
-  );
+  const currentSubCategory = findSubCategory(subCategories, fields.category);
   const isCategoryWarning = checkCategoryWarning(
     fields.rolling_stock,
     fields.category,
@@ -408,19 +381,16 @@ const ExpandedTrainForm = ({
     ? t('manageTrainSchedule.trainHeader.categoryMismatch')
     : undefined;
 
-  const initialSpeedError = useMemo(
-    () => computeInitialSpeedError(fields.initial_speed, fields.rolling_stock),
-    [fields.initial_speed, fields.rolling_stock, computeInitialSpeedError]
-  );
+  const initialSpeedError = computeInitialSpeedError(fields.initial_speed, fields.rolling_stock);
 
-  const revertServiceChange = useCallback(() => {
+  const revertServiceChange = () => {
     setFields({
       ...fields,
       service_interval: fieldsFromTrain.service_interval,
       service_window: fieldsFromTrain.service_window,
       is_unique: fieldsFromTrain.is_unique,
     });
-  }, [fields, fieldsFromTrain]);
+  };
 
   return (
     <div className="train-header expanded-train-form" data-testid="train-header-expanded">
