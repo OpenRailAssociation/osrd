@@ -332,7 +332,7 @@ const TimesStopsTable = ({
     info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string | null>
   ) => {
     const {
-      availablePowerRestrictions: codes,
+      availablePowerRestrictions: rawCodes,
       powerRestrictionBlocks: blocks,
       onPowerRestrictionChange: onRestrictionChange,
     } = info.table.options.meta!;
@@ -346,6 +346,12 @@ const TimesStopsTable = ({
     const showPropagated =
       value === null && blockInfo?.isBlockStart && blockInfo.propagatedValue !== null;
     const displayedValue = showPropagated ? blockInfo.propagatedValue : value;
+
+    const valueNotInCodes = // Happens if the power restriction is incompatible with the rs, for example after a rs change by user
+      displayedValue &&
+      displayedValue !== NO_POWER_RESTRICTION &&
+      !rawCodes.includes(displayedValue);
+    const codes = valueNotInCodes ? [...rawCodes, displayedValue] : rawCodes;
 
     return (
       <div

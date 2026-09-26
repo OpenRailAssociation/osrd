@@ -868,8 +868,8 @@
     "noPathLoaded": "No path loaded",
     "operational_point": "operational point",
     "powerRestriction": "power restriction",
-    "powerRestrictionIncompatibility_one": "{{count}} power restriction code isn't compatible with the electrification.",
-    "powerRestrictionIncompatibility_other": "{{count}} power restriction codes aren't compatible with the electrification.",
+    "powerRestrictionIncompatibility_one": "{{count}} power restriction code isn't compatible with the electrification or the rolling stock.",
+    "powerRestrictionIncompatibility_other": "{{count}} power restriction codes aren't compatible with the electrification or the rolling stock.",
     "propagationMenu": {
       "atThisTime": "at this time",
       "atThisWaypoint": "at this waypoint",
