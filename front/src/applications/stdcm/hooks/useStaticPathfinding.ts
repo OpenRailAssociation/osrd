@@ -16,8 +16,10 @@ import {
   getLoadingGauge,
   getStdcmSpeedLimitByTag,
   getTrackSectionIdsByLoadingGauge,
+  getTotalLength,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { useDebouncedEffect } from 'utils/hooks/useDebounce';
 
 import {
   getConsistChanges,
@@ -47,12 +49,17 @@ function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
   );
 }
 
-const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
+const useStaticPathfinding = (
+  workerStatus: WorkerStatus,
+  infra: Infra | undefined,
+  debounceMs = 400
+) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
   const [consistChanges, setConsistChanges] = useState(() => getConsistChanges(pathSteps));
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const totalLength = useSelector(getTotalLength);
   const rollingStock = useStdcmLightRollingStock();
   const loadingGauge = useSelector(getLoadingGauge);
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
@@ -83,84 +90,99 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     });
   }, [pathSteps]);
 
-  useEffect(() => {
-    let dependenciesUpToDate = true;
+  useDebouncedEffect(
+    () => {
+      let dependenciesUpToDate = true;
 
-    const launchPathfinding = async () => {
-      setPathfinding(undefined);
-      setShowPathfindingStatusMessage(false);
-
-      if (!infra || workerStatus !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
-        return;
-      }
-
-      if (pathStepsLocations.some((step) => !step.secondaryCode)) {
-        return;
-      }
-
-      // Don't run the pathfinding if the origin and destination are the same:
-      const origin = pathSteps.at(0)!;
-      const destination = pathSteps.at(-1)!;
-      if (!origin.operationalPoint || !destination.operationalPoint) {
-        return;
-      }
-      if (origin.operationalPoint.id === destination.operationalPoint.id) {
-        return;
-      }
-
-      const stdcmPathSteps = pathStepsLocations.map((step) => ({
-        location: stdcmPathStepToPathItemLocation(step),
-        can_backtrack: step.canBacktrack,
-      }));
-
-      const pathSegmentsIndexes = getPathSegmentsIndexes(consistChanges, pathStepsLocations.length);
-
-      setShowPathfindingStatusMessage(true);
-
-      const allowedTrackSections =
-        trackSectionIdsByLoadingGauge && loadingGauge
-          ? trackSectionIdsByLoadingGauge[loadingGauge]
-          : undefined;
-
-      const pathfindingResult = await launchSegmentedPathfinding({
-        pathSegmentsIndexes,
-        stdcmPathSteps,
-        consistChanges,
-        getLightRollingStockById,
-        postPathfindingBlocks,
-        infraId: infra.id,
-        rollingStock,
-        loadingGauge,
-        speedLimitByTag,
-        allowedTrackSections,
-      });
-
-      if (!dependenciesUpToDate) {
-        return;
-      }
-
-      setPathfinding(pathfindingResult);
-
-      if (pathfindingResult?.status === 'failure') {
+      const launchPathfinding = async () => {
+        setPathfinding(undefined);
         setShowPathfindingStatusMessage(false);
-      }
-    };
 
-    launchPathfinding();
+        if (
+          !infra ||
+          workerStatus !== 'READY' ||
+          !rollingStock ||
+          !totalLength ||
+          pathStepsLocations.length < 2
+        ) {
+          return;
+        }
 
-    return () => {
-      dependenciesUpToDate = false;
-    };
-  }, [
-    pathStepsLocations,
-    rollingStock,
-    speedLimitByTag,
-    loadingGauge,
-    trackSectionIdsByLoadingGauge,
-    infra,
-    workerStatus,
-    consistChanges,
-  ]);
+        if (pathStepsLocations.some((step) => !step.secondaryCode)) {
+          return;
+        }
+
+        // Don't run the pathfinding if the origin and destination are the same:
+        const origin = pathSteps.at(0)!;
+        const destination = pathSteps.at(-1)!;
+        if (!origin.operationalPoint || !destination.operationalPoint) {
+          return;
+        }
+        if (origin.operationalPoint.id === destination.operationalPoint.id) {
+          return;
+        }
+
+        const stdcmPathSteps = pathStepsLocations.map((step) => ({
+          location: stdcmPathStepToPathItemLocation(step),
+          can_backtrack: step.canBacktrack,
+        }));
+
+        const pathSegmentsIndexes = getPathSegmentsIndexes(
+          consistChanges,
+          pathStepsLocations.length
+        );
+
+        setShowPathfindingStatusMessage(true);
+
+        const allowedTrackSections =
+          trackSectionIdsByLoadingGauge && loadingGauge
+            ? trackSectionIdsByLoadingGauge[loadingGauge]
+            : undefined;
+
+        const pathfindingResult = await launchSegmentedPathfinding({
+          pathSegmentsIndexes,
+          stdcmPathSteps,
+          consistChanges,
+          getLightRollingStockById,
+          postPathfindingBlocks,
+          infraId: infra.id,
+          rollingStock,
+          totalLength,
+          loadingGauge,
+          speedLimitByTag,
+          allowedTrackSections,
+        });
+
+        if (!dependenciesUpToDate) {
+          return;
+        }
+
+        setPathfinding(pathfindingResult);
+
+        if (pathfindingResult?.status === 'failure') {
+          setShowPathfindingStatusMessage(false);
+        }
+      };
+
+      launchPathfinding();
+
+      return () => {
+        dependenciesUpToDate = false;
+      };
+    },
+    [
+      pathStepsLocations,
+      rollingStock,
+      totalLength,
+      speedLimitByTag,
+      loadingGauge,
+      trackSectionIdsByLoadingGauge,
+      infra,
+      workerStatus,
+      consistChanges,
+    ],
+    debounceMs
+  );
 
   const pathfindingStatusMessage = useMemo(() => {
     if (isFetching) {
