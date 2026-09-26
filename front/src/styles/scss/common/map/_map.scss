@@ -1,5 +1,9 @@
-.no-mastnav .fullscreen {
+.fullscreen {
   padding-top: 0 !important;
+}
+
+.map-container {
+  height: calc(100vh - var(--header-height));
 }
 
 .btn-map-container {

@@ -19,20 +19,6 @@ body {
   z-index: 9999;
 }
 
-.mastcontainer-map {
-  height: calc(100vh - var(--header-height));
-}
-
-.no-mastnav {
-  .actionbar {
-    width: 100%;
-  }
-
-  .mastcontainer {
-    padding-left: 0;
-  }
-}
-
 .loader {
   text-align: center;
 }
@@ -87,7 +73,6 @@ body {
 /* Make cool transitions for fullscreen mode */
 .mastheader,
 .mastnav,
-.mastcontainer,
 .actionbar,
 .sideBar-container {
   transition: 0.4s ease-in-out;
@@ -122,11 +107,6 @@ body {
 .actionbar.fullscreen {
   top: 0 !important;
   width: 100% !important;
-}
-
-.mastcontainer.fullscreen {
-  padding-top: 72px;
-  padding-left: 0 !important;
 }
 
 .sideBar-container.fullscreen {

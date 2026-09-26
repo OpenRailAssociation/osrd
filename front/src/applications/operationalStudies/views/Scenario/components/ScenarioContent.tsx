@@ -240,7 +240,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   return (
     <TimetableContext.Provider value={timetableContext}>
       <ItineraryModalContext.Provider value={itineraryModalContext}>
-        <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
+        <main className="scenario scenario-content-v2">
           {itineraryModalOpen && (
             <ItineraryModal
               onTrainCreated={openAndScrollToTableBoard}
