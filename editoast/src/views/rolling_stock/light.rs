@@ -31,12 +31,12 @@ use super::RollingStockIdParam;
 use super::RollingStockKey;
 use super::RollingStockNameParam;
 use crate::AppState;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
+use authz::authorizers::SystemAuthorizer;
 
 #[cfg(test)]
 use serde::Deserialize;

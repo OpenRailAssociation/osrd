@@ -49,10 +49,10 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::authentication;
-use crate::authorizers::SystemAuthorizer;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
+use authz::authorizers::SystemAuthorizer;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
