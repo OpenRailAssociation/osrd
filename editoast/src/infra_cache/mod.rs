@@ -469,7 +469,11 @@ impl InfraCache {
         &self.objects[object_type]
     }
 
-    #[allow(clippy::too_many_arguments)]
+    // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Infra does have a lot of different parts 🤷"
+    )]
     fn from_objects(
         mut ts: impl Iterator<Item = impl Borrow<TrackSectionCache>>,
         mut s: impl Iterator<Item = impl Borrow<SignalCache>>,
