@@ -47,9 +47,14 @@ mod tests {
             syn::parse_quote! {
                 #[error("named error")]
                 #[view_error(context)]
-                struct Named {
+                struct Named<'a, T: std::fmt::Display, const N: usize>
+                where
+                    T: std::fmt::Debug,
+                {
                     source: std::io::Error,
-                    context: String,
+                    context: &'a str,
+                    detail: T,
+                    bytes: [u8; N],
                 }
             }
         );

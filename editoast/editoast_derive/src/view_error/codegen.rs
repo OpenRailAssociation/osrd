@@ -8,10 +8,11 @@ impl ToTokens for Codegen {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self(view_error_impl) = self;
         let ty = &view_error_impl.implementor;
+        let (impl_generics, ty_generics, where_clause) = view_error_impl.generics.split_for_impl();
         tokens.extend(quote::quote! {
             #view_error_impl
 
-            impl utoipa::IntoResponses for #ty {
+            impl #impl_generics utoipa::IntoResponses for #ty #ty_generics #where_clause {
                 fn responses() -> std::collections::BTreeMap<
                     String,
                     utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
@@ -20,7 +21,7 @@ impl ToTokens for Codegen {
                 }
             }
 
-            impl axum::response::IntoResponse for #ty {
+            impl #impl_generics axum::response::IntoResponse for #ty #ty_generics #where_clause {
                 fn into_response(self) -> axum::response::Response {
                     <Self as crate::views::error::ViewError>::into_response(self)
                 }
@@ -31,6 +32,7 @@ impl ToTokens for Codegen {
 
 pub(super) struct ViewErrorImpl {
     implementor: syn::Ident,
+    generics: syn::Generics,
     label_impl: Vec<(syn::Pat, OrForwarded<String>)>,
     status_impl: Vec<(syn::Pat, OrForwarded<args::StatusCodeArg>)>,
     context_impl: Vec<(syn::Pat, OrForwarded<Context>)>,
@@ -77,9 +79,10 @@ pub(super) struct ContextEntrySpec {
 }
 
 impl ViewErrorImpl {
-    pub(super) fn new(implementor: syn::Ident) -> Self {
+    pub(super) fn new(implementor: syn::Ident, generics: syn::Generics) -> Self {
         Self {
             implementor,
+            generics,
             label_impl: Vec::new(),
             status_impl: Vec::new(),
             context_impl: Vec::new(),
@@ -127,6 +130,7 @@ impl ToTokens for ViewErrorImpl {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self {
             implementor,
+            generics,
             label_impl,
             status_impl,
             context_impl,
@@ -136,6 +140,7 @@ impl ToTokens for ViewErrorImpl {
                     forwarded_view_errors,
                 },
         } = self;
+        let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
         let (status_pat, status_code): (Vec<_>, Vec<_>) = status_impl.iter().cloned().unzip();
         let status_code = OrForwarded::apply(status_code, &syn::parse_quote! { status });
@@ -148,7 +153,7 @@ impl ToTokens for ViewErrorImpl {
 
         let maybe_mut = (!forwarded_view_errors.is_empty()).then_some(quote::quote! { mut });
         tokens.extend(quote::quote! {
-            impl crate::views::error::ViewError for #implementor {
+            impl #impl_generics crate::views::error::ViewError for #implementor #ty_generics #where_clause {
                 fn label(&self) -> &'static str {
                     match self {
                         #(#label_pat => #label_value),*
