@@ -375,7 +375,8 @@ impl DbConnectionPoolV2 {
         let (test_db_name, test_db_url) = create_test_database(osrd_conn, test_name).await?;
         let url = Url::parse(&test_db_url).expect("Failed to parse postgresql url");
         tracing::info!(%url, "Using test database URL");
-        let pool = create_connection_pool(url, 2)?.into();
+        let max_connections = 8; // arbitrary number: used to be 2 but some tests needed more
+        let pool = create_connection_pool(url, max_connections)?.into();
         Ok(Self {
             pool,
             osrd_pool,
