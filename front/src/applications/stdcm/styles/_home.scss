@@ -24,6 +24,7 @@
       display: grid;
       grid-template-columns: [consist-col] 322px auto [via-col] 1fr;
       column-gap: 13px;
+      height: fit-content;
     }
 
     .stdcm-scenario-explorer {
