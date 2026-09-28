@@ -2,8 +2,8 @@ version = 1
 revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
-    "python_full_version < '3.14'",
     "python_full_version >= '3.14'",
+    "python_full_version < '3.14'",
 ]
 
 [[package]]
@@ -112,14 +112,14 @@ wheels = [
 
 [[package]]
 name = "geojson-pydantic"
-version = "2.1.1"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d9/76/77c6f2e608028a2885e4d9d9a28cb6801879972d4bb3106c1dca02201df6/geojson_pydantic-2.1.1.tar.gz", hash = "sha256:3b64fa2dcd98108ff8a19bfb01eee3dab41bc230be2481804aefd7c1659d1c23", size = 8156, upload-time = "2026-04-07T09:48:07.252Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/0b/485bfbe208875af513831a4f91966fe504488ba45bbaa60ed39c23a077dc/geojson_pydantic-2.2.0.tar.gz", hash = "sha256:d9c28d672a754b8dcda27b4192aa9ef9638c373a8e960baa8dcf907a0c8b897c", size = 8205, upload-time = "2026-09-21T09:29:53.208Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/97/d59d999f00aec90fc7a4efb742fc11e6c160552aa1b313438d3497998644/geojson_pydantic-2.1.1-py3-none-any.whl", hash = "sha256:55354f22ededc3c070e3210fec6f518d784b65c4368c1763f2c6dc4bab79b898", size = 9456, upload-time = "2026-04-07T09:48:05.772Z" },
+    { url = "https://files.pythonhosted.org/packages/01/34/4b21a7796bf013bab15568ca83f1e2f90c0babbf8e59ecca7bf2e74adb8e/geojson_pydantic-2.2.0-py3-none-any.whl", hash = "sha256:5048d9519510ccaa7d1c1e6d8c04d790c59a365221a565288e03ec5ccae61f20", size = 9507, upload-time = "2026-09-21T09:29:51.921Z" },
 ]
 
 [[package]]
@@ -290,7 +290,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "datamodel-code-generator", specifier = "==0.73.0" },
-    { name = "geojson-pydantic", specifier = "~=2.1.1" },
+    { name = "geojson-pydantic", specifier = ">=2.1.1,<2.3.0" },
     { name = "openapi-pydantic", specifier = "==0.5.1" },
     { name = "pydantic", specifier = ">=2.12.2" },
     { name = "pyyaml", specifier = "==6.0.3" },
