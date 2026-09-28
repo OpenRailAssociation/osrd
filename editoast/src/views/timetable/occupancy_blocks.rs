@@ -123,7 +123,11 @@ pub(super) async fn compute_batch_signal_updates<'a>(
     Ok(response.signal_updates)
 }
 
-#[allow(clippy::too_many_arguments)]
+// TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+#[allow(
+    clippy::too_many_arguments,
+    reason = "by design of the function: 1 to 1 mapping of the API"
+)]
 pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,

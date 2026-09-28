@@ -337,7 +337,11 @@ pub fn interpolate_arrival_time(position: u64, report_train: &ReportTrain) -> i6
     time as i64
 }
 
-#[allow(clippy::too_many_arguments)]
+// TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+#[allow(
+    clippy::too_many_arguments,
+    reason = "by design of the function: 1 to 1 mapping of the API"
+)]
 pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
@@ -707,7 +711,11 @@ impl OperationalPointProjection {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+// TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+#[allow(
+    clippy::too_many_arguments,
+    reason = "by design of the function: 1 to 1 mapping of the API"
+)]
 pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,

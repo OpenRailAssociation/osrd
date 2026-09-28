@@ -582,7 +582,11 @@ struct VirtualTrainRun {
 }
 
 impl VirtualTrainRun {
-    #[allow(clippy::too_many_arguments)]
+    // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "by design of the function: 1 to 1 mapping of the API"
+    )]
     async fn simulate_consists_sequence(
         db_pool: Arc<DbConnectionPoolV2>,
         valkey_client: Arc<cache::Client>,

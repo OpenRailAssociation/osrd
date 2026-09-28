@@ -377,7 +377,11 @@ impl From<PathfindingFailure> for SummaryResponse {
 /// Compute in batch the simulation of a list of train schedule
 ///
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
-#[allow(clippy::too_many_arguments)]
+// TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+#[allow(
+    clippy::too_many_arguments,
+    reason = "by design of the function: 1 to 1 mapping of the API"
+)]
 pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
