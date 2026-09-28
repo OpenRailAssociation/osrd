@@ -6,35 +6,67 @@ source: editoast_derive/src/view_error.rs
 
 #[error("named error")]
 #[view_error(context)]
-struct Named {
+struct Named<'a, T: std::fmt::Display, const N: usize>
+where
+    T: std::fmt::Debug,
+{
     source: std::io::Error,
-    context: String,
+    context: &'a str,
+    detail: T,
+    bytes: [u8; N],
 }
 
 // Macro expansion
 // -----------------------------------------------------------------------------
 
-impl crate::views::error::ViewError for Named {
+impl<'a, T: std::fmt::Display, const N: usize> crate::views::error::ViewError
+for Named<'a, T, N>
+where
+    T: std::fmt::Debug,
+{
     fn label(&self) -> &'static str {
         match self {
-            Self { source: _source, context: _context } => "named",
+            Self {
+                source: _source,
+                context: _context,
+                detail: _detail,
+                bytes: _bytes,
+            } => "named",
         }
     }
     fn status(&self) -> axum::http::StatusCode {
         match self {
-            Self { source: _source, context: _context } => {
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR
-            }
+            Self {
+                source: _source,
+                context: _context,
+                detail: _detail,
+                bytes: _bytes,
+            } => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
     fn context(self) -> std::collections::HashMap<String, serde_json::Value> {
         match self {
-            Self { source: _source, context: _context } => {
+            Self {
+                source: _source,
+                context: _context,
+                detail: _detail,
+                bytes: _bytes,
+            } => {
                 std::collections::HashMap::from([
                     (
                         "context".to_owned(),
                         serde_json::to_value(_context)
                             .expect("failed to serialize context entry context"),
+                    ),
+                    (
+                        "detail".to_owned(),
+                        serde_json::to_value(_detail)
+                            .expect("failed to serialize context entry detail"),
+                    ),
+                    (
+                        "bytes".to_owned(),
+                        serde_json::to_value(_bytes)
+                            .expect("failed to serialize context entry bytes"),
                     ),
                 ])
             }
@@ -49,7 +81,15 @@ impl crate::views::error::ViewError for Named {
                 context: Vec::from([
                     crate::views::error::ContextEntry {
                         key: "context",
-                        schema: <String as utoipa::PartialSchema>::schema(),
+                        schema: <&'a str as utoipa::PartialSchema>::schema(),
+                    },
+                    crate::views::error::ContextEntry {
+                        key: "detail",
+                        schema: <T as utoipa::PartialSchema>::schema(),
+                    },
+                    crate::views::error::ContextEntry {
+                        key: "bytes",
+                        schema: <[u8; N] as utoipa::PartialSchema>::schema(),
                     },
                 ]),
             },
@@ -57,7 +97,10 @@ impl crate::views::error::ViewError for Named {
         responses
     }
 }
-impl utoipa::IntoResponses for Named {
+impl<'a, T: std::fmt::Display, const N: usize> utoipa::IntoResponses for Named<'a, T, N>
+where
+    T: std::fmt::Debug,
+{
     fn responses() -> std::collections::BTreeMap<
         String,
         utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
@@ -65,7 +108,11 @@ impl utoipa::IntoResponses for Named {
         <Self as crate::views::error::ViewError>::utoipa_responses().into()
     }
 }
-impl axum::response::IntoResponse for Named {
+impl<'a, T: std::fmt::Display, const N: usize> axum::response::IntoResponse
+for Named<'a, T, N>
+where
+    T: std::fmt::Debug,
+{
     fn into_response(self) -> axum::response::Response {
         <Self as crate::views::error::ViewError>::into_response(self)
     }

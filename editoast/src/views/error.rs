@@ -163,6 +163,48 @@ mod tests {
         }
     }
 
+    #[test]
+    fn generic_view_error() {
+        #[derive(Debug, thiserror::Error, ViewError)]
+        #[error("{detail}: {name}")]
+        #[view_error(status = BAD_REQUEST)]
+        struct Generic<'a, T: std::fmt::Display + std::fmt::Debug> {
+            name: &'a str,
+            detail: T,
+        }
+
+        assert_eq!(
+            EditoastError::from(Generic {
+                name: "request",
+                detail: "invalid".to_owned(),
+            }),
+            EditoastError::new("editoast:generic", 400, "invalid: request")
+        );
+    }
+
+    #[test]
+    fn forwarded_generic_view_error() {
+        #[derive(Debug, thiserror::Error, ViewError)]
+        #[error("{detail}: {value}")]
+        #[view_error(path = inner, status = IM_A_TEAPOT)]
+        struct Inner<'a, T: std::fmt::Display + std::fmt::Debug> {
+            detail: &'a str,
+            value: T,
+        }
+
+        #[derive(Debug, thiserror::Error, ViewError)]
+        #[error(transparent)]
+        struct Wrapper<'a, T: std::fmt::Display + std::fmt::Debug>(#[view_error] Inner<'a, T>);
+
+        assert_eq!(
+            EditoastError::from(Wrapper(Inner {
+                detail: "forwarded",
+                value: "value".to_owned(),
+            })),
+            EditoastError::new("editoast:inner", 418, "forwarded: value")
+        );
+    }
+
     mod unit_struct {
         use super::*;
 
