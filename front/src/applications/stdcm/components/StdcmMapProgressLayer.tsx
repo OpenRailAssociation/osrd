@@ -175,7 +175,7 @@ const ANIMATIONS_BY_THEME: Record<StdcmProgressPoint['type'], AnimationDef> = {
 };
 
 /**
- * React Map layer component that display the progress of the stdcm path finding algo.
+ * React Map layer component that display the progress of the stdcm pathfinding algo.
  */
 const StdcmMapProgressLayer = ({
   progressPoints,
