@@ -13,7 +13,9 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.stdcm.infra_exploration.getOppositeBlockLocations
+import fr.sncf.osrd.utils.TIME_EPSILON
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.util.*
@@ -54,7 +56,7 @@ data class STDCMAStarHeuristic(
         val expectedIndex = getExpectedStepIndex(currentAndLookaheadBlocksExceptLast, stepTracker)
         if (expectedIndex >= remainingTimeEstimations.size) return 0.0
 
-        val estimatedTimeAfterStartOfLastBlock =
+        val estimatedTimeAfterLastBlockStart =
             remainingTimeEstimations[expectedIndex][lastBlock] ?: return Double.POSITIVE_INFINITY
 
         // Compute the time it takes from the current point until the start
@@ -81,9 +83,13 @@ data class STDCMAStarHeuristic(
             )
 
         val remainingTime =
-            startTimeOfLastLookaheadBlock - timeAtCurrentOffset + estimatedTimeAfterStartOfLastBlock
+            startTimeOfLastLookaheadBlock - timeAtCurrentOffset + estimatedTimeAfterLastBlockStart
 
-        return remainingTime
+        // If remaining travel time is < 0, end is before start (probably on the same block), so
+        // it's not reachable (current path processing excludes loops)
+        if (remainingTime < -TIME_EPSILON) return Double.POSITIVE_INFINITY
+
+        return max(remainingTime, 0.0)
     }
 
     /** Estimates the minimum remaining stop time. */
@@ -164,10 +170,14 @@ class STDCMHeuristicBuilder(
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
                 val timeSinceBlockStart =
                     maxSpeedEnvBuilder.getBlockTime(it.edge, 0, null, allowance, it.offset)
-                remainingTimeSinceBlockStart - timeSinceBlockStart
+                val remainingTravelTime = remainingTimeSinceBlockStart - timeSinceBlockStart
+                // If remaining travel time is < 0, end is before start (probably on the same
+                // block), so it's not reachable (current path processing excludes loops)
+                if (remainingTravelTime < -TIME_EPSILON) Double.POSITIVE_INFINITY
+                else max(remainingTravelTime, 0.0)
             } ?: Double.POSITIVE_INFINITY
         logger.info(
-            "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.toInt()} seconds"
+            "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.seconds}"
         )
 
         return STDCMAStarHeuristic(
