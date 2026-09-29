@@ -10,7 +10,6 @@ import { deleteScenario } from '../../utils/teardown-utils';
 import {
   COMPOSITION_CODE,
   NORTH_STATION_BV,
-  NORTH_STATION_MAIN_CODE,
   ROLLING_STOCK_NAME,
   SOUTH_STATION_BV,
   TRACK_NAME,
@@ -22,8 +21,8 @@ import {
   ELECTRIC_RS,
   INTERCITY_CATEGORY,
   INTERCITY_TRAIN_HEADER,
-  NORTH_STATION,
   SOUTH_STATION,
+  SOUTH_EAST_STATION,
 } from './itinerary-modal.consts';
 
 const trains: TrainSchedule[] = readJsonFile('./tests/assets/trains/trains.json');
@@ -131,12 +130,12 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
         }
       });
       await test.step('Insert a path step in the itinerary', async () => {
-        await itineraryModalPage.insertIntermediatePathStep(1, NORTH_STATION_MAIN_CODE, 1);
+        await itineraryModalPage.insertIntermediatePathStep(1, SOUTH_EAST_STATION_MAIN_CODE, 1);
         await itineraryModalPage.checkPathStepValue(2, SOUTH_STATION_BV);
         if (browserName === 'chromium') {
           await itineraryModalPage.checkPathStepMarkers([
             { name: NORTH_STATION_BV, index: 1 },
-            { name: NORTH_STATION_BV, index: 2 },
+            { name: SOUTH_EAST_STATION_BV, index: 2 },
             { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 3 },
           ]);
         }
@@ -144,10 +143,10 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
       });
       await test.step('remove pathStep and check rows and map update', async () => {
         await itineraryModalPage.removePathStepAt(0);
-        await itineraryModalPage.checkPathStepValue(0, NORTH_STATION_BV);
+        await itineraryModalPage.checkPathStepValue(0, SOUTH_EAST_STATION_BV);
         if (browserName === 'chromium') {
           await itineraryModalPage.checkPathStepMarkers([
-            { name: NORTH_STATION_BV, index: 1 },
+            { name: SOUTH_EAST_STATION_BV, index: 1 },
             { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 2 },
           ]);
         }
@@ -160,7 +159,10 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
           ELECTRIC_RS,
           COMPOSITION_CODE
         );
-        await itineraryModalPage.checkManchetteOriginAndDestination(NORTH_STATION, SOUTH_STATION);
+        await itineraryModalPage.checkManchetteOriginAndDestination(
+          SOUTH_EAST_STATION,
+          SOUTH_STATION
+        );
       });
     }
   );
