@@ -32,7 +32,7 @@ check_forbidden_chars() {
 
 # shellcheck disable=SC2329 # Called indirectly
 check_structure() {
-    if grep -q -E -v '^([-_.a-z0-9]+, )*[-_.a-z0-9]+: (([-_.[:alnum:]]+, )*[-_.[:alnum:]]+: )*[a-z]([^:]|:[^ ])*$'; then
+    if grep -q -E -v '^([-_.a-z0-9]+, )*[-_.a-z0-9]+: (([-_.[:alnum:]]+, )*[-_.[:alnum:]]+: )*[a-z`]([^:]|:[^ ])*$'; then
         echo 'Invalid commit title structure'
     fi
 }
