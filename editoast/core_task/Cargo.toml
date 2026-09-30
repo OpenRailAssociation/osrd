@@ -31,3 +31,6 @@ http.workspace = true
 pretty_assertions.workspace = true
 serde_json = { workspace = true, features = ["preserve_order"] }
 zstd.workspace = true
+
+[lints]
+workspace = true
