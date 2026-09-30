@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use itertools::Itertools as _;
 
 use crate::model::AsUser;
 use crate::model::Object as _;

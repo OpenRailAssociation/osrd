@@ -274,7 +274,7 @@ macro_rules! relations {
         $(
             impl $object {
                 $(
-                    #[allow(unused)]
+                    #[allow(unused, reason = "automatically generated, can’t know if it’s used or not")]
                     pub const fn $name() -> impl $crate::model::Relation<User = $user, Object = $object> {
                         #[derive(Debug)]
                         struct R;
@@ -584,7 +584,7 @@ mod defs {
             fga_type!(@ $vis struct $name $ns);
             $(fga_type!(@ $name : $derive);)*
 
-            #[allow(unused)]
+            #[allow(unused, reason = "automatically generated, can’t know if it’s used or not")]
             macro_rules! $name {
                 ($s:literal) => {
                     $name($s.to_string())

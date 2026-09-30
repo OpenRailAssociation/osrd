@@ -28,3 +28,6 @@ uuid.workspace = true
 
 [dev-dependencies]
 fga = { path = "./", features = ["test_utilities"] }
+
+[lints]
+workspace = true

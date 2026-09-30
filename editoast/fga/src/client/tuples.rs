@@ -1,6 +1,6 @@
 use futures::stream;
 use itertools::Itertools as _;
-use tracing::Instrument;
+use tracing::Instrument as _;
 
 use crate::model::AsUser;
 use crate::model::Relation;
