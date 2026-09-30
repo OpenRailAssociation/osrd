@@ -106,16 +106,16 @@ export type PathStepV2 = {
 };
 
 export type PathStepMetadata =
-  | { isInvalid: true | undefined; localTrackName?: string; customTrackNames?: string[] }
+  | { validity: 'invalid' | 'loading'; localTrackName?: string; customTrackNames?: string[] }
   | {
       type: 'trackOffset';
-      isInvalid: false;
+      validity: 'valid';
       label: string;
       coordinates: Position;
     }
   | {
       type: 'opRef';
-      isInvalid: false;
+      validity: 'valid';
       name: string;
       mainCode: string;
       /** Store the UIC for cases where we modify a step that was defined by an op id / trigram */

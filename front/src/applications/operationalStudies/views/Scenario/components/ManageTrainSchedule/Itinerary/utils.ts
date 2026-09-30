@@ -6,15 +6,15 @@ import type {
 import type { PathStepMetadata } from 'reducers/osrdconf/types';
 
 export const isOpRefMetadata = (pathStepMetadata: PathStepMetadata | undefined) =>
-  !!pathStepMetadata && pathStepMetadata.isInvalid === false && pathStepMetadata.type === 'opRef';
+  !!pathStepMetadata && pathStepMetadata.validity === 'valid' && pathStepMetadata.type === 'opRef';
 
 export const computeOpRefMarkerName = (
-  pathStepMetadata: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>
+  pathStepMetadata: Extract<PathStepMetadata, { validity: 'valid'; type: 'opRef' }>
 ) =>
   `${pathStepMetadata.name}${pathStepMetadata.secondaryCode ? ` ${pathStepMetadata.secondaryCode}` : ''}${pathStepMetadata.trackName ? ` \u00B7 ${pathStepMetadata.trackName}` : ''}`;
 
 export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) => {
-  if (pathStepMetadata.isInvalid !== false) return [];
+  if (pathStepMetadata.validity !== 'valid') return [];
   if (pathStepMetadata.type === 'trackOffset') {
     return [pathStepMetadata.coordinates];
   }
