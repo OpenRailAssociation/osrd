@@ -159,9 +159,8 @@ const PathStepItem = ({
         ...customTracks.map((track) => track.trackName),
       ];
     } else {
-      const timetableNames = pathStepMetadata?.isInvalid !== false
-        ? (pathStepMetadata?.customTrackNames ?? [])
-        : [];
+      const timetableNames =
+        pathStepMetadata?.validity !== 'valid' ? (pathStepMetadata?.customTrackNames ?? []) : [];
       // Combine tracks from:
       // 1. pathStepMetadata.customTrackNames — track names used by other trains in the timetable
       // 2. customTracks — tracks added by the user in the current form session
@@ -199,7 +198,7 @@ const PathStepItem = ({
 
   const selectedTrackNameOption = useMemo(() => {
     // When OP is invalid but has a local_track_name, show it
-    if (pathStepMetadata?.isInvalid !== false && pathStepMetadata?.localTrackName) {
+    if (pathStepMetadata?.validity !== 'valid' && pathStepMetadata?.localTrackName) {
       return { label: pathStepMetadata.localTrackName, id: pathStepMetadata.localTrackName };
     }
 

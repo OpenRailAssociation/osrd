@@ -393,7 +393,7 @@ const ItineraryModal = ({
   const hasInvalidPathStep = pathSteps.some((step) => {
     if (isEmptyStep(step, getInputForStep(step.id))) return false;
     const meta = pathStepsMetadataById.get(step.id);
-    return !meta || meta.isInvalid;
+    return !meta || meta.validity === 'invalid';
   });
   const handleDeletePathStep = (stepId: string) => {
     resetOpSuggestions();
@@ -452,7 +452,7 @@ const ItineraryModal = ({
       // is not briefly flagged invalid while its OP match is fetched
       setPathStepMetadata(newStep.id, {
         type: 'opRef',
-        isInvalid: false,
+        validity: 'valid',
         name: op.name,
         mainCode: op.main_code,
         uic: op.uic,
@@ -479,7 +479,7 @@ const ItineraryModal = ({
   /** Return true if the path step is invalid and is not a placeholder */
   const isStepInvalid = (step: PathStepV2, metadata?: PathStepMetadata) =>
     // if step.location is null, the step is a placeholder waiting for user input
-    step.location !== null && !!metadata?.isInvalid;
+    step.location !== null && metadata?.validity === 'invalid';
 
   const hasInvalidPathStepDisplay = pathSteps.some((step) =>
     isStepInvalid(step, pathStepsMetadataById.get(step.id))
@@ -646,7 +646,7 @@ const ItineraryModal = ({
       pathSteps.filter((s) => {
         if (!s.location) return false;
         const meta = pathStepsMetadataById.get(s.id);
-        return !!meta && !meta.isInvalid;
+        return !!meta && meta.validity === 'valid';
       }),
     [pathSteps, pathStepsMetadataById]
   );
@@ -727,8 +727,8 @@ const ItineraryModal = ({
           receptionSignal: step.receptionSignal ?? undefined,
         };
 
-        if (!metadata || metadata.isInvalid !== false) {
-          return { ...baseStep, isInvalid: metadata?.isInvalid };
+        if (!metadata || metadata.validity !== 'valid') {
+          return { ...baseStep, isInvalid: metadata?.validity === 'invalid' ? true : undefined };
         }
 
         return {
@@ -973,7 +973,7 @@ const ItineraryModal = ({
                     hidePathfindingLine={
                       i > 0 &&
                       !isTrailingPlaceholder &&
-                      (isInvalid || !!previousPathStepMetadata?.isInvalid)
+                      (isInvalid || previousPathStepMetadata?.validity === 'invalid')
                     }
                     onDelete={() => {
                       handleDeletePathStep(pathStep.id);
@@ -989,7 +989,7 @@ const ItineraryModal = ({
                       focusValueRef.current[pathStep.id] =
                         getInputForStep(pathStep.id) ??
                         (pathStepMetadata &&
-                        pathStepMetadata.isInvalid === false &&
+                        pathStepMetadata.validity === 'valid' &&
                         pathStepMetadata.type === 'opRef'
                           ? `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`
                           : '');

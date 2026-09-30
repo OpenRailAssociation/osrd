@@ -115,7 +115,7 @@ export const usePathStepsMetadata = (
         const { location } = pathStep;
         // TODO : we need to evaluate if we still need to invalidate a pathstep when it has no location
         if (!location) {
-          newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
+          newPathStepsMetadataById.set(pathStep.id, { validity: 'invalid' });
           return;
         }
 
@@ -134,13 +134,13 @@ export const usePathStepsMetadata = (
           if (!correspondingTrack || !coordinates) {
             // Can happen in case of track offset id does not exist in infra or
             // if its offset is greater than the track length
-            newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
+            newPathStepsMetadataById.set(pathStep.id, { validity: 'invalid' });
             return;
           }
 
           newPathStepsMetadataById.set(pathStep.id, {
             type: 'trackOffset',
-            isInvalid: false,
+            validity: 'valid',
             label: '',
             coordinates,
           });
@@ -156,7 +156,7 @@ export const usePathStepsMetadata = (
           // A just-added step has no match until /match_operational_points
           // answers; keep its pre-filled metadata instead of flagging it
           const previous = pathStepsMetadataById.get(pathStep.id);
-          if (previous && previous.isInvalid === false && previous.type === 'opRef') {
+          if (previous && previous.validity === 'valid' && previous.type === 'opRef') {
             newPathStepsMetadataById.set(pathStep.id, previous);
             return;
           }
@@ -165,7 +165,7 @@ export const usePathStepsMetadata = (
           const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
 
           newPathStepsMetadataById.set(pathStep.id, {
-            isInvalid: matchedOp === null ? true : undefined,
+            validity: matchedOp === null ? 'invalid' : 'loading',
             localTrackName: local_track_name ?? undefined,
             customTrackNames: timetableTrackNames.length > 0 ? timetableTrackNames : undefined,
           });
@@ -183,7 +183,7 @@ export const usePathStepsMetadata = (
             })
           : true;
 
-        const validParts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
+        const validParts: Extract<PathStepMetadata, { validity: 'valid'; type: 'opRef' }>['parts'] =
           matchedOp.parts.map((part) => ({
             type: 'valid' as const,
             trackId: part.track,
@@ -192,16 +192,18 @@ export const usePathStepsMetadata = (
           }));
 
         const existingTrackNames = new Set(validParts.map((p) => p.trackName));
-        const customParts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
-          timetableTrackNames
-            .filter((name) => !existingTrackNames.has(name))
-            .map((name) => ({ type: 'custom' as const, trackName: name }));
+        const customParts: Extract<
+          PathStepMetadata,
+          { validity: 'valid'; type: 'opRef' }
+        >['parts'] = timetableTrackNames
+          .filter((name) => !existingTrackNames.has(name))
+          .map((name) => ({ type: 'custom' as const, trackName: name }));
 
         const parts = [...validParts, ...customParts];
 
         newPathStepsMetadataById.set(pathStep.id, {
           type: 'opRef',
-          isInvalid: false,
+          validity: 'valid',
           name: matchedOp.name,
           mainCode: matchedOp.main_code,
           uic: matchedOp.uic,
@@ -215,7 +217,7 @@ export const usePathStepsMetadata = (
 
       if (pendingStepId) {
         const metadata = newPathStepsMetadataById.get(pendingStepId);
-        if (metadata && !metadata.isInvalid) {
+        if (metadata && metadata.validity !== 'invalid') {
           pendingStepIdRef.current = '';
         }
       }
