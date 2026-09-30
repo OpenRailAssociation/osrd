@@ -75,7 +75,7 @@ where
         // section 4.1)
 
         use aws_lc_rs::digest;
-        use x509_cert::der::Decode;
+        use x509_cert::der::Decode as _;
         use x509_cert::der::oid::db::rfc5912 as db;
 
         let (_s, tls_state) = self.inner.get_ref();

@@ -26,3 +26,6 @@ tracing.workspace = true
 url.workspace = true
 uuid.workspace = true
 x509-cert.workspace = true
+
+[lints]
+workspace = true
