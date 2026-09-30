@@ -10,7 +10,7 @@ use diesel::ConnectionResult;
 use diesel::sql_query;
 use diesel_async::AsyncConnection;
 use diesel_async::AsyncPgConnection;
-use diesel_async::RunQueryDsl;
+use diesel_async::RunQueryDsl as _;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::pooled_connection::deadpool::Object;
