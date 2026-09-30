@@ -2,7 +2,7 @@ use std::future;
 
 use futures::TryStreamExt as _;
 use futures::stream;
-use tracing::Instrument;
+use tracing::Instrument as _;
 
 use super::Client;
 use super::ConnectionSettings;

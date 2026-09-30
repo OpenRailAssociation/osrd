@@ -141,11 +141,11 @@ impl Client {
         #[derive(serde::Deserialize)]
         struct Response {
             allowed: bool,
-            #[expect(dead_code)]
-            resolution: String,
+            // Also contains the following but we do not use it.
+            // resolution: String,
         }
 
-        let Response { allowed, .. } = response.json::<Message<_>>().await?.try_success()?;
+        let Response { allowed } = response.json::<Message<_>>().await?.try_success()?;
 
         Ok(allowed)
     }

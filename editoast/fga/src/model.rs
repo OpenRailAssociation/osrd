@@ -397,10 +397,10 @@ pub struct QueryUsersets<'a, R: Relation, S: Relation>(
     pub(crate) std::marker::PhantomData<S>,
 );
 
-#[expect(unused)]
+#[expect(unused, reason = "used in functions not yet implemented")]
 #[derive(Debug)]
 pub struct QueryObjectsStored<'a, R: Relation>(&'a R::User);
-#[expect(unused)]
+#[expect(unused, reason = "used in functions not yet implemented")]
 #[derive(Debug)]
 pub struct QueryUsersStored<'a, R: Relation>(&'a R::Object);
 

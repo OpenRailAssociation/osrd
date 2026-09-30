@@ -1,17 +1,17 @@
 use std::collections::HashMap;
-use std::str::FromStr;
+use std::str::FromStr as _;
 
-use tracing::Instrument;
+use tracing::Instrument as _;
 use uuid::Uuid;
 
 use crate::model::AsUser;
 use crate::model::Check;
-use crate::model::Object;
+use crate::model::Object as _;
 use crate::model::QueryObjects;
 use crate::model::QueryUsers;
 use crate::model::QueryUsersets;
 use crate::model::Relation;
-use crate::model::Type;
+use crate::model::Type as _;
 use crate::model::User;
 use crate::model::Wildcard;
 
@@ -478,13 +478,12 @@ mod tests {
     use crate::test_client;
 
     fn setup_tracing() {
-        tracing_subscriber::fmt()
+        let _ = tracing_subscriber::fmt()
             .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
             .with_test_writer()
             .without_time()
             .pretty()
-            .try_init()
-            .ok();
+            .try_init();
     }
 
     impl Client {
