@@ -27,7 +27,7 @@ use itertools::izip;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use tokio_stream::wrappers::UnboundedReceiverStream;
-use tracing::Instrument;
+use tracing::Instrument as _;
 
 /// Interface required by [SimulationEnv] and friends for [Correlated] keys
 ///
@@ -83,7 +83,10 @@ pub trait Task: Sized + Send {
     /// Cache write errors are ignored. So are serde errors for caching.
     /// All errors are logged.
     #[tracing::instrument(skip_all, err)]
-    #[expect(async_fn_in_trait)] // not for public (ie. outside editoast) use, no auto traits bounds to specify on the resulting future
+    #[expect(
+        async_fn_in_trait,
+        reason = "not for public (ie. outside editoast) use, no auto traits bounds to specify on the resulting future"
+    )]
     async fn run(
         self,
         vk_client: Arc<cache::Client>,

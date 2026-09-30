@@ -47,7 +47,10 @@ where
 /// The error is forwarded by [SimulationOutput::PathfindingFailure].
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
-#[expect(clippy::large_enum_variant)] // success is large, we can Box it if it becomes problematic but it's less convenient
+#[expect(
+    clippy::large_enum_variant,
+    reason = "success is large, we can Box it if it becomes problematic but it's less convenient"
+)]
 pub enum SimulationOutput {
     /// Yay!
     Success(core_client::simulation::SimulationSuccess),

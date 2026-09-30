@@ -11,7 +11,7 @@ use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use dashmap::DashMap;
 use futures::stream;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use ordered_float::OrderedFloat;
 use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;

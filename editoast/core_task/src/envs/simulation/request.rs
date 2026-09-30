@@ -1,5 +1,5 @@
 use std::hash::DefaultHasher;
-use std::hash::Hash;
+use std::hash::Hash as _;
 use std::sync::Arc;
 
 use core_client::AsCoreRequest as _;

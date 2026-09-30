@@ -1,9 +1,9 @@
 use std::hash::DefaultHasher;
-use std::hash::Hash;
+use std::hash::Hash as _;
 use std::hash::Hasher as _;
 use std::sync::Arc;
 
-use core_client::AsCoreRequest;
+use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 
 use crate::Task;
