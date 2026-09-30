@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use deadpool_redis::redis::Arg;
-use deadpool_redis::redis::AsyncCommands;
+use deadpool_redis::redis::AsyncCommands as _;
 use deadpool_redis::redis::Cmd;
 use deadpool_redis::redis::ErrorKind;
 use deadpool_redis::redis::Pipeline;
@@ -12,13 +12,13 @@ use deadpool_redis::redis::ToRedisArgs;
 use deadpool_redis::redis::ToSingleRedisArg;
 use deadpool_redis::redis::Value;
 use deadpool_redis::redis::aio::ConnectionLike;
-use futures::FutureExt;
+use futures::FutureExt as _;
 use futures::future;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
-use tracing::Instrument;
+use tracing::Instrument as _;
 use tracing::Level;
 use tracing::debug;
 use tracing::info_span;
@@ -138,8 +138,6 @@ struct ZaddWrapper<'a, M: Serialize> {
 #[derive(Clone, Deserialize)]
 struct ZrangebyscoreWrapper<M> {
     member: M,
-    #[expect(dead_code)]
-    nonce: u64,
 }
 
 impl Connection {
