@@ -667,6 +667,7 @@
     "zone": "Zone"
   },
   "nav-bar": {
+    "adminDashboard": "Admin dashboard",
     "disconnect": "Sign out",
     "featureFlags": {
       "hourlyTimetables": "Enable hourly timetables",

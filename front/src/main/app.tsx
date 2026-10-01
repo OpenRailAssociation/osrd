@@ -3,6 +3,7 @@ import { Suspense, useEffect, useCallback } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import '../i18n';
+import AdminDashboard from 'applications/adminDashboard/AdminDashboard';
 import HomeEditor from 'applications/editor/Home';
 import Project from 'applications/operationalStudies/views/Project';
 import ProjectList from 'applications/operationalStudies/views/ProjectList';
@@ -114,6 +115,10 @@ const router = createBrowserRouter([
         element: <Scenario />,
       },
     ],
+  },
+  {
+    path: 'admin-dashboard/',
+    element: <AdminDashboard />,
   },
   {
     path: '403/*',
