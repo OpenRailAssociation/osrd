@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Bug, SignOut } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
@@ -12,6 +14,8 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
+
+import StdcmRequestsSentModal from './StdcmRequestsSent/StdcmRequestsSentModal';
 
 const LogoSTDCM = () => {
   const deploymentSettings = useDeploymentSettings();
@@ -44,6 +48,7 @@ const StdcmHeader = ({
   const { impersonatedUser, impersonate } = useAuth();
   const dispatch = useAppDispatch();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
+  const [showRequestsSentModal, setShowRequestsSentModal] = useState(false);
 
   const { data: sendLMRAuthorizedResponse } =
     osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestAuthorized.useQuery(
@@ -67,6 +72,16 @@ const StdcmHeader = ({
           })
         )
       );
+    }
+  };
+
+  const handleRequestsButton = () => {
+    // TODO: remove openRequestsFolder() and related code
+    // when requests sent modal is fully done
+    if (isDebugMode) {
+      setShowRequestsSentModal(true);
+    } else {
+      openRequestsFolder();
     }
   };
 
@@ -96,7 +111,7 @@ const StdcmHeader = ({
               className={cx('ml-4 px-3', {
                 'impersonated-bg': impersonatedUser,
               })}
-              onClick={openRequestsFolder}
+              onClick={handleRequestsButton}
             >
               {t('header.requests')}
             </button>
@@ -124,6 +139,9 @@ const StdcmHeader = ({
           </button>
         )}
       </div>
+      {showRequestsSentModal && (
+        <StdcmRequestsSentModal onClose={() => setShowRequestsSentModal(false)} />
+      )}
     </div>
   );
 };
