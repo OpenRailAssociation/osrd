@@ -216,7 +216,7 @@ use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]
@@ -258,7 +258,7 @@ enum SearchApiError {
 #[derive(ToSchema, Serialize)]
 #[schema(example = json!(["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]), title_variants)]
 #[serde(untagged)]
-#[allow(unused, reason = "only used as an OpenAPI schema")]
+#[expect(unused, reason = "only used as an OpenAPI schema")]
 enum SearchQuery {
     Boolean(bool),
     Number(f64),

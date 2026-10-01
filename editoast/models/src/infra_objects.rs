@@ -76,10 +76,6 @@ macro_rules! infra_model {
                 infra_id: i64,
             ) -> Result<C, database::DatabaseError> {
                 use diesel::prelude::*;
-                #[allow(
-                    clippy::unused_trait_names,
-                    reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
-                )]
                 use diesel_async::RunQueryDsl;
                 use futures::TryStreamExt as _;
                 use $table::dsl;
@@ -285,7 +281,7 @@ impl OperationalPointModel {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]
@@ -318,7 +314,7 @@ impl OperationalPointModel {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]
@@ -359,7 +355,7 @@ impl OperationalPointModel {
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::prelude::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]
@@ -392,7 +388,7 @@ impl TrackSectionModel {
     ) -> Result<HashSet<String>, database::DatabaseError> {
         use database::tables::infra_object_track_section::dsl;
         use diesel::prelude::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]

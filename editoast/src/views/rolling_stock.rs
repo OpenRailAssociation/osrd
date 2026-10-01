@@ -173,13 +173,13 @@ impl From<rolling_stock::Error> for RollingStockError {
 }
 
 #[derive(IntoParams)]
-#[allow(unused, reason = "only used as an OpenAPI schema")]
+#[expect(unused, reason = "only used as an OpenAPI schema")]
 pub struct RollingStockIdParam {
     rolling_stock_id: i64,
 }
 
 #[derive(IntoParams)]
-#[allow(unused, reason = "only used as an OpenAPI schema")]
+#[expect(unused, reason = "only used as an OpenAPI schema")]
 pub struct RollingStockNameParam {
     rolling_stock_name: String,
 }
@@ -506,7 +506,7 @@ pub(in crate::views) async fn update_locked(
 
 // TODO delete that struct: it is used to document the API and is wrong
 #[derive(ToSchema)]
-#[allow(unused, reason = "only used as an OpenAPI schema")]
+#[expect(unused, reason = "only used as an OpenAPI schema")]
 struct RollingStockLiveryCreateForm {
     name: String,
     images: Vec<Vec<u8>>,

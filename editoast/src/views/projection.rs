@@ -338,7 +338,7 @@ pub fn interpolate_arrival_time(position: u64, report_train: &ReportTrain) -> i6
 }
 
 // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
-#[allow(
+#[expect(
     clippy::too_many_arguments,
     reason = "by design of the function: 1 to 1 mapping of the API"
 )]
@@ -712,7 +712,7 @@ impl OperationalPointProjection {
 }
 
 // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
-#[allow(
+#[expect(
     clippy::too_many_arguments,
     reason = "by design of the function: 1 to 1 mapping of the API"
 )]

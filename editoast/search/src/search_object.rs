@@ -12,7 +12,6 @@ pub struct Criteria {
 pub struct Property {
     pub name: String,
     pub sql: String,
-    #[allow(unused, reason = "only used in the `Search` derive macro")]
     pub data_type: Option<TypeSpec>,
 }
 

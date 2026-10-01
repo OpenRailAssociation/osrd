@@ -94,10 +94,6 @@ pub struct StdcmConflictingWorkSchedule {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-#[allow(
-    clippy::large_enum_variant,
-    reason = "We accepted the difference of memory size taken by variants since there is only one success and others are error cases"
-)]
 #[schema(title_variants)]
 pub(in crate::views) enum StdcmResponse {
     Success {
@@ -583,10 +579,6 @@ struct VirtualTrainRun {
 
 impl VirtualTrainRun {
     // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "by design of the function: 1 to 1 mapping of the API"
-    )]
     async fn simulate_consists_sequence(
         db_pool: Arc<DbConnectionPoolV2>,
         valkey_client: Arc<cache::Client>,

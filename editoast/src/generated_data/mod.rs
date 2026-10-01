@@ -21,7 +21,7 @@ use detector::DetectorLayer;
 use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]
@@ -243,7 +243,7 @@ impl InfraGeneratedData for Infra {
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::Text;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]

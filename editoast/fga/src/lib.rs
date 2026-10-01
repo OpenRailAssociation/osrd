@@ -584,7 +584,7 @@ mod defs {
             fga_type!(@ $vis struct $name $ns);
             $(fga_type!(@ $name : $derive);)*
 
-            #[allow(unused, reason = "automatically generated, can’t know if it’s used or not")]
+            #[expect(unused, reason = "automatically generated, can’t know if it’s used or not")]
             macro_rules! $name {
                 ($s:literal) => {
                     $name($s.to_string())

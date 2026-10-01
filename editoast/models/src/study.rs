@@ -48,7 +48,7 @@ impl Study {
         use database::tables::scenario::dsl;
         use diesel::dsl::*;
         use diesel::prelude::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]

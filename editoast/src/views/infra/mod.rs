@@ -856,7 +856,7 @@ pub mod tests {
     use core_client::mocking::MockingClient;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
-    #[allow(
+    #[expect(
         clippy::unused_trait_names,
         reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
     )]
