@@ -593,6 +593,16 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    search_group (id) {
+        id -> Int8,
+        name -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     search_journey_environment (id) {
         id -> Int8,
         infra_id -> Int8,
@@ -1014,6 +1024,7 @@ diesel::joinable!(scenario -> electrical_profile_set (electrical_profile_set_id)
 diesel::joinable!(scenario -> infra (infra_id));
 diesel::joinable!(scenario -> study (study_id));
 diesel::joinable!(scenario -> timetable (timetable_id));
+diesel::joinable!(search_group -> authn_group (id));
 diesel::joinable!(search_journey_environment -> infra (infra_id));
 diesel::joinable!(search_journey_environment_timetable -> search_journey_environment (search_journey_environment_id));
 diesel::joinable!(search_journey_environment_timetable -> timetable (timetable_id));
@@ -1079,6 +1090,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     rolling_stock_livery,
     rolling_stock_separate_image,
     scenario,
+    search_group,
     search_journey_environment,
     search_journey_environment_timetable,
     search_operational_point,
