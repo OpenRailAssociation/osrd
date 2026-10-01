@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Bug, SignOut } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
@@ -12,6 +14,8 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
+
+import StdcmRequestsSentModal from './StdcmRequestsSent/StdcmRequestsSentModal';
 
 const LogoSTDCM = () => {
   const deploymentSettings = useDeploymentSettings();
@@ -44,6 +48,7 @@ const StdcmHeader = ({
   const { impersonatedUser, impersonate } = useAuth();
   const dispatch = useAppDispatch();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
+  const [showRequestsSentModal, setShowRequestsSentModal] = useState(false);
 
   const { data: sendLMRAuthorizedResponse } =
     osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestAuthorized.useQuery(
@@ -70,6 +75,14 @@ const StdcmHeader = ({
     }
   };
 
+  const handleRequestButton = () => {
+    if (isDebugMode) {
+      setShowRequestsSentModal(true);
+    } else {
+      openRequestsFolder();
+    }
+  };
+
   return (
     <div className={cx('stdcm-header', impersonatedUser ? 'stdcm-header__impersonated' : 'd-flex')}>
       <LogoSTDCM />
@@ -89,17 +102,17 @@ const StdcmHeader = ({
         {railwayManagerUrl &&
           sendLMRAuthorizedResponse?.authorized &&
           requestsFolderUrl.isSuccess && (
-            <button
-              data-testid="stdcm-requests-folder-button"
-              type="button"
-              aria-label={t('header.requests')}
-              className={cx('ml-4 px-3', {
-                'impersonated-bg': impersonatedUser,
-              })}
-              onClick={openRequestsFolder}
-            >
-              {t('header.requests')}
-            </button>
+        <button
+          data-testid="stdcm-requests-folder-button"
+          type="button"
+          aria-label={t('header.requests')}
+          className={cx('ml-4 px-3', {
+            'impersonated-bg': impersonatedUser,
+          })}
+          onClick={handleRequestButton}
+        >
+          {t('header.requests')}
+        </button>
           )}
         <button
           data-testid="stdcm-help-button"
@@ -124,6 +137,9 @@ const StdcmHeader = ({
           </button>
         )}
       </div>
+      {showRequestsSentModal && (
+        <StdcmRequestsSentModal onClose={() => setShowRequestsSentModal(false)} />
+      )}
     </div>
   );
 };

@@ -1,0 +1,73 @@
+.stdcm-requests-sent-modal-body {
+  padding: 0 !important;
+}
+
+.stdcm-requests-sent-table-container {
+  th,
+  td {
+    height: 40px;
+    border: 1px solid var(--color-grey-30);
+    border-width: 1px 1px 1px 0;
+    padding: 4px 8px;
+  }
+
+  thead {
+    th {
+      background: color-mix(in srgb, var(--black100) 5%, var(--ambientB5) 100%);
+      color: var(--color-grey-50);
+      font-weight: 400;
+      font-size: 12px;
+    }
+  }
+
+  tr:nth-child(odd) {
+    background: var(--ambientA5);
+  }
+
+  tr:nth-child(even) {
+    background: var(--ambientA15);
+  }
+
+  .stdcm-requests-color-ACCEPTED {
+    background: var(--level60alpha40);
+  }
+
+  .stdcm-requests-color-PROCESSING {
+    background: var(--level40alpha80);
+  }
+
+  .stdcm-requests-color-CREATED {
+    background: var(--black50);
+  }
+
+  .stdcm-requests-color-REFUSED {
+    background: var(--level100alpha60);
+  }
+
+  .stdcm-requests-color-CANCELLED {
+    background: var(--level90alpha60);
+  }
+
+  .stdcm-requests-text-color-ACCEPTED {
+    color: var(--success60);
+  }
+
+  .stdcm-requests-text-color-PROCESSING {
+    color: var(--info60);
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  .stdcm-requests-text-color-CREATED {
+    color: var(--black100);
+    font-weight: 600;
+  }
+
+  .stdcm-requests-text-color-REFUSED {
+    color: var(--error60);
+  }
+
+  .stdcm-requests-text-color-CANCELLED {
+    color: var(--warning60);
+  }
+}

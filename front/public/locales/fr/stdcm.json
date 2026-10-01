@@ -121,6 +121,21 @@
     "weight": "tonnage",
     "withoutWarranty": "Simulation de sillon sans garantie de disponibilité"
   },
+  "requestsSentModal": {
+    "destination": "Destination",
+    "origin": "Origine",
+    "requestNumber": "N° de demande",
+    "status": "État",
+    "statuses": {
+      "ACCEPTED": "Allouée",
+      "CANCELLED": "Annulée",
+      "CREATED": "Envoyée",
+      "PROCESSING": "En cours",
+      "REFUSED": "Non allouée"
+    },
+    "title": "Demandes GESICO",
+    "updateDate": "Mise à jour"
+  },
   "scenario": "Scénario",
   "scenarioExplorer": {
     "infraLegend": "infra",
