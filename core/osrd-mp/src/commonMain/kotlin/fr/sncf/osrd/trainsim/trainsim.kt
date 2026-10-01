@@ -454,24 +454,21 @@ data class SpeedLimitedZone(
     val end: PreciseDistance,
     val limit: PreciseSpeed,
 ) : SpeedConstraint {
-    private var stopCurve: Curve? = null
+    /** Curve cached on vMaxFactor which varies when running simulations with margins. */
+    private val stopCurve = Cache<Double, Curve>()
 
     init {
         require(start < end) { "speed limit zone start must be strictly lower than end" }
     }
 
     override fun speedCurves(context: EnvelopeSimContext, currentState: TrainState): List<Curve> {
-        if (stopCurve == null) {
-            stopCurve =
-                decelerationCurve(context, start, limit * context.driver.vMaxFactor) +
-                    Vec2(
-                        end.micrometers,
-                        (limit.micrometersPerSecond * context.driver.vMaxFactor).toLong(),
-                    )
-        }
-
-        // SAFETY: stopCurve is never null in this code path
-        return listOf(stopCurve!!)
+        val vMaxFactor = context.driver.vMaxFactor
+        return listOf(
+            stopCurve.get(vMaxFactor) {
+                decelerationCurve(context, start, limit * vMaxFactor) +
+                    Vec2(end.micrometers, (limit.micrometersPerSecond * vMaxFactor).toLong())
+            }
+        )
     }
 }
 
