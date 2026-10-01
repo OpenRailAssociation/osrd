@@ -1,3 +1,4 @@
+pub mod authorizers;
 pub mod identity;
 mod model;
 pub mod v2;
