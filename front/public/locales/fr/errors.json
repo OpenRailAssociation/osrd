@@ -49,7 +49,9 @@
       "UnknownResource": "Ressource inconnue",
       "UnknownResourceType": "Type de ressource inconnu",
       "UnknownSubject": "Sujet inconnu",
-      "UnknownUser": "Utilisateur inconnu '{{id}}'"
+      "UnknownUser": "Utilisateur inconnu '{{id}}'",
+      "identity_already_exists": "L'identité utilisateur '{{identity}}' existe déjà",
+      "no_identity_provided": "L'utilisateur doit avoir au moins une identité"
     },
     "authz_legacy": {
       "Openfga": "Erreur interne",
