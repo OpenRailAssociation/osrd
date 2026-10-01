@@ -625,22 +625,20 @@ class Stop(val position: PreciseDistance, val initialDuration: PreciseDuration) 
     /** The stop duration, or `null` if the stop doesn't apply. */
     private var duration: PreciseDuration? = initialDuration.takeIf { it >= 0.microseconds }
 
-    /** Deceleration curve cache */
-    private var stopCurve: Curve? = null
+    /** Curve cached on vMaxFactor which varies when running simulations with margins. */
+    private val stopCurve = Cache<Double, Curve>()
 
     override fun speedCurves(context: EnvelopeSimContext, currentState: TrainState): List<Curve> {
         if (duration == null) {
             return listOf()
         }
 
-        if (stopCurve == null) {
-            stopCurve =
+        return listOf(
+            stopCurve.get(context.driver.vMaxFactor) {
                 decelerationCurve(context, position, 0.micrometersPerSecond) +
                     Vec2(Long.MAX_VALUE, 0)
-        }
-
-        // This is safe because [Stop.speedCurves] isn't ever set to null outside of initialization
-        return listOf(stopCurve!!)
+            }
+        )
     }
 
     override fun update(oldState: TrainState, newState: TrainState) {
