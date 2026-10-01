@@ -278,6 +278,7 @@ enum SearchObjectType {
     TrainSchedule,
     OperationalPoint,
     User,
+    Group,
 }
 
 /// The payload of a search request
@@ -370,7 +371,8 @@ pub(in crate::views) async fn search(
         | SearchObjectType::Scenario => Some(authz::Role::OperationalStudies),
         SearchObjectType::TrainSchedule
         | SearchObjectType::OperationalPoint
-        | SearchObjectType::User => None,
+        | SearchObjectType::User
+        | SearchObjectType::Group => None,
     };
 
     if let Some(required_role) = required_role
@@ -663,6 +665,26 @@ pub(super) struct SearchResultItemUser {
     name: String,
 }
 
+#[derive(Search, Serialize, ToSchema, Deserialize)]
+#[search(
+    table = "search_group",
+    migration(src_table = "authn_group"),
+    joins = "INNER JOIN authn_group ON authn_group.id = search_group.id",
+    column(
+        name = "name",
+        data_type = "TEXT",
+        sql = "authn_group.name",
+        textual_search
+    )
+)]
+/// A search result item for a query with `object = "group"`
+pub(super) struct SearchResultItemGroup {
+    #[search(sql = "authn_group.id")]
+    id: u64,
+    #[search(sql = "authn_group.name")]
+    name: String,
+}
+
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_study",
@@ -818,13 +840,16 @@ pub(super) struct SearchResultItemTrainSchedule {
     object(name = "scenario", config = SearchResultItemScenario),
     object(name = "trainschedule", config = SearchResultItemTrainSchedule),
     object(name = "user", config = SearchResultItemUser),
+    object(name = "group", config = SearchResultItemGroup),
 )]
 pub struct SearchConfigFinder;
 
 #[cfg(test)]
 pub mod tests {
     use models::infra_objects::SchemaModel as _;
+    use models::prelude::Create as _;
     use models::prelude::CreateBatch as _;
+    use models::prelude::Model as _;
     use pretty_assertions::assert_eq;
 
     use schemas::infra::OperationalPoint;
@@ -1097,5 +1122,31 @@ pub mod tests {
 
         assert_eq!(response.len(), 1);
         assert_eq!(response[0].geographic, None);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_group() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let user = app.user("test", "Test").create().await;
+        let group_name = "Test Group".to_string();
+        models::Group::changeset()
+            .name(group_name.clone())
+            .create(&mut pool.get_ok())
+            .await
+            .unwrap();
+        let response: Vec<SearchResultItemGroup> = app
+            .post("/search")
+            .by_user(user.as_ref())
+            .json(&json!({
+                "object": "group",
+                "query": ["=", ["name"], group_name],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 1);
+        assert_eq!(response[0].name, group_name);
     }
 }

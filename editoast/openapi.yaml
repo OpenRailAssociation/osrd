@@ -14631,6 +14631,7 @@ components:
       - trainschedule
       - operationalpoint
       - user
+      - group
     SearchPayload:
       type: object
       description: The payload of a search request
@@ -14711,7 +14712,23 @@ components:
       - oneOf:
         - $ref: '#/components/schemas/SearchResultItemUser'
         title: SearchResultItemSearchResultItemUser
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemGroup'
+        title: SearchResultItemSearchResultItemGroup
       description: A search result item that depends on the query's `object`
+    SearchResultItemGroup:
+      type: object
+      description: A search result item for a query with `object = "group"`
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+        name:
+          type: string
     SearchResultItemOperationalPoint:
       type: object
       description: |

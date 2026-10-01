@@ -4479,6 +4479,10 @@ export type SearchResultItemUser = {
   id: number;
   name: string;
 };
+export type SearchResultItemGroup = {
+  id: number;
+  name: string;
+};
 export type SearchResultItem =
   | SearchResultItemTrack
   | SearchResultItemOperationalPoint
@@ -4487,7 +4491,8 @@ export type SearchResultItem =
   | SearchResultItemStudy
   | SearchResultItemScenario
   | SearchResultItemTrainSchedule
-  | SearchResultItemUser;
+  | SearchResultItemUser
+  | SearchResultItemGroup;
 export type SearchObjectType =
   | 'track'
   | 'signal'
@@ -4496,7 +4501,8 @@ export type SearchObjectType =
   | 'scenario'
   | 'trainschedule'
   | 'operationalpoint'
-  | 'user';
+  | 'user'
+  | 'group';
 export type SearchQuery = boolean | number | number | string | object;
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it

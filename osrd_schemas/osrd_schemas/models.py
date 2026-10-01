@@ -3771,6 +3771,16 @@ class SearchObjectType(Enum):
     trainschedule = "trainschedule"
     operationalpoint = "operationalpoint"
     user = "user"
+    group = "group"
+
+
+class SearchResultItemGroup(BaseModel):
+    """
+    A search result item for a query with `object = "group"`
+    """
+
+    id: Annotated[int, Field(ge=0)]
+    name: str
 
 
 class SearchResultItemOperationalPointTrackSections(BaseModel):
@@ -5953,6 +5963,15 @@ class SearchResultItemSearchResultItemUser(RootModel[SearchResultItemUser]):
     """
 
 
+class SearchResultItemSearchResultItemGroup(RootModel[SearchResultItemGroup]):
+    root: Annotated[
+        SearchResultItemGroup, Field(title="SearchResultItemSearchResultItemGroup")
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
 class SearchResultItemOperationalPoint(BaseModel):
     """
     A search result item for a query with `object = "operationalpoint"`
@@ -7441,6 +7460,7 @@ class SearchResultItem(
         | SearchResultItemSearchResultItemScenario
         | SearchResultItemSearchResultItemTrainSchedule
         | SearchResultItemSearchResultItemUser
+        | SearchResultItemSearchResultItemGroup
     ]
 ):
     root: (
@@ -7452,6 +7472,7 @@ class SearchResultItem(
         | SearchResultItemSearchResultItemScenario
         | SearchResultItemSearchResultItemTrainSchedule
         | SearchResultItemSearchResultItemUser
+        | SearchResultItemSearchResultItemGroup
     )
     """
     A search result item that depends on the query's `object`
