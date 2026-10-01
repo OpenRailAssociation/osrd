@@ -196,10 +196,8 @@ export const matchOpRefAndWaypoint = (
   );
 };
 
-export const buildPathItemWaypointId = (pathItemId: string) => `path-item-${pathItemId}`;
-// Unlike op.position, an op's index in the ops list stays stable across
-// pathfinding recomputes.
-const buildOpWaypointId = (opId: string, opIndex: number) => `op-${opId}-${opIndex}`;
+export const buildOpWaypointId = (opId: string, occurrenceCount: number) =>
+  `${opId}-${occurrenceCount}`;
 
 export const buildPathWaypointsFromRawOPs = (
   ops: CoreOperationalPointOnPath[],
@@ -208,7 +206,12 @@ export const buildPathWaypointsFromRawOPs = (
   let opRefPathItemsQueue = [...path].filter(
     (pathItem) => pathItem.location.type !== 'track_offset'
   );
-  const waypoints = ops.map((op, opIndex) => {
+  // waypointId = op ID + occurrence number (1 for the first time we see it, 2 for the second).
+  const opOccurrenceCounts = new Map<string, number>();
+  const waypoints = ops.map((op) => {
+    const occurrenceCount = (opOccurrenceCounts.get(op.id) ?? 0) + 1;
+    opOccurrenceCounts.set(op.id, occurrenceCount);
+
     // ops and path items follow the same order, so a match should always be
     // the next path item in the queue. If not, some path items were skipped
     // without ever matching an op.
@@ -219,9 +222,7 @@ export const buildPathWaypointsFromRawOPs = (
 
     const waypoint: PathWaypoint = {
       ...omit(op, 'id'),
-      waypointId: pathItem
-        ? buildPathItemWaypointId(pathItem.id)
-        : buildOpWaypointId(op.id, opIndex),
+      waypointId: buildOpWaypointId(op.id, occurrenceCount),
       opId: op.id,
       pathItemId: null,
       location: {
