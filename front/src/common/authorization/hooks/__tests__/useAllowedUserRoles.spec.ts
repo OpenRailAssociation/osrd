@@ -19,6 +19,7 @@ describe('useAllowedUserRoles', () => {
     caseName: string;
     userRoles: Role[];
     expectedAllowedViews: {
+      adminDashboardAllowed: boolean;
       operationalStudiesAllowed: boolean;
       stdcmAllowed: boolean;
       infraEditorAllowed: boolean;
@@ -30,6 +31,7 @@ describe('useAllowedUserRoles', () => {
       caseName: 'stdcm users',
       userRoles: ['Stdcm'],
       expectedAllowedViews: {
+        adminDashboardAllowed: false,
         operationalStudiesAllowed: false,
         stdcmAllowed: true,
         infraEditorAllowed: false,
@@ -41,6 +43,7 @@ describe('useAllowedUserRoles', () => {
       caseName: 'operational studies users',
       userRoles: ['OperationalStudies'],
       expectedAllowedViews: {
+        adminDashboardAllowed: false,
         operationalStudiesAllowed: true,
         stdcmAllowed: false,
         infraEditorAllowed: true,
@@ -52,6 +55,7 @@ describe('useAllowedUserRoles', () => {
       caseName: 'users with multiple roles',
       userRoles: ['OperationalStudies', 'Stdcm'],
       expectedAllowedViews: {
+        adminDashboardAllowed: false,
         operationalStudiesAllowed: true,
         stdcmAllowed: true,
         infraEditorAllowed: true,
@@ -63,6 +67,7 @@ describe('useAllowedUserRoles', () => {
       caseName: 'super users',
       userRoles: ['Admin'],
       expectedAllowedViews: {
+        adminDashboardAllowed: true,
         operationalStudiesAllowed: true,
         stdcmAllowed: true,
         infraEditorAllowed: true,
@@ -74,6 +79,7 @@ describe('useAllowedUserRoles', () => {
       caseName: 'users with no roles',
       userRoles: [],
       expectedAllowedViews: {
+        adminDashboardAllowed: false,
         operationalStudiesAllowed: false,
         stdcmAllowed: false,
         infraEditorAllowed: false,
@@ -111,6 +117,7 @@ describe('useAllowedUserRoles', () => {
     }));
 
     expect(result.current.allowedUserRoles).toEqual({
+      adminDashboardAllowed: false,
       operationalStudiesAllowed: false,
       stdcmAllowed: false,
       infraEditorAllowed: false,
