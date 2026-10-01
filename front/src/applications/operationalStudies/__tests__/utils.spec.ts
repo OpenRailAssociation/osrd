@@ -7,6 +7,7 @@ import {
   isTooFast,
   transformBoundariesDataToPositionDataArray,
   transformElectricalBoundariesToRanges,
+  buildOpWaypointId,
   buildPathWaypointsFromRawOPs,
   sortPathOperationalPoints,
 } from 'applications/operationalStudies/utils';
@@ -204,6 +205,17 @@ describe('buildPathWaypointsFromRawOPs', () => {
       { opId: 'op3', pathItemId: 'step2' },
       { opId: 'op2', pathItemId: null },
       { opId: 'op1', pathItemId: 'step3' },
+    ]);
+  });
+
+  it('should give each occurrence of a repeated OP a unique, order-based waypointId', () => {
+    const ops = [makeRawOp('op1'), makeRawOp('op2'), makeRawOp('op1')];
+    const path = [makePathItem('step1', 'op1')];
+    const result = buildPathWaypointsFromRawOPs(ops, path);
+    expect(result.map(({ waypointId }) => waypointId)).toEqual([
+      buildOpWaypointId('op1', 1),
+      buildOpWaypointId('op2', 1),
+      buildOpWaypointId('op1', 2),
     ]);
   });
 });
