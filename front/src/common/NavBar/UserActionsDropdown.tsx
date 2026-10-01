@@ -1,9 +1,11 @@
 import { type ReactNode } from 'react';
 
-import { Gear, Report, SignOut } from '@osrd-project/ui-icons';
+import { Gear, Report, SignOut, Tools } from '@osrd-project/ui-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
+import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles';
 import DropdownSNCF, { type DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
 import HelpModalSNCF from 'common/BootstrapSNCF/HelpModalSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -25,6 +27,7 @@ const UserActionsDropdown = ({
   type = 'transparent',
 }: UserActionsDropdownProps) => {
   const { logout } = useAuth();
+  const { adminDashboardAllowed } = useAllowedUserRoles();
   const { openModal } = useModal();
   const { t, i18n } = useTranslation();
 
@@ -83,6 +86,20 @@ const UserActionsDropdown = ({
       key: 'sign-out',
     },
   ];
+  if (adminDashboardAllowed) {
+    const adminDownItem = {
+      node: (
+        <Link to="/admin-dashboard">
+          <span className="mr-2">
+            <Tools />
+          </span>
+          {t('nav-bar.adminDashboard')}
+        </Link>
+      ),
+      key: 'admin-dashboard',
+    };
+    dropdownItems.unshift(adminDownItem);
+  }
 
   return (
     <DropdownSNCF

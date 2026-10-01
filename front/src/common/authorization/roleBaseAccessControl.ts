@@ -7,6 +7,7 @@ export type RequiredUserRolesFor = {
     INFRA_EDITOR: Role[];
     MAP: Role[];
     ROLLING_STOCK_EDITOR: Role[];
+    ADMIN_DASHBOARD: Role[];
   };
   USER_PROFILE: {
     STDCM: Role[];
@@ -25,6 +26,7 @@ export const REQUIRED_USER_ROLES_FOR: RequiredUserRolesFor = {
     INFRA_EDITOR: ['OperationalStudies'],
     MAP: ['OperationalStudies', 'Stdcm'],
     ROLLING_STOCK_EDITOR: ['OperationalStudies'],
+    ADMIN_DASHBOARD: ['Admin'],
   },
   USER_PROFILE: {
     STDCM: ['Stdcm'],
