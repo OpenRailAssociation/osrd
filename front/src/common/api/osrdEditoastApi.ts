@@ -397,6 +397,7 @@ const osrdEditoastApi = generatedEditoastApi
           (
             ({
               user: [],
+              group: [],
               study: ['studies'],
               project: ['projects'],
               scenario: ['scenarios'],
