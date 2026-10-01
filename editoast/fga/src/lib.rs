@@ -274,10 +274,10 @@ macro_rules! relations {
         $(
             impl $object {
                 $(
-                    #[allow(unused, reason = "automatically generated, can’t know if it’s used or not")]
                     pub const fn $name() -> impl $crate::model::Relation<User = $user, Object = $object> {
                         #[derive(Debug)]
                         struct R;
+                        #[automatically_derived]
                         impl $crate::model::Relation for R {
                             const NAME: &'static str = stringify!($name);
                             type User = $user;
@@ -593,19 +593,16 @@ mod defs {
         };
     }
 
-    fga_type!(pub struct Role("role"): User);
     fga_type!(pub struct User("user"): User, Object);
     fga_type!(pub struct Group("group"): User, Object);
     fga_type!(pub struct Infra("infra"): Object);
 
     relations! {
         User {
-            role: Role,
             group: Group,
             manager: User
         },
         Group {
-            role: Role,
             member: User,
             manager: User
         },
