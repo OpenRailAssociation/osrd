@@ -5,12 +5,14 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import type { Infra } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type Infra } from 'common/api/osrdEditoastApi';
 import GrantsManager from 'common/authorization/components/GrantsManager';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
 
@@ -51,6 +53,10 @@ const InfraSelectorModalBodyStandard = ({
   const navigate = useNavigate();
   const { userId, getUserPrivileges } = useAuthz();
   const [redraw, setRedraw] = useState(0);
+  const { updateViewport } = useMapSettingsActions();
+  const { viewport } = useMapSettings();
+
+  const [getInfraBbox] = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useLazyQuery();
 
   // Get the user privileges for infras
   const userPrivilegesByInfraId = useAsyncMemo(async () => {
@@ -59,9 +65,19 @@ const InfraSelectorModalBodyStandard = ({
     // redraw is in the deps to force the reload of the privileges when the user changes his own grant
   }, [getUserPrivileges, infraIdsList, redraw]);
 
-  const setInfraID = useCallback(
-    (id: number) => {
+  const changeInfrastructure = useCallback(
+    async (id: number) => {
       dispatch(updateInfraID(id));
+      const { data: infraBbox } = await getInfraBbox({ infraId: id });
+      if (infraBbox) {
+        const { min_lat, min_lon, max_lat, max_lon } = infraBbox;
+
+        const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
+          padding: 64,
+        });
+
+        dispatch(updateViewport(newViewport));
+      }
       if (isInEditor) {
         navigate(`/editor/${id}`);
       }
@@ -69,7 +85,7 @@ const InfraSelectorModalBodyStandard = ({
         closeModal();
       }
     },
-    [isInEditor]
+    [isInEditor, viewport]
   );
 
   return (
@@ -100,7 +116,7 @@ const InfraSelectorModalBodyStandard = ({
           >
             <div
               onClick={() => {
-                setInfraID(infra.id);
+                changeInfrastructure(infra.id);
               }}
               tabIndex={0}
               role="button"
