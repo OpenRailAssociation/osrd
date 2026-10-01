@@ -207,66 +207,59 @@ class Curve(val xs: LongArray, val ys: LongArray) {
         // Iterate through points from [xs];[ys] that start with the one just
         // before [x1] (or the first point if none) and ends with the one just
         // after [x2] (or the last point if none)
-        return (i1..<size)
-            .asSequence()
-            .map { i -> Vec2(xs[i], ys[i]) }
-            .windowed(2)
-            .takeWhile { window -> window[0].x < x2 }
-            .mapNotNull { window ->
-                val vA = window[0]
-                val vAx = SignalingLong(vA.x)
-                val vAy = SignalingLong(vA.y)
-                val vB = window[1]
-                val vBx = SignalingLong(vB.x)
-                val vBy = SignalingLong(vB.y)
+        var i = i1
+        while (i + 1 < size && xs[i] < x2) {
+            val vAx = SignalingLong(xs[i])
+            val vAy = SignalingLong(ys[i])
+            val vBx = SignalingLong(xs[i + 1])
+            val vBy = SignalingLong(ys[i + 1])
+            i++
 
-                val xlo = SignalingLong(max(x1, vA.x))
-                val xhi = SignalingLong(min(x2, vB.x))
+            val xlo = SignalingLong(max(x1, vAx.raw))
+            val xhi = SignalingLong(min(x2, vBx.raw))
 
-                val x1 = SignalingLong(x1)
-                val y1 = SignalingLong(y1)
-                val x2 = SignalingLong(x2)
-                val y2 = SignalingLong(y2)
+            val x1 = SignalingLong(x1)
+            val y1 = SignalingLong(y1)
+            val x2 = SignalingLong(x2)
+            val y2 = SignalingLong(y2)
 
-                val y1lo = y1 + (y2 - y1) * (xlo - x1) / (x2 - x1)
-                val y1hi = y1 + (y2 - y1) * (xhi - x1) / (x2 - x1)
-                val yAlo = if (vAy == vBy) vAy else vAy + (vBy - vAy) * (xlo - vAx) / (vBx - vAx)
-                val yAhi = if (vAy == vBy) vAy else vAy + (vBy - vAy) * (xhi - vAx) / (vBx - vAx)
+            val y1lo = y1 + (y2 - y1) * (xlo - x1) / (x2 - x1)
+            val y1hi = y1 + (y2 - y1) * (xhi - x1) / (x2 - x1)
+            val yAlo = if (vAy == vBy) vAy else vAy + (vBy - vAy) * (xlo - vAx) / (vBx - vAx)
+            val yAhi = if (vAy == vBy) vAy else vAy + (vBy - vAy) * (xhi - vAx) / (vBx - vAx)
 
-                if (yAlo == y1lo) {
-                    return@mapNotNull if (yAhi == y1hi) {
-                        // Curve and segment intersect and have the same slope on this [window],
-                        if (xhi == x2) {
-                            // this is the end of the segment
-                            Vec2(x2.raw, y2.raw)
-                        } else {
-                            // we'll return a value in one of the next windows.
-                            null
-                        }
-                    } else {
-                        // Curve and segment stopped intersecting and having the same slope.
-                        Vec2(xlo.raw, y1lo.raw)
+            if (yAlo == y1lo) {
+                if (yAhi == y1hi) {
+                    // Curve and segment intersect and have the same slope on this window,
+                    if (xhi == x2) {
+                        // this is the end of the segment
+                        return Vec2(x2.raw, y2.raw)
                     }
+                    // we'll return a value in one of the next windows.
+                    continue
                 }
-
-                if ((yAlo < y1lo) == (yAhi < y1hi)) {
-                    // Curve and segment have the same slope, but don't intersect
-                    return@mapNotNull null
-                }
-
-                val ymid = (yAhi * y1lo - yAlo * y1hi) / ((yAhi - yAlo) + (y1lo - y1hi))
-
-                val xmid =
-                    if (yAhi != yAlo) {
-                        xlo + (xhi - xlo) * (ymid - yAlo) / (yAhi - yAlo)
-                    } else {
-                        // yBhi != yBlo, or else we would have returned null above
-                        xlo + (xhi - xlo) * (ymid - y1lo) / (y1hi - y1lo)
-                    }
-
-                Vec2(xmid.raw, ymid.raw)
+                // Curve and segment stopped intersecting and having the same slope.
+                return Vec2(xlo.raw, y1lo.raw)
             }
-            .firstOrNull()
+
+            if ((yAlo < y1lo) == (yAhi < y1hi)) {
+                // Curve and segment have the same slope, but don't intersect
+                continue
+            }
+
+            val ymid = (yAhi * y1lo - yAlo * y1hi) / ((yAhi - yAlo) + (y1lo - y1hi))
+
+            val xmid =
+                if (yAhi != yAlo) {
+                    xlo + (xhi - xlo) * (ymid - yAlo) / (yAhi - yAlo)
+                } else {
+                    // yBhi != yBlo, or else we would have returned null above
+                    xlo + (xhi - xlo) * (ymid - y1lo) / (y1hi - y1lo)
+                }
+
+            return Vec2(xmid.raw, ymid.raw)
+        }
+        return null
     }
 
     override fun toString(): String =
