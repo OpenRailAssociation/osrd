@@ -11,8 +11,9 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use itertools::Itertools as _;
+use serde::Serialize;
 
-#[derive(Debug, Clone, PartialEq, Eq, Model)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Model)]
 #[model(table = database::tables::authn_user)]
 #[model(gen(ops = rd, batch_ops = r, list))]
 pub struct User {
