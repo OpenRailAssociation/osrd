@@ -15,6 +15,7 @@ export default function useAllowedUserRoles() {
       infraEditorAllowed: checkUserRole(requiredRolesByView.INFRA_EDITOR),
       rollingStockEditorAllowed: checkUserRole(requiredRolesByView.ROLLING_STOCK_EDITOR),
       mapAllowed: checkUserRole(requiredRolesByView.MAP),
+      adminDashboardAllowed: checkUserRole(requiredRolesByView.ADMIN_DASHBOARD),
     }),
     [checkUserRole]
   );
