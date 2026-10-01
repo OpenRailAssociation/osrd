@@ -124,7 +124,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
 }
 
 // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
-#[allow(
+#[expect(
     clippy::too_many_arguments,
     reason = "by design of the function: 1 to 1 mapping of the API"
 )]

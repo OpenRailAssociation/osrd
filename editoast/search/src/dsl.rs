@@ -376,7 +376,7 @@ impl QueryContext {
     /// ```
     ///
     /// See [Type] for information about the DSL itself
-    #[allow(
+    #[expect(
         clippy::type_complexity,
         reason = "the complex type represents a function where each type is relatively simple."
     )]
@@ -412,7 +412,7 @@ impl QueryContext {
     /// ```
     ///
     /// See [Type] for information about the DSL itself
-    #[allow(
+    #[expect(
         clippy::type_complexity,
         reason = "the complex type represents a function where each type is relatively simple."
     )]

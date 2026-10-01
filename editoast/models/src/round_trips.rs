@@ -69,7 +69,7 @@ impl TrainScheduleRoundTrips {
     ) -> Result<usize, database::DatabaseError> {
         use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]
@@ -95,7 +95,7 @@ impl TrainScheduleRoundTrips {
     ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]

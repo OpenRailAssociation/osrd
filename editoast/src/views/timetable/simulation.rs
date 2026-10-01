@@ -220,7 +220,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-#[allow(
+#[expect(
     clippy::large_enum_variant,
     reason = "We accepted the difference of memory size taken by variants since there is only one success and others are error cases"
 )]
@@ -378,10 +378,6 @@ impl From<PathfindingFailure> for SummaryResponse {
 ///
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
 // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
-#[allow(
-    clippy::too_many_arguments,
-    reason = "by design of the function: 1 to 1 mapping of the API"
-)]
 pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,

@@ -4,7 +4,7 @@ use database::DbConnection;
 use database::tables::authn_user;
 use database::tables::authn_user_identity;
 use diesel::prelude::*;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]

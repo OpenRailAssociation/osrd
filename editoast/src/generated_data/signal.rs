@@ -69,7 +69,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a SignalC
     }
 
     for ((signaling_system, sprite_id), signals) in group_by_sprite {
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]
@@ -95,7 +95,7 @@ impl GeneratedData for SignalLayer {
         infra: i64,
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabaseError> {
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]
@@ -123,7 +123,7 @@ impl GeneratedData for SignalLayer {
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabaseError> {
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]

@@ -6,7 +6,7 @@ use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]

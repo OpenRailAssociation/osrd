@@ -183,7 +183,7 @@ pub struct ProgressCoordinates {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "snake_case")]
-#[allow(
+#[expect(
     clippy::large_enum_variant,
     reason = "We accepted the difference of memory size taken by variants, since there is only one success and others are error cases"
 )]

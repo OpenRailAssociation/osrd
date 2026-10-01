@@ -18,7 +18,7 @@ use diesel::sql_types::Double;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]
@@ -470,7 +470,7 @@ impl InfraCache {
     }
 
     // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
-    #[allow(
+    #[expect(
         clippy::too_many_arguments,
         reason = "Infra does have a lot of different parts 🤷"
     )]

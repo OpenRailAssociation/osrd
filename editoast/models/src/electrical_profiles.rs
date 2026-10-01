@@ -3,7 +3,7 @@ use std::ops::DerefMut as _;
 use database::DbConnection;
 use database::tables::electrical_profile_set;
 use diesel::prelude::*;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]

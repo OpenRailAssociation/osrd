@@ -24,7 +24,7 @@ use models::LightElectricalProfileSet;
 use models::prelude::*;
 
 #[derive(IntoParams)]
-#[allow(unused, reason = "only used as an OpenAPI schema")]
+#[expect(unused, reason = "only used as an OpenAPI schema")]
 pub struct ElectricalProfileSetId {
     electrical_profile_set_id: i64,
 }

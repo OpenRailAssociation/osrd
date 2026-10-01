@@ -240,7 +240,7 @@ pub(in crate::views) async fn list(
 
 // Documentation struct
 #[derive(IntoParams)]
-#[allow(unused, reason = "only used as an OpenAPI schema")]
+#[expect(unused, reason = "only used as an OpenAPI schema")]
 pub(in crate::views) struct ProjectIdParam {
     /// The id of a project
     project_id: i64,

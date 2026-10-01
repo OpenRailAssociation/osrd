@@ -45,28 +45,28 @@ impl utoipa::PartialSchema for Operation {
     fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
         #[derive(ToSchema, Serialize)]
         #[serde(rename_all = "UPPERCASE")]
-        #[allow(unused, reason = "only used as an OpenAPI schema")]
+        #[expect(unused, reason = "only used as an OpenAPI schema")]
         enum Create {
             Create,
         }
 
         #[derive(ToSchema, Serialize)]
         #[serde(rename_all = "UPPERCASE")]
-        #[allow(unused, reason = "only used as an OpenAPI schema")]
+        #[expect(unused, reason = "only used as an OpenAPI schema")]
         enum Update {
             Update,
         }
 
         #[derive(ToSchema, Serialize)]
         #[serde(rename_all = "UPPERCASE")]
-        #[allow(unused, reason = "only used as an OpenAPI schema")]
+        #[expect(unused, reason = "only used as an OpenAPI schema")]
         enum Delete {
             Delete,
         }
 
         #[derive(ToSchema, Serialize)]
         #[serde(untagged)]
-        #[allow(unused, reason = "only used as an OpenAPI schema")]
+        #[expect(unused, reason = "only used as an OpenAPI schema")]
         #[schema(title_variants)]
         enum Operation {
             Create {

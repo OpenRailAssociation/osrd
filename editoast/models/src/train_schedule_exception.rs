@@ -99,7 +99,7 @@ impl TrainScheduleException {
     ) -> Result<usize, crate::Error> {
         use database::tables::train_schedule_exception::dsl;
         use diesel::prelude::*;
-        #[allow(
+        #[expect(
             clippy::unused_trait_names,
             reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
         )]

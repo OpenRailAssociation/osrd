@@ -3,7 +3,7 @@ use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
-#[allow(
+#[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]

@@ -24,7 +24,7 @@ use crate::rolling_stock::EtcsBrakeParams;
 #[educe(Hash, Eq, PartialEq)]
 #[serde(tag = "type")]
 #[schema(title_variants)]
-#[allow(
+#[expect(
     clippy::large_enum_variant,
     reason = "we could `Box`, but API will be harder to use, compared to the lost memory, which is related to Rolling Stocks, not a lot of them."
 )]
