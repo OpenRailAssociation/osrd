@@ -24,8 +24,11 @@ export type VisibilityFilterOptions<T> = {
 };
 
 export const getGraphOffsets = (width: number, height: number, declivities?: boolean) => {
-  const WIDTH_OFFSET = declivities ? width - 102 : width - 60; // +2px so that the tick appears on the right of the chart
-  const HEIGHT_OFFSET = height - 80;
+  var WIDTH_OFFSET = width - MARGINS.MARGIN_LEFT - MARGINS.MARGIN_RIGHT;
+  if (declivities) {
+    WIDTH_OFFSET -= MARGINS.RIGHT_TICK_MARGINS;
+  }
+  const HEIGHT_OFFSET = height - MARGINS.MARGIN_BOTTOM;
   return { WIDTH_OFFSET, HEIGHT_OFFSET };
 };
 
