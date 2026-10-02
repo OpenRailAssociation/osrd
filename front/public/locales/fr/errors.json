@@ -240,7 +240,7 @@
     "search_journeys": {
       "Database": "database error",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "InvalidInput": "données d'entrée invalides: {{message}}"
+      "InvalidInput": "données d'entrée invalides : {{message}}"
     },
     "single_simulation": {
       "ElectricalProfileSetNotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé",
