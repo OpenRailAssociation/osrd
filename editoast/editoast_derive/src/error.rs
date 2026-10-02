@@ -186,7 +186,7 @@ fn parse_variants(enum_data: &DataEnum) -> Result<Vec<ParsedVariant>> {
 
 fn forward_binding() -> syn::Ident {
     syn::Ident::new(
-        "__editoast_error_unamed_field",
+        "__editoast_error_unnamed_field",
         proc_macro2::Span::mixed_site(),
     )
 }
