@@ -91,16 +91,25 @@ export default defineConfig(({ mode }) => {
       port: +env.OSRD_VITE_PORT || 3000,
     },
     test: {
-      globalSetup: './vitest.global-setup.ts',
-      setupFiles: './vitest.setup.ts',
-      dir: 'src',
-      include: ['**/*.spec.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-      environment: 'happy-dom',
       coverage: {
         all: true,
         reportsDirectory: 'coverage',
       },
       silent: 'passed-only',
+      projects: [
+        {
+          extends: true,
+          test: {
+            name: 'front',
+            globalSetup: './vitest.global-setup.ts',
+            setupFiles: './vitest.setup.ts',
+            dir: 'src',
+            include: ['**/*.spec.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+            environment: 'happy-dom',
+          },
+        },
+        'ui/*/vitest.config.mts',
+      ],
     },
   };
 });
