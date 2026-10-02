@@ -277,19 +277,21 @@ pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> 
 /// Get sql query that insert errors given an object type
 fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
     match obj_type {
-        ObjectType::TrackSection => include_str!("sql/track_sections_insert_errors.sql"),
-        ObjectType::Signal => include_str!("sql/signals_insert_errors.sql"),
+        ObjectType::TrackSection => include_str!("error/sql/track_sections_insert_errors.sql"),
+        ObjectType::Signal => include_str!("error/sql/signals_insert_errors.sql"),
         // TODO: update neutral_sections_insert_errors.sql when layers are set up
-        ObjectType::NeutralSection => include_str!("sql/neutral_sections_insert_errors.sql"),
-        ObjectType::SpeedSection => include_str!("sql/speed_sections_insert_errors.sql"),
-        ObjectType::Detector => include_str!("sql/detectors_insert_errors.sql"),
-        ObjectType::Switch => include_str!("sql/switches_insert_errors.sql"),
-        ObjectType::SwitchType => include_str!("sql/switch_types_insert_errors.sql"),
-        ObjectType::BufferStop => include_str!("sql/buffer_stops_insert_errors.sql"),
-        ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
-        ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
-        ObjectType::Electrification => include_str!("sql/electrifications_insert_errors.sql"),
-        ObjectType::LevelCrossing => include_str!("sql/level_crossings_insert_errors.sql"),
+        ObjectType::NeutralSection => include_str!("error/sql/neutral_sections_insert_errors.sql"),
+        ObjectType::SpeedSection => include_str!("error/sql/speed_sections_insert_errors.sql"),
+        ObjectType::Detector => include_str!("error/sql/detectors_insert_errors.sql"),
+        ObjectType::Switch => include_str!("error/sql/switches_insert_errors.sql"),
+        ObjectType::SwitchType => include_str!("error/sql/switch_types_insert_errors.sql"),
+        ObjectType::BufferStop => include_str!("error/sql/buffer_stops_insert_errors.sql"),
+        ObjectType::Route => include_str!("error/sql/routes_insert_errors.sql"),
+        ObjectType::OperationalPoint => {
+            include_str!("error/sql/operational_points_insert_errors.sql")
+        }
+        ObjectType::Electrification => include_str!("error/sql/electrifications_insert_errors.sql"),
+        ObjectType::LevelCrossing => include_str!("error/sql/level_crossings_insert_errors.sql"),
     }
 }
 
