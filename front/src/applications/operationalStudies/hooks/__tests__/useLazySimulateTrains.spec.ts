@@ -239,9 +239,7 @@ describe('useLazySimulateTrains', () => {
     it('should update exceptions for paced trains', async () => {
       postTrainSchedulesSimulationSummary.mockResolvedValue({
         data: {
-          [mockTrain.id]: {
-            ...mockSimulationSummaryResult,
-          },
+          [mockTrain.id]: mockSimulationSummaryResult,
         },
       });
 
@@ -293,9 +291,7 @@ describe('useLazySimulateTrains', () => {
     it('should ignore changes if mock Train is not paced', async () => {
       postTrainSchedulesSimulationSummary.mockResolvedValue({
         data: {
-          [mockTrain.id]: {
-            ...mockSimulationSummaryResult,
-          },
+          [mockTrain.id]: mockSimulationSummaryResult,
         },
       });
 
