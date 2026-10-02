@@ -1,0 +1,176 @@
+import { parse_int, uppercase } from "std/text"
+import { log_info, log_error } from "./logger.ab"
+
+const ENV_FILE = ".env"
+
+// ---------- Targets and authentication ----------
+
+pub fun api_url(env: Text): Text? {
+    if env == "local" { return "http://localhost:8090" }
+    if env == "dev" { return "https://dev-osrd.reseau.sncf.fr/api" }
+    if env == "rec" { return "https://rec-osrd.reseau.sncf.fr/api" }
+    if env == "prod" { return "https://osrd.reseau.sncf.fr/api" }
+    log_error("No API URL configured for env '{env}'")
+    fail 1
+}
+
+// Returns "" when the cookie is absent and not required
+pub fun load_gateway_cookie(env: Text, required: Bool = true): Text? {
+    const var_name = "GATEWAY_COOKIE_{uppercase(env)}"
+    $ set -a; . "./{ENV_FILE}"; set +a $ failed {
+        log_error("Could not load {ENV_FILE}")
+        fail 1
+    }
+    const cookie = $ printenv {var_name} $ failed {
+        if not required {
+            return ""
+        }
+        log_error("{var_name} is not set in {ENV_FILE}")
+        fail 1
+    }
+    return cookie
+}
+
+// Returns a target's authentication
+pub fun editoast_auth(cookie: Text, skip_authz: Bool): Text {
+    let config = ""
+    if cookie != "" {
+        config += "cookie = \"{cookie}\"\n"
+    }
+    if skip_authz {
+        config += "header = \"x-osrd-skip-authz: true\"\n"
+    }
+    return config
+}
+
+// ---------- Generic requests ----------
+
+// Single entry point for JSON API calls. `body` is either a JSON text or "@<path>" to read it from a file.
+fun editoast_request(base_url: Text, auth: Text, method: Text, path: Text, body: Text = ""): Text? {
+    const url = "{base_url}{path}"
+    let response = ""
+    if body == "" {
+        response = $ printf '%s' "{auth}" | curl -sSf -K - -X {method} "{url}" $ failed {
+            log_error("{method} {url} failed")
+            fail 1
+        }
+    } else {
+        response = $ printf '%s' "{auth}" | curl -sSf -K - -X {method} --json "{body}" "{url}" $ failed {
+            log_error("{method} {url} failed")
+            fail 1
+        }
+    }
+    return response
+}
+
+// Reads a top-level field of a JSON object ("null" if absent)
+pub fun json_field(json: Text, field: Text): Text? {
+    const value = $ printf '%s' "{json}" | jq -r ".{field}" $ failed {
+        log_error("Could not read field '{field}' from JSON")
+        fail 1
+    }
+    return value
+}
+
+// Sends a JSON array read from a file (no size limit); returns the length of the response array
+pub fun send_json_file(base_url: Text, auth: Text, method: Text, path: Text, body_path: Text): Int? {
+    const response = editoast_request(base_url, auth, method, path, "@{body_path}")?
+    const created = $ printf '%s' "{response}" | jq -e 'length' $ failed {
+        log_error("Unexpected response from {method} {base_url}{path}")
+        fail 1
+    }
+    return parse_int(created)?
+}
+
+// Appends the items of a paginated list endpoint to a file, one JSON object per line,
+// keeping only what `filter` (a jq expression) outputs for each item
+pub fun download_paginated(base_url: Text, auth: Text, path: Text, output_path: Text, filter: Text = "."): Null? {
+    let page = 1
+    loop {
+        log_info("Scanning page {page} of {path}")
+        const response = editoast_request(base_url, auth, "GET", "{path}?page={page}")?
+        $ printf '%s' "{response}" | jq -e '.results | type == "array"' > /dev/null $ failed {
+            log_error("Unexpected response on page {page} of {path}")
+            fail 1
+        }
+        $ printf '%s' "{response}" | jq -c ".results[] | {filter}" >> "{output_path}" $ failed {
+            log_error("Could not filter page {page} of {path}")
+            fail 1
+        }
+        const next_page = $ printf '%s' "{response}" | jq -r '.next // empty' $?
+        if next_page == "" {
+            break
+        }
+        page = parse_int(next_page)?
+    }
+}
+
+// ---------- Infra ----------
+
+// The railjson is a large file so write straight to disk to avoid going through editoast_request
+pub fun download_infra_railjson(base_url: Text, auth: Text, infra_id: Text, output_path: Text): Null? {
+    const url = "{base_url}/infra/{infra_id}/railjson"
+    $ printf '%s' "{auth}" | curl -sSf -K - --output "{output_path}" "{url}" $ failed {
+        log_error("Could not download railjson from {url}")
+        fail 1
+    }
+}
+
+// Finds "[<id>] generated data refreshed!" in editoast's output.
+fun extract_infra_id(output: Text): Int? {
+    const infra_id = $ printf '%s' "{output}" | grep -oE '[[][0-9]+[]][[:space:]]+generated data refreshed!' | head -n 1 | grep -oE '[0-9]+' $ failed {
+        log_error("Could not find infra id in editoast output: {output}")
+        fail 1
+    }
+    return parse_int(infra_id)?
+}
+
+pub fun import_railjson_locally(railjson_path: Text, infra_name: Text): Int? {
+    const output = $ sh ../load-railjson-infra.sh "{infra_name}" "{railjson_path}" $ failed {
+        log_error("Loading railjson failed for infra {infra_name}")
+        fail 1
+    }
+    return extract_infra_id(output)?
+}
+
+// ---------- Timetables, train and work schedules, stdcm search envs ----------
+
+pub fun create_timetable(base_url: Text, auth: Text): Int? {
+    const body = $ jq -nc '.timetable_type = "CALENDAR"' $?
+    const response = editoast_request(base_url, auth, "POST", "/timetable", body)?
+    const timetable_id = $ printf '%s' "{response}" | jq -er '.timetable_id' $ failed {
+        log_error("Unexpected response when creating timetable: {response}")
+        fail 1
+    }
+    return parse_int(timetable_id)?
+}
+
+// The description is used as the set's name too
+pub fun create_and_link_train_schedule_set_to_timetable(base_url: Text, auth: Text, timetable_id: Int, description: Text): Int? {
+    const create_body = $ TEXT="{description}" jq -nc '.name = env.TEXT | .description = env.TEXT | .published = false | .timetable_type = "CALENDAR"' $?
+    const create_response = editoast_request(base_url, auth, "POST", "/train_schedule_sets", create_body)?
+    const id_text = $ printf '%s' "{create_response}" | jq -er '.id' $ failed {
+        log_error("Unexpected response when creating a train schedule set: {create_response}")
+        fail 1
+    }
+    const train_schedule_set_id = parse_int(id_text)?
+
+    const link_body = $ jq -nc ".train_schedule_set_ids = [{train_schedule_set_id}]" $?
+    editoast_request(base_url, auth, "POST", "/timetable/{timetable_id}/train_schedule_sets", link_body)?
+
+    return train_schedule_set_id
+}
+
+pub fun create_work_schedule_group(base_url: Text, auth: Text, name: Text): Int? {
+    const body = $ NAME="{name}" jq -nc '.work_schedule_group_name = env.NAME' $?
+    const response = editoast_request(base_url, auth, "POST", "/work_schedules/group", body)?
+    const work_schedule_group_id = $ printf '%s' "{response}" | jq -er '.work_schedule_group_id' $ failed {
+        log_error("Unexpected response when creating a work schedule group: {response}")
+        fail 1
+    }
+    return parse_int(work_schedule_group_id)?
+}
+
+pub fun create_stdcm_search_env(base_url: Text, auth: Text, body: Text): Null? {
+    editoast_request(base_url, auth, "POST", "/stdcm/search_environment", body)?
+}

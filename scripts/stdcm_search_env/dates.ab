@@ -1,0 +1,36 @@
+import { date_from_posix, date_format_posix } from "std/date"
+import { parse_int } from "std/text"
+import { log_error } from "./logger.ab"
+
+// Format of the dates stored by editoast (UTC)
+const DB_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+// A date is valid only if it parses as YYYY-MM-DD AND formats back to the
+// exact same string. This rejects "2026-1-5" and impossible dates like "2026-02-30".
+pub fun is_valid_date(date: Text): Bool {
+    const timestamp = date_from_posix(date, "%F", true) failed {
+        return false
+    }
+    const normalized = date_format_posix(timestamp, "%F", true) failed {
+        return false
+    }
+    return normalized == date
+}
+
+// Midnight UTC of a YYYY-MM-DD date, in seconds since epoch
+pub fun day_start(date: Text): Int? {
+    const epoch = $ date -u -d "{date}" +%s $ failed {
+        log_error("Could not parse date '{date}'")
+        fail 1
+    }
+    return parse_int(epoch)?
+}
+
+// Midnight UTC of `date` + `days`, in editoast's date format
+pub fun db_date(date: Text, days: Int = 0): Text? {
+    const formatted = $ date -u -d "{date} + {days} days" "+{DB_DATE_FORMAT}" $ failed {
+        log_error("Could not compute {date} + {days} days")
+        fail 1
+    }
+    return formatted
+}
