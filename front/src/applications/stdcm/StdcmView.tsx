@@ -58,6 +58,7 @@ const StdcmViewContent = ({
   const [displayInfoMessage, setDisplayInfoMessage] = useState(false);
   const [isReloading, setIsReloading] = useState(false);
 
+  const statusBannerRef = useRef<HTMLDivElement | null>(null);
   const resultSectionRef = useRef<HTMLDivElement | null>(null);
   const previousResultSectionOffsetRef = useRef<number | null>(null);
 
@@ -152,6 +153,16 @@ const StdcmViewContent = ({
   }, []);
 
   useEffect(() => {
+    if (
+      requestStatus !== STDCM_REQUEST_STATUS.success &&
+      showStatusBanner &&
+      statusBannerRef.current
+    ) {
+      statusBannerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [requestStatus, showStatusBanner]);
+
+  useEffect(() => {
     if (completedSimulations.length > 0 && resultSectionRef.current) {
       resultSectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -186,7 +197,9 @@ const StdcmViewContent = ({
       />
 
       {showStatusBanner && (
-        <StdcmStatusBanner isFailed={requestStatus === STDCM_REQUEST_STATUS.rejected} />
+        <div ref={statusBannerRef}>
+          <StdcmStatusBanner isFailed={requestStatus === STDCM_REQUEST_STATUS.rejected} />
+        </div>
       )}
 
       {completedSimulations.length > 0 && (
