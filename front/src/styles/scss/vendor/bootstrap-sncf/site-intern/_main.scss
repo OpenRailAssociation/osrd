@@ -28,7 +28,6 @@
 @import 'layout/actionbar';
 @import '../site-common/layout/footerbar';
 @import 'layout/controlbar';
-@import '../site-common/layout/schedule-grid';
 
 // components
 @import 'bootstrap/scss/images';
@@ -69,8 +68,6 @@
 @import '../site-common/components/form-toolbar';
 @import '../site-common/components/range-slider';
 @import '../site-common/components/tables';
-@import 'components/options-menu';
-@import 'components/mobile-menu';
 
 // trumps
 @import 'bootstrap/scss/utilities';
