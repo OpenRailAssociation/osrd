@@ -184,15 +184,6 @@ enum Continuation {
     Stop,
 }
 
-impl Continuation {
-    fn as_option(&self) -> Option<&str> {
-        match self {
-            Continuation::None | Continuation::Stop => None,
-            Continuation::Continue(continuation) => Some(continuation.as_str()),
-        }
-    }
-}
-
 impl From<String> for Continuation {
     fn from(s: String) -> Self {
         if s.is_empty() {
@@ -204,6 +195,13 @@ impl From<String> for Continuation {
 }
 
 impl Continuation {
+    fn as_option(&self) -> Option<&str> {
+        match self {
+            Continuation::None | Continuation::Stop => None,
+            Continuation::Continue(continuation) => Some(continuation.as_str()),
+        }
+    }
+
     /// Unfolds a continuation-based paginated API call into a stream of items
     ///
     /// ```ignore
