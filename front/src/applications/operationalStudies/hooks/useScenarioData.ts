@@ -18,7 +18,10 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import { formatTrainScheduleWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
-import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
+import {
+  computeHourlyTimetableDuration,
+  wrapHourlyExceptionStartTimes,
+} from 'modules/trainSchedule/helpers/hourlyTimetable';
 import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
@@ -62,19 +65,31 @@ function upsertAndSort(
 /**
  * In 'all' mode the whole paced train moves, so every start_time exception is shifted by the same
  * offset as the model departure. Returns undefined when there is nothing to shift.
+ *
+ * In an hourly timetable the shifted start times are wrapped back into the train's time window,
+ * so that moving a paced train out of the pattern never leaves an occurrence outside of it.
  */
 function computeShiftedExceptions(
   trainSchedule: TrainScheduleResponse,
   newDeparture: Date,
-  panelSelectionMode?: PanelSelectionMode
+  panelSelectionMode?: PanelSelectionMode,
+  isHourlyTimetable?: boolean
 ): PacedTrainException[] | undefined {
   if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
   const offset = Duration.subtractDate(newDeparture, new Date(trainSchedule.start_time));
-  return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
+  const shiftedExceptions = shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
+  return isHourlyTimetable
+    ? wrapHourlyExceptionStartTimes(
+        shiftedExceptions,
+        Duration.parse(trainSchedule.paced.time_window)
+      )
+    : shiftedExceptions;
 }
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
+
+  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
@@ -177,11 +192,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   );
 
   const hourlyTimetableDuration = useMemo(
-    () =>
-      scenario.timetable_type === 'HOURLY'
-        ? computeHourlyTimetableDuration(trainSchedules ?? [])
-        : undefined,
-    [scenario.timetable_type, trainSchedules]
+    () => (isHourlyTimetable ? computeHourlyTimetableDuration(trainSchedules ?? []) : undefined),
+    [isHourlyTimetable, trainSchedules]
   );
 
   useAutoSelectTrainIds(trainSchedules ? trainSchedulesWithDetails : undefined);
@@ -228,7 +240,12 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     (trainScheduleId: number, newDeparture: Date, panelSelectionMode?: PanelSelectionMode) => {
       const trainSchedule = trainSchedules?.find((train) => train.id === trainScheduleId);
       const shiftedExceptions = trainSchedule
-        ? computeShiftedExceptions(trainSchedule, newDeparture, panelSelectionMode)
+        ? computeShiftedExceptions(
+            trainSchedule,
+            newDeparture,
+            panelSelectionMode,
+            isHourlyTimetable
+          )
         : undefined;
 
       setTrainSchedules((prev) => {
@@ -248,7 +265,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
       updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
     },
-    [trainSchedules]
+    [trainSchedules, isHourlyTimetable]
   );
 
   /** Update paced train exceptions in local state without re-simulating. Used after drag-created exceptions. */
@@ -336,7 +353,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       const shiftedExceptions = computeShiftedExceptions(
         trainSchedule,
         newDeparture,
-        panelSelectionMode
+        panelSelectionMode,
+        isHourlyTimetable
       );
 
       // Update the model start_time. The train schedule PUT ignores paced.exceptions, so shifted
@@ -356,7 +374,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
       setTrainScheduleDepartureTime(editoastId, newDeparture, panelSelectionMode);
     },
-    [trainSchedules, dispatch, timetableId, upsertTrainScheduleExceptions]
+    [trainSchedules, dispatch, timetableId, upsertTrainScheduleExceptions, isHourlyTimetable]
   );
 
   const upsertTrainSchedulesWithBroadcast = useCallback(
