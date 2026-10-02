@@ -37,6 +37,10 @@ export function getTimetableRepeatOffsets({
   return offsets;
 }
 
+export function getFirstPeriodOffset(timeMs: number, period: Duration): number {
+  return Math.floor(timeMs / period.ms) * period.ms;
+}
+
 function getProjectionTravelTime(curves: BaseTrainProjection['spaceTimeCurves']): Duration {
   const times = curves.flatMap((curve) => curve.times);
   return new Duration({ milliseconds: Math.max(...times) - Math.min(...times) });
