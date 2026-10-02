@@ -98,8 +98,12 @@ $colors: (
 
   // Heat map
   'level30alpha40': rgba(165, 229, 133, 0.4),
+  'level40alpha80': rgba(92, 182, 242, 0.8),
+  'level60alpha40': rgba(165, 229, 133, 0.4),
   'level70alpha40': rgba(253, 162, 82, 0.4),
   'level90alpha40': rgba(221, 34, 34, 0.4),
+  'level90alpha60': rgba(255, 209, 114, 0.6),
+  'level100alpha60': rgba(253, 162, 82, 0.6),
   // Trains
   'trainPurple5': #f2f3fc,
   'trainPurple10': #e5e7ff,
