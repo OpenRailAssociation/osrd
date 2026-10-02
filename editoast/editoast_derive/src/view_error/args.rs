@@ -33,6 +33,7 @@ use crate::view_error::codegen::ViewErrorImpl;
 )]
 pub(super) struct Args {
     ident: syn::Ident,
+    generics: syn::Generics,
     data: ast::Data<VariantArgs, FieldArgs>,
     #[darling(with = ErrorAttrs::parse)]
     attrs: ErrorAttrs,
@@ -119,6 +120,7 @@ impl Args {
     pub(super) fn parse(self) -> Result<Codegen> {
         let Self {
             ident,
+            generics,
             data,
             attrs: ErrorAttrs { thiserror },
             path,
@@ -129,7 +131,7 @@ impl Args {
             .as_ref()
             .map(normalize_path)
             .unwrap_or_else(|| normalize_label(&ident));
-        let mut view_error_impl = ViewErrorImpl::new(ident);
+        let mut view_error_impl = ViewErrorImpl::new(ident, generics);
 
         match data {
             ast::Data::Struct(fields) => {
