@@ -5,11 +5,12 @@ import {
   type BareOccurrence,
 } from 'applications/operationalStudies/helpers/generateBareOccurrences';
 import getTrainScheduleRepeatOffsets, {
+  getFirstPeriodOffset,
   type TimeRange,
 } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
-import { addDurationToDate } from 'utils/duration';
+import { addDurationToDate, type Duration } from 'utils/duration';
 import {
   formatEditoastIdToTrainScheduleId,
   isIndexedOccurrenceId,
@@ -20,14 +21,24 @@ export const EXCEPTION_SUFFIX = '≠';
 
 function repeatOccurrencesInRange(
   projectedTrain: TrainSpaceTimeData,
+  timeWindow: Duration,
   occurrences: BareOccurrence<Date>[],
   timeRange: TimeRange
 ): BareOccurrence<Date>[] {
   const repeatOffsets = getTrainScheduleRepeatOffsets(projectedTrain, timeRange);
 
+  // An occurrence dragged out of the first time window is repeated from its copy inside it.
+  const firstPeriodOccurrences = occurrences.map((occurrence) => ({
+    ...occurrence,
+    startTime: new Date(
+      occurrence.startTime.getTime() -
+        getFirstPeriodOffset(occurrence.startTime.getTime(), timeWindow)
+    ),
+  }));
+
   const repeatedOccurrences: BareOccurrence<Date>[] = [];
   for (const offset of repeatOffsets) {
-    for (const occurrence of occurrences) {
+    for (const occurrence of firstPeriodOccurrences) {
       repeatedOccurrences.push({
         ...occurrence,
         startTime: addDurationToDate(occurrence.startTime, offset),
@@ -71,7 +82,12 @@ const makeProjectedTrains = (
     }).filter(({ exception }) => !exception?.disabled);
 
     if (repeatTimeRange) {
-      bareOccurrences = repeatOccurrencesInRange(projectedTrain, bareOccurrences, repeatTimeRange);
+      bareOccurrences = repeatOccurrencesInRange(
+        projectedTrain,
+        paced.timeWindow,
+        bareOccurrences,
+        repeatTimeRange
+      );
     }
 
     return bareOccurrences.map(

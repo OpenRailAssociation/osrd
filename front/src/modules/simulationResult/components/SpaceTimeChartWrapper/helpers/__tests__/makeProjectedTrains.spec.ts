@@ -327,37 +327,40 @@ describe('makeProjectedTrains', () => {
       });
     });
 
+    // In an hourly timetable, start times are offsets from the timetable start.
+    const hourlyTime = (minutes: number) => new Date(new Duration({ minutes }).ms);
+    const hourlyTimeRange = {
+      start: new Duration({ minutes: -5 }),
+      end: new Duration({ minutes: 10 }),
+    };
+
     test('time range should repeat occurrences', () => {
-      const timeRange = {
-        start: new Duration({ minutes: -5 }),
-        end: new Duration({ minutes: 10 }),
-      };
-      const result = makeProjectedTrains([basePacedTrainProjection], timeRange);
+      const result = makeProjectedTrains(
+        [{ ...basePacedTrainProjection, departureTime: hourlyTime(30) }],
+        hourlyTimeRange
+      );
       expect(result.map(({ id, departureTime }) => ({ id, departureTime }))).toEqual([
-        {
-          id: 'indexedoccurrence_2564_0',
-          departureTime: new Date('2025-07-09T02:30:00.000Z'),
-        },
-        {
-          id: 'indexedoccurrence_2564_1',
-          departureTime: new Date('2025-07-09T03:30:00.000Z'),
-        },
-        {
-          id: 'indexedoccurrence_2564_2',
-          departureTime: new Date('2025-07-09T04:30:00.000Z'),
-        },
-        {
-          id: 'indexedoccurrence_2564_0',
-          departureTime: new Date('2025-07-09T05:30:00.000Z'),
-        },
-        {
-          id: 'indexedoccurrence_2564_1',
-          departureTime: new Date('2025-07-09T06:30:00.000Z'),
-        },
-        {
-          id: 'indexedoccurrence_2564_2',
-          departureTime: new Date('2025-07-09T07:30:00.000Z'),
-        },
+        { id: 'indexedoccurrence_2564_0', departureTime: hourlyTime(-150) },
+        { id: 'indexedoccurrence_2564_1', departureTime: hourlyTime(-90) },
+        { id: 'indexedoccurrence_2564_2', departureTime: hourlyTime(-30) },
+        { id: 'indexedoccurrence_2564_0', departureTime: hourlyTime(30) },
+        { id: 'indexedoccurrence_2564_1', departureTime: hourlyTime(90) },
+        { id: 'indexedoccurrence_2564_2', departureTime: hourlyTime(150) },
+      ]);
+    });
+
+    test('time range should repeat occurrences dragged out of the time window', () => {
+      const result = makeProjectedTrains(
+        [{ ...basePacedTrainProjection, departureTime: hourlyTime(30 - 300) }],
+        hourlyTimeRange
+      );
+      expect(result.map(({ id, departureTime }) => ({ id, departureTime }))).toEqual([
+        { id: 'indexedoccurrence_2564_0', departureTime: hourlyTime(-90) },
+        { id: 'indexedoccurrence_2564_1', departureTime: hourlyTime(-30) },
+        { id: 'indexedoccurrence_2564_2', departureTime: hourlyTime(-150) },
+        { id: 'indexedoccurrence_2564_0', departureTime: hourlyTime(90) },
+        { id: 'indexedoccurrence_2564_1', departureTime: hourlyTime(150) },
+        { id: 'indexedoccurrence_2564_2', departureTime: hourlyTime(30) },
       ]);
     });
   });

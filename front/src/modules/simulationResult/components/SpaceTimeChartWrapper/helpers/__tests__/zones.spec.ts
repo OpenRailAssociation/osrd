@@ -146,4 +146,43 @@ describe('repeatOccupancyZonesInRange', () => {
       zonesB[0],
     ]);
   });
+  it('should repeat paced train zones dragged out of the time window', () => {
+    const paced = {
+      timeWindow: new Duration({ hours: 1 }),
+      interval: new Duration({ minutes: 30 }),
+      exceptions: [],
+    };
+    // Same zone as in the first time window at 50min, dragged 3h to the left.
+    const draggedZone = {
+      ...buildOccupancyZone({
+        trainId: formatEditoastIdToIndexedOccurrenceId({
+          trainScheduleId: 42,
+          occurrenceIndex: 0,
+        }),
+        startTime: new Duration({ hours: -3, minutes: 50 }).ms,
+        endTime: new Duration({ hours: -3, minutes: 55 }).ms,
+        paced,
+      }),
+      dbStartTime: new Duration({ minutes: 50 }).ms,
+      dbEndTime: new Duration({ minutes: 55 }).ms,
+    };
+
+    const repeatedZones = repeatOccupancyZonesInRange([draggedZone], timeRange);
+
+    expect(
+      repeatedZones.map(({ startTime, endTime, dbStartTime, dbEndTime }) => ({
+        startTime,
+        endTime,
+        dbStartTime,
+        dbEndTime,
+      }))
+    ).toEqual(
+      [-1, 0, 1].map((hours) => ({
+        startTime: new Duration({ hours, minutes: 50 }).ms,
+        endTime: new Duration({ hours, minutes: 55 }).ms,
+        dbStartTime: new Duration({ hours: hours + 3, minutes: 50 }).ms,
+        dbEndTime: new Duration({ hours: hours + 3, minutes: 55 }).ms,
+      }))
+    );
+  });
 });
