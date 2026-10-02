@@ -1,3 +1,5 @@
+$height-header: 48px;
+
 .waypoints-panel {
   margin: 0;
   width: 456px; // TODO switch width to 44.5rem (712px) after implementing styles columns
@@ -13,7 +15,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    height: 48px;
+    height: $height-header;
     font-size: 0.875rem;
     color: var(--grey50);
     background-color: var(--ambientB15);
@@ -39,7 +41,7 @@
   }
 
   .waypoints-panel-body {
-    height: calc(100% - 48px - 105px);
+    height: calc(100% - #{$height-header} - 105px);
     background-color: var(--ambientB10);
     padding-top: calc(11px - 2px); // 2px > checkbox border
     padding-left: calc(18px - 2px); // 2px > checkbox border
