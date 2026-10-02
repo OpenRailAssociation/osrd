@@ -2,6 +2,7 @@ import type { RGBColor } from '../types';
 
 // COLORS DEFINITIONS:
 export const BLACK_ALPHA_100 = 'rgb(0, 0, 0)';
+export const BLACK_ALPHA_85 = 'rgb(0 0 0 / 0.85)';
 export const BLACK_ALPHA_70 = 'rgb(0 0 0 / 0.70)';
 export const BLACK_ALPHA_55 = 'rgb(0 0 0 / 0.55)';
 export const BLACK_ALPHA_50 = 'rgb(0 0 0 / 0.5)';

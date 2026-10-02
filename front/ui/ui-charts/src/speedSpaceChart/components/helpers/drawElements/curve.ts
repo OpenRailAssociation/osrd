@@ -28,7 +28,6 @@ const computeCurvePoints = (
   const { width, height } = canvasConfig;
 
   const adjustedWidth = width - CURVE_MARGIN_SIDES;
-  const halfCurveMarginSides = CURVE_MARGIN_SIDES / 2;
   const adjustedHeight = height - CURVE_MARGIN_TOP;
   const xcoef = (adjustedWidth / maxPosition) * ratioX;
   const points: { x: number; y: number }[] = [];
@@ -36,14 +35,14 @@ const computeCurvePoints = (
   specificSpeeds.forEach(({ position, value }) => {
     // normalize speed based on range of values
     const normalizedSpeed = value / maxSpeed;
-    const x = position.start * xcoef + halfCurveMarginSides;
+    const x = position.start * xcoef + CURVE_MARGIN_SIDES / 2;
     const y = height - normalizedSpeed * adjustedHeight;
     points.push({ x, y });
   });
 
   // Close the path
-  points.push({ x: maxPosition * xcoef + halfCurveMarginSides, y: height });
-  points.push({ x: halfCurveMarginSides, y: height });
+  points.push({ x: maxPosition * xcoef + CURVE_MARGIN_SIDES / 2, y: height });
+  points.push({ x: CURVE_MARGIN_SIDES / 2, y: height });
   return points;
 };
 

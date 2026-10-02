@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_ETCS_LAYERS_DISPLAY, MARGINS } from '../components/consts';
 import {
   clearCanvas,
-  getGraphOffsets,
+  getGraphHeight,
   getLinearLayersDisplayedHeight,
   maxPositionValue,
   positionOnGraphScale,
@@ -64,34 +64,10 @@ const store: Store = {
 };
 
 describe('getGraphOffsets', () => {
-  const width = 200;
   const height = 150;
 
   it('should return correct width and height offsets when declivities is true', () => {
-    const result = getGraphOffsets(width, height, true);
-
-    expect(result).toEqual({
-      WIDTH_OFFSET: 98,
-      HEIGHT_OFFSET: 70,
-    });
-  });
-
-  it('should return correct width and height offsets when declivities is false', () => {
-    const result = getGraphOffsets(width, height, false);
-
-    expect(result).toEqual({
-      WIDTH_OFFSET: 140,
-      HEIGHT_OFFSET: 70,
-    });
-  });
-
-  it('should return correct width and height offsets when declivities is undefined', () => {
-    const result = getGraphOffsets(width, height);
-
-    expect(result).toEqual({
-      WIDTH_OFFSET: 140,
-      HEIGHT_OFFSET: 70,
-    });
+    expect(getGraphHeight(height)).toEqual(70);
   });
 });
 

@@ -8,8 +8,6 @@ import {
   type Store,
 } from '../types';
 
-export const RIGHT_TICK_HEIGHT_OFFSET = 2;
-
 export const TICK_TITLE_MARGINS = {
   Y_LEFT_VERTICAL: 30,
   Y_LEFT_HORIZONTAL: 22,
@@ -18,18 +16,20 @@ export const TICK_TITLE_MARGINS = {
 };
 
 export const MARGINS = {
-  MARGIN_LEFT: 48,
-  MARGIN_RIGHT: 12,
-  MARGIN_TOP: 27,
-  MARGIN_BOTTOM: 52.5,
+  MARGIN_LEFT: 40,
+  MARGIN_BOTTOM: 40,
   CURVE_MARGIN_TOP: 40,
-  CURVE_MARGIN_SIDES: 16,
+  CURVE_MARGIN_SIDES: 40,
   ELECTRICAL_PROFILES_MARGIN_TOP: 8,
-  RIGHT_TICK_MARGINS: 60,
+  RIGHT_TICK_MARGINS: 40,
   OFFSET_RIGHT_AXIS: 42,
 };
 
 export const CURSOR_SNAP_DISTANCE = 6;
+
+export const LINEAR_LAYERS_DEFAULT_BACKGROUND_COLOR = AMBIENT_B_5;
+export const LINEAR_LAYERS_SINGLE_BACKGROUND_COLOR = AMBIENT_B_10;
+export const LINEAR_LAYERS_BOTH_BACKGROUND_COLOR = AMBIENT_B_15;
 
 export const LINEAR_LAYERS_HEIGHTS = {
   ELECTRICAL_PROFILES_HEIGHT: 56,
@@ -39,9 +39,11 @@ export const LINEAR_LAYERS_HEIGHTS = {
 
 export const LINEAR_LAYER_SEPARATOR_HEIGHT = 1;
 
-export const LINEAR_LAYERS_DEFAULT_BACKGROUND_COLOR = AMBIENT_B_5;
-export const LINEAR_LAYERS_SINGLE_BACKGROUND_COLOR = AMBIENT_B_10;
-export const LINEAR_LAYERS_BOTH_BACKGROUND_COLOR = AMBIENT_B_15;
+export const LINEAR_LAYERS_BACKGROUND_COLOR = {
+  FIRST: 'rgb(250, 249, 245)',
+  SECOND: 'rgb(247, 246, 238)',
+  THIRD: 'rgb(242, 240, 228)',
+};
 
 export const FRONT_INTERACTIVITY_LAYER_ID = '#front-interactivity-layer';
 
@@ -98,9 +100,7 @@ export const ETCS_CURVE_SELECTION: Record<
 
 export const BASE_SPEED_FILL_COLOR = 'rgb(17 101 180 / 0.15)';
 export const BASE_SPEED_STROKE_COLOR = 'rgb(17, 101, 180)';
-
 export const ECO_SPEED_STROKE_COLOR = 'rgb(7, 69, 128)';
-
 export const SLOPE_FILL_COLOR = 'rgb(207, 221, 206)';
 
 /**
@@ -121,13 +121,10 @@ export const ZOOM_CONFIG = {
 };
 
 export const SPEEDS_LINEWIDTH = 0.5;
-
 export const ETCS_LINEWIDTH = 3;
 export const IND_STROKE_COLOR = 'rgb(3 222 255 / 0.3)';
 export const PS_STROKE_COLOR = 'rgb(0 87 218 / 0.24)';
 export const GUI_STROKE_COLOR = 'rgb(255 192 3 / 0.4)';
-
-// Etcs color dictionary
 export const ETCS_COLOR_DICTIONARY: EtcsColorDictionary = {
   [EtcsBrakingCurveType.IND]: IND_STROKE_COLOR,
   [EtcsBrakingCurveType.PS]: PS_STROKE_COLOR,

@@ -1,9 +1,9 @@
 import chroma from 'chroma-js';
 
-import { FONT_SANS_REGULAR } from '../../../../common/consts';
-import { BLACK_ALPHA_100, GREY_50, GREY_80, SKY_700 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../consts';
+import { FONT_SANS_REGULAR } from '../../../../common/consts';
+import { BLACK_ALPHA_100, GREY_50 } from '../../../../common/helpers/colors';
 import {
   clearCanvas,
   positionToPosX,
@@ -12,15 +12,15 @@ import {
   getSnappedStop,
 } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM } = MARGINS;
+const { MARGIN_LEFT } = MARGINS;
 
 const STEP_HEIGHT = 6;
 const STEP_WIDTH = 1;
 const STEP_RADIUS = 1.0;
+const FADE_RADIUS = 100;
 
 export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const { stops, ratioX, leftOffset, cursor } = store;
-
   if (stops.length === 0) {
     return;
   }
@@ -28,33 +28,20 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
   clearCanvas(ctx, width, height);
 
   const maxPosition = maxPositionValue(store.speeds);
+  const cursorX = (cursor.x && cursor.y && cursor.y < height && cursor.x > MARGIN_LEFT && cursor.x < width + MARGIN_LEFT) ? cursor.x : null;
 
   const filteredStops = getDisplayedStops(stops, ratioX, width, maxPosition);
 
   ctx.save();
   ctx.translate(leftOffset, 0);
 
-  ctx.strokeStyle = chroma(SKY_700).alpha(0.5).hex();
-  ctx.lineWidth = 1;
-  ctx.lineCap = 'round';
-  ctx.setLineDash([1, 6]);
-
-  // Vertical lines
-  ctx.beginPath();
-  filteredStops.forEach(({ position }) => {
-    const posX = positionToPosX(position.start, maxPosition, width, ratioX);
-    ctx.moveTo(posX, MARGIN_TOP);
-    ctx.lineTo(posX, height - MARGIN_BOTTOM);
-  });
-  ctx.stroke();
-
   // Step rectangles
+  ctx.lineCap = 'round';
   ctx.lineWidth = 2;
   ctx.fillStyle = GREY_50;
   ctx.strokeStyle = GREY_50;
-  ctx.setLineDash([]);
 
-  const snappedStop = cursor.x ? getSnappedStop(cursor.x, width, store) : null;
+  const snappedStop = cursorX ? getSnappedStop(cursorX, width, store) : null;
 
   filteredStops.forEach(({ position }) => {
     if (snappedStop && position.start === snappedStop.position.start) {
@@ -65,7 +52,7 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.beginPath();
     ctx.roundRect(
       posX - STEP_WIDTH / 2,
-      height - STEP_HEIGHT - MARGIN_BOTTOM - 1,
+      height - STEP_HEIGHT - 1,
       STEP_WIDTH,
       STEP_HEIGHT,
       [STEP_RADIUS, STEP_RADIUS, 0, 0]
@@ -76,48 +63,36 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
   });
   ctx.restore();
 
-  // Text
-  const filteredTextStops = getDisplayedStops(filteredStops, ratioX, width, maxPosition, 25);
-  const prevSteps: (typeof filteredTextStops)[0][] = [];
-  const nextSteps: (typeof filteredTextStops)[0][] = [];
+  // Text and lines
+  ctx.strokeStyle = 'rgba(33, 112, 185, 0.25)';
+  ctx.lineWidth = 1;
+  const reticlePositionX = cursorX ? cursorX - MARGIN_LEFT : Infinity;
 
-  filteredTextStops.forEach((stop) => {
-    const posX = positionToPosX(stop.position.start, maxPosition, width, ratioX);
-    if (cursor.x && posX < cursor.x + MARGIN_LEFT - leftOffset) {
-      prevSteps.push(stop);
-      if (prevSteps.length > 4) prevSteps.shift();
-    }
+  getDisplayedStops(filteredStops, ratioX, width, maxPosition, 25).forEach(({ position, value }) => {
 
-    if (cursor.x && posX > cursor.x + MARGIN_LEFT - leftOffset) {
-      if (nextSteps.length < 4) {
-        nextSteps.push(stop);
-      }
-    }
-  });
+    const posX = positionToPosX(position.start, maxPosition, width, ratioX, leftOffset);
 
-  filteredTextStops.forEach(({ position, value }) => {
+    // Vertical lines
+    ctx.beginPath();
+    ctx.moveTo(posX, 0);
+    ctx.lineTo(posX, height);
+    ctx.stroke();
+
     if (snappedStop && position.start === snappedStop.position.start) {
       return;
     }
 
     ctx.save();
     // Calculate the original x and y positions before rotation
-    const posX = positionToPosX(position.start, maxPosition, width, ratioX, leftOffset);
-    const posY = height - STEP_HEIGHT - MARGIN_BOTTOM - 8;
+    const posY = height - STEP_HEIGHT - 8;
 
     // Apply the translation and rotation
     ctx.translate(posX, posY);
     ctx.rotate((-40 * Math.PI) / 180); // -40 degrees in radians
 
     // Check if the current step is within the 4 previous or 4 next steps
-    if (
-      prevSteps.some((step) => step.position.start === position.start) ||
-      nextSteps.some((step) => step.position.start === position.start)
-    ) {
-      ctx.fillStyle = BLACK_ALPHA_100;
-    } else {
-      ctx.fillStyle = chroma(GREY_80).alpha(0.2).hex();
-    }
+    const alpha = Math.max(0.2, Math.min(1, 1.5 - Math.abs(reticlePositionX - posX) / FADE_RADIUS));
+    ctx.fillStyle = chroma(BLACK_ALPHA_100).alpha(alpha).hex();
 
     ctx.font = FONT_SANS_REGULAR;
     ctx.textAlign = 'left';
@@ -126,10 +101,4 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.fillText(value!.name, 0, 0);
     ctx.restore();
   });
-
-  // prevent overlapping with margins left and right
-  ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, MARGIN_RIGHT, height);
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
-  ctx.clearRect(0, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
 };

@@ -1,94 +1,103 @@
-import chroma from 'chroma-js';
-
-import { FONT_SANS_REGULAR } from '../../../../common/consts';
-import { GREY_30, GREY_50, SKY_700 } from '../../../../common/helpers/colors';
+import { FONT_SANS } from '../../../../common/consts';
+import { BLACK_ALPHA_25, BLACK_ALPHA_85 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, TICK_TITLE_MARGINS } from '../../consts';
+import { MARGINS } from '../../consts';
 import { clearCanvas, maxSpeedValue } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, CURVE_MARGIN_TOP, MARGIN_RIGHT } = MARGINS;
-const { Y_LEFT_VERTICAL, Y_LEFT_HORIZONTAL } = TICK_TITLE_MARGINS;
+const { MARGIN_LEFT, CURVE_MARGIN_TOP } = MARGINS;
 const TICK_WIDTH = 6;
-const TEXT_POSITION_X = 36;
+const TEXT_POSITION_X = MARGIN_LEFT - TICK_WIDTH - 6;
 
 export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const maxSpeed = maxSpeedValue(store);
+  const { cursor } = store;
 
   clearCanvas(ctx, width, height);
+  ctx.save();
 
-  ctx.strokeStyle = GREY_50;
+  // Draw background
+  const cursorHover = cursor.x !== null && cursor.y !== null && cursor.x < MARGIN_LEFT && cursor.y < height;
+  ctx.fillStyle = cursorHover ? 'white' : 'rgb(247, 246, 238)';
+  ctx.fillRect(0, 0, MARGIN_LEFT, height);
+
+  // Draw separator line
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
   ctx.lineWidth = 0.5;
-  ctx.font = FONT_SANS_REGULAR;
-  ctx.fillStyle = GREY_30;
+  ctx.moveTo(MARGIN_LEFT, 0);
+  ctx.lineTo(MARGIN_LEFT, height);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgb(121, 118, 113)';
+  ctx.lineWidth = 0.5;
+  ctx.font = 'normal 12px IBM Plex Sans';
+  ctx.fillStyle = 'rgb(182, 178, 175)';
 
   // Define the tick scale depending on the max speed
   let tickScale = 5;
   if (maxSpeed > 250) {
-    tickScale = 30;
+    tickScale = 50;
   } else if (maxSpeed > 130) {
-    tickScale = 20;
+    tickScale = 30;
   } else if (maxSpeed > 60) {
-    tickScale = 10;
+    tickScale = 15;
   }
 
   const nbTicks = Math.ceil(maxSpeed / tickScale);
   const maxTickSpeed = nbTicks * tickScale;
   const ratioRoundPositions = maxTickSpeed / maxSpeed;
   const ticksOffset =
-    ((height - MARGIN_BOTTOM - MARGIN_TOP - CURVE_MARGIN_TOP) * ratioRoundPositions) / nbTicks;
+    ((height - CURVE_MARGIN_TOP) * ratioRoundPositions) / nbTicks;
 
   // Draw ticks with text
   ctx.beginPath();
-  for (let i = 0; i <= nbTicks; i++) {
-    const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
+  for (let i = 1; i <= nbTicks; i++) {
+    const positionY = height - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT - TICK_WIDTH, positionY);
     ctx.lineTo(MARGIN_LEFT, positionY);
     ctx.textAlign = 'right';
     const text = (i * tickScale).toString();
     const textPositionY = positionY + 4;
 
-    ctx.fillStyle = GREY_30;
+    ctx.fillStyle = `rgb(121, 118, 113)`;
     ctx.fillText(text, TEXT_POSITION_X, textPositionY);
   }
   ctx.stroke();
 
-  // Draw major lines
-  ctx.strokeStyle = chroma(SKY_700).alpha(0.6).css();
+  // Draw lines
+  ctx.strokeStyle = 'rgba(33, 112, 185, 0.75)';
   ctx.beginPath();
   ctx.lineWidth = 0.5;
-  for (let i = 3; i <= nbTicks; i += 3) {
-    const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
-    ctx.moveTo(MARGIN_LEFT, positionY);
-    ctx.lineTo(width - MARGIN_RIGHT, positionY);
-  }
-  ctx.stroke();
-
-  // Draw minor lines
-  ctx.strokeStyle = chroma(SKY_700).alpha(0.25).css();
-  ctx.beginPath();
   for (let i = 1; i <= nbTicks; i++) {
-    if (i % 3 === 0) {
-      continue;
-    }
-    const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
+    const positionY = height - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT, positionY);
-    ctx.lineTo(width - MARGIN_RIGHT, positionY);
+    ctx.lineTo(width, positionY);
   }
   ctx.stroke();
 
-  // Prevent overlapping with margin top
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
-  ctx.clearRect(MARGIN_LEFT - 6, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
-  ctx.clearRect(0, height - MARGIN_BOTTOM + 6, MARGIN_LEFT, MARGIN_BOTTOM);
 
-  ctx.fillStyle = GREY_30;
-  ctx.textAlign = 'center';
-  ctx.shadowOffsetY = 0;
-  ctx.shadowBlur = 0;
+  if (cursorHover) {
+    const unitBoxWidth = 57;
+    const unitBoxHeight = 32;
+    const unitBoxOffset = 8;
+    const unitBoxPostionX = MARGIN_LEFT + unitBoxOffset;
+    const unitBoxPositionY = (height - unitBoxHeight) / 2;
 
-  // Draw km/h axis title
-  ctx.beginPath();
-  ctx.fillText('km/h', Y_LEFT_VERTICAL, Y_LEFT_HORIZONTAL);
-  ctx.closePath();
-  ctx.stroke();
+    ctx.fillStyle = BLACK_ALPHA_85;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = BLACK_ALPHA_25;
+    ctx.beginPath();
+    ctx.roundRect(unitBoxPostionX, unitBoxPositionY, unitBoxWidth, unitBoxHeight, 4);
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = `normal 14px ${FONT_SANS}`;
+    ctx.fillText("km/h", unitBoxPostionX + unitBoxWidth / 2, unitBoxPositionY + unitBoxHeight / 2 + 4);
+  }
+
+  ctx.restore();
 };
