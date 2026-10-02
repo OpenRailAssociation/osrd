@@ -58,7 +58,7 @@ mod tests {
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_icons() {
+    async fn icons_works() {
         let app = test_app!().skip_authz().build();
         let response = app.get("/icons/TVM300/REP%20TGV.svg").await;
         response.assert_status_ok();
@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_icons_not_found() {
+    async fn icons_not_found() {
         let app = test_app!().skip_authz().build();
         app.get("/icons/TVM300/NOT_A_THING.svg")
             .await

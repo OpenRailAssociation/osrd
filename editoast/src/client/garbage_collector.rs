@@ -253,7 +253,7 @@ mod tests {
     use models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_clean_orphaned_timetables() {
+    async fn clean_orphaned_timetables_works() {
         let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
         let conn = &mut db_pool.get_ok();
 
@@ -312,7 +312,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_clean_orphaned_train_schedule_sets() {
+    async fn clean_orphaned_train_schedule_sets_works() {
         let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
         let conn = &mut db_pool.get_ok();
 
@@ -349,7 +349,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_clean_orphaned_openfga_tuples() {
+    async fn clean_orphaned_openfga_tuples() {
         use fga::model::Relation as _;
 
         // Setup FGA client with migrations

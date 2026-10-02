@@ -685,7 +685,7 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn test_update_image() {
+    async fn update_image() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 

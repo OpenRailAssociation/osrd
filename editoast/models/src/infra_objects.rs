@@ -442,18 +442,18 @@ mod tests_persist {
         };
     }
 
-    test_persist!(TrackSectionModel, test_persist_track_section_model);
-    test_persist!(BufferStopModel, test_persist_buffer_stop_model);
-    test_persist!(ElectrificationModel, test_persist_electrification_model);
-    test_persist!(DetectorModel, test_persist_detector_model);
-    test_persist!(OperationalPointModel, test_persist_operational_point_model);
-    test_persist!(RouteModel, test_persist_route_model);
-    test_persist!(SignalModel, test_persist_signal_model);
-    test_persist!(SwitchModel, test_persist_switch_model);
-    test_persist!(SpeedSectionModel, test_persist_speed_section_model);
-    test_persist!(SwitchTypeModel, test_persist_switch_type_model);
-    test_persist!(NeutralSectionModel, test_persist_neutral_section_model);
-    test_persist!(LevelCrossingModel, test_persist_level_crossing_model);
+    test_persist!(TrackSectionModel, persist_track_section_model);
+    test_persist!(BufferStopModel, persist_buffer_stop_model);
+    test_persist!(ElectrificationModel, persist_electrification_model);
+    test_persist!(DetectorModel, persist_detector_model);
+    test_persist!(OperationalPointModel, persist_operational_point_model);
+    test_persist!(RouteModel, persist_route_model);
+    test_persist!(SignalModel, persist_signal_model);
+    test_persist!(SwitchModel, persist_switch_model);
+    test_persist!(SpeedSectionModel, persist_speed_section_model);
+    test_persist!(SwitchTypeModel, persist_switch_type_model);
+    test_persist!(NeutralSectionModel, persist_neutral_section_model);
+    test_persist!(LevelCrossingModel, persist_level_crossing_model);
 }
 
 #[cfg(test)]

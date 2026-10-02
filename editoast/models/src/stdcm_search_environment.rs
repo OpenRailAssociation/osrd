@@ -173,7 +173,7 @@ mod tests {
     use super::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_retrieve_latest() {
+    async fn retrieve_latest() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let (
@@ -237,7 +237,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_retrieve_latest_empty() {
+    async fn retrieve_latest_empty() {
         let db_pool = DbConnectionPoolV2::for_tests();
         StdcmSearchEnvironment::delete_all(&mut db_pool.get_ok())
             .await

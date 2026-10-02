@@ -500,7 +500,7 @@ mod tests {
     use super::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_connection_pool() {
+    async fn connection_pool() {
         let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
         let test_name = format!("test_{uuid_str}");
         let db = DbConnectionPoolV2::new_test(test_name).await.unwrap();

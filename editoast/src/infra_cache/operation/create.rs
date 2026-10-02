@@ -84,16 +84,16 @@ pub mod tests {
         };
     }
 
-    test_create_object!(TrackSection, test_create_track_section);
-    test_create_object!(Signal, test_create_signal);
-    test_create_object!(SpeedSection, test_create_speed_section);
-    test_create_object!(Switch, test_create_switch);
-    test_create_object!(Detector, test_create_detector);
-    test_create_object!(BufferStop, test_create_buffer_stop);
-    test_create_object!(Route, test_create_route);
-    test_create_object!(OperationalPoint, test_create_operational_point);
-    test_create_object!(SwitchType, test_create_switch_type);
-    test_create_object!(Electrification, test_create_electrification);
-    test_create_object!(NeutralSection, test_create_neutral_section);
-    test_create_object!(LevelCrossing, test_create_level_crossing);
+    test_create_object!(TrackSection, create_track_section);
+    test_create_object!(Signal, create_signal);
+    test_create_object!(SpeedSection, create_speed_section);
+    test_create_object!(Switch, create_switch);
+    test_create_object!(Detector, create_detector);
+    test_create_object!(BufferStop, create_buffer_stop);
+    test_create_object!(Route, create_route);
+    test_create_object!(OperationalPoint, create_operational_point);
+    test_create_object!(SwitchType, create_switch_type);
+    test_create_object!(Electrification, create_electrification);
+    test_create_object!(NeutralSection, create_neutral_section);
+    test_create_object!(LevelCrossing, create_level_crossing);
 }

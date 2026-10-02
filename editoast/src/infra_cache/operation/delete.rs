@@ -137,27 +137,19 @@ mod tests {
         };
     }
 
-    test_delete_object!(TrackSection, test_delete_track_section, "track_section");
-    test_delete_object!(Signal, test_delete_signal, "signal");
-    test_delete_object!(SpeedSection, test_delete_speed_section, "speed_section");
-    test_delete_object!(Switch, test_delete_switch, "switch");
-    test_delete_object!(Detector, test_delete_detector, "detector");
-    test_delete_object!(BufferStop, test_delete_buffer_stop, "buffer_stop");
-    test_delete_object!(Route, test_delete_route, "route");
+    test_delete_object!(TrackSection, delete_track_section, "track_section");
+    test_delete_object!(Signal, delete_signal, "signal");
+    test_delete_object!(SpeedSection, delete_speed_section, "speed_section");
+    test_delete_object!(Switch, delete_switch, "switch");
+    test_delete_object!(Detector, delete_detector, "detector");
+    test_delete_object!(BufferStop, delete_buffer_stop, "buffer_stop");
+    test_delete_object!(Route, delete_route, "route");
     test_delete_object!(
         OperationalPoint,
-        test_delete_operational_point,
+        delete_operational_point,
         "operational_point"
     );
-    test_delete_object!(
-        Electrification,
-        test_delete_electrification,
-        "electrification"
-    );
-    test_delete_object!(
-        NeutralSection,
-        test_delete_neutral_section,
-        "neutral_section"
-    );
-    test_delete_object!(LevelCrossing, test_delete_level_crossing, "level_crossing");
+    test_delete_object!(Electrification, delete_electrification, "electrification");
+    test_delete_object!(NeutralSection, delete_neutral_section, "neutral_section");
+    test_delete_object!(LevelCrossing, delete_level_crossing, "level_crossing");
 }

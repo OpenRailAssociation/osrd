@@ -318,7 +318,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_list_ids() {
+    async fn list_ids() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;

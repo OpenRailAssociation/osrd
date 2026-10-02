@@ -265,7 +265,7 @@ mod tests {
 
     /// Test the deserialization
     #[test]
-    fn test_deserialize() {
+    fn deserialize_works() {
         let s = r#"{"duration":"PT1H"}"#; // 1 hour
         let my_struct: MyStruct = from_str(s).unwrap();
         assert_eq!(my_struct.duration.num_seconds(), 3600);
@@ -273,7 +273,7 @@ mod tests {
 
     /// Test the serialization
     #[test]
-    fn test_serialize() {
+    fn serialize_works() {
         let s = r#"{"duration":"PT3600S"}"#; // 1 hour
         let my_struct = MyStruct {
             duration: chrono::Duration::hours(1).try_into().unwrap(),
@@ -283,7 +283,7 @@ mod tests {
 
     /// Test invalid deserialization
     #[test]
-    fn test_invalid_deserialize() {
+    fn invalid_deserialize() {
         let s = r#"{"duration":"P1M"}"#; // 1 month
         assert!(from_str::<MyStruct>(s).is_err());
     }

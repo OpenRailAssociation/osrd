@@ -22,7 +22,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
 
     #[test]
-    fn test_compute_track_ranges_1() {
+    fn compute_track_ranges_1() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
         let r1 = infra_cache.routes().get("R1").unwrap().unwrap_route();
@@ -45,7 +45,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_track_ranges_2() {
+    fn compute_track_ranges_2() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
         let r1 = infra_cache.routes().get("R2").unwrap().unwrap_route();

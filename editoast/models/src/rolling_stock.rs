@@ -282,7 +282,7 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_primary_category_with_empty_other_categories() {
+    async fn primary_category_with_empty_other_categories() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let created_fast_rolling_stock =

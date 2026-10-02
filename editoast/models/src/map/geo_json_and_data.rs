@@ -231,7 +231,7 @@ mod tests {
     use crate::map::MAP_LAYERS;
 
     #[test]
-    fn test_query_creation() {
+    fn query_creation() {
         let map_layers = &MAP_LAYERS;
         let expected_queries = [
         "
@@ -285,7 +285,7 @@ mod tests {
     }
 
     #[test]
-    fn test_create_and_fill_tile() {
+    fn create_and_fill_tile() {
         let records = vec![GeoJsonAndData {
           geo_json: "{\"type\":\"MultiLineString\",\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:3857\"}},\"coordinates\":[[[252941.293121198,6258992.543559584],[252858.794084681,6258960.207464033],[252853.844467147,6258958.257191242]]]}".to_string(),
           data: json!({
@@ -328,7 +328,7 @@ mod tests {
     }
 
     #[test]
-    fn test_empty_tile() {
+    fn empty_tile() {
         let empty_tile = create_and_fill_mvt_tile("track_sections", vec![]);
         assert!(empty_tile.to_bytes().unwrap().is_empty());
     }

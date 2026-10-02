@@ -122,18 +122,18 @@ mod tests {
     use super::Identifier;
 
     #[test]
-    fn test_de_identifier_valid() {
+    fn de_identifier_valid() {
         let res: Identifier = serde_json::from_str(r#""foo""#).unwrap();
         assert_eq!(res, "foo".into());
     }
 
     #[test]
-    fn test_de_identifier_empty() {
+    fn de_identifier_empty() {
         assert!(serde_json::from_str::<Identifier>(r#""""#).is_err());
     }
 
     #[test]
-    fn test_de_identifier_too_long() {
+    fn de_identifier_too_long() {
         let id = "a".repeat(256);
         assert!(serde_json::from_str::<Identifier>(format!(r#""{id}""#).as_str()).is_err());
     }

@@ -460,7 +460,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_squash_waypoints() {
+    fn squash_waypoints() {
         let waypoints = Vec::new();
         assert_eq!(squash_successive_waypoints(waypoints), Vec::new());
 
@@ -941,7 +941,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_select_single_train_without_merging_consecutive_segments() {
+    async fn select_single_train_without_merging_consecutive_segments() {
         let rolling_stock_name = Uuid::new_v4().to_string();
         let speed_limit_tag = "MA100".to_string();
         let mut traffics = Vec::<TrainTraffic>::new();
@@ -1200,7 +1200,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rolling_stock_characteristics_deserialize_with_name_only() {
+    fn rolling_stock_characteristics_deserialize_with_name_only() {
         let json = r#"{"name": "rolling_stock_name"}"#;
         let result = serde_json::from_str::<RollingStockCharacteristics>(json);
         assert_eq!(
@@ -1213,7 +1213,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rolling_stock_characteristics_deserialize_with_speed_limit_tag_only() {
+    fn rolling_stock_characteristics_deserialize_with_speed_limit_tag_only() {
         let json = r#"{"speed_limit_tag": "MA100"}"#;
         let result = serde_json::from_str::<RollingStockCharacteristics>(json);
         assert_eq!(
@@ -1226,7 +1226,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rolling_stock_characteristics_deserialize_with_both_fields() {
+    fn rolling_stock_characteristics_deserialize_with_both_fields() {
         let json = r#"{"name": "rolling_stock_name", "speed_limit_tag": "MA100"}"#;
         let result = serde_json::from_str::<RollingStockCharacteristics>(json);
         assert_eq!(
@@ -1239,7 +1239,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rolling_stock_characteristics_deserialize_missing_both_fields() {
+    fn rolling_stock_characteristics_deserialize_missing_both_fields() {
         let json = r#"{}"#;
         let result = serde_json::from_str::<RollingStockCharacteristics>(json);
         let error = result.unwrap_err();
@@ -1249,7 +1249,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_similar_trains_by_relaxing_rolling_stock_criterion() {
+    async fn similar_trains_by_relaxing_rolling_stock_criterion() {
         let train_traffic = TrainTraffic {
             name: Uuid::new_v4().to_string(),
             start_time: Utc::now(),

@@ -982,7 +982,7 @@ mod tests {
     #[case(7, 6)]
     #[case(8, 7)]
     #[case(9, 9)]
-    fn test_find_index_upper(#[case] value: u64, #[case] expected: usize) {
+    fn find_index_upper_works(#[case] value: u64, #[case] expected: usize) {
         let values = vec![1, 3, 3, 4, 5, 5, 7, 8, 9, 9];
         assert_eq!(find_index_upper(&values, value), expected);
     }
@@ -997,7 +997,7 @@ mod tests {
     #[case(7, 6)]
     #[case(8, 7)]
     #[case(9, 8)]
-    fn test_find_index_lower(#[case] value: u64, #[case] expected: usize) {
+    fn find_index_lower_works(#[case] value: u64, #[case] expected: usize) {
         let values = vec![1, 3, 3, 4, 5, 5, 7, 8, 9, 9];
         assert_eq!(find_index_lower(&values, value), expected);
     }
@@ -1006,7 +1006,7 @@ mod tests {
     #[case(25, vec![0, 50, 100], vec![0, 500, 1000], 250)]
     #[case(0, vec![0, 50, 100], vec![0, 500, 1000], 0)]
     #[case(100, vec![0, 50, 100], vec![0, 500, 1000], 1000)]
-    fn test_interpolate_arrival_time(
+    fn interpolate_arrival_time_works(
         #[case] position: u64,
         #[case] positions: Vec<u64>,
         #[case] times: Vec<u64>,
@@ -1027,7 +1027,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_space_time_curves_case_1() {
+    fn compute_space_time_curves_case_1() {
         let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 600, 730, 1_000_000];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 50, 70, 90];
         let path = vec![
@@ -1063,7 +1063,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_space_time_curves_case_2() {
+    fn compute_space_time_curves_case_2() {
         let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 730_000];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 70];
         let path = vec![
@@ -1095,7 +1095,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_space_time_curves_case_3() {
+    fn compute_space_time_curves_case_3() {
         let positions: Vec<u64> = vec![
             0, 100_000, 200_000, 300_000, 400_000, 450_000, 500_000, 600_000, 720_000,
         ];
@@ -1186,7 +1186,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_simple_project_train_path_op() {
+    async fn simple_project_train_path_op() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1248,7 +1248,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_simple_reverse_project_train_path_op() {
+    async fn simple_reverse_project_train_path_op() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1311,7 +1311,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_points_project_train_path_op() {
+    async fn points_project_train_path_op() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1369,7 +1369,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_no_matching_points_project_train_path_op() {
+    async fn no_matching_points_project_train_path_op() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;

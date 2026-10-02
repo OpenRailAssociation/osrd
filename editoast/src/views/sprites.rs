@@ -84,7 +84,7 @@ mod tests {
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_signaling_systems() {
+    async fn signaling_systems() {
         let app = test_app!().skip_authz().build();
         let response: Vec<String> = app
             .get("/sprites/signaling_systems")
@@ -100,7 +100,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_sprites() {
+    async fn sprites() {
         let app = test_app!().skip_authz().build();
         let response = app.get("/sprites/TVM300/REP%20TGV.svg").await;
         response.assert_status_ok();
@@ -116,7 +116,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_sprites_not_found() {
+    async fn sprites_not_found() {
         let app = test_app!().skip_authz().build();
         app.get("/sprites/TVM300/NOT_A_THING.svg")
             .await

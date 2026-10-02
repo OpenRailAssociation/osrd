@@ -1055,7 +1055,7 @@ mod tests {
     }
 
     #[test]
-    fn test_too_fast() {
+    fn too_fast() {
         let schedule = train_schedule_too_fast();
         let sim = shallow_sim_too_fast();
         let respect = path_item_respect_margins(
@@ -1067,7 +1067,7 @@ mod tests {
     }
 
     #[test]
-    fn test_too_fast_on_interval() {
+    fn too_fast_on_interval() {
         let schedule = train_schedule_too_fast_on_interval();
         let sim = shallow_sim_too_fast_on_interval();
         let respect = path_item_respect_margins(
@@ -1079,7 +1079,7 @@ mod tests {
     }
 
     #[test]
-    fn test_not_too_fast_if_honored() {
+    fn not_too_fast_if_honored() {
         let schedule = train_schedule_honored();
         let sim = shallow_sim_honored();
         let respect = path_item_respect_margins(
@@ -1091,7 +1091,7 @@ mod tests {
     }
 
     #[test]
-    fn test_times_honored() {
+    fn times_honored() {
         let schedule = train_schedule_honored();
         let sim = shallow_sim_honored();
         let respect: Vec<bool> =
@@ -1100,7 +1100,7 @@ mod tests {
     }
 
     #[test]
-    fn test_times_no_schedule() {
+    fn times_no_schedule() {
         let schedule = train_schedule_no_schedule();
         let sim = shallow_sim_honored();
         let respect: Vec<bool> =
@@ -1109,7 +1109,7 @@ mod tests {
     }
 
     #[test]
-    fn test_times_not_honored() {
+    fn times_not_honored() {
         let schedule = train_schedule_not_honored();
         let sim = shallow_sim_not_honored();
         let respect: Vec<bool> =
@@ -1118,7 +1118,7 @@ mod tests {
     }
 
     #[test]
-    fn test_build_simulation_schedule() {
+    fn build_simulation_schedule() {
         let train_schedule = train_schedule_honored();
         let path_item_positions: [u64; 2] = [0, 3000];
         let path_items_to_position =

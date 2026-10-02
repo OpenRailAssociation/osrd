@@ -102,13 +102,13 @@ mod tests {
     use super::SpeedSectionExtensions;
 
     #[test]
-    fn test_speed_section_extensions_deserialization() {
+    fn speed_section_extensions_deserialization() {
         from_str::<SpeedSectionExtensions>(r#"{}"#).unwrap();
     }
 
     // SpeedSection validation succeed
     #[test]
-    fn test_valid_speed_section() {
+    fn valid_speed_section() {
         let section = json!({
             "id": "section_id",
             "speed_limit": 50.0,
@@ -120,7 +120,7 @@ mod tests {
 
     // SpeedSection validation failed caused by speed_limit
     #[test]
-    fn test_invalid_speed_limit() {
+    fn invalid_speed_limit() {
         let section = json!({
             "id": "section_id",
             "speed_limit": -10.0,
@@ -132,7 +132,7 @@ mod tests {
 
     // SpeedSection validation failed caused by speed_limit_by_tag
     #[test]
-    fn test_invalid_speed_limit_by_tag() {
+    fn invalid_speed_limit_by_tag() {
         let section = json!({
             "id": "section_id",
             "speed_limit": 50.0,

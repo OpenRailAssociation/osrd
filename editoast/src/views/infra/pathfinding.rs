@@ -450,7 +450,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_path() {
+    fn compute_path_works() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
         let input = InfraPathfindingInput {
@@ -490,7 +490,7 @@ mod tests {
     }
 
     #[test]
-    fn test_compute_path_opposite_direction() {
+    fn compute_path_opposite_direction() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
         let input = InfraPathfindingInput {

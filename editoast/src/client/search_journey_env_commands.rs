@@ -129,7 +129,7 @@ mod tests {
     use std::collections::HashSet;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_set_search_journey_env_from_scenario() {
+    async fn set_search_journey_env_from_scenario_works() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
 
@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_set_search_journey_env_from_scratch() {
+    async fn set_search_journey_env_from_scratch_works() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
 

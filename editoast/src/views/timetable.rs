@@ -1176,7 +1176,7 @@ mod tests {
     }
 
     #[test]
-    fn test_make_requirements_absolute() {
+    fn make_requirements_absolute_works() {
         let start_time = millisecond::i64::new(30_000);
 
         let spacing_requirement = SpacingRequirement {
@@ -1405,7 +1405,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_set_links_train_schedule_sets_to_timetable() {
+    async fn set_links_train_schedule_sets_to_timetable() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1429,7 +1429,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_get_local_track_names_simple_train_schedule() {
+    async fn get_local_track_names_simple_train_schedule() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1522,7 +1522,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_set_links_train_schedule_sets_to_timetable_with_hourly_type() {
+    async fn set_links_train_schedule_sets_to_timetable_with_hourly_type() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1564,7 +1564,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_set_links_train_schedule_sets_to_timetable_with_type_mismatch() {
+    async fn set_links_train_schedule_sets_to_timetable_with_type_mismatch() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
