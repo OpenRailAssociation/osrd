@@ -8,7 +8,7 @@ import {
   getSnappedStop,
 } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM } = MARGINS;
+const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM } = MARGINS;
 const STEP_HEIGHT = 6;
 const STEP_WIDTH = 1;
 const STEP_RADIUS = 1.0;
@@ -122,9 +122,8 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.restore();
   });
 
-  // prevent overlapping with margins left and right
+  // prevent overlapping with margins
   ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, MARGIN_RIGHT, height);
   ctx.clearRect(0, 0, width, MARGIN_TOP);
   ctx.clearRect(0, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
 };

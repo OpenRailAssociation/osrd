@@ -46,7 +46,7 @@ const DetailsBox = ({
   previousGradientText,
   modeText,
 }: DetailsBoxProps) => {
-  const { MARGIN_BOTTOM, MARGIN_RIGHT } = MARGINS;
+  const { MARGIN_BOTTOM } = MARGINS;
   const { energySource, tractionStatus, declivities, electricalProfiles, powerRestrictions } =
     store.detailsBoxDisplay;
 
@@ -57,7 +57,7 @@ const DetailsBox = ({
   const detailsBoxHeight = document.getElementById('details-box')?.offsetHeight || 0;
 
   // find out if the box is going out off the right side of the canvas
-  if (curveX + detailsBoxWidth > width - MARGIN_RIGHT - DETAILBOX_LIMIT)
+  if (curveX + detailsBoxWidth > width - DETAILBOX_LIMIT)
     rightOffset = detailsBoxWidth + DETAILBOX_OFFSET;
   // find out if the box is going out off the bottom side of the canvas
   if (curveY + detailsBoxHeight > height - MARGIN_BOTTOM - DETAILBOX_LIMIT)

@@ -20,7 +20,6 @@ import {
 
 const {
   MARGIN_LEFT,
-  MARGIN_RIGHT,
   MARGIN_TOP,
   MARGIN_BOTTOM,
   CURVE_MARGIN_TOP,
@@ -137,7 +136,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   const maxPosition = maxPositionValue(store.speeds);
 
   const cursorBoxHeight = height - MARGIN_BOTTOM - MARGIN_TOP;
-  const cursorBoxWidth = width - MARGIN_LEFT - MARGIN_RIGHT;
+  const cursorBoxWidth = width - MARGIN_LEFT;
 
   const xPositionReference = (ref: number) =>
     ref * ((cursorBoxWidth - CURVE_MARGIN_SIDES) / maxPosition) * ratioX +

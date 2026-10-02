@@ -2,7 +2,7 @@ import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
 import { clearCanvas, maxPositionValue } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_RIGHT, MARGIN_BOTTOM, CURVE_MARGIN_SIDES } = MARGINS;
+const { MARGIN_LEFT, MARGIN_BOTTOM, CURVE_MARGIN_SIDES } = MARGINS;
 
 export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const { ratioX, leftOffset, cursor } = store;
@@ -43,7 +43,7 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   const maxTickPosition = nbTicks * tickScale;
   const ratioRoundPositions = maxTickPosition / maxPosition;
   const ticksOffset =
-    ((width - CURVE_MARGIN_SIDES - MARGIN_LEFT - MARGIN_RIGHT) * ratioRoundPositions * ratioX) /
+    ((width - CURVE_MARGIN_SIDES - MARGIN_LEFT ) * ratioRoundPositions * ratioX) /
     nbTicks;
 
   ctx.beginPath();
@@ -74,7 +74,7 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
       const opacityCursor = Math.max(Math.min(distanceCursor / fadeWidth - 0.1, 1.0), 0.0);
 
       const distanceRightBorder = Math.abs(
-        width - MARGIN_RIGHT - CURVE_MARGIN_SIDES / 2 - leftOffset - positionX
+        width - CURVE_MARGIN_SIDES / 2 - leftOffset - positionX
       );
       const opacityRightBorder = Math.max(
         Math.min(distanceRightBorder / fadeWidth - 0.1, 1.0),
@@ -105,5 +105,5 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // prevent overlapping with margins left and right
   ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, width, height);
+  ctx.clearRect(width, 0, width, height);
 };

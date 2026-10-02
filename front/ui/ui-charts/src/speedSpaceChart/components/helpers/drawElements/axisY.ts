@@ -2,9 +2,9 @@ import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
 import { clearCanvas, maxSpeedValue } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, CURVE_MARGIN_TOP, MARGIN_RIGHT } = MARGINS;
+const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, CURVE_MARGIN_TOP } = MARGINS;
 const TICK_WIDTH = 6;
-const TEXT_POSITION_X = 36;
+const TEXT_POSITION_X = MARGIN_LEFT - TICK_WIDTH - 6;
 
 export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const maxSpeed = maxSpeedValue(store);
@@ -34,7 +34,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Draw ticks with text
   ctx.beginPath();
-  for (let i = 0; i <= nbTicks; i++) {
+  for (let i = 1; i <= nbTicks; i++) {
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT - TICK_WIDTH, positionY);
     ctx.lineTo(MARGIN_LEFT, positionY);
@@ -54,7 +54,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   for (let i = 3; i <= nbTicks; i += 3) {
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT, positionY);
-    ctx.lineTo(width - MARGIN_RIGHT, positionY);
+    ctx.lineTo(width, positionY);
   }
   ctx.stroke();
 
@@ -67,7 +67,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
     }
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT, positionY);
-    ctx.lineTo(width - MARGIN_RIGHT, positionY);
+    ctx.lineTo(width, positionY);
   }
   ctx.stroke();
 

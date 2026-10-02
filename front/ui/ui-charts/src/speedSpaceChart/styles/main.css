@@ -9,8 +9,8 @@
 #curve-layer,
 #declivity-layer,
 #front-interactivity-layer {
-  margin-left: 48px;
-  margin-top: 27px;
+  margin-left: 40px;
+  border-radius: 0;
 }
 
 #front-interactivity-layer {

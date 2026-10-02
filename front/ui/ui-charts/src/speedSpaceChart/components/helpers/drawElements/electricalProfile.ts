@@ -30,7 +30,6 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
     MARGIN_TOP,
     MARGIN_BOTTOM,
     MARGIN_LEFT,
-    MARGIN_RIGHT,
     CURVE_MARGIN_SIDES,
     ELECTRICAL_PROFILES_MARGIN_TOP,
   } = MARGINS;
@@ -160,7 +159,7 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
       const xEnd =
         positionOnGraphScale(end!, maxPosition, width, ratioX, MARGINS) ||
-        width - MARGIN_RIGHT - CURVE_MARGIN_SIDES / 2;
+        width - CURVE_MARGIN_SIDES / 2;
 
       const profileWidth = xEnd - xStart;
       const profileHeight = PROFILE_HEIGHT_MAX - heightLevelMax * 4;
@@ -179,7 +178,6 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
   ctx.restore();
 
-  // Prevent overlapping with margins left and right
+  // Prevent overlapping with margins
   ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, MARGIN_RIGHT, height);
 };
