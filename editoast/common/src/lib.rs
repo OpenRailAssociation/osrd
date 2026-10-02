@@ -17,13 +17,12 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 pub fn setup_tracing_for_test() {
-    tracing_subscriber::fmt()
+    let _ = tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .with_test_writer()
         .without_time()
         .pretty()
-        .try_init()
-        .ok();
+        .try_init();
 }
 
 #[derive(ToSchema, Serialize, Deserialize)]

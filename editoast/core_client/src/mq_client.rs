@@ -255,9 +255,9 @@ impl RabbitMQClient {
             conn.clone(),
             tx,
         ));
-        rx.instrument(tracing::info_span!("waiting for first connection signal"))
-            .await
-            .ok();
+        let _ = rx
+            .instrument(tracing::info_span!("waiting for first connection signal"))
+            .await;
 
         // We should ensure that the connection is established at least once before creating the pool
         // since deadpool will try to create resources upfront
@@ -350,7 +350,7 @@ impl RabbitMQClient {
                 Ok(new_connection) => {
                     *connection.write().await = Some(new_connection);
                     if let Some(tx) = tx.take() {
-                        tx.send(()).ok();
+                        let _ = tx.send(());
                     }
                     tracing::info!("Reconnected to RabbitMQ");
                 }

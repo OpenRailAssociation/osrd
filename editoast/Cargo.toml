@@ -30,6 +30,7 @@ async_fn_in_trait = "allow" # all of our public traits are only used inside the 
 [workspace.lints.clippy]
 get_unwrap = "deny"
 rest_pat_in_fully_bound_structs = "deny"
+unused_result_ok = "deny"
 unused_trait_names = "deny"
 
 [workspace.package]

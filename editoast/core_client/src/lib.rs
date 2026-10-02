@@ -335,7 +335,7 @@ where
                     return Ok(f);
                 }
             };
-            sender.send(event).ok();
+            let _ = sender.send(event);
         }
         Err(Error::MqClientError(MqClientError::ResponseChannelClosed))
     }

@@ -82,7 +82,7 @@ where
                     let trains = runner
                         .train_set(&input)
                         .expect("input provided by the Runner should be valid");
-                    tx.unbounded_send(trains).ok();
+                    let _ = tx.unbounded_send(trains);
                 }
                 paths.insert(input, Poll::Ready(data.map(Arc::new)));
                 (paths, runner, ready_trains_tx)

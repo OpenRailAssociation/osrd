@@ -282,7 +282,7 @@ where
                                 for (value, correlation, key, input) in
                                     izip!(cached_values, correlation_keys, cache_keys, inputs)
                                 {
-                                    cache_read_tx.send((input, correlation, key, value)).ok();
+                                    let _ = cache_read_tx.send((input, correlation, key, value));
                                 }
                             }
                             Err(e) => {
@@ -293,7 +293,7 @@ where
                                 for (key, correlation, input) in
                                     izip!(cache_keys, correlation_keys, inputs)
                                 {
-                                    cache_read_tx.send((input, correlation, key, None)).ok();
+                                    let _ = cache_read_tx.send((input, correlation, key, None));
                                 }
                             }
                         };
@@ -315,9 +315,8 @@ where
                         cache_read_rx.recv().await
                     {
                         if let Some(cached_value) = cache_entry {
-                            results_tx
-                                .unbounded_send(Correlated::new(correlation_key, Ok(cached_value)))
-                                .ok();
+                            let _ = results_tx
+                                .unbounded_send(Correlated::new(correlation_key, Ok(cached_value)));
                         } else {
                             match input.compute(ctx.clone()).await {
                                 Ok(value) => {
@@ -329,15 +328,15 @@ where
                                         serialized.sort_all_objects();
                                         serialized
                                     };
-                                    cache_write_tx.send((cache_key, serialized)).ok();
-                                    results_tx
-                                        .unbounded_send(Correlated::new(correlation_key, Ok(value)))
-                                        .ok();
+                                    let _ = cache_write_tx.send((cache_key, serialized));
+                                    let _ = results_tx.unbounded_send(Correlated::new(
+                                        correlation_key,
+                                        Ok(value),
+                                    ));
                                 }
                                 Err(err) => {
-                                    results_tx
-                                        .unbounded_send(Correlated::new(correlation_key, Err(err)))
-                                        .ok();
+                                    let _ = results_tx
+                                        .unbounded_send(Correlated::new(correlation_key, Err(err)));
                                 }
                             };
                         }
