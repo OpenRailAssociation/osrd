@@ -1,0 +1,4 @@
+DROP INDEX idx_fkey_train_schedule_linking_source_train_schedule_id;
+DROP INDEX idx_fkey_train_schedule_linking_target_train_schedule_id;
+DROP INDEX idx_fkey_train_schedule_linking_source_added_exception_id;
+DROP INDEX idx_fkey_train_schedule_linking_target_added_exception_id;
