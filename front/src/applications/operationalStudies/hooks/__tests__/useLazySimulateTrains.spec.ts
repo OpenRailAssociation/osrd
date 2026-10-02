@@ -215,9 +215,13 @@ describe('useLazySimulateTrains', () => {
     });
 
     it('should return false if train simulations are done', async () => {
-      postTrainSchedulesSimulationSummary.mockResolvedValue({
-        data: { [mockTrain.id]: mockSimulationSummaryResult },
-      });
+      let resolveSimulation!: () => void;
+      postTrainSchedulesSimulationSummary.mockReturnValue(
+        new Promise((resolve) => {
+          resolveSimulation = () =>
+            resolve({ data: { [mockTrain.id]: mockSimulationSummaryResult } });
+        }) as never
+      );
 
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
@@ -227,6 +231,10 @@ describe('useLazySimulateTrains', () => {
 
       await vi.waitFor(() => {
         expect(result.current.isTrainSimulationLoading).toBe(true);
+      });
+
+      await act(async () => {
+        resolveSimulation();
       });
 
       await vi.waitFor(() => {
