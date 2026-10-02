@@ -28,7 +28,7 @@ import {
 } from 'utils/trainId';
 
 import type { PathProjectionResult } from '../types';
-import { buildPathWaypointsFromRawOPs } from '../utils';
+import { buildOpWaypointId, buildPathWaypointsFromRawOPs } from '../utils';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
@@ -243,6 +243,7 @@ const usePathProjection = (
     // 2. If a point is matched → use matched data with full extensions
     // 3. If a point is not matched (e.g., NGE) → create a virtual point from the reference
     const normalizedOps: ProjectionWaypoint[] = [];
+    const opOccurrenceCounts = new Map<string, number>();
 
     opRefs.forEach((opRef, index) => {
       const matchedOp = matchedOperationalPoints?.related_operational_points[index];
@@ -260,9 +261,11 @@ const usePathProjection = (
 
       if (matchedOp) {
         // MATCHED: Point exists in infrastructure
+        const occurrenceCount = (opOccurrenceCounts.get(matchedOp.id) ?? 0) + 1;
+        opOccurrenceCounts.set(matchedOp.id, occurrenceCount);
         normalizedOps.push({
           country_code: matchedOp.country_code,
-          waypointId: `op-${matchedOp.id}-${position}`,
+          waypointId: buildOpWaypointId(matchedOp.id, occurrenceCount),
           opId: matchedOp.id,
           pathItemId,
           is_passenger_station: matchedOp.is_passenger_station,

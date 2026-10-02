@@ -807,7 +807,11 @@ const useTrackOccupancy = ({
     fetchOperationalPoints();
   }, [trainScheduleProjections, i18n.language]);
 
-  return { deployedWaypoints, toggleWaypoint, updateTrackOccupanciesOnDrag };
+  return {
+    deployedWaypoints,
+    toggleWaypoint,
+    updateTrackOccupanciesOnDrag,
+  };
 };
 
 export default useTrackOccupancy;

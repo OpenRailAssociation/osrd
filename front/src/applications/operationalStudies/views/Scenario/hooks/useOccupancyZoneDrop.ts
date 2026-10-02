@@ -65,6 +65,7 @@ function upsertPathStepTrack(
         local_track_name: localTrackName,
       },
     };
+    return newPath;
   } else {
     // Path step needs to be inserted
 
@@ -90,8 +91,8 @@ function upsertPathStepTrack(
         local_track_name: localTrackName,
       },
     });
+    return newPath;
   }
-  return newPath;
 }
 
 export default function useOccupancyZoneDrop({
