@@ -102,6 +102,7 @@
   "devDependencies": {
     "@apidevtools/swagger-parser": "^13.0.0",
     "@playwright/test": "^1.63.0",
+    "@rolldown/plugin-babel": "^0.2.4",
     "@rtk-query/codegen-openapi": "^2.2.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.4.2",
@@ -117,6 +118,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/ui": "^4.1.11",
     "ansi-to-html": "^0.7.2",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint-plugin-import": "^2.31.0",
     "happy-dom": "^20.14.5",
     "i18next-fs-backend": "^2.6.8",
