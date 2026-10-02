@@ -372,7 +372,6 @@ async fn validate_rolling_stock_input(
     RollingStockCharacteristics {
         name,
         speed_limit_tag,
-        ..
     }: &RollingStockCharacteristics,
     speed_limit_tag_ids: &SpeedLimitTagIds,
 ) -> Result<()> {

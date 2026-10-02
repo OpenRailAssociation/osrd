@@ -262,7 +262,6 @@ fn reduce_operation(
                 obj_id,
                 obj_type,
                 railjson_patch,
-                ..
             } = update;
             debug_assert_eq!(infra_object.get_id(), &obj_id);
             debug_assert_eq!(infra_object.get_type(), obj_type);
