@@ -47,6 +47,7 @@ const InfraObjectLayers = ({
       <OperationalPoints
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+        mutedLayerOrder={LAYER_GROUPS_ORDER[LAYERS.MUTED_OPERATIONAL_POINTS.GROUP]}
         operationnalPointId={hoveredOperationalPointId}
         highlightedArea={highlightedArea}
       />
