@@ -192,17 +192,6 @@ pub struct TrackRange {
     pub direction: Direction,
 }
 
-impl TrackRange {
-    pub fn new(track_section: &str, begin: u64, end: u64, direction: Direction) -> Self {
-        Self {
-            track_section: track_section.into(),
-            begin,
-            end,
-            direction,
-        }
-    }
-}
-
 /// A range on a linear object (usually block or route)
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 #[schema(as = CoreObjectRange)]
@@ -241,6 +230,15 @@ impl From<schemas::infra::DirectionalTrackRange> for TrackRange {
 }
 
 impl TrackRange {
+    pub fn new(track_section: &str, begin: u64, end: u64, direction: Direction) -> Self {
+        Self {
+            track_section: track_section.into(),
+            begin,
+            end,
+            direction,
+        }
+    }
+
     /// Returns the starting offset of the range (depending on the direction).
     pub fn start(&self) -> u64 {
         if self.direction == Direction::StartToStop {
