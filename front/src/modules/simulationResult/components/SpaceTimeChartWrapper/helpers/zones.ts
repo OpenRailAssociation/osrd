@@ -6,6 +6,7 @@ import {
   type PostTrainSchedulesTrackOccupancyApiResponse,
 } from 'common/api/osrdEditoastApi';
 import {
+  getFirstPeriodOffset,
   getTimetableRepeatOffsets,
   type TimeRange,
 } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
@@ -178,19 +179,29 @@ export const repeatOccupancyZonesInRange = (
   occupancyZones.flatMap((zone) => {
     if (!zone.paced) return [zone];
 
+    // A zone dragged out of the first time window is repeated from its copy inside it.
+    const firstPeriodOffset = getFirstPeriodOffset(zone.startTime, zone.paced.timeWindow);
+    const firstPeriodZone = {
+      ...zone,
+      startTime: zone.startTime - firstPeriodOffset,
+      endTime: zone.endTime - firstPeriodOffset,
+      dbStartTime: zone.dbStartTime - firstPeriodOffset,
+      dbEndTime: zone.dbEndTime - firstPeriodOffset,
+    };
+
     const repeatOffsets = getTimetableRepeatOffsets({
       period: zone.paced.timeWindow,
       // Note, occupancy zones are relative to their train's start time, so we
       // need to *not* subtract the zone's own startTime here
-      maxItemDuration: new Duration({ milliseconds: zone.endTime }),
+      maxItemDuration: new Duration({ milliseconds: firstPeriodZone.endTime }),
       range,
     });
 
     return repeatOffsets.map((offset) => ({
-      ...zone,
-      startTime: zone.startTime + offset.ms,
-      endTime: zone.endTime + offset.ms,
-      dbStartTime: zone.dbStartTime + offset.ms,
-      dbEndTime: zone.dbEndTime + offset.ms,
+      ...firstPeriodZone,
+      startTime: firstPeriodZone.startTime + offset.ms,
+      endTime: firstPeriodZone.endTime + offset.ms,
+      dbStartTime: firstPeriodZone.dbStartTime + offset.ms,
+      dbEndTime: firstPeriodZone.dbEndTime + offset.ms,
     }));
   });
