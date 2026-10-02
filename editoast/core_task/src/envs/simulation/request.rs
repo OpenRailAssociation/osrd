@@ -172,7 +172,7 @@ mod tests {
     /// Simple request with only schedule items
     #[test]
     fn build_request_no_power_restrictions_no_margins() {
-        let path_item_positions = vec![0u64, 10u64];
+        let path_item_positions = vec![0_u64, 10_u64];
         let path = core_client::pathfinding::TrainPath {
             blocks: Vec::new(),
             routes: Vec::new(),
@@ -273,7 +273,7 @@ mod tests {
     /// Complex case with overlapping margins and power restrictions, testing RangeMap iteration and coalescing
     #[test]
     fn build_request_with_overlapping_ranges() {
-        let path_item_positions = vec![0u64, 10u64, 20u64, 30u64, 40u64];
+        let path_item_positions = vec![0_u64, 10_u64, 20_u64, 30_u64, 40_u64];
         let path = core_client::pathfinding::TrainPath {
             blocks: Vec::new(),
             routes: Vec::new(),
@@ -394,7 +394,7 @@ mod tests {
                 },
             ],
             margins: core_client::simulation::SimulationMargins {
-                boundaries: vec![10u64, 30u64],
+                boundaries: vec![10_u64, 30_u64],
                 values: vec![
                     MarginValue::Percentage(10.0),
                     MarginValue::Percentage(5.0),
@@ -434,7 +434,7 @@ mod tests {
     /// 2 schedule items but only 1 path item
     #[test]
     fn build_request_error_schedule_path_mismatch() {
-        let path_positions = vec![0u64];
+        let path_positions = vec![0_u64];
         let path = core_client::pathfinding::TrainPath {
             blocks: Vec::new(),
             routes: Vec::new(),

@@ -126,7 +126,7 @@ impl EditoastError for DieselError {
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:DatabaseAccessError", "DatabaseAccessError", "DatabaseAccessError", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:DatabaseAccessError", "DatabaseAccessError", "DatabaseAccessError", 500_u16, r#"{}"#)
 }
 impl EditoastError for DatabasePoolBuildError {
     fn get_status(&self) -> StatusCode {
@@ -211,13 +211,13 @@ impl EditoastError for serde_json::Error {
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:JoinError:panic", "JoinError", "Panic", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:JoinError:panic", "JoinError", "Panic", 500_u16, r#"{}"#)
 }
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:JoinError:cancelled", "JoinError", "Abort", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:JoinError:cancelled", "JoinError", "Abort", 500_u16, r#"{}"#)
 }
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:JoinError:unhandled_add_case_here", "JoinError", "Unexpected", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:JoinError:unhandled_add_case_here", "JoinError", "Unexpected", 500_u16, r#"{}"#)
 }
 impl EditoastError for tokio::task::JoinError {
     fn get_status(&self) -> StatusCode {
@@ -246,7 +246,7 @@ impl EditoastError for json_patch::PatchError {
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:geometry:UnexpectedGeometry", "UnexpectedGeometry", "GeometryError", 404u16, r#"{"expected":"String","actual":"String"}"#)
+    crate::error::ErrorDefinition::new("editoast:geometry:UnexpectedGeometry", "UnexpectedGeometry", "GeometryError", 404_u16, r#"{"expected":"String","actual":"String"}"#)
 }
 impl EditoastError for schemas::errors::GeometryError {
     fn get_status(&self) -> StatusCode {
@@ -270,7 +270,7 @@ impl EditoastError for schemas::errors::GeometryError {
 }
 
 inventory::submit! {
-    ErrorDefinition::new("editoast:model:ModelError", "", "ModelError", 500u16, r#"{}"#)
+    ErrorDefinition::new("editoast:model:ModelError", "", "ModelError", 500_u16, r#"{}"#)
 }
 impl EditoastError for models::Error {
     fn get_status(&self) -> StatusCode {
@@ -283,19 +283,19 @@ impl EditoastError for models::Error {
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:coreclient:CoreResponseFormatError", "CoreResponseFormatError", "CoreError", 500u16, r#"{"msg":"String"}"#)
+    crate::error::ErrorDefinition::new("editoast:coreclient:CoreResponseFormatError", "CoreResponseFormatError", "CoreError", 500_u16, r#"{"msg":"String"}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:coreclient:UnparsableErrorOutput", "UnparsableErrorOutput", "CoreError", 400u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:coreclient:UnparsableErrorOutput", "UnparsableErrorOutput", "CoreError", 400_u16, r#"{}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:coreclient:BrokenPipe", "BrokenPipe", "CoreError", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:coreclient:BrokenPipe", "BrokenPipe", "CoreError", 500_u16, r#"{}"#)
 }
 
 inventory::submit! {
-    crate::error::ErrorDefinition::new("editoast:coreclient:MqClientError", "MqClientError", "CoreError", 500u16, r#"{}"#)
+    crate::error::ErrorDefinition::new("editoast:coreclient:MqClientError", "MqClientError", "CoreError", 500_u16, r#"{}"#)
 }
 
 impl EditoastError for core_client::Error {
@@ -346,10 +346,10 @@ impl From<authz::authorizers::Error> for InternalError {
 }
 
 inventory::submit! {
-    ErrorDefinition::new("editoast:cache_operation:ObjectNotFound","ObjectNotFound","CacheOperationError",404u16,"{\"obj_type\":\"String\",\"obj_id\":\"String\"}")
+    ErrorDefinition::new("editoast:cache_operation:ObjectNotFound","ObjectNotFound","CacheOperationError",404_u16,"{\"obj_type\":\"String\",\"obj_id\":\"String\"}")
 }
 inventory::submit! {
-    ErrorDefinition::new("editoast:cache_operation:DuplicateIdsProvided","DuplicateIdsProvided","CacheOperationError",404u16,"{\"obj_id\":\"String\",\"obj_type\":\"String\"}")
+    ErrorDefinition::new("editoast:cache_operation:DuplicateIdsProvided","DuplicateIdsProvided","CacheOperationError",404_u16,"{\"obj_id\":\"String\",\"obj_type\":\"String\"}")
 }
 
 impl EditoastError for crate::infra_cache::CacheOperationError {
@@ -399,25 +399,25 @@ impl EditoastError for crate::infra_cache::CacheOperationError {
 }
 
 inventory::submit! {
-    ErrorDefinition::new("editoast:operation:ObjectNotFound","ObjectNotFound","OperationError",404u16,"{\"infra_id\":\"i64\",\"obj_id\":\"String\"}")
+    ErrorDefinition::new("editoast:operation:ObjectNotFound","ObjectNotFound","OperationError",404_u16,"{\"infra_id\":\"i64\",\"obj_id\":\"String\"}")
 }
 inventory::submit! {
-    ErrorDefinition::new("editoast:operation:EmptyId","EmptyId","OperationError",400u16,"{}")
+    ErrorDefinition::new("editoast:operation:EmptyId","EmptyId","OperationError",400_u16,"{}")
 }
 inventory::submit! {
-    ErrorDefinition::new("editoast:operation:ModifyId","ModifyId","OperationError",400u16,"{}")
+    ErrorDefinition::new("editoast:operation:ModifyId","ModifyId","OperationError",400_u16,"{}")
 }
 inventory::submit! {
-    ErrorDefinition::new("editoast:operation:InvalidPatch","InvalidPatch","OperationError",400u16,"{\"error\":\"String\"}")
+    ErrorDefinition::new("editoast:operation:InvalidPatch","InvalidPatch","OperationError",400_u16,"{\"error\":\"String\"}")
 }
 impl crate::error::EditoastError for crate::infra_cache::operation::OperationError {
     fn get_status(&self) -> axum::http::StatusCode {
         match self {
             Self::ObjectNotFound { .. } => axum::http::StatusCode::try_from(404)
                 .expect("EditoastError: invalid status expression"),
-            Self::EmptyId => axum::http::StatusCode::from_u16(400u16).unwrap(),
-            Self::ModifyId => axum::http::StatusCode::from_u16(400u16).unwrap(),
-            Self::InvalidPatch { .. } => axum::http::StatusCode::from_u16(400u16).unwrap(),
+            Self::EmptyId => axum::http::StatusCode::from_u16(400_u16).unwrap(),
+            Self::ModifyId => axum::http::StatusCode::from_u16(400_u16).unwrap(),
+            Self::InvalidPatch { .. } => axum::http::StatusCode::from_u16(400_u16).unwrap(),
             Self::DatabaseError(fwd) => fwd.get_status(),
         }
     }
