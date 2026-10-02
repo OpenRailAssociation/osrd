@@ -671,7 +671,6 @@ const SpaceTimeChartWrapper = ({
         onDragStart: handleOccupancyZoneDragStart,
         onDrop: handleOccupancyZoneDrop,
       },
-      dispatch,
     }),
     [
       spaceTimeChartProps.onPan,
@@ -686,7 +685,6 @@ const SpaceTimeChartWrapper = ({
       isDraggingOccupancyZone,
       handleOccupancyZoneDragStart,
       handleOccupancyZoneDrop,
-      dispatch,
     ]
   );
 

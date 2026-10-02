@@ -8,9 +8,7 @@ import {
 
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { SelectionSource } from 'reducers/simulationResults/types';
-import type { AppDispatch } from 'store';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -81,7 +79,6 @@ type ConfigureHandlePanParams = {
     onDragStart: (zoneRef: OccupancyZoneReference) => void;
     onDrop: () => void;
   };
-  dispatch: AppDispatch;
 };
 
 export function configureHandlePan({
@@ -100,7 +97,6 @@ export function configureHandlePan({
   zoomMode,
   trainScheduleProjections,
   occupancyZoneDragAndDrop,
-  dispatch,
 }: ConfigureHandlePanParams): NonNullable<SpaceTimeChartProps['onPan']> {
   return async (payload) => {
     const { isPanning } = payload;
@@ -115,11 +111,6 @@ export function configureHandlePan({
     if (draggingState) {
       const { draggedTrain, initialDepartureTime, originalPacedExceptions, pacedGrid } =
         draggingState;
-
-      // In 'all' mode, selectedTrainId is a PacedTrainId — don't overwrite it with the occurrence id
-      if (draggedTrain.id !== selectedTrainId && panelSelectionMode !== 'all') {
-        dispatch(updateSelectedTrain({ id: draggedTrain.id, by: 'std' }));
-      }
 
       // Snap onto the cadence grid (single mode) so an occurrence can be re-aligned — and made
       // conforming — without pixel-perfect aiming.
