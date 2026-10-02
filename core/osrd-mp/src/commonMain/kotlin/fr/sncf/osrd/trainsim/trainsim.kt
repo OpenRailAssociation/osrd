@@ -204,7 +204,13 @@ data class TrainState(
         )
     }
 
-    fun accelerate(context: EnvelopeSimContext): TrainState {
+    /** Caches the accelerated state since it is bound only to the context. */
+    private val acceleratedState = Cache<EnvelopeSimContext, TrainState>()
+
+    fun accelerate(context: EnvelopeSimContext): TrainState =
+        acceleratedState.get(context) { computeAcceleratedState(context) }
+
+    private fun computeAcceleratedState(context: EnvelopeSimContext): TrainState {
         val action =
             if (pantograph.isUp() || context.rollingStock.isThermal) {
                 Action.ACCELERATE
