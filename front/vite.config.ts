@@ -33,6 +33,10 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    optimizeDeps: {
+      // Prebundle dayjs and its locales together so locales register on the same dayjs instance
+      include: ['dayjs', 'dayjs/locale/fr'],
+    },
     plugins: [
       react(),
       {

@@ -122,6 +122,14 @@
     "withoutWarranty": "Simulation de sillon sans garantie de disponibilité"
   },
   "requestsSentModal": {
+    "calendar": {
+      "lastDay": "[Hier à] HH:mm",
+      "lastWeek": "dddd [dernier à] HH:mm",
+      "nextDay": "[Demain à] HH:mm",
+      "nextWeek": "dddd [à] HH:mm",
+      "sameDay": "[Aujourd’hui à] HH:mm",
+      "sameElse": "DD/MM/YYYY"
+    },
     "destination": "Destination",
     "origin": "Origine",
     "requestNumber": "N° de demande",

@@ -1,6 +1,11 @@
 import { Dialog } from '@osrd-project/ui-core';
 import { X } from '@osrd-project/ui-icons';
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+import calendar from 'dayjs/plugin/calendar';
 import { useTranslation } from 'react-i18next';
+
+dayjs.extend(calendar);
 
 type StdcmRequestsSentModalProps = {
   onClose: () => void;
@@ -43,7 +48,8 @@ const requestsHistory: mockedRequestsHistory[] = [
 ];
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
-  const { t } = useTranslation(['stdcm', 'translation']);
+  const { t, i18n } = useTranslation(['stdcm', 'translation']);
+  dayjs.locale(i18n.language);
 
   const requestsSentRows = () =>
     requestsHistory.map((request, index) => (
@@ -53,7 +59,12 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
         <td className={`stdcm-requests-text-color-${request.status}`}>
           {t(`requestsSentModal.statuses.${request.status}`)}
         </td>
-        <td>{request.updated_at}</td>
+        <td>
+          {dayjs(request.updated_at).calendar(
+            undefined,
+            t('requestsSentModal.calendar', { returnObjects: true })
+          )}
+        </td>
         <td>{request.begin_op}</td>
         <td>{request.end_op}</td>
       </tr>
