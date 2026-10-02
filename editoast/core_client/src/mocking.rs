@@ -146,7 +146,7 @@ pub struct StubResponse {
     // It would be nice if AsCoreRequest could expose an interface to
     // properly handle response error cases (and Deserialize the error)
     code: StatusCode,
-    body: Option<Arc<String>>,
+    body: Option<Arc<str>>,
 }
 
 #[derive(Debug)]
@@ -159,7 +159,7 @@ pub struct StubRequestBuilder<'a> {
 #[derive(Debug)]
 pub struct StubResponseBuilder<'a> {
     code: StatusCode,
-    bodies: Vec<Option<Arc<String>>>,
+    bodies: Vec<Option<Arc<str>>>,
     request_builder: StubRequestBuilder<'a>,
 }
 
@@ -233,15 +233,15 @@ impl StubResponseBuilder<'_> {
     ///
     /// If none is set, `AsCoreRequest::fetch` will return an `Err(CoreError::NoResponseContent)`
     #[must_use = "call .finish() to register the stub request"]
-    pub fn body<B: AsRef<str>>(mut self, body: B) -> Self {
-        self.bodies.push(Some(Arc::new(body.as_ref().to_string())));
+    pub fn body<B: Into<Arc<str>>>(mut self, body: B) -> Self {
+        self.bodies.push(Some(body.into()));
         self
     }
 
     #[must_use = "call .finish() to register the stub request"]
     pub fn json<T: Serialize>(mut self, body: T) -> Self {
         let json_body = serde_json::to_string(&body).expect("Failed to serialize JSON");
-        self.bodies.push(Some(Arc::new(json_body)));
+        self.bodies.push(Some(Arc::from(json_body)));
         self
     }
 

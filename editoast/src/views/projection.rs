@@ -726,7 +726,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
-) -> Result<Vec<Arc<Vec<SpaceTimeCurve>>>> {
+) -> Result<Vec<Arc<[SpaceTimeCurve]>>> {
     let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
@@ -768,7 +768,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
             context.simulation,
             context.pathfinding,
         );
-        let curves = Arc::new(project_train_path_op(
+        let curves: Arc<[SpaceTimeCurve]> = Arc::from(project_train_path_op(
             &train_to_project,
             op_cache,
             operational_points_projection,
@@ -848,12 +848,12 @@ pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
     train_schedules: &[T],
     op_cache: &OperationalPointCache,
     operational_points_projection: &OperationalPointProjection,
-) -> Vec<Arc<Vec<SpaceTimeCurve>>> {
+) -> Vec<Arc<[SpaceTimeCurve]>> {
     train_schedules
         .iter()
         .map(|train_schedule| {
             let train_to_project = TrainToProjectOnOperationalPoint::new_from_input(train_schedule);
-            Arc::new(project_train_path_op(
+            Arc::from(project_train_path_op(
                 &train_to_project,
                 op_cache,
                 operational_points_projection,
