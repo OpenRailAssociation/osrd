@@ -6,8 +6,8 @@ use darling::FromDeriveInput;
 use darling::FromField;
 use darling::FromMeta;
 use darling::ast;
+use darling::util;
 use darling::util::PathList;
-use darling::util::{self};
 
 #[derive(FromDeriveInput, Debug)]
 #[darling(
