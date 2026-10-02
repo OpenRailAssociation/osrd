@@ -35,7 +35,7 @@ pub struct PathPropertiesResponse {
     pub operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path
     pub zones: PropertyZoneValues,
-    // Projection from topologic offset to geometric offset
+    // Projection from topological offset to geometric offset (or vice versa)
     pub geom_projection: GeometryProjection,
 }
 
@@ -173,12 +173,13 @@ pub struct GeometryProjection {
     /// Starts with 0 and is increasing.
     #[schema(min_items = 2)]
     topo_offsets: Vec<u64>,
-    /// Geometric offsets in millimeters.
+    /// Geometric offsets in millimeters, processed using haversine formula.
     /// Starts with 0 and is increasing.
     #[schema(min_items = 2)]
     geom_offsets: Vec<u64>,
 }
 
+#[cfg(test)]
 impl GeometryProjection {
     pub fn new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Self {
         assert_eq!(topo_offsets.len(), geom_offsets.len());

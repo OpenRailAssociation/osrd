@@ -6224,7 +6224,7 @@ components:
             format: int64
             minimum: 0
           description: |-
-            Geometric offsets in millimeters.
+            Geometric offsets in millimeters, processed using haversine formula.
             Starts with 0 and is increasing.
           minItems: 2
         topo_offsets:

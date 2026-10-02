@@ -19,6 +19,8 @@ class PathPropResponse(
     val geometry: RJSLineString,
     @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>,
     val zones: RangeValues<String>,
+    // Geometric to topological projection (or vice-versa) using haversine formula for geometric
+    // offsets
     @Json(name = "geom_projection") val geomProjection: GeometricProjection,
 )
 
@@ -67,8 +69,8 @@ data class GeometricProjection(
         // Each list must start by 0
         assert(topoOffsets[0].distance == Distance.ZERO && geomOffsets[0].distance == Distance.ZERO)
         // Each list must be increasing (not strictly)
-        topoOffsets.zipWithNext().all { it.first <= it.second }
-        geomOffsets.zipWithNext().all { it.first <= it.second }
+        assert(topoOffsets.zipWithNext().all { it.first <= it.second })
+        assert(geomOffsets.zipWithNext().all { it.first <= it.second })
     }
 }
 

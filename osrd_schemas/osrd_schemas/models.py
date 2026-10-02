@@ -250,7 +250,7 @@ class CorePropertyGeometryProjection(BaseModel):
 
     geom_offsets: Annotated[list[GeomOffset], Field(min_length=2)]
     """
-    Geometric offsets in millimeters.
+    Geometric offsets in millimeters, processed using haversine formula.
     Starts with 0 and is increasing.
     """
     topo_offsets: Annotated[list[TopoOffset], Field(min_length=2)]

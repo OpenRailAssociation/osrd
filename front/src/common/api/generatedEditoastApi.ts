@@ -3660,7 +3660,7 @@ export type InfraObjectWithGeometry = {
   railjson: object;
 };
 export type CorePropertyGeometryProjection = {
-  /** Geometric offsets in millimeters.
+  /** Geometric offsets in millimeters, processed using haversine formula.
     Starts with 0 and is increasing. */
   geom_offsets: number[];
   /** Topological offsets in millimeters.

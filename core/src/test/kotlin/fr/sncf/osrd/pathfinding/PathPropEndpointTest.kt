@@ -87,6 +87,8 @@ class PathPropEndpointTest : ApiTest() {
                 ),
             )
         assertEquals(parsed.operationalPoints, oPs)
+        val firstTrackRangeGeoLength = Distance(2464352)
+        val sumTrackRangeGeoLength = Distance(4630820)
         // Check topological distance to geometric distance projection
         // The repetition of the last two values is because of a null-length range
         // on the TA3 track section
@@ -100,9 +102,9 @@ class PathPropEndpointTest : ApiTest() {
                 ),
                 listOf(
                     Offset.zero(),
-                    Offset(Distance(2464352)),
-                    Offset(Distance(4630820)),
-                    Offset(Distance(4630820)),
+                    Offset(firstTrackRangeGeoLength),
+                    Offset(sumTrackRangeGeoLength),
+                    Offset(sumTrackRangeGeoLength),
                 ),
             )
         assertEquals(geomProjection, parsed.geomProjection)
