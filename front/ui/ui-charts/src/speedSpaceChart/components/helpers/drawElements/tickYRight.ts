@@ -46,8 +46,6 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
 
     ctx.fillStyle = `rgba(182, 179, 175, ${opacity})`;
     ctx.fillText(text, textOffsetX, textPositionYRight);
-
-    ctx.fillText('‰', width - Y_RIGHT_HORIZONTAL, Y_RIGHT_VERTICAL);
   }
   ctx.stroke();
 

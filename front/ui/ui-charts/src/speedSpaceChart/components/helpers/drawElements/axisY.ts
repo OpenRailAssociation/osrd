@@ -1,11 +1,10 @@
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, TICK_TITLE_MARGINS } from '../../const';
+import { MARGINS } from '../../const';
 import { clearCanvas, maxSpeedValue } from '../../utils';
 
 const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, CURVE_MARGIN_TOP, MARGIN_RIGHT } = MARGINS;
-const { Y_LEFT_VERTICAL, Y_LEFT_HORIZONTAL } = TICK_TITLE_MARGINS;
 const TICK_WIDTH = 6;
-const TEXT_POSITION_X = 36;
+const TEXT_POSITION_X = MARGIN_LEFT - TICK_WIDTH - 6;
 
 export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const maxSpeed = maxSpeedValue(store);
@@ -35,7 +34,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Draw ticks with text
   ctx.beginPath();
-  for (let i = 0; i <= nbTicks; i++) {
+  for (let i = 1; i <= nbTicks; i++) {
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT - TICK_WIDTH, positionY);
     ctx.lineTo(MARGIN_LEFT, positionY);
@@ -81,10 +80,4 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.textAlign = 'center';
   ctx.shadowOffsetY = 0;
   ctx.shadowBlur = 0;
-
-  // Draw km/h axis title
-  ctx.beginPath();
-  ctx.fillText('km/h', Y_LEFT_VERTICAL, Y_LEFT_HORIZONTAL);
-  ctx.closePath();
-  ctx.stroke();
 };
