@@ -236,6 +236,8 @@ pub(in crate::views) async fn post_railjson(
 
 #[cfg(test)]
 mod tests {
+    use std::iter::repeat_with;
+
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -315,16 +317,16 @@ mod tests {
             .await;
 
         let railjson = RailJson {
-            buffer_stops: (0..10).map(|_| Default::default()).collect(),
-            routes: (0..10).map(|_| Default::default()).collect(),
-            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
-            switches: (0..10).map(|_| Default::default()).collect(),
-            track_sections: (0..10).map(|_| Default::default()).collect(),
-            speed_sections: (0..10).map(|_| Default::default()).collect(),
-            electrifications: (0..10).map(|_| Default::default()).collect(),
-            signals: (0..10).map(|_| Default::default()).collect(),
-            detectors: (0..10).map(|_| Default::default()).collect(),
-            operational_points: (0..10).map(|_| Default::default()).collect(),
+            buffer_stops: repeat_with(Default::default).take(10).collect(),
+            routes: repeat_with(Default::default).take(10).collect(),
+            extended_switch_types: repeat_with(Default::default).take(10).collect(),
+            switches: repeat_with(Default::default).take(10).collect(),
+            track_sections: repeat_with(Default::default).take(10).collect(),
+            speed_sections: repeat_with(Default::default).take(10).collect(),
+            electrifications: repeat_with(Default::default).take(10).collect(),
+            signals: repeat_with(Default::default).take(10).collect(),
+            detectors: repeat_with(Default::default).take(10).collect(),
+            operational_points: repeat_with(Default::default).take(10).collect(),
             ..Default::default()
         };
 
