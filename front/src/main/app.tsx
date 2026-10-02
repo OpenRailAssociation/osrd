@@ -3,6 +3,7 @@ import { Suspense, useEffect, useCallback } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import '../i18n';
+import AdminDashboard from 'applications/adminDashboard/AdminDashboard';
 import HomeEditor from 'applications/editor/Home';
 import Project from 'applications/operationalStudies/views/Project';
 import ProjectList from 'applications/operationalStudies/views/ProjectList';
@@ -15,6 +16,7 @@ import StdcmDebugView from 'applications/stdcm/StdcmDebugView';
 import Stdcm from 'applications/stdcm/StdcmView';
 import Error403 from 'common/authorization/components/Error403';
 import InitialRedirect from 'common/authorization/components/InitialRedirect';
+import ProtectedRoute from 'common/authorization/components/ProtectedRoute';
 import ErrorBoundary from 'common/ErrorBoundary';
 import { Loader } from 'common/Loaders';
 import NotificationsState from 'common/Notifications';
@@ -114,6 +116,14 @@ const router = createBrowserRouter([
         element: <Scenario />,
       },
     ],
+  },
+  {
+    path: 'admin-dashboard/',
+    element: (
+      <ProtectedRoute allowedRoles={['Admin']}>
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '403/*',

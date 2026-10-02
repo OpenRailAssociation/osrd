@@ -667,6 +667,7 @@
     "zone": "Zone"
   },
   "nav-bar": {
+    "adminDashboard": "Panneau administrateur",
     "disconnect": "Déconnexion",
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",
