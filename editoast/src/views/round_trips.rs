@@ -79,7 +79,7 @@ fn schema_round_trips() -> RefOr<Schema> {
                         .format(Some(utoipa::openapi::SchemaFormat::KnownFormat(
                             utoipa::openapi::KnownFormat::Int64,
                         )))
-                        .minimum(Some(0f64)),
+                        .minimum(Some(0_f64)),
                 )
                 .min_items(Some(2))
                 .max_items(Some(2)),
