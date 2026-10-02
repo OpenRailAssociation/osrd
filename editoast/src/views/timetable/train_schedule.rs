@@ -524,7 +524,7 @@ pub(in crate::views) async fn simulation_summary(
                  correlation_key,
                  data,
              }| {
-                // We need to duplicate all simulations outputs since the output must be flattend
+                // We need to duplicate all simulations outputs since the output must be flattened
                 correlation_key
                     .into_iter()
                     .map(move |occurrence_id| (occurrence_id, data.clone()))

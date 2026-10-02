@@ -23,8 +23,8 @@ use futures::TryStreamExt as _;
 use futures::stream;
 use url::Url;
 
+use std::future;
 use std::future::Future;
-use std::future::{self};
 use std::sync::Arc;
 
 use crate::client::api::healthz::Health;
