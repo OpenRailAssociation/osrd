@@ -11,6 +11,9 @@ import { mmToKm } from 'utils/physics';
 
 import { getWaypointsLocalStorageKey } from './helpers/utils';
 
+const formatPositionInKM = (position: number) =>
+  mmToKm(position) % 1 === 0 ? mmToKm(position).toFixed(1) : mmToKm(position).toFixed(2);
+
 type WaypointsPanelProps = {
   waypointsPanelIsOpen: boolean;
   setWaypointsPanelIsOpen: (open: boolean) => void;
@@ -51,9 +54,7 @@ const Waypoint = ({
     {!hideOffsets && (
       <span data-testid="waypoint-point-offset" className="path-offset">
         {/* If an offset ends with .00, we want do display only one 0 */}
-        {mmToKm(waypoint.position) % 1 === 0
-          ? mmToKm(waypoint.position).toFixed(1)
-          : mmToKm(waypoint.position).toFixed(2)}
+        {formatPositionInKM(waypoint.position)}
       </span>
     )}
     <span className="name" data-testid="waypoint-name">
