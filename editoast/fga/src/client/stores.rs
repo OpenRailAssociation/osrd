@@ -80,7 +80,7 @@ mod tests {
     use crate::test_utilities::connection_settings;
 
     #[tokio::test]
-    async fn test_try_init_not_found() {
+    async fn try_init_not_found() {
         setup_tracing();
         let result = Client::try_with_store("nonexistent_store", connection_settings()).await;
 

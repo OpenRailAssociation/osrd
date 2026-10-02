@@ -65,7 +65,7 @@ mod tests {
     use super::*;
 
     #[tokio::test(flavor = "multi_thread")]
-    async fn test_list_light() {
+    async fn list_light() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let set_1 = ElectricalProfileSet::outer_space()
             .create(&mut db_pool.get_ok())

@@ -359,7 +359,7 @@ mod tests {
     use super::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_list() {
+    async fn list() {
         let app = test_app!().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();
@@ -448,7 +448,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_create() {
+    async fn create() {
         let app = test_app!().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();
@@ -491,7 +491,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_create_already_used() {
+    async fn create_already_used() {
         let app = test_app!().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();
@@ -571,7 +571,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_delete() {
+    async fn delete() {
         let app = test_app!().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();
@@ -619,7 +619,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_batch_not_found() {
+    async fn batch_not_found() {
         let app = test_app!().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();

@@ -93,7 +93,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_construction() {
+    fn construction() {
         crate::assert_macro_expansion!(
             model,
             syn::parse_quote! {

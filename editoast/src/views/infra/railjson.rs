@@ -307,7 +307,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    async fn test_post_railjson() {
+    async fn post_railjson() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let user = app
@@ -347,7 +347,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_post_railjson_requires_operational_studies() {
+    async fn post_railjson_requires_operational_studies() {
         let app = test_app!().build();
         let user = app.user("user", "User").create().await;
 

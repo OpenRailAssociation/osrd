@@ -143,37 +143,37 @@ mod tests {
     use crate::rolling_stock::EffortCurve;
 
     #[test]
-    fn test_de_effort_curve_valid() {
+    fn de_effort_curve_valid() {
         let curve = json!({ "speeds": [0, 1], "max_efforts": [0, 2] });
         assert!(from_value::<EffortCurve>(curve).is_ok());
     }
 
     #[test]
-    fn test_effort_curve_invalid_due_to_single_point() {
+    fn effort_curve_invalid_due_to_single_point() {
         let curve = json!({ "speeds": [0], "max_efforts": [0] });
         assert!(from_value::<EffortCurve>(curve).is_err());
     }
 
     #[test]
-    fn test_de_effort_curve_invalid_due_to_mismatched_lengths() {
+    fn de_effort_curve_invalid_due_to_mismatched_lengths() {
         let curve = json!({ "speeds": [0, 1], "max_efforts": [] });
         assert!(from_value::<EffortCurve>(curve).is_err());
     }
 
     #[test]
-    fn test_de_effort_curve_invalid_due_to_negative_max_efforts() {
+    fn de_effort_curve_invalid_due_to_negative_max_efforts() {
         let curve = json!({ "speeds": [0, 1, 2], "max_efforts": [5, 4, -3] });
         assert!(from_value::<EffortCurve>(curve).is_err());
     }
 
     #[test]
-    fn test_de_effort_curve_invalid_due_to_negative_speeds() {
+    fn de_effort_curve_invalid_due_to_negative_speeds() {
         let curve = json!({ "speeds": [-1, 0, 1], "max_efforts": [5, 4, 3] });
         assert!(from_value::<EffortCurve>(curve).is_err());
     }
 
     #[test]
-    fn test_de_effort_curve_invalid_due_to_unordered_speeds() {
+    fn de_effort_curve_invalid_due_to_unordered_speeds() {
         let curve = json!({ "speeds": [0, 2, 1], "max_efforts": [5, 4, 3] });
         assert!(from_value::<EffortCurve>(curve).is_err());
     }

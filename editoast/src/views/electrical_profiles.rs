@@ -243,7 +243,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_get_level_order_some() {
+    async fn get_level_order_some() {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
@@ -292,7 +292,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_post() {
+    async fn post() {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 

@@ -300,7 +300,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck() {
+    fn typecheck_works() {
         assert!(typecheck(json!(null)).is_ok());
         assert!(typecheck(json!(true)).is_ok());
         assert!(typecheck(json!(12)).is_ok());
@@ -312,7 +312,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_error() {
+    fn typecheck_error() {
         assert!(try_eval(json!(["+", 21, "21"])).is_err());
         assert!(try_eval(json!(["not", 0])).is_err());
         assert!(try_eval(json!(["=", 0, 0, 0])).is_err());
@@ -322,7 +322,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_undeclared_column() {
+    fn typecheck_undeclared_column() {
         assert!(typecheck(json!(["like", "test", ["; DROP DATABASE ohno"]])).is_err())
     }
 
@@ -388,7 +388,7 @@ mod tests {
     }
 
     #[test]
-    fn test_call_dispatch() {
+    fn call_dispatch() {
         assert_eq!(
             eval(json!(["=", 42, 42])),
             TypedAst::Sql(
@@ -415,7 +415,7 @@ mod tests {
     }
 
     #[test]
-    fn test_call_variadic() {
+    fn call_variadic() {
         assert_eq!(
             eval(json!(["and", true])),
             TypedAst::Sql(
@@ -443,7 +443,7 @@ mod tests {
     }
 
     #[test]
-    fn test_eval_real() {
+    fn eval_real() {
         let req = json!([
             "and",
             [
@@ -490,7 +490,7 @@ mod tests {
     }
 
     #[test]
-    fn test_null_keeping() {
+    fn null_keeping() {
         assert_eq!(
             eval(json!(["=", null, null])),
             TypedAst::Sql(
@@ -504,7 +504,7 @@ mod tests {
     }
 
     #[test]
-    fn test_arity_error() {
+    fn arity_error() {
         assert!(try_eval(json!(["+", 21])).is_err());
         assert!(try_eval(json!(["+", 21, 10, 11])).is_err());
         assert!(try_eval(json!(["not", true, false])).is_err());
@@ -513,7 +513,7 @@ mod tests {
     }
 
     #[test]
-    fn test_integer_comparisons() {
+    fn integer_comparisons() {
         let mut env = create_processing_context();
         env.columns_type
             .insert("start_time".into(), AstType::Integer.into());
@@ -555,7 +555,7 @@ mod tests {
     }
 
     #[test]
-    fn test_datetime_function_and_comparisons() {
+    fn datetime_function_and_comparisons() {
         let mut env = create_processing_context();
         env.columns_type
             .insert("last_modification".into(), AstType::DateTime.into());

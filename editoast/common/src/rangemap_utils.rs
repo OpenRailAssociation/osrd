@@ -123,7 +123,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_clip_range_map() {
+    fn clip_range_map_works() {
         let range_map = range_map!(0.0, 10.0 => "a", 10.0, 20.0 => "b", 20.0, 30.0 => "c");
 
         let clipped = clip_range_map(&range_map, 5.0.into()..20.0.into());
@@ -131,7 +131,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shift_range_map_start_to_stop() {
+    fn shift_range_map_start_to_stop() {
         let range_map = range_map!(5.0, 10.0 => "a", 10.0, 20.0 => "b", 20.0, 30.0 => "c");
 
         let traveled = shift_range_map(&range_map, 5.0, Direction::StartToEnd);
@@ -142,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    fn test_shift_range_map_stop_to_start() {
+    fn shift_range_map_stop_to_start() {
         let range_map = range_map!(0.0, 10.0 => "a", 10.0, 22.0 => "b", 22.0, 25.0 => "c");
 
         let traveled = shift_range_map(&range_map, 25.0, Direction::EndToStart);
@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_extend_range_map_overlap() {
+    fn extend_range_map_overlap() {
         let mut dest_range_map = range_map!(0.0, 10.0 => "a", 10.0, 20.0 => "b");
         let origin_range_map = range_map!(0.0, 10.0 => "c", 10.0, 20.0 => "d");
 
@@ -166,7 +166,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extend_range_map() {
+    fn extend_range_map_works() {
         let mut dest_range_map = range_map!(0.0, 10.0 => "a", 10.0, 20.0 => "b");
         let origin_range_map = range_map!(0.0, 10.0 => "b", 10.0, 20.0 => "c");
 
@@ -178,7 +178,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ranged_value_list_from_range_map() {
+    fn ranged_value_list_from_range_map() {
         let range_map = range_map!(0.0, 10.0 => "a", 10.0, 20.0 => "b", 30.0, 40.0 => "c");
 
         let expected = vec![

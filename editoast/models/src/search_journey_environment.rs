@@ -119,7 +119,7 @@ mod tests {
     use std::collections::HashSet;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_create_with_timetables() {
+    async fn create_with_timetables() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
 
@@ -146,7 +146,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_create_with_timetables_rejects_non_calendar() {
+    async fn create_with_timetables_rejects_non_calendar() {
         use crate::Infra;
         use crate::timetable::Timetable;
         use crate::timetable_type::TimetableType;
@@ -187,7 +187,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_retrieve_latest() {
+    async fn retrieve_latest() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
 
@@ -218,7 +218,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_retrieve_latest_empty() {
+    async fn retrieve_latest_empty() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let result = SearchJourneyEnvironmentWithTimetables::retrieve_latest(&mut db_pool.get_ok())
             .await

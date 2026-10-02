@@ -496,7 +496,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_cache_cross_indexing() {
+    async fn cache_cross_indexing() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut conn = db_pool.get_ok();
         let infra = create_empty_infra(&mut conn).await;

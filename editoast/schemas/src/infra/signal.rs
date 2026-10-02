@@ -88,7 +88,7 @@ mod tests {
     use super::SignalExtensions;
 
     #[test]
-    fn test_signal_extensions_deserialization() {
+    fn signal_extensions_deserialization() {
         from_str::<SignalExtensions>(r#"{}"#).unwrap();
     }
 }

@@ -134,7 +134,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_bounding_box_union() {
+    fn bounding_box_union() {
         let mut a = BoundingBox {
             min_lon: 0.,
             min_lat: 0.,
@@ -160,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bounding_box_min() {
+    fn bounding_box_min() {
         let mut min = BoundingBox::default();
         let a = BoundingBox {
             min_lon: 0.,
@@ -173,7 +173,7 @@ mod tests {
     }
 
     #[test]
-    fn test_validity() {
+    fn validity() {
         assert!(
             BoundingBox {
                 min_lon: 0.,

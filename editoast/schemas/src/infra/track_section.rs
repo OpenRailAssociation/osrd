@@ -68,7 +68,7 @@ mod tests {
 
     /// Test bounding box from linestring
     #[test]
-    fn test_line_string_bbox() {
+    fn line_string_bbox() {
         let line_string = geojson::Value::LineString(vec![
             vec![2.4, 49.3],
             vec![2.6, 49.1],
@@ -89,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn test_track_extensions_deserialization() {
+    fn track_extensions_deserialization() {
         from_str::<TrackSectionExtensions>(r#"{}"#).unwrap();
     }
 }

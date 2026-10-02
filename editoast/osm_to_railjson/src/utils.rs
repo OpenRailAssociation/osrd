@@ -234,7 +234,7 @@ mod tests {
     }
 
     #[test]
-    fn test_no_voltage() {
+    fn no_voltage() {
         let edge = Edge {
             id: "1".into(),
             ..Default::default()

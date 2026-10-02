@@ -84,7 +84,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_layer_cache_prefix() {
+    fn get_layer_cache_prefix_works() {
         assert_eq!(
             get_layer_cache_prefix("track_sections", 1, None),
             "editoast.default.layer.track_sections.infra_1"
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_view_cache_prefix() {
+    fn get_view_cache_prefix_works() {
         assert_eq!(
             get_view_cache_prefix("track_sections", 1, "geo", None),
             "editoast.default.layer.track_sections.infra_1.geo"
@@ -100,7 +100,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_cache_tile_key() {
+    fn get_cache_tile_key_works() {
         assert_eq!(
             get_cache_tile_key("editoast.default.layer.track_sections.infra_1", (1, 2, 3)),
             "editoast.default.layer.track_sections.infra_1.tile/3/1/2"

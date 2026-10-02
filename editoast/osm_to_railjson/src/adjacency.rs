@@ -113,7 +113,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_angle() {
+    fn angle_works() {
         /* b
         .  | 90 °
         .  o–––––a */
@@ -124,7 +124,7 @@ mod tests {
     }
 
     #[test]
-    fn test_flat() {
+    fn flat_works() {
         assert!(flat(190.0));
         assert!(flat(170.0));
         assert!(!flat(10.0));
@@ -133,7 +133,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reference_coord() {
+    fn reference_coord_works() {
         let edge = Edge {
             nodes: vec![NodeId(0), NodeId(1)],
             geometry: vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }],
@@ -144,7 +144,7 @@ mod tests {
     }
 
     #[test]
-    fn test_reference_coord_overlapping_nodes() {
+    fn reference_coord_overlapping_nodes() {
         let edge = Edge {
             nodes: vec![NodeId(0), NodeId(1), NodeId(2)],
             geometry: vec![

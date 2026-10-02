@@ -304,7 +304,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_construction() {
+    fn construction() {
         crate::assert_macro_expansion!(
             expand_editoast_error,
             syn::parse_quote! {

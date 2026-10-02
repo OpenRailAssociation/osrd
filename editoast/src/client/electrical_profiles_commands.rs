@@ -106,7 +106,7 @@ mod tests {
     use super::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_electrical_profile_set_delete() {
+    async fn electrical_profile_set_delete_works() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
         let db_pool = Arc::new(db_pool);
@@ -131,7 +131,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_electrical_profile_set_list_doesnt_fail() {
+    async fn electrical_profile_set_list_doesnt_fail() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let db_pool = Arc::new(db_pool);
         let _ = create_electrical_profile_set(&mut db_pool.get_ok()).await;

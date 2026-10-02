@@ -390,7 +390,7 @@ mod tests {
     use schemas::train_schedule::PathItem;
 
     #[test]
-    fn test_find_level_crossing_intersection_found() {
+    fn find_level_crossing_intersection_found() {
         let level_crossing = LevelCrossing {
             id: "LC1".into(),
             name: "Test LC".to_string(),
@@ -421,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_level_crossing_intersection_not_found() {
+    fn find_level_crossing_intersection_not_found() {
         let level_crossing = LevelCrossing {
             id: "LC1".into(),
             name: "Test LC".to_string(),
@@ -610,7 +610,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_level_crossing_occupancy_endpoint() {
+    async fn level_crossing_occupancy_endpoint() {
         let app = test_app!().core_client(mocked_core().into()).build();
         let (form, train, rolling_stock) =
             create_occupancy_fixtures(&app, "LC_TC1", "TC1", 750.0).await;
@@ -654,7 +654,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_level_crossing_occupancy_returns_empty() {
+    async fn level_crossing_occupancy_returns_empty() {
         // A level crossing at 750m on TX1, which is not on the train path
         let app = test_app!().core_client(mocked_core().into()).build();
         let (form, _, rolling_stock) =
@@ -684,7 +684,7 @@ mod tests {
     /// The trains whose rolling stock the user cannot read are filtered out of the response,
     /// instead of failing the whole request with a 403
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_level_crossing_occupancy_without_rolling_stock_permission() {
+    async fn level_crossing_occupancy_without_rolling_stock_permission() {
         // GIVEN
         let app = test_app!().core_client(mocked_core().into()).build();
         let (form, ..) = create_occupancy_fixtures(&app, "LC_TC1", "TC1", 750.0).await;
@@ -713,7 +713,7 @@ mod tests {
     /// Among several trains, only the occurrences of those whose rolling stock the user can read
     /// are reported, the others are filtered out
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_level_crossing_occupancy_filters_out_unreadable_trains_only() {
+    async fn level_crossing_occupancy_filters_out_unreadable_trains_only() {
         // GIVEN
         let app = test_app!().core_client(mocked_core().into()).build();
         let (mut form, readable_train, readable_rolling_stock) =

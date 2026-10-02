@@ -59,7 +59,7 @@ mod tests {
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_font() {
+    async fn font_works() {
         let app = test_app!().skip_authz().build();
         let response = app.get("/fonts/IBMPlexSans/0-255.pbf").await;
         response.assert_status_ok();
@@ -75,7 +75,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_font_not_found() {
+    async fn font_not_found() {
         let app = test_app!().skip_authz().build();
         app.get("/fonts/Comic%20Sans/0-255.pbf")
             .await

@@ -202,7 +202,7 @@ mod tests {
     struct DocError(#[from] crate::Error);
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_batch() {
+    async fn batch() {
         let pool = DbConnectionPoolV2::for_tests();
 
         let changesets = (0..5).map(|i| {
@@ -273,7 +273,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_remote() {
+    async fn remote() {
         #[derive(Debug, Clone, PartialEq)]
         enum Data {
             Prefixed(u8),
@@ -347,7 +347,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_list() {
+    async fn list() {
         // GIVEN
         let pool = DbConnectionPoolV2::for_tests();
 

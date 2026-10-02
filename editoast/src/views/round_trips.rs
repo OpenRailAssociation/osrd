@@ -435,7 +435,7 @@ mod tests {
     }
 
     #[test]
-    fn test_round_trips_duplicates() {
+    fn round_trips_duplicates() {
         let round_trips = RoundTrips {
             one_ways: (1..10_000).collect(),
             round_trips: (10_000..20_000).step_by(2).map(|i| (i, i + 1)).collect(),

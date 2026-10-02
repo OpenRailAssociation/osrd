@@ -167,7 +167,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_segmentation() {
+    fn segmentation() {
         let waypoints = vec![
             Waypoint::stop("a".into()),
             Waypoint::passing_by("b".into()),
@@ -191,7 +191,7 @@ mod tests {
     }
 
     #[test]
-    fn test_segment_endpoints() {
+    fn segment_endpoints() {
         let waypoints = vec![
             Waypoint::stop("a".into()),
             Waypoint::passing_by("b".into()),

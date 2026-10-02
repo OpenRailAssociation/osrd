@@ -377,7 +377,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_search_construction() {
+    fn search_construction() {
         crate::assert_macro_expansion!(
             expand_search,
             syn::parse_quote! {
@@ -400,7 +400,7 @@ mod tests {
     }
 
     #[test]
-    fn test_store_construction() {
+    fn store_construction() {
         crate::assert_macro_expansion!(
             expand_store,
             syn::parse_quote! {

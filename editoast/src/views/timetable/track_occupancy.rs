@@ -393,7 +393,7 @@ pub mod tests {
     #[case("op_1", 0, 0, false, false, true)] // op_1 at index 0 works without pathfinding
     #[case("op_2", 1000, 300000, false, true, false)] // No simulation fails (no arrival_time)
     #[case("op_3", 5000, 200000, false, false, true)] // op_3 works without simulation/pathfinding (explicit arrival + local_track_name)
-    fn test_find_track_occupancy_with_matching_path_item(
+    fn find_track_occupancy_with_matching_path_item(
         #[case] op_id: &str,
         #[case] expected_time: u64,
         #[case] expected_stop_duration_ms: i64,
@@ -584,10 +584,7 @@ pub mod tests {
     #[case("op_2", Some(1))] // Should find second OP
     #[case("op_12", None)] // Should not find non-existent OP
     #[case("T1", None)] // Should skip non-OP items
-    fn test_find_matching_path_item_by_id(
-        #[case] op_id: &str,
-        #[case] expected_index: Option<usize>,
-    ) {
+    fn find_matching_path_item_by_id(#[case] op_id: &str, #[case] expected_index: Option<usize>) {
         let path = vec![
             PathItem {
                 id: "p1".into(),
@@ -637,7 +634,7 @@ pub mod tests {
     }
 
     #[test]
-    fn test_schedule_arrival_used_when_simulation_does_not_honor_times() {
+    fn schedule_arrival_used_when_simulation_does_not_honor_times() {
         let start_time = ms_since_epoch("2026-02-01T00:00:00Z");
 
         let train_schedule = schemas::TrainOccurrence {
@@ -707,7 +704,7 @@ pub mod tests {
     }
 
     #[test]
-    fn test_get_occupancy_location_between_path_items() {
+    fn get_occupancy_location_between_path_items() {
         // Create test data
         let op_id = "op_1";
         let track_section: Identifier = Identifier::from("T0");

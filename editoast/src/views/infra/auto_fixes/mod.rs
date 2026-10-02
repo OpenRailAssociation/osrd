@@ -398,7 +398,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_no_fix() {
+    async fn no_fix() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -433,7 +433,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_fix_invalid_ref_punctual_objects() {
+    async fn fix_invalid_ref_punctual_objects() {
         // GIVEN
         let app = test_app!().build();
         let db_pool = app.db_pool();
@@ -515,7 +515,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn test_fix_invalid_ref_route_entry_exit() {
+    async fn fix_invalid_ref_route_entry_exit() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -553,7 +553,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_ref_signal_fix() {
+    fn invalid_ref_signal_fix() {
         let signal = SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]);
         let error = InfraError::new_invalid_reference(
             &signal,
@@ -576,7 +576,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_wrong_invalid_ref_signal_fix() {
+    async fn wrong_invalid_ref_signal_fix() {
         let signal = SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]);
         let error = InfraError::new_invalid_reference(
             &signal,
@@ -597,7 +597,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_ref_route_fix_entry() {
+    fn invalid_ref_route_fix_entry() {
         let missing_bs_id = "missing_bs_id";
         let exit_bs_id = "exit_bs_id";
         let route = Route {
@@ -635,7 +635,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_ref_route_missing() {
+    fn invalid_ref_route_missing() {
         let missing_bs_id = "missing_bs_id";
         let exit_bs_id = "exit_bs_id";
         let route = Route {
@@ -671,7 +671,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_ref_route_fix_exit() {
+    fn invalid_ref_route_fix_exit() {
         let missing_detector_id = "missing_detector_id";
         let entry_detector_id = "entry_detector_id";
         let route = Route {
@@ -709,7 +709,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_ref_route_nofix() {
+    fn invalid_ref_route_nofix() {
         let entry_detector_id = "entry_detector_id";
         let exit_detector_id = "exit_detector_id";
         let missing_detector_id = "missing_detector_id";

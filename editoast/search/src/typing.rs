@@ -322,7 +322,7 @@ mod tests {
     use crate::typing::TypeSpec;
 
     #[test]
-    fn test_rhs_function_signature() {
+    fn rhs_function_signature() {
         assert_eq!(
             AstType::Integer >> AstType::String,
             TypeSpec::Function {
@@ -348,12 +348,12 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_panic_arg_after_variadic() {
+    fn panic_arg_after_variadic() {
         let _ = TypeSpec::varg(AstType::Integer) >> AstType::Null >> AstType::String;
     }
 
     #[test]
-    fn test_typecheck_simple() {
+    fn typecheck_simple() {
         assert!(AstType::Null.is_supertype(&AstType::Null));
         assert!(!AstType::Null.is_supertype(&AstType::Integer));
         assert!(!AstType::Integer.is_supertype(&AstType::Null));
@@ -368,7 +368,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_union() {
+    fn typecheck_union() {
         assert!(TypeSpec::or(AstType::Integer, AstType::Float).is_supertype(&AstType::Integer));
         assert!(TypeSpec::or(AstType::Integer, AstType::Float).is_supertype(&AstType::Float));
         assert!(!TypeSpec::or(AstType::Integer, AstType::Float).is_supertype(&AstType::String));
@@ -392,7 +392,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_any() {
+    fn typecheck_any() {
         assert!(TypeSpec::Any.is_supertype_spec(&AstType::Null.into()));
         assert!(TypeSpec::Any.is_supertype_spec(&AstType::Boolean.into()));
         assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::or(AstType::Integer, AstType::Float)));
@@ -409,7 +409,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_function_simple() {
+    fn typecheck_function_simple() {
         // Correct types
         assert!((AstType::Integer >> AstType::Integer >> AstType::String)
             .typecheck_args(&[AstType::Integer.into(), AstType::Integer.into()])
@@ -442,7 +442,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_function_union() {
+    fn typecheck_function_union() {
         assert!((TypeSpec::or(AstType::Integer, AstType::Boolean)
             >> TypeSpec::or(AstType::String, AstType::Null)
             >> AstType::Null)
@@ -480,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_function_variadic() {
+    fn typecheck_function_variadic() {
         assert!((TypeSpec::varg(AstType::Integer) >> AstType::Null)
             .typecheck_args(&[])
             .is_ok());
@@ -527,7 +527,7 @@ mod tests {
     }
 
     #[test]
-    fn test_typecheck_sequence() {
+    fn typecheck_sequence() {
         assert!(!TypeSpec::seq(AstType::String).is_supertype(&AstType::String));
         assert!(TypeSpec::seq(AstType::String).is_supertype_spec(&TypeSpec::seq(AstType::String)));
         assert!(TypeSpec::seq(TypeSpec::or(AstType::String, AstType::Null))
@@ -550,7 +550,7 @@ mod tests {
     }
 
     #[test]
-    fn test_hash_typespec() {
+    fn hash_typespec() {
         assert!(hash_eq(
             &TypeSpec::or(AstType::String, AstType::Integer),
             &TypeSpec::or(AstType::Integer, AstType::String)
@@ -582,7 +582,7 @@ mod tests {
     }
 
     #[test]
-    fn test_union_alternative_irrelevant_order() {
+    fn union_alternative_irrelevant_order() {
         assert_eq!(
             TypeSpec::or(AstType::String, AstType::Integer),
             TypeSpec::or(AstType::Integer, AstType::String)
