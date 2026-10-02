@@ -324,11 +324,10 @@ impl EditoastError for core_client::Error {
         }
     }
     fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
-        match self {
-            core_client::Error::CoreResponseFormatError { msg } => {
-                [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
-            }
-            _ => Default::default(),
+        if let core_client::Error::CoreResponseFormatError { msg } = self {
+            [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
+        } else {
+            Default::default()
         }
     }
 }

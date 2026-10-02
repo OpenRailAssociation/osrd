@@ -21,8 +21,8 @@ pub fn fix_track_section(
     errors: impl Iterator<Item = InfraError>,
 ) -> HashMap<ObjectRef, Fix> {
     errors
-        .filter_map(|infra_error| match infra_error.get_sub_type() {
-            InfraErrorType::MissingBufferStop { endpoint } => {
+        .filter_map(|infra_error| {
+            if let InfraErrorType::MissingBufferStop { endpoint } = infra_error.get_sub_type() {
                 let track_id = infra_error.get_id();
                 let position = match endpoint {
                     Endpoint::Begin => 0.0,
@@ -37,8 +37,7 @@ pub fn fix_track_section(
                     }),
                 };
                 Some(new_ref_fix_create_pair(buffer_stop))
-            }
-            _ => {
+            } else {
                 debug!("error not (yet) fixable for '{}'", infra_error.get_type());
                 None
             }

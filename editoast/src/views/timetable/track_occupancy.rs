@@ -78,15 +78,16 @@ fn extract_occupancy_context<'a>(
     pathfinding: &'a PathfindingResult,
     train_schedule: &'a schemas::TrainOccurrence,
 ) -> OccupancyContext<'a> {
-    let report_train = match simulation {
-        simulation::Response::Success(simulation) => simulation::path_item_respect_times(
+    let report_train = if let simulation::Response::Success(simulation) = simulation {
+        simulation::path_item_respect_times(
             &simulation.final_output.report_train.path_item_times,
             train_schedule,
         )
         .into_iter()
         .all(|path_item| path_item)
-        .then_some(&simulation.final_output.report_train),
-        _ => None,
+        .then_some(&simulation.final_output.report_train)
+    } else {
+        None
     };
 
     let pathfinding_success = match pathfinding {

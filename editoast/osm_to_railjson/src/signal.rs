@@ -20,9 +20,12 @@ pub(crate) fn signals(
     pbf.iter()
         .flatten()
         .filter(main_signal)
-        .flat_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Node(node) => Some(node),
-            _ => None,
+        .flat_map(|obj| {
+            if let osm4routing::osmpbfreader::OsmObj::Node(node) = obj {
+                Some(node)
+            } else {
+                None
+            }
         })
         .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
         .flat_map(|node| {

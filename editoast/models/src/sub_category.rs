@@ -61,15 +61,19 @@ pub enum Error {
 
 impl From<crate::Error> for Error {
     fn from(e: crate::Error) -> Self {
-        match e {
-            crate::Error::UniqueViolation {
-                constraint,
-                column,
-                value,
-            } if constraint == "sub_categories_code_key" && column == "code" => {
-                Self::CodeAlreadyUsed { code: value }
+        if let crate::Error::UniqueViolation {
+            constraint,
+            column,
+            value,
+        } = &e
+            && constraint == "sub_categories_code_key"
+            && column == "code"
+        {
+            Self::CodeAlreadyUsed {
+                code: value.clone(),
             }
-            e => Self::Database(e),
+        } else {
+            Self::Database(e)
         }
     }
 }

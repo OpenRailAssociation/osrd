@@ -41,9 +41,10 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
     let name = &input.ident;
     let base_id = options.base_id;
 
-    let enum_data = match &input.data {
-        syn::Data::Enum(data) => data,
-        _ => return Err(Error::custom("EditoastError: Only enums are supported.")),
+    let enum_data = if let syn::Data::Enum(data) = &input.data {
+        data
+    } else {
+        return Err(Error::custom("EditoastError: Only enums are supported."));
     };
     let variants = parse_variants(enum_data)?;
     let default_status = options.default_status.unwrap_or(DEFAULT_STATUS_CODE);
@@ -103,12 +104,13 @@ fn parse_error_definition(
     let id = format!("editoast:{base_id}:{name}");
 
     // Retrieve error status (or get the default one)
-    let status = match variant.params.status.as_ref() {
-        Some(syn::Expr::Lit(exprlit)) => match &exprlit.lit {
-            Lit::Int(lit) => lit.base10_parse::<u16>().unwrap(),
-            _ => default_status,
-        },
-        _ => default_status,
+    let status = if let Some(syn::Expr::Lit(syn::ExprLit {
+        lit: Lit::Int(lit), ..
+    })) = variant.params.status.as_ref()
+    {
+        lit.base10_parse::<u16>().unwrap()
+    } else {
+        default_status
     };
 
     // Retrieve the list of parameters that are given in the error
@@ -285,17 +287,17 @@ fn expand_contexts(variants: &[ParsedVariant]) -> TokenStream {
 
 // https://stackoverflow.com/questions/55271857/how-can-i-get-the-t-from-an-optiont-when-using-syn
 fn extract_type(ty: &syn::Type) -> Option<String> {
-    match *ty {
-        syn::Type::Path(ref typepath) => {
-            if typepath.qself.is_none() {
+    if let syn::Type::Path(typepath) = ty {
+        match typepath.qself {
+            Some(_) => None,
+            None => {
                 let path = &typepath.path;
                 let segment = path.segments.first();
                 segment.map(|x| x.ident.to_string())
-            } else {
-                None
             }
         }
-        _ => Some(ty.to_token_stream().to_string()),
+    } else {
+        Some(ty.to_token_stream().to_string())
     }
 }
 

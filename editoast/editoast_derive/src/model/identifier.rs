@@ -69,15 +69,12 @@ impl darling::FromMeta for RawIdentifier {
             syn::Expr::Tuple(tuple) => {
                 let mut idents = Vec::new();
                 for expr in tuple.elems.iter() {
-                    match expr {
-                        syn::Expr::Path(path) => {
-                            idents.push(extract_ident_of_path(&path.path)?);
-                        }
-                        _ => {
-                            return Err(darling::Error::custom(
-                                "Model: invalid compound 'identifier' expression: must be a tuple of idents",
-                            ));
-                        }
+                    if let syn::Expr::Path(path) = expr {
+                        idents.push(extract_ident_of_path(&path.path)?);
+                    } else {
+                        return Err(darling::Error::custom(
+                            "Model: invalid compound 'identifier' expression: must be a tuple of idents",
+                        ));
                     }
                 }
                 Ok(RawIdentifier::Compound(idents))
