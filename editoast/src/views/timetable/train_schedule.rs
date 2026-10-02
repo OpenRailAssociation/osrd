@@ -3581,7 +3581,6 @@ mod tests {
             timetable,
             train_schedule,
             exception,
-            ..
         } = simulation_tests_initial_setup().await;
 
         let exception = swap_exception_rolling_stock(&app, &train_schedule, exception).await;

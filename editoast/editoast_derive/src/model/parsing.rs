@@ -321,7 +321,7 @@ impl Errors {
                 delete: path.clone(),
                 list: path,
             }),
-            ErrorArgs::Rw(RwErrorArgs { read, write, .. }) => {
+            ErrorArgs::Rw(RwErrorArgs { read, write }) => {
                 let Errors {
                     retrieve, create, ..
                 } = Errors::default();
