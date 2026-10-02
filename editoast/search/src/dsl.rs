@@ -34,12 +34,12 @@ use crate::sqlquery::SqlQuery;
 ///         let left = match &args[0] {
 ///             TypedAst::Null => 1,
 ///             TypedAst::Integer(n) => *n,
-///             _ => unreachable!("cannot happen because of prior typecheking"),
+///             _ => unreachable!("cannot happen because of prior typechecking"),
 ///         };
 ///         let right = match &args[1] {
 ///             TypedAst::Null => 1,
 ///             TypedAst::Integer(n) => *n,
-///             _ => unreachable!("cannot happen because of prior typecheking"),
+///             _ => unreachable!("cannot happen because of prior typechecking"),
 ///         };
 ///         Ok(TypedAst::Integer(left * right))
 ///     }),
