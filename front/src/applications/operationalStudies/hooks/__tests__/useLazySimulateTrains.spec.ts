@@ -264,7 +264,10 @@ describe('useLazySimulateTrains', () => {
         ]);
       });
 
-      await vi.waitUntil(() => result.current.simulatedTrainsById.get(mockTrain.id)?.paced);
+      
+      await vi.waitUntil(() => result.current.simulatedTrainsById.size > 0);
+      
+      expect(result.current.simulatedTrainsById.get(mockTrain.id)?.paced).toBeTruthy();
 
       act(() => {
         result.current.updateSimulatedTrainExceptions(mockTrain.id, [
