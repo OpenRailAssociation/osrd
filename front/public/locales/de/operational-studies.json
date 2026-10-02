@@ -575,7 +575,6 @@
       "signalsStates": "Signalzustände",
       "trackProjection": "Auf Gleis"
     },
-    "toggleManchetteMenu": "Manchette-Menü umschalten",
     "toggleWarpedMap": "Verzerrte Karte umschalten",
     "warpedMapUnavailable": "Die verzerrte Karte ist für nicht berechnete Züge nicht verfügbar",
     "waypointMenu": {
