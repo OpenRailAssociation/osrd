@@ -1,6 +1,10 @@
 import type { TFunction } from 'i18next';
 
-import type { CorePathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type {
+  CorePathfindingResultSuccess,
+  TrackSection,
+  TrainSchedule,
+} from 'common/api/osrdEditoastApi';
 import type { PathWaypoint, ProjectionWaypoint } from 'modules/simulationResult/types';
 
 /**
@@ -18,14 +22,16 @@ export function upsertTrackOffsetPathItemsInWaypoints(
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
   operationalPoints: PathWaypoint[],
-  t: TFunction<'operational-studies'>
+  t: TFunction<'operational-studies'>,
+  trackSectionsById?: Record<string, TrackSection>
 ): PathWaypoint[];
 export function upsertTrackOffsetPathItemsInWaypoints(
   type: 'projection' | 'path',
   path: TrainSchedule['path'],
   pathItemsPositions: CorePathfindingResultSuccess['path_item_positions'],
   operationalPoints: (ProjectionWaypoint | PathWaypoint)[],
-  t: TFunction<'operational-studies'>
+  t: TFunction<'operational-studies'>,
+  trackSectionsById: Record<string, TrackSection> = {}
 ): (ProjectionWaypoint | PathWaypoint)[] {
   return path.reduce(
     (operationalPointsWithAllWaypoints, step, stepIndex) => {
@@ -58,12 +64,18 @@ export function upsertTrackOffsetPathItemsInWaypoints(
         weight: null,
         location,
       };
+
       const formattedStep =
         type === 'projection'
           ? baseFormattedStep
           : {
               ...baseFormattedStep,
-              part: { track: location.track, position: location.offset, local_track_name: 'V1' },
+              part: {
+                track: location.track,
+                position: location.offset,
+                local_track_name:
+                  trackSectionsById[location.track]?.extensions?.sncf?.track_name ?? '',
+              },
             };
 
       // If we can't find any op position greater than the current step position, we add it at the end

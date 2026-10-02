@@ -15,6 +15,7 @@ import type {
   PathItem,
   TrainScheduleResponse,
   CoreOperationalPointOnPath,
+  TrackSection,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import type { PathWaypoint } from 'modules/simulationResult/types';
@@ -282,7 +283,8 @@ export const preparePathPropertiesData = (
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
   { path_item_positions, length }: CorePathfindingResultSuccess,
   trainSchedulePath: TrainSchedule['path'],
-  t: TFunction<'operational-studies'>
+  t: TFunction<'operational-studies'>,
+  trackSectionsById?: Record<string, TrackSection>
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes, length, 'gradient');
   const formattedCurves = transformBoundariesDataToPositionDataArray(curves, length, 'radius');
@@ -311,7 +313,8 @@ export const preparePathPropertiesData = (
     trainSchedulePath,
     path_item_positions,
     orderedOperationalPoints,
-    t
+    t,
+    trackSectionsById
   );
   // Apply max weight on path steps so they are prioritized in the SDD
   const waypointsWithPathStepWeight = applyPathStepWeight(waypointsWithTrackOffsetPathSteps);
