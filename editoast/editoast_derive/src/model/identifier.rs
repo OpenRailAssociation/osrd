@@ -64,6 +64,10 @@ impl Identifier {
 
 impl darling::FromMeta for RawIdentifier {
     fn from_expr(expr: &syn::Expr) -> darling::Result<Self> {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we are interested by only 2 patterns"
+        )]
         match expr {
             syn::Expr::Path(path) => Ok(RawIdentifier::Field(extract_ident_of_path(&path.path)?)),
             syn::Expr::Tuple(tuple) => {

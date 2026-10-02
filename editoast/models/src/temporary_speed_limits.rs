@@ -24,6 +24,10 @@ pub enum TslGroupError {
 }
 
 impl From<crate::Error> for TslGroupError {
+    #[expect(
+        clippy::wildcard_enum_match_arm,
+        reason = "We can’t use an `if let` since we need to bind all the other patterns"
+    )]
     fn from(e: crate::Error) -> Self {
         match e {
             crate::Error::UniqueViolation {

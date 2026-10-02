@@ -17,24 +17,30 @@ pub fn fix_route(
     errors: impl Iterator<Item = InfraError>,
 ) -> HashMap<ObjectRef, Fix> {
     errors
-        .filter_map(|infra_error| match infra_error.get_sub_type() {
-            InfraErrorType::InvalidReference { reference }
-                if matches!(
-                    reference.obj_type,
-                    ObjectType::BufferStop | ObjectType::Detector
-                ) =>
-            {
-                if reference.obj_id.eq(route.entry_point.get_id())
-                    || reference.obj_id.eq(route.exit_point.get_id())
+        .filter_map(|infra_error| {
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "We can’t use an `if let` since we are interested by only a few patterns"
+            )]
+            match infra_error.get_sub_type() {
+                InfraErrorType::InvalidReference { reference }
+                    if matches!(
+                        reference.obj_type,
+                        ObjectType::BufferStop | ObjectType::Detector
+                    ) =>
                 {
-                    Some(new_ref_fix_delete_pair(route))
-                } else {
+                    if reference.obj_id.eq(route.entry_point.get_id())
+                        || reference.obj_id.eq(route.exit_point.get_id())
+                    {
+                        Some(new_ref_fix_delete_pair(route))
+                    } else {
+                        None
+                    }
+                }
+                _ => {
+                    debug!("error not (yet) fixable for '{}'", infra_error.get_type());
                     None
                 }
-            }
-            _ => {
-                debug!("error not (yet) fixable for '{}'", infra_error.get_type());
-                None
             }
         })
         .collect()

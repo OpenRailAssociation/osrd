@@ -296,6 +296,10 @@ impl<T: Type> Type for Ersatz<T> {
     }
 
     fn typecheck(value: &TypedAst) -> Result<(), ProcessingError> {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we need to bind all the other patterns"
+        )]
         match value {
             TypedAst::Column { spec, .. } | TypedAst::Sql(_, spec) => {
                 if Self::type_spec().is_supertype_spec(spec) {

@@ -419,6 +419,10 @@ fn check_item_titles<'a>(
 
 // Returns the title of an inline schema, or None if it has no title.
 fn get_title(schema: &Schema) -> Option<&str> {
+    #[expect(
+        clippy::wildcard_enum_match_arm,
+        reason = "We can’t use an `if let` since we are interested by only a few patterns"
+    )]
     match schema {
         Schema::Object(obj) => obj.title.as_deref(),
         Schema::AllOf(AllOf { title, .. }) | Schema::OneOf(OneOf { title, .. }) => title.as_deref(),

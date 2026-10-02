@@ -109,6 +109,10 @@ pub enum Error {
 
 impl From<crate::Error> for Error {
     fn from(e: crate::Error) -> Self {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we are interested by a few patterns and bind all of them"
+        )]
         match e {
             crate::Error::UniqueViolation {
                 constraint,

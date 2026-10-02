@@ -175,6 +175,10 @@ impl Infra {
 
                 if let Some(layer_table) = get_geometry_layer_table(&object) {
                     let layer_table = layer_table.to_string();
+                    #[expect(
+                        clippy::wildcard_enum_match_arm,
+                        reason = "We can’t use an `if let` since we are interested by only 2 patterns"
+                    )]
                     let sql = match object {
                         ObjectType::Signal => {
                             format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id, angle_geo, signaling_system, sprite)

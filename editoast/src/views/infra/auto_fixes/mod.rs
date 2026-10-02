@@ -148,6 +148,10 @@ fn fix_infra(
 ) -> Result<Vec<Operation>> {
     let mut fixes: HashMap<ObjectRef, Fix> = HashMap::new();
     for (object_ref, errors) in &infra_errors.into_iter().chunk_by(OSRDObject::get_ref) {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we are interested by a few patterns and bind all of them"
+        )]
         let fixes_for_object_errors = match object_ref.obj_type {
             ObjectType::TrackSection => {
                 let track_section = infra_cache

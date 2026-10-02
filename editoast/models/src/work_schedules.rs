@@ -28,6 +28,10 @@ pub enum WsGroupError {
 
 impl From<crate::Error> for WsGroupError {
     fn from(e: crate::Error) -> Self {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we need to bind all the other patterns"
+        )]
         match e {
             crate::Error::UniqueViolation {
                 constraint,

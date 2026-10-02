@@ -58,6 +58,10 @@ impl GeoJsonAndData {
         let geo_json = serde_json::from_str::<Geometry>(&self.geo_json).unwrap();
         let geom_type = geometry_into_mvt_geom_type(&geo_json);
         let mut encoder = GeomEncoder::new(geom_type);
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we are interested by only a few patterns"
+        )]
         match geo_json.value {
             GeoJsonValue::Point(point) => {
                 encoder.add_point(point[0], point[1]).unwrap();
@@ -87,6 +91,10 @@ impl GeoJsonAndData {
 }
 
 fn geometry_into_mvt_geom_type(geometry: &Geometry) -> GeomType {
+    #[expect(
+        clippy::wildcard_enum_match_arm,
+        reason = "We can’t use an `if let` since we are interested by only a few patterns"
+    )]
     match geometry.value {
         GeoJsonValue::Point { .. } => GeomType::Point,
         GeoJsonValue::MultiPoint { .. } => GeomType::Point,

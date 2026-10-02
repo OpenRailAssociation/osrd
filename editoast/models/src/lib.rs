@@ -141,6 +141,10 @@ fn try_parse_foreign_key_violation(
 
 impl From<diesel::result::Error> for Error {
     fn from(e: diesel::result::Error) -> Self {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we are interested by only a few patterns"
+        )]
         match &e {
             diesel::result::Error::DatabaseError(DatabaseErrorKind::UniqueViolation, inner) => {
                 try_parse_unique_violation(inner.as_ref()).unwrap_or_else(move || {

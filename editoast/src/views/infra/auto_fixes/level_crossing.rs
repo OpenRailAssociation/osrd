@@ -61,31 +61,37 @@ pub fn fix_level_crossing(
 ) -> HashMap<ObjectRef, Fix> {
     let mut new_lc = level_crossing.clone();
     let operation = errors
-        .filter_map(|infra_error| match infra_error.get_sub_type() {
-            InfraErrorType::EmptyObject => Some(OrderedOperation::Delete),
-            InfraErrorType::InvalidReference { reference }
-                if reference.obj_type == ObjectType::TrackSection =>
-            {
-                new_lc
-                    .parts
-                    .retain(|part| part.track.as_str() != reference.obj_id);
-                invalid_part_to_ordered_operation(level_crossing, reference)
-            }
-            InfraErrorType::OutOfRange {
-                reference,
-                expected_range,
-                ..
-            } if reference.obj_type == ObjectType::TrackSection => {
-                out_of_range_part_to_ordered_operation(
-                    level_crossing,
-                    &mut new_lc,
+        .filter_map(|infra_error| {
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "We can’t use an `if let` since we are interested by only a few patterns"
+            )]
+            match infra_error.get_sub_type() {
+                InfraErrorType::EmptyObject => Some(OrderedOperation::Delete),
+                InfraErrorType::InvalidReference { reference }
+                    if reference.obj_type == ObjectType::TrackSection =>
+                {
+                    new_lc
+                        .parts
+                        .retain(|part| part.track.as_str() != reference.obj_id);
+                    invalid_part_to_ordered_operation(level_crossing, reference)
+                }
+                InfraErrorType::OutOfRange {
                     reference,
                     expected_range,
-                )
-            }
-            _ => {
-                debug!("error not (yet) fixable for '{}'", infra_error.get_type());
-                None
+                    ..
+                } if reference.obj_type == ObjectType::TrackSection => {
+                    out_of_range_part_to_ordered_operation(
+                        level_crossing,
+                        &mut new_lc,
+                        reference,
+                        expected_range,
+                    )
+                }
+                _ => {
+                    debug!("error not (yet) fixable for '{}'", infra_error.get_type());
+                    None
+                }
             }
         })
         .unique()
