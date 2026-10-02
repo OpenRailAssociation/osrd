@@ -1,9 +1,8 @@
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
+import { MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
 import { clearCanvas, slopesValues } from '../../utils';
 
 const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
-const { Y_RIGHT_VERTICAL, Y_RIGHT_HORIZONTAL } = TICK_TITLE_MARGINS;
 
 export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams) => {
   clearCanvas(ctx, width, height);

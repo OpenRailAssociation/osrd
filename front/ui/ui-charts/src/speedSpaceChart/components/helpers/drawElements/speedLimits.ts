@@ -8,7 +8,7 @@ import {
   positionToPosX,
 } from '../../utils';
 
-const { CURVE_MARGIN_TOP, MARGIN_RIGHT, MARGIN_LEFT, MARGIN_BOTTOM, MARGIN_TOP } = MARGINS;
+const { CURVE_MARGIN_TOP, MARGIN_LEFT, MARGIN_BOTTOM, MARGIN_TOP } = MARGINS;
 const GRADIENT_HEIGHT = 16;
 const TRAIN_LENGTH_MARKER_HEIGHT = 8;
 
@@ -96,5 +96,4 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
 
   // Prevent overlapping with y axis
   ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, MARGIN_RIGHT, height);
 };

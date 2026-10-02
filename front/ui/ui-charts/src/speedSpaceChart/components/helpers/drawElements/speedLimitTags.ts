@@ -48,7 +48,7 @@ export const drawSpeedLimitTags = ({
     layersDisplay: { electricalProfiles, powerRestrictions },
   } = store;
 
-  const { MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT } = MARGINS;
+  const { MARGIN_BOTTOM, MARGIN_LEFT } = MARGINS;
 
   clearCanvas(ctx, width, LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT);
 
@@ -156,9 +156,8 @@ export const drawSpeedLimitTags = ({
   drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, marginTop);
   ctx.restore();
 
-  // prevent overlapping with margins left and right
+  // prevent overlapping with margins
   ctx.clearRect(0, 0, MARGIN_LEFT, LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, width, LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT);
 };
 
 export const computeTooltip = ({

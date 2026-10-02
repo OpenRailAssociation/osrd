@@ -24,8 +24,11 @@ export type VisibilityFilterOptions<T> = {
 };
 
 export const getGraphOffsets = (width: number, height: number, declivities?: boolean) => {
-  const WIDTH_OFFSET = declivities ? width - 102 : width - 60; // +2px so that the tick appears on the right of the chart
-  const HEIGHT_OFFSET = height - 80;
+  let WIDTH_OFFSET = width - MARGINS.MARGIN_LEFT;
+  if (declivities) {
+    WIDTH_OFFSET -= MARGINS.RIGHT_TICK_MARGINS;
+  }
+  const HEIGHT_OFFSET = height - MARGINS.MARGIN_BOTTOM;
   return { WIDTH_OFFSET, HEIGHT_OFFSET };
 };
 
@@ -81,7 +84,7 @@ export const positionOnGraphScale = (
   margins: typeof MARGINS
 ) =>
   position *
-    ((width - margins.CURVE_MARGIN_SIDES - margins.MARGIN_LEFT - margins.MARGIN_RIGHT) /
+    ((width - margins.CURVE_MARGIN_SIDES - margins.MARGIN_LEFT ) /
       maxPosition) *
     ratioX +
   margins.MARGIN_LEFT +
@@ -103,12 +106,12 @@ export const drawSeparatorLinearLayer = (
   width: number,
   height: number
 ) => {
-  const { MARGIN_LEFT, MARGIN_RIGHT } = margins;
+  const { MARGIN_LEFT } = margins;
   ctx.beginPath();
   ctx.strokeStyle = separatorColor;
   ctx.lineWidth = 1;
   ctx.moveTo(MARGIN_LEFT, height);
-  ctx.lineTo(width - MARGIN_RIGHT, height);
+  ctx.lineTo(width , height);
   ctx.stroke();
 };
 
@@ -126,14 +129,14 @@ export const drawLinearLayerBackground = (
   startingHeight: number,
   layerHeight: number
 ) => {
-  const { MARGIN_LEFT, MARGIN_RIGHT } = margins;
+  const { MARGIN_LEFT } = margins;
 
   ctx.beginPath();
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(
     MARGIN_LEFT,
     startingHeight - layerHeight + LINEAR_LAYER_SEPARATOR_HEIGHT,
-    width - MARGIN_LEFT - MARGIN_RIGHT,
+    width - MARGIN_LEFT,
     layerHeight
   );
 };
@@ -276,7 +279,7 @@ export const positionToPosX = (
   ratioX: number,
   leftOffset = 0
 ) => {
-  const xWidth = width - MARGINS.MARGIN_LEFT - MARGINS.MARGIN_RIGHT - MARGINS.CURVE_MARGIN_SIDES;
+  const xWidth = width - MARGINS.MARGIN_LEFT - MARGINS.CURVE_MARGIN_SIDES;
   const leftMargin = MARGINS.CURVE_MARGIN_SIDES / 2 + MARGINS.MARGIN_LEFT + leftOffset;
   return (position / maxPosition) * (xWidth * ratioX) + leftMargin;
 };
@@ -343,7 +346,7 @@ export const getCursorPosition = (cursorX: number, width: number, store: Store) 
   const maxPosition = maxPositionValue(store.speeds);
   const x = cursorX - leftOffset - MARGINS.CURVE_MARGIN_SIDES / 2;
   const maxX =
-    (width - MARGINS.MARGIN_LEFT - MARGINS.MARGIN_RIGHT - MARGINS.CURVE_MARGIN_SIDES) * ratioX;
+    (width - MARGINS.MARGIN_LEFT - MARGINS.CURVE_MARGIN_SIDES) * ratioX;
   return (x * maxPosition) / maxX;
 };
 
