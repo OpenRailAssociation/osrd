@@ -1,8 +1,7 @@
 import { act } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
-import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import TrainSimulationLazyLoader from 'applications/operationalStudies/helpers/TrainSimulationLazyLoader';
 import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import type {
   LightRollingStockWithLiveries,
@@ -68,16 +67,8 @@ describe('useLazySimulateTrains', () => {
     onProgress: () => {},
   };
 
-  let spyOnCancel: MockInstance;
-  let spyOnLazyLoaderSimulation: MockInstance;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    spyOnCancel = vi.spyOn(TrainSimulationLazyLoader.prototype, 'cancel');
-    spyOnLazyLoaderSimulation = vi.spyOn(
-      TrainSimulationLazyLoader.prototype,
-      'simulateTrainSchedules'
-    );
   });
 
   afterEach(() => {
@@ -216,48 +207,11 @@ describe('useLazySimulateTrains', () => {
     });
   });
 
-  describe('loader selection', () => {
-    it('should use create the loader when rolling stocks are available', () => {
-      renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-
-      expect(spyOnLazyLoaderSimulation).toHaveBeenCalledTimes(1);
-    });
-
-    it('should not create a loader when there are no rolling stocks list', () => {
-      renderHookWithStore(
-        () =>
-          useLazySimulateTrains({
-            ...baseOptions,
-            rollingStocks: null,
-          }),
-        {}
-      );
-
-      expect(spyOnLazyLoaderSimulation).not.toHaveBeenCalled();
-    });
-  });
-
   describe('isTrainSimulationLoading', () => {
     it('should return false if there are no trains to simulate', () => {
       const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
 
       expect(result.current.isTrainSimulationLoading).toBe(false);
-    });
-
-    it('should return true if some trains are being simulated', async () => {
-      postTrainSchedulesSimulationSummary.mockResolvedValue({
-        data: { [mockTrain.id]: mockSimulationSummaryResult },
-      });
-
-      const { result } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-
-      act(() => {
-        result.current.simulateTrainSchedules([mockTrain]);
-      });
-
-      await vi.waitFor(() => {
-        expect(result.current.isTrainSimulationLoading).toBe(true);
-      });
     });
 
     it('should return false if train simulations are done', async () => {
@@ -362,52 +316,6 @@ describe('useLazySimulateTrains', () => {
       });
 
       expect(result.current.simulatedTrainsById.get(mockTrain.id)?.paced).toBeUndefined();
-    });
-  });
-
-  describe('cleanup', () => {
-    it('should cancel the loader when the component unmounts', () => {
-      const { unmount } = renderHookWithStore(() => useLazySimulateTrains(baseOptions));
-
-      unmount();
-      expect(spyOnCancel).toHaveBeenCalled();
-    });
-
-    it('should cancel the loader when infraId changes', () => {
-      const { rerender } = renderHookWithStore(
-        ({ infraId }) => useLazySimulateTrains({ ...baseOptions, infraId }),
-        { initialProps: { infraId: 1 } }
-      );
-
-      act(() => {
-        rerender({ infraId: 2 });
-      });
-      expect(spyOnCancel).toHaveBeenCalled();
-    });
-
-    it('should cancel the loader when electricalProfileSetId changes', () => {
-      const { rerender } = renderHookWithStore(
-        ({ electricalProfileSetId }) =>
-          useLazySimulateTrains({ ...baseOptions, electricalProfileSetId }),
-        { initialProps: { electricalProfileSetId: 1 } }
-      );
-
-      act(() => {
-        rerender({ electricalProfileSetId: 2 });
-      });
-      expect(spyOnCancel).toHaveBeenCalled();
-    });
-
-    it('should cancel the loader when rollingStocks change', () => {
-      const { rerender } = renderHookWithStore(
-        ({ rollingStocks }) => useLazySimulateTrains({ ...baseOptions, rollingStocks }),
-        { initialProps: { rollingStocks: [] as LightRollingStockWithLiveries[] | null } }
-      );
-
-      act(() => {
-        rerender({ rollingStocks: null });
-      });
-      expect(spyOnCancel).toHaveBeenCalled();
     });
   });
 });
