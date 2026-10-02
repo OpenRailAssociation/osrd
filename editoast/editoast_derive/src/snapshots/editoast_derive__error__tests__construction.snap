@@ -45,8 +45,8 @@ impl crate::error::EditoastError for InfraApiError {
                     .expect("EditoastError: invalid status expression")
             }
             #[allow(unused)]
-            Self::WithInner(__editoast_error_unamed_field) => {
-                __editoast_error_unamed_field.get_status()
+            Self::WithInner(__editoast_error_unnamed_field) => {
+                __editoast_error_unnamed_field.get_status()
             }
             #[allow(unused)]
             Self::InternalError => axum::http::StatusCode::from_u16(500u16).unwrap(),
@@ -59,8 +59,8 @@ impl crate::error::EditoastError for InfraApiError {
             #[allow(unused)]
             Self::BadRequest { message } => "editoast:infra:BadRequest",
             #[allow(unused)]
-            Self::WithInner(__editoast_error_unamed_field) => {
-                __editoast_error_unamed_field.get_type()
+            Self::WithInner(__editoast_error_unnamed_field) => {
+                __editoast_error_unnamed_field.get_type()
             }
             #[allow(unused)]
             Self::InternalError => "editoast:infra:InternalError",
@@ -78,8 +78,8 @@ impl crate::error::EditoastError for InfraApiError {
                 ]
                     .into()
             }
-            Self::WithInner(__editoast_error_unamed_field) => {
-                __editoast_error_unamed_field.context()
+            Self::WithInner(__editoast_error_unnamed_field) => {
+                __editoast_error_unnamed_field.context()
             }
             Self::InternalError { .. } => Default::default(),
         }
