@@ -1,0 +1,16 @@
+[package]
+name = "unit_system"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+common.workspace = true
+serde = { workspace = true, features = ["derive"] }
+uom = { version = "0.38.0", default-features = false, features = ["f64"] }
+
+
+[lints]
+workspace = true

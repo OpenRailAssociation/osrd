@@ -38,12 +38,12 @@ pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
 use serde_with::DefaultOnNull;
 use serde_with::serde_as;
+use unit_system::quantities::Offset;
 use utoipa::ToSchema;
 
 use crate::primitives::NonBlankString;
@@ -60,7 +60,7 @@ pub struct TrainOccurrence {
     pub rolling_stock_name: String,
     /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     /// For hourly timetables: elapsed ms since the timetable start.
-    #[serde(with = "common::units::millisecond::i64")]
+    #[serde(with = "unit_system::units::millisecond::i64")]
     #[schema(value_type = i64)]
     pub start_time: Offset,
     pub path: Vec<PathItem>,

@@ -21,8 +21,6 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use chrono::Duration;
-use common::units::millisecond;
-use common::units::quantities::Offset;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use editoast_derive::EditoastError;
@@ -41,6 +39,8 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use thiserror::Error;
+use unit_system::quantities::Offset;
+use unit_system::units::millisecond;
 use utoipa::ToSchema;
 
 #[derive(Debug, Error, EditoastError)]
@@ -209,7 +209,12 @@ pub(in crate::views) async fn occupancy(
 
     let rolling_stock_lengths: HashMap<_, _> = rolling_stocks
         .into_iter()
-        .map(|rs| (rs.name, common::units::millimeter::from(rs.length) as u64))
+        .map(|rs| {
+            (
+                rs.name,
+                unit_system::units::millimeter::from(rs.length) as u64,
+            )
+        })
         .collect();
 
     // For each occurrence + simulation result, compute level crossing occupancy and group by level crossing id

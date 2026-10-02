@@ -150,7 +150,7 @@ tracing-opentelemetry = { version = "0.33.0", default-features = false, features
   "tracing-log",
 ] }
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-uom = { version = "0.38.0", default-features = false, features = ["f64", "si"] }
+unit_system = { path = "./unit_system" }
 url = { version = "2.5.8", features = ["serde"] }
 urlencoding = "2.1.3"
 utoipa = { git = "https://github.com/osrd-project/utoipa.git", rev = "5103a24a6d6", features = [
@@ -250,7 +250,7 @@ tower-http = { version = "0.7", features = [
 ] }
 tracing.workspace = true
 tracing-subscriber.workspace = true
-uom.workspace = true
+unit_system.workspace = true
 url.workspace = true
 utoipa.workspace = true
 uuid.workspace = true

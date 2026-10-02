@@ -1,7 +1,7 @@
-use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use unit_system::quantities::Offset;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
@@ -65,7 +65,7 @@ pub struct Conflict {
     /// (`trains_requirements` and `work_schedules`) and response.
     /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
     /// timetables.
-    #[serde(with = "common::units::millisecond::i64")]
+    #[serde(with = "unit_system::units::millisecond::i64")]
     pub start_time: Offset,
     /// Duration of the conflict in ms.
     pub duration: u64,
@@ -90,7 +90,7 @@ pub struct ConflictRequirement {
     /// (`trains_requirements` and `work_schedules`) and response.
     /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
     /// timetables.
-    #[serde(with = "common::units::millisecond::i64")]
+    #[serde(with = "unit_system::units::millisecond::i64")]
     #[schema(value_type = i64)]
     pub start_time: Offset,
     /// Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict).

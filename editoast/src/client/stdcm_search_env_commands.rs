@@ -3,7 +3,6 @@ use chrono::Duration;
 use chrono::Utc;
 use clap::Args;
 use clap::Subcommand;
-use common::units::millisecond;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use models::ElectricalProfileSet;
@@ -18,6 +17,7 @@ use std::collections::HashSet;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use unit_system::units::millisecond;
 
 #[derive(Subcommand, Debug)]
 pub enum StdcmSearchEnvCommands {
@@ -322,12 +322,12 @@ mod tests {
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;
-    use common::units::quantities::Offset;
     use database::DbConnection;
     use database::DbConnectionPoolV2;
     use rstest::rstest;
     use schemas::fixtures::ms_since_epoch;
     use serde_json::json;
+    use unit_system::quantities::Offset;
 
     fn make_datetime(s: &str) -> DateTime<Utc> {
         DateTime::parse_from_rfc3339(s).unwrap().to_utc()

@@ -4,7 +4,8 @@ use std::str::FromStr as _;
 
 use chrono::DateTime;
 use chrono::Utc;
-use common::units;
+use unit_system;
+use unit_system::units;
 
 use crate::RollingStock;
 use crate::rolling_stock::EffortCurves;
@@ -95,6 +96,6 @@ pub fn small_infra() -> crate::infra::RailJson {
     .expect("Unable to parse small infra RailJson")
 }
 
-pub fn ms_since_epoch(s: &str) -> units::quantities::Time {
+pub fn ms_since_epoch(s: &str) -> unit_system::quantities::Time {
     units::millisecond::i64::new(DateTime::<Utc>::from_str(s).unwrap().timestamp_millis())
 }

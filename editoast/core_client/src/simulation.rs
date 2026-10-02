@@ -2,13 +2,6 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use common::units;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Deceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Time;
-use common::units::quantities::Velocity;
 use educe::Educe;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EtcsBrakeParams;
@@ -20,6 +13,13 @@ use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
+use unit_system::quantities::Acceleration;
+use unit_system::quantities::Deceleration;
+use unit_system::quantities::Length;
+use unit_system::quantities::Mass;
+use unit_system::quantities::Time;
+use unit_system::quantities::Velocity;
+use unit_system::units;
 use utoipa::ToSchema;
 
 use super::RawError;

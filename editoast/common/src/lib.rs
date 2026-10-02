@@ -2,7 +2,6 @@ pub mod geometry;
 mod hash_rounded_float;
 pub mod rangemap_utils;
 pub mod tracing;
-pub mod units;
 
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -35,10 +34,7 @@ pub struct Version {
 /// Allows implementing Eq for floats considering all NaN values to be equal
 ///
 /// Tip: provide this to Educe.
-pub fn float_eq<V>(a: &V, b: &V) -> bool
-where
-    V: uom::num_traits::Num + uom::num_traits::float::TotalOrder + uom::Conversion<V>,
-{
+pub fn float_eq(a: &f64, b: &f64) -> bool {
     matches!(a.total_cmp(b), std::cmp::Ordering::Equal)
 }
 

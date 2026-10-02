@@ -798,7 +798,6 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
- "uom",
  "url",
  "utoipa",
 ]
@@ -928,6 +927,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "tracing-opentelemetry",
+ "unit_system",
  "url",
  "utoipa",
  "uuid",
@@ -955,7 +955,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tracing",
- "uom",
+ "unit_system",
  "zstd 0.14.0",
 ]
 
@@ -1493,7 +1493,7 @@ dependencies = [
  "tower-http 0.7.1",
  "tracing",
  "tracing-subscriber",
- "uom",
+ "unit_system",
  "url",
  "utoipa",
  "uuid",
@@ -3084,7 +3084,7 @@ dependencies = [
  "tokio",
  "tokio-postgres",
  "tracing",
- "uom",
+ "unit_system",
  "url",
  "utoipa",
  "uuid",
@@ -4573,7 +4573,7 @@ dependencies = [
  "serde_with",
  "strum",
  "thiserror 2.0.20",
- "uom",
+ "unit_system",
  "utoipa",
  "uuid",
 ]
@@ -5585,6 +5585,15 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "unit_system"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "serde",
+ "uom",
+]
 
 [[package]]
 name = "unsafe-libyaml-norway"

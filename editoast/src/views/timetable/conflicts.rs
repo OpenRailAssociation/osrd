@@ -12,14 +12,14 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use chrono::Duration;
-use common::units::millisecond;
-use common::units::quantities::Offset;
 use itertools::Itertools as _;
 use itertools::izip;
 use models::prelude::*;
 use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
+use unit_system::quantities::Offset;
+use unit_system::units::millisecond;
 use utoipa::ToSchema;
 
 use crate::AppState;
@@ -62,7 +62,7 @@ pub struct Conflict {
     /// frame in this timetable.
     /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
     /// timetables.
-    #[serde(with = "common::units::millisecond::i64")]
+    #[serde(with = "unit_system::units::millisecond::i64")]
     #[schema(value_type = i64)]
     pub start_time: Offset,
     /// Duration of the conflict in ms.
@@ -705,8 +705,8 @@ fn get_linking_requirements(
         .times
         .last()
         .expect("times should not be empty");
-    let target_start_time = (target_occurrence.start_time() - source_occurrence.start_time())
-        .get::<uom::si::time::millisecond>() as u64;
+    let target_start_time =
+        millisecond::from(target_occurrence.start_time() - source_occurrence.start_time()) as u64;
 
     let final_spacing_requirements = spacing_requirements
         .into_iter()
@@ -771,7 +771,6 @@ mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use authz::InfraGrant;
     use authz::RollingStockGrant;
-    use common::units;
     use core_client::conflict_detection::ConflictDetectionResponse;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
@@ -792,6 +791,7 @@ mod tests {
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::Margins;
     use schemas::train_schedule::PathItem;
+    use unit_system::units;
 
     fn spacing(zone: &str, begin_time: u64, end_time: u64) -> SpacingRequirement {
         SpacingRequirement {

@@ -11,13 +11,13 @@ use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainOccurrence;
 use crate::train_schedule::TrainScheduleOptions;
 use chrono::Duration;
-use common::units::quantities::Offset;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use serde_with::DefaultOnNull;
 use serde_with::serde_as;
 use serde_with::skip_serializing_none;
+use unit_system::quantities::Offset;
 use utoipa::ToSchema;
 use utoipa::openapi::ObjectBuilder;
 use utoipa::openapi::RefOr;
@@ -176,7 +176,7 @@ pub struct SpeedLimitTagChangeGroup {
 pub struct StartTimeChangeGroup {
     /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     /// For hourly timetables: elapsed ms since the timetable start.
-    #[serde(with = "common::units::millisecond::i64")]
+    #[serde(with = "unit_system::units::millisecond::i64")]
     #[schema(value_type = i64)]
     pub value: Offset,
 }

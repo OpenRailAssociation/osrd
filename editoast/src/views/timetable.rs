@@ -22,12 +22,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use common::units::millisecond;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Offset;
-use common::units::quantities::Velocity;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
@@ -57,6 +51,12 @@ use simulation::train_simulation_ordered_batch;
 use thiserror::Error;
 use tokio::time::timeout;
 use train_schedule::TrainScheduleResponse;
+use unit_system::quantities::Acceleration;
+use unit_system::quantities::Length;
+use unit_system::quantities::Mass;
+use unit_system::quantities::Offset;
+use unit_system::quantities::Velocity;
+use unit_system::units::millisecond;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -744,7 +744,7 @@ impl PhysicsConsistParameters {
             let traction_engine_inertia =
                 self.traction_engine.mass * self.traction_engine.inertia_coefficient;
             let towed_inertia = towed_mass * towed_rolling_stock.inertia_coefficient;
-            ((traction_engine_inertia + towed_inertia) / total_mass).into()
+            ((traction_engine_inertia + towed_inertia) / total_mass).value
         } else {
             self.traction_engine.inertia_coefficient
         }
@@ -988,7 +988,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::Duration;
-    use common::units;
     use core_client::simulation::RoutingZoneRequirement;
     use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
@@ -998,6 +997,7 @@ mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
+    use unit_system::units;
 
     use super::*;
     use crate::error::InternalError;

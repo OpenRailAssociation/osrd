@@ -23,7 +23,7 @@ serde_json.workspace = true
 serde_with.workspace = true
 strum.workspace = true
 thiserror.workspace = true
-uom.workspace = true
+unit_system.workspace = true
 utoipa.workspace = true
 uuid.workspace = true
 

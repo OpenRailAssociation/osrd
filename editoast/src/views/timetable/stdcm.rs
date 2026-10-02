@@ -28,7 +28,6 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use common::geometry::GeoJsonPoint;
-use common::units::millisecond;
 use core_client::AsCoreStreaming as _;
 use core_client::CoreClient;
 use core_client::Progress;
@@ -72,6 +71,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::mpsc;
 use tracing::Instrument as _;
+use unit_system::units::millisecond;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -735,7 +735,6 @@ mod tests {
     use authz::RollingStockGrant;
     use axum::http::StatusCode;
     use chrono::DateTime;
-    use common::units;
     use core_client;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrainPath;
@@ -752,16 +751,8 @@ mod tests {
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
     use std::str::FromStr as _;
-    use uom::si::SI;
-    use uom::si::acceleration::meter_per_second_squared;
-    use uom::si::length::Length;
-    use uom::si::length::meter;
-    use uom::si::length::millimeter;
-    use uom::si::mass::Mass;
-    use uom::si::mass::kilogram;
-    use uom::si::velocity::Velocity;
-    use uom::si::velocity::kilometer_per_hour;
-    use uom::si::velocity::meter_per_second;
+    use unit_system::units;
+    use unit_system::units::*;
     use uuid::Uuid;
 
     use crate::error::InternalError;
@@ -857,9 +848,9 @@ mod tests {
         request::ConsistConfiguration {
             rolling_stock_id,
             towed_rolling_stock_id,
-            total_mass: total_mass.map(Mass::new::<kilogram>),
-            total_length: total_length.map(Length::new::<meter>),
-            max_speed: max_speed.map(Velocity::new::<kilometer_per_hour>),
+            total_mass: total_mass.map(kilogram::new),
+            total_length: total_length.map(meter::new),
+            max_speed: max_speed.map(kilometer_per_hour::new),
             speed_limit_tag: Some("AR120".to_string()),
             loading_gauge_type,
         }
@@ -1187,28 +1178,28 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_return_success() {
-        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
-        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
-        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let mass = kilogram::new(1000000.0);
+        let length = meter::new(400.0);
+        let maximum_speed = kilometer_per_hour::new(30.0);
         let core = {
             let mut core = MockingClient::new();
             core.stub("/pathfinding/blocks")
                 .on_body("/rolling_stock_loading_gauge", "GLOTT")
                 .on_body(
                     "/rolling_stock_maximum_speed",
-                    maximum_speed.get::<meter_per_second>(),
+                    meter_per_second::from(maximum_speed),
                 )
-                .on_body("/rolling_stock_length", length.get::<millimeter>() as u64)
+                .on_body("/rolling_stock_length", millimeter::from(length) as u64)
                 .response(StatusCode::OK)
                 .json(PathfindingResult::Success(pathfinding_result_success()))
                 .finish();
             core.stub("/standalone_simulation")
-                .on_body("/physics_consist/length", length.get::<millimeter>() as u64)
+                .on_body("/physics_consist/length", millimeter::from(length) as u64)
                 .on_body(
                     "/physics_consist/max_speed",
-                    maximum_speed.get::<meter_per_second>(),
+                    meter_per_second::from(maximum_speed),
                 )
-                .on_body("/physics_consist/mass", mass.get::<kilogram>() as u64)
+                .on_body("/physics_consist/mass", kilogram::from(mass) as u64)
                 .response(StatusCode::OK)
                 .json(simulation_empty_response())
                 .finish();
@@ -1216,15 +1207,15 @@ mod tests {
                 .on_body("/consist_schedule/values/0/loading_gauge_type", "GLOTT")
                 .on_body(
                     "/consist_schedule/values/0/physics_consist/length",
-                    length.get::<millimeter>() as u64,
+                    millimeter::from(length) as u64,
                 )
                 .on_body(
                     "/consist_schedule/values/0/physics_consist/max_speed",
-                    maximum_speed.get::<meter_per_second>(),
+                    meter_per_second::from(maximum_speed),
                 )
                 .on_body(
                     "/consist_schedule/values/0/physics_consist/mass",
-                    mass.get::<kilogram>() as u64,
+                    kilogram::from(mass) as u64,
                 )
                 .response(StatusCode::OK)
                 .json(core_client::stdcm::FinalEvent {
@@ -1254,9 +1245,9 @@ mod tests {
             .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            Some(mass.get::<kilogram>()),
-            Some(length.get::<meter>()),
-            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(kilogram::from(mass)),
+            Some(meter::from(length)),
+            Some(kilometer_per_hour::from(maximum_speed)),
             Some(LoadingGaugeType::Glott),
             None,
         ));
@@ -1983,39 +1974,39 @@ mod tests {
     async fn stdcm_with_towed_rolling_stock() {
         let mut core: MockingClient = MockingClient::new();
         // Added masses of both the rolling stock and the towed rolling stock
-        let mass = Mass::<SI<_>, f64>::new::<kilogram>(950000.0);
+        let mass = kilogram::new(950000.0);
         // Added lengths of both the rolling stock and the towed rolling stock
-        let length = Length::<SI<_>, f64>::new::<meter>(430.0);
+        let length = meter::new(430.0);
         // Minimum of both the rolling stock and the towed rolling stock maximum speeds
-        let maximum_speed = Velocity::<SI<_>, f64>::new::<meter_per_second>(35.0);
+        let maximum_speed = meter_per_second::new(35.0);
         // The maximum startup acceleration of both the rolling stock and the towed rolling stock
         let startup_acceleration = units::meter_per_second_squared::new(0.06);
         // The minimum comfort acceleration of both the rolling stock and the towed rolling stock
         let comfort_acceleration = units::meter_per_second_squared::new(0.2);
         core.stub("/pathfinding/blocks")
             .on_body("/rolling_stock_loading_gauge", "G1")
-            .on_body("/rolling_stock_length", length.get::<millimeter>() as u64)
+            .on_body("/rolling_stock_length", millimeter::from(length) as u64)
             .on_body(
                 "/rolling_stock_maximum_speed",
-                maximum_speed.get::<meter_per_second>(),
+                meter_per_second::from(maximum_speed),
             )
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .finish();
         core.stub("/standalone_simulation")
-            .on_body("/physics_consist/length", length.get::<millimeter>() as u64)
+            .on_body("/physics_consist/length", millimeter::from(length) as u64)
             .on_body(
                 "/physics_consist/max_speed",
-                maximum_speed.get::<meter_per_second>(),
+                meter_per_second::from(maximum_speed),
             )
-            .on_body("/physics_consist/mass", mass.get::<kilogram>() as u64)
+            .on_body("/physics_consist/mass", kilogram::from(mass) as u64)
             .on_body(
                 "/physics_consist/startup_acceleration",
-                startup_acceleration.get::<meter_per_second_squared>(),
+                meter_per_second_squared::from(startup_acceleration),
             )
             .on_body(
                 "/physics_consist/comfort_acceleration",
-                comfort_acceleration.get::<meter_per_second_squared>(),
+                meter_per_second_squared::from(comfort_acceleration),
             )
             .response(StatusCode::OK)
             .json(simulation_empty_response())
@@ -2023,23 +2014,23 @@ mod tests {
         core.stub("/stdcm")
             .on_body(
                 "/consist_schedule/values/0/physics_consist/length",
-                length.get::<millimeter>() as u64,
+                millimeter::from(length) as u64,
             )
             .on_body(
                 "/consist_schedule/values/0/physics_consist/max_speed",
-                maximum_speed.get::<meter_per_second>(),
+                meter_per_second::from(maximum_speed),
             )
             .on_body(
                 "/consist_schedule/values/0/physics_consist/mass",
-                mass.get::<kilogram>() as u64,
+                kilogram::from(mass) as u64,
             )
             .on_body(
                 "/consist_schedule/values/0/physics_consist/startup_acceleration",
-                startup_acceleration.get::<meter_per_second_squared>(),
+                meter_per_second_squared::from(startup_acceleration),
             )
             .on_body(
                 "/consist_schedule/values/0/physics_consist/comfort_acceleration",
-                comfort_acceleration.get::<meter_per_second_squared>(),
+                meter_per_second_squared::from(comfort_acceleration),
             )
             .response(StatusCode::OK)
             .json(core_client::stdcm::FinalEvent {
@@ -2097,9 +2088,9 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_with_no_grant_is_forbidden() {
-        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
-        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
-        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let mass = kilogram::new(1000000.0);
+        let length = meter::new(400.0);
+        let maximum_speed = kilometer_per_hour::new(30.0);
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -2113,9 +2104,9 @@ mod tests {
             .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            Some(mass.get::<kilogram>()),
-            Some(length.get::<meter>()),
-            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(kilogram::from(mass)),
+            Some(meter::from(length)),
+            Some(kilometer_per_hour::from(maximum_speed)),
             Some(LoadingGaugeType::Glott),
             None,
         ));
@@ -2129,9 +2120,9 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_without_stdcm_role_is_forbidden() {
-        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
-        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
-        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let mass = kilogram::new(1000000.0);
+        let length = meter::new(400.0);
+        let maximum_speed = kilometer_per_hour::new(30.0);
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -2146,9 +2137,9 @@ mod tests {
             .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            Some(mass.get::<kilogram>()),
-            Some(length.get::<meter>()),
-            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(kilogram::from(mass)),
+            Some(meter::from(length)),
+            Some(kilometer_per_hour::from(maximum_speed)),
             Some(LoadingGaugeType::Glott),
             None,
         ));
@@ -2162,9 +2153,9 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_without_infra_grant_is_forbidden() {
-        let mass = Mass::<SI<_>, f64>::new::<kilogram>(1000000.0);
-        let length = Length::<SI<_>, f64>::new::<meter>(400.0);
-        let maximum_speed = Velocity::<SI<_>, f64>::new::<kilometer_per_hour>(30.0);
+        let mass = kilogram::new(1000000.0);
+        let length = meter::new(400.0);
+        let maximum_speed = kilometer_per_hour::new(30.0);
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -2179,9 +2170,9 @@ mod tests {
             .await;
         let consist_schedule = build_single_consist(build_consist_config(
             rolling_stock.id,
-            Some(mass.get::<kilogram>()),
-            Some(length.get::<meter>()),
-            Some(maximum_speed.get::<kilometer_per_hour>()),
+            Some(kilogram::from(mass)),
+            Some(meter::from(length)),
+            Some(kilometer_per_hour::from(maximum_speed)),
             Some(LoadingGaugeType::Glott),
             None,
         ));
