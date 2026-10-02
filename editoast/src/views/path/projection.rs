@@ -159,10 +159,7 @@ impl<'a> PathProjection<'a> {
             // When a previous `track_range` (from maybe several iterations ago) left the `self` path,
             // but the current `track_range` is back on it, then `dist > 1` which indicates a discontinuity in the resulting intersection list.
             // So we need to close the previous intersection (if there is one => `start_intersection.is_some()`).
-            let current_path_index = *self
-                .track_index
-                .get(&proj_track_range.track_section)
-                .unwrap();
+            let current_path_index = self.track_index[&proj_track_range.track_section];
 
             let dist = ((current_path_index as i64) - (path_track_index as i64)).abs();
             if dist != 1 {

@@ -241,10 +241,7 @@ mod tests {
             .json();
 
         assert_eq!(level_order.len(), 1);
-        assert_eq!(
-            level_order.get("25000V").unwrap(),
-            &vec!["25000V", "22500V", "20000V"]
-        );
+        assert_eq!(&level_order["25000V"], &vec!["25000V", "22500V", "20000V"]);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

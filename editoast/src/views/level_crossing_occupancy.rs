@@ -633,7 +633,7 @@ mod tests {
 
         let level_crossing_obj_id = &form.level_crossing_ids[0];
         assert!(occupancies.contains_key(level_crossing_obj_id));
-        let lc_occupancies = occupancies.get(level_crossing_obj_id).unwrap();
+        let lc_occupancies = &occupancies[level_crossing_obj_id];
         assert_eq!(lc_occupancies.len(), 4);
 
         // Expected values:
@@ -678,10 +678,7 @@ mod tests {
             .json();
 
         // The level crossing is reported, without any occupancy
-        assert_eq!(
-            occupancies.get(&form.level_crossing_ids[0]).unwrap(),
-            &Vec::new()
-        );
+        assert_eq!(&occupancies[&form.level_crossing_ids[0]], &Vec::new());
     }
 
     /// The trains whose rolling stock the user cannot read are filtered out of the response,
@@ -710,10 +707,7 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        assert_eq!(
-            occupancies.get(&form.level_crossing_ids[0]).unwrap(),
-            &Vec::new()
-        );
+        assert_eq!(&occupancies[&form.level_crossing_ids[0]], &Vec::new());
     }
 
     /// Among several trains, only the occurrences of those whose rolling stock the user can read

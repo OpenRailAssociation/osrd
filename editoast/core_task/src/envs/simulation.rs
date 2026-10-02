@@ -576,13 +576,13 @@ mod tests {
             .collect::<HashMap<_, _>>()
             .await;
         assert_eq!(
-            *simulations.get(&1).unwrap(),
+            simulations[&1],
             Ok(SimulationOutput::Success(
                 serde_json::from_value(simulation_success(1)).unwrap()
             )),
         );
         assert_eq!(
-            *simulations.get(&2).unwrap(),
+            simulations[&2],
             Ok(SimulationOutput::Success(
                 serde_json::from_value(simulation_success(2)).unwrap()
             ))

@@ -1101,7 +1101,7 @@ mod tests {
         let _train_schedule_exception_t1_2 = create_train_schedule_exception(
             &mut pool.get_ok(),
             timetable1.id,
-            train_schedules_t1.get(1).unwrap().id,
+            train_schedules_t1[1].id,
             None,
             None,
             None,
