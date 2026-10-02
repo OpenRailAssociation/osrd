@@ -35,6 +35,8 @@ pub struct PathPropertiesResponse {
     pub operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path
     pub zones: PropertyZoneValues,
+    // Projection from topologic offset to geometric offset
+    pub geom_projection: GeometryProjection,
 }
 
 /// Property f64 values along a path. Each value is associated to a range of the path.
@@ -159,6 +161,32 @@ impl PropertyZoneValues {
     pub fn new(boundaries: Vec<u64>, values: Vec<String>) -> Self {
         assert!(boundaries.len() == values.len() + 1);
         Self { boundaries, values }
+    }
+}
+
+/// Projection to map topological offset to geometric offset (or reversed).
+/// topo_offsets and geom_offsets are the same size
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = CorePropertyGeometryProjection)]
+pub struct GeometryProjection {
+    /// Topological offsets in millimeters.
+    /// Starts with 0 and is increasing.
+    #[schema(min_items = 2)]
+    topo_offsets: Vec<u64>,
+    /// Geometric offsets in millimeters.
+    /// Starts with 0 and is increasing.
+    #[schema(min_items = 2)]
+    geom_offsets: Vec<u64>,
+}
+
+impl GeometryProjection {
+    pub fn new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Self {
+        assert_eq!(topo_offsets.len(), geom_offsets.len());
+        assert!(topo_offsets.len() >= 2);
+        Self {
+            topo_offsets,
+            geom_offsets,
+        }
     }
 }
 
