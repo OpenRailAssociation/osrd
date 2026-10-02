@@ -54,11 +54,11 @@ pub fn hashing_supported_signaling_systems<H>(
         .iter()
         // Each discriminant correspond to one specific bit of a `u64`
         .map(|supported_signal_system| match supported_signal_system {
-            SupportedSignalingSystem::BAL => 1u64.wrapping_shl(0),
-            SupportedSignalingSystem::BAPR => 1u64.wrapping_shl(1),
-            SupportedSignalingSystem::TVM300 => 1u64.wrapping_shl(2),
-            SupportedSignalingSystem::TVM430 => 1u64.wrapping_shl(3),
-            SupportedSignalingSystem::EtcsLevel2 { .. } => 1u64.wrapping_shl(4),
+            SupportedSignalingSystem::BAL => 1_u64.wrapping_shl(0),
+            SupportedSignalingSystem::BAPR => 1_u64.wrapping_shl(1),
+            SupportedSignalingSystem::TVM300 => 1_u64.wrapping_shl(2),
+            SupportedSignalingSystem::TVM430 => 1_u64.wrapping_shl(3),
+            SupportedSignalingSystem::EtcsLevel2 { .. } => 1_u64.wrapping_shl(4),
         })
         // Create a unique bitmask
         .reduce(std::ops::BitOr::bitor)
@@ -76,11 +76,11 @@ pub fn hashing_supported_signaling_systems_variant<H>(
         .iter()
         // Each discriminant correspond to one specific bit of a `u64`
         .map(|supported_signal_system| match supported_signal_system {
-            SupportedSignalingSystemVariant::BAL => 1u64.wrapping_shl(0),
-            SupportedSignalingSystemVariant::BAPR => 1u64.wrapping_shl(1),
-            SupportedSignalingSystemVariant::TVM300 => 1u64.wrapping_shl(2),
-            SupportedSignalingSystemVariant::TVM430 => 1u64.wrapping_shl(3),
-            SupportedSignalingSystemVariant::EtcsLevel2 => 1u64.wrapping_shl(4),
+            SupportedSignalingSystemVariant::BAL => 1_u64.wrapping_shl(0),
+            SupportedSignalingSystemVariant::BAPR => 1_u64.wrapping_shl(1),
+            SupportedSignalingSystemVariant::TVM300 => 1_u64.wrapping_shl(2),
+            SupportedSignalingSystemVariant::TVM430 => 1_u64.wrapping_shl(3),
+            SupportedSignalingSystemVariant::EtcsLevel2 => 1_u64.wrapping_shl(4),
         })
         // Create a unique bitmask
         .reduce(std::ops::BitOr::bitor)

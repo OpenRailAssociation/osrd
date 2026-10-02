@@ -186,7 +186,7 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
                     ObjectBuilder::new()
                         .schema_type(SchemaType::Type(Type::Integer))
                         .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
-                        .minimum(Some(1f64))
+                        .minimum(Some(1_f64))
                         .default(Some(json!(1))),
                 ))
                 .build(),
@@ -198,7 +198,7 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
                     ObjectBuilder::new()
                         .schema_type(SchemaType::Type(Type::Integer))
                         .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
-                        .minimum(Some(1f64))
+                        .minimum(Some(1_f64))
                         .maximum(Some(MAX_PAGE_SIZE as f64))
                         .default(Some(json!(MAX_PAGE_SIZE))),
                 ))
