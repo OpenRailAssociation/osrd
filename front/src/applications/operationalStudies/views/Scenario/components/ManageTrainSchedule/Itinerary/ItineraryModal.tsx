@@ -379,7 +379,7 @@ const ItineraryModal = ({
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
     if (!chosenSecondaryCode) return;
-    confirmedStepKeyRef.current = stepKey;
+    pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
     const opRef: OperationalPointReference = {
