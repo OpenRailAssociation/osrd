@@ -1462,7 +1462,7 @@ pub(in crate::views) async fn project_path_op(
             &operational_points_projection,
         );
 
-        let mut projected_trains = vec![Arc::<Vec<SpaceTimeCurve>>::default(); occurrences_count];
+        let mut projected_trains = vec![Arc::<[SpaceTimeCurve]>::default(); occurrences_count];
         for (index, projection) in readable_indexes
             .into_iter()
             .zip(simulated_projections)
@@ -1499,11 +1499,11 @@ pub(in crate::views) async fn project_path_op(
                         results
                             .entry(train_schedule_id)
                             .or_insert_with(|| ProjectPathTrainScheduleResult {
-                                train_schedule: (*projected_train).clone(),
+                                train_schedule: projected_train.to_vec(),
                                 exceptions: HashMap::new(),
                             })
                             .exceptions
-                            .insert(exception_id, (*projected_train).clone());
+                            .insert(exception_id, projected_train.to_vec());
                     }
                 }
                 OccurrenceId::Base {
@@ -1512,10 +1512,10 @@ pub(in crate::views) async fn project_path_op(
                     results
                         .entry(train_schedule_id)
                         .or_insert_with(|| ProjectPathTrainScheduleResult {
-                            train_schedule: Arc::unwrap_or_clone(projected_train.clone()),
+                            train_schedule: projected_train.to_vec(),
                             exceptions: HashMap::new(),
                         })
-                        .train_schedule = (*projected_train).clone();
+                        .train_schedule = projected_train.to_vec();
                     base_project_path = projected_train;
                 }
             };
