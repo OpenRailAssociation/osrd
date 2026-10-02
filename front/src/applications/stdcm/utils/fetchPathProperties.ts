@@ -82,6 +82,7 @@ const fetchPathProperties = async (
       curves: result.curves,
       electrifications: result.electrifications,
       operational_points: result.operational_points,
+      geom_projection: result.geom_projection,
     };
   } catch (error) {
     console.error('Error fetching path properties:', error);
