@@ -224,12 +224,11 @@ where
                     } => {
                         for sim_key in runner.simulation_keys_of_pathfinding_key(&pf_key)
                         {
-                            return_tx
+                            let _ = return_tx
                                 .unbounded_send(Correlated::new(
                                     sim_key,
                                     Ok(SimulationOutput::PathfindingFailure(failure.clone())),
-                                ))
-                                .ok();
+                                ));
                         }
                         return (runner, simulate_tx, return_tx);
                     }
@@ -239,9 +238,8 @@ where
                     } => {
                         for sim_key in runner.simulation_keys_of_pathfinding_key(&pf_key)
                         {
-                            return_tx
-                                .unbounded_send(Correlated::new(sim_key, Err(err.clone())))
-                                .ok();
+                            let _ = return_tx
+                                .unbounded_send(Correlated::new(sim_key, Err(err.clone())));
                         }
                         return (runner, simulate_tx, return_tx);
                     }
@@ -270,19 +268,17 @@ where
 
                 for (sim_key, request) in requests {
                     if let Ok(request) = request {
-                        simulate_tx
-                            .unbounded_send(Correlated::new(sim_key, request))
-                            .ok();
+                        let _ = simulate_tx
+                            .unbounded_send(Correlated::new(sim_key, request));
                     } else {
                         // This error is sent by Core when we provide it with a single path item.
                         // But the semantic still fits for our case and it is probably not worth having a new error variant
                         // for an error we can't do anything about.
-                        return_tx
+                        let _ = return_tx
                             .unbounded_send(Correlated::new(
                                 sim_key,
                                 Ok(SimulationOutput::PathfindingFailure(core_client::pathfinding::PathfindingCoreResult::NotEnoughPathItems))
-                            ))
-                            .ok();
+                            ));
                     }
                 }
                 (runner, simulate_tx, return_tx)
@@ -299,23 +295,21 @@ where
                             correlation_key: sim_key,
                             data: Ok(core_client::simulation::Response::Success(simulation)),
                         } => {
-                            return_tx
-                                .unbounded_send(Correlated::new(sim_key, Ok(SimulationOutput::Success(simulation))))
-                                .ok();
+                            let _ = return_tx
+                                .unbounded_send(Correlated::new(sim_key, Ok(SimulationOutput::Success(simulation))));
                         }
                         Correlated {
                             correlation_key: sim_key,
                             data: Ok(core_client::simulation::Response::SimulationFailed { core_error }),
                         } => {
-                            return_tx
-                                .unbounded_send(Correlated::new(sim_key, Err(core_client::Error::RawError(core_error))))
-                                .ok();
+                            let _ = return_tx
+                                .unbounded_send(Correlated::new(sim_key, Err(core_client::Error::RawError(core_error))));
                         }
                         Correlated {
                             correlation_key: sim_key,
                             data: Err(err),
                         } => {
-                            return_tx.unbounded_send(Correlated::new(sim_key, Err(err))).ok();
+                            let _ = return_tx.unbounded_send(Correlated::new(sim_key, Err(err)));
                         }
                     })
                 .collect::<Vec<_>>()
