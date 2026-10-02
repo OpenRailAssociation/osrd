@@ -172,7 +172,7 @@ mod tests {
             .await
             .assert_status_ok()
             .json();
-        assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
+        assert_eq!(response[&ObjectType::Detector].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

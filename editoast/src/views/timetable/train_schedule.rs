@@ -3390,7 +3390,7 @@ mod tests {
         );
 
         assert_eq!(
-            exceptions.get(&exception_3.id).unwrap(),
+            &exceptions[&exception_3.id],
             // Simulation of the exception is the same than base
             // because all simulation results from core are identical stubs
             &SummaryResponse::Success {
@@ -3405,7 +3405,7 @@ mod tests {
             }
         );
         assert_eq!(
-            exceptions.get(&exception_2.id).unwrap(),
+            &exceptions[&exception_2.id],
             // Simulation of the exception is the same than base
             // because all simulation results from core are identical stubs
             &SummaryResponse::Success {
@@ -3420,7 +3420,7 @@ mod tests {
             }
         );
         assert_eq!(
-            exceptions.get(&exception_4.id).unwrap(),
+            &exceptions[&exception_4.id],
             &SummaryResponse::PathfindingInputError(PathfindingInputError::InvalidPathItems {
                 items: vec![
                     InvalidPathItem {
@@ -4590,18 +4590,8 @@ mod tests {
             response.assert_status_ok().json();
         assert_eq!(response.len(), 1);
         // TODO fix mocked simulation to return path item times that respect times
-        assert_eq!(
-            response
-                .get(&train_schedule.id)
-                .unwrap()
-                .train_schedule
-                .len(),
-            0
-        );
-        assert_eq!(
-            response.get(&train_schedule.id).unwrap().exceptions.len(),
-            0
-        );
+        assert_eq!(response[&train_schedule.id].train_schedule.len(), 0);
+        assert_eq!(response[&train_schedule.id].exceptions.len(), 0);
 
         // User without rolling stock reader rights should have a filtered out response:
         let user_missing_rs_grant = app

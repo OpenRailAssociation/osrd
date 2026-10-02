@@ -180,7 +180,7 @@ mod tests {
 
         assert_eq!(operations.len(), 1);
 
-        let (operation, cache_operation) = operations.get(&lc_cache.get_ref()).unwrap();
+        let (operation, cache_operation) = &operations[&lc_cache.get_ref()];
         let Operation::Update(update_operation) = operation else {
             panic!("not an `Operation::Update`");
         };
@@ -219,7 +219,7 @@ mod tests {
 
         assert_eq!(operations.len(), 1);
 
-        let (operation, cache_operation) = operations.get(&lc_cache.get_ref()).unwrap();
+        let (operation, cache_operation) = &operations[&lc_cache.get_ref()];
         let Operation::Delete(delete_operation) = operation else {
             panic!("not an `Operation::Delete`");
         };
@@ -262,7 +262,7 @@ mod tests {
 
         assert_eq!(operations.len(), 1);
 
-        let (operation, cache_operation) = operations.get(&lc_cache.get_ref()).unwrap();
+        let (operation, cache_operation) = &operations[&lc_cache.get_ref()];
         let Operation::Update(update_operation) = operation else {
             panic!("not an `Operation::Update`");
         };

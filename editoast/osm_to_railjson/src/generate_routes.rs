@@ -368,9 +368,9 @@ mod tests {
         let detector = super::Node::Detector("detector".into());
         // buffer, trackend, detector, trackend, buffer
         assert_eq!(5, g.successors.len());
-        assert_eq!(1, g.successors.get(&begin).unwrap().len());
-        assert_eq!(1, g.successors.get(&end).unwrap().len());
-        assert_eq!(2, g.successors.get(&detector).unwrap().len());
+        assert_eq!(1, g.successors[&begin].len());
+        assert_eq!(1, g.successors[&end].len());
+        assert_eq!(2, g.successors[&detector].len());
     }
 
     #[test]

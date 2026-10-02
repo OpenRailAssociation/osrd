@@ -314,15 +314,9 @@ pub mod tests {
         );
 
         // Checking the inner indices
-        assert_eq!(
-            traffic.trains_by_rolling_stock.get("RS_V1").unwrap().len(),
-            1
-        );
-        assert_eq!(
-            traffic.trains_by_rolling_stock.get("RS_V2").unwrap().len(),
-            1
-        );
-        assert_eq!(traffic.trains_by_speed_limit.get("MA100").unwrap().len(), 2);
+        assert_eq!(traffic.trains_by_rolling_stock["RS_V1"].len(), 1);
+        assert_eq!(traffic.trains_by_rolling_stock["RS_V2"].len(), 1);
+        assert_eq!(traffic.trains_by_speed_limit["MA100"].len(), 2);
 
         // trains_by_segment index should contains A->C & C->D, but not A->B
         assert_eq!(

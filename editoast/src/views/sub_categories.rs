@@ -222,7 +222,7 @@ pub mod tests {
 
         assert_eq!(created_sub_category1, &sub_category_1);
 
-        let created_sub_category2 = response.get(1).unwrap();
+        let created_sub_category2 = &response[1];
         let sub_category_2 =
             models::SubCategory::retrieve(db_pool.get_ok(), created_sub_category2.code.clone())
                 .await

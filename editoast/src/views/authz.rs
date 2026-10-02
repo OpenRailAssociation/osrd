@@ -1306,21 +1306,21 @@ mod tests {
 
         // Check the direct grants are there
         assert_eq!(
-            response.get(&ResourceType::Infra).unwrap(),
+            &response[&ResourceType::Infra],
             &[UserResourceGrant {
                 id: infra.id,
                 grant: StandardGrant::Reader
             }]
         );
         assert_eq!(
-            response.get(&ResourceType::RollingStock).unwrap(),
+            &response[&ResourceType::RollingStock],
             &[UserResourceGrant {
                 id: rs_with_grant.id,
                 grant: StandardGrant::Reader
             }]
         );
         assert_eq!(
-            response.get(&ResourceType::Project).unwrap(),
+            &response[&ResourceType::Project],
             &[UserResourceGrant {
                 id: project.id,
                 grant: StandardGrant::Owner
@@ -1351,21 +1351,21 @@ mod tests {
         // Check the inherited grant from the group has overridden by the user's direct grant
         // Unreadable and non-existent resources are filtered out
         assert_eq!(
-            response.get(&ResourceType::Infra).unwrap(),
+            &response[&ResourceType::Infra],
             &[UserResourceGrant {
                 id: infra.id,
                 grant: StandardGrant::Writer
             }]
         );
         assert_eq!(
-            response.get(&ResourceType::RollingStock).unwrap(),
+            &response[&ResourceType::RollingStock],
             &[UserResourceGrant {
                 id: rs_with_grant.id,
                 grant: StandardGrant::Writer
             }]
         );
         assert_eq!(
-            response.get(&ResourceType::Project).unwrap(),
+            &response[&ResourceType::Project],
             &[UserResourceGrant {
                 id: project.id,
                 grant: StandardGrant::Owner

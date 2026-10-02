@@ -1237,7 +1237,7 @@ pub mod tests {
 
         assert!(infra_cache.signals().contains_key(signal.get_id()));
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1259,7 +1259,7 @@ pub mod tests {
 
         assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1294,7 +1294,7 @@ pub mod tests {
 
         assert!(infra_cache.operational_points().contains_key(op.get_id()));
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1342,7 +1342,7 @@ pub mod tests {
 
         assert!(infra_cache.detectors().contains_key(detector.get_id()));
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1356,7 +1356,7 @@ pub mod tests {
 
         assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1383,7 +1383,7 @@ pub mod tests {
                 .contains_key(electrification.get_id())
         );
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1406,7 +1406,7 @@ pub mod tests {
 
         assert!(infra_cache.level_crossings().contains_key(lc.get_id()));
         let refs = infra_cache.track_sections_refs;
-        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        assert_eq!(refs["InvalidRef"].len(), 1);
     }
 
     pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
