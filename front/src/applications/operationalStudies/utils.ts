@@ -51,11 +51,10 @@ export const intermediateStopsCount = ({
 }) => {
   if (!schedule) return 0;
 
-  // TODO (origin|destination)Id => (origin|destination)Key
-  const originId = path.at(0)?.key;
-  const destinationId = path.at(-1)?.key;
+  const originKey = path.at(0)?.key;
+  const destinationKey = path.at(-1)?.key;
   const intermediateStops = schedule.filter(
-    (step) => step.stop_for && step.at !== originId && step.at !== destinationId
+    (step) => step.stop_for && step.at !== originKey && step.at !== destinationKey
   );
   return intermediateStops.length;
 };
