@@ -30,9 +30,12 @@ pub(crate) fn operational_points(
     pbf.iter()
         .flatten()
         .filter(|obj| obj.tags().contains("public_transport", "stop_area"))
-        .flat_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Relation(rel) => Some(rel), // Only consider OSM relations
-            _ => None,                                                     // Discard Nodes and Ways
+        .flat_map(|obj| {
+            if let osm4routing::osmpbfreader::OsmObj::Relation(rel) = obj {
+                Some(rel) // Only consider OSM relations
+            } else {
+                None // Discard Nodes and Ways
+            }
         })
         .flat_map(|rel| {
             let parts = parts(&rel, nodes_to_tracks, track_sections);
@@ -66,12 +69,14 @@ fn map_node_id_to_main_code(
 ) -> HashMap<osm4routing::osmpbfreader::NodeId, NonBlankString> {
     pbf.iter()
         .flatten()
-        .filter_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Node(node) => node
-                .tags
-                .get("railway:ref")
-                .map(|tag| (node.id, NonBlankString::from(tag.to_string()))),
-            _ => None,
+        .filter_map(|obj| {
+            if let osm4routing::osmpbfreader::OsmObj::Node(node) = obj {
+                node.tags
+                    .get("railway:ref")
+                    .map(|tag| (node.id, NonBlankString::from(tag.to_string())))
+            } else {
+                None
+            }
         })
         .collect()
 }
@@ -82,27 +87,29 @@ fn parts(
     track_sections: &[TrackSection],
 ) -> Vec<OperationalPointPart> {
     relation
-		.refs
-		.iter()
-		.filter(|r| r.role == "stop") // We ignore other members of the relation
-		.flat_map(|r| match r.member {
-			osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
-			_ => {
-				warn!("OpenStreetMap relation ({}) has a member ({:?}) with role `stop` that isn’t a node", relation.id.0, r.member);
-				None
-			},
-		})
-		.flat_map(|node| {
-			nodes_to_tracks
-				.track_and_position(node)
-				.map(|(track, position, local_track_name)| OperationalPointPart {
-					track: track.clone(),
-					position,
-					local_track_name: local_track_name.unwrap_or_else(|| local_track_name_fallback(&track, track_sections)),
-					extensions: Default::default()
-				})
-		})
-		.collect()
+        .refs
+        .iter()
+        .filter(|r| r.role == "stop") // We ignore other members of the relation
+        .flat_map(|r| {
+            if let osm4routing::osmpbfreader::OsmId::Node(id) = r.member {
+                Some(id)
+            } else {
+                warn!("OpenStreetMap relation ({}) has a member ({:?}) with role `stop` that isn’t a node", relation.id.0, r.member);
+                None
+            }
+        })
+        .flat_map(|node| {
+            nodes_to_tracks
+                .track_and_position(node)
+                .map(|(track, position, local_track_name)| OperationalPointPart {
+                    track: track.clone(),
+                    position,
+                    local_track_name: local_track_name
+                        .unwrap_or_else(|| local_track_name_fallback(&track, track_sections)),
+                    extensions: Default::default(),
+                })
+        })
+        .collect()
 }
 
 /// If the local_track_name is None, we try to find if the track_section associated with this operational_point_part has a track_name.
@@ -135,9 +142,12 @@ fn main_code(
     relation
         .refs
         .iter()
-        .filter_map(|r| match r.member {
-            osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
-            _ => None,
+        .filter_map(|r| {
+            if let osm4routing::osmpbfreader::OsmId::Node(id) = r.member {
+                Some(id)
+            } else {
+                None
+            }
         })
         .find_map(|node_id| node_id_to_main_code.get(&node_id).cloned())
         .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))

@@ -53,6 +53,10 @@ impl BoundingBox {
     }
 
     pub fn from_geojson(value: geos::geojson::Value) -> Result<Self, GeometryError> {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we need to bind all the other patterns"
+        )]
         match value {
             LineString(segments) => Ok(Self::from_iter(segments.into_iter().map(|points| {
                 (

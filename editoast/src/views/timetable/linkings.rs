@@ -124,12 +124,13 @@ enum LinkingError {
 
 impl From<models::Error> for LinkingError {
     fn from(err: models::Error) -> Self {
-        match &err {
-            models::Error::UniqueViolation {
-                constraint,
-                column: _,
-                value,
-            } => match constraint.as_str() {
+        if let models::Error::UniqueViolation {
+            constraint,
+            column: _,
+            value,
+        } = &err
+        {
+            match constraint.as_str() {
                 "unique_source" => Self::SourceAlreadyUsed {
                     occurrence: format!(
                         "(timetable_id, train_schedule_id, occurrence_index, added_exception_id, train_schedule_instance_index) = ({})",
@@ -143,8 +144,9 @@ impl From<models::Error> for LinkingError {
                     ),
                 },
                 _ => Self::Database(err),
-            },
-            _ => Self::Database(err),
+            }
+        } else {
+            Self::Database(err)
         }
     }
 }
@@ -235,19 +237,23 @@ impl LinkingOccurrenceId {
         }
     }
     pub fn occurrence_index(&self) -> Option<i64> {
-        match self {
-            LinkingOccurrenceId::PacedOccurrence {
-                occurrence_index, ..
-            } => Some(*occurrence_index),
-            _ => None,
+        if let LinkingOccurrenceId::PacedOccurrence {
+            occurrence_index, ..
+        } = self
+        {
+            Some(*occurrence_index)
+        } else {
+            None
         }
     }
     pub fn added_exception_id(&self) -> Option<i64> {
-        match self {
-            LinkingOccurrenceId::AddedException {
-                added_exception_id, ..
-            } => Some(*added_exception_id),
-            _ => None,
+        if let LinkingOccurrenceId::AddedException {
+            added_exception_id, ..
+        } = self
+        {
+            Some(*added_exception_id)
+        } else {
+            None
         }
     }
 }

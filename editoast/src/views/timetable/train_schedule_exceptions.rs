@@ -61,20 +61,19 @@ pub enum TrainScheduleExceptionError {
 
 impl From<models::Error> for TrainScheduleExceptionError {
     fn from(e: models::Error) -> Self {
-        match e {
-            models::Error::UniqueViolation {
-                constraint,
-                column,
-                value,
-            } if constraint
-                == "train_schedule_exception_timetable_id_train_schedule_id_occ_key"
-                && column == "timetable_id, train_schedule_id, occurrence_index" =>
-            {
-                Self::OccurrenceIndexAlreadyUsed {
-                    occurrence_index: value,
-                }
+        if let models::Error::UniqueViolation {
+            constraint,
+            column,
+            value,
+        } = &e
+            && constraint == "train_schedule_exception_timetable_id_train_schedule_id_occ_key"
+            && column == "timetable_id, train_schedule_id, occurrence_index"
+        {
+            Self::OccurrenceIndexAlreadyUsed {
+                occurrence_index: value.clone(),
             }
-            e => Self::Database(e),
+        } else {
+            Self::Database(e)
         }
     }
 }

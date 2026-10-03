@@ -261,11 +261,15 @@ impl Request {
         let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &locations).await?;
         let track_offsets = op_cache
             .extract_location_from_path_items(&locations)
-            .map_err(|path_res| match path_res {
-                PathfindingFailure::PathfindingInputError(
+            .map_err(|path_res| {
+                if let PathfindingFailure::PathfindingInputError(
                     PathfindingInputError::InvalidPathItems { items },
-                ) => StdcmError::InvalidPathItems { items },
-                _ => panic!("Unexpected pathfinding result"),
+                ) = path_res
+                {
+                    StdcmError::InvalidPathItems { items }
+                } else {
+                    panic!("Unexpected pathfinding result")
+                }
             })?;
 
         Ok(track_offsets

@@ -16,16 +16,22 @@ pub fn fix_signal(
     errors: impl Iterator<Item = InfraError>,
 ) -> HashMap<ObjectRef, Fix> {
     errors
-        .filter_map(|infra_error| match infra_error.get_sub_type() {
-            InfraErrorType::OutOfRange { .. } => Some(new_ref_fix_delete_pair(signal)),
-            InfraErrorType::InvalidReference { reference }
-                if reference.obj_type == ObjectType::TrackSection =>
-            {
-                Some(new_ref_fix_delete_pair(signal))
-            }
-            _ => {
-                debug!("error not (yet) fixable for '{}'", infra_error.get_type());
-                None
+        .filter_map(|infra_error| {
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "We can’t use an `if let` since we are interested by only a few patterns"
+            )]
+            match infra_error.get_sub_type() {
+                InfraErrorType::OutOfRange { .. } => Some(new_ref_fix_delete_pair(signal)),
+                InfraErrorType::InvalidReference { reference }
+                    if reference.obj_type == ObjectType::TrackSection =>
+                {
+                    Some(new_ref_fix_delete_pair(signal))
+                }
+                _ => {
+                    debug!("error not (yet) fixable for '{}'", infra_error.get_type());
+                    None
+                }
             }
         })
         .collect()

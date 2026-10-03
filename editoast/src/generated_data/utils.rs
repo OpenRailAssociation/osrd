@@ -27,6 +27,10 @@ impl<'a> InvolvedObjects<'a> {
     ) -> Self {
         let mut res = Self::default();
         for op in operations {
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "We can’t use an `if let` since we are interested by only a few patterns"
+            )]
             match op {
                 CacheOperation::Create(object_cache) | CacheOperation::Update(object_cache)
                     if object_cache.get_type() == obj_type =>

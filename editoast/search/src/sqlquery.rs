@@ -125,6 +125,10 @@ impl Display for SqlQuery {
 }
 
 fn sql_type(spec: &TypeSpec) -> Option<String> {
+    #[expect(
+        clippy::wildcard_enum_match_arm,
+        reason = "We can’t use an `if let` since we are interested by only a few patterns"
+    )]
     match spec {
         TypeSpec::Type(AstType::Boolean) => Some("BOOLEAN".to_owned()),
         TypeSpec::Type(AstType::Integer) => Some("INTEGER".to_owned()),

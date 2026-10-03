@@ -169,9 +169,10 @@ impl ColumnType {
     }
 
     fn index(&self) -> TokenStream {
-        match self {
-            ColumnType::TextualSearchString => quote! { search::Index::GinTrgm },
-            _ => quote! { search::Index::Default },
+        if let ColumnType::TextualSearchString = self {
+            quote! { search::Index::GinTrgm }
+        } else {
+            quote! { search::Index::Default }
         }
     }
 }

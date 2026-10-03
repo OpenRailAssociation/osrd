@@ -300,6 +300,10 @@ inventory::submit! {
 
 impl EditoastError for core_client::Error {
     fn get_status(&self) -> StatusCode {
+        #[expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "We can’t use an `if let` since we are interested by only a few patterns"
+        )]
         match self {
             core_client::Error::UnparsableErrorOutput => StatusCode::BAD_REQUEST,
             core_client::Error::RawError(error) => match error.cause {
@@ -324,11 +328,10 @@ impl EditoastError for core_client::Error {
         }
     }
     fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
-        match self {
-            core_client::Error::CoreResponseFormatError { msg } => {
-                [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
-            }
-            _ => Default::default(),
+        if let core_client::Error::CoreResponseFormatError { msg } = self {
+            [("msg".to_string(), serde_json::to_value(msg).unwrap())].into()
+        } else {
+            Default::default()
         }
     }
 }

@@ -440,11 +440,14 @@ fn build_trains_requirements(
                 spacing_requirements,
                 routing_requirements,
                 ..
-            } = match sim {
-                simulation::Response::Success(SimulationResponseSuccess {
-                    final_output, ..
-                }) => Some(final_output),
-                _ => None,
+            } = if let simulation::Response::Success(SimulationResponseSuccess {
+                final_output,
+                ..
+            }) = sim
+            {
+                Some(final_output)
+            } else {
+                None
             }?;
             let train_requirements = make_requirements_absolute(
                 start_time,

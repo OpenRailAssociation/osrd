@@ -11,27 +11,26 @@ pub(super) struct Crud {
 
 impl FromMeta for Crud {
     fn from_expr(expr: &syn::Expr) -> darling::Result<Self> {
-        match expr {
-            Expr::Path(path) => {
-                let s = path
-                    .path
-                    .segments
-                    .first()
-                    .expect("a valid path has at least one segment")
-                    .ident
-                    .to_string()
-                    .to_lowercase();
-                if let Some(find) = s.chars().find(|c| !"crud".contains(*c)) {
-                    return Err(darling::Error::unknown_value(&find.to_string()).with_span(path));
-                }
-                Ok(Self {
-                    create: s.contains('c'),
-                    read: s.contains('r'),
-                    update: s.contains('u'),
-                    delete: s.contains('d'),
-                })
+        if let Expr::Path(path) = expr {
+            let s = path
+                .path
+                .segments
+                .first()
+                .expect("a valid path has at least one segment")
+                .ident
+                .to_string()
+                .to_lowercase();
+            if let Some(find) = s.chars().find(|c| !"crud".contains(*c)) {
+                return Err(darling::Error::unknown_value(&find.to_string()).with_span(path));
             }
-            _ => Err(darling::Error::unexpected_expr_type(expr)),
+            Ok(Self {
+                create: s.contains('c'),
+                read: s.contains('r'),
+                update: s.contains('u'),
+                delete: s.contains('d'),
+            })
+        } else {
+            Err(darling::Error::unexpected_expr_type(expr))
         }
         .map_err(|e| e.with_span(expr))
     }

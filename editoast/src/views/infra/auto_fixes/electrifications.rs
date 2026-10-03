@@ -37,14 +37,20 @@ pub fn fix_electrification(
     errors: impl Iterator<Item = InfraError>,
 ) -> HashMap<ObjectRef, Fix> {
     let operation = errors
-        .filter_map(|infra_error| match infra_error.get_sub_type() {
-            InfraErrorType::EmptyObject => Some(OrderedOperation::Delete),
-            InfraErrorType::InvalidReference { reference } => {
-                invalid_reference_to_ordered_operation(electrification, reference)
-            }
-            _ => {
-                debug!("error not (yet) fixable for '{}'", infra_error.get_type());
-                None
+        .filter_map(|infra_error| {
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "We can’t use an `if let` since we are interested by only a few patterns"
+            )]
+            match infra_error.get_sub_type() {
+                InfraErrorType::EmptyObject => Some(OrderedOperation::Delete),
+                InfraErrorType::InvalidReference { reference } => {
+                    invalid_reference_to_ordered_operation(electrification, reference)
+                }
+                _ => {
+                    debug!("error not (yet) fixable for '{}'", infra_error.get_type());
+                    None
+                }
             }
         })
         .unique()

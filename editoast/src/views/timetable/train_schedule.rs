@@ -21,7 +21,6 @@ use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingInputError::UnauthorizedRollingStock;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
 use core_task::Correlated;
@@ -1039,19 +1038,15 @@ pub(in crate::views) async fn etcs_braking_curves(
     .unwrap();
 
     // Extract simulation path
-    let pathfinding_response: PathfindingResultSuccess = match pathfinding_result.as_ref() {
-        PathfindingResult::Success(path) => path.clone(),
-        _ => {
-            return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
-        }
+    let PathfindingResult::Success(ref pathfinding_response) = *pathfinding_result else {
+        return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
     };
 
     // Extract mrsp
-    let mrsp = match simulation_result.as_ref() {
-        simulation::Response::Success(SimulationResponseSuccess { mrsp, .. }) => mrsp.clone(),
-        _ => {
-            return Err(TrainScheduleError::SimulationFailed { train_schedule_id }.into());
-        }
+    let simulation::Response::Success(SimulationResponseSuccess { ref mrsp, .. }) =
+        *simulation_result
+    else {
+        return Err(TrainScheduleError::SimulationFailed { train_schedule_id }.into());
     };
 
     // Build physics consist
@@ -1079,12 +1074,12 @@ pub(in crate::views) async fn etcs_braking_curves(
         expected_version: infra.version,
         physics_consist,
         comfort: train_occurrence.comfort,
-        path: pathfinding_response.path,
+        path: pathfinding_response.path.clone(),
         schedule,
         power_restrictions,
         electrical_profile_set_id,
         use_electrical_profiles: train_occurrence.options.use_electrical_profiles,
-        mrsp,
+        mrsp: mrsp.clone(),
     };
 
     let etcs_braking_curves_response = etcs_braking_curves_request

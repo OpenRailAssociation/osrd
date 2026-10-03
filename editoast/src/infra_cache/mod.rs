@@ -198,97 +198,109 @@ impl ObjectCache {
 
     /// Unwrap a track section from the object cache
     pub fn unwrap_track_section(&self) -> &TrackSectionCache {
-        match self {
-            ObjectCache::TrackSection(track) => track,
-            _ => panic!("ObjectCache is not a TrackSection"),
+        if let ObjectCache::TrackSection(track) = self {
+            track
+        } else {
+            panic!("ObjectCache is not a TrackSection")
         }
     }
 
     /// Unwrap a signal from the object cache
     pub fn unwrap_signal(&self) -> &SignalCache {
-        match self {
-            ObjectCache::Signal(signal) => signal,
-            _ => panic!("ObjectCache is not a Signal"),
+        if let ObjectCache::Signal(signal) = self {
+            signal
+        } else {
+            panic!("ObjectCache is not a Signal")
         }
     }
 
     /// Unwrap a speed section from the object cache
     pub fn unwrap_speed_section(&self) -> &SpeedSection {
-        match self {
-            ObjectCache::SpeedSection(speed) => speed,
-            _ => panic!("ObjectCache is not a SpeedSection"),
+        if let ObjectCache::SpeedSection(speed) = self {
+            speed
+        } else {
+            panic!("ObjectCache is not a SpeedSection")
         }
     }
 
     /// Unwrap a switch from the object cache
     pub fn unwrap_switch(&self) -> &SwitchCache {
-        match self {
-            ObjectCache::Switch(switch) => switch,
-            _ => panic!("ObjectCache is not a Switch"),
+        if let ObjectCache::Switch(switch) = self {
+            switch
+        } else {
+            panic!("ObjectCache is not a Switch")
         }
     }
 
     /// Unwrap a detector from the object cache
     pub fn unwrap_detector(&self) -> &DetectorCache {
-        match self {
-            ObjectCache::Detector(detector) => detector,
-            _ => panic!("ObjectCache is not a Detector"),
+        if let ObjectCache::Detector(detector) = self {
+            detector
+        } else {
+            panic!("ObjectCache is not a Detector")
         }
     }
 
     /// Unwrap a buffer stop from the object cache
     pub fn unwrap_buffer_stop(&self) -> &BufferStopCache {
-        match self {
-            ObjectCache::BufferStop(buffer_stop) => buffer_stop,
-            _ => panic!("ObjectCache is not a BufferStop"),
+        if let ObjectCache::BufferStop(buffer_stop) = self {
+            buffer_stop
+        } else {
+            panic!("ObjectCache is not a BufferStop")
         }
     }
 
     /// Unwrap a route from the object cache
     pub fn unwrap_route(&self) -> &Route {
-        match self {
-            ObjectCache::Route(route) => route,
-            _ => panic!("ObjectCache is not a Route"),
+        if let ObjectCache::Route(route) = self {
+            route
+        } else {
+            panic!("ObjectCache is not a Route")
         }
     }
 
     /// Unwrap an operational point from the object cache
     pub fn unwrap_operational_point(&self) -> &OperationalPointCache {
-        match self {
-            ObjectCache::OperationalPoint(op) => op,
-            _ => panic!("ObjectCache is not a OperationalPoint"),
+        if let ObjectCache::OperationalPoint(op) = self {
+            op
+        } else {
+            panic!("ObjectCache is not a OperationalPoint")
         }
     }
 
     /// Unwrap a switch type from the object cache
     pub fn unwrap_switch_type(&self) -> &SwitchType {
-        match self {
-            ObjectCache::SwitchType(switch_type) => switch_type,
-            _ => panic!("ObjectCache is not a SwitchType"),
+        if let ObjectCache::SwitchType(switch_type) = self {
+            switch_type
+        } else {
+            panic!("ObjectCache is not a SwitchType")
         }
     }
 
     /// Unwrap a electrification from the object cache
     pub fn unwrap_electrification(&self) -> &Electrification {
-        match self {
-            ObjectCache::Electrification(electrification) => electrification,
-            _ => panic!("ObjectCache is not a Electrification"),
+        if let ObjectCache::Electrification(electrification) = self {
+            electrification
+        } else {
+            panic!("ObjectCache is not a Electrification")
         }
     }
 
     /// Unwrap a neutral section from the object cache
     pub fn unwrap_neutral_section(&self) -> &NeutralSection {
-        match self {
-            ObjectCache::NeutralSection(neutral_section) => neutral_section,
-            _ => panic!("ObjectCache is not a NeutralSection"),
+        if let ObjectCache::NeutralSection(neutral_section) = self {
+            neutral_section
+        } else {
+            panic!("ObjectCache is not a NeutralSection")
         }
     }
 
     /// Unwrap a level crossing from the object cache
     pub fn unwrap_level_crossing(&self) -> &LevelCrossingCache {
-        match self {
-            ObjectCache::LevelCrossing(lc) => lc,
-            _ => panic!("ObjectCache is not a LevelCrossing"),
+        if let ObjectCache::LevelCrossing(lc) = self {
+            lc
+        } else {
+            panic!("ObjectCache is not a LevelCrossing")
         }
     }
 }
