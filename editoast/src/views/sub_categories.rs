@@ -109,7 +109,7 @@ pub(in crate::views) async fn create_sub_categories(
 }
 
 #[derive(IntoParams)]
-#[expect(unused)]
+#[allow(unused, reason = "only used as an OpenAPI schema")]
 struct SubCategoryCodeParam {
     code: String,
 }

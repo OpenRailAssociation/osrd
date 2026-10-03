@@ -16,7 +16,10 @@ pub trait RollingResistance: Serialize + for<'de> Deserialize<'de> {}
 #[derive(Clone, Debug, Default, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
-#[allow(non_snake_case)]
+#[allow(
+    non_snake_case,
+    reason = "The coefficient A, B, and C are usually represented as capital letters."
+)]
 pub struct RollingResistanceRaw {
     #[serde(rename = "type")]
     pub rolling_resistance_type: String,
@@ -43,7 +46,10 @@ impl RollingResistance for RollingResistanceRaw {}
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
 #[educe(Hash)]
 #[serde(deny_unknown_fields)]
-#[allow(non_snake_case)]
+#[allow(
+    non_snake_case,
+    reason = "The coefficient A, B, and C are usually represented as capital letters."
+)]
 pub struct RollingResistancePerWeight {
     #[serde(rename = "type")]
     pub rolling_resistance_type: String,

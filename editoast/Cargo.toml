@@ -32,6 +32,7 @@ get_unwrap = "deny"
 rest_pat_in_fully_bound_structs = "deny"
 unused_result_ok = "deny"
 unused_trait_names = "deny"
+allow_attributes_without_reason = "deny"
 
 [workspace.package]
 version = "0.1.0"

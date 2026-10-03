@@ -271,7 +271,10 @@ pub enum ElectricalProfileValue {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[schema(as = CoreSpeedLimitSource, title_variants)]
 #[serde(tag = "speed_limit_source_type", rename_all = "snake_case")]
-#[allow(clippy::enum_variant_names)]
+#[allow(
+    clippy::enum_variant_names,
+    reason = "part of the external API, let’s keep the `Tag` suffix"
+)]
 pub enum SpeedLimitSource {
     GivenTrainTag { tag: String },
     FallbackTag { tag: String },
@@ -333,9 +336,10 @@ pub struct SimulationSuccess {
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(tag = "status", rename_all = "snake_case")]
-// We accepted the difference of memory size taken by variants
-// Since there is only on success and others are error cases
-#[allow(clippy::large_enum_variant)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "We accepted the difference of memory size taken by variants, since there is only one success and others are error cases"
+)]
 pub enum Response {
     Success(SimulationSuccess),
     SimulationFailed { core_error: RawError },

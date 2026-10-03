@@ -1,5 +1,3 @@
-#![allow(clippy::manual_unwrap_or_default)]
-
 use super::RawIdentifier;
 use super::crud::Crud;
 use darling::FromDeriveInput;
@@ -46,7 +44,10 @@ pub(super) struct ImplPlan {
 }
 
 #[derive(Debug, PartialEq)]
-#[allow(clippy::large_enum_variant)] // yeah sure, but that's by design though...
+#[allow(
+    clippy::large_enum_variant,
+    reason = "yeah sure, but that’s by design though…"
+)]
 pub(super) enum ErrorArgs {
     Single(syn::Path),
     Rw(RwErrorArgs),

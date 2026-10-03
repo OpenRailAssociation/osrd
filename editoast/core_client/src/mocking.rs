@@ -145,7 +145,6 @@ pub struct StubResponse {
     // TODO: currently any failing status code is treated as a GenericCoreError
     // It would be nice if AsCoreRequest could expose an interface to
     // properly handle response error cases (and Deserialize the error)
-    #[allow(unused)]
     code: StatusCode,
     body: Option<Arc<String>>,
 }
@@ -182,7 +181,6 @@ impl<'a> StubRequestBuilder<'a> {
     /// same pointer, the last one win.
     ///
     /// [RFC6901]: https://tools.ietf.org/html/rfc6901
-    #[allow(unused)]
     #[must_use = "call .finish() to register the stub request"]
     pub fn on_body<B: Serialize>(mut self, pointer: &'static str, expected: B) -> Self {
         self.on_body.insert(
@@ -203,7 +201,6 @@ impl<'a> StubRequestBuilder<'a> {
     }
 
     /// Builds the [StubResponse] and registers it into the [MockingClient]
-    #[allow(unused)]
     pub fn finish(self) {
         self.client
             .stubs
@@ -241,7 +238,6 @@ impl StubResponseBuilder<'_> {
         self
     }
 
-    #[allow(unused)]
     #[must_use = "call .finish() to register the stub request"]
     pub fn json<T: Serialize>(mut self, body: T) -> Self {
         let json_body = serde_json::to_string(&body).expect("Failed to serialize JSON");

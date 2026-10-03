@@ -94,9 +94,10 @@ pub struct StdcmConflictingWorkSchedule {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-// We accepted the difference of memory size taken by variants
-// Since there is only on success and others are error cases
-#[allow(clippy::large_enum_variant)]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "We accepted the difference of memory size taken by variants since there is only one success and others are error cases"
+)]
 #[schema(title_variants)]
 pub(in crate::views) enum StdcmResponse {
     Success {
@@ -127,10 +128,9 @@ struct StdcmProgressionEvent {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "event", rename_all = "snake_case", content = "data")]
-#[allow(clippy::large_enum_variant)]
 enum StdcmProgression {
     Ongoing(StdcmProgressionEvent),
-    Completed(StdcmResponse),
+    Completed(Box<StdcmResponse>),
 }
 
 #[derive(Debug, Error, EditoastError, Serialize, derive_more::From)]
@@ -413,9 +413,11 @@ pub(in crate::views) async fn stdcm(
 
         match stdcm_stream {
             Err(error) => response_tx
-                .send(StdcmProgression::Completed(StdcmResponse::InternalError {
-                    error: error.into(),
-                }))
+                .send(StdcmProgression::Completed(Box::new(
+                    StdcmResponse::InternalError {
+                        error: error.into(),
+                    },
+                )))
                 .expect("the receiver should not be dropped"),
             Ok(stream) => {
                 stream
@@ -438,11 +440,13 @@ pub(in crate::views) async fn stdcm(
                                             departure_time,
                                         } => {
                                             tracing::Span::current().record("path_found", true);
-                                            StdcmProgression::Completed(StdcmResponse::Success {
-                                                simulation: simulation.into(),
-                                                pathfinding_result: path,
-                                                departure_time,
-                                            })
+                                            StdcmProgression::Completed(Box::new(
+                                                StdcmResponse::Success {
+                                                    simulation: simulation.into(),
+                                                    pathfinding_result: path,
+                                                    departure_time,
+                                                },
+                                            ))
                                         }
                                         core_client::stdcm::Response::PathNotFound {
                                             most_blocking_work_schedules,
@@ -491,7 +495,7 @@ pub(in crate::views) async fn stdcm(
                                                 )
                                                 .await;
 
-                                            StdcmProgression::Completed(
+                                            StdcmProgression::Completed(Box::new(
                                                 StdcmResponse::PathNotFound {
                                                     most_blocking_work_schedules:
                                                         stdcm_most_blocking_work_schedules,
@@ -500,15 +504,15 @@ pub(in crate::views) async fn stdcm(
                                                     partial_pathfinding_result: partial_path,
                                                     last_reached_operational_point,
                                                 },
-                                            )
+                                            ))
                                         }
                                     }
                                 }
-                                Err(error) => {
-                                    StdcmProgression::Completed(StdcmResponse::InternalError {
+                                Err(error) => StdcmProgression::Completed(Box::new(
+                                    StdcmResponse::InternalError {
                                         error: error.into(),
-                                    })
-                                }
+                                    },
+                                )),
                             };
                             tx.send(api_event)
                                 .expect("the receiver should not be dropped");
@@ -578,7 +582,11 @@ struct VirtualTrainRun {
 }
 
 impl VirtualTrainRun {
-    #[allow(clippy::too_many_arguments)]
+    // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "by design of the function: 1 to 1 mapping of the API"
+    )]
     async fn simulate_consists_sequence(
         db_pool: Arc<DbConnectionPoolV2>,
         valkey_client: Arc<cache::Client>,
@@ -1274,12 +1282,12 @@ mod tests {
         {
             assert_eq!(
                 stdcm_response,
-                StdcmProgression::Completed(StdcmResponse::Success {
+                StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                     simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
-                })
+                }))
             );
         }
     }
@@ -1454,7 +1462,7 @@ mod tests {
 
         assert_eq!(
             stdcm_response,
-            StdcmProgression::Completed(StdcmResponse::PathNotFound {
+            StdcmProgression::Completed(Box::new(StdcmResponse::PathNotFound {
                 most_blocking_work_schedules: stdcm_most_blocking_work_schedules,
                 nearest_to_destination_work_schedules: stdm_nearest_blocking_work_schedules,
                 partial_pathfinding_result: Some(pathfinding_result_partial()),
@@ -1462,7 +1470,7 @@ mod tests {
                     last_reached_operational_point(),
                     new_ses_op()
                 )),
-            })
+            }))
         );
     }
 
@@ -1537,12 +1545,12 @@ mod tests {
             );
             assert_eq!(
                 stdcm_response[2].clone(),
-                StdcmProgression::Completed(StdcmResponse::Success {
+                StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                     simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
-                })
+                }))
             );
         }
     }
@@ -1656,7 +1664,7 @@ mod tests {
         );
         assert_eq!(
             stdcm_response[2].clone(),
-            StdcmProgression::Completed(StdcmResponse::PathNotFound {
+            StdcmProgression::Completed(Box::new(StdcmResponse::PathNotFound {
                 most_blocking_work_schedules: stdcm_most_blocking_work_schedules,
                 nearest_to_destination_work_schedules: stdcm_nearest_blocking_work_schedules,
                 partial_pathfinding_result: Some(pathfinding_result_partial()),
@@ -1664,7 +1672,7 @@ mod tests {
                     last_reached_operational_point(),
                     new_ses_op()
                 )),
-            }),
+            })),
         );
     }
 
@@ -1877,12 +1885,12 @@ mod tests {
 
         assert_eq!(
             stdcm_response,
-            StdcmProgression::Completed(StdcmResponse::Success {
+            StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                 simulation: simulation_empty_response().success().unwrap().into(),
                 pathfinding_result: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
-            })
+            }))
         );
     }
 
@@ -1970,12 +1978,12 @@ mod tests {
 
         assert_eq!(
             stdcm_response,
-            StdcmProgression::Completed(StdcmResponse::Success {
+            StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                 simulation: simulation_empty_response().success().unwrap().into(),
                 pathfinding_result: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
-            })
+            }))
         );
     }
 
@@ -2086,12 +2094,12 @@ mod tests {
 
         assert_eq!(
             stdcm_response,
-            StdcmProgression::Completed(StdcmResponse::Success {
+            StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                 simulation: simulation_empty_response().success().unwrap().into(),
                 pathfinding_result: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
-            })
+            }))
         );
     }
 

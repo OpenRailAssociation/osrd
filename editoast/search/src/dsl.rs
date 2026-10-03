@@ -376,7 +376,10 @@ impl QueryContext {
     /// ```
     ///
     /// See [Type] for information about the DSL itself
-    #[allow(clippy::type_complexity)]
+    #[allow(
+        clippy::type_complexity,
+        reason = "the complex type represents a function where each type is relatively simple."
+    )]
     pub fn def_function_1<P1: Type + 'static, R: Type + 'static>(
         &mut self,
         name: &'static str,
@@ -409,7 +412,10 @@ impl QueryContext {
     /// ```
     ///
     /// See [Type] for information about the DSL itself
-    #[allow(clippy::type_complexity)]
+    #[allow(
+        clippy::type_complexity,
+        reason = "the complex type represents a function where each type is relatively simple."
+    )]
     pub fn def_function_2<P1: Type + 'static, P2: Type + 'static, R: Type + 'static>(
         &mut self,
         name: &'static str,

@@ -14,7 +14,7 @@ impl ChangesetBuilderImplBlock {
     fn builder_field_fn_decl(&self, field: &ModelField) -> syn::ItemFn {
         let ident = &field.ident;
         let ty = &field.ty;
-        let value = field.into_transformed(parse_quote! { #ident });
+        let value = field.to_transformed(parse_quote! { #ident });
         let statement = quote! { self.#ident = Some(#value) };
         parse_quote! {
             pub fn #ident(mut self, #ident: #ty) -> Self {
@@ -27,7 +27,7 @@ impl ChangesetBuilderImplBlock {
     fn builder_flat_fn_decl(&self, field: &ModelField) -> syn::ItemFn {
         let ident = &field.ident;
         let ty = &field.ty;
-        let value = field.into_transformed(parse_quote! { #ident });
+        let value = field.to_transformed(parse_quote! { #ident });
         let statement = quote! { self.#ident = #ident.map(|#ident| #value) };
         let name = syn::Ident::new(&format!("flat_{}", field.builder_ident), Span::call_site());
         parse_quote! {

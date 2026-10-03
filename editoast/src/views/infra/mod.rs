@@ -226,7 +226,6 @@ pub(in crate::views) async fn list(
 }
 
 #[derive(IntoParams, Deserialize)]
-#[allow(unused)]
 pub(in crate::views) struct InfraIdParam {
     /// An existing infra ID
     infra_id: i64,

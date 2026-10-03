@@ -1,5 +1,7 @@
-// Clippy doesn't seem to understand the `Search` derive macro
-#![allow(clippy::duplicated_attributes)]
+#![allow(
+    clippy::duplicated_attributes,
+    reason = "False positive, Clippy doesn't seem to understand the `Search` derive macro"
+)]
 
 //! Defines the route [search()] that can efficiently search all objects declared
 //! in `search.yml` in a generic way
@@ -256,7 +258,7 @@ enum SearchApiError {
 #[derive(ToSchema, Serialize)]
 #[schema(example = json!(["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]), title_variants)]
 #[serde(untagged)]
-#[allow(unused)] // only used as an OpenAPI schema
+#[allow(unused, reason = "only used as an OpenAPI schema")]
 enum SearchQuery {
     Boolean(bool),
     Number(f64),

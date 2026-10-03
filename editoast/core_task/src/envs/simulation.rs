@@ -303,7 +303,7 @@ where
                             data: Ok(core_client::simulation::Response::SimulationFailed { core_error }),
                         } => {
                             let _ = return_tx
-                                .unbounded_send(Correlated::new(sim_key, Err(core_client::Error::RawError(core_error))));
+                                .unbounded_send(Correlated::new(sim_key, Err(core_client::Error::Raw(core_error))));
                         }
                         Correlated {
                             correlation_key: sim_key,
