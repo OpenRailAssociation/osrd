@@ -21,13 +21,13 @@ export default function getLinkableOccupancyData(
 ): Pick<LinkableOccupancy, 'blockType' | 'isStop' | 'active'> {
   const exceptionPathAndSchedule = exception?.path_and_schedule;
   const path = exceptionPathAndSchedule?.path;
-  const originPathItemId = path?.at(0)?.key ?? train.originPathItem.key;
-  const destinationPathItemId = path?.at(-1)?.key ?? train.destinationPathItem.key;
+  const originPathItemKey = path?.at(0)?.key ?? train.originPathItem.key;
+  const destinationPathItemKey = path?.at(-1)?.key ?? train.destinationPathItem.key;
 
   let blockType: LinkableOccupancy['blockType'] = 'via';
   if (location.type === 'exact_path_item') {
-    if (location.path_item_key === originPathItemId) blockType = 'outgoing';
-    else if (location.path_item_key === destinationPathItemId) blockType = 'incoming';
+    if (location.path_item_key === originPathItemKey) blockType = 'outgoing';
+    else if (location.path_item_key === destinationPathItemKey) blockType = 'incoming';
   }
 
   const schedule = exceptionPathAndSchedule?.schedule ?? train.schedule;
