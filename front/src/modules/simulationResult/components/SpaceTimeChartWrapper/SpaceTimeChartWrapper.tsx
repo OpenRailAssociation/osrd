@@ -61,7 +61,8 @@ import {
 } from 'reducers/simulationResults/selectors';
 import type { SelectionSource } from 'reducers/simulationResults/types';
 import { useAppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, subtractDurationFromDate } from 'utils/duration';
+import { usePrevious } from 'utils/hooks/state';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractExceptionIdFromOccurrenceId,
@@ -522,13 +523,23 @@ const SpaceTimeChartWrapper = ({
       (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0,
   });
 
+  const previousProjectionId = usePrevious(selectedProjectionId);
+
   useEffect(() => {
-    const trainId = isTrainScheduleId(selectedProjectionId)
+    const firstOccurrenceId = isTrainScheduleId(selectedProjectionId)
       ? formatTrainScheduleIdToIndexedOccurrenceId(selectedProjectionId, 0)
-      : selectedProjectionId;
-    const trainUsedForProjection = projectedTrains.find((train) => train.id === trainId);
+      : undefined;
+    const trainUsedForProjection = projectedTrains.find(
+      (train) => train.id === selectedProjectionId || train.id === firstOccurrenceId
+    );
     if (trainUsedForProjection) {
-      setTimeOrigin(+trainUsedForProjection.departureTime);
+      // Center the view on the newly projected train (+5mn).
+      setTimeOrigin(
+        +subtractDurationFromDate(trainUsedForProjection.departureTime, new Duration({ minutes: 5 }))
+      );
+      if (previousProjectionId !== selectedProjectionId && spaceTimeChartProps.xOffset) {
+        pan({ dx: -spaceTimeChartProps.xOffset });
+      }
     } else {
       const minTime = Math.min(
         ...trainScheduleProjections
