@@ -31,6 +31,7 @@ async_fn_in_trait = "allow" # all of our public traits are only used inside the 
 get_unwrap = "deny"
 map_with_unused_argument_over_ranges = "deny"
 rest_pat_in_fully_bound_structs = "deny"
+unseparated_literal_suffix = "deny"
 unused_result_ok = "deny"
 unused_trait_names = "deny"
 
