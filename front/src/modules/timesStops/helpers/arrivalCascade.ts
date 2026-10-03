@@ -20,11 +20,11 @@ export const cascadeArrivals = ({
   fromPathIndex: number;
   shift?: (arrival: Duration) => Duration;
 }): ScheduleItem[] => {
-  const pathIndexById = new Map(path.map((step, index) => [step.key, index]));
+  const pathIndexByKey = new Map(path.map((step, index) => [step.key, index]));
 
   const scheduledItems = schedule
     .flatMap((item) => {
-      const pathIndex = pathIndexById.get(item.at);
+      const pathIndex = pathIndexByKey.get(item.at);
       return pathIndex === undefined ? [] : [{ item, pathIndex }];
     })
     .sort((a, b) => a.pathIndex - b.pathIndex);

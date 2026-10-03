@@ -42,12 +42,12 @@ import { type Margins, type StepStatus, type TimesStopsRow } from '../types';
  */
 const getPowerRestrictionForPathStep = (
   stepIndex: number,
-  pathIdToIndex: Map<string, number>,
+  pathKeyToIndex: Map<string, number>,
   powerRestrictions: PowerRestrictionItem[] | undefined
 ): string | null => {
   if (!powerRestrictions) return null;
   for (const restriction of powerRestrictions) {
-    const fromIndex = pathIdToIndex.get(restriction.from);
+    const fromIndex = pathKeyToIndex.get(restriction.from);
     if (fromIndex === stepIndex) return restriction.value;
   }
   return null;
@@ -253,9 +253,9 @@ const useTimesStopsTableData = (
   const allRows = useMemo(() => {
     const startDate = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
-    const pathIdToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
+    const pathKeyToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
 
-    const pathStepRowsById = new Map(
+    const pathStepRowsByKey = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
         const pathStepOp = pathStepOps.get(pathStep.key);
 
@@ -317,7 +317,7 @@ const useTimesStopsTableData = (
 
         const powerRestriction = getPowerRestrictionForPathStep(
           stepIndex,
-          pathIdToIndex,
+          pathKeyToIndex,
           selectedTrain.power_restrictions
         );
 
@@ -356,7 +356,9 @@ const useTimesStopsTableData = (
     if (stableOPs) {
       stableOPs.forEach((op, opIndex) => {
         const trackName = op.part.local_track_name;
-        const matchingPathStepRow = op.pathItemId ? pathStepRowsById.get(op.pathItemId) : undefined;
+        const matchingPathStepRow = op.pathItemId
+          ? pathStepRowsByKey.get(op.pathItemId)
+          : undefined;
 
         if (matchingPathStepRow) {
           formattedRows.push({
@@ -413,7 +415,7 @@ const useTimesStopsTableData = (
         }
       });
     } else {
-      formattedRows = Array.from(pathStepRowsById.values()).map((row, rowIndex) => ({
+      formattedRows = Array.from(pathStepRowsByKey.values()).map((row, rowIndex) => ({
         ...row,
         opOnPathIndex: rowIndex,
       }));
