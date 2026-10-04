@@ -686,8 +686,16 @@ const useTrackOccupancy = ({
                   ...state,
                   zones: {
                     ...state.zones,
+                    // Drop any pre-existing zone for a train we're about to re-add fresh data for
+                    // (added or modified): otherwise a train that reappears in addedTrainIDs while
+                    // its zones are still present (e.g. during progressive projection loading when
+                    // the projected train has been updated after a drag and drop in the TOD)
+                    // keeps its stale entries and ends up duplicated once newZones is concatenated.
                     data: (state.zones.data || [])
-                      .filter((zone) => !modifiedTrainIDs.has(toOwnerTrainScheduleId(zone.trainId)))
+                      .filter((zone) => {
+                        const owner = toOwnerTrainScheduleId(zone.trainId);
+                        return !modifiedTrainIDs.has(owner) && !addedTrainIDs.has(owner);
+                      })
                       .concat(newZones),
                   },
                 }
