@@ -8,9 +8,8 @@ use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::str::FromStr as _;
-use std::sync::atomic::AtomicU32;
-use std::sync::atomic::Ordering;
 
 use tracing::warn;
 use uuid::Uuid;
@@ -26,6 +25,7 @@ pub(crate) fn operational_points(
     let file = std::fs::File::open(osm_pbf_in).unwrap();
     let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
     let node_id_to_main_code = map_node_id_to_main_code(&mut pbf);
+    let mut marked_uic: HashSet<u32> = Default::default();
     pbf.rewind().expect("Could not rewind file.");
     pbf.iter()
         .flatten()
@@ -39,23 +39,34 @@ pub(crate) fn operational_points(
             let main_code = main_code(&rel, &node_id_to_main_code);
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
             if parts.is_empty() {
-                None
-            } else {
-                let (identifier_name, identifier_uic) = identifier(&rel.tags);
-                Some(OperationalPoint {
-                    id: rel.id.0.to_string().into(),
-                    parts,
-                    weight: None,
-                    name: identifier_name,
-                    uic: Some(identifier_uic),
-                    plc: None,
-                    country_code: "FR".into(),
-                    main_code,
-                    secondary_code: Some("BV".into()),
-                    is_passenger_station: true,
-                    secondary_name: Some("BV".into()),
-                })
+                return None;
             }
+            let (identifier_name, mut identifier_uic) = identifier(&rel.tags);
+
+            // Check uic uniqueness. If the uic is already used, we set it to None to avoid duplicates.
+            if let Some(uic) = identifier_uic
+                && !marked_uic.insert(uic)
+            {
+                identifier_uic = None;
+                warn!(
+                    "UIC code {uic} is already used. Setting it to None for operational point {}",
+                    rel.id.0
+                );
+            }
+
+            Some(OperationalPoint {
+                id: rel.id.0.to_string().into(),
+                parts,
+                weight: None,
+                name: identifier_name,
+                uic: identifier_uic,
+                plc: None,
+                country_code: "FR".into(),
+                main_code,
+                secondary_code: Some("BV".into()),
+                is_passenger_station: true,
+                secondary_name: Some("BV".into()),
+            })
         })
         .collect()
 }
@@ -147,7 +158,7 @@ fn main_code(
 // The front crashes when this function return None.
 // This function will probably be changed when the data model will change.
 // The necessity of a fake UIC and name should be re-evaluated at that time.
-fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, u32) {
+fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, Option<u32>) {
     let uic = tags
         .get("uic_ref")
         .and_then(|uic| match u32::from_str(uic.as_str()) {
@@ -156,16 +167,11 @@ fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, u32) {
                 warn!("Could not parse {uic} uic code as integer");
                 None
             }
-        })
-        .unwrap_or_else(|| {
-            // Generate a fake UIC with code 11
-            static UIC_COUNTER: AtomicU32 = AtomicU32::new(0);
-            11_00000 + UIC_COUNTER.fetch_add(1, Ordering::Relaxed)
         });
 
     tags.get("name").map_or(
         // Generate a fake name from the UIC
-        (format!("op_{}", uic).into(), uic),
+        ("unknown".into(), uic),
         |name| (name.as_str().into(), uic),
     )
 }
