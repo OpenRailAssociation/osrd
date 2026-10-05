@@ -34,15 +34,20 @@ import useCategoryOptions, {
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import {
+  isStartTimeWithinInterval,
+  wrapStartTimeToInterval,
+} from 'modules/trainSchedule/helpers/hourlyTimetable';
+import {
   DEFAULT_PACED_TRAIN_INTERVAL,
   getDefaultPacedTrainTimeWindow,
 } from 'modules/trainSchedule/helpers/pacedTrain';
+import useStartTimeWrappedWarning from 'modules/trainSchedule/hooks/useStartTimeWrappedWarning';
 import type { Train } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { Duration, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
-import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
+import { extractEditoastIdFromTrainId, isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 import { createFixedSelectOptions, createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import RollingStockField from './RollingStockField';
@@ -259,6 +264,7 @@ const ExpandedTrainForm = ({
   onItineraryOpened,
 }: ExpandedTrainFormProps) => {
   const { t, i18n } = useTranslation(['operational-studies', 'translation']);
+  const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
   const infraID = useInfraID();
   const { scenario } = useScenarioContext();
   const timetableType = scenario.timetable_type;
@@ -308,15 +314,39 @@ const ExpandedTrainForm = ({
     setPathChanged(false);
   }, [setPathChanged]);
 
+  /**
+   * Persist the train if the fields changed it, and return the fields actually persisted.
+   *
+   * In an hourly timetable, the paced train start time must stay in `[0, interval)`: if it doesn't
+   * anymore (e.g. after the interval was lowered), it is brought back into it with a modulo.
+   */
   const persistTrainIfNeeded = useCallback(
-    (newFields: TrainFieldsState) => {
-      const updatedTrain = applyFieldsToTrain(newFields, train, timetableType);
+    (newFields: TrainFieldsState): TrainFieldsState => {
+      let persistedFields = newFields;
+      let updatedTrain = applyFieldsToTrain(newFields, train, timetableType);
+
+      if (
+        isTrainScheduleId(train.id) &&
+        updatedTrain.paced &&
+        newFields.departure_date instanceof Duration
+      ) {
+        const interval = Duration.parse(updatedTrain.paced.interval);
+        if (!isStartTimeWithinInterval(newFields.departure_date, interval)) {
+          persistedFields = {
+            ...newFields,
+            departure_date: wrapStartTimeToInterval(newFields.departure_date, interval),
+          };
+          updatedTrain = { ...updatedTrain, start_time: persistedFields.departure_date.valueOf() };
+          displayStartTimeWrappedWarning();
+        }
+      }
 
       if (trainPayloadChanged(updatedTrain, train)) {
         onPersistTrain(updatedTrain);
       }
+      return persistedFields;
     },
-    [train, onPersistTrain, timetableType]
+    [train, onPersistTrain, timetableType, displayStartTimeWrappedWarning]
   );
 
   const onFieldChange = useCallback(
@@ -337,8 +367,7 @@ const ExpandedTrainForm = ({
     (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       const newFields = { ...fields, [fieldName]: newValue };
 
-      persistTrainIfNeeded(newFields);
-      setFields(newFields);
+      setFields(persistTrainIfNeeded(newFields));
     },
     [fields, persistTrainIfNeeded]
   );
