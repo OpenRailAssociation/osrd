@@ -670,7 +670,8 @@
     "disconnect": "Sign out",
     "featureFlags": {
       "hourlyTimetables": "Enable hourly timetables",
-      "linkings": "Enable linkings"
+      "linkings": "Enable linkings",
+      "multipleTimetables": "Enable multiple timetables per scenario"
     },
     "help": "Help",
     "impersonation": "Impersonate user",
