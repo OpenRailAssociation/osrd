@@ -37,3 +37,18 @@ export const computeDefaultHourlyPacedTrainTimeWindow = (
   hourlyTimetableDuration: Duration,
   interval: Duration
 ): Duration => new Duration({ milliseconds: lcm(hourlyTimetableDuration.ms, interval.ms) });
+
+/**
+ * In an hourly timetable, the start time of a paced train must stay in `[0, interval)`, and the
+ * one of an occurrence (indexed or added) in `[0, time_window)`. Return it modulo this period if it is out of
+ * it, or undefined if it is already valid.
+ */
+export const wrapHourlyStartTime = (
+  startTime: Duration,
+  paced: { interval: string; time_window: string },
+  isOccurrence: boolean
+): Duration | undefined => {
+  const period = Duration.parse(isOccurrence ? paced.time_window : paced.interval);
+  if (startTime.ms >= 0 && startTime.ms < period.ms) return undefined;
+  return new Duration({ milliseconds: ((startTime.ms % period.ms) + period.ms) % period.ms });
+};
