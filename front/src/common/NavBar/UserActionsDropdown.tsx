@@ -44,9 +44,7 @@ const UserActionsDropdown = ({
           className="user-settings-btn btn-link text-reset"
           onClick={openUserSettingsModal}
         >
-          <span className="mr-2">
-            <Gear variant="fill" />
-          </span>
+          <Gear variant="fill" className="mr-2" />
           {t('nav-bar.userSettings')}
         </button>
       ),
@@ -66,9 +64,7 @@ const UserActionsDropdown = ({
     {
       node: (
         <button type="button" className="btn-link text-reset" onClick={openHelpModalSNCF}>
-          <span className="mr-2">
-            <Report />
-          </span>
+          <Report className="mr-2" />
           {t('nav-bar.help')}
         </button>
       ),
@@ -77,9 +73,7 @@ const UserActionsDropdown = ({
     {
       node: (
         <button type="button" className="btn-link text-reset" onClick={() => logout()}>
-          <span className="mr-2">
-            <SignOut />
-          </span>
+          <SignOut className="mr-2" />
           {t('nav-bar.disconnect')}
         </button>
       ),
@@ -90,9 +84,7 @@ const UserActionsDropdown = ({
     const adminDownItem = {
       node: (
         <Link to="/admin-dashboard">
-          <span className="mr-2">
-            <Tools />
-          </span>
+          <Tools className="mr-2" />
           {t('nav-bar.adminDashboard')}
         </Link>
       ),
