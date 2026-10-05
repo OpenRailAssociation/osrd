@@ -670,7 +670,8 @@
     "disconnect": "Déconnexion",
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",
-      "linkings": "Activer les enchaînements"
+      "linkings": "Activer les enchaînements",
+      "multipleTimetables": "Activer les grilles horaires multiples par scénario"
     },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",
