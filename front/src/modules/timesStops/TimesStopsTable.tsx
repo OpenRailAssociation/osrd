@@ -769,7 +769,7 @@ const TimesStopsTable = ({
         }),
         columnHelper.accessor('realMargin', {
           header: () => t('realMargin'),
-          cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin' }),
+          cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin', showPolarity: !isValid }),
           meta: {
             className: 'col-real-margin computed computed-margin',
             title: t('realMargin'),
