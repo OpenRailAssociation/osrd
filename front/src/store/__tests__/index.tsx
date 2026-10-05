@@ -1,6 +1,6 @@
 import { renderHook, type RenderHookOptions, type RenderHookResult } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { beforeEach } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 
 import type { RootState } from 'reducers';
 import { createStore, createStoreWithoutMiddleware, type Store } from 'store';
@@ -35,6 +35,11 @@ export function renderHookWithStore<Result, Props>(
   rootState?: Partial<RootState>
 ): RenderHookResult<Result, Props> {
   const activeStore = rootState ? createStoreWithoutMiddleware(rootState) : store;
+
+  // RTK use requestAnimationFrame and cancelAnimationFrame to postpone some actions
+  // after some re-rendering; not providing those will crash with flackiness.
+  vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame'] });
+
   return renderHook(render, {
     ...options,
     wrapper: ({ children }) => {
