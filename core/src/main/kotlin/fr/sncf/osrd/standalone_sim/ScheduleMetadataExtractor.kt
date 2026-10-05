@@ -3,6 +3,7 @@ package fr.sncf.osrd.standalone_sim
 import com.google.common.collect.Comparators.min
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.standalone_sim.CompleteReportTrain
+import fr.sncf.osrd.api.standalone_sim.DriverAction
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.*
@@ -12,6 +13,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
@@ -33,6 +35,7 @@ import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.units.Distance
@@ -167,6 +170,7 @@ fun runScheduleMetadataExtractor(
         zoneUpdates,
         sortAndMergeRequirements(spacingRequirements).map { it.toRJS(rawInfra) },
         routingRequirements.map { it.toRJS(rawInfra) },
+        reportTrain.driverActions,
     )
 }
 
@@ -298,13 +302,36 @@ fun makeSimpleReportTrain(
     val simplified = simplifyEnvelopePoints(points, 5.0, 0.2)
     assert(simplified.isNotEmpty()) { "simulation result shouldn't be empty" }
 
+    val driverActions = mapDriverActions(envelope)
+
     return ReportTrain(
         simplified.map { Offset(it.position.meters) },
         simplified.map { it.time.seconds },
         simplified.map { it.speed },
         mechanicalEnergyConsumed,
         pathItemTimes,
+        driverActions,
     )
+}
+
+fun mapDriverActions(envelope: Envelope): RangeValues<DriverAction> {
+    val entries = envelope.map {
+        val type =
+            when (it.getAttr(EnvelopeProfile::class.java)) {
+                EnvelopeProfile.ACCELERATING -> DriverAction.TRACTING
+                // TODO: may actually be BRAKING on important slopes?
+                EnvelopeProfile.CONSTANT_SPEED -> DriverAction.TRACTING
+                EnvelopeProfile.CATCHING_UP -> DriverAction.TRACTING
+                EnvelopeProfile.COASTING -> DriverAction.COASTING
+                EnvelopeProfile.BRAKING -> DriverAction.BRAKING
+                null ->
+                    throw RuntimeException("Missing envelope profile attribute in envelope part")
+            }
+        DistanceRangeMap.RangeMapEntry(it.beginPos.meters, it.endPos.meters, type)
+    }
+    // Going through a DistanceRangeMap is mostly used to flatten repeated values
+    val rangeMap = DistanceRangeMapImpl(entries)
+    return rangeMap.toRangeValues()
 }
 
 private fun getArrivalAt(envelope: EnvelopeTimeInterpolate, offset: Offset<PhysicsPath>): Duration {
