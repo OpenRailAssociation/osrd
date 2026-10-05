@@ -71,6 +71,9 @@ Community contributors (this means you) can freely open issues, submit pull requ
 To comply with the [DCO](http://developercertificate.org/), all commits must
 include a Signed-off-by line. You can find more information about this [here](https://osrd.fr/en/docs/guides/contribute/contribute-code/commit-conventions/#the-developer-certificate-of-origin)
 
+> [!WARNING]
+> If you wish to make a significant change, we strongly recommend that you open an issue or discuss it on our channels so that we can work on it together. This helps to avoid unnecessary work.
+
 For more advice on how to contribute, follow that link:
 https://osrd.fr/en/docs/guides/contribute/contribute-code
 
