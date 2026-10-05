@@ -9,12 +9,15 @@ type ExtraOccurrenceFormProps = {
   addedExceptionDate: StartTime;
   setAddedExceptionDate: (newDate: StartTime) => void;
   onCreateAddedException: () => void;
+  /** Error to display on the start time input */
+  error?: string;
 };
 
 const ExtraOccurrenceForm = ({
   addedExceptionDate,
   setAddedExceptionDate,
   onCreateAddedException,
+  error,
 }: ExtraOccurrenceFormProps) => {
   const { t, i18n } = useTranslation(['operational-studies']);
 
@@ -76,6 +79,7 @@ const ExtraOccurrenceForm = ({
           onChange={(milliseconds: number) => {
             setAddedExceptionDate(new Duration({ milliseconds }));
           }}
+          statusWithMessage={error ? { status: 'error', message: error } : undefined}
           small
         />
       )}
