@@ -88,14 +88,14 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     start_time: new Date('2024-10-15T03:00:00Z').getTime(),
     path: [
       {
-        id: 'id227',
+        key: 'key227',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
         },
       },
       {
-        id: 'id228',
+        key: 'key228',
         location: {
           type: 'operational_point_part_reference',
           operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
@@ -104,7 +104,7 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     ],
     schedule: [
       {
-        at: 'id228',
+        at: 'key228',
         arrival: null,
         stop_for: 'P0D',
         reception_signal: 'OPEN',
@@ -163,14 +163,14 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
       path_and_schedule: {
         path: [
           {
-            id: 'id225',
+            key: 'key225',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
             },
           },
           {
-            id: 'id228',
+            key: 'key228',
             location: {
               type: 'operational_point_part_reference',
               operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
@@ -179,7 +179,7 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
         ],
         schedule: [
           {
-            at: 'id228',
+            at: 'key228',
             arrival: null,
             stop_for: 'P0D',
             reception_signal: 'OPEN',

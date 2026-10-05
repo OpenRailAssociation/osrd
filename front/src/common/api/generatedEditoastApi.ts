@@ -4434,9 +4434,9 @@ export type TrainScheduleOptions = {
   use_speed_limits_for_simulation?: boolean;
 };
 export type PathItem = {
-  /** The unique identifier of the path item.
+  /** The unique key of the path item.
     This is used to reference path items in the train schedule. */
-  id: string;
+  key: string;
   location: PathItemLocation;
 };
 export type PowerRestrictionItem = {
@@ -5359,15 +5359,15 @@ export type TrainScheduleSimulationSummaryResult = {
 };
 export type PathItemRelativeLocation =
   | {
-      /** Path item ID, when the operational point matches an item in the input path */
-      path_item_id: NonBlankString;
+      /** Path item key, when the operational point matches an item in the input path */
+      path_item_key: NonBlankString;
       type: 'exact_path_item';
     }
   | {
-      /** Following path item ID, when the operational point is not one of the input path items */
-      following_path_item_id: NonBlankString;
-      /** Previous path item ID, when the operational point is not one of the input path items */
-      previous_path_item_id: NonBlankString;
+      /** Following path item key, when the operational point is not one of the input path items */
+      following_path_item_key: NonBlankString;
+      /** Previous path item key, when the operational point is not one of the input path items */
+      previous_path_item_key: NonBlankString;
       type: 'between_path_items';
     };
 export type CoreSimpleEnvelope = {

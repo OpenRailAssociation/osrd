@@ -161,13 +161,13 @@ impl<'de> Deserialize<'de> for TrainOccurrence {
         let train_schedule = TrainOccurrence::deserialize(deserializer)?;
 
         // Look for invalid path waypoint reference
-        let path_ids: HashSet<_> = train_schedule.path.iter().map(|p| &p.id).collect();
-        if path_ids.len() != train_schedule.path.len() {
+        let path_keys: HashSet<_> = train_schedule.path.iter().map(|p| &p.key).collect();
+        if path_keys.len() != train_schedule.path.len() {
             return Err(SerdeError::custom("Duplicate path waypoint ids"));
         }
 
         for schedule_item in &train_schedule.schedule {
-            if !path_ids.contains(&schedule_item.at) {
+            if !path_keys.contains(&schedule_item.at) {
                 return Err(SerdeError::custom(format!(
                     "Invalid schedule, path waypoint '{}' not found",
                     schedule_item.at
@@ -176,7 +176,7 @@ impl<'de> Deserialize<'de> for TrainOccurrence {
         }
 
         for boundary in &train_schedule.margins.boundaries {
-            if !path_ids.contains(&boundary) {
+            if !path_keys.contains(&boundary) {
                 return Err(SerdeError::custom(format!(
                     "Invalid boundary, path waypoint '{boundary}' not found"
                 )));
@@ -184,13 +184,13 @@ impl<'de> Deserialize<'de> for TrainOccurrence {
         }
 
         for power_restriction in train_schedule.power_restrictions.iter() {
-            if !path_ids.contains(&power_restriction.from) {
+            if !path_keys.contains(&power_restriction.from) {
                 return Err(SerdeError::custom(format!(
                     "Invalid power restriction, path waypoint '{}' not found",
                     power_restriction.from
                 )));
             }
-            if !path_ids.contains(&power_restriction.to) {
+            if !path_keys.contains(&power_restriction.to) {
                 return Err(SerdeError::custom(format!(
                     "Invalid power restriction, path waypoint '{}' not found",
                     power_restriction.to
@@ -203,9 +203,9 @@ impl<'de> Deserialize<'de> for TrainOccurrence {
         if schedules.len() != train_schedule.schedule.len() {
             return Err(SerdeError::custom("Schedule points at the same location"));
         }
-        let first_point_id = &train_schedule.path.first().unwrap().id;
+        let first_point_key = &train_schedule.path.first().unwrap().key;
         if schedules
-            .get(first_point_id)
+            .get(first_point_key)
             .is_some_and(|s| s.arrival.is_some())
         {
             return Err(SerdeError::custom(
@@ -242,7 +242,7 @@ impl TrainOccurrence {
             start_time: ms_since_epoch("2023-12-21T08:51:30Z"),
             path: vec![
                 PathItem {
-                    id: NonBlankString::from("a"),
+                    key: NonBlankString::from("a"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Uic {
@@ -254,14 +254,14 @@ impl TrainOccurrence {
                     ),
                 },
                 PathItem {
-                    id: NonBlankString::from("b"),
+                    key: NonBlankString::from("b"),
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         track: Identifier::from("TC0"),
                         offset: 340,
                     }),
                 },
                 PathItem {
-                    id: NonBlankString::from("c"),
+                    key: NonBlankString::from("c"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Domestic {
@@ -274,7 +274,7 @@ impl TrainOccurrence {
                     ),
                 },
                 PathItem {
-                    id: NonBlankString::from("d"),
+                    key: NonBlankString::from("d"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
                             operational_point: OperationalPointReference::Id {
@@ -373,7 +373,7 @@ mod tests {
                 local_track_name: None,
             });
         let path_item = PathItem {
-            id: "a".into(),
+            key: "a".into(),
             location,
         };
         let train_schedule = TrainOccurrence {
@@ -431,7 +431,7 @@ mod tests {
                 local_track_name: None,
             });
         let path_item = PathItem {
-            id: "a".into(),
+            key: "a".into(),
             location,
         };
         let train_schedule = TrainOccurrence {
@@ -469,7 +469,7 @@ mod tests {
                 local_track_name: None,
             });
         let path_item = PathItem {
-            id: "a".into(),
+            key: "a".into(),
             location,
         };
         let train_schedule = TrainOccurrence {

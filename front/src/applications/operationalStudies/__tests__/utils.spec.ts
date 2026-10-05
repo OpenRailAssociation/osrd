@@ -152,8 +152,8 @@ describe('isScheduledPointsNotHonored', () => {
 describe('buildPathWaypointsFromRawOPs', () => {
   const makeRawOp = (id: string) => ({ id }) as CoreOperationalPointOnPath;
 
-  const makePathItem = (pathItemId: string, opId: string): PathItem => ({
-    id: pathItemId,
+  const makePathItem = (pathItemKey: string, opId: string): PathItem => ({
+    key: pathItemKey,
     location: {
       type: 'operational_point_part_reference',
       operational_point: { type: 'id', operational_point: opId },
@@ -224,8 +224,8 @@ describe('sortPathOperationalPoints', () => {
   const makeOp = (pathItemId: string, position: number) =>
     ({ waypointId: uuidV4(), pathItemId, position }) as PathWaypoint;
 
-  const makePathItem = (id: string): PathItem => ({
-    id,
+  const makePathItem = (key: string): PathItem => ({
+    key,
     location: {
       type: 'operational_point_part_reference',
       operational_point: { type: 'id', operational_point: uuidV4() },
