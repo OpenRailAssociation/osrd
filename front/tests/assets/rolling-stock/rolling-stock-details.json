@@ -19,9 +19,9 @@
     { "id": "inertiaCoefficient", "value": 1 },
     { "id": "constGamma", "value": 1 },
     { "id": "basePowerClass", "value": 7 },
-    { "id": "rollingResistanceA-input", "value": 15, "isNumeric": true },
-    { "id": "rollingResistanceB-input", "value": 0.3, "isNumeric": true },
-    { "id": "rollingResistanceC-input", "value": 0.005, "isNumeric": true }
+    { "id": "rollingResistanceA-input", "value": 0.011895, "isNumeric": true },
+    { "id": "rollingResistanceB-input", "value": 0.000095, "isNumeric": true },
+    { "id": "rollingResistanceC-input", "value": 0.000002, "isNumeric": true }
   ],
   "updatedInputs": [
     { "id": "name", "value": "U_RSN" },
@@ -43,9 +43,9 @@
     { "id": "inertiaCoefficient", "value": 1.3 },
     { "id": "constGamma", "value": 1.1 },
     { "id": "basePowerClass", "value": 6 },
-    { "id": "rollingResistanceA-input", "value": 13, "isNumeric": true },
-    { "id": "rollingResistanceB-input", "value": 0.23, "isNumeric": true },
-    { "id": "rollingResistanceC-input", "value": 0.002, "isNumeric": true }
+    { "id": "rollingResistanceA-input", "value": 0.006, "isNumeric": true },
+    { "id": "rollingResistanceB-input", "value": 0.000062, "isNumeric": true },
+    { "id": "rollingResistanceC-input", "value": 0.000001, "isNumeric": true }
   ],
   "speedEffortData": [
     { "velocity": "0", "effort": "500" },
@@ -77,9 +77,9 @@
     { "id": "inertiaCoefficient", "value": "1" },
     { "id": "constGamma", "value": "1m/s²" },
     { "id": "basePowerClass", "value": "7" },
-    { "id": "rollingResistanceA", "value": "15kN" },
-    { "id": "rollingResistanceB", "value": "0.3kN/(km/h)" },
-    { "id": "rollingResistanceC", "value": "0.005kN/(km/h)²" },
+    { "id": "rollingResistanceA", "value": "0.011895kN/t" },
+    { "id": "rollingResistanceB", "value": "0.000095kN/(km/h)/t" },
+    { "id": "rollingResistanceC", "value": "0.000002kN/(km/h)²/t" },
     { "id": "loadingGauge", "value": "GA" },
     { "id": "rollingResistance", "value": "R(v) = a + bv + cv²" },
     { "id": "primaryCategory", "value": "NIGHT_TRAIN", "isTranslated": true },
@@ -92,9 +92,9 @@
     { "id": "inertiaCoefficient", "value": "1.3" },
     { "id": "constGamma", "value": "1.1m/s²" },
     { "id": "basePowerClass", "value": "6" },
-    { "id": "rollingResistanceA", "value": "13kN" },
-    { "id": "rollingResistanceB", "value": "0.23kN/(km/h)" },
-    { "id": "rollingResistanceC", "value": "0.002kN/(km/h)²" },
+    { "id": "rollingResistanceA", "value": "0.006kN/t" },
+    { "id": "rollingResistanceB", "value": "0.000062kN/(km/h)/t" },
+    { "id": "rollingResistanceC", "value": "0.000001kN/(km/h)²/t" },
     { "id": "loadingGauge", "value": "G1" },
     { "id": "rollingResistance", "value": "R(v) = a + bv + cv²" },
     { "id": "primaryCategory", "value": "WORK_TRAIN", "isTranslated": true },
