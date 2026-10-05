@@ -393,6 +393,11 @@
       "trainScheduleTitle": "An error has occurred",
       "unableToRetrieveTags": "Impossible to get tags"
     },
+    "hourlyTimetableWarnings": {
+      "occurrenceStartTimeWrapped": "The departure time has been recomputed based on the service repeat window.",
+      "startTimeWrapped": "The departure time has been recomputed based on the service cadence.",
+      "title": "Warning"
+    },
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Display all constraints",

@@ -6,6 +6,9 @@ import { Duration } from 'utils/duration';
 import {
   computeHourlyTimetableDuration,
   DEFAULT_HOURLY_TIMETABLE_DURATION,
+  getHourlyStartTimePeriod,
+  isStartTimeWithinInterval,
+  wrapStartTimeToInterval,
 } from '../hourlyTimetable';
 
 const baseTrainSchedule: TrainScheduleResponse = {
@@ -82,5 +85,54 @@ describe('computeHourlyTimetableDuration', () => {
     expect(
       computeHourlyTimetableDuration([buildPacedTrain('PT5H'), buildPacedTrain('PT7H')])
     ).toEqual(new Duration({ hours: 35 }));
+  });
+});
+
+describe('isStartTimeWithinInterval', () => {
+  const interval = new Duration({ minutes: 30 });
+
+  it('should accept a start time in [0, interval)', () => {
+    expect(isStartTimeWithinInterval(Duration.zero, interval)).toBe(true);
+    expect(isStartTimeWithinInterval(new Duration({ minutes: 29 }), interval)).toBe(true);
+  });
+
+  it('should reject a negative start time or one reaching the interval', () => {
+    expect(isStartTimeWithinInterval(new Duration({ minutes: -1 }), interval)).toBe(false);
+    expect(isStartTimeWithinInterval(interval, interval)).toBe(false);
+  });
+});
+
+describe('wrapStartTimeToInterval', () => {
+  const interval = new Duration({ minutes: 30 });
+
+  it('should keep a start time already within the interval', () => {
+    expect(wrapStartTimeToInterval(new Duration({ minutes: 10 }), interval)).toEqual(
+      new Duration({ minutes: 10 })
+    );
+  });
+
+  it('should take a start time past the interval modulo the interval', () => {
+    expect(wrapStartTimeToInterval(new Duration({ minutes: 70 }), interval)).toEqual(
+      new Duration({ minutes: 10 })
+    );
+    expect(wrapStartTimeToInterval(interval, interval)).toEqual(Duration.zero);
+  });
+
+  it('should bring a negative start time back into the interval', () => {
+    expect(wrapStartTimeToInterval(new Duration({ minutes: -5 }), interval)).toEqual(
+      new Duration({ minutes: 25 })
+    );
+  });
+});
+
+describe('getHourlyStartTimePeriod', () => {
+  const paced = { interval: 'PT30M', time_window: 'PT2H' };
+
+  it('should return the interval for a paced train', () => {
+    expect(getHourlyStartTimePeriod(paced, false)).toEqual(new Duration({ minutes: 30 }));
+  });
+
+  it('should return the time window for an added occurrence', () => {
+    expect(getHourlyStartTimePeriod(paced, true)).toEqual(new Duration({ hours: 2 }));
   });
 });
