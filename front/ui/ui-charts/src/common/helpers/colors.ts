@@ -14,6 +14,8 @@ export const RED_100 = 'rgb(221, 34, 34)';
 
 export const WHITE_100 = 'rgb(255, 255, 255)';
 
+export const BROWN_50 = 'rgb(138, 113, 75)';
+
 /**
  * This function returns a unique hex color corresponding to the given index. The colors are
  * generated as #000001, #000002 ... #0000ff, #000100 etc.
