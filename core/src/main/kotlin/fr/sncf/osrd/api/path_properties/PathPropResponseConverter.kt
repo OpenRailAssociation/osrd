@@ -2,6 +2,7 @@ package fr.sncf.osrd.api.path_properties
 
 import com.google.common.collect.Range
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.api.toRangeValues
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
@@ -29,11 +30,11 @@ fun makePathPropResponse(pathProperties: TrainPath, rawInfra: RawSignalingInfra)
 }
 
 private fun makeSlopes(pathProperties: TrainPath): RangeValues<Double> {
-    return makeRangeValues(pathProperties.getSlopes())
+    return pathProperties.getSlopes().toRangeValues()
 }
 
 private fun makeCurves(pathProperties: TrainPath): RangeValues<Double> {
-    return makeRangeValues(pathProperties.getCurves())
+    return pathProperties.getCurves().toRangeValues()
 }
 
 private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electrification> {
@@ -49,7 +50,7 @@ private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electri
             neutralSectionValue
         }
     }
-    return makeRangeValues(DistanceRangeMapImpl.from(mergedMap))
+    return DistanceRangeMapImpl.from(mergedMap).toRangeValues()
 }
 
 private fun makeGeographic(path: TrainPath): RJSLineString {
@@ -110,19 +111,8 @@ private fun makeOperationalPoints(
 }
 
 private fun makeZones(path: TrainPath, rawInfra: RawSignalingInfra): RangeValues<String> {
-    val zoneIds = makeRangeValues(path.getZones())
+    val zoneIds = path.getZones().toRangeValues()
     return RangeValues(zoneIds.internalBoundaries, zoneIds.values.map { rawInfra.getZoneName(it) })
-}
-
-private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeValues<T> {
-    val boundaries = mutableListOf<Offset<PhysicsPath>>()
-    val values = mutableListOf<T>()
-    distanceRangeMap.forEach { _, upper, value ->
-        boundaries.add(Offset(upper))
-        values.add(value)
-    }
-    boundaries.removeLast()
-    return RangeValues(boundaries, values)
 }
 
 private fun makeElectrificationMap(

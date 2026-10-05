@@ -128,6 +128,19 @@ data class OperationalPointStop(
 enum class ForcedStopType {
     // General stop station are station where the stop is mandatory
     GENERAL_STOP,
+
     // Fake overtake where a stop on the overtake track is mandatory
     OVERTAKE,
+}
+
+/** Converts a DistanceRangeMap into an API compatible RangeValues. */
+fun <T> DistanceRangeMap<T>.toRangeValues(): RangeValues<T> {
+    val boundaries = mutableListOf<Offset<PhysicsPath>>()
+    val values = mutableListOf<T>()
+    this.forEach { _, upper, value ->
+        boundaries.add(Offset(upper))
+        values.add(value)
+    }
+    boundaries.removeLast()
+    return RangeValues(boundaries, values)
 }
