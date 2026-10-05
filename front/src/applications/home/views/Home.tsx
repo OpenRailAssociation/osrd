@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, type LinkProps } from 'react-router-dom';
 
 import editorImg from 'assets/pictures/home/editor.svg';
-import mapImg from 'assets/pictures/home/map.png';
+import mapImg from 'assets/pictures/home/map.svg';
 import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import osrdLogoImg from 'assets/pictures/home/osrd-logo.svg';
 import rollingStockEditorImg from 'assets/pictures/home/rollingstockeditor.svg';
