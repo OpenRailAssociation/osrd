@@ -7,9 +7,10 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { isStartTimeWithinInterval } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { Train } from 'reducers/osrdconf/types';
-import { MAX_DURATION_MS } from 'utils/duration';
+import { Duration, MAX_DURATION_MS } from 'utils/duration';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 
@@ -66,6 +67,7 @@ export default function TrainServiceForm({
   const timetableType = scenario.timetable_type;
 
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
+  const [addedExceptionError, setAddedExceptionError] = useState<string>();
 
   const pacedTrain = train.paced ? (train as PacedTrain) : null;
   const occurrenceId = isOccurrenceId(train.id) ? train.id : null;
@@ -226,14 +228,33 @@ export default function TrainServiceForm({
         <div className="train-extra-occurrences" data-testid="train-header-extra-occurrences">
           <ExtraOccurrenceForm
             addedExceptionDate={fields.added_exception_date}
-            setAddedExceptionDate={(newAddedExceptionDate) =>
-              onFieldChange('added_exception_date', newAddedExceptionDate)
-            }
+            setAddedExceptionDate={(newAddedExceptionDate) => {
+              setAddedExceptionError(undefined);
+              onFieldChange('added_exception_date', newAddedExceptionDate);
+            }}
             onCreateAddedException={() => {
+              // In an hourly timetable, an occurrence must start within the first interval
+              const interval = Duration.parse(train.paced!.interval);
+              if (
+                fields.added_exception_date instanceof Duration &&
+                !isStartTimeWithinInterval(fields.added_exception_date, interval)
+              ) {
+                setAddedExceptionError(
+                  t('manageTrainSchedule.errorMessages.addedOccurrenceOutsideInterval', {
+                    interval: interval.toLocaleString(undefined, {
+                      style: 'digital',
+                      hours: '2-digit',
+                      secondsDisplay: 'auto',
+                    }),
+                  })
+                );
+                return;
+              }
               onPersistTrain(train, {
                 addedExceptions: [{ startTime: fields.added_exception_date }],
               });
             }}
+            error={addedExceptionError}
           />
           <div
             className="train-extra-occurrences-list"

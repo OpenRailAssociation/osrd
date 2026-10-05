@@ -360,6 +360,7 @@
     "anyTrack": "Any track",
     "categoryMismatch": "The combination of the rolling stock and the category is unusual",
     "errorMessages": {
+      "addedOccurrenceOutsideInterval": "The departure time must be lower than the service cadence ({{interval}})",
       "error": "An error has occurred",
       "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
       "invalidInitialSpeed": "The initial speed must be rounded to the nearest tenth",

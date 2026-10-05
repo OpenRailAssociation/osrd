@@ -360,6 +360,7 @@
     "anyTrack": "Toutes voies",
     "categoryMismatch": "L’association du matériel roulant et de la catégorie est atypique",
     "errorMessages": {
+      "addedOccurrenceOutsideInterval": "L'heure de départ doit être inférieure à la cadence de la mission ({{interval}})",
       "error": "Une erreur est survenue",
       "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
       "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
