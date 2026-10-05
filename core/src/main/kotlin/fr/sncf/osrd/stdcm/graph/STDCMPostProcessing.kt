@@ -3,8 +3,6 @@ package fr.sncf.osrd.stdcm.graph
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
-import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -22,6 +20,7 @@ import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -105,31 +104,11 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val lastExplorer = lastNode.infraExplorer
         val reachedSteps =
             lastExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
-        val predecessorBlocks = lastExplorer.getPredecessorBlocks().toList()
-        val blockRanges = predecessorBlocks.ifEmpty {
-            val currentBlockRange = lastExplorer.getCurrentBlockRange()
-            listOf(
-                BlockRange(
-                    currentBlockRange.value,
-                    currentBlockRange.objectBegin,
-                    currentBlockRange.objectEnd,
-                    currentBlockRange.pathBegin,
-                    currentBlockRange.pathEnd,
-                    currentBlockRange.objectLength,
-                )
-            )
-        }
-        // TODO: Send only simulated routes, and not all explored ones
+        assert(lastExplorer.getAllBlocks().size > 0)
+        // Get rid of current block unless it's the only one
+        val nbBlocksToInclude = max(lastExplorer.getPredecessorBlocks().size, 1)
         val trainPath =
-            buildTrainPathFromBlockRanges(
-                infra.rawInfra,
-                infra.blockInfra,
-                blockRanges,
-                reachedSteps.mapNotNull { step ->
-                    if (step.isBacktracking) step.travelledPathOffset else null
-                },
-                lastExplorer.getExploredRoutes(),
-            )
+            lastExplorer.buildPathUntilIndex(infra.rawInfra, infra.blockInfra, nbBlocksToInclude)
         val earliestReachableTime = lastNode.timeData.earliestReachableTime
         val geoPoint =
             lastNode.toGeoPoint(infra.rawInfra, infra.blockInfra, useLocationOnEdge = true)

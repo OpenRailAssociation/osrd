@@ -154,6 +154,14 @@ interface InfraExplorer {
      * of the currently known path.
      */
     fun getLookaheadEndOffset(): Offset<PhysicsPath>
+
+    /** Builds path until given block range index */
+    fun buildPathUntilIndex(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
+        maxBlockRangeIndex: Int,
+        electricalProfileMapping: ElectricalProfileMapping? = null,
+    ): TrainPath
 }
 
 /** Returns the current block and the lookahead blocks. */
@@ -415,21 +423,27 @@ private class InfraExplorerImpl(
         blockInfra: BlockInfra,
         electricalProfileMapping: ElectricalProfileMapping?,
     ): TrainPath {
-        val blocks = blockRanges.toList()
-        return buildTrainPathFromBlockRanges(
+        return buildPathUntilIndex(
             rawInfra,
             blockInfra,
-            blocks,
-            getSeenBacktrackLocations(),
-            getExploredRoutes(),
-            electricalProfileMapping = electricalProfileMapping,
+            blockRanges.size,
+            electricalProfileMapping,
         )
     }
 
-    private fun getSeenBacktrackLocations(): List<Offset<PhysicsPath>> {
+    private fun getSeenBacktrackLocations(
+        maximumPathOffset: Offset<PhysicsPath>? = null
+    ): List<Offset<PhysicsPath>> {
         return stepTracker
             .iterateSeenStepsBackwards()
-            .mapNotNull { if (it.isBacktracking) it.travelledPathOffset else null }
+            .mapNotNull {
+                if (
+                    it.isBacktracking &&
+                        (maximumPathOffset == null || it.travelledPathOffset <= maximumPathOffset)
+                )
+                    it.travelledPathOffset
+                else null
+            }
             .toList()
             .asReversed()
     }
@@ -500,6 +514,26 @@ private class InfraExplorerImpl(
 
     override fun getLookaheadEndOffset(): Offset<PhysicsPath> =
         blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
+
+    override fun buildPathUntilIndex(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
+        maxBlockRangeIndex: Int,
+        electricalProfileMapping: ElectricalProfileMapping?,
+    ): TrainPath {
+        val blocks = blockRanges.subList(maxBlockRangeIndex).toList()
+        val endOffset = blocks.last().pathEnd
+        val backtrackLocations = getSeenBacktrackLocations(endOffset)
+        // TODO: Send only simulated routes, and not all explored ones
+        return buildTrainPathFromBlockRanges(
+            rawInfra,
+            blockInfra,
+            blocks,
+            backtrackLocations,
+            this.getExploredRoutes(),
+            electricalProfileMapping = electricalProfileMapping,
+        )
+    }
 
     /**
      * Updates `incrementalPath`, `routes`, `blocks` and returns true if route can be explored.
