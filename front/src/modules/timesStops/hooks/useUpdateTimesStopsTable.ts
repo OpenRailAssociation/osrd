@@ -16,6 +16,7 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/trainSchedule/helpers/computeBasePathStep';
+import { wrapHourlyStartTime } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import {
   getOccurrenceTrainName,
   isPacedTrainBase,
@@ -26,7 +27,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
-import { Duration, startTimeToMs, subtractStartTime } from 'utils/duration';
+import { Duration, type StartTime, startTimeToMs, subtractStartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -70,8 +71,27 @@ type TrainPatch = Partial<
   Pick<TrainSchedule, 'path' | 'schedule' | 'margins' | 'power_restrictions' | 'start_time'>
 >;
 
-/** The train fields to persist for an edit, along with the edits to display while it is saved. */
-type ComputedUpdate = { patch: TrainPatch | undefined; edits: PendingEdit[] };
+/**
+ * The train fields to persist for an edit, along with the edits to display while it is saved.
+ * `isStartTimeWrapped` is set when the start time had to be brought back into the paced train
+ * interval or the occurrence time window (see `wrapEditedStartTime`).
+ */
+type ComputedUpdate = {
+  patch: TrainPatch | undefined;
+  edits: PendingEdit[];
+  isStartTimeWrapped?: boolean;
+};
+
+/**
+ * Bring the start time of an edited train back into its hourly timetable period (see
+ * `wrapHourlyStartTime`), or return undefined if it is already valid. An occurrence start time
+ * (indexed or added) is relative to the timetable start, like the paced train one, so it is
+ * brought back into the time window.
+ */
+const wrapEditedStartTime = (train: Train, startTime: StartTime): Duration | undefined => {
+  if (!(startTime instanceof Duration) || !train.paced) return undefined;
+  return wrapHourlyStartTime(startTime, train.paced, isOccurrenceId(train.id));
+};
 
 /** A theoretical margin applies until the next boundary, so the rows in between display it too. */
 const buildMarginEdits = (
@@ -188,24 +208,41 @@ const useUpdateTimesStopsTable = (
   );
 
   const computeTimesUpdate = useCallback(
-    (update: ArrivalUpdate | DepartureUpdate | StopDurationUpdate): ComputedUpdate => {
+    (originalUpdate: ArrivalUpdate | DepartureUpdate | StopDurationUpdate): ComputedUpdate => {
+      // The origin arrival is the start time: an entered value out of the interval is replaced by
+      // its modulo before being applied, so that the propagation works from the right value.
+      let update = originalUpdate;
+      let wrappedOriginArrival: Duration | undefined;
+      if (update.field === 'requestedArrival' && update.row.opOnPathIndex === 0 && update.value) {
+        wrappedOriginArrival = wrapEditedStartTime(selectedTrain, update.value);
+        if (wrappedOriginArrival) update = { ...update, value: wrappedOriginArrival };
+      }
+
       const propagatedResult =
         update.field === 'stopDuration'
           ? propagateStopDuration(update, selectedTrain, scenario.timetable_type)
           : propagateTime(update, selectedTrain, scenario.timetable_type);
-      if (propagatedResult)
+      if (propagatedResult) {
+        // The propagation itself may also move the start time out of the interval
+        const wrappedStartTime = wrapEditedStartTime(
+          selectedTrain,
+          propagatedResult.updatedStartTime
+        );
+        const updatedStartTime = wrappedStartTime ?? propagatedResult.updatedStartTime;
         return {
           patch: {
             path: propagatedResult.updatedPath,
             schedule: propagatedResult.updatedSchedule,
-            start_time: startTimeToMs(propagatedResult.updatedStartTime),
+            start_time: startTimeToMs(updatedStartTime),
           },
           edits: computePendingEditsFromSchedule(
             propagatedResult.updatedSchedule,
-            propagatedResult.updatedStartTime,
+            updatedStartTime,
             allRows
           ),
+          isStartTimeWrapped: !!wrappedOriginArrival || !!wrappedStartTime,
         };
+      }
 
       const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];

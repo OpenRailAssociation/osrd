@@ -7,6 +7,7 @@ import {
   computeDefaultHourlyPacedTrainTimeWindow,
   computeHourlyTimetableDuration,
   DEFAULT_HOURLY_TIMETABLE_DURATION,
+  wrapHourlyStartTime,
 } from '../hourlyTimetable';
 
 const baseTrainSchedule: TrainScheduleResponse = {
@@ -112,5 +113,50 @@ describe('computeDefaultHourlyPacedTrainTimeWindow', () => {
         new Duration({ minutes: 45 })
       )
     ).toEqual(new Duration({ hours: 6 }));
+  });
+});
+
+describe('wrapHourlyStartTime', () => {
+  const paced = { interval: 'PT30M', time_window: 'PT2H' };
+
+  describe('for a paced train', () => {
+    it('should return undefined for a start time in [0, interval)', () => {
+      expect(wrapHourlyStartTime(Duration.zero, paced, false)).toBeUndefined();
+      expect(wrapHourlyStartTime(new Duration({ minutes: 29 }), paced, false)).toBeUndefined();
+    });
+
+    it('should take a start time reaching or past the interval modulo the interval', () => {
+      expect(wrapHourlyStartTime(new Duration({ minutes: 30 }), paced, false)).toEqual(
+        Duration.zero
+      );
+      expect(wrapHourlyStartTime(new Duration({ minutes: 70 }), paced, false)).toEqual(
+        new Duration({ minutes: 10 })
+      );
+    });
+
+    it('should bring a negative start time back into the interval', () => {
+      expect(wrapHourlyStartTime(new Duration({ minutes: -5 }), paced, false)).toEqual(
+        new Duration({ minutes: 25 })
+      );
+    });
+  });
+
+  describe('for an occurrence', () => {
+    it('should return undefined for a start time in [0, time_window), even past the interval', () => {
+      expect(wrapHourlyStartTime(new Duration({ minutes: 70 }), paced, true)).toBeUndefined();
+    });
+
+    it('should take a start time reaching or past the time window modulo the time window', () => {
+      expect(wrapHourlyStartTime(new Duration({ hours: 2 }), paced, true)).toEqual(Duration.zero);
+      expect(wrapHourlyStartTime(new Duration({ minutes: 130 }), paced, true)).toEqual(
+        new Duration({ minutes: 10 })
+      );
+    });
+
+    it('should bring a negative start time back into the time window', () => {
+      expect(wrapHourlyStartTime(new Duration({ minutes: -5 }), paced, true)).toEqual(
+        new Duration({ minutes: 115 })
+      );
+    });
   });
 });
