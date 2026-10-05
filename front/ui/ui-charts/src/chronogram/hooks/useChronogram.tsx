@@ -6,7 +6,7 @@ import {
   CHRONOGRAM_HEADER_HEIGHT,
   CHRONOGRAM_BOTTOM_PADDING,
   LEVEL_CROSSING_ITEM_HEIGHT,
-} from '../lib/const';
+} from '../lib/consts';
 
 export type UseChronogramProps = {
   itemCount: number;

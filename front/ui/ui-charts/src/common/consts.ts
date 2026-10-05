@@ -8,3 +8,5 @@ export const MINUTE = 60 * SECOND;
 export const HOUR = 60 * MINUTE;
 
 export const KM_TO_MM = 1_000_000;
+
+export const FONT_SANS = 'IBM Plex Sans';
