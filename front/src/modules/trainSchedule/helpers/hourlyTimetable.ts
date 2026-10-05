@@ -32,3 +32,14 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
     milliseconds: pacedTrainDurationsMs.reduce((acc, ms) => lcm(acc, ms)),
   });
 }
+
+/**
+ * Whether a paced train start time is in `[0, interval)`, as required for paced trains of an
+ * hourly timetable (`0 <= start_time < interval <= time_window`).
+ */
+export const isStartTimeWithinInterval = (startTime: Duration, interval: Duration): boolean =>
+  startTime.ms >= 0 && startTime.ms < interval.ms;
+
+/** Bring a paced train start time back into `[0, interval)` (see `isStartTimeWithinInterval`). */
+export const wrapStartTimeToInterval = (startTime: Duration, interval: Duration): Duration =>
+  new Duration({ milliseconds: ((startTime.ms % interval.ms) + interval.ms) % interval.ms });

@@ -393,6 +393,10 @@
       "trainScheduleTitle": "Une erreur est survenue",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
     },
+    "hourlyTimetableWarnings": {
+      "startTimeWrapped": "L'heure de départ a été recalculée sur la base de la cadence de la mission.",
+      "title": "Attention"
+    },
     "incompatibleConstraints": {
       "filters": {
         "activateAll": "Afficher toutes les contraintes",
