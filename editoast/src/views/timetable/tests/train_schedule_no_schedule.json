@@ -6,7 +6,7 @@
     "start_time": 1722600000000,
     "path": [
         {
-            "id": "id440",
+            "key": "id440",
             "location": {
                 "type": "track_offset",
                 "track": "TA0",
@@ -14,7 +14,7 @@
             }
         },
         {
-            "id": "id450",
+            "key": "id450",
             "location": {
                 "type": "track_offset",
                 "track": "TG1",

@@ -6,7 +6,7 @@
     "start_time": 1797146700000,
     "path": [
         {
-            "id": "idA",
+            "key": "idA",
             "location": {
                 "type": "operational_point_part_reference",
                 "operational_point": {
@@ -17,7 +17,7 @@
             }
         },
         {
-            "id": "idB",
+            "key": "idB",
             "location": {
                 "type": "operational_point_part_reference",
                 "operational_point": {
@@ -28,7 +28,7 @@
             }
         },
         {
-            "id": "idC",
+            "key": "idC",
             "location": {
                 "type": "operational_point_part_reference",
                 "operational_point": {
@@ -39,7 +39,7 @@
             }
         },
         {
-            "id": "idD",
+            "key": "idD",
             "location": {
                 "type": "operational_point_part_reference",
                 "operational_point": {
@@ -50,7 +50,7 @@
             }
         },
         {
-            "id": "idE",
+            "key": "idE",
             "location": {
                 "type": "operational_point_part_reference",
                 "operational_point": {
