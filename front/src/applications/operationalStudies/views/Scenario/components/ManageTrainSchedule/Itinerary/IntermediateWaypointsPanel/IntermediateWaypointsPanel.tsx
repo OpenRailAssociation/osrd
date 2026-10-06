@@ -15,7 +15,7 @@ type IntermediateWaypointsPanelProps = {
   pathProperties: ItineraryPathProperties | undefined;
   status: 'idle' | 'loading' | 'error' | 'success';
   onHide: () => void;
-  onAddWaypoint: (op: CoreOperationalPointOnPath, afterStepId: string) => void;
+  onAddWaypoint: (op: CoreOperationalPointOnPath, afterStepKey: string) => void;
 };
 
 const IntermediateWaypointsPanel = ({
