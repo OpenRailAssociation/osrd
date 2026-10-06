@@ -1,0 +1,48 @@
+
+#adm-dash-header {
+    // display: grid;
+    // grid-template-columns: auto 1fr auto auto;
+    // grid-auto-flow: dense;
+    align-items: center;
+    display: flex;
+
+    #help {
+        margin-left: auto; // push to the left
+    }
+
+    #osrd {
+        margin: 6px 24px;
+        color: var(--black25);
+        font-family: IBMPlexSans-Bold, 'IBM Plex Sans', system-ui, sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.22px;
+
+    }
+
+    /* TODO: vertically center the text */
+    #help {
+        --color: #B9C7C4;
+        --bg: rgba(185, 199, 196, 0.5);
+
+        width: 18px;
+        height: 18px;
+        box-shadow: 0 0 0 3px var(--bg);
+        border-radius: 12px;
+        background-color: white;
+        color: var(--color);
+        font-family: IBMPlexSans-SemiBold, 'IBM Plex Sans', system-ui, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    #username {
+        margin: 9px 16px;
+        color: var(--black25);
+        font-size: 14px;
+        font-weight: 400;
+        text-align: right;
+    }
+}
+
