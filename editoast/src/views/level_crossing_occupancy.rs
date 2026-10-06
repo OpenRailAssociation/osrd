@@ -500,6 +500,7 @@ mod tests {
                 speeds: vec![],
                 energy_consumption: 0.0,
                 path_item_times: vec![],
+                driver_actions: Default::default(),
             },
             provisional: ReportTrain {
                 positions: vec![],
@@ -507,6 +508,7 @@ mod tests {
                 speeds: vec![],
                 energy_consumption: 0.0,
                 path_item_times: vec![],
+                driver_actions: Default::default(),
             },
             final_output: CompleteReportTrain {
                 report_train: ReportTrain {
@@ -515,6 +517,7 @@ mod tests {
                     speeds,
                     energy_consumption: 100.0,
                     path_item_times: vec![0, 1450],
+                    driver_actions: Default::default(),
                 },
                 signal_critical_positions: vec![],
                 zone_updates: vec![],
