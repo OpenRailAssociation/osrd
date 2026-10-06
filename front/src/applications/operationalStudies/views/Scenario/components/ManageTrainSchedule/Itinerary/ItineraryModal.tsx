@@ -1133,7 +1133,7 @@ const ItineraryModal = ({
           pathStepsMetadata={pathStepsMetadataByKey}
           pathProperties={displayedPathProperties}
           pathWaypoints={pathWaypoints}
-          selectedStepId={mapSelectionStepKey ?? undefined}
+          selectedStepKey={mapSelectionStepKey ?? undefined}
           isMapSelectionMode={mapSelectionStepKey !== null}
           onMapSelectionClick={handleMapSelectionClick}
           onPathStepDragEnd={handlePathStepDragEnd}
