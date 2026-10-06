@@ -351,6 +351,7 @@ pub mod tests {
             speeds: vec![0., 25., 20., 35., 0.],
             energy_consumption: 0.0,
             path_item_times,
+            driver_actions: Default::default(),
         };
         simulation::Response::Success(SimulationResponseSuccess {
             base: report_train.clone(),

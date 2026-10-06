@@ -1141,6 +1141,7 @@ mod tests {
             speeds: vec![0.0, 10.0, 0.0],
             energy_consumption: 100.0,
             path_item_times: vec![0, 4000],
+            driver_actions: Default::default(),
         }
     }
 

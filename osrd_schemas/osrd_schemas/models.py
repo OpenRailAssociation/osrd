@@ -246,40 +246,6 @@ class Time(RootModel[int]):
     root: Annotated[int, Field(ge=0)]
 
 
-class CoreReportTrain(BaseModel):
-    energy_consumption: float
-    """
-    Total energy consumption
-    """
-    path_item_times: list[PathItemTime]
-    """
-    Time in ms at which the train *arrives* at each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
-
-    In case multiple path items are at the same position, the stop duration
-    of the earlier ones are added to the path item time of the next. For
-    example, if A and B are at the same position, and A has a stop duration
-    of 2s, then the path item time of B will be equal to the path item time
-    of A plus 2s.
-    """
-    positions: list[Position]
-    """
-    List of positions of a train
-    Both positions (in mm) and times (in ms) must have the same length
-    The length of positions and times is arbitrary and comes from a curve simplification
-    made in core
-    """
-    speeds: list[float]
-    """
-    List of speeds associated to a position
-    """
-    times: list[Time]
-    """
-    List of times of a train
-    The first value is always `0` and the last one is always the total duration of the simulation.
-    """
-
-
 class CoreRoutingZoneRequirement(BaseModel):
     end_time: Annotated[int, Field(ge=0)]
     """
@@ -470,6 +436,16 @@ class DirectionalTrackRange(BaseModel):
 class Distribution(Enum):
     STANDARD = "STANDARD"
     MARECO = "MARECO"
+
+
+class DriverAction(Enum):
+    """
+    The action taken by the train driver at any given time
+    """
+
+    TRACTING = "TRACTING"
+    BRAKING = "BRAKING"
+    COASTING = "COASTING"
 
 
 class EditoastAbortJoinError(BaseModel):
@@ -4807,6 +4783,22 @@ class ConstraintDistributionChangeGroup(BaseModel):
     value: Distribution
 
 
+class CoreDriverActions(BaseModel):
+    """
+    Describes the driver actions at each point on the path
+    """
+
+    boundaries: list[Boundary]
+    """
+    List of `n` boundaries of the ranges.
+    A boundary is a distance from the beginning of the path in mm.
+    """
+    values: list[DriverAction]
+    """
+    List of `n+1` values associated to the ranges
+    """
+
+
 class CoreETCSConflictCurves(BaseModel):
     conflict_type: CoreConflictType
     guidance: CoreSimpleEnvelope
@@ -4827,6 +4819,44 @@ class CoreIncompatibleOffsetRange(BaseModel):
 class CoreIncompatibleOffsetRangeWithValue(BaseModel):
     range: CoreOffsetRange
     value: str
+
+
+class CoreReportTrain(BaseModel):
+    driver_actions: CoreDriverActions
+    """
+    Describes the driver actions at each point on the path
+    """
+    energy_consumption: float
+    """
+    Total energy consumption
+    """
+    path_item_times: list[PathItemTime]
+    """
+    Time in ms at which the train *arrives* at each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one, the arrival time of the path's last step.
+
+    In case multiple path items are at the same position, the stop duration
+    of the earlier ones are added to the path item time of the next. For
+    example, if A and B are at the same position, and A has a stop duration
+    of 2s, then the path item time of B will be equal to the path item time
+    of A plus 2s.
+    """
+    positions: list[Position]
+    """
+    List of positions of a train
+    Both positions (in mm) and times (in ms) must have the same length
+    The length of positions and times is arbitrary and comes from a curve simplification
+    made in core
+    """
+    speeds: list[float]
+    """
+    List of speeds associated to a position
+    """
+    times: list[Time]
+    """
+    List of times of a train
+    The first value is always `0` and the last one is always the total duration of the simulation.
+    """
 
 
 class CoreRoutingRequirement(BaseModel):

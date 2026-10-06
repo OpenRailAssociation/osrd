@@ -6128,6 +6128,27 @@ components:
       enum:
       - Spacing
       - Routing
+    CoreDriverActions:
+      type: object
+      description: Describes the driver actions at each point on the path
+      required:
+      - boundaries
+      - values
+      properties:
+        boundaries:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of `n` boundaries of the ranges.
+            A boundary is a distance from the beginning of the path in mm.
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverAction'
+          description: List of `n+1` values associated to the ranges
     CoreETCSBrakingCurvesResponse:
       type: object
       required:
@@ -6498,7 +6519,11 @@ components:
       - speeds
       - energy_consumption
       - path_item_times
+      - driver_actions
       properties:
+        driver_actions:
+          $ref: '#/components/schemas/CoreDriverActions'
+          description: Describes the driver actions at each point on the path
         energy_consumption:
           type: number
           format: double
@@ -6979,6 +7004,13 @@ components:
       enum:
       - STANDARD
       - MARECO
+    DriverAction:
+      type: string
+      description: The action taken by the train driver at any given time
+      enum:
+      - TRACTING
+      - BRAKING
+      - COASTING
     EditoastAbortJoinError:
       type: object
       required:
