@@ -671,7 +671,8 @@
     "featureFlags": {
       "hourlyTimetables": "Activer les trames 2h",
       "linkings": "Activer les enchaînements",
-      "multipleTimetables": "Activer les grilles horaires multiples par scénario"
+      "multipleTimetables": "Activer les grilles horaires multiples par scénario",
+      "unrecognizedWaypoints": "Activer les points de passage non reconnus dans la modale itinéraire"
     },
     "help": "Aide",
     "impersonation": "Se faire passer pour un utilisateur",
