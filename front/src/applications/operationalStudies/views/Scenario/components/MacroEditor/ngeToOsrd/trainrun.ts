@@ -145,7 +145,7 @@ const createPathItemFromNode = (
   let pathItemLocation: PathItemLocation;
   if (state) {
     const indexedNode = state.getNodeByNgeId(node.id)!;
-    pathItemLocation = MacroEditorState.parsePathKey(indexedNode.path_item_key);
+    pathItemLocation = MacroEditorState.parseNodeLocation(indexedNode.node_location);
   } else {
     // TODO : handle this case in xml import refacto
     const { main_code, secondary_code, country_code } = MacroEditorState.decodeDomesticReference(

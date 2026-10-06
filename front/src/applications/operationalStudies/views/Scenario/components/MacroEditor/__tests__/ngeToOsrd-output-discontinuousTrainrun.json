@@ -8,7 +8,7 @@
       "position_x": 672,
       "position_y": 800,
       "labels": [],
-      "path_item_key": "domestic:SS"
+      "node_location": { "main_code": "SS", "country_code": "??", "type": "domestic" }
     },
     {
       "ngeId": 7,
@@ -18,7 +18,7 @@
       "position_x": 320,
       "position_y": 32,
       "labels": [],
-      "path_item_key": "domestic:RTR"
+      "node_location": { "main_code": "RTR", "country_code": "??", "type": "domestic" }
     },
     {
       "ngeId": 8,
@@ -28,14 +28,14 @@
       "position_x": 320,
       "position_y": 192,
       "labels": [],
-      "path_item_key": "domestic:LTH"
+      "node_location": { "main_code": "LTH", "country_code": "??", "type": "domestic" }
     },
     {
       "full_name": "Waldegg",
       "is_collapsed": false,
       "labels": [],
       "ngeId": 10,
-      "path_item_key": "domestic:WLD",
+      "node_location": { "main_code": "WLD", "country_code": "??", "type": "domestic" },
       "position_x": 960,
       "position_y": 960,
       "trigram": "WLD"
@@ -45,7 +45,7 @@
       "is_collapsed": false,
       "labels": [],
       "ngeId": 11,
-      "path_item_key": "domestic:FLR",
+      "node_location": { "main_code": "FLR", "country_code": "??", "type": "domestic" },
       "position_x": 1120,
       "position_y": 1120,
       "trigram": "FLR"

@@ -3,6 +3,7 @@ import { sortBy } from 'lodash';
 
 import type {
   MacroNodeResponse,
+  NodeLocation,
   OperationalPoint,
   OperationalPointReference,
   PathItemLocation,
@@ -46,9 +47,9 @@ export default class MacroEditorState {
   nodes: Array<NodeIndexed | null> = [];
 
   /**
-   * Given a path key, returns the node index in the nodes storage.
+   * Given a node location key, returns the node index in the nodes storage.
    */
-  indexByPathKey: Record<string, number>;
+  indexByNodeLocationKey: Record<string, number>;
 
   /**
    * Given a nge ID, returns the node index in the nodes storage.
@@ -108,7 +109,7 @@ export default class MacroEditorState {
     this.trainrunLabels = new Set<string>([]);
     this.noteLabels = new Set<string>([]);
     this.nodes = [];
-    this.indexByPathKey = {};
+    this.indexByNodeLocationKey = {};
     this.indexByNgeId = {};
     this.ngeNoteIdToDbId = new Map();
     this.infraId = infraId;
@@ -132,10 +133,15 @@ export default class MacroEditorState {
    *  - add redirection in the nodesByPathKey
    */
   dedupNodes(): void {
-    const trigramAggreg = Object.entries(this.indexByPathKey)
+    const trigramAggreg = Object.entries(this.indexByNodeLocationKey)
       .map(([_, indexInStorage]) => {
         const node = this.nodes[indexInStorage];
-        return node ? { key: node.path_item_key, trigram: node.trigram } : null;
+        return node
+          ? {
+              key: MacroEditorState.getPathKeyByNodeLocation(node.node_location),
+              trigram: node.trigram,
+            }
+          : null;
       })
       .filter((i) => i !== null && i.trigram)
       .reduce(
@@ -151,7 +157,7 @@ export default class MacroEditorState {
         delete trigramAggreg[trig];
       }
       trigramAggreg[trig] = sortBy(trigramAggreg[trig], (key) => {
-        const node = this.nodes[this.indexByPathKey[key]];
+        const node = this.nodes[this.indexByNodeLocationKey[key]];
         if (node?.dbId) return 0;
         if (key.startsWith('op_id:')) return 1;
         if (key.startsWith('domestic:')) return 2;
@@ -163,13 +169,13 @@ export default class MacroEditorState {
 
     Object.values(trigramAggreg).forEach((mergeList) => {
       const mainNodeKey = mergeList[0];
-      const mainNodeIndex = this.indexByPathKey[mainNodeKey];
+      const mainNodeIndex = this.indexByNodeLocationKey[mainNodeKey];
       mergeList.slice(1).forEach((key) => {
         // Delete the node
-        const nodeIndexInStorage = this.indexByPathKey[key];
+        const nodeIndexInStorage = this.indexByNodeLocationKey[key];
         this.deleteByIndexStorage(nodeIndexInStorage);
         // Update the indices to redirect to the main one
-        this.indexByPathKey[key] = mainNodeIndex;
+        this.indexByNodeLocationKey[key] = mainNodeIndex;
       });
     });
   }
@@ -177,13 +183,14 @@ export default class MacroEditorState {
   /**
    * Store and index the node.
    */
-  indexNodeByKey(key: string, node: NodeIndexed) {
-    let nodeIndexInStorage = this.indexByPathKey[key];
+  indexNodeByLocation(location: NodeLocation, node: NodeIndexed) {
+    const nodeLocationKey = MacroEditorState.getPathKeyByNodeLocation(location);
+    let nodeIndexInStorage = this.indexByNodeLocationKey[nodeLocationKey];
     if (nodeIndexInStorage !== undefined) {
       // if there is previous value, we clean the indices
       const prevNode = this.nodes[nodeIndexInStorage]!;
       delete this.indexByNgeId[prevNode.ngeId];
-      delete this.indexByPathKey[key];
+      delete this.indexByNodeLocationKey[nodeLocationKey];
       // replace the node
       this.nodes[nodeIndexInStorage] = node;
     } else {
@@ -193,7 +200,7 @@ export default class MacroEditorState {
     }
 
     // Update the indices
-    this.indexByPathKey[node.path_item_key] = nodeIndexInStorage;
+    this.indexByNodeLocationKey[nodeLocationKey] = nodeIndexInStorage;
     this.indexByNgeId[node.ngeId] = nodeIndexInStorage;
 
     // Index labels
@@ -203,12 +210,12 @@ export default class MacroEditorState {
   }
 
   /**
-   * Update node's data by its key
+   * Update node's data by its node location
    */
-  updateNodeDataByKey(key: string, data: Partial<NodeIndexed>) {
-    const indexedNode = this.getNodeByKey(key);
+  updateNodeDataByNodeLocation(nodeLocation: NodeLocation, data: Partial<NodeIndexed>) {
+    const indexedNode = this.getNodeByLocation(nodeLocation);
     if (indexedNode) {
-      this.indexNodeByKey(key, { ...indexedNode, ...data });
+      this.indexNodeByLocation(nodeLocation, { ...indexedNode, ...data });
     }
   }
 
@@ -224,10 +231,10 @@ export default class MacroEditorState {
   }
 
   /**
-   * Get a node by its key.
+   * Get a node by its location.
    */
-  getNodeByKey(key: string): NodeIndexed | null {
-    const index = this.indexByPathKey[key];
+  getNodeByLocation(location: NodeLocation): NodeIndexed | null {
+    const index = this.indexByNodeLocationKey[MacroEditorState.getPathKeyByNodeLocation(location)];
     return this.nodes[index] || null;
   }
 
@@ -253,7 +260,7 @@ export default class MacroEditorState {
 
   private deleteByIndexStorage(indexInStorage: number) {
     // delete all refs in indices
-    [this.indexByPathKey, this.indexByPathKey, this.indexByNgeId].forEach((index) => {
+    [this.indexByNodeLocationKey, this.indexByNgeId].forEach((index) => {
       Object.keys(index).forEach((key) => {
         if (index[key] === indexInStorage) delete index[key];
       });
@@ -262,17 +269,13 @@ export default class MacroEditorState {
     this.nodes[indexInStorage] = null;
   }
 
-  /**
-   * Given an path step, returns its pathKey
-   */
-  static getPathKey(item: PathItemLocation): string {
+  static getPathKeyByNodeLocation(item: NodeLocation): string {
     if (item.type === 'track_offset') return `track_offset:${item.track}+${item.offset}`;
-    if (item.operational_point.type === 'domestic') {
-      return `domestic:${MacroEditorState.encodeDomesticReference(item.operational_point)}`;
+    if (item.type === 'domestic') {
+      return `domestic:${MacroEditorState.encodeDomesticReference(item)}`;
     }
-    if (item.operational_point.type === 'id')
-      return `op_id:${item.operational_point.operational_point}`;
-    return `uic:${item.operational_point.uic}${item.operational_point.secondary_code ? `/${item.operational_point.secondary_code}` : ''}`;
+    if (item.type === 'id') return `op_id:${item.operational_point}`;
+    return `uic:${item.uic}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
   }
 
   /**
@@ -288,58 +291,37 @@ export default class MacroEditorState {
   }
 
   /**
-   * Given a search result item, returns all possible pathKeys, ordered by weight.
+   * Given a search result item, returns all possible node locations, ordered by weight.
    */
-  static getPathKeys(op: OperationalPoint): string[] {
-    const { main_code, secondary_code, uic, country_code } = op ?? {};
+  static getNodeLocations(op: OperationalPoint): NodeLocation[] {
+    const { main_code, secondary_code, uic, country_code } = op;
 
-    const result = [];
-    result.push(`op_id:${op.id}`);
+    const result: NodeLocation[] = [{ type: 'id', operational_point: op.id }];
     if (main_code) {
-      result.push(
-        this.getPathKey({
-          type: 'operational_point_part_reference',
-          operational_point: { main_code, secondary_code, country_code, type: 'domestic' },
-          local_track_name: null,
-        })
-      );
+      result.push({ main_code, secondary_code, country_code, type: 'domestic' });
     }
-    if (uic) result.push(`uic:${uic}${secondary_code ? `/${secondary_code}` : ''}`);
+    if (uic) result.push({ type: 'uic', uic, secondary_code });
     for (const opPart of op.parts) {
-      result.push(`track_offset:${opPart.track}+${opPart.position}`);
+      result.push({ type: 'track_offset', track: opPart.track, offset: opPart.position });
     }
     return result;
   }
 
-  static parsePathKey(key: string): PathItemLocation {
-    const [type, value] = key.split(':');
-    if (!value) throw new Error('Invalid path key');
-    switch (type) {
-      case 'op_id': {
-        return {
-          type: 'operational_point_part_reference',
-          operational_point: { operational_point: value, type: 'id' },
-        };
-      }
-      case 'domestic': {
-        return {
-          type: 'operational_point_part_reference',
-          operational_point: this.decodeDomesticReference(value),
-        };
-      }
+  static parseNodeLocation(nodeLocation: NodeLocation): PathItemLocation {
+    switch (nodeLocation.type) {
+      case 'id':
+      case 'domestic':
       case 'uic': {
-        const [uic, secondary_code] = value.split('/');
         return {
           type: 'operational_point_part_reference',
-          operational_point: { uic: Number(uic), secondary_code, type: 'uic' },
+          operational_point: nodeLocation,
         };
       }
       case 'track_offset': {
-        const [track, offset] = value.split('+');
-        return { type: 'track_offset', track, offset: Number(offset) };
+        return nodeLocation;
       }
       default:
-        throw new Error(`Invalid path key type "${type}"`);
+        throw new Error(`Invalid node location "${nodeLocation}"`);
     }
   }
 

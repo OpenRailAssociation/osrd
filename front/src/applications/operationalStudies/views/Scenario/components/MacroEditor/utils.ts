@@ -50,7 +50,7 @@ export const createMacroNode = async (
   );
   const result = await createPromise.unwrap();
   const newNode = result.macro_nodes[0];
-  state.indexNodeByKey(newNode.path_item_key, {
+  state.indexNodeByLocation(newNode.node_location, {
     ...omit(newNode, ['id']),
     ngeId: ngeNodeId,
     dbId: newNode.id,
@@ -72,7 +72,7 @@ export const updateMacroNode = async (
       macroNodeForm: node,
     })
   ).unwrap();
-  state.indexNodeByKey(indexedNode.path_item_key, node);
+  state.indexNodeByLocation(indexedNode.node_location, node);
 };
 
 export const deleteMacroNodeByDbId = async (dispatch: AppDispatch, dbId: number) => {
@@ -116,7 +116,7 @@ export const storeRoundTrip = async (
 };
 
 /**
- * Check if every new nodes (from import) are already in the DB (by path_item_key).
+ * Check if every new nodes (from import) are already in the DB (by node location).
  * If not we persist them and update the state with their dbIds.
  */
 export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: AppDispatch) => {
@@ -133,7 +133,7 @@ export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: App
   ).unwrap();
 
   result.macro_nodes.forEach((createdNode) => {
-    state.updateNodeDataByKey(createdNode.path_item_key, {
+    state.updateNodeDataByNodeLocation(createdNode.node_location, {
       dbId: createdNode.id,
     });
   });

@@ -4032,7 +4032,7 @@ export type MacroNodeResponse = {
   id: number;
   is_collapsed: boolean;
   labels: Tags;
-  path_item_key: string;
+  node_location: NodeLocation;
   position_x: number;
   position_y: number;
   trigram?: string | null;
@@ -4043,11 +4043,12 @@ export type MacroNodeListResponse = PaginationStats & {
 export type MacroNodeBatchResponse = {
   macro_nodes: MacroNodeResponse[];
 };
+export type NodeLocation = OperationalPointReference | (TrackOffset & { type: 'track_offset' });
 export type MacroNodeForm = {
   full_name?: string | null;
   is_collapsed?: boolean;
   labels: Tags;
-  path_item_key: string;
+  node_location: NodeLocation;
   position_x: number;
   position_y: number;
   trigram?: string | null;
