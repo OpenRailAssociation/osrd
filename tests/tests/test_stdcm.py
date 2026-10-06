@@ -1,5 +1,6 @@
 import datetime
 import json
+import time
 from typing import Any
 
 from requests import Session
@@ -612,6 +613,63 @@ def test_max_running_time(
     assert r.status_code == 200
     assert data is not None
     assert data.get("status") == "path_not_found"
+
+
+def test_consistent_trace_id(
+    small_infra: Infra,
+    foo_project_id: int,
+    fast_rolling_stock: int,
+    session: Session,
+):
+    """
+    Regression test: ensures that the trace_id returned by the editoast header
+    actually matches the ID used by core to write log files
+    """
+    op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
+    _, timetable, _ = create_scenario(EDITOAST_URL, small_infra.id, op_study, session)
+    payload = {
+        "timetable_id": timetable,
+        "start_time": "2024-08-13T21:26:05.793Z",
+        "steps": [
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _START, "can_backtrack": False},
+            },
+            {
+                "duration": 100,
+                "pathfinding_item": {"location": _STOP, "can_backtrack": False},
+            },
+        ],
+        "comfort": "STANDARD",
+        "margin": "0%",
+        "consist_schedule": {
+            "boundaries": [],
+            "values": [
+                {
+                    "rolling_stock_id": fast_rolling_stock,
+                }
+            ],
+        },
+    }
+    r = session.post(
+        EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}",
+        json=payload,
+    )
+    r.raise_for_status()
+    trace_id = r.headers["traceparent"].split("-")[1]
+    # A "null" trace ID is returned as all 0
+    assert any(x != "0" for x in trace_id)
+
+    # Core doesn't wait for the file to be written before returning its response,
+    # we may have to wait a bit
+    for _ in range(10):
+        r = session.get(EDITOAST_URL + f"/stdcm/debug_data/{trace_id}/")
+        if r.ok and r.json()["simulation_data"] is not None:
+            return
+        time.sleep(1)
+    raise RuntimeError(
+        f"Test failed even after retries: {r.status_code=}, {r.content=}"
+    )
 
 
 def _get_stdcm_response(
