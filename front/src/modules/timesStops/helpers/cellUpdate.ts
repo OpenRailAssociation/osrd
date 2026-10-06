@@ -26,9 +26,9 @@ const computeInsertIndex = (
   allRows: TimesStopsRow[],
   currentPath: PathItem[]
 ): number => {
-  // Build a map of pathStepId -> opOnPathIndex from rows that are path steps
+  // Build a map of pathStepKey -> opOnPathIndex from rows that are path steps
   const pathStepOpIndices = new Map(
-    allRows.filter((r) => r.pathStepId).map((r) => [r.pathStepId!, r.opOnPathIndex])
+    allRows.filter((r) => r.pathStepKey).map((r) => [r.pathStepKey!, r.opOnPathIndex])
   );
 
   // Find the first PathStep whose opOnPathIndex is greater than the edited OP's
@@ -46,8 +46,8 @@ export const upsertPathStep = (
   currentPath: PathItem[],
   allRows: TimesStopsRow[]
 ): { pathStepKey: string; updatedPath: PathItem[] } => {
-  if (editedRow.pathStepId) {
-    return { pathStepKey: editedRow.pathStepId, updatedPath: currentPath };
+  if (editedRow.pathStepKey) {
+    return { pathStepKey: editedRow.pathStepKey, updatedPath: currentPath };
   }
 
   const newPathStep: PathItem = { key: uuidV4(), location: editedRow.location };
@@ -246,7 +246,7 @@ export const computePendingEditsFromSchedule = (
   rows: TimesStopsRow[]
 ): PendingEdit[] =>
   rows.flatMap((row): PendingEdit[] => {
-    const item = schedule.find((s) => s.at === row.pathStepId);
+    const item = schedule.find((s) => s.at === row.pathStepKey);
 
     let newArrival: StartTime | null = null;
     if (row.opOnPathIndex === 0) {
@@ -283,26 +283,26 @@ export const computePendingEditsFromSchedule = (
  * The range extends until the next path step with an explicit value (or the last path step).
  *
  * @example
- * // rows: [{ id: 'A', powerRestriction: 'C1' }, { id: 'B', powerRestriction: null }, { id: 'C', powerRestriction: '∅' }, { id: 'D', powerRestriction: null }]
+ * // rows: [{ pathStepKey: 'A', powerRestriction: 'C1' }, { pathStepKey: 'B', powerRestriction: null }, { pathStepKey: 'C', powerRestriction: '∅' }, { pathStepKey: 'D', powerRestriction: null }]
  * // → [{ from: 'A', to: 'C', value: 'C1' }, { from: 'C', to: 'D', value: '∅' }]
  *
- * // rows: [{ id: 'A', powerRestriction: null }, { id: 'B', powerRestriction: 'C2' }, { id: 'C', powerRestriction: null }]
+ * // rows: [{ pathStepKey: 'A', powerRestriction: null }, { pathStepKey: 'B', powerRestriction: 'C2' }, { pathStepKey: 'C', powerRestriction: null }]
  * // → [{ from: 'B', to: 'C', value: 'C2' }]
  */
 export const buildPowerRestrictionsFromRows = (rows: TimesStopsRow[]): PowerRestrictionItem[] => {
-  const pathStepRows = rows.filter((r) => r.pathStepId);
+  const pathStepRows = rows.filter((r) => r.pathStepKey);
   const result: PowerRestrictionItem[] = [];
 
   for (let i = 0; i < pathStepRows.length - 1; i++) {
     const code = pathStepRows[i].powerRestriction;
     if (!code) continue;
 
-    const from = pathStepRows[i].pathStepId!;
+    const from = pathStepRows[i].pathStepKey!;
     let j = i + 1;
     while (j < pathStepRows.length - 1 && !pathStepRows[j].powerRestriction) {
       j++;
     }
-    const to = pathStepRows[j].pathStepId!;
+    const to = pathStepRows[j].pathStepKey!;
     result.push({ from, to, value: code });
   }
 

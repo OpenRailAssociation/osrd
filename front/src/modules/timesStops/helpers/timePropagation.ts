@@ -161,7 +161,7 @@ export const propagateTime = (
   if (update.field !== 'requestedArrival' && update.field !== 'requestedDeparture')
     return undefined;
 
-  const { pathStepId, stopDuration, opOnPathIndex } = update.row;
+  const { pathStepKey, stopDuration, opOnPathIndex } = update.row;
   const isArrivalUpdate = update.field === 'requestedArrival';
   const isOrigin = opOnPathIndex === 0;
   const delta = computeDeltaForPropagationMode(
@@ -170,7 +170,7 @@ export const propagateTime = (
     update.propagationMode,
     isArrivalUpdate && isOrigin
   );
-  if (delta === null || !pathStepId) return undefined;
+  if (delta === null || !pathStepKey) return undefined;
 
   switch (update.propagationMode) {
     case 'shiftAllWaypoints':
@@ -195,7 +195,7 @@ export const propagateTime = (
         ? propagateShiftAll(delta, selectedTrain, timetableType)
         : propagateFromEditedPoint(
             delta,
-            pathStepId,
+            pathStepKey,
             selectedTrain,
             'toDestination',
             timetableType
@@ -216,7 +216,7 @@ export const propagateTime = (
           )
         : propagateFromEditedPoint(
             delta,
-            pathStepId,
+            pathStepKey,
             selectedTrain,
             'fromDeparture',
             timetableType
@@ -241,7 +241,7 @@ export const propagateTime = (
           )
         : applyAtThisPoint(
             delta,
-            pathStepId,
+            pathStepKey,
             update.field,
             'atThisTime',
             selectedTrain,
@@ -254,7 +254,7 @@ export const propagateTime = (
       if (isOrigin)
         return propagateFromEditedPoint(
           delta,
-          pathStepId,
+          pathStepKey,
           selectedTrain,
           'fromDeparture',
           timetableType
@@ -266,7 +266,7 @@ export const propagateTime = (
         ? undefined
         : applyAtThisPoint(
             delta,
-            pathStepId,
+            pathStepKey,
             update.field,
             'atThisWaypoint',
             selectedTrain,

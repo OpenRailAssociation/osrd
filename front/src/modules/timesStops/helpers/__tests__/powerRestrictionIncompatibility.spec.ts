@@ -12,7 +12,7 @@ const row = (
   ({
     id,
     opOnPathIndex,
-    pathStepId: opts.pathStepKey ?? null,
+    pathStepKey: opts.pathStepKey ?? null,
     powerRestriction: opts.powerRestriction ?? null,
   }) as TimesStopsRow;
 

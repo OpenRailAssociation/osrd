@@ -34,7 +34,7 @@ const makeTrainWithoutOp11 = (): Train =>
 
 const makeRow = (stopDurationIso: string | null): TimesStopsRow =>
   ({
-    pathStepId: 'op11',
+    pathStepKey: 'op11',
     opOnPathIndex: 10,
     stopDuration: stopDurationIso ? Duration.parse(stopDurationIso) : null,
   }) as unknown as TimesStopsRow;
@@ -69,7 +69,7 @@ describe('propagateStopDuration', () => {
     expect(
       propagateStopDuration(
         {
-          row: { ...makeRow('PT5M'), pathStepId: null },
+          row: { ...makeRow('PT5M'), pathStepKey: null },
           field: 'stopDuration',
           value: 900,
           propagationMode: 'toDestination',

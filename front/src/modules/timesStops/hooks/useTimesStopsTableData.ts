@@ -144,7 +144,7 @@ const buildTableRow = ({
 
   return {
     id,
-    pathStepId: pathStepKey,
+    pathStepKey,
     stepStatus,
     opOnPathIndex,
     name: name ?? '',
@@ -436,7 +436,7 @@ const useTimesStopsTableData = (
   ]);
 
   const filteredRows = useMemo(
-    () => (displayOnlyPathSteps ? allRows.filter((row) => row.pathStepId) : allRows),
+    () => (displayOnlyPathSteps ? allRows.filter((row) => row.pathStepKey) : allRows),
     [allRows, displayOnlyPathSteps]
   );
 

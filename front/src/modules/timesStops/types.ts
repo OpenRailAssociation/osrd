@@ -24,10 +24,10 @@ export type StepStatus =
 
 export type TimesStopsRow = {
   // Identification
-  /** Unique, opaque identifier for the row. Not to be confused with path step IDs or OP IDs. */
+  /** Unique, opaque identifier for the row. Not to be confused with path step keys or OP IDs. */
   id: string;
-  /** Path step ID the row originates from, if any. null if it's an OP along the path not explicitly picked by the user. */
-  pathStepId: string | null;
+  /** Path step key the row originates from, if any. null if it's an OP along the path not explicitly picked by the user. */
+  pathStepKey: string | null;
   opOnPathIndex: number;
 
   // Schedule information
