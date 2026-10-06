@@ -8,7 +8,7 @@ const _10H30 = new Date('2025-01-01T10:30:00Z');
 
 const buildRow = (overrides: Partial<TimesStopsRow> = {}): TimesStopsRow => ({
   id: 'row-1',
-  pathStepId: 'step-1',
+  pathStepKey: 'step-1',
   opOnPathIndex: 1,
   stepStatus: 'allHonored',
   name: 'Some station',
@@ -32,8 +32,8 @@ const buildRow = (overrides: Partial<TimesStopsRow> = {}): TimesStopsRow => ({
 });
 
 describe('getRowsToUpdateFromSimulation', () => {
-  it('excludes rows without a pathStepId', () => {
-    const rows = [buildRow({ pathStepId: null })];
+  it('excludes rows without a pathStepKey', () => {
+    const rows = [buildRow({ pathStepKey: null })];
 
     expect(getRowsToUpdateFromSimulation(rows, 'requestedArrival', 'fill')).toEqual([]);
   });

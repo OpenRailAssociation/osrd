@@ -160,7 +160,7 @@ describe('buildPathWaypointsFromRawOPs', () => {
     },
   });
 
-  it('should populate pathItemId when all OPs are unique', () => {
+  it('should populate pathItemKey when all OPs are unique', () => {
     const ops = [
       makeRawOp('op1'),
       makeRawOp('op2'),
@@ -185,7 +185,7 @@ describe('buildPathWaypointsFromRawOPs', () => {
     ]);
   });
 
-  it('should populate pathItemId when some OPs are crossed multiple times', () => {
+  it('should populate pathItemKey when some OPs are crossed multiple times', () => {
     const ops = [
       makeRawOp('op1'),
       makeRawOp('op2'),

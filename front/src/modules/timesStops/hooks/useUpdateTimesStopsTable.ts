@@ -243,7 +243,7 @@ const useUpdateTimesStopsTable = (
       });
 
       // Editing a row that is not a path step yet creates one
-      const editedRows = update.row.pathStepId
+      const editedRows = update.row.pathStepKey
         ? allRows
         : allRows.map((row) => (row.id === update.row.id ? { ...row, pathStepKey } : row));
 

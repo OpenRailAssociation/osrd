@@ -46,12 +46,12 @@ export const propagateStopDuration = (
   // Clearing the duration falls through to the generic single-row edit path, regardless of mode.
   if (
     update.propagationMode === 'atThisWaypoint' ||
-    !update.row.pathStepId ||
+    !update.row.pathStepKey ||
     update.value === null
   )
     return undefined;
 
-  const pathStepKey = update.row.pathStepId;
+  const pathStepKey = update.row.pathStepKey;
   const editedPathIndex = selectedTrain.path.findIndex((step) => step.key === pathStepKey);
   if (editedPathIndex < 0) return undefined;
 

@@ -50,7 +50,7 @@ it('formatPropagationDeltaLabelByMode: ignores sub-second precision', () => {
 
 const train = makeTrain();
 const row = {
-  pathStepId: 'op11',
+  pathStepKey: 'op11',
   opOnPathIndex: 10,
   requestedArrival: _18H30,
 } as unknown as TimesStopsRow;
@@ -330,7 +330,7 @@ describe('Scenario 3 — -40 min at OP11', () => {
 // +40min causes OP11's offset to go negative (30min - 40min) → midnight crossing for atThisWaypoint.
 describe('Scenario 4 — +40 min at origin (OP1)', () => {
   const originRow = {
-    pathStepId: 'op1',
+    pathStepKey: 'op1',
     opOnPathIndex: 0,
     requestedArrival: _18H00,
   } as unknown as TimesStopsRow;
