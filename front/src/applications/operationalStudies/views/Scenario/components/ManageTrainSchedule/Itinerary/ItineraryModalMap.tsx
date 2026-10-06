@@ -47,7 +47,7 @@ type ItineraryModalMapProps = {
   pathStepsMetadata?: Map<string, PathStepMetadata>;
   pathProperties?: PathProperties;
   pathWaypoints: PathWaypoint[] | null;
-  selectedStepId?: string;
+  selectedStepKey?: string;
   isMapSelectionMode?: boolean;
   onMapSelectionClick?: (featureInfoClick: FeatureInfoClick) => void;
   onPathStepDragEnd?: (stepKey: string, featureInfoClick: FeatureInfoClick) => void;
@@ -60,7 +60,7 @@ const ItineraryModalMap = ({
   pathStepsMetadata,
   pathProperties,
   pathWaypoints,
-  selectedStepId,
+  selectedStepKey,
   isMapSelectionMode,
   onMapSelectionClick,
   onPathStepDragEnd,
@@ -400,7 +400,7 @@ const ItineraryModalMap = ({
               name = computeOpRefMarkerName(pathStepMetadata);
             }
 
-            const isSelected = selectedStepId === step.key;
+            const isSelected = selectedStepKey === step.key;
 
             return (
               <PathStepMarker
