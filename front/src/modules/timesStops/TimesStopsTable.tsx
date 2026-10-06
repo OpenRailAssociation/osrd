@@ -116,6 +116,31 @@ const getArrivalReferenceDate = (
 };
 
 /**
+ * Get the reference date for base arrival editing.
+ * Uses the previous stop's base arrival, so anything earlier than it is D+1.
+ * The first row displays its requested arrival as base arrival.
+ */
+const getBaseArrivalReferenceDate = (
+  row: TimesStopsRow,
+  allRows: TimesStopsRow[],
+  startTime: StartTime
+): Date | undefined => {
+  const previousRow = allRows.findLast((r) => {
+    if (r.opOnPathIndex >= row.opOnPathIndex) return false;
+    return (
+      (r.opOnPathIndex === allRows[0]?.opOnPathIndex
+        ? r.requestedArrival
+        : r.baseArrival) instanceof Date
+    );
+  });
+
+  if (!previousRow) return truncateStartTimeToDay(startTime) as Date;
+
+  const isPreviousFirstRow = previousRow.opOnPathIndex === allRows[0]?.opOnPathIndex;
+  return (isPreviousFirstRow ? previousRow.requestedArrival : previousRow.baseArrival) as Date;
+};
+
+/**
  * Get the reference date for departure editing.
  * Uses the current row's arrival time since departure must be after arrival.
  */
@@ -621,7 +646,7 @@ const TimesStopsTable = ({
           type={startTimeCellType}
           ref={registerTimeCellRef(info.row.index, 'baseArrival')}
           cellContext={info}
-          referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
+          referenceDate={getBaseArrivalReferenceDate(row, allRows, startTime)}
           clearButtonTitle={t('clearRequestedBaseArrival')}
           onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
           onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
@@ -769,7 +794,8 @@ const TimesStopsTable = ({
         }),
         columnHelper.accessor('realMargin', {
           header: () => t('realMargin'),
-          cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin', showPolarity: !isValid }),
+          cell: (info) =>
+            returnMarginCell({ info, dataTestId: 'real-margin', showPolarity: !isValid }),
           meta: {
             className: 'col-real-margin computed computed-margin',
             title: t('realMargin'),
@@ -887,7 +913,13 @@ const TimesStopsTable = ({
   let floor = 0;
 
   for (const [index, { original }] of tableRows.entries()) {
-    const { requestedArrival, computedArrival, requestedDeparture, computedDeparture } = original;
+    const {
+      requestedArrival,
+      computedArrival,
+      requestedDeparture,
+      computedDeparture,
+      baseArrival,
+    } = original;
     const arrival = readsSimulation[index]
       ? (computedArrival ?? requestedArrival)
       : requestedArrival;
@@ -895,7 +927,11 @@ const TimesStopsTable = ({
       ? (computedDeparture ?? requestedDeparture)
       : requestedDeparture;
 
-    const offset = arrival ? Math.max(computeDayOffset(arrival), floor) : floor;
+    const arrivalOffset = Math.max(
+      arrival ? computeDayOffset(arrival) : 0,
+      baseArrival ? computeDayOffset(baseArrival) : 0
+    );
+    const offset = Math.max(arrivalOffset, floor);
     effectiveDayOffsets.push(offset);
     floor = departure ? Math.max(offset, computeDayOffset(departure)) : offset;
   }
