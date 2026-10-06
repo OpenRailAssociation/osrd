@@ -283,7 +283,7 @@ const StdcmVias = ({
             >
               <StdcmOperationalPoint
                 operationalPoint={pathStep.operationalPoint}
-                pathStepId={pathStep.id}
+                pathStepKey={pathStep.id}
                 disabled={disabled}
                 onItineraryChange={onItineraryChange}
               />
