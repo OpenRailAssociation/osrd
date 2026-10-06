@@ -769,6 +769,7 @@ pub(in crate::views) async fn get_path(
             )
             .collect(),
         allowed_track_sections: BTreeSet::new(),
+        forced_op_stops: Vec::new(),
     };
 
     let consist = build_pathfinding_consist(&consist, train_occurrence.speed_limit_tag().cloned());

@@ -15,6 +15,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use models::prelude::*;
+use models::stdcm_search_environment::OperationalPointStop;
 use models::stdcm_search_environment::StdcmSearchEnvironment;
 use serde::Deserialize;
 use serde::Serialize;
@@ -84,6 +85,8 @@ struct StdcmSearchEnvironmentResponse {
     /// None means no zones restrictions.
     #[schema(required)]
     allowed_tracks: Option<HashMap<String, HashSet<String>>>,
+    /// List of mandatory operational point stops
+    forced_op_stops: Option<Vec<OperationalPointStop>>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
     operational_points_id_filtered: Option<Vec<String>>,
@@ -180,6 +183,7 @@ impl From<models::stdcm_search_environment::StdcmSearchEnvironment>
             enabled_from: from.enabled_from,
             enabled_until: from.enabled_until,
             allowed_tracks: from.allowed_tracks,
+            forced_op_stops: from.forced_op_stops,
             operational_points: if !from.operational_points.is_empty() {
                 Some(from.operational_points.to_vec())
             } else {

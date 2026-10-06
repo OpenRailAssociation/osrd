@@ -196,6 +196,7 @@ impl SimulationTrain {
             path_constraints: PathfindingConstraints {
                 path_items: Vec::new(),
                 allowed_track_sections: BTreeSet::new(),
+                forced_op_stops: Vec::new(),
             },
             schedule_item_to_index: HashMap::default(),
         }

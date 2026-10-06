@@ -4,6 +4,7 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use common::units;
+use core_client::pathfinding::OperationalPointStop;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 
@@ -131,6 +132,9 @@ pub(crate) struct Request {
     #[serde(default)]
     pub(crate) allowed_track_sections: HashSet<String>,
     pub(crate) consist_schedule: ConsistSchedule,
+    /// List of mandatory operational point stops
+    #[serde(default)]
+    pub(crate) forced_op_stops: Vec<OperationalPointStop>,
 }
 
 impl Request {

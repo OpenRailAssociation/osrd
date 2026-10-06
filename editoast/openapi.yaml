@@ -4161,6 +4161,11 @@ paths:
                   - integer
                   - 'null'
                   format: int64
+                forced_op_stops:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CoreOperationalPointStop'
+                  description: List of mandatory operational point stops
                 margin:
                   type:
                   - string
@@ -6184,6 +6189,11 @@ components:
           - $ref: '#/components/schemas/CoreSimpleEnvelope'
         permitted_speed:
           $ref: '#/components/schemas/CoreSimpleEnvelope'
+    CoreForcedStopType:
+      type: string
+      enum:
+      - GENERAL_STOP
+      - OVERTAKE
     CoreIncompatibleConstraints:
       type: object
       required:
@@ -6325,6 +6335,18 @@ components:
           description: Importance of the operational point
           maximum: 100
           minimum: 0
+    CoreOperationalPointStop:
+      type: object
+      required:
+      - id
+      - stop_type
+      properties:
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        stop_type:
+          $ref: '#/components/schemas/CoreForcedStopType'
     CorePathfindingInputError:
       oneOf:
       - type: object
@@ -11505,6 +11527,11 @@ components:
           format: double
           description: 'T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero'
       additionalProperties: false
+    ForcedStopType:
+      type: string
+      enum:
+      - GENERAL_STOP
+      - OVERTAKE
     GeoJson:
       oneOf:
       - oneOf:
@@ -13063,6 +13090,18 @@ components:
             format: int32
             description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
             minimum: 0
+    OperationalPointStop:
+      type: object
+      required:
+      - id
+      - stop_type
+      properties:
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        stop_type:
+          $ref: '#/components/schemas/ForcedStopType'
     OptionsChangeGroup:
       type: object
       required:
@@ -13576,6 +13615,11 @@ components:
             type: string
           description: Set of authorized track section ids, empty means no restriction
           uniqueItems: true
+        forced_op_stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreOperationalPointStop'
+          description: List of mandatory operational point stops
         path_items:
           type: array
           items:
@@ -16209,6 +16253,7 @@ components:
       - speed_limit_tags
       - operational_points_id_filtered
       - allowed_tracks
+      - forced_op_stops
       properties:
         allowed_tracks:
           type:
@@ -16239,6 +16284,13 @@ components:
           description: |-
             The time window end point where the environment is enabled.
             This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
+        forced_op_stops:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OperationalPointStop'
+          description: List of mandatory operational point stops
         id:
           type: integer
           format: int64
@@ -16389,6 +16441,13 @@ components:
         enabled_until:
           type: string
           format: date-time
+        forced_op_stops:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OperationalPointStop'
+          description: List of mandatory operational point stops
         id:
           type: integer
           format: int64

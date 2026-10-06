@@ -195,6 +195,7 @@ mod tests {
             Arc::new(crate::PathfindingConstraints {
                 path_items: path_items.clone(),
                 allowed_track_sections: BTreeSet::new(),
+                forced_op_stops: Vec::new(),
             }),
         );
 
@@ -299,6 +300,7 @@ mod tests {
             Arc::new(crate::PathfindingConstraints {
                 path_items: path_items.clone(),
                 allowed_track_sections: BTreeSet::new(),
+                forced_op_stops: Vec::new(),
             }),
         );
 
@@ -453,6 +455,7 @@ mod tests {
             Arc::new(crate::PathfindingConstraints {
                 path_items: vec![],
                 allowed_track_sections: BTreeSet::new(),
+                forced_op_stops: Vec::new(),
             }),
         );
 

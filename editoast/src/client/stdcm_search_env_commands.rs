@@ -11,6 +11,7 @@ use models::Infra;
 use models::WorkScheduleGroup;
 use models::prelude::*;
 use models::scenario::Scenario;
+use models::stdcm_search_environment::OperationalPointStop;
 use models::stdcm_search_environment::StdcmSearchEnvironment;
 use models::timetable::Timetable;
 use std::collections::HashMap;
@@ -75,6 +76,24 @@ fn parse_allowed_tracks(
     }
 }
 
+fn parse_forced_op_stops(
+    file_path: Option<PathBuf>,
+) -> anyhow::Result<Option<Vec<OperationalPointStop>>> {
+    match file_path {
+        None => Ok(None),
+        Some(forced_op_stops_path) => {
+            let forced_op_stops_file = File::open(forced_op_stops_path)
+                .map_err(|_| anyhow::anyhow!("forced_op_stops_tracksfile must exist"))?;
+
+            let forced_op_stops: Option<Vec<OperationalPointStop>> =
+                serde_json::from_reader(BufReader::new(forced_op_stops_file))
+                    .map_err(|_| anyhow::anyhow!("forced_op_stops file can't be read"))?;
+
+            Ok(forced_op_stops)
+        }
+    }
+}
+
 fn parse_speed_limit_tags(
     speed_limit_tags: Option<Vec<String>>,
 ) -> anyhow::Result<HashMap<String, i64>> {
@@ -122,6 +141,8 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
     pub default_speed_limit_tag: Option<String>,
     /// Path to the file that contains the allowed tracks ids for STDCM requests
     pub allowed_tracks_json_path: Option<PathBuf>,
+    /// Path to the file that contains the mandatory operational point stops
+    pub forced_op_stops_json_path: Option<PathBuf>,
 }
 
 async fn set_stdcm_search_env_from_scenario(
@@ -160,6 +181,7 @@ async fn set_stdcm_search_env_from_scenario(
         .default_speed_limit_tag(args.default_speed_limit_tag)
         .operational_points(args.operational_points.unwrap_or_default())
         .operational_points_id_filtered(args.operational_points_id_filtered.unwrap_or_default())
+        .forced_op_stops(parse_forced_op_stops(args.forced_op_stops_json_path)?)
         .create(conn)
         .await?;
 
@@ -201,6 +223,8 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     pub search_window_end: Option<DateTime<Utc>>,
     /// Path to the file that contains the allowed tracks ids for STDCM requests
     pub allowed_tracks_json_path: Option<PathBuf>,
+    /// Path to the file that contains the mandatory operational point stops
+    pub forced_op_stops_json_path: Option<PathBuf>,
 }
 
 async fn set_stdcm_search_env_from_scratch(
@@ -247,6 +271,7 @@ async fn set_stdcm_search_env_from_scratch(
         .allowed_tracks(parse_allowed_tracks(args.allowed_tracks_json_path)?)
         .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
         .default_speed_limit_tag(args.default_speed_limit_tag)
+        .forced_op_stops(parse_forced_op_stops(args.forced_op_stops_json_path)?)
         .create(conn)
         .await?;
 
@@ -496,6 +521,7 @@ mod tests {
             speed_limit_tags: Some(speed_limit_tags),
             default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
             allowed_tracks_json_path: Some(allowed_tracks_file.path().to_path_buf()),
+            forced_op_stops_json_path: None,
         };
 
         let result = set_stdcm_search_env_from_scenario(args, conn).await;
@@ -567,6 +593,7 @@ mod tests {
             speed_limit_tags: Some(speed_limit_tags),
             default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
             allowed_tracks_json_path: None,
+            forced_op_stops_json_path: None,
         };
 
         let result = set_stdcm_search_env_from_scratch(args, conn).await;
@@ -586,6 +613,99 @@ mod tests {
             make_datetime("2000-02-03 08:00:00Z")
         );
 
+        assert_eq!(search_env.operational_points.to_vec(), operational_points);
+        assert_eq!(
+            search_env.operational_points_id_filtered.to_vec(),
+            operational_points_id_filtered
+        );
+        assert_eq!(
+            search_env.speed_limit_tags,
+            vec![("MA80".to_string(), 80), ("MA90".to_string(), 90),]
+                .into_iter()
+                .collect::<HashMap<String, i64>>()
+        );
+        assert_eq!(
+            search_env.default_speed_limit_tag,
+            Some(default_speed_limit_tag)
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn stdcm_set_search_env_from_scenario_with_forced_op_stops() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let conn = &mut db_pool.get_ok();
+
+        let scenario_fixture_set =
+            create_scenario_fixtures_set(conn, "test_stdcm_set_search_env_from_scenario").await;
+
+        let work_schedule_group = create_work_schedule_group(conn).await;
+
+        let start_times = vec![
+            ms_since_epoch("2000-01-01T12:00:00Z"),
+            ms_since_epoch("2000-02-02T08:00:00Z"),
+        ];
+
+        create_trains_from_start_times(
+            start_times,
+            scenario_fixture_set.train_schedule_set.id,
+            conn,
+        )
+        .await;
+
+        let forced_op_stops_json = json!(
+            [
+                {
+                    "id": "North_station",
+                    "stop_type" : "GENERAL_STOP"
+                },
+                {
+                    "id": "South_station",
+                    "stop_type" : "OVERTAKE"
+                }
+            ]
+        );
+
+        let forced_op_stops: Vec<OperationalPointStop> =
+            serde_json::from_value(forced_op_stops_json).expect("Failed to parse forced_op_stops");
+        let forced_op_stops_file = generate_temp_file(&forced_op_stops);
+
+        let operational_points = Vec::from([1, 2, 3, 4]);
+        let operational_points_id_filtered =
+            Vec::from(["uuid-1".to_string(), "uuid-2".to_string()]);
+        let speed_limit_tags = Vec::from(["MA80|80".to_string(), "MA90|90".to_string()]);
+        let default_speed_limit_tag = "MA90".to_string();
+
+        let args = SetSTDCMSearchEnvFromScenarioArgs {
+            scenario_id: scenario_fixture_set.scenario.id,
+            work_schedule_group_id: Some(work_schedule_group.id),
+            search_window_begin: None,
+            search_window_end: None,
+            operational_points: Some(operational_points.clone()),
+            operational_points_id_filtered: Some(operational_points_id_filtered.clone()),
+            speed_limit_tags: Some(speed_limit_tags),
+            default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
+            allowed_tracks_json_path: None,
+            forced_op_stops_json_path: Some(forced_op_stops_file.path().to_path_buf()),
+        };
+
+        let result = set_stdcm_search_env_from_scenario(args, conn).await;
+        assert!(result.is_ok());
+
+        let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
+
+        assert!(search_env.is_some());
+        let search_env = search_env.unwrap();
+
+        assert_eq!(
+            search_env.search_window_begin,
+            make_datetime("2000-01-01 12:00:00Z")
+        );
+        assert_eq!(
+            search_env.search_window_end,
+            make_datetime("2000-02-03 08:00:00Z")
+        );
+
+        assert_eq!(search_env.forced_op_stops, Some(forced_op_stops));
         assert_eq!(search_env.operational_points.to_vec(), operational_points);
         assert_eq!(
             search_env.operational_points_id_filtered.to_vec(),

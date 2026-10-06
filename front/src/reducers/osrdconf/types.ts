@@ -15,6 +15,7 @@ import type {
   PathItemLocation,
   ReceptionSignal,
   TrainScheduleResponse,
+  OperationalPointStop,
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { MapSettings } from 'reducers/commonMap/types';
@@ -63,6 +64,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   speedLimitsByTag: Record<string, number>;
   trackSectionIdsByLoadingGauge?: Record<string, string[]>;
   operationalPointsIdFiltered?: string[];
+  forcedOpStops?: OperationalPointStop[];
 };
 
 export type PathStep = {

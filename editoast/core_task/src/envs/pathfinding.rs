@@ -9,6 +9,7 @@ use std::task::Poll;
 
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::pathfinding::OperationalPointStop;
 use dashmap::DashMap;
 use futures::stream;
 use itertools::Itertools as _;
@@ -180,6 +181,8 @@ pub struct PathfindingConstraints {
     pub path_items: Vec<PathItemConstraint>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: BTreeSet<String>,
+    /// List of mandatory operational point stops
+    pub forced_op_stops: Vec<OperationalPointStop>,
 }
 
 /// A waypoint the resulting path must pass through
@@ -412,6 +415,7 @@ pub fn pathfinding_request_from_consist_constraints(
         speed_limit_tag: consist.speed_limit_tag.clone(),
         stops_at_end_of_block: Some(false),
         allowed_track_sections: constraints.allowed_track_sections.clone(),
+        forced_op_stops: constraints.forced_op_stops.clone(),
     }
 }
 
@@ -482,6 +486,7 @@ pub(crate) mod test_data {
                 PathItemConstraint::new([TrackOffset::new("tr2", 200)], false),
             ],
             allowed_track_sections: BTreeSet::new(),
+            forced_op_stops: vec![],
         }
     }
 

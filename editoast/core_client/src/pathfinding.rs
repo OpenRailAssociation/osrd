@@ -47,6 +47,8 @@ pub struct PathfindingRequest {
     pub stops_at_end_of_block: Option<bool>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: BTreeSet<String>,
+    /// List of mandatory operational point stops
+    pub forced_op_stops: Vec<OperationalPointStop>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema, Hash)]
@@ -91,6 +93,22 @@ pub struct IncompatibleConstraints {
 pub struct InvalidPathItem {
     pub index: usize,
     pub path_item: PathItemLocation,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, ToSchema, PartialEq, Eq, Hash)]
+#[schema(as = CoreForcedStopType)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ForcedStopType {
+    GeneralStop,
+    Overtake,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, ToSchema, PartialEq, Eq, Hash)]
+#[schema(as = CoreOperationalPointStop)]
+pub struct OperationalPointStop {
+    #[schema(inline)]
+    pub id: Identifier,
+    pub stop_type: ForcedStopType,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

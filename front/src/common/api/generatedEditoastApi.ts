@@ -2568,6 +2568,8 @@ export type PostTimetableByIdStdcmApiArg = {
     comfort: Comfort;
     consist_schedule: ConsistSchedule;
     electrical_profile_set_id?: number | null;
+    /** List of mandatory operational point stops */
+    forced_op_stops?: CoreOperationalPointStop[];
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
     /** By how long we can shift the departure time in milliseconds
@@ -3873,6 +3875,11 @@ export type PathfindingResult =
   | (PathfindingFailure & {
       status: 'failure';
     });
+export type CoreForcedStopType = 'GENERAL_STOP' | 'OVERTAKE';
+export type CoreOperationalPointStop = {
+  id: string;
+  stop_type: CoreForcedStopType;
+};
 export type PathfindingItem = {
   can_backtrack: boolean;
   location: PathItemLocation;
@@ -3881,6 +3888,8 @@ export type SupportedSignalingSystemVariant = 'BAL' | 'BAPR' | 'TVM300' | 'TVM43
 export type PathfindingInput = {
   /** Set of authorized track section ids, empty means no restriction */
   allowed_track_sections?: string[];
+  /** List of mandatory operational point stops */
+  forced_op_stops?: CoreOperationalPointStop[];
   /** List of waypoints given to the pathfinding */
   path_items: PathfindingItem[];
   /** Can the rolling stock run on non-electrified tracks */
@@ -4742,6 +4751,11 @@ export type SimDebugData = {
   train_times: number[];
   zone_locations: SimDebugZoneLocation[];
 };
+export type ForcedStopType = 'GENERAL_STOP' | 'OVERTAKE';
+export type OperationalPointStop = {
+  id: string;
+  stop_type: ForcedStopType;
+};
 export type SpeedLimits = {
   default_speed_limit_tag?: string | null;
   speed_limit_tags: {
@@ -4761,6 +4775,8 @@ export type StdcmSearchEnvironmentResponse = {
   electrical_profile_set_id?: number | null;
   enabled_from: string;
   enabled_until: string;
+  /** List of mandatory operational point stops */
+  forced_op_stops?: OperationalPointStop[] | null;
   id: number;
   infra_id: number;
   operational_points?: number[] | null;
@@ -4788,6 +4804,8 @@ export type StdcmSearchEnvironment = {
   /** The time window end point where the environment is enabled.
     This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls. */
   enabled_until: string;
+  /** List of mandatory operational point stops */
+  forced_op_stops: OperationalPointStop[] | null;
   id: number;
   infra_id: number;
   operational_points: number[];
