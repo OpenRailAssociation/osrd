@@ -248,7 +248,7 @@ const StdcmConfig = ({
   const removeOriginArrivalTime = () => {
     dispatch(
       updateStdcmPathStep({
-        id: origin.id,
+        key: origin.key,
         updates: { arrivalType: ArrivalTimeTypes.RESPECT_DESTINATION_SCHEDULE },
       })
     );
@@ -256,7 +256,7 @@ const StdcmConfig = ({
 
   const removeDestinationArrivalTime = () => {
     dispatch(
-      updateStdcmPathStep({ id: destination.id, updates: { arrivalType: ArrivalTimeTypes.ASAP } })
+      updateStdcmPathStep({ key: destination.key, updates: { arrivalType: ArrivalTimeTypes.ASAP } })
     );
   };
 
@@ -333,7 +333,7 @@ const StdcmConfig = ({
           <StdcmLinkedTrainSearch
             disabled={disabled}
             linkedTrainType="anterior"
-            linkedOpId={origin.id}
+            linkedOpKey={origin.key}
           />
           <StdcmConsist
             disabled={disabled}
@@ -365,7 +365,7 @@ const StdcmConfig = ({
           <StdcmLinkedTrainSearch
             disabled={disabled}
             linkedTrainType="posterior"
-            linkedOpId={destination.id}
+            linkedOpKey={destination.key}
           />
 
           <div

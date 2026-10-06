@@ -14,13 +14,13 @@ import StdcmLinkedTrainResults from './StdcmLinkedTrainResults';
 type StdcmLinkedTrainSearchProps = {
   disabled: boolean;
   linkedTrainType: LinkedTrainType;
-  linkedOpId: string;
+  linkedOpKey: string;
 };
 
 const StdcmLinkedTrainSearch = ({
   disabled,
   linkedTrainType,
-  linkedOpId,
+  linkedOpKey,
 }: StdcmLinkedTrainSearchProps) => {
   const { t, i18n } = useTranslation('stdcm');
   const [displayLinkedTrainSearch, setShowLinkedTrainSearch] = useState(false);
@@ -129,7 +129,7 @@ const StdcmLinkedTrainSearch = ({
                 linkedTrainResults={linkedTrainResults}
                 linkedOp={{
                   extremityType: linkedTrainType === 'anterior' ? 'destination' : 'origin',
-                  id: linkedOpId,
+                  key: linkedOpKey,
                 }}
               />
             ) : (
