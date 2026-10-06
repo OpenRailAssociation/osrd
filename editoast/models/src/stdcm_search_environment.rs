@@ -5,6 +5,7 @@ use diesel::ExpressionMethods as _;
 use diesel::QueryDsl as _;
 use diesel_async::RunQueryDsl as _;
 use editoast_derive::Model;
+use schemas::infra::OperationalPointStop;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -56,6 +57,10 @@ pub struct StdcmSearchEnvironment {
     #[model(json)]
     #[schema(required)]
     pub allowed_tracks: Option<HashMap<String, HashSet<String>>>,
+    /// List of operational points where stop is mandatory
+    #[model(json)]
+    #[schema(required)]
+    pub forced_op_stops: Option<HashSet<OperationalPointStop>>,
 }
 
 impl StdcmSearchEnvironment {

@@ -389,6 +389,7 @@ pub(in crate::views) async fn stdcm(
         expected_version: infra.version,
         timetable_id,
         allowed_track_sections: request.allowed_track_sections.clone(),
+        forced_op_stops: request.forced_op_stops.clone(),
         consist_schedule: ConsistSchedule {
             boundaries: request.consist_schedule.boundaries.clone(),
             values: stdcm_consist_schedule_values,
@@ -845,6 +846,7 @@ mod tests {
             margin: Some(MarginValue::MinPer100Km(4.5)),
             allowed_track_sections: HashSet::new(),
             consist_schedule,
+            forced_op_stops: HashSet::new(),
         }
     }
 

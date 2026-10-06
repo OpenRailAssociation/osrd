@@ -176,7 +176,8 @@ export const stdcmConfSlice = createSlice({
           | 'scenarioID'
           | 'operationalPoints'
           | 'trackSectionIdsByLoadingGauge'
-          | 'speedLimitsByTag',
+          | 'speedLimitsByTag'
+          | 'forcedOpStops',
           'infraID' | 'timetableID'
         > & { defaultSpeedLimitTag?: string }
       >
@@ -196,6 +197,7 @@ export const stdcmConfSlice = createSlice({
       state.trackSectionIdsByLoadingGauge = action.payload.trackSectionIdsByLoadingGauge;
       state.speedLimitsByTag = speedLimitsByTag;
       state.operationalPointsIdFiltered = action.payload.operationalPointsIdFiltered;
+      state.forcedOpStops = action.payload.forcedOpStops;
 
       // check if a speedLimitTag is already defined, and if not, use the defaultSpeedLimitTag
       const speedLimitTags = Object.keys(speedLimitsByTag);

@@ -11,6 +11,7 @@ use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::Hash;
 use std::sync::Arc;
 
@@ -196,6 +197,7 @@ impl SimulationTrain {
             path_constraints: PathfindingConstraints {
                 path_items: Vec::new(),
                 allowed_track_sections: BTreeSet::new(),
+                forced_op_stops: HashSet::new(),
             },
             schedule_item_to_index: HashMap::default(),
         }
