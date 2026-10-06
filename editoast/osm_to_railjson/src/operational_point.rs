@@ -25,6 +25,9 @@ pub(crate) fn operational_points(
     let file = std::fs::File::open(osm_pbf_in).unwrap();
     let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
     let node_id_to_main_code = map_node_id_to_main_code(&mut pbf);
+    pbf.rewind().expect("Could not rewind file.");
+    let node_id_to_uic = map_node_id_to_uic(&mut pbf);
+
     let mut marked_uic: HashSet<u32> = Default::default();
     let mut marked_domestic: HashSet<(NonBlankString, NonBlankString)> = Default::default();
     pbf.rewind().expect("Could not rewind file.");
@@ -42,7 +45,12 @@ pub(crate) fn operational_points(
             if parts.is_empty() {
                 return None;
             }
-            let (identifier_name, mut identifier_uic) = identifier(&rel.tags);
+            let identifier_name = name(&rel.tags);
+            let mut identifier_uic = uic(&rel, &node_id_to_uic);
+
+            if identifier_uic.is_none() {
+                warn!("Operational point {identifier_name} has no UIC code. Setting it to None.");
+            }
 
             // Check uic uniqueness. If the uic is already used, we set it to None to avoid duplicates.
             if let Some(uic) = identifier_uic
@@ -95,6 +103,23 @@ fn map_node_id_to_main_code(
                 .tags
                 .get("railway:ref")
                 .map(|tag| (node.id, NonBlankString::from(tag.to_string()))),
+            _ => None,
+        })
+        .collect()
+}
+
+/// Find all nodes that have a `uic_ref` tag and create a mapping from their id to the value of this tag.
+fn map_node_id_to_uic(
+    pbf: &mut OsmPbfReader<std::fs::File>,
+) -> HashMap<osm4routing::osmpbfreader::NodeId, u32> {
+    pbf.iter()
+        .flatten()
+        .filter_map(|obj| match obj {
+            osm4routing::osmpbfreader::OsmObj::Node(node) => node
+                .tags
+                .get("uic_ref")
+                .and_then(|tag| tag.parse::<u32>().ok())
+                .map(|uic| (node.id, uic)),
             _ => None,
         })
         .collect()
@@ -167,9 +192,20 @@ fn main_code(
         .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))
 }
 
-/// Extract UIC and name from tags
-fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, Option<u32>) {
-    let uic = tags
+/// Extract UIC code.
+/// Search in both the relation and nodes members of the relation.
+fn uic(rel: &Relation, node_id_to_uic: &HashMap<NodeId, u32>) -> Option<u32> {
+    let find_from_nodes = || {
+        rel.refs
+            .iter()
+            .filter_map(|r| match r.member {
+                osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
+                _ => None,
+            })
+            .find_map(|node_id| node_id_to_uic.get(&node_id).cloned())
+    };
+
+    rel.tags
         .get("uic_ref")
         .and_then(|uic| match u32::from_str(uic.as_str()) {
             Ok(uic) => Some(uic),
@@ -177,13 +213,14 @@ fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, Option
                 warn!("Could not parse {uic} uic code as integer");
                 None
             }
-        });
+        })
+        .or_else(find_from_nodes)
+}
 
-    tags.get("name").map_or(
-        // Generate a fake name from the UIC
-        ("unknown".into(), uic),
-        |name| (name.as_str().into(), uic),
-    )
+/// Extract name from relation tags
+fn name(tags: &osm4routing::osmpbfreader::Tags) -> NonBlankString {
+    tags.get("name")
+        .map_or("unknown".into(), |name| name.as_str().into())
 }
 
 /// Extract country code from UIC code. The country code is encoded in the first two digits of the UIC code.
