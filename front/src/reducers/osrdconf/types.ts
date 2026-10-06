@@ -145,7 +145,7 @@ export type PathStepMetadata =
     };
 
 export type StdcmPathStep = {
-  id: string;
+  key: string;
   operationalPoint?: {
     id: string;
     mainCode: string;

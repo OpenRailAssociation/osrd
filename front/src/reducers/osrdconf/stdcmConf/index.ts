@@ -26,13 +26,13 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
   speedLimitsByTag: {},
   stdcmPathSteps: [
     {
-      id: uuidV4(),
+      key: uuidV4(),
       isVia: false,
       arrivalType: ArrivalTimeTypes.PRECISE_TIME,
       tolerances: { before: DEFAULT_TOLERANCE, after: DEFAULT_TOLERANCE },
     },
     {
-      id: uuidV4(),
+      key: uuidV4(),
       isVia: false,
       arrivalType: ArrivalTimeTypes.ASAP,
       tolerances: { before: DEFAULT_TOLERANCE, after: DEFAULT_TOLERANCE },
@@ -238,12 +238,12 @@ export const stdcmConfSlice = createSlice({
     updateStdcmPathStep(
       state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<{
-        id: string;
+        key: string;
         updates: Partial<ArrayElement<OsrdStdcmConfState['stdcmPathSteps']>>;
       }>
     ) {
       const newPathSteps = state.stdcmPathSteps.map((pathStep) =>
-        pathStep.id === action.payload.id
+        pathStep.key === action.payload.key
           ? ({ ...pathStep, ...action.payload.updates } as StdcmPathStep)
           : pathStep
       );
@@ -252,7 +252,7 @@ export const stdcmConfSlice = createSlice({
     addStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       // Index takes count of the origin in the array
       state.stdcmPathSteps = addElementAtIndex(state.stdcmPathSteps, action.payload, {
-        id: uuidV4(),
+        key: uuidV4(),
         stopType: StdcmStopTypes.PASSAGE_TIME,
         isVia: true,
         consistChange: undefined,
@@ -260,7 +260,7 @@ export const stdcmConfSlice = createSlice({
     },
     deleteStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<string>) {
       state.stdcmPathSteps = state.stdcmPathSteps.filter(
-        (pathStep) => pathStep.id !== action.payload
+        (pathStep) => pathStep.key !== action.payload
       );
     },
     updateLinkedTrainExtremity(
@@ -302,7 +302,7 @@ export const stdcmConfSlice = createSlice({
           countryCode: country_code,
           uic,
         },
-        id: pathStepKey,
+        key: pathStepKey,
         arrival: arrivalDate,
         ...(linkedTrainExtremity === 'origin' && {
           arrivalType: ArrivalTimeTypes.PRECISE_TIME,
@@ -317,7 +317,7 @@ export const stdcmConfSlice = createSlice({
         state.linkedTrains.posteriorTrain = newLinkedTrain;
       }
       const newPathSteps = state.stdcmPathSteps.map((step) => {
-        if (step.id === action.payload.pathStepKey) {
+        if (step.key === action.payload.pathStepKey) {
           return { ...step, ...newPathStep };
         }
         return step;

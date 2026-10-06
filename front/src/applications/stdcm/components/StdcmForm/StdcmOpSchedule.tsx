@@ -78,19 +78,19 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
 
   const onArrivalChange = ({ date, hours, minutes }: ScheduleConstraint) => {
     if (!date) {
-      dispatch(updateStdcmPathStep({ id: pathStep.id, updates: { arrival: null } }));
+      dispatch(updateStdcmPathStep({ key: pathStep.key, updates: { arrival: null } }));
       return;
     }
     // We need to create a new date object to avoid mutating the original one
     // otherwise the useEffect/useMemo will not be triggered
     const newDate = new Date(date);
     newDate.setHours(hours, minutes);
-    dispatch(updateStdcmPathStep({ id: pathStep.id, updates: { arrival: newDate } }));
+    dispatch(updateStdcmPathStep({ key: pathStep.key, updates: { arrival: newDate } }));
     setInputArrival(newDate);
   };
 
   const onArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
-    dispatch(updateStdcmPathStep({ id: pathStep.id, updates: { arrivalType } }));
+    dispatch(updateStdcmPathStep({ key: pathStep.key, updates: { arrivalType } }));
   };
 
   return (
@@ -164,7 +164,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             onToleranceChange={({ minusTolerance, plusTolerance }) => {
               dispatch(
                 updateStdcmPathStep({
-                  id: pathStep.id,
+                  key: pathStep.key,
                   updates: {
                     tolerances: {
                       before: new Duration({ seconds: minusTolerance }),

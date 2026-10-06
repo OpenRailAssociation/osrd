@@ -91,7 +91,7 @@ const StdcmOperationalPoint = ({
     const { secondaryCode: _, ...op } = selectedSuggestion ?? { secondaryCode: undefined };
     dispatch(
       updateStdcmPathStep({
-        id: pathStepKey,
+        key: pathStepKey,
         updates: { operationalPoint: selectedSuggestion ? (op as StdcmOp) : undefined },
       })
     );
@@ -110,7 +110,7 @@ const StdcmOperationalPoint = ({
     if (selectedChCode) {
       dispatch(
         updateStdcmPathStep({
-          id: pathStepKey,
+          key: pathStepKey,
           updates: {
             operationalPoint: selectedChCode,
           },

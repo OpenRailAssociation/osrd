@@ -8,12 +8,12 @@ import type { StdcmLinkedTrainResult, ExtremityPathStepType } from '../../types'
 
 type StdcmLinkedTrainResultsProps = {
   linkedTrainResults: StdcmLinkedTrainResult[];
-  linkedOp: { extremityType: ExtremityPathStepType; id: string };
+  linkedOp: { extremityType: ExtremityPathStepType; key: string };
 };
 
 const StdcmLinkedTrainResults = ({
   linkedTrainResults,
-  linkedOp: { extremityType, id },
+  linkedOp: { extremityType, key: pathStepKey },
 }: StdcmLinkedTrainResultsProps) => {
   const dispatch = useDispatch();
   return (
@@ -32,7 +32,7 @@ const StdcmLinkedTrainResults = ({
                   linkedTrainExtremity: extremityType,
                   trainName,
                   pathStep: linkedTrainResults[0][extremityType],
-                  pathStepKey: id,
+                  pathStepKey,
                 })
               );
           }}
@@ -50,7 +50,7 @@ const StdcmLinkedTrainResults = ({
                     linkedTrainExtremity: extremityType,
                     trainName,
                     pathStep: linkedTrainResults[resultIndex][extremityType],
-                    pathStepKey: id,
+                    pathStepKey,
                   })
                 );
               }}
