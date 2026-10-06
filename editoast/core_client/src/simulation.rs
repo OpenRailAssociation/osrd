@@ -151,6 +151,29 @@ pub struct SimulationPowerRestrictionItem {
     pub value: String,
 }
 
+/// The action taken by the train driver at any given time
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum DriverAction {
+    #[default]
+    Tracting,
+    Braking,
+    Coasting,
+}
+
+/// Describes the driver actions at each point on the path
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Educe, PartialEq)]
+#[schema(as = CoreDriverActions)]
+#[educe(Default)]
+pub struct DriverActions {
+    /// List of `n` boundaries of the ranges.
+    /// A boundary is a distance from the beginning of the path in mm.
+    boundaries: Vec<u64>,
+    /// List of `n+1` values associated to the ranges
+    #[educe(Default(expression = vec![DriverAction::default()]))]
+    values: Vec<DriverAction>,
+}
+
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 #[schema(as = CoreReportTrain)]
 pub struct ReportTrain {
@@ -175,6 +198,8 @@ pub struct ReportTrain {
     /// of 2s, then the path item time of B will be equal to the path item time
     /// of A plus 2s.
     pub path_item_times: Vec<u64>,
+    /// Describes the driver actions at each point on the path
+    pub driver_actions: DriverActions,
 }
 
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
