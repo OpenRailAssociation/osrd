@@ -8,7 +8,7 @@
       "position_x": 672,
       "position_y": 800,
       "labels": [],
-      "path_item_key": "domestic:SS"
+      "node_location": { "main_code": "SS", "country_code": "??", "type": "domestic" }
     },
     {
       "ngeId": 7,
@@ -18,7 +18,7 @@
       "position_x": 320,
       "position_y": 32,
       "labels": [],
-      "path_item_key": "domestic:RTR"
+      "node_location": { "main_code": "RTR", "country_code": "??", "type": "domestic" }
     },
     {
       "ngeId": 8,
@@ -28,7 +28,7 @@
       "position_x": 320,
       "position_y": 192,
       "labels": [],
-      "path_item_key": "domestic:LTH"
+      "node_location": { "main_code": "LTH", "country_code": "??", "type": "domestic" }
     }
   ],
   "macro_notes": [

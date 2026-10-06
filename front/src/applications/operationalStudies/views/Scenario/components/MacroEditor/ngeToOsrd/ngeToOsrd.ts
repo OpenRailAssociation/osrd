@@ -18,7 +18,7 @@ import {
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
   TRAINRUN_DIRECTIONS,
 } from '../consts';
-import type MacroEditorState from '../MacroEditorState';
+import MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId, localStorageFilterSettingKey } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
 import { castNgeNoteToOsrd, handleNoteOperation } from './note';
@@ -237,9 +237,10 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
   const dedupNodes = relabelDuplicateTrigrams(dto.nodes);
   const macroNodes: MacroNodeForm[] = [];
   for (const node of dedupNodes) {
+    const domesticNodeLocation = MacroEditorState.decodeDomesticReference(node.betriebspunktName);
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
-      path_item_key: `domestic:${node.betriebspunktName}`,
+      node_location: domesticNodeLocation,
     });
   }
 
