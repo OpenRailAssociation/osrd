@@ -164,8 +164,10 @@ impl PropertyZoneValues {
     }
 }
 
-/// Projection to map topological offset to geometric offset (or reversed).
-/// topo_offsets and geom_offsets are the same size
+/// Describes a monotonic curve to be used to project topological offset to geometric offset (or reversed).
+/// For example on a path:
+/// * Coordinates of the points are built by cumulating **track-section's** ranges lengths (respectively topological or geometric) along the path.
+/// * `topo_offsets` and `geom_offsets` are the same size, both start with `0` and both end with path's lengths (respectively topological or geometric).
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[schema(as = CorePropertyGeometryProjection)]
 pub struct GeometryProjection {
@@ -179,9 +181,8 @@ pub struct GeometryProjection {
     geom_offsets: Vec<u64>,
 }
 
-#[cfg(test)]
 impl GeometryProjection {
-    pub fn new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Self {
+    pub fn try_new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Self {
         assert_eq!(topo_offsets.len(), geom_offsets.len());
         assert!(topo_offsets.len() >= 2);
         Self {

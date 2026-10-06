@@ -244,8 +244,10 @@ class TopoOffset(RootModel[int]):
 
 class CorePropertyGeometryProjection(BaseModel):
     """
-    Projection to map topological offset to geometric offset (or reversed).
-    topo_offsets and geom_offsets are the same size
+    Describes a monotonic curve to be used to project topological offset to geometric offset (or reversed).
+    For example on a path:
+    * Coordinates of the points are built by cumulating **track-section's** ranges lengths (respectively topological or geometric) along the path.
+    * `topo_offsets` and `geom_offsets` are the same size, both start with `0` and both end with path's lengths (respectively topological or geometric).
     """
 
     geom_offsets: Annotated[list[GeomOffset], Field(min_length=2)]

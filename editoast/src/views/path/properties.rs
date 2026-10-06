@@ -155,7 +155,7 @@ mod tests {
             ]])),
             operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
-            geom_projection: GeometryProjection::new(vec![0, 1], vec![0, 0]),
+            geom_projection: GeometryProjection::try_new(vec![0, 1], vec![0, 0]),
         }
     }
 
