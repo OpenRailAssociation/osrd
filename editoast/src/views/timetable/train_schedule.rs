@@ -2809,14 +2809,16 @@ mod tests {
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![0, 1, 2, 3],
+                    driver_actions: Default::default(),
                 },
                 provisional: ReportTrain {
                     positions: vec![0, 500_000, 15_050_000],
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![0, 1, 2, 3],
+                    driver_actions: Default::default(),
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
@@ -2824,7 +2826,8 @@ mod tests {
                         times: vec![0, 30_000, 100_000],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 1, 2, 3]
+                        path_item_times: vec![0, 1, 2, 3],
+                        driver_actions: Default::default(),
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],
@@ -3204,14 +3207,16 @@ mod tests {
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![0, 1, 2, 3],
+                    driver_actions: Default::default(),
                 },
                 provisional: ReportTrain {
                     positions: vec![0, 500_000, 15_050_000],
                     times: vec![0, 30_000, 100_000],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1, 2, 3]
+                    path_item_times: vec![0, 1, 2, 3],
+                    driver_actions: Default::default(),
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
@@ -3219,7 +3224,8 @@ mod tests {
                         times: vec![0, 30_000, 100_000],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 1, 2, 3]
+                        path_item_times: vec![0, 1, 2, 3],
+                        driver_actions: Default::default(),
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],

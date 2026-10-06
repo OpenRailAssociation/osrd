@@ -1027,6 +1027,7 @@ mod tests {
             speeds: vec![10.0; 5],
             energy_consumption: 0.0,
             path_item_times: vec![],
+            driver_actions: Default::default(),
         };
 
         let result = interpolate_arrival_time(position, &report_train);

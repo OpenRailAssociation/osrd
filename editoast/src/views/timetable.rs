@@ -952,6 +952,7 @@ pub(in crate::views) fn simulation_empty_response(
             speeds: vec![],
             energy_consumption: 0.0,
             path_item_times: path_item_times.clone(),
+            driver_actions: Default::default(),
         },
         provisional: ReportTrain {
             positions: vec![0, 500_000, 15_050_000],
@@ -959,6 +960,7 @@ pub(in crate::views) fn simulation_empty_response(
             speeds: vec![],
             energy_consumption: 0.0,
             path_item_times: path_item_times.clone(),
+            driver_actions: Default::default(),
         },
         final_output: CompleteReportTrain {
             report_train: ReportTrain {
@@ -967,6 +969,7 @@ pub(in crate::views) fn simulation_empty_response(
                 speeds: vec![],
                 energy_consumption: 0.0,
                 path_item_times: path_item_times.clone(),
+                driver_actions: Default::default(),
             },
             signal_critical_positions: vec![],
             zone_updates: vec![],
