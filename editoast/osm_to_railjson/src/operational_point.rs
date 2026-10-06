@@ -26,6 +26,7 @@ pub(crate) fn operational_points(
     let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
     let node_id_to_main_code = map_node_id_to_main_code(&mut pbf);
     let mut marked_uic: HashSet<u32> = Default::default();
+    let mut marked_domestic: HashSet<(NonBlankString, NonBlankString)> = Default::default();
     pbf.rewind().expect("Could not rewind file.");
     pbf.iter()
         .flatten()
@@ -54,6 +55,18 @@ pub(crate) fn operational_points(
                 );
             }
 
+            // Check domestic code uniqueness. If the domestic code is already used, we add a suffix to it to avoid duplicates.
+            let country_code: NonBlankString = "FR".into();
+            let mut suffix = 1;
+            let mut unique_main_code = main_code.clone();
+            loop {
+                if marked_domestic.insert((country_code.clone(), unique_main_code.clone())) {
+                    break;
+                }
+                unique_main_code = format!("{main_code}-{suffix}").into();
+                suffix += 1;
+            }
+
             Some(OperationalPoint {
                 id: rel.id.0.to_string().into(),
                 parts,
@@ -61,11 +74,11 @@ pub(crate) fn operational_points(
                 name: identifier_name,
                 uic: identifier_uic,
                 plc: None,
-                country_code: "FR".into(),
-                main_code,
-                secondary_code: Some("BV".into()),
+                country_code,
+                main_code: unique_main_code,
                 is_passenger_station: true,
-                secondary_name: Some("BV".into()),
+                secondary_code: None,
+                secondary_name: None,
             })
         })
         .collect()
@@ -154,10 +167,7 @@ fn main_code(
         .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))
 }
 
-// TODO: the generation of fake UIC and name is here as a temporary solution.
-// The front crashes when this function return None.
-// This function will probably be changed when the data model will change.
-// The necessity of a fake UIC and name should be re-evaluated at that time.
+/// Extract UIC and name from tags
 fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, Option<u32>) {
     let uic = tags
         .get("uic_ref")
