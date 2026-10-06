@@ -4,6 +4,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.OperationalPointStop
 import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.train.RollingStock
@@ -30,6 +31,8 @@ class PathfindingBlockRequest(
 
     // Set of authorized track section ids, empty set means no restriction
     @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String> = emptySet(),
+    // List of operational points where stop is mandatory
+    @Json(name = "forced_op_stops") val forcedOpStops: Set<OperationalPointStop> = emptySet(),
 )
 
 val pathfindingRequestAdapter: JsonAdapter<PathfindingBlockRequest> =

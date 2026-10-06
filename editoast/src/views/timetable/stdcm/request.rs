@@ -5,6 +5,7 @@ use chrono::Duration;
 use chrono::Utc;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
+use schemas::infra::OperationalPointStop;
 
 use schemas::RollingStock;
 use schemas::rolling_stock::LoadingGaugeType;
@@ -128,6 +129,9 @@ pub(crate) struct Request {
     #[serde(default)]
     pub(crate) allowed_track_sections: HashSet<String>,
     pub(crate) consist_schedule: ConsistSchedule,
+    /// List of operational points where stop is mandatory
+    #[serde(default)]
+    pub(crate) forced_op_stops: HashSet<OperationalPointStop>,
 }
 
 impl Request {
