@@ -56,7 +56,7 @@ pub(crate) fn operational_points(
             }
 
             // Check domestic code uniqueness. If the domestic code is already used, we add a suffix to it to avoid duplicates.
-            let country_code: NonBlankString = "FR".into();
+            let country_code: NonBlankString = identifier_uic.map_or("??".into(), contry_code);
             let mut suffix = 1;
             let mut unique_main_code = main_code.clone();
             loop {
@@ -184,4 +184,86 @@ fn identifier(tags: &osm4routing::osmpbfreader::Tags) -> (NonBlankString, Option
         ("unknown".into(), uic),
         |name| (name.as_str().into(), uic),
     )
+}
+
+/// Extract country code from UIC code. The country code is encoded in the first two digits of the UIC code.
+/// If the UIC code is not recognized, we return "??" and log a warning.
+fn contry_code(uic: u32) -> NonBlankString {
+    let uic = uic.to_string();
+    let uic_country = uic.chars().take(2).collect::<String>();
+    // Source: https://en.wikipedia.org/wiki/List_of_UIC_country_codes
+    match uic_country.as_str() {
+        "10" => "FI", // Finland
+        "20" => "RU", // Russia
+        "21" => "BY", // Belarus
+        "22" => "UA", // Ukraine
+        "23" => "MD", // Moldova
+        "24" => "LT", // Lithuania
+        "25" => "LV", // Latvia
+        "26" => "EE", // Estonia
+        "27" => "KZ", // Kazakhstan
+        "28" => "GE", // Georgia
+        "29" => "UZ", // Uzbekistan
+        "30" => "KP", // North Korea
+        "31" => "MN", // Mongolia
+        "32" => "VN", // Vietnam
+        "33" => "CN", // China
+        "34" => "LA", // Laos
+        "40" => "CU", // Cuba
+        "41" => "AL", // Albania
+        "42" => "JP", // Japan
+        "44" => "BA", // Bosnia and Herzegovina, Serb Republic of
+        "49" => "BA", // Bosnia and Herzegovina
+        "50" => "BA", // Bosnia and Herzegovina, Muslim-Croat Federation
+        "51" => "PL", // Poland
+        "52" => "BG", // Bulgaria
+        "53" => "RO", // Romania
+        "54" => "CZ", // Czech Republic
+        "55" => "HU", // Hungary
+        "56" => "SK", // Slovakia
+        "57" => "AZ", // Azerbaijan
+        "58" => "AM", // Armenia
+        "59" => "KG", // Kyrgyzstan
+        "60" => "IE", // Ireland
+        "61" => "KR", // South Korea
+        "62" => "ME", // Montenegro
+        "65" => "MK", // North Macedonia
+        "66" => "TJ", // Tajikistan
+        "67" => "TM", // Turkmenistan
+        "68" => "AF", // Afghanistan
+        "70" => "GB", // United Kingdom
+        "71" => "ES", // Spain
+        "72" => "RS", // Serbia
+        "73" => "GR", // Greece
+        "74" => "SE", // Sweden
+        "75" => "TR", // Turkey
+        "76" => "NO", // Norway
+        "78" => "HR", // Croatia
+        "79" => "SI", // Slovenia
+        "80" => "DE", // Germany
+        "81" => "AT", // Austria
+        "82" => "LU", // Luxembourg
+        "83" => "IT", // Italy
+        "84" => "NL", // Netherlands
+        "85" => "CH", // Switzerland
+        "86" => "DK", // Denmark
+        "87" => "FR", // France
+        "88" => "BE", // Belgium
+        "89" => "TZ", // Tanzania
+        "90" => "EG", // Egypt
+        "91" => "TN", // Tunisia
+        "92" => "DZ", // Algeria
+        "93" => "MA", // Morocco
+        "94" => "PT", // Portugal
+        "95" => "IL", // Israel
+        "96" => "IR", // Iran
+        "97" => "SY", // Syria
+        "98" => "LB", // Lebanon
+        "99" => "IQ", // Iraq
+        _ => {
+            warn!("UIC code {uic} has an unknown country code {uic_country}");
+            "??"
+        }
+    }
+    .into()
 }
