@@ -55,7 +55,7 @@ const getPowerRestrictionForPathStep = (
 
 type BuildTableRowParams = {
   id: string;
-  pathStepId: string | null;
+  pathStepKey: string | null;
   opOnPathIndex: number;
   name?: string;
   secondaryCode?: string | null;
@@ -76,7 +76,7 @@ type BuildTableRowParams = {
 
 const buildTableRow = ({
   id,
-  pathStepId,
+  pathStepKey,
   opOnPathIndex,
   name,
   secondaryCode,
@@ -144,7 +144,7 @@ const buildTableRow = ({
 
   return {
     id,
-    pathStepId,
+    pathStepId: pathStepKey,
     stepStatus,
     opOnPathIndex,
     name: name ?? '',
@@ -323,7 +323,7 @@ const useTimesStopsTableData = (
 
         const row = buildTableRow({
           id: `path-step-${pathStep.key}`,
-          pathStepId: pathStep.key,
+          pathStepKey: pathStep.key,
           // opOnPathIndex is a placeholder here (-1), it will be replaced by opIndex when matching with operationalPointsOnPath
           opOnPathIndex: -1,
           name,
@@ -392,7 +392,7 @@ const useTimesStopsTableData = (
           formattedRows.push({
             ...buildTableRow({
               id: op.waypointId,
-              pathStepId: null,
+              pathStepKey: null,
               opOnPathIndex: opIndex,
               name: op.name,
               secondaryCode: op.secondary_code,
