@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use chrono::DateTime;
 use chrono::Utc;
+use schemas::infra::OperationalPointStop;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::SupportedSignalingSystemVariant;
 use schemas::rolling_stock::hashing_supported_signaling_systems_variant;
@@ -34,6 +35,9 @@ pub struct Request {
     pub path_items: Vec<STDCMPathItem>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: HashSet<String>,
+    /// List of operational points where stop is mandatory
+    #[serde(default)]
+    pub forced_op_stops: HashSet<OperationalPointStop>,
 
     // Simulation inputs
     /// The comfort of the train

@@ -2,6 +2,9 @@ use crate::primitives::NonBlankString;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::hash::Hasher;
 use utoipa::ToSchema;
 
 use super::TrackOffset;
@@ -60,6 +63,22 @@ pub struct OperationalPointPartSncfExtension {
     pub kp: String,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema, Eq, Hash)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ForcedStopType {
+    /// General stop station are station where the stop is mandatory
+    GeneralStop,
+    /// Fake overtake where a stop on the overtake track is mandatory
+    Overtake,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema, Eq, Hash)]
+pub struct OperationalPointStop {
+    #[schema(inline)]
+    pub id: Identifier,
+    pub stop_type: ForcedStopType,
+}
+
 impl OSRDTyped for OperationalPoint {
     fn get_type() -> ObjectType {
         ObjectType::OperationalPoint
@@ -93,4 +112,21 @@ impl OperationalPoint {
             })
             .collect()
     }
+}
+
+pub fn hashing_forced_op_stops<H>(iter: &HashSet<OperationalPointStop>, state: &mut H)
+where
+    H: Hasher,
+{
+    let hash: u64 = iter
+        .iter()
+        // Each discriminant correspond to one specific bit of a `u64`
+        .map(|forced_op_stop| match forced_op_stop.stop_type {
+            ForcedStopType::GeneralStop => 1_u64.wrapping_shl(0),
+            ForcedStopType::Overtake => 1_u64.wrapping_shl(1),
+        })
+        // Create a unique bitmask
+        .reduce(std::ops::BitOr::bitor)
+        .unwrap_or(0);
+    Hash::hash(&hash, state)
 }

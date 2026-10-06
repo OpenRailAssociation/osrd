@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
+import fr.sncf.osrd.api.OperationalPointStop
 import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TimetableId
 import fr.sncf.osrd.api.WorkSchedule
@@ -58,6 +59,8 @@ class STDCMRequest(
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
     @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
     @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String> = emptySet(),
+    // List of operational points where stop is mandatory
+    @Json(name = "forced_op_stops") val forcedOpStops: Set<OperationalPointStop> = emptySet(),
 )
 
 data class STDCMTemporarySpeedLimit(
