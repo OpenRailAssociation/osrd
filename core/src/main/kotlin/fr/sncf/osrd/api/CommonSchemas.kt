@@ -119,3 +119,15 @@ data class WorkSchedule(
     @Json(name = "start_time") val startTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
 )
+
+data class OperationalPointStop(
+    val id: String,
+    val stop_type: ForcedStopType,
+)
+
+enum class ForcedStopType {
+    // General stop station are station where the stop is mandatory
+    GENERAL_STOP,
+    // Fake overtake where a stop on the overtake track is mandatory
+    OVERTAKE,
+}

@@ -2901,6 +2901,11 @@ class Endpoint(Enum):
     END = "END"
 
 
+class ForcedStopType(Enum):
+    GENERAL_STOP = "GENERAL_STOP"
+    OVERTAKE = "OVERTAKE"
+
+
 class Identifier(RootModel[str]):
     root: Annotated[str, Field(max_length=255, min_length=1)]
 
@@ -3189,6 +3194,11 @@ class OperationalPointReferenceNodeOperationalPointReference(BaseModel):
         | OperationalPointReferenceUic
     )
     type: Literal["operational_point_reference"] = "operational_point_reference"
+
+
+class OperationalPointStop(BaseModel):
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    stop_type: ForcedStopType
 
 
 class PaginationStats(BaseModel):
@@ -4220,6 +4230,10 @@ class StdcmSearchEnvironment(BaseModel):
     The time window end point where the environment is enabled.
     This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
     """
+    forced_op_stops: list[OperationalPointStop] | None
+    """
+    List of operational points where stop is mandatory
+    """
     id: int
     infra_id: int
     operational_points: list[int]
@@ -4247,6 +4261,7 @@ class StdcmSearchEnvironmentCreateForm(BaseModel):
     electrical_profile_set_id: int | None = None
     enabled_from: AwareDatetime
     enabled_until: AwareDatetime
+    forced_op_stops: list[OperationalPointStop] | None = None
     infra_id: int
     operational_points: list[int] | None = None
     operational_points_id_filtered: list[str] | None = None
@@ -4267,6 +4282,10 @@ class StdcmSearchEnvironmentResponse(BaseModel):
     electrical_profile_set_id: int | None = None
     enabled_from: AwareDatetime
     enabled_until: AwareDatetime
+    forced_op_stops: list[OperationalPointStop] | None = None
+    """
+    List of operational points where stop is mandatory
+    """
     id: int
     infra_id: int
     operational_points: list[int] | None = None
@@ -6762,6 +6781,10 @@ class PathfindingInput(BaseModel):
     allowed_track_sections: list[str] | None = None
     """
     Set of authorized track section ids, empty means no restriction
+    """
+    forced_op_stops: list[OperationalPointStop] | None = None
+    """
+    List of operational points where stop is mandatory
     """
     path_items: list[PathfindingItem]
     """
