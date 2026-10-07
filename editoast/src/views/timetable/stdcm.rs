@@ -20,6 +20,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::HeaderMap;
 use axum::http::header;
 use axum::response::IntoResponse as _;
 use axum::response::Response;
@@ -185,6 +186,12 @@ pub(in crate::views) struct StdcmQueryParams {
     infra: i64,
 }
 
+fn is_fallback_request(headers: &HeaderMap) -> bool {
+    headers
+        .get("x-osrd-stdcm-fallback")
+        .is_some_and(|value| value == "true")
+}
+
 /// This function computes a STDCM and returns the result.
 ///
 /// It first checks user authorization, then retrieves timetable, infrastructure,
@@ -200,6 +207,7 @@ pub(in crate::views) struct StdcmQueryParams {
         timetable_id = id,
         infra_id = query.infra,
         path_found = tracing::field::Empty,
+        is_fallback = is_fallback_request(&headers),
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -210,6 +218,7 @@ pub(in crate::views) struct StdcmQueryParams {
     params(
         ("id" = i64, Path, description = "timetable_id"),
         StdcmQueryParams,
+        ("x-osrd-stdcm-fallback" = Option<bool>, Header, description = "Whether this request is a fallback, sent after an initial request failed to find a path"),
     ),
     responses(
         (status = 200, body = inline(StdcmProgression), description = "The simulation result"),
@@ -227,6 +236,7 @@ pub(in crate::views) async fn stdcm(
     Extension(authn_state): Extension<authentication::State>,
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
+    headers: HeaderMap,
     Json(request): Json<Request>,
 ) -> Result<Response> {
     let consist_schedule_values = &request.consist_schedule.values;

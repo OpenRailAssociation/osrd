@@ -4135,6 +4135,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: x-osrd-stdcm-fallback
+        in: header
+        description: Whether this request is a fallback, sent after an initial request failed to find a path
+        required: false
+        schema:
+          type:
+          - boolean
+          - 'null'
       requestBody:
         content:
           application/json:
