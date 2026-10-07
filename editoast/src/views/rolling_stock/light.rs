@@ -540,8 +540,13 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock_increasing_ids() {
-        let app = test_app!().skip_authz().build();
+        let app = test_app!().build();
         let db_pool = app.db_pool();
+        let admin = app
+            .user("admin", "admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
 
         let generated_rolling_stock = (0..10)
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
@@ -573,13 +578,18 @@ mod tests {
 
         let response: LightRollingStockWithLiveriesCountList = app
             .get("/light_rolling_stock/")
+            .by_user(admin.as_ref())
             .await
             .assert_status_ok()
             .json();
         let count = response.stats.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
-        let response: LightRollingStockWithLiveriesCountList =
-            app.get(&uri).await.assert_status_ok().json();
+        let response: LightRollingStockWithLiveriesCountList = app
+            .get(&uri)
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
 
         // Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
@@ -590,7 +600,6 @@ mod tests {
         assert!(is_sorted(&vec_ids));
         let ids = HashSet::from_iter(vec_ids.into_iter());
 
-        // Since tests are not properly isolated, some rolling stock fixture may "leak" from another test, so maybe ids.len() > expected_ids.len()
         assert!(expected_rs_ids.is_subset(&ids));
     }
 
