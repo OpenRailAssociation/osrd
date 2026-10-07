@@ -3972,4 +3972,93 @@ mod tests {
             .await
             .assert_status_forbidden();
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_users() {
+        let app = test_app!().build();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user_1 = app
+            .user("user1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_2 = app
+            .user("user2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let group = app
+            .group("Group")
+            .with_members([&user_1, &user_2])
+            .create()
+            .await;
+
+        // List all users as admin
+        let users = app
+            .get("/authz/users")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfo>>();
+
+        // Verify all users are returned
+        let expected_users = vec![
+            UserInfo {
+                id: user_1.id,
+                name: "User 1".to_string(),
+                identities: user_1.info.identities.clone(),
+                roles: HashSet::from([Role::OperationalStudies]),
+                groups: HashSet::from([Group {
+                    id: group.id,
+                    name: group.info.name.clone(),
+                }]),
+            },
+            UserInfo {
+                id: user_2.id,
+                name: "User 2".to_string(),
+                identities: user_2.info.identities.clone(),
+                roles: HashSet::from([Role::Stdcm]),
+                groups: HashSet::from([Group {
+                    id: group.id,
+                    name: group.info.name.clone(),
+                }]),
+            },
+            UserInfo {
+                id: admin.id,
+                name: "Admin".to_string(),
+                identities: admin.info.identities.clone(),
+                roles: HashSet::from([Role::Admin]),
+                groups: HashSet::new(),
+            },
+        ];
+
+        assert_eq!(users.len(), expected_users.len());
+        for expected_user in expected_users {
+            assert!(users.contains(&expected_user));
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_users_forbidden_non_admin() {
+        let app = test_app!().build();
+
+        // Create a non-admin user
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // Try to list users as non-admin
+        app.get("/authz/users")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
 }
