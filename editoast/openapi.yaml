@@ -3631,6 +3631,38 @@ paths:
       responses:
         '204':
           description: The stdcm search environment was deleted successfully
+  /stdcm_requests:
+    get:
+      tags:
+      - stdcm
+      summary: Return a list of stdcm requests
+      parameters:
+      - name: by
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - group
+          - user
+      - name: after
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: List of stdcm requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListStdcmRequestResponse'
   /studies:
     get:
       tags:
@@ -7985,6 +8017,10 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTowedRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTrainSimulationFail'
+      - $ref: '#/components/schemas/EditoastStdcmRequestErrorDatabase'
+      - $ref: '#/components/schemas/EditoastStdcmRequestErrorForbidden'
+      - $ref: '#/components/schemas/EditoastStdcmRequestErrorMalformedParameters'
+      - $ref: '#/components/schemas/EditoastStdcmRequestErrorNotUser'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
@@ -10114,6 +10150,86 @@ components:
           type: string
           enum:
           - editoast:stdcm:TrainSimulationFail
+    EditoastStdcmRequestErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestErrorDatabaseContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request:Database
+    EditoastStdcmRequestErrorForbidden:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestErrorForbiddenContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 403
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request:Forbidden
+    EditoastStdcmRequestErrorMalformedParameters:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestErrorMalformedParametersContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request:MalformedParameters
+    EditoastStdcmRequestErrorNotUser:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestErrorNotUserContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 401
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request:NotUser
     EditoastStdcmSearchEnvErrorDatabase:
       type: object
       required:
@@ -12525,6 +12641,23 @@ components:
             type: string
             enum:
             - added_exception
+    ListStdcmRequestResponse:
+      type: object
+      required:
+      - links
+      - requests
+      properties:
+        links:
+          type: object
+          properties:
+            next:
+              type:
+              - string
+              - 'null'
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/StdcmRequest'
     LoadingGaugeLimit:
       type: object
       required:
@@ -16265,6 +16398,25 @@ components:
           minimum: 0
         point:
           $ref: '#/components/schemas/GeoJsonPoint'
+    StdcmRequest:
+      type: object
+      required:
+      - id
+      - rmi_id
+      - created_by
+      properties:
+        created_by:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+        rmi_id:
+          type: string
+        trace_id:
+          type:
+          - string
+          - 'null'
     StdcmResponse:
       oneOf:
       - type: object
