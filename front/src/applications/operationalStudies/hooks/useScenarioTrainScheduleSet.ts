@@ -183,13 +183,7 @@ export default function useScenarioTrainScheduleSet(
         },
       }).unwrap();
     },
-    [
-      updateTrainScheduleSetMutation,
-      createCatalogEntryMutation,
-      linkTrainScheduleSetToTimetable,
-      timetableId,
-      trainScheduleSets,
-    ]
+    [updateTrainScheduleSetMutation, createCatalogEntryMutation]
   );
 
   const localCopyTrainScheduleSet = useCallback(
@@ -235,11 +229,12 @@ export default function useScenarioTrainScheduleSet(
     },
     [
       createTrainScheduleSetMutation,
-      createTrainSchedules,
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
       trainSchedules,
+      dispatch,
+      upsertTrainSchedules,
     ]
   );
 
@@ -350,11 +345,11 @@ export default function useScenarioTrainScheduleSet(
       trainScheduleSets,
       getTrainScheduleSetTrainSchedules,
       createTrainScheduleSetMutation,
-      createTrainSchedules,
       linkTrainScheduleSetToTimetable,
       timetableId,
       upsertTrainSchedules,
       scenario.timetable_type,
+      dispatch,
     ]
   );
 

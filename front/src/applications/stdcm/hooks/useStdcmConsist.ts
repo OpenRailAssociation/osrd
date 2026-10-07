@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { InputProps } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -48,8 +48,10 @@ const useStdcmConsist = (
 
   const missingValueMessage = t('consist.errors.missingValue');
 
-  const getMissingFieldMessage = (value?: number): string | null =>
-    !value ? missingValueMessage : null;
+  const getMissingFieldMessage = useCallback(
+    (value?: number): string | null => (!value ? missingValueMessage : null),
+    [missingValueMessage]
+  );
 
   const updateConsistErrors = (
     errors: Partial<Record<keyof ConsistErrors, string | undefined>>
@@ -189,7 +191,12 @@ const useStdcmConsist = (
         towedMass: selectedTowedRollingStock?.mass,
         totalMass: consist.totalMass,
       }),
-    [consist.totalMass, selectedRollingStock?.mass, selectedTowedRollingStock?.mass]
+    [
+      consist.totalMass,
+      selectedRollingStock?.mass,
+      selectedTowedRollingStock?.mass,
+      getMissingFieldMessage,
+    ]
   );
 
   const totalLengthError = useMemo(
@@ -200,14 +207,19 @@ const useStdcmConsist = (
         towedLength: selectedTowedRollingStock?.length,
         totalLength: consist.totalLength,
       }),
-    [consist.totalLength, selectedRollingStock?.length, selectedTowedRollingStock?.length]
+    [
+      consist.totalLength,
+      selectedRollingStock?.length,
+      selectedTowedRollingStock?.length,
+      getMissingFieldMessage,
+    ]
   );
 
   const maxSpeedError = useMemo(
     () =>
       getMissingFieldMessage(consist.maxSpeed) ??
       validateMaxSpeed(consist.maxSpeed, selectedRollingStock?.max_speed),
-    [consist.maxSpeed, selectedRollingStock?.max_speed]
+    [consist.maxSpeed, selectedRollingStock?.max_speed, getMissingFieldMessage]
   );
 
   return {

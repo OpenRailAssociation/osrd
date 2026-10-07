@@ -85,8 +85,7 @@ const EditPSLSection = ({
   const pslExtension = entity.properties.extensions.psl_sncf;
 
   const tracks = useMemo(() => {
-    const { psl_sncf: pslExtensionSigns } = entity.properties.extensions;
-    const signs = [pslExtensionSigns.z, ...pslExtensionSigns.r, ...pslExtensionSigns.announcement];
+    const signs = [pslExtension.z, ...pslExtension.r, ...pslExtension.announcement];
     const signTrackIds = removeDuplicates(signs.map((sign) => sign.track));
     return compact(
       signTrackIds.map((trackId) => {
@@ -94,7 +93,7 @@ const EditPSLSection = ({
         return track?.type !== 'success' ? null : track.track;
       })
     );
-  }, [entity.properties.extensions.psl_sncf]);
+  }, [pslExtension, trackSectionsCache]);
 
   const selectSign = (signInformation: PslSignInformation) => {
     selectPslSign(signInformation, setState);

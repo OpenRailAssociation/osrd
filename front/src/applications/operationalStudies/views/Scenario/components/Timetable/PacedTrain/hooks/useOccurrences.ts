@@ -44,17 +44,11 @@ const useOccurrences = (
   pacedTrain: PacedTrainWithDetails,
   rollingStockList: LightRollingStockWithLiveries[] | null
 ): { occurrencesCount: number; occurrences: Occurrence[] } => {
-  const {
-    paced,
-    name,
-    rollingStock,
-    stopsCount,
-    summary,
-    category: pacedTrainCategory,
-  } = pacedTrain;
-  const { exceptions } = paced;
+  const { exceptions } = pacedTrain.paced;
 
   const occurrences = useMemo(() => {
+    const { name, rollingStock, stopsCount, summary, category: pacedTrainCategory } = pacedTrain;
+
     const computedOccurrences = generateBareOccurrences(pacedTrain).map(
       ({ id, startTime, exception }): Occurrence => {
         let occurrenceIndex: number | undefined;

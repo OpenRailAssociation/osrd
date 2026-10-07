@@ -19,7 +19,7 @@ import { useInfraID } from 'common/osrdContext';
 
 // TODO : Rename all switch by tracknode when back renaming PR merged
 const useSwitch = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { state, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -41,7 +41,7 @@ const useSwitch = () => {
           type: t(`Editor.tools.switch-edition.${type.id}`),
         }),
       })),
-    [switchTypes, i18n.language]
+    [switchTypes, t]
   );
   const switchTypeOptionsDict = useMemo(
     () => keyBy(switchTypeOptions, 'value'),

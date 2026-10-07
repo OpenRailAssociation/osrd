@@ -85,7 +85,17 @@ const InfraSelectorModalBodyStandard = ({
         closeModal();
       }
     },
-    [isInEditor, viewport]
+    [
+      isInEditor,
+      viewport,
+      closeModal,
+      updateViewport,
+      navigate,
+      getInfraBbox,
+      onlySelectionMode,
+      dispatch,
+      updateInfraID,
+    ]
   );
 
   return (

@@ -29,7 +29,7 @@ export const Modal = ({
 
   useEffect(() => {
     register({ code: 'Escape', handler: closeModal });
-  }, [closeModal]);
+  }, [register, closeModal]);
 
   return (
     <>

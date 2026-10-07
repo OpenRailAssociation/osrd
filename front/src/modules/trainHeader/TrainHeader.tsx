@@ -94,15 +94,7 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
       parentPacedTrain: originalTrainSchedule ?? train,
       occurrenceId,
     });
-  }, [
-    train,
-    originalTrainSchedule,
-    trainScheduleId,
-    occurrenceId,
-    rollingStocks,
-    dispatch,
-    openItineraryModalToEdit,
-  ]);
+  }, [train, originalTrainSchedule, occurrenceId, rollingStocks, openItineraryModalToEdit]);
 
   if (expanded) {
     return (

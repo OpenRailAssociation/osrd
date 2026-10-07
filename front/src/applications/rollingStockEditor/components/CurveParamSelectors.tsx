@@ -101,25 +101,30 @@ const CurveParamSelectors = ({
       data: powerRestrictionsClass,
       updateData: setPowerRestrictionsClass,
     }),
-    [powerRestrictionsClass]
+    [powerRestrictionsClass, setPowerRestrictionsClass, basePowerClass]
   );
 
-  const comfortOptions = useMemo(() => {
-    const { comfortLevels: alreadySelectedComforts } = rollingstockParams;
-    return COMFORTS.filter((comfort) => !alreadySelectedComforts.includes(comfort)).map(
-      (comfort) => ({ id: comfort, label: t(`rollingStock.comfortTypes.${comfort}`) })
-    );
-  }, [rollingstockParams.comfortLevels]);
+  const { comfortLevels: alreadySelectedComforts, tractionModes: alreadySelectedModes } =
+    rollingstockParams;
+  const comfortOptions = useMemo(
+    () =>
+      COMFORTS.filter((comfort) => !alreadySelectedComforts.includes(comfort)).map((comfort) => ({
+        id: comfort,
+        label: t(`rollingStock.comfortTypes.${comfort}`),
+      })),
+    [alreadySelectedComforts, t]
+  );
 
-  const tractionModeOptions = useMemo(() => {
-    const { tractionModes: alreadySelectedModes } = rollingstockParams;
-    return [...(availableModes || []), THERMAL_TRACTION_IDENTIFIER]
-      .filter((mode) => !alreadySelectedModes.includes(mode))
-      .map((tractionMode) => ({
-        id: tractionMode,
-        label: rollingStockT(tractionMode, { defaultValue: tractionMode }),
-      }));
-  }, [availableModes, rollingstockParams.tractionModes]);
+  const tractionModeOptions = useMemo(
+    () =>
+      [...(availableModes || []), THERMAL_TRACTION_IDENTIFIER]
+        .filter((mode) => !alreadySelectedModes.includes(mode))
+        .map((tractionMode) => ({
+          id: tractionMode,
+          label: rollingStockT(tractionMode, { defaultValue: tractionMode }),
+        })),
+    [availableModes, alreadySelectedModes, rollingStockT]
+  );
 
   const updateComfortLevelsList = (value: Comfort) => {
     if (!effortCurves) return;
@@ -162,28 +167,41 @@ const CurveParamSelectors = ({
     selectedParamsSetter('electricalProfile', value);
   };
 
-  const updatePowerRestrictionsList = (newPowerRestriction: string) => {
-    if (!selectedTractionMode || !effortCurves) return;
+  const updatePowerRestrictionsList = useCallback(
+    (newPowerRestriction: string) => {
+      if (!selectedTractionMode || !effortCurves) return;
 
-    const newEmptyCurve = createEmptyCurve(
-      selectedComfortLvl,
-      selectedElectricalProfile,
-      newPowerRestriction
-    );
-    const updatedEffortCurves = addNewCurveToMode(
-      effortCurves,
+      const newEmptyCurve = createEmptyCurve(
+        selectedComfortLvl,
+        selectedElectricalProfile,
+        newPowerRestriction
+      );
+      const updatedEffortCurves = addNewCurveToMode(
+        effortCurves,
+        selectedTractionMode,
+        newEmptyCurve
+      );
+
+      if (!powerRestrictionList.includes(newPowerRestriction)) {
+        setPowerRestrictionList([...powerRestrictionList, newPowerRestriction]);
+      }
+
+      setPowerRestrictionsClass({ ...powerRestrictionsClass, [newPowerRestriction]: '' });
+      setEffortCurves(updatedEffortCurves);
+      selectedParamsSetter('powerRestriction', newPowerRestriction);
+    },
+    [
+      powerRestrictionList,
+      setPowerRestrictionsClass,
       selectedTractionMode,
-      newEmptyCurve
-    );
-
-    if (!powerRestrictionList.includes(newPowerRestriction)) {
-      setPowerRestrictionList([...powerRestrictionList, newPowerRestriction]);
-    }
-
-    setPowerRestrictionsClass({ ...powerRestrictionsClass, [newPowerRestriction]: '' });
-    setEffortCurves(updatedEffortCurves);
-    selectedParamsSetter('powerRestriction', newPowerRestriction);
-  };
+      selectedElectricalProfile,
+      selectedComfortLvl,
+      powerRestrictionsClass,
+      setEffortCurves,
+      selectedParamsSetter,
+      effortCurves,
+    ]
+  );
 
   const removeTractionMode = (mode: string) => {
     if (!effortCurves) return;

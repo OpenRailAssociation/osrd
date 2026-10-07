@@ -84,7 +84,7 @@ const StdcmSimulationReportSheet = ({
       rows.push(row);
     });
     return rows;
-  }, [stdcmData.simulationPathSteps]);
+  }, [stdcmData.simulationPathSteps, dateTimeLocale, t]);
 
   const simulationTableRows = useMemo(
     () =>
@@ -99,7 +99,7 @@ const StdcmSimulationReportSheet = ({
         t,
         stdcmData.pathfinding_result
       ),
-    [operationalPointsList, rollingStock, stdcmData, consistData]
+    [operationalPointsList, rollingStock, stdcmData, consist.totalLength, consist.totalMass, t]
   );
 
   const consistChangesData: ConsistChangeData[] = simulationTableRows.reduce<ConsistChangeData[]>(

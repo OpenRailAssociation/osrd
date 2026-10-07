@@ -75,7 +75,16 @@ const RollingStockEditorButtons = ({
             );
           });
       }),
-    [userPrivileges, rollingStock]
+    [
+      userPrivileges,
+      rollingStock,
+      t,
+      resetFilters,
+      checkProtectedAction,
+      setPageMode,
+      dispatch,
+      postRollingstock,
+    ]
   );
 
   const deleteRollingStock = useCallback(
@@ -112,7 +121,17 @@ const RollingStockEditorButtons = ({
               );
             });
       }),
-    [setPageMode, rollingStock.id, rollingStock.locked, userPrivileges]
+    [
+      setPageMode,
+      rollingStock.id,
+      rollingStock.locked,
+      userPrivileges,
+      t,
+      openModal,
+      deleteRollingStockById,
+      checkProtectedAction,
+      dispatch,
+    ]
   );
 
   const confirmDelete = () => {

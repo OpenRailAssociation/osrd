@@ -58,6 +58,7 @@ const useStdcmForm = (): StdcmSimulationInputs => {
     maxSpeed,
     loadingGauge,
     linkedTrains,
+    origin.arrival,
   ]);
 
   return currentSimulationInputs;

@@ -79,7 +79,7 @@ const TrainScheduleSetForm = ({
       }
       return undefined;
     },
-    [catalogEntryMode]
+    [catalogEntryMode, catalogEntries, t]
   );
   const isCatalogEntryValid = useCallback(
     (value?: TrainScheduleSetFormData['catalog']) => {
@@ -105,8 +105,8 @@ const TrainScheduleSetForm = ({
    * Function that check the uniqueness of the couple name/catalog.
    * This function is debounce by lodash to avoid multiple calls
    */
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   const checkNameCatalogUniqueness = useCallback(
-    // eslint-disable-next-line react/use-memo
     debounce(async (formName?: string, formCatalog?: TrainScheduleSetFormData['catalog']) => {
       if (checkNameInCatalogIsUniq && formName && formCatalog && 'id' in formCatalog) {
         const catalogId = formCatalog.id;
@@ -175,7 +175,7 @@ const TrainScheduleSetForm = ({
 
   const placeholderName = useMemo(
     () => t('namePlaceholder', { series: trainSetNameExample() }),
-    []
+    [t]
   );
 
   const isEditing = useMemo(() => {
@@ -191,7 +191,7 @@ const TrainScheduleSetForm = ({
 
   useEffect(() => {
     setIsEditing(isEditing);
-  }, [isEditing]);
+  }, [isEditing, setIsEditing]);
 
   return (
     <form

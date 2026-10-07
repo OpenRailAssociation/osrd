@@ -140,7 +140,6 @@ const useFilterTrainSchedules = (
       debouncedRollingstockFilter,
       validityFilter,
       scheduledPointsHonoredFilter,
-      trainTypeFilter,
       selectedTags,
       trainCategoryFilter,
     ]
@@ -176,7 +175,7 @@ const useFilterTrainSchedules = (
         });
         return [modelTrain, ...exceptionItems].some((train) => filterTrainSchedule(train));
       }),
-    [trainSchedules, filterTrainSchedule]
+    [trainSchedules, rollingStocks, trainTypeFilter, filterTrainSchedule]
   );
 
   return {

@@ -177,7 +177,7 @@ const StdcmConfig = ({
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [updateMapSettingsAction, dispatch]
   );
 
   const {

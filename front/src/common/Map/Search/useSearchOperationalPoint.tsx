@@ -84,7 +84,7 @@ export default function useSearchOperationalPoint({
         return [];
       }
     },
-    [infraId, stdcmPerimeterOperationalpointsFilter]
+    [infraId, stdcmPerimeterOperationalpointsFilter, postSearch, pageSize]
   );
 
   const shouldSearchByMainCode =

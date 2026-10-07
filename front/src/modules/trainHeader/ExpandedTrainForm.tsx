@@ -412,7 +412,7 @@ const ExpandedTrainForm = ({
 
   const initialSpeedError = useMemo(
     () => computeInitialSpeedError(fields.initial_speed, fields.rolling_stock),
-    [fields.initial_speed, fields.rolling_stock, computeInitialSpeedError]
+    [fields.initial_speed, fields.rolling_stock]
   );
 
   const revertServiceChange = useCallback(() => {

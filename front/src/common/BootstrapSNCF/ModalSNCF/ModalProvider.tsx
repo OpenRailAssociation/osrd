@@ -134,7 +134,7 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
    */
   useEffect(() => {
     closeModal();
-  }, [location.pathname]);
+  }, [closeModal, location.pathname]);
 
   return (
     <ModalContext.Provider value={modalContext}>

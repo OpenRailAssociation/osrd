@@ -121,7 +121,7 @@ const ItineraryModalFormHeader = ({
       (rs) => getRollingStockLabel(rs) === rollingStockValue
     );
     return isValid ? undefined : t('unknownRollingStock');
-  }, [rollingStockValue, fullRollingStockList, t]);
+  }, [rollingStockValue, fullRollingStockList, t, getRollingStockLabel]);
 
   // Category warning
   useEffect(() => {

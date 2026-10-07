@@ -88,7 +88,7 @@ const useEtcsBrakingCurves = (
     } else {
       setEtcsBrakingCurves(undefined);
     }
-  }, [selectedTrainId, infraId, electricalProfileSetId, exception]);
+  }, [selectedTrainId, infraId, electricalProfileSetId, exception, getEtcsBrakingCurves]);
 
   // Update existing curves when simulation changes
   useEffect(() => {

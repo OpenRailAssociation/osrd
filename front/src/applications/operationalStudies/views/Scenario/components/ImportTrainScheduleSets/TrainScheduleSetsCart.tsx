@@ -29,7 +29,7 @@ const TrainScheduleSetsCart = ({
         const catalogEntry = catalog.get(trainScheduleSet.catalog_entry_id!)!;
         return { trainScheduleSet, catalogEntry, importType: cartItem.importType };
       }),
-    [cart, catalog, trainScheduleSets, cart]
+    [cart, catalog, trainScheduleSets]
   );
 
   return (

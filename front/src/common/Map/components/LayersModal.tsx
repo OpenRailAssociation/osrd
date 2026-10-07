@@ -75,7 +75,7 @@ const LayersModal = ({
 
   const speedLimitOptions = useMemo(
     () => [DEFAULT_SPEED_LIMIT_TAG, ...speedLimitTags],
-    [t, speedLimitTags]
+    [DEFAULT_SPEED_LIMIT_TAG, speedLimitTags]
   );
 
   const layers = useMemo(
@@ -123,7 +123,7 @@ const LayersModal = ({
       updateMapSettings({ layersSettings: updatedLayers });
       onChange?.(updatedLayers);
     },
-    [selectedLayers, updateMapSettings]
+    [selectedLayers, updateMapSettings, onChange]
   );
 
   return (

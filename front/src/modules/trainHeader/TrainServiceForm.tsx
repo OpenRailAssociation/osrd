@@ -95,7 +95,7 @@ export default function TrainServiceForm({
   const serviceWindowError = useMemo(() => {
     if (!isPacedTrain || !windowHasChanged) return null;
     return computeServiceTimingError(fields.service_window) ?? intervalOutsideWindowError;
-  }, [isPacedTrain, fields.service_window, intervalHasChanged, intervalOutsideWindowError]);
+  }, [isPacedTrain, fields.service_window, windowHasChanged, intervalOutsideWindowError]);
 
   const erroneousFields = useMemo(
     () =>
@@ -119,7 +119,7 @@ export default function TrainServiceForm({
       (fields.service_interval?.valueOf() !== fieldsFromTrain.service_interval?.valueOf() ||
         fields.service_window?.valueOf() !== fieldsFromTrain.service_window?.valueOf() ||
         fields.is_unique !== fieldsFromTrain.is_unique),
-    [train.paced, fields, fieldsFromTrain]
+    [fields, fieldsFromTrain]
   );
 
   const confirmServiceChange = useCallback(() => {
