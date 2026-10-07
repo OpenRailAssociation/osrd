@@ -4043,15 +4043,23 @@ export type LightRollingStockWithLiveries = LightRollingStock & {
   liveries: RollingStockLivery[];
 };
 export type Tags = string[];
+export type OperationalPointReferenceNode =
+  | (TrackOffset & {
+      type: 'track_offset';
+    })
+  | {
+      operational_point: OperationalPointReference;
+      type: 'operational_point_reference';
+    };
 export type MacroNodeResponse = {
   full_name?: string | null;
   id: number;
   is_collapsed: boolean;
   labels: Tags;
-  path_item_key: string;
+  node_location: OperationalPointReferenceNode;
   position_x: number;
   position_y: number;
-  trigram?: string | null;
+  short_name?: string | null;
 };
 export type MacroNodeListResponse = PaginationStats & {
   results: MacroNodeResponse[];
@@ -4063,10 +4071,10 @@ export type MacroNodeForm = {
   full_name?: string | null;
   is_collapsed?: boolean;
   labels: Tags;
-  path_item_key: string;
+  node_location: OperationalPointReferenceNode;
   position_x: number;
   position_y: number;
-  trigram?: string | null;
+  short_name?: string | null;
 };
 export type MacroNodeBatchForm = {
   macro_nodes: MacroNodeForm[];

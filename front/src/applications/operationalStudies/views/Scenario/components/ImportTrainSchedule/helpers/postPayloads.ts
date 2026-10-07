@@ -20,6 +20,7 @@ import {
 import { setWarning, setFailure } from 'reducers/main';
 import type { AppDispatch } from 'store';
 
+import MacroEditorState from '../../MacroEditor/MacroEditorState';
 import { generateRoundTripsPayload, generateTrainPayloads } from './generatePayloads';
 
 const postRoundTrips = async (
@@ -37,7 +38,7 @@ const postRoundTrips = async (
 };
 
 /**
- * Post macro nodes if their trigrams are not already present in the database.
+ * Post macro nodes if their locations are not already present in the database.
  * Displays a warning to the user if any nodes do not get posted.
  */
 const postMacroNodesIfNew = async (
@@ -49,8 +50,15 @@ const postMacroNodesIfNew = async (
   const storedNodes = await dispatch(
     osrdEditoastApi.endpoints.getAllMacroNodes.initiate({ scenarioId }, { subscribe: false })
   ).unwrap();
-  const storedNodesKeys = new Set(storedNodes.map((node) => node.path_item_key));
-  const newMacroNodes = nodes.filter((node) => !storedNodesKeys.has(node.path_item_key));
+  // To handle thousands of macro nodes efficiently, we use a Set with stable stringified node locations
+  // instead of having to nest loops to compare each node location.
+  const storedNodeLocationKeys = new Set(
+    storedNodes.map((node) => MacroEditorState.getPathKeyByNodeLocation(node.node_location))
+  );
+  const newMacroNodes = nodes.filter(
+    (node) =>
+      !storedNodeLocationKeys.has(MacroEditorState.getPathKeyByNodeLocation(node.node_location))
+  );
   if (newMacroNodes.length > 0) {
     await dispatch(
       osrdEditoastApi.endpoints.postMacroNodes.initiate({
