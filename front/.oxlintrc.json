@@ -199,12 +199,10 @@
         ]
       }
     ],
-
     "react/capitalized-calls": "off",
     "react/exhaustive-effect-dependencies": "off",
     "react/hooks": "off",
     "react/memo-dependencies": "off",
-    "react/no-deriving-state-in-effects": "off",
     "react/preserve-manual-memoization": "off",
     "react/refs": "off",
     "react/set-state-in-effect": "off",
