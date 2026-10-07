@@ -120,7 +120,7 @@ const RouteEditionLayers = () => {
             state.hovered.type
           ) as WayPointEntity)
         : null,
-    [state.hovered?.renderedEntity, state.hovered?.type]
+    [state.hovered]
   );
 
   /**
