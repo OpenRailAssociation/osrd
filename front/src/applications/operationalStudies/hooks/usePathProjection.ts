@@ -56,7 +56,7 @@ const FALLBACK_DISTANCE_MM = 100_000_000;
  */
 const createVirtualOp = (
   opRef: OperationalPointReference,
-  pathItemId: string,
+  pathItemKey: string,
   index: number,
   totalCount: number,
   position: number,
@@ -64,12 +64,12 @@ const createVirtualOp = (
   t: TFunction<'operational-studies'>
 ): ProjectionWaypoint => {
   const virtualName = getVirtualOpName(opRef, index, totalCount, t);
-  const virtualId = `virtual_op_${pathItemId}`;
+  const virtualId = `virtual_op_${pathItemKey}`;
 
   return {
     waypointId: virtualId,
     opId: null,
-    pathItemKey: pathItemId,
+    pathItemKey,
     name: virtualName,
     uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
@@ -161,16 +161,16 @@ const usePathProjection = (
     return exception?.path_and_schedule?.path ?? trainSchedule?.path;
   }, [trainIdUsedForProjection, trainSchedulesById]);
 
-  const { opRefs, opRefPathItemIds } = useMemo(() => {
+  const { opRefs, opRefPathItemKeys } = useMemo(() => {
     const refs: OperationalPointReference[] = [];
-    const refPathItemIds: string[] = [];
+    const refPathItemKeys: string[] = [];
     pathUsedForProjection?.forEach((step) => {
       if (step.location.type === 'operational_point_part_reference') {
         refs.push(step.location.operational_point);
-        refPathItemIds.push(step.key);
+        refPathItemKeys.push(step.key);
       }
     });
-    return { opRefs: refs, opRefPathItemIds: refPathItemIds };
+    return { opRefs: refs, opRefPathItemKeys: refPathItemKeys };
   }, [pathUsedForProjection]);
 
   const { data: matchedOperationalPoints } =
@@ -253,10 +253,10 @@ const usePathProjection = (
         operationalPointDistances.push(FALLBACK_DISTANCE_MM); // Add distance for fallback positioning
       }
 
-      const pathItemId = opRefPathItemIds.at(index);
-      if (!pathItemId) {
-        // We know there are as many opRefPathItemIds as opRefs, so this should never happens
-        throw new Error(`Path item ID not found for index ${index}`);
+      const pathItemKey = opRefPathItemKeys.at(index);
+      if (!pathItemKey) {
+        // We know there are as many opRefPathItemKeys as opRefs, so this should never happens
+        throw new Error(`Path item key not found for index ${index}`);
       }
 
       if (matchedOp) {
@@ -267,7 +267,7 @@ const usePathProjection = (
           country_code: matchedOp.country_code,
           waypointId: buildOpWaypointId(matchedOp.id, occurrenceCount),
           opId: matchedOp.id,
-          pathItemKey: pathItemId,
+          pathItemKey,
           is_passenger_station: matchedOp.is_passenger_station,
           main_code: matchedOp.main_code,
           name: matchedOp.name,
@@ -285,7 +285,7 @@ const usePathProjection = (
         // Create virtual point from the reference
         // TODO : change this logic when implementing the non computation creation feature with the new opRef format
         normalizedOps.push(
-          createVirtualOp(opRef, pathItemId, index, opRefs.length, position, weight, t)
+          createVirtualOp(opRef, pathItemKey, index, opRefs.length, position, weight, t)
         );
       }
     });
