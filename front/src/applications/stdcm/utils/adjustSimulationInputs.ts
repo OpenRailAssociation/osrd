@@ -17,6 +17,7 @@ export const adjustPayloadByDirection = (
   ...payload,
   body: {
     ...payload.body,
+    is_fallback: true,
     steps: payload.body.steps.map((step, index, steps) => {
       if (index !== 0 && index !== steps.length - 1) return step;
       if (!step.timing_data) return step;

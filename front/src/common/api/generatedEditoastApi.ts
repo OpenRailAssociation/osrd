@@ -2568,6 +2568,8 @@ export type PostTimetableByIdStdcmApiArg = {
     comfort: Comfort;
     consist_schedule: ConsistSchedule;
     electrical_profile_set_id?: number | null;
+    /** Whether this request is a fallback, sent after an initial request failed to find a path */
+    is_fallback?: boolean;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
     /** By how long we can shift the departure time in milliseconds

@@ -200,6 +200,7 @@ pub(in crate::views) struct StdcmQueryParams {
         timetable_id = id,
         infra_id = query.infra,
         path_found = tracing::field::Empty,
+        is_fallback = request.is_fallback,
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -843,6 +844,7 @@ mod tests {
             margin: Some(MarginValue::MinPer100Km(4.5)),
             allowed_track_sections: HashSet::new(),
             consist_schedule,
+            is_fallback: false,
         }
     }
 

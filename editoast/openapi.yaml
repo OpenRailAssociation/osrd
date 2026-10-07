@@ -4161,6 +4161,9 @@ paths:
                   - integer
                   - 'null'
                   format: int64
+                is_fallback:
+                  type: boolean
+                  description: Whether this request is a fallback, sent after an initial request failed to find a path
                 margin:
                   type:
                   - string
