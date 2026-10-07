@@ -3,12 +3,12 @@ import { useCallback, useContext } from 'react';
 import { FONT_SANS } from '../../common/consts';
 import { TimeChartCanvasContext } from '../../common/context';
 import {
-  BLACK_100,
+  BLACK_ALPHA_100,
   GREY_30,
   GREY_50,
   GREY_90,
   RED_100,
-  WHITE_100,
+  WHITE_ALPHA_100,
 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { TimeChartContextType, DrawingFunction } from '../../common/types';
@@ -56,7 +56,7 @@ const drawStripedBlock = (ctx: CanvasRenderingContext2D, x: number, y: number, w
   ctx.rect(x, y, width, BLOCK_HEIGHT);
   ctx.clip();
 
-  ctx.fillStyle = WHITE_100;
+  ctx.fillStyle = WHITE_ALPHA_100;
   ctx.fillRect(x, y, width, BLOCK_HEIGHT);
 
   ctx.strokeStyle = RED_100;
@@ -86,7 +86,7 @@ const drawGapBlock = (
   const gapWidth = gapEndX - gapStartX;
 
   if (gapWidth > 0) {
-    ctx.fillStyle = BLACK_100;
+    ctx.fillStyle = BLACK_ALPHA_100;
     ctx.fillRect(gapStartX - 0.5, bandTop - 0.5, gapWidth + 1, BLOCK_HEIGHT + 1);
   }
 };

@@ -1,17 +1,17 @@
+import { BLACK_ALPHA_55, BLACK_ALPHA_70, WHITE_ALPHA_100 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import {
   OCCUPANCY_ZONE_Y_START,
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_SEPARATOR_WIDTH,
-  FONTS,
-  COLORS,
+  FONT_MONO_BOLD,
+  FONT_MONO_REGULAR,
+  FONT_SANS_REGULAR,
 } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 
-const { SANS, MONO } = FONTS;
-const { REMAINING_TRAINS_BACKGROUND, WHITE_100 } = COLORS;
 const REMAINING_TRAINS_WIDTH = 70;
 const REMAINING_TRAINS_HEIGHT = 24;
 const REMAINING_TEXT_OFFSET = 12;
@@ -80,13 +80,13 @@ export const drawRemainingTrainsBox = (
   const y = getSpacePixel(position) + yOffset;
   const textY = y + OCCUPANCY_ZONE_Y_START - REMAINING_TEXT_OFFSET;
 
-  ctx.fillStyle = REMAINING_TRAINS_BACKGROUND;
+  ctx.fillStyle = BLACK_ALPHA_70;
   ctx.beginPath();
   ctx.rect(x - REMAINING_TRAINS_WIDTH / 2, textY, REMAINING_TRAINS_WIDTH, REMAINING_TRAINS_HEIGHT);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = WHITE_100;
-  ctx.font = SANS;
+  ctx.fillStyle = WHITE_ALPHA_100;
+  ctx.font = FONT_SANS_REGULAR;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(`+${remainingTrainsNb} trains`, x, textY + REMAINING_TRAINS_HEIGHT / 2);
@@ -113,7 +113,7 @@ export const drawOccupationZone = (
 
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.font = MONO;
+  ctx.font = FONT_MONO_REGULAR;
 
   const { getTimePixel, getSpacePixel } = stcContext;
   const yStart = getOccupancyZonesY(stcContext, position);
@@ -124,7 +124,7 @@ export const drawOccupationZone = (
 
   if (isThroughTrain) {
     ctx.fillStyle = curveColor;
-    ctx.strokeStyle = WHITE_100;
+    ctx.strokeStyle = WHITE_ALPHA_100;
     ctx.lineWidth = OCCUPANCY_SEPARATOR_WIDTH;
     drawThroughTrain(ctx, arrivalTimePixel, y);
   } else {
@@ -163,7 +163,7 @@ export const drawOccupationZone = (
       ctx.lineWidth = border.width;
       ctx.stroke();
     } else if (!outline) {
-      ctx.strokeStyle = WHITE_100;
+      ctx.strokeStyle = WHITE_ALPHA_100;
       ctx.lineWidth = OCCUPANCY_SEPARATOR_WIDTH;
       ctx.stroke();
     }
@@ -216,7 +216,7 @@ export const drawZoneTrailingText = (
   const yCenter = getSpacePixel(position) + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
 
   ctx.save();
-  ctx.font = '600 12px IBM Plex Mono';
+  ctx.font = FONT_MONO_BOLD;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
 
@@ -229,12 +229,12 @@ export const drawZoneTrailingText = (
   const x = xEnd;
   const yTop = yCenter - boxH / 2;
 
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillStyle = BLACK_ALPHA_55;
   ctx.beginPath();
   ctx.roundRect(x, yTop, boxW, boxH, radius);
   ctx.fill();
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = WHITE_ALPHA_100;
   ctx.fillText(trailingText, x + paddingX, yCenter + 0.5);
   ctx.restore();
 };

@@ -1,9 +1,15 @@
 import { sum } from 'lodash';
 
-import { TRACK_HEIGHT_CONTAINER, COLORS, TICKS_PATTERN } from '../../../lib/consts';
+import {
+  SKY_700,
+  WHITE_ALPHA_100,
+  WHITE_ALPHA_50,
+  PRIMARY_5,
+  PRIMARY_30,
+  GREY_20,
+} from '../../../../common/helpers/colors';
+import { TRACK_HEIGHT_CONTAINER, TICKS_PATTERN } from '../../../lib/consts';
 import { getTickPattern } from '../../utils';
-
-const { WHITE_100, WHITE_50, GREY_20, PRIMARY_5, PRIMARY_30, RAIL_TICK } = COLORS;
 
 const drawRails = ({
   xStart,
@@ -20,7 +26,7 @@ const drawRails = ({
   stroke: string;
   ctx: CanvasRenderingContext2D;
 }) => {
-  ctx.fillStyle = WHITE_100;
+  ctx.fillStyle = WHITE_ALPHA_100;
   ctx.fillRect(xStart, yStart, width, 9);
 
   ctx.fillStyle = fill;
@@ -71,7 +77,7 @@ export const drawTrack = ({
   labelMarks,
   highlighted,
 }: DrawTrackProps) => {
-  ctx.fillStyle = WHITE_50;
+  ctx.fillStyle = WHITE_ALPHA_50;
 
   ctx.save();
 
@@ -80,7 +86,7 @@ export const drawTrack = ({
     xStart: -1,
     yStart: TRACK_HEIGHT_CONTAINER / 2 - 4,
     width: width + 1,
-    fill: highlighted ? PRIMARY_5 : WHITE_50,
+    fill: highlighted ? PRIMARY_5 : WHITE_ALPHA_50,
     stroke: highlighted ? PRIMARY_30 : GREY_20,
   });
 
@@ -95,7 +101,7 @@ export const drawTrack = ({
       xStart: getTimePixel(+t),
       yStart: TRACK_HEIGHT_CONTAINER / 2,
       ticks: TICKS_PATTERN[tickPattern],
-      stroke: RAIL_TICK,
+      stroke: SKY_700,
     });
   }
 
