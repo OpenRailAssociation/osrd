@@ -8,10 +8,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.BlockLocation
-import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -90,8 +87,6 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun endAtStop(): Boolean
 
     fun getFullRollingStockRangeMap(): DistanceRangeMap<PhysicsRollingStock>
-
-    fun getPathUntilCurrentBlock(rawInfra: RawInfra, blockInfra: BlockInfra): TrainPath
 }
 
 data class PlannedTimingData(

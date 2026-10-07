@@ -54,7 +54,10 @@ class FailureExplainer(
             val travelTime = parentNode.timeData.totalRunningTime
             val geoPoint = parentNode.toGeoPoint(rawInfra, blockInfra, useLocationOnEdge = true)
             val infraExplorer = parentNode.infraExplorer
-            val reachedTrainPath = infraExplorer.getPathUntilCurrentBlock(rawInfra, blockInfra)
+            val reachedSteps =
+                infraExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
+            val reachedTrainPath =
+                infraExplorer.getPathUntilPreviousBlock(rawInfra, blockInfra, reachedSteps)
             val lastOPId =
                 reachedTrainPath
                     .getOperationalPointParts()

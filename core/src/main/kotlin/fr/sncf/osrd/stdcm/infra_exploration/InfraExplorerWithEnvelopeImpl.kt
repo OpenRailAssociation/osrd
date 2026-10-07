@@ -10,13 +10,8 @@ import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
-import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
-import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData
@@ -31,7 +26,6 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.lang.ref.SoftReference
-import kotlin.collections.ifEmpty
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
@@ -184,35 +178,6 @@ data class InfraExplorerWithEnvelopeImpl(
 
     override fun getFullSpacingRequirements(): List<SpacingRequirement> {
         return getSpacingRequirements(needFullRequirements = true)
-    }
-
-    override fun getPathUntilCurrentBlock(rawInfra: RawInfra, blockInfra: BlockInfra): TrainPath {
-        val reachedSteps =
-            this.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
-        val predecessorBlocks = this.getPredecessorBlocks().toList()
-        val blockRanges = predecessorBlocks.ifEmpty {
-            val currentBlockRange = this.getCurrentBlockRange()
-            listOf(
-                BlockRange(
-                    currentBlockRange.value,
-                    currentBlockRange.objectBegin,
-                    currentBlockRange.objectEnd,
-                    currentBlockRange.pathBegin,
-                    currentBlockRange.pathEnd,
-                    currentBlockRange.objectLength,
-                )
-            )
-        }
-        // TODO: Send only simulated routes, and not all explored ones
-        return buildTrainPathFromBlockRanges(
-            rawInfra,
-            blockInfra,
-            blockRanges,
-            reachedSteps.mapNotNull { step ->
-                if (step.isBacktracking) step.travelledPathOffset else null
-            },
-            this.getExploredRoutes(),
-        )
     }
 
     private fun getSpacingRequirements(needFullRequirements: Boolean): List<SpacingRequirement> {
