@@ -201,7 +201,6 @@
     ],
     "react/exhaustive-effect-dependencies": "off",
     "react/memo-dependencies": "off",
-    "react/preserve-manual-memoization": "off",
     "react/refs": "off",
     "react/set-state-in-effect": "off",
 
@@ -254,7 +253,6 @@
         "react/exhaustive-deps": "warn",
         "react/exhaustive-effect-dependencies": "error",
         "react/memo-dependencies": "error",
-        "react/preserve-manual-memoization": "error",
         "react/react-in-jsx-scope": "error",
         "react/refs": "error",
         "react/set-state-in-effect": "error",
