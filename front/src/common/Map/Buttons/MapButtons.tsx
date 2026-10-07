@@ -205,6 +205,7 @@ export default function MapButtons({
   }, [isOpen]);
 
   useEffect(() => {
+    /* eslint-disable-next-line react/no-deriving-state-in-effects */
     setViewport(viewportProps);
   }, [viewportProps]);
 

@@ -61,6 +61,7 @@ const RollingStockEditorForm = ({ rollingStockData, setPageMode }: RollingStockP
   );
 
   useEffect(() => {
+    /* eslint-disable-next-line react/no-deriving-state-in-effects */
     setRollingStockValues(getRollingStockEditorDefaultValues(rollingStockData));
   }, [rollingStockData]);
 

@@ -70,6 +70,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
   );
 
   useEffect(() => {
+    /* eslint-disable-next-line react/no-deriving-state-in-effects */
     setSelectedItem(value);
   }, [value]);
 
