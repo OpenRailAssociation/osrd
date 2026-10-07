@@ -54,6 +54,7 @@ export const ANY_DATE_SLOT: CalendarSlot = { start: new Date(0), end: null };
 
 export type ExpandedTrainFormProps = {
   train: Train;
+  // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
   path?: Omit<PathfindingResult, 'status'>;
   onCollapse: () => void;
   onPersistTrain: (

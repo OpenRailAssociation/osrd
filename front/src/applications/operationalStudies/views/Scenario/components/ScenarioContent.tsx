@@ -51,6 +51,8 @@ const MACRO_MIN_HEIGHT = 500;
 const CHRONOGRAM_INITIAL_HEIGHT = 492;
 const CHRONOGRAM_MIN_HEIGHT = 398;
 
+const now = new Date();
+
 const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -232,7 +234,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const defaultStartTime = useMemo(
     () =>
       scenario.timetable_type === 'CALENDAR'
-        ? computeLatestMidnight([...trainSchedulesById.values()], new Date())
+        ? computeLatestMidnight([...trainSchedulesById.values()], now)
         : Duration.zero,
     [scenario.timetable_type, trainSchedulesById]
   );
