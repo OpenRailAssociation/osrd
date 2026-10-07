@@ -15,6 +15,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 
+import { adaptPayloadForTargetTimetable } from '../ImportTrainSchedule/helpers/adaptJsonImport';
 import { validateTimetableJsonPayload } from '../ImportTrainSchedule/helpers/parseJson';
 import { postFullImportPayload } from '../ImportTrainSchedule/helpers/postPayloads';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -175,7 +176,8 @@ const TimetableBoardWrapper = ({
       await copyTrainSchedulesToClipboard(
         selectedTrainScheduleIds,
         trainSchedules,
-        trainScheduleRoundTrips
+        trainScheduleRoundTrips,
+        scenario.timetable_type
       );
       dispatch(
         setSuccess({
@@ -193,7 +195,11 @@ const TimetableBoardWrapper = ({
     const clipboardContent = await navigator.clipboard.readText();
     try {
       data = JSON.parse(clipboardContent);
-      const importedPayload = validateTimetableJsonPayload(data);
+      const importedPayload = adaptPayloadForTargetTimetable(
+        validateTimetableJsonPayload(data),
+        scenario.timetable_type,
+        [...trainSchedules.values()]
+      );
 
       const newTrainSchedules = await postFullImportPayload(
         sandboxId,
@@ -218,7 +224,7 @@ const TimetableBoardWrapper = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }
-  }, [sandboxId, subCategories]);
+  }, [sandboxId, subCategories, trainSchedules]);
 
   const handleCut = useCallback(
     async (event: ClipboardEvent) => {
@@ -237,7 +243,8 @@ const TimetableBoardWrapper = ({
         await copyTrainSchedulesToClipboard(
           selectedTrainScheduleIds,
           trainSchedules,
-          trainScheduleRoundTrips
+          trainScheduleRoundTrips,
+          scenario.timetable_type
         );
         await handleTrainsDelete(true);
         dispatch(
