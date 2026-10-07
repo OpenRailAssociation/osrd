@@ -67,7 +67,7 @@ def parse_merge_commit(ref) -> Tuple[str, str]:
 
 
 def registry_cache(image: str) -> str:
-    return f"type=registry,mode=max,ref={image}-cache"
+    return f"type=registry,mode=max,ref={image}-cache-v2"
 
 
 class BaseEvent(ABC):
