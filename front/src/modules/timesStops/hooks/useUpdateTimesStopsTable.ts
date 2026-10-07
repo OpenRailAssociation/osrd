@@ -426,14 +426,7 @@ const useUpdateTimesStopsTable = (
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
     },
-    [
-      selectedTrain,
-      trainSchedulesWithDetails,
-      computeTrainUpdate,
-      timetableId,
-      dispatch,
-      persistTrain,
-    ]
+    [selectedTrain, trainSchedulesWithDetails, timetableId, dispatch, persistTrain]
   );
 
   /**
@@ -471,7 +464,7 @@ const useUpdateTimesStopsTable = (
 
       return updateResult.success ? 'updated' : 'skipped';
     },
-    [selectedTrain, persistTrain]
+    [selectedTrain, dispatch, timetableId, upsertTrainSchedules, trainSchedulesWithDetails]
   );
 
   /**

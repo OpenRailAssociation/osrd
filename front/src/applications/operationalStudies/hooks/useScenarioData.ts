@@ -199,30 +199,40 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTrainSchedules = useCallback((trainSchedulesToUpsert: TrainScheduleResponse[]) => {
-    setTrainSchedules((prev) => upsertAndSort(prev, trainSchedulesToUpsert));
+  const upsertTrainSchedules = useCallback(
+    (trainSchedulesToUpsert: TrainScheduleResponse[]) => {
+      setTrainSchedules((prev) => upsertAndSort(prev, trainSchedulesToUpsert));
 
-    removeSimulatedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
-    removeProjectedTrainSchedules(trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
-    simulateTrainSchedules(trainSchedulesToUpsert);
-  }, []);
+      removeSimulatedTrainSchedules(
+        trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id)
+      );
+      removeProjectedTrainSchedules(
+        trainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id)
+      );
+      simulateTrainSchedules(trainSchedulesToUpsert);
+    },
+    [simulateTrainSchedules, removeProjectedTrainSchedules, removeSimulatedTrainSchedules]
+  );
 
-  const removeTrainSchedules = useCallback((_trainSchedulesToRemove: number[]) => {
-    setTrainSchedules((prev) => {
-      const prevTrainSchedulesById = mapBy(prev, 'id');
-      _trainSchedulesToRemove.forEach((trainScheduleId) => {
-        prevTrainSchedulesById.delete(trainScheduleId);
+  const removeTrainSchedules = useCallback(
+    (_trainSchedulesToRemove: number[]) => {
+      setTrainSchedules((prev) => {
+        const prevTrainSchedulesById = mapBy(prev, 'id');
+        _trainSchedulesToRemove.forEach((trainScheduleId) => {
+          prevTrainSchedulesById.delete(trainScheduleId);
+        });
+        return Array.from(prevTrainSchedulesById.values());
       });
-      return Array.from(prevTrainSchedulesById.values());
-    });
 
-    setSelectedTrainScheduleIds((prevSelected) =>
-      prevSelected.filter((id) => !_trainSchedulesToRemove.includes(id))
-    );
+      setSelectedTrainScheduleIds((prevSelected) =>
+        prevSelected.filter((id) => !_trainSchedulesToRemove.includes(id))
+      );
 
-    removeSimulatedTrainSchedules(_trainSchedulesToRemove);
-    removeProjectedTrainSchedules(_trainSchedulesToRemove);
-  }, []);
+      removeSimulatedTrainSchedules(_trainSchedulesToRemove);
+      removeProjectedTrainSchedules(_trainSchedulesToRemove);
+    },
+    [removeSimulatedTrainSchedules, removeProjectedTrainSchedules]
+  );
 
   const setTrainScheduleDepartureTime = useCallback(
     (trainScheduleId: number, newDeparture: Date, panelSelectionMode?: PanelSelectionMode) => {
@@ -248,7 +258,11 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
       updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture, shiftedExceptions);
     },
-    [trainSchedules]
+    [
+      trainSchedules,
+      updateSimulatedTrainScheduleDepartureTime,
+      updateProjectedTrainScheduleDepartureTime,
+    ]
   );
 
   /** Update paced train exceptions in local state without re-simulating. Used after drag-created exceptions. */
@@ -266,7 +280,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       updateSimulatedTrainExceptions(trainScheduleId, updatedExceptions);
       updateProjectedTrainExceptions(trainScheduleId, updatedExceptions);
     },
-    []
+    [updateProjectedTrainExceptions, updateSimulatedTrainExceptions]
   );
 
   /**
@@ -356,7 +370,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
       setTrainScheduleDepartureTime(editoastId, newDeparture, panelSelectionMode);
     },
-    [trainSchedules, dispatch, timetableId, upsertTrainScheduleExceptions]
+    [
+      trainSchedules,
+      dispatch,
+      timetableId,
+      upsertTrainScheduleExceptions,
+      setTrainScheduleDepartureTime,
+      updateTrainSchedule,
+    ]
   );
 
   const upsertTrainSchedulesWithBroadcast = useCallback(
@@ -465,11 +486,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       projectionPath,
       projectedTrains,
       allTrainsProjected,
-      trainSchedules?.length ?? 0,
+      trainSchedules?.length,
       conflicts,
       isConflictsLoading,
       hourlyTimetableDuration,
-      rollingStocks,
       removeTrainSchedulesWithBroadcast,
       upsertTrainSchedulesWithBroadcast,
       updateTrainScheduleDepartureTimeWithBroadcast,

@@ -16,7 +16,7 @@ export default function useAllowedUserRoles() {
       rollingStockEditorAllowed: checkUserRole(requiredRolesByView.ROLLING_STOCK_EDITOR),
       mapAllowed: checkUserRole(requiredRolesByView.MAP),
     }),
-    [checkUserRole]
+    [checkUserRole, requiredRolesByView]
   );
 
   return allowViews;

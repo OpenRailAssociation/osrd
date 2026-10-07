@@ -113,7 +113,6 @@ const DefaultBaseMap = ({
       <MapButtons
         zoomIn={zoomIn}
         zoomOut={zoomOut}
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         bearing={viewport.bearing}
         withMapKeyButton={false}

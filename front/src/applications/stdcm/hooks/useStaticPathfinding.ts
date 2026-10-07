@@ -172,7 +172,7 @@ const useStaticPathfinding = (
       return t('pathfindingStatus.calculating');
     }
     return t('pathfindingStatus.success');
-  }, [isFetching]);
+  }, [isFetching, t]);
 
   return {
     pathfinding,

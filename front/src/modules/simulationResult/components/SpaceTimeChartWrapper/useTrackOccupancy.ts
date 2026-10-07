@@ -293,7 +293,7 @@ const useTrackOccupancy = ({
 
       return zones;
     },
-    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled]
+    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled, timetableId]
   );
 
   const deployedWaypoints = useMemo(() => {
@@ -448,6 +448,7 @@ const useTrackOccupancy = ({
       pathOperationalPointsState,
       updatePathOperationalPointState,
       trainScheduleProjectionsById,
+      fetchTrackOccupancy,
     ]
   );
 
@@ -516,7 +517,7 @@ const useTrackOccupancy = ({
         );
       }
     },
-    [pathOpsByWaypointId, pathOperationalPointsState]
+    [pathOpsByWaypointId, pathOperationalPointsState, fetchTrackOccupancy]
   );
 
   // Abort all batch calls on unmount:

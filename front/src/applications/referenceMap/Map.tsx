@@ -29,7 +29,7 @@ const Map = () => {
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [dispatch, updateMapSettingsAction]
   );
 
   const updateViewportChange = useCallback(
@@ -66,7 +66,6 @@ const Map = () => {
         updateMapSettings={updateMapSettings}
       >
         <MapButtons
-          map={mapRef.current ?? undefined}
           resetPitchBearing={resetPitchBearing}
           bearing={viewport.bearing}
           viewPort={viewport}

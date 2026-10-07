@@ -51,7 +51,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
   const [submited, setSubmited] = useState<boolean>(false);
-  const { t, i18n, ready: isI18nLoaded } = useTranslation('infraEditor');
+  const { t } = useTranslation('infraEditor');
 
   const editorState = useSelector(getEditorState);
   const layer = useMemo(
@@ -64,10 +64,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   );
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
-  const translatedSchema = useMemo(
-    () => translateSchema(schema, t),
-    [schema, isI18nLoaded, i18n.language]
-  );
+  const translatedSchema = useMemo(() => translateSchema(schema, t), [schema, t]);
 
   /**
    * When data or schema change

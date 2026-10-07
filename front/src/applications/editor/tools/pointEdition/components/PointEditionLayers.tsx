@@ -7,7 +7,7 @@ import { Popup } from 'react-map-gl/maplibre';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
-import { NEW_ENTITY_ID, cleanSymbolType, flattenEntity } from 'applications/editor/data/utils';
+import { NEW_ENTITY_ID, flattenEntity } from 'applications/editor/data/utils';
 import { POINT_LAYER_ID } from 'applications/editor/tools/pointEdition/consts';
 import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
@@ -69,7 +69,6 @@ export const BasePointEditionLayers = ({
     [renderedEntity]
   );
 
-  const type = cleanSymbolType((entity.properties || {}).extensions?.sncf?.installation_type || '');
   const layers = useMemo(
     () =>
       SourcesDefinitionsIndex[objType](
@@ -87,7 +86,7 @@ export const BasePointEditionLayers = ({
           ? { ...layer, id: POINT_LAYER_ID }
           : layer
       ),
-    [interactiveLayerIDRegex, mapStyle, objType, type, layersSettings, issuesSettings]
+    [interactiveLayerIDRegex, mapStyle, objType, layersSettings, issuesSettings]
   );
 
   return (

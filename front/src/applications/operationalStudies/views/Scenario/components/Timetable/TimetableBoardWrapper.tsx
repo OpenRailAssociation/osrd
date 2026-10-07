@@ -83,7 +83,7 @@ const TimetableBoardWrapper = ({
         selectedPacedTrainIds: number[];
       }
     );
-  }, [selectedTrainScheduleIds]);
+  }, [selectedTrainScheduleIds, trainSchedulesWithDetails]);
 
   // --- BOARD WRAPPER TITLE MANAGEMENT -------------------------
   const computedTrainLabel = useCallback(() => {
@@ -133,30 +133,33 @@ const TimetableBoardWrapper = ({
   ]);
   // --- END BOARD WRAPPER TITLE MANAGEMENT ---------------------
 
-  const handleTrainsDelete = async (hideToast: boolean = false) => {
-    const trainSchedulesCount = selectedTrainScheduleIds.length;
+  const handleTrainsDelete = useCallback(
+    async (hideToast: boolean = false) => {
+      const trainSchedulesCount = selectedTrainScheduleIds.length;
 
-    if (selectedTrainScheduleIds.length > 0) {
-      await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
-    }
+      if (selectedTrainScheduleIds.length > 0) {
+        await deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
+      }
 
-    removeTrainSchedules(selectedTrainScheduleIds);
+      removeTrainSchedules(selectedTrainScheduleIds);
 
-    if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
-      setIsSelectMode(false);
-    }
+      if (trainSchedules.size - selectedTrainScheduleIds.length === 0) {
+        setIsSelectMode(false);
+      }
 
-    if (!hideToast) {
-      dispatch(
-        setSuccess({
-          title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
-            count: trainSchedulesCount,
-          }),
-          text: '',
-        })
-      );
-    }
-  };
+      if (!hideToast) {
+        dispatch(
+          setSuccess({
+            title: t('main.timetable.trainSchedulesSelectionDeletedCount', {
+              count: trainSchedulesCount,
+            }),
+            text: '',
+          })
+        );
+      }
+    },
+    [removeTrainSchedules, trainSchedules.size, selectedTrainScheduleIds, dispatch, t]
+  );
 
   // --- END BOARD WRAPPER MENU ITEMS CONFIGURATION ---
 
@@ -186,7 +189,7 @@ const TimetableBoardWrapper = ({
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     }
-  }, [selectedTrainScheduleIds, trainSchedules, getTimetableRoundTrips, timetableId]);
+  }, [selectedTrainScheduleIds, trainSchedules, getTimetableRoundTrips, timetableId, t, dispatch]);
 
   const handlePaste = useCallback(async () => {
     let data = null;
@@ -218,7 +221,16 @@ const TimetableBoardWrapper = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }
-  }, [sandboxId, subCategories]);
+  }, [
+    sandboxId,
+    subCategories,
+    upsertTrainSchedules,
+    setSelectedTrainScheduleIds,
+    t,
+    scenario.timetable_id,
+    scenario.id,
+    dispatch,
+  ]);
 
   const handleCut = useCallback(
     async (event: ClipboardEvent) => {
@@ -250,7 +262,15 @@ const TimetableBoardWrapper = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     },
-    [selectedTrainScheduleIds, trainSchedules, getTimetableRoundTrips, timetableId]
+    [
+      selectedTrainScheduleIds,
+      trainSchedules,
+      getTimetableRoundTrips,
+      timetableId,
+      handleTrainsDelete,
+      t,
+      dispatch,
+    ]
   );
 
   const handleDeleteTrainSchedules = () => setIsDeleteDialogOpen(true);

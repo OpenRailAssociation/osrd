@@ -41,7 +41,7 @@ const GrantManagerAddSubjectForm = ({
         setAddUserStatus({ type: 'error' });
       }
     }
-  }, [addUserForm, isAddUserFormValid, onSubmit]);
+  }, [addUserForm, isAddUserFormValid, onSubmit, resetSuggestions]);
 
   return (
     <form

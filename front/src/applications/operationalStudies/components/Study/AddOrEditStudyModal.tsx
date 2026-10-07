@@ -143,7 +143,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
     }
   };
 
-  const deleteStudy = () => {
+  const deleteStudy = useCallback(() => {
     if (study?.id && projectId) {
       deleteStudies({
         studyId: study.id,
@@ -167,7 +167,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
           closeModal();
         });
     }
-  };
+  }, [dispatch, study, scenarios, deleteStudies, t, projectId, navigate, closeModal]);
 
   const { isExpectedEndDateValid, isActualEndDateValid } = useMemo(() => {
     const startDate = currentStudy?.start_date;

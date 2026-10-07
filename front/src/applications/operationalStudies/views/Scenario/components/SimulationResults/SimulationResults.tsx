@@ -94,14 +94,18 @@ const SimulationResults = ({
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
   );
 
-  const sddData = simulationResults?.isValid
-    ? {
-        trainScheduleSimulation: simulationResults.simulation,
-        powerRestrictions: simulationResults.powerRestrictions,
-        rollingStock: simulationResults.rollingStock,
-        pathProperties: simulationResults.pathProperties,
-      }
-    : undefined;
+  const sddData = useMemo(
+    () =>
+      simulationResults?.isValid
+        ? {
+            trainScheduleSimulation: simulationResults.simulation,
+            powerRestrictions: simulationResults.powerRestrictions,
+            rollingStock: simulationResults.rollingStock,
+            pathProperties: simulationResults.pathProperties,
+          }
+        : undefined,
+    [simulationResults]
+  );
 
   const [SDDHeight, setSDDHeight] = useState(SDD_INITIAL_HEIGHT);
 

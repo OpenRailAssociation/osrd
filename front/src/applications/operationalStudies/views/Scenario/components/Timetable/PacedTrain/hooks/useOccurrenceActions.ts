@@ -79,9 +79,12 @@ const useOccurrenceActions = ({
     [dispatch, selectedTrainId]
   );
 
-  const selectOccurrenceForProjection = useCallback((occurrenceId: OccurrenceId) => {
-    dispatch(updateTrainIdUsedForProjection(occurrenceId));
-  }, []);
+  const selectOccurrenceForProjection = useCallback(
+    (occurrenceId: OccurrenceId) => {
+      dispatch(updateTrainIdUsedForProjection(occurrenceId));
+    },
+    [dispatch]
+  );
 
   // We build a new train schedule to edit with the current paced train modified with
   // the occurrence start time and all its eventual exceptions
@@ -193,7 +196,7 @@ const useOccurrenceActions = ({
         // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
       }
     },
-    [pacedTrain, occurrences, selectedTrainId, timetableId]
+    [pacedTrain, occurrences, selectedTrainId, timetableId, upsertWithNewExceptions, dispatch]
   );
 
   /**
@@ -239,7 +242,7 @@ const useOccurrenceActions = ({
 
       upsertWithNewExceptions(updatedExceptions);
     },
-    [pacedTrain]
+    [pacedTrain, upsertWithNewExceptions, dispatch]
   );
 
   const deleteAddedException = useCallback(
@@ -268,7 +271,7 @@ const useOccurrenceActions = ({
         );
       }
     },
-    [pacedTrain.paced.exceptions, occurrences, selectedTrainId]
+    [pacedTrain.paced.exceptions, occurrences, selectedTrainId, upsertWithNewExceptions, dispatch]
   );
 
   return {

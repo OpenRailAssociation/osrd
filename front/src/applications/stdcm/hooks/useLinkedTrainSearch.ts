@@ -109,7 +109,7 @@ const useLinkedTrainSearch = () => {
       }).unwrap();
       return trainsSummaries;
     },
-    [postTrainSchedulesSimulationSummary, infraId]
+    [postTrainSchedulesSimulationSummary, infraId, timetableId]
   );
 
   const launchTrainScheduleSearch = useCallback(async () => {
@@ -194,6 +194,9 @@ const useLinkedTrainSearch = () => {
     getTrainScheduleSets,
     linkedTrainDate,
     getExtremityDetails,
+    getTrainsSummaries,
+    dispatch,
+    t,
   ]);
 
   const resetLinkedTrainSearch = () => {

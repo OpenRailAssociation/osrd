@@ -103,7 +103,7 @@ const useOccurrences = (
     );
 
     return sortBy(computedOccurrences, 'startTime');
-  }, [pacedTrain, rollingStockList]);
+  }, [pacedTrain, rollingStockList, name, pacedTrainCategory, stopsCount, rollingStock, summary]);
 
   // Add to the count the added exceptions and substract the disabled ones
   const occurrenceCountLabel = useMemo(

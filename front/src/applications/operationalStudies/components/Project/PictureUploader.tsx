@@ -102,7 +102,7 @@ export default function PictureUploader({
         setIsValid(true);
       }
     },
-    [setIsValid, setTempProjectImage]
+    [setIsValid, setTempProjectImage, dispatch, t]
   );
 
   return (

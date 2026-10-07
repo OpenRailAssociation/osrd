@@ -123,62 +123,73 @@ const OccurrenceItem = ({
   };
 
   // TODO exceptions : add action to menu buttons
-  const menuItems: Record<string, OSRDMenuItem> = {
-    disable: {
-      title: t('occurrenceMenu.disable'),
-      icon: <Skip />,
-      onClick: () => {
-        updateOccurrenceStatus(occurrence, 'disabled');
-        closeMenu();
+  const menuItems: Record<string, OSRDMenuItem> = useMemo(
+    () => ({
+      disable: {
+        title: t('occurrenceMenu.disable'),
+        icon: <Skip />,
+        onClick: () => {
+          updateOccurrenceStatus(occurrence, 'disabled');
+          closeMenu();
+        },
+        dataTestID: 'occurrence-disable-button',
       },
-      dataTestID: 'occurrence-disable-button',
-    },
-    enable: {
-      title: t('occurrenceMenu.enable'),
-      icon: <Play />,
-      onClick: () => {
-        updateOccurrenceStatus(occurrence, 'enable');
-        closeMenu();
+      enable: {
+        title: t('occurrenceMenu.enable'),
+        icon: <Play />,
+        onClick: () => {
+          updateOccurrenceStatus(occurrence, 'enable');
+          closeMenu();
+        },
+        dataTestID: 'occurrence-enable-button',
       },
-      dataTestID: 'occurrence-enable-button',
-    },
-    edit: {
-      title: t('occurrenceMenu.edit'),
-      icon: <Pencil />,
-      onClick: () => {
-        editOccurrence(occurrence);
-        closeMenu();
+      edit: {
+        title: t('occurrenceMenu.edit'),
+        icon: <Pencil />,
+        onClick: () => {
+          editOccurrence(occurrence);
+          closeMenu();
+        },
+        dataTestID: 'occurrence-edit-button',
       },
-      dataTestID: 'occurrence-edit-button',
-    },
-    restore: {
-      title: t('occurrenceMenu.restore'),
-      icon: <Reverse />,
-      onClick: () => {
-        resetOccurrenceExceptions(occurrence.id);
-        closeMenu();
+      restore: {
+        title: t('occurrenceMenu.restore'),
+        icon: <Reverse />,
+        onClick: () => {
+          resetOccurrenceExceptions(occurrence.id);
+          closeMenu();
+        },
+        dataTestID: 'occurrence-restore-button',
       },
-      dataTestID: 'occurrence-restore-button',
-    },
-    project: {
-      title: t('occurrenceMenu.project'),
-      icon: <GiPathDistance />,
-      onClick: () => {
-        selectOccurrenceForProjection(occurrence.id);
-        closeMenu();
+      project: {
+        title: t('occurrenceMenu.project'),
+        icon: <GiPathDistance />,
+        onClick: () => {
+          selectOccurrenceForProjection(occurrence.id);
+          closeMenu();
+        },
+        dataTestID: 'occurrence-project-button',
       },
-      dataTestID: 'occurrence-project-button',
-    },
-    delete: {
-      title: t('occurrenceMenu.delete'),
-      icon: <Trash />,
-      onClick: () => {
-        deleteAddedException(occurrence.id);
-        closeMenu();
+      delete: {
+        title: t('occurrenceMenu.delete'),
+        icon: <Trash />,
+        onClick: () => {
+          deleteAddedException(occurrence.id);
+          closeMenu();
+        },
+        dataTestID: 'occurrence-delete-button',
       },
-      dataTestID: 'occurrence-delete-button',
-    },
-  };
+    }),
+    [
+      selectOccurrenceForProjection,
+      occurrence,
+      editOccurrence,
+      resetOccurrenceExceptions,
+      deleteAddedException,
+      updateOccurrenceStatus,
+      t,
+    ]
+  );
 
   // TODO exceptions : filter menu items depending on the occurrence status
   const filteredMenuItems = useMemo(() => {
@@ -200,7 +211,7 @@ const OccurrenceItem = ({
       return addElementAtIndex(items, 2, restore);
     }
     return items;
-  }, [menuItems, exceptionChangeGroups]);
+  }, [menuItems, exceptionChangeGroups, occurrence, disabled]);
 
   const occurrenceMenu = (
     <AnchoredMenu anchorRef={menuButtonRef} onDismiss={closeMenu}>

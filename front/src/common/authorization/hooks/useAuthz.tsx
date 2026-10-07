@@ -45,7 +45,7 @@ export default function useAuthz() {
         body: grant ? { grant: [{ ...basePayload, grant }] } : { revoke: [basePayload] },
       });
     },
-    []
+    [updateSubjectGrantApi]
   );
 
   /**

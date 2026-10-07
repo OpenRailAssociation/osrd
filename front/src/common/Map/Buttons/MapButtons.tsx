@@ -13,7 +13,6 @@ import {
 import cx from 'classnames';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
@@ -39,7 +38,6 @@ import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 import MapButton from './MapButton';
 
 type MapButtonsProps = {
-  map?: MapRef;
   resetPitchBearing: () => void;
   closeFeatureInfoClickPopup?: () => void;
   zoomIn?: () => void;
@@ -105,7 +103,6 @@ const ContextZoomButtons = ({
 };
 
 export default function MapButtons({
-  map,
   resetPitchBearing,
   closeFeatureInfoClickPopup,
   withInfraButton,
@@ -182,15 +179,7 @@ export default function MapButtons({
       </MapContextProvider>,
       'lg'
     );
-  }, [
-    editorProps,
-    openModal,
-    compactModal,
-    layersModalContainer,
-    mapSettings,
-    infraId,
-    updateMapSettings,
-  ]);
+  }, [editorProps, openModal, compactModal, mapSettings, infraId, updateMapSettings]);
 
   const mapButtonsRef = useRef<HTMLDivElement>(null);
 
@@ -306,7 +295,6 @@ export default function MapButtons({
         )}
       {openedPopover === MAP_POPOVERS.SEARCH && (
         <MapSearch
-          map={map}
           closeMapSearchPopUp={() => setOpenedPopover(undefined)}
           mapSettings={mapSettings}
         />

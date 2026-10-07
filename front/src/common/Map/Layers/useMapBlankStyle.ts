@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { SpriteSpecification } from 'maplibre-gl';
 import type { MapProps } from 'react-map-gl/maplibre';
@@ -25,7 +25,7 @@ const useMapBlankStyle = (): MapProps['mapStyle'] => {
   const { data: signalingSystems } =
     osrdEditoastApi.endpoints.getSpritesSignalingSystems.useQuery();
 
-  const getSpriteData = async () => {
+  const getSpriteData = useCallback(async () => {
     if (!signalingSystems) return [];
 
     const ponctualObjectsSprites: Sprite = {
@@ -44,7 +44,7 @@ const useMapBlankStyle = (): MapProps['mapStyle'] => {
     ]);
 
     return sprites.filter((sprite) => sprite !== null);
-  };
+  }, [signalingSystems]);
 
   const [validSprites, setValidSprites] = useState<Sprite[]>([]);
 

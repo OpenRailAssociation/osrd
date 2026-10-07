@@ -145,8 +145,8 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     scenario.id,
     scenario.timetable_id,
     scenario.timetable_type,
-    // eslint-disable-next-line react/use-memo
-    activeBoards.has('macro'),
+    activeBoards,
+    t,
   ]);
 
   const upsertTrainSchedulesWithNge = useCallback(

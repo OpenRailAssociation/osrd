@@ -94,7 +94,7 @@ const EditPSLSection = ({
         return track?.type !== 'success' ? null : track.track;
       })
     );
-  }, [entity.properties.extensions.psl_sncf]);
+  }, [entity.properties.extensions, trackSectionsCache]);
 
   const selectSign = (signInformation: PslSignInformation) => {
     selectPslSign(signInformation, setState);

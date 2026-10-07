@@ -58,7 +58,7 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
         is_430: t('mapSearch.signal-settings.is_430'),
       },
     }),
-    []
+    [t]
   );
 
   const SIGNAL_SETTINGS_MAP = useMemo(

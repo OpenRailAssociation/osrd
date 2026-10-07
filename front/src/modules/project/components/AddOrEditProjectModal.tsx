@@ -209,7 +209,7 @@ export default function AddOrEditProjectModal({
     }
   };
 
-  const removeProject = async () => {
+  const removeProject = useCallback(async () => {
     if (projectStudies) {
       // For each scenario in the project, clean the local storage if a manchette is saved
       cleanLocalStorageByProject(projectStudies, dispatch);
@@ -236,7 +236,7 @@ export default function AddOrEditProjectModal({
           )
         );
       });
-  };
+  }, [dispatch, project, projectStudies, closeModal, t, deleteProject, navigate]);
 
   const debouncedObjectives = useDebounce(currentProject.objectives, 500);
 

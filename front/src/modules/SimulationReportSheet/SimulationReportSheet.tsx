@@ -61,7 +61,7 @@ const SimulationReportSheet = ({
     });
 
     return rows;
-  }, [operationalPointsList]);
+  }, [operationalPointsList, t, dateTimeLocale]);
 
   const simulationTableRows = useMemo(
     () =>
@@ -71,7 +71,7 @@ const SimulationReportSheet = ({
         rollingStock,
         dateTimeLocale
       ),
-    [operationalPointsList, path, rollingStock]
+    [operationalPointsList, path, rollingStock, dateTimeLocale]
   );
 
   return (

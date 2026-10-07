@@ -82,35 +82,38 @@ const RoundTripsModalCard = ({
     `${pair.requestedArrivalTime ? pair.requestedArrivalTime.getMinutes().toString().padStart(2, '0') : '\u00A0\u00A0\u00A0?'} | ${pair.destination}`,
   ];
 
-  const menuItems: Record<string, OSRDMenuItem> = {
-    restore: {
-      dataTestID: 'round-trips-restore-menu-item',
-      title: t('restore'),
-      icon: <BsXCircleFill />,
-      onClick: () => {
-        restoreItems?.();
-        closeMenu();
+  const menuItems: Record<string, OSRDMenuItem> = useMemo(
+    () => ({
+      restore: {
+        dataTestID: 'round-trips-restore-menu-item',
+        title: t('restore'),
+        icon: <BsXCircleFill />,
+        onClick: () => {
+          restoreItems?.();
+          closeMenu();
+        },
       },
-    },
-    setOneWay: {
-      dataTestID: 'round-trips-set-one-way-menu-item',
-      title: t('setOneWay'),
-      icon: <ArrowRight />,
-      onClick: () => {
-        moveItemToOneWays?.(pairingItem);
-        closeMenu();
+      setOneWay: {
+        dataTestID: 'round-trips-set-one-way-menu-item',
+        title: t('setOneWay'),
+        icon: <ArrowRight />,
+        onClick: () => {
+          moveItemToOneWays?.(pairingItem);
+          closeMenu();
+        },
       },
-    },
-    pickReturn: {
-      dataTestID: 'round-trips-pick-return-menu-item',
-      title: t('pickReturn'),
-      icon: <ArrowSwitch />,
-      onClick: () => {
-        openPairingMode?.(id);
-        closeMenu();
+      pickReturn: {
+        dataTestID: 'round-trips-pick-return-menu-item',
+        title: t('pickReturn'),
+        icon: <ArrowSwitch />,
+        onClick: () => {
+          openPairingMode?.(id);
+          closeMenu();
+        },
       },
-    },
-  };
+    }),
+    [pairingItem, restoreItems, moveItemToOneWays, openPairingMode, id, t]
+  );
 
   const filteredMenuItems = useMemo(() => {
     const { restore, setOneWay, pickReturn } = menuItems;

@@ -50,7 +50,7 @@ const TrackSectionEndpointSelector = ({
     if (!ports.length) return [];
     const currentPort = ports.find((p) => p.name === name);
     return ports.filter((p) => p.name !== name && p.track === currentPort?.track);
-  }, [state.entity.properties]);
+  }, [state.entity.properties, name]);
 
   const { t } = useTranslation();
   const infraID = useInfraID();

@@ -303,6 +303,9 @@ const usePathProjection = (
     matchedOperationalPoints,
     pathUsedForProjection,
     projectingOnSimulatedPathException,
+    opRefs,
+    opRefPathItemIds,
+    t,
   ]);
 };
 

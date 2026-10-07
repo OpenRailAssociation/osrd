@@ -46,7 +46,7 @@ export default function useStdcmEnvironment() {
     } finally {
       setLoading(false);
     }
-  }, [getStdcmSearchEnvironment]);
+  }, [getStdcmSearchEnvironment, dispatch]);
 
   useEffect(() => {
     loadStdcmEnvironment();

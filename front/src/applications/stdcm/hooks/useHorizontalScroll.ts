@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 
 import { debounce } from 'lodash';
 
@@ -34,7 +34,7 @@ const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: num
   };
 
   // Calculate the total width of all items inside the scrollable container
-  const calculateTotalItemsWidth = () => {
+  const calculateTotalItemsWidth = useCallback(() => {
     const scrollable = scrollableRef.current;
     if (scrollable) {
       const items = scrollable.querySelectorAll(selector);
@@ -45,10 +45,10 @@ const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: num
       return totalWidth;
     }
     return 0;
-  };
+  }, [selector]);
 
   // Update the visibility of the left and right scroll buttons based on scroll position and content width
-  const updateButtonsVisibility = () => {
+  const updateButtonsVisibility = useCallback(() => {
     const scrollable = scrollableRef.current;
     if (scrollable) {
       const totalItemWidth = calculateTotalItemsWidth();
@@ -60,7 +60,7 @@ const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: num
       setShowLeftBtn(scrollable.scrollLeft > 0);
       setShowRightBtn(contentExceedsVisibleWidth && canScrollRight);
     }
-  };
+  }, [calculateTotalItemsWidth]);
 
   const scrollLeft = () => {
     if (scrollableRef.current) {
@@ -76,7 +76,7 @@ const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: num
 
   const debouncedUpdateButtonsVisibility = useMemo(
     () => debounce(updateButtonsVisibility, DEBOUNCE),
-    []
+    [updateButtonsVisibility]
   );
 
   useEffect(() => {

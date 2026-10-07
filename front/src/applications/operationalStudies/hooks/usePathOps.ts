@@ -51,7 +51,7 @@ const usePathOps = (
     const relatedOps = operationalPoints?.related_operational_points;
     const pathStepKeys = [...opRefMap.keys()];
     return new Map(relatedOps?.map((op, index) => [pathStepKeys[index], op]));
-  }, [operationalPoints]);
+  }, [operationalPoints, opRefMap]);
 };
 
 export default usePathOps;
