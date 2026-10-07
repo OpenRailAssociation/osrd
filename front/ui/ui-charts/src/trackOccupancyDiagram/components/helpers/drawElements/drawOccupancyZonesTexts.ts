@@ -1,4 +1,11 @@
-import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET, FONTS, COLORS } from '../../../lib/consts';
+import { FONT_MONO, FONT_SANS } from '../../../../common/consts';
+import { GREY_50, GREY_80, GREY_60 } from '../../../../common/helpers/colors';
+import {
+  FONT_MONO_REGULAR,
+  FONT_SANS_REGULAR,
+  MINUTES_TEXT_OFFSET,
+  STATION_TEXT_OFFSET,
+} from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawText } from '../../utils';
 
@@ -16,9 +23,6 @@ const Y_TEXT_CENTERING_OFFSET = 1;
 const X_THROUGHTRAIN_OFFSET = 4;
 const Y_MEDIUM_POSITION_OFFSET = 24;
 const ROTATE_VALUE = (-30 * Math.PI) / 180;
-
-const { SANS, MONO } = FONTS;
-const { GREY_50, GREY_60, GREY_80 } = COLORS;
 
 export const drawOccupancyZonesTexts = ({
   ctx,
@@ -43,9 +47,9 @@ export const drawOccupancyZonesTexts = ({
   const isBelowBreakpoint = (breakpoint: keyof typeof BREAKPOINTS) =>
     zoneOccupancyLength < BREAKPOINTS[breakpoint];
 
-  ctx.font = MONO;
+  ctx.font = FONT_MONO_REGULAR;
   const originTextLength = ctx.measureText(zone.originStation || '--').width;
-  ctx.font = `${labelFontWeight} 12px IBM Plex Sans`;
+  ctx.font = `${labelFontWeight} 12px ${FONT_SANS}`;
   const nameTextLength = ctx.measureText(zone.trainName).width;
 
   const { xOriginTrainName, yOriginTrainName } = isBelowBreakpoint('medium')
@@ -101,7 +105,7 @@ export const drawOccupancyZonesTexts = ({
     x: xOriginTrainName,
     y: yOriginTrainName,
     color: labelStyle?.color || GREY_50,
-    font: `${labelFontWeight} 12px IBM Plex Sans`,
+    font: `${labelFontWeight} 12px ${FONT_SANS}`,
     rotateAngle: ROTATE_VALUE,
     yPosition: 'middle',
     stroke: textStroke,
@@ -118,7 +122,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_80,
     xPosition: xArrivalPosition,
     yPosition: 'top',
-    font: SANS,
+    font: FONT_SANS_REGULAR,
     stroke: textStroke,
   });
 
@@ -133,7 +137,7 @@ export const drawOccupancyZonesTexts = ({
       color: GREY_80,
       xPosition: xDeparturePosition,
       yPosition: 'top',
-      font: SANS,
+      font: FONT_SANS_REGULAR,
       stroke: textStroke,
     });
 
@@ -146,7 +150,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_60,
     xPosition: 'right',
     yPosition: 'bottom',
-    font: `${labelFontWeight} 10px IBM Plex Mono`,
+    font: `${labelFontWeight} 10px ${FONT_MONO}`,
     stroke: textStroke,
   });
 
@@ -158,7 +162,7 @@ export const drawOccupancyZonesTexts = ({
     color: GREY_60,
     xPosition: 'left',
     yPosition: 'bottom',
-    font: `${labelFontWeight} 10px IBM Plex Mono`,
+    font: `${labelFontWeight} 10px ${FONT_MONO}`,
     stroke: textStroke,
   });
 };

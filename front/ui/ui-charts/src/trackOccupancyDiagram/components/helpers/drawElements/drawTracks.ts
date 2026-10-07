@@ -1,17 +1,10 @@
 import { HOUR, MINUTE } from '../../../../common/consts';
+import { AMBIENT_B_15, AMBIENT_B_5, GREY_50 } from '../../../../common/helpers/colors';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { GREY_50 } from '../../../../spaceTimeChart/lib/consts';
-import {
-  TRACK_HEIGHT_CONTAINER,
-  CANVAS_PADDING,
-  COLORS,
-  TICKS_PRIORITIES,
-} from '../../../lib/consts';
+import { TRACK_HEIGHT_CONTAINER, CANVAS_PADDING, TICKS_PRIORITIES } from '../../../lib/consts';
 import { type Track } from '../../../lib/types';
 import { getLabelLevels, getLabelMarks } from '../../utils';
 import { drawTrack } from './drawTrack';
-
-const { HOUR_BACKGROUND_1, HOUR_BACKGROUND_2 } = COLORS;
 
 export const drawTracks = (
   ctx: CanvasRenderingContext2D,
@@ -58,7 +51,7 @@ export const drawTracks = (
   while (hours < hourEnd) {
     const x = getTimePixel(hours * HOUR);
     const w = getTimePixel((hours + 1) * HOUR) - x;
-    ctx.fillStyle = hours % 2 ? HOUR_BACKGROUND_1 : HOUR_BACKGROUND_2;
+    ctx.fillStyle = hours % 2 ? AMBIENT_B_5 : AMBIENT_B_15;
     ctx.fillRect(x, yStart, w, flatStepHeight);
     hours++;
   }

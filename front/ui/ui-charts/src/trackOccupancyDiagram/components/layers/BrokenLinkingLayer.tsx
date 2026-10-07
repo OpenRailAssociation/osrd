@@ -14,13 +14,13 @@ import {
 } from '../../../spaceTimeChart';
 import {
   CANVAS_PADDING,
+  FONT_MONO_BOLD,
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_ZONE_Y_START,
   TRACK_HEIGHT_CONTAINER,
 } from '../../lib/consts';
 import type { BrokenLinking, BrokenLinkingPickingElement, Track } from '../../lib/types';
 import {
-  BADGE_FONT,
   drawBrokenLinking,
   getBadgeName,
   getBrokenLinkingBadgeGeometry,
@@ -64,7 +64,7 @@ const BrokenLinkingLayer = ({
   // size the picking area, which has no 2D context).
   const measureContext = useMemo(() => {
     const context = document.createElement('canvas').getContext('2d')!;
-    context.font = BADGE_FONT;
+    context.font = FONT_MONO_BOLD;
     return context;
   }, []);
 

@@ -1,3 +1,12 @@
+import chroma from 'chroma-js';
+
+import {
+  ERROR_60,
+  WARNING_30,
+  WARNING_60,
+  WHITE_ALPHA_100,
+} from '../../../../common/helpers/colors';
+import { FONT_MONO_BOLD } from '../../../lib/consts';
 import type { BrokenLinking } from '../../../lib/types';
 import { drawText, truncateTextToWidth } from '../../utils';
 
@@ -11,11 +20,7 @@ const BADGE_ATTRS = {
   highlighted: { trainSidePadding: 12.5, outerPadding: 4, boxHeight: 23 },
 } as const;
 
-export const BADGE_FONT = '600 12px IBM Plex Sans';
-const BADGE_REST_BACKGROUND = 'rgba(234, 167, 43, 0.3)';
-const BADGE_REST_TEXT = 'rgb(125, 82, 30)';
-const BADGE_HIGHLIGHTED_BACKGROUND = 'rgb(217, 28, 28)';
-const BADGE_HIGHLIGHTED_TEXT = 'rgb(255, 255, 255)';
+const BADGE_REST_BACKGROUND = chroma(WARNING_30).alpha(0.4).css();
 
 /** The name a badge shows: a long one is cut, so that a badge never outgrows its block. */
 export const getBadgeName = (ctx: CanvasRenderingContext2D, name: string) =>
@@ -90,7 +95,7 @@ export const drawBrokenLinking = (
   }
 ) => {
   ctx.save();
-  ctx.font = BADGE_FONT;
+  ctx.font = FONT_MONO_BOLD;
   const name = getBadgeName(ctx, brokenLinking.name);
   const nameWidth = ctx.measureText(name).width;
   const { boxLeft, boxTop, boxWidth, boxHeight, nameX, iconX } = getBrokenLinkingBadgeGeometry({
@@ -102,7 +107,7 @@ export const drawBrokenLinking = (
     nameWidth,
   });
 
-  ctx.fillStyle = highlighted ? BADGE_HIGHLIGHTED_BACKGROUND : BADGE_REST_BACKGROUND;
+  ctx.fillStyle = highlighted ? ERROR_60 : BADGE_REST_BACKGROUND;
   ctx.beginPath();
   ctx.roundRect(boxLeft, boxTop, boxWidth, boxHeight, BADGE_RADIUS);
   ctx.fill();
@@ -112,8 +117,8 @@ export const drawBrokenLinking = (
     text: name,
     x: nameX,
     y: yCenter,
-    color: highlighted ? BADGE_HIGHLIGHTED_TEXT : BADGE_REST_TEXT,
-    font: BADGE_FONT,
+    color: highlighted ? WHITE_ALPHA_100 : WARNING_60,
+    font: FONT_MONO_BOLD,
     yPosition: 'middle',
   });
 

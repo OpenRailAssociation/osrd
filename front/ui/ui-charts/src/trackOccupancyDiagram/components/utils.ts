@@ -1,3 +1,4 @@
+import { FONT_SANS_REGULAR } from '../lib/consts';
 import { type TickPattern } from '../lib/types';
 
 type DrawTextType = {
@@ -49,7 +50,7 @@ export const drawText = ({
   color,
   xPosition = 'left',
   yPosition = 'bottom',
-  font = '400 12px IBM Plex Sans',
+  font = FONT_SANS_REGULAR,
   rotateAngle = 0,
   stroke,
 }: DrawTextType) => {
