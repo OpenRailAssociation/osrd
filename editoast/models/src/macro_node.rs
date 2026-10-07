@@ -1,4 +1,6 @@
 use editoast_derive::Model;
+use schemas::infra::TrackOffset;
+use schemas::train_schedule::OperationalPointReference;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -16,9 +18,20 @@ pub struct MacroNode {
     pub full_name: Option<String>,
     #[model(remote = "Vec<Option<String>>")]
     pub labels: Tags,
-    pub trigram: Option<String>,
-    pub path_item_key: String,
+    pub short_name: Option<String>,
+    #[model(json)]
+    pub node_location: OperationalPointReferenceNode,
     pub is_collapsed: bool,
+}
+
+/// The location represented by a macro node
+#[derive(Clone, Debug, Serialize, Deserialize, ToSchema, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum OperationalPointReferenceNode {
+    #[schema(title = "OperationalPointReferenceNodeTrackOffset")]
+    TrackOffset(TrackOffset),
+    #[schema(title = "OperationalPointReferenceNodeOperationalPoint")]
+    OperationalPoint(OperationalPointReference),
 }
 
 #[cfg(test)]
@@ -33,6 +46,7 @@ pub mod test {
     use crate::timetable::Timetable;
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
+    use serde_json::json;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn macro_node_create_and_get() {
@@ -69,8 +83,10 @@ pub mod test {
             .position_y(32)
             .full_name(Some("My Super Node".to_string()))
             .labels(Tags::new(vec!["A".to_string(), "B".to_string()]))
-            .trigram(Some("ABC".to_string()))
-            .path_item_key("PATH".to_string())
+            .short_name(Some("ABC".to_string()))
+            .node_location(OperationalPointReferenceNode::TrackOffset(
+                TrackOffset::new("track", 42),
+            ))
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create macro node");
@@ -82,5 +98,22 @@ pub mod test {
             .expect("Macro node not found");
 
         assert_eq!(&created, &node);
+    }
+
+    #[test]
+    fn node_location_json_roundtrip() {
+        let locations = [
+            json!({"track_offset": {"track": "TA0", "offset": 1500}}),
+            json!({"operational_point": {"type": "id", "operational_point": "abc-123"}}),
+            json!({"operational_point": {
+                "type": "domestic", "country_code": "FR", "main_code": "PNO", "secondary_code": null
+            }}),
+            json!({"operational_point": {"type": "uic", "uic": 87686006, "secondary_code": "BV"}}),
+        ];
+        for location in locations {
+            let node_location: OperationalPointReferenceNode =
+                serde_json::from_value(location.clone()).expect("Invalid node location");
+            assert_eq!(serde_json::to_value(node_location).unwrap(), location);
+        }
     }
 }

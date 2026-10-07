@@ -463,10 +463,9 @@ diesel::table! {
         full_name -> Nullable<Varchar>,
         labels -> Array<Nullable<Text>>,
         #[max_length = 255]
-        trigram -> Nullable<Varchar>,
-        #[max_length = 255]
-        path_item_key -> Varchar,
+        short_name -> Nullable<Varchar>,
         is_collapsed -> Bool,
+        node_location -> Jsonb,
     }
 }
 

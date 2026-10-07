@@ -3150,6 +3150,18 @@ class OperationalPointReferenceUic(BaseModel):
     """
 
 
+class OperationalPointReferenceNodeOperationalPoint(BaseModel):
+    """
+    The location represented by a macro node
+    """
+
+    operational_point: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    )
+
+
 class PaginationStats(BaseModel):
     """
     Statistics about a paginated editoast response
@@ -5444,27 +5456,6 @@ class LoadingGaugeLimit(BaseModel):
     end: float
 
 
-class MacroNodeForm(BaseModel):
-    full_name: str | None = None
-    is_collapsed: bool | None = None
-    labels: list[str]
-    path_item_key: str
-    position_x: int
-    position_y: int
-    trigram: str | None = None
-
-
-class MacroNodeResponse(BaseModel):
-    full_name: str | None = None
-    id: int
-    is_collapsed: bool
-    labels: list[str]
-    path_item_key: str
-    position_x: int
-    position_y: int
-    trigram: str | None = None
-
-
 class MacroNoteForm(BaseModel):
     labels: list[str]
     text: str
@@ -5556,6 +5547,14 @@ class OperationalPointPartReference(BaseModel):
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
+
+
+class OperationalPointReferenceNodeTrackOffset(BaseModel):
+    """
+    The location represented by a macro node
+    """
+
+    track_offset: TrackOffset
 
 
 class OptionsChangeGroup(BaseModel):
@@ -6567,17 +6566,37 @@ class LightRollingStockWithLiveries(LightRollingStock):
     liveries: list[RollingStockLivery]
 
 
-class MacroNodeBatchForm(BaseModel):
-    macro_nodes: list[MacroNodeForm]
-    scenario_id: int
+class MacroNodeForm(BaseModel):
+    full_name: str | None = None
+    is_collapsed: bool | None = None
+    labels: list[str]
+    node_location: (
+        OperationalPointReferenceNodeTrackOffset
+        | OperationalPointReferenceNodeOperationalPoint
+    )
+    """
+    The location represented by a macro node
+    """
+    position_x: int
+    position_y: int
+    short_name: str | None = None
 
 
-class MacroNodeBatchResponse(BaseModel):
-    macro_nodes: list[MacroNodeResponse]
-
-
-class MacroNodeListResponse(PaginationStats):
-    results: list[MacroNodeResponse]
+class MacroNodeResponse(BaseModel):
+    full_name: str | None = None
+    id: int
+    is_collapsed: bool
+    labels: list[str]
+    node_location: (
+        OperationalPointReferenceNodeTrackOffset
+        | OperationalPointReferenceNodeOperationalPoint
+    )
+    """
+    The location represented by a macro node
+    """
+    position_x: int
+    position_y: int
+    short_name: str | None = None
 
 
 class MacroNoteBatchForm(BaseModel):
@@ -7225,6 +7244,19 @@ class InfraObjectSpeedSection(BaseModel):
 class InfraObjectSwitch(BaseModel):
     obj_type: Literal["Switch"] = "Switch"
     railjson: Switch
+
+
+class MacroNodeBatchForm(BaseModel):
+    macro_nodes: list[MacroNodeForm]
+    scenario_id: int
+
+
+class MacroNodeBatchResponse(BaseModel):
+    macro_nodes: list[MacroNodeResponse]
+
+
+class MacroNodeListResponse(PaginationStats):
+    results: list[MacroNodeResponse]
 
 
 class NeutralSection(BaseModel):

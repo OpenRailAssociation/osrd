@@ -21,6 +21,7 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use models::macro_node::MacroNode;
+use models::macro_node::OperationalPointReferenceNode;
 use models::prelude::*;
 use models::scenario::Scenario;
 use models::tags::Tags;
@@ -65,8 +66,8 @@ pub(in crate::views) struct MacroNodeForm {
     position_y: i64,
     full_name: Option<String>,
     labels: Tags,
-    trigram: Option<String>,
-    path_item_key: String,
+    short_name: Option<String>,
+    node_location: OperationalPointReferenceNode,
     #[serde(default)]
     is_collapsed: bool,
 }
@@ -86,8 +87,8 @@ impl MacroNodeForm {
             .position_y(self.position_y)
             .full_name(self.full_name)
             .labels(self.labels)
-            .trigram(self.trigram)
-            .path_item_key(self.path_item_key)
+            .short_name(self.short_name)
+            .node_location(self.node_location)
             .is_collapsed(self.is_collapsed)
     }
 }
@@ -100,8 +101,8 @@ pub(in crate::views) struct MacroNodeResponse {
     position_y: i64,
     full_name: Option<String>,
     labels: Tags,
-    trigram: Option<String>,
-    path_item_key: String,
+    short_name: Option<String>,
+    node_location: OperationalPointReferenceNode,
     is_collapsed: bool,
 }
 
@@ -119,8 +120,8 @@ impl From<MacroNode> for MacroNodeResponse {
             position_y: node.position_y,
             full_name: node.full_name,
             labels: node.labels,
-            trigram: node.trigram,
-            path_item_key: node.path_item_key,
+            short_name: node.short_name,
+            node_location: node.node_location,
             is_collapsed: node.is_collapsed,
         }
     }
@@ -338,6 +339,9 @@ pub mod test {
     use rand::distr::Alphanumeric;
     use rand::rng;
 
+    use schemas::infra::TrackOffset;
+    use schemas::train_schedule::OperationalPointReference;
+
     use super::*;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::views::test_app;
@@ -349,8 +353,8 @@ pub mod test {
                 && self.position_y == other.position_y
                 && self.full_name == other.full_name
                 && self.labels == other.labels
-                && self.trigram == other.trigram
-                && self.path_item_key == other.path_item_key
+                && self.short_name == other.short_name
+                && self.node_location == other.node_location
                 && self.is_collapsed == other.is_collapsed
         }
     }
@@ -361,8 +365,8 @@ pub mod test {
                 && self.position_y == other.position_y
                 && self.full_name == other.full_name
                 && self.labels == other.labels
-                && self.trigram == other.trigram
-                && self.path_item_key == other.path_item_key
+                && self.short_name == other.short_name
+                && self.node_location == other.node_location
                 && self.is_collapsed == other.is_collapsed
         }
     }
@@ -380,8 +384,12 @@ pub mod test {
             position_y: 51,
             full_name: Some("My super node".to_string()),
             labels: Tags::new(vec!["".to_string(), "".to_string()]),
-            trigram: None,
-            path_item_key: "->".to_string(),
+            short_name: None,
+            node_location: OperationalPointReferenceNode::OperationalPoint(
+                OperationalPointReference::Id {
+                    operational_point: "op".into(),
+                },
+            ),
             is_collapsed: false,
         }];
 
@@ -415,8 +423,10 @@ pub mod test {
             position_y: 1,
             full_name: Some("My super node".to_string()),
             labels: Tags::new(vec!["A".to_string(), "B".to_string()]),
-            trigram: None,
-            path_item_key: "A->B".to_string(),
+            short_name: None,
+            node_location: OperationalPointReferenceNode::TrackOffset(TrackOffset::new(
+                "track", 1000,
+            )),
             is_collapsed: false,
         };
         let response: MacroNodeResponse = app
@@ -523,8 +533,10 @@ pub mod test {
                 .position_y(rng.random_range(0..100))
                 .full_name(Some(random_string(10)))
                 .labels(Tags::new(vec![random_string(5), random_string(5)]))
-                .trigram(Some(random_string(3)))
-                .path_item_key(random_string(10))
+                .short_name(Some(random_string(3)))
+                .node_location(OperationalPointReferenceNode::TrackOffset(
+                    TrackOffset::new(random_string(10), 0),
+                ))
                 .create(conn)
                 .await
                 .expect("Failed to create macro node");
