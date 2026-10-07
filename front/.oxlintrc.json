@@ -199,7 +199,6 @@
         ]
       }
     ],
-    "react/capitalized-calls": "off",
     "react/exhaustive-effect-dependencies": "off",
     "react/memo-dependencies": "off",
     "react/preserve-manual-memoization": "off",
@@ -252,7 +251,6 @@
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
 
-        "react/capitalized-calls": "error",
         "react/exhaustive-deps": "warn",
         "react/exhaustive-effect-dependencies": "error",
         "react/memo-dependencies": "error",

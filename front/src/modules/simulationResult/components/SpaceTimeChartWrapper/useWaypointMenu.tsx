@@ -110,13 +110,13 @@ const useWaypointMenu = (
     }
   }
 
-  const waypointMenu = AnchoredMenu({
-    children: activeWaypointId && (
-      <OSRDMenu menuRef={menuRef} items={menuItems} className="waypoint-menu" />
-    ),
-    anchorRef: activeWaypointRef,
-    onDismiss: closeMenu,
-  });
+  const waypointMenu = (
+    <AnchoredMenu anchorRef={activeWaypointRef} onDismiss={closeMenu}>
+      {activeWaypointId && (
+        <OSRDMenu menuRef={menuRef} items={menuItems} className="waypoint-menu" />
+      )}
+    </AnchoredMenu>
+  );
 
   const handleWaypointClick = (id: string) => {
     setActiveWaypointId(id);
