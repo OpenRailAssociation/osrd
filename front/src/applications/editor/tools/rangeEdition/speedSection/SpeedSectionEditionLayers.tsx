@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo } from 'react';
+import { useCallback, useContext, useEffect, useMemo } from 'react';
 
 import { featureCollection } from '@turf/helpers';
 import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
@@ -77,18 +77,17 @@ export const SpeedSectionEditionLayers = () => {
     return res;
   }, [interactionState, hoveredItem, entity, selectedSwitches]);
 
-  const extractTrackRangeFeatures = (
-    flatEntity: EditorEntity,
-    range: ApplicableTrackRange,
-    i: number
-  ) => {
-    const trackState = trackSectionsCache[range.track];
-    return (
-      trackState?.type === 'success'
-        ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
-        : []
-    ) as Feature<LineString | Point>[];
-  };
+  const extractTrackRangeFeatures = useCallback(
+    (flatEntity: EditorEntity, range: ApplicableTrackRange, i: number) => {
+      const trackState = trackSectionsCache[range.track];
+      return (
+        trackState?.type === 'success'
+          ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
+          : []
+      ) as Feature<LineString | Point>[];
+    },
+    [trackSectionsCache]
+  );
 
   // dashed lines - - - (selected routes tracks in the case of speed restrictions)
   const selectedTracksFeatures = useMemo(() => {
@@ -110,7 +109,14 @@ export const SpeedSectionEditionLayers = () => {
       );
     }
     return featureCollection([...trackRangeFeatures, ...pslSignFeatures]);
-  }, [entity, highlightedRoutes, trackSectionsCache]);
+  }, [
+    entity,
+    highlightedRoutes,
+    trackSectionsCache,
+    routeElements,
+    isSpeedRestriction,
+    extractTrackRangeFeatures,
+  ]);
 
   // Where the speed limit applies (entity track_ranges)
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
@@ -121,7 +127,7 @@ export const SpeedSectionEditionLayers = () => {
       extractTrackRangeFeatures(flatEntity, range, i)
     );
     return featureCollection(trackRangeFeatures);
-  }, [entity, trackSectionsCache]);
+  }, [entity, extractTrackRangeFeatures]);
 
   const { speedSectionLayerProps, pslLayerProps } = useMemo(() => {
     const context = {

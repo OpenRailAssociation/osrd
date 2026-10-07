@@ -133,11 +133,14 @@ export default function App() {
     dispatch(updateLastInterfaceVersion(import.meta.env.VITE_OSRD_GIT_DESCRIBE));
   }, []);
 
-  const handleError = useCallback((event: ErrorEvent) => {
-    if (event.error instanceof Error) {
-      dispatch(setFailure(castErrorToFailure(event.error)));
-    }
-  }, []);
+  const handleError = useCallback(
+    (event: ErrorEvent) => {
+      if (event.error instanceof Error) {
+        dispatch(setFailure(castErrorToFailure(event.error)));
+      }
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
     window.addEventListener('error', handleError);

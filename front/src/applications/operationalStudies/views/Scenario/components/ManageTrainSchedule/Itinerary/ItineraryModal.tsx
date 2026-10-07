@@ -293,10 +293,10 @@ const ItineraryModal = ({
   // Make a custom setter for pathSteps so that we remember to also set submitAttempted to false.
   const [pathSteps, setPathStepsRaw] = useState<PathStepV2[]>([]);
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  const setPathSteps = (newPathSteps: SetStateAction<PathStepV2[]>) => {
+  const setPathSteps = useCallback((newPathSteps: SetStateAction<PathStepV2[]>) => {
     setPathStepsRaw(newPathSteps);
     setSubmitAttempted(false);
-  };
+  }, []);
 
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
   const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
@@ -324,7 +324,7 @@ const ItineraryModal = ({
     } else {
       closeModal();
     }
-  }, [mapSelectionStepKey, handleCancelMapSelection]);
+  }, [mapSelectionStepKey, handleCancelMapSelection, closeModal]);
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 
@@ -359,7 +359,7 @@ const ItineraryModal = ({
         }
         return [];
       }),
-    [pathSteps, pathStepsMetadataByKey]
+    [pathSteps, pathStepsMetadataByKey, getInputForStep]
   );
 
   const initCustomTracksEntry = useCallback(
@@ -488,7 +488,7 @@ const ItineraryModal = ({
         ensureTrailingEmptyStep(addElementAtIndex(prev, insertIndex, newStep))
       );
     },
-    [pathSteps, pathProperties, initCustomTracksEntry, setPathStepMetadata]
+    [pathSteps, pathProperties, initCustomTracksEntry, setPathStepMetadata, setPathSteps]
   );
 
   /** Return true if the path step is invalid and is not a placeholder */
@@ -572,7 +572,7 @@ const ItineraryModal = ({
       setInputForStep(stepKey, '');
       setMapSelectionStepKey(null);
     },
-    [mapSelectionStepKey, pathSteps, convertFeatureClickToLocation, setInputForStep]
+    [mapSelectionStepKey, convertFeatureClickToLocation, setInputForStep, setPathSteps]
   );
 
   const handleOpSelectionConfirm = useCallback(
@@ -589,7 +589,7 @@ const ItineraryModal = ({
       }
       setMapSelectionStepKey(null);
     },
-    [mapSelectionStepKey, commitSelectionForStep, setInputForStep]
+    [mapSelectionStepKey, commitSelectionForStep, setInputForStep, setPathSteps]
   );
 
   const handlePathStepDragEnd = useCallback(
@@ -605,7 +605,7 @@ const ItineraryModal = ({
       setInputForStep(stepKey, '');
       setMapSelectionStepKey(null);
     },
-    [convertFeatureClickToLocation, setInputForStep]
+    [convertFeatureClickToLocation, setInputForStep, setPathSteps]
   );
 
   const frameAllPathSteps = () => {

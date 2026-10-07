@@ -36,7 +36,7 @@ const SearchJourneyView = () => {
   const resultsSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (journeys && journeys.length > 0 && resultsSectionRef.current) {
+    if ((journeys?.length ?? 0) > 0 && resultsSectionRef.current) {
       resultsSectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [journeys?.length]);

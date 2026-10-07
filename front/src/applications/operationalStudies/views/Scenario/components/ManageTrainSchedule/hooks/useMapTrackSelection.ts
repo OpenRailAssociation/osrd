@@ -50,7 +50,7 @@ const useMapTrackSelection = (infraId: number | undefined) => {
         return null;
       }
     },
-    [infraId]
+    [infraId, getInfraObjectEntity]
   );
 
   return { convertFeatureClickToLocation };

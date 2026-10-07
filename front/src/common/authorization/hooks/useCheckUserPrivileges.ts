@@ -31,7 +31,7 @@ export default function useCheckUserPrivileges({
           setHasPrivileges(false);
         });
     }
-  }, [checkUserPrivileges, resourceType, resourceId, JSON.stringify(privileges)]);
+  }, [checkUserPrivileges, resourceType, resourceId, privileges]);
 
   return hasPrivileges;
 }

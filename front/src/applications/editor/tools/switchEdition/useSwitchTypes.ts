@@ -25,7 +25,7 @@ export default function useSwitchTypes(infraID: number | undefined) {
     osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useLazyQuery({});
   const invalidateCache = useCallback(() => {
     switchTypesCache = {};
-  }, [switchTypesCache]);
+  }, []);
 
   const fetch = useCallback(
     async (infraId?: number) => {

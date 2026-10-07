@@ -190,7 +190,7 @@ const RouteEditionPanel = () => {
       console.error(e);
       setState({ optionsState: { type: 'idle' } });
     }
-  }, [infraID, setState, state.entity]);
+  }, [infraID, setState, state.entity, dispatch, postPathfinding]);
 
   /**
    * Function that selects a new route search item (or unselected it)

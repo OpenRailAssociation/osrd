@@ -141,7 +141,12 @@ const PacedTrainItem = ({
       pathUsedForProjectionIsException:
         projectingOnSimulatedPathException || isTrackOffsetsException,
     };
-  }, [trainIdUsedForProjection, pacedTrain]);
+  }, [
+    trainIdUsedForProjection,
+    pacedTrain,
+    formattedTrainScheduleId,
+    projectingOnSimulatedPathException,
+  ]);
 
   const { summary } = pacedTrain;
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStocks);

@@ -94,8 +94,6 @@ const Editor = () => {
     state: TOOLS[TOOL_NAMES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
   const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
-  // TODO: fix this lint
-  // eslint-disable-next-line react/purity
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
     setRenderingFingerprint(Date.now());
@@ -145,14 +143,14 @@ const Editor = () => {
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [dispatch, updateMapSettingsAction]
   );
 
   const setViewport = useCallback(
     (value: Partial<Viewport>) => {
       dispatch(updateViewportAction(value));
     },
-    [dispatch]
+    [dispatch, updateViewportAction]
   );
 
   const resetPitchBearing = () => {
@@ -197,10 +195,10 @@ const Editor = () => {
       toolAndState,
       openModal,
       closeModal,
-      infraID,
       t,
       forceRender,
       renderingFingerprint,
+      switchTool,
     ]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
@@ -533,14 +531,12 @@ const Editor = () => {
                 />
                 {isSearchToolOpened && (
                   <MapSearch
-                    map={mapRef.current!}
                     closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
                     mapSettings={editorState.mapSettings}
                   />
                 )}
 
                 <MapButtons
-                  map={mapRef.current ?? undefined}
                   resetPitchBearing={resetPitchBearing}
                   withInfraButton
                   bearing={viewport.bearing}

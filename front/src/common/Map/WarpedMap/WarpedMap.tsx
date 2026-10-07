@@ -61,7 +61,7 @@ const WarpedMap = ({
       showIGNBDORTHO,
       layersSettings,
     }),
-    [colors, mapStyle, showIGNBDORTHO, layersSettings]
+    [mapStyle, showIGNBDORTHO, layersSettings]
   );
   const osrdSources = useMemo(
     () =>
@@ -73,7 +73,7 @@ const WarpedMap = ({
           (props) => omit(props, 'source-layer') as typeof props
         ),
       })),
-    [osrdLayers]
+    [osrdLayers, layerContext]
   );
   const osmSources = useMemo(
     () =>

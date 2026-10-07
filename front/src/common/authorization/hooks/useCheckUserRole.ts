@@ -11,9 +11,7 @@ import useAuthz from './useAuthz';
 export default function useCheckUserRole(roles: Role[]) {
   const { checkUserRole } = useAuthz();
 
-  // TODO: fix this lint
-  // eslint-disable-next-line react/use-memo
-  const hasRole = useMemo(() => checkUserRole(roles), [checkUserRole, JSON.stringify(roles)]);
+  const hasRole = useMemo(() => checkUserRole(roles), [checkUserRole, roles]);
 
   return hasRole;
 }

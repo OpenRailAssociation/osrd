@@ -51,7 +51,7 @@ const RollingStockCardButtons = ({
       });
     }
     return options;
-  }, [curvesComfortList]);
+  }, [curvesComfortList, t]);
 
   useEffect(() => {
     setComfort(curvesComfortList.at(0) ?? 'STANDARD');

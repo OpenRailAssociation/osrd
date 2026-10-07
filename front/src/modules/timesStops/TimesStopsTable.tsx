@@ -303,37 +303,38 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnRequestTheoreticalMarginCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>
-  ) => {
-    const { allRows } = info.table.options.meta!;
-    const row = info.row.original;
-    const isFirstRow = info.row.index === 0;
-    const isLastRow = info.row.index === allRows.length - 1;
+  const returnRequestTheoreticalMarginCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>) => {
+      const { allRows } = info.table.options.meta!;
+      const row = info.row.original;
+      const isFirstRow = info.row.index === 0;
+      const isLastRow = info.row.index === allRows.length - 1;
 
-    if (isLastRow) return null;
+      if (isLastRow) return null;
 
-    const marginValue =
-      isScheduledOP(row) || !!row.requestedTheoreticalMargin
-        ? row.requestedTheoreticalMargin
-        : null;
-    const isSpecifiedMargin =
-      (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
-      row.requestedTheoreticalMargin;
-    return (
-      <div data-testid="requested-theoretical-margin">
-        <MarginCell
-          data-testid="margin-cell-editable"
-          marginValue={marginValue ?? null}
-          editable={!isLastRow}
-          isInherited={!isSpecifiedMargin}
-          isFirstRow={isFirstRow}
-          showUnitToggle={isValid && !scheduleNotHonored}
-          onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
-        />
-      </div>
-    );
-  };
+      const marginValue =
+        isScheduledOP(row) || !!row.requestedTheoreticalMargin
+          ? row.requestedTheoreticalMargin
+          : null;
+      const isSpecifiedMargin =
+        (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
+        row.requestedTheoreticalMargin;
+      return (
+        <div data-testid="requested-theoretical-margin">
+          <MarginCell
+            data-testid="margin-cell-editable"
+            marginValue={marginValue ?? null}
+            editable={!isLastRow}
+            isInherited={!isSpecifiedMargin}
+            isFirstRow={isFirstRow}
+            showUnitToggle={isValid && !scheduleNotHonored}
+            onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
+          />
+        </div>
+      );
+    },
+    [scheduleNotHonored, isValid]
+  );
 
   const returnShortSlipDistanceCell = (
     info: CellContext<TimesStopsTableFeatures, TimesStopsRow, boolean | undefined>
@@ -415,28 +416,29 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnDepartureTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
-  ) => {
-    const row = info.row.original;
-    return (
-      <StartTimeCell
-        type={startTimeCellType}
-        ref={registerTimeCellRef(info.row.index, 'requestedDeparture')}
-        cellContext={info}
-        referenceDate={getDepartureReferenceDate(row, startTime)}
-        prefillValue={row.computedDeparture}
-        clearButtonTitle={t('clearRequestedDepartureTime')}
-        onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
-        onTabKeyDown={(direction) =>
-          focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
-        }
-        onCommit={(date, propagationMode) =>
-          info.table.options.meta!.onDepartureChange(row, date, propagationMode)
-        }
-      />
-    );
-  };
+  const returnDepartureTimeCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>) => {
+      const row = info.row.original;
+      return (
+        <StartTimeCell
+          type={startTimeCellType}
+          ref={registerTimeCellRef(info.row.index, 'requestedDeparture')}
+          cellContext={info}
+          referenceDate={getDepartureReferenceDate(row, startTime)}
+          prefillValue={row.computedDeparture}
+          clearButtonTitle={t('clearRequestedDepartureTime')}
+          onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedDeparture')}
+          onTabKeyDown={(direction) =>
+            focusRequestedCellOnTab(info.row.index, 'requestedDeparture', direction)
+          }
+          onCommit={(date, propagationMode) =>
+            info.table.options.meta!.onDepartureChange(row, date, propagationMode)
+          }
+        />
+      );
+    },
+    [focusRequestedCellOnTab, registerTimeCellRef, t, focusCellBelow, startTimeCellType, startTime]
+  );
 
   const returnReceptionOnCloseSignalCell = (
     info: CellContext<TimesStopsTableFeatures, TimesStopsRow, boolean | undefined>
@@ -466,17 +468,18 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnStopDurationCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, Duration | null>
-  ) => (
-    <DurationCell
-      ref={registerTimeCellRef(info.row.index, 'stopDuration')}
-      clearButtonTitle={t('clearStopDuration')}
-      {...info}
-      onCommit={(seconds, propagationMode) =>
-        info.table.options.meta!.onStopDurationChange(info.row.original, seconds, propagationMode)
-      }
-    />
+  const returnStopDurationCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, Duration | null>) => (
+      <DurationCell
+        ref={registerTimeCellRef(info.row.index, 'stopDuration')}
+        clearButtonTitle={t('clearStopDuration')}
+        {...info}
+        onCommit={(seconds, propagationMode) =>
+          info.table.options.meta!.onStopDurationChange(info.row.original, seconds, propagationMode)
+        }
+      />
+    ),
+    [t, registerTimeCellRef]
   );
 
   const returnStepStatusCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow>) => {
@@ -548,55 +551,58 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnArrivalTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
-  ) => {
-    const row = info.row.original;
-    const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
-    return (
-      <StartTimeCell
-        type={startTimeCellType}
-        ref={registerTimeCellRef(info.row.index, 'requestedArrival')}
-        cellContext={info}
-        referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
-        prefillValue={row.computedArrival}
-        clearButtonTitle={t('clearRequestedArrivalTime')}
-        onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
-        onTabKeyDown={(direction) =>
-          focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
-        }
-        onCommit={(date, propagationMode) => onArrival(row, date, propagationMode)}
-        disableClear={info.row.index === 0}
-      />
-    );
-  };
+  const returnArrivalTimeCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>) => {
+      const row = info.row.original;
+      const { allRows, onArrivalChange: onArrival } = info.table.options.meta!;
+      return (
+        <StartTimeCell
+          type={startTimeCellType}
+          ref={registerTimeCellRef(info.row.index, 'requestedArrival')}
+          cellContext={info}
+          referenceDate={getArrivalReferenceDate(row, allRows, startTime)}
+          prefillValue={row.computedArrival}
+          clearButtonTitle={t('clearRequestedArrivalTime')}
+          onEnterKeyDown={() => focusCellBelow(info.row.index, 'requestedArrival')}
+          onTabKeyDown={(direction) =>
+            focusRequestedCellOnTab(info.row.index, 'requestedArrival', direction)
+          }
+          onCommit={(date, propagationMode) => onArrival(row, date, propagationMode)}
+          disableClear={info.row.index === 0}
+        />
+      );
+    },
+    [focusRequestedCellOnTab, registerTimeCellRef, focusCellBelow, t, startTimeCellType, startTime]
+  );
 
-  const returnCalculatedArrivalTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
-  ) => {
-    if (info.table.options.meta!.isComputedDataPending) {
-      return <SkeletonLoader className="cell-loading-placeholder" />;
-    }
-    const value = info.getValue();
-    return (
-      <span data-testid="computed-arrival">{value ? formatTime(value, dateTimeLocale) : ''}</span>
-    );
-  };
+  const returnCalculatedArrivalTimeCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>) => {
+      if (info.table.options.meta!.isComputedDataPending) {
+        return <SkeletonLoader className="cell-loading-placeholder" />;
+      }
+      const value = info.getValue();
+      return (
+        <span data-testid="computed-arrival">{value ? formatTime(value, dateTimeLocale) : ''}</span>
+      );
+    },
+    [dateTimeLocale]
+  );
 
-  const returnCalculatedDepartureTimeCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
-  ) => {
-    if (info.table.options.meta!.isComputedDataPending) {
-      return <SkeletonLoader className="cell-loading-placeholder" />;
-    }
-    const value = info.getValue();
-    const isEmpty = !value;
-    return (
-      <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
-        {isEmpty ? '•' : formatTime(value, dateTimeLocale)}
-      </span>
-    );
-  };
+  const returnCalculatedDepartureTimeCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>) => {
+      if (info.table.options.meta!.isComputedDataPending) {
+        return <SkeletonLoader className="cell-loading-placeholder" />;
+      }
+      const value = info.getValue();
+      const isEmpty = !value;
+      return (
+        <span data-testid="computed-departure" className={cx({ 'cell-empty-dot': isEmpty })}>
+          {isEmpty ? '•' : formatTime(value, dateTimeLocale)}
+        </span>
+      );
+    },
+    [dateTimeLocale]
+  );
 
   const onMouseEnterTimeColumnMenu = (
     allRows: TimesStopsRow[],
@@ -609,67 +615,71 @@ const TimesStopsTable = ({
     setMouseOverTimeField(field);
   };
 
-  const returnRequestedTimeHeader = (field: RequestedTimeField) => {
-    const requestedTimeHeader = (
-      info: HeaderContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
-    ) => {
+  const returnRequestedTimeHeader = useCallback(
+    (field: RequestedTimeField) => {
+      const requestedTimeHeader = (
+        info: HeaderContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
+      ) => {
+        const { allRows } = info.table.options.meta!;
+        return (
+          <RequestedTimeColumnHeader
+            field={field}
+            isSimulationValid={isValid}
+            rows={allRows}
+            onFillEmpty={() => info.table.options.meta!.onApplyTimesFromSimulation(field, 'fill')}
+            onOverwriteAll={() =>
+              info.table.options.meta!.onApplyTimesFromSimulation(field, 'overwrite')
+            }
+            onMouseEnterFillEmpty={() => onMouseEnterTimeColumnMenu(allRows, field, 'fill')}
+            onMouseEnterOverwriteAll={() => onMouseEnterTimeColumnMenu(allRows, field, 'overwrite')}
+            onMouseLeave={() => setHighlightedRowIds(new Set())}
+          />
+        );
+      };
+      requestedTimeHeader.displayName = 'RequestedTimeHeader';
+      return requestedTimeHeader;
+    },
+    [isValid]
+  );
+
+  const returnBaseArrivalCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>) => {
+      const row = info.row.original;
       const { allRows } = info.table.options.meta!;
-      return (
-        <RequestedTimeColumnHeader
-          field={field}
-          isSimulationValid={isValid}
-          rows={allRows}
-          onFillEmpty={() => info.table.options.meta!.onApplyTimesFromSimulation(field, 'fill')}
-          onOverwriteAll={() =>
-            info.table.options.meta!.onApplyTimesFromSimulation(field, 'overwrite')
-          }
-          onMouseEnterFillEmpty={() => onMouseEnterTimeColumnMenu(allRows, field, 'fill')}
-          onMouseEnterOverwriteAll={() => onMouseEnterTimeColumnMenu(allRows, field, 'overwrite')}
-          onMouseLeave={() => setHighlightedRowIds(new Set())}
-        />
-      );
-    };
-    requestedTimeHeader.displayName = 'RequestedTimeHeader';
-    return requestedTimeHeader;
-  };
+      const isFirstRow = info.row.index === 0;
 
-  const returnBaseArrivalCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
-  ) => {
-    const row = info.row.original;
-    const { allRows } = info.table.options.meta!;
-    const isFirstRow = info.row.index === 0;
+      if (!isValid && !isFirstRow) {
+        return (
+          <StartTimeCell
+            type={startTimeCellType}
+            ref={registerTimeCellRef(info.row.index, 'baseArrival')}
+            cellContext={info}
+            referenceDate={getBaseArrivalReferenceDate(row, allRows, startTime)}
+            clearButtonTitle={t('clearRequestedBaseArrival')}
+            onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
+            onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
+            disablePropagation
+          />
+        );
+      }
 
-    if (!isValid && !isFirstRow) {
-      return (
-        <StartTimeCell
-          type={startTimeCellType}
-          ref={registerTimeCellRef(info.row.index, 'baseArrival')}
-          cellContext={info}
-          referenceDate={getBaseArrivalReferenceDate(row, allRows, startTime)}
-          clearButtonTitle={t('clearRequestedBaseArrival')}
-          onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
-          onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
-          disablePropagation
-        />
-      );
-    }
+      if (isFirstRow) {
+        return (
+          <span data-testid="first-base-arrival">
+            {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
+          </span>
+        );
+      }
 
-    if (isFirstRow) {
+      const value = info.getValue();
       return (
-        <span data-testid="first-base-arrival">
-          {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
+        <span data-testid="computed-base-arrival">
+          {value ? formatTime(value, dateTimeLocale) : ''}
         </span>
       );
-    }
-
-    const value = info.getValue();
-    return (
-      <span data-testid="computed-base-arrival">
-        {value ? formatTime(value, dateTimeLocale) : ''}
-      </span>
-    );
-  };
+    },
+    [startTime, registerTimeCellRef, dateTimeLocale, focusCellBelow, t, startTimeCellType, isValid]
+  );
 
   const columns = useMemo(
     () =>
@@ -838,7 +848,18 @@ const TimesStopsTable = ({
           },
         }),
       ]),
-    [startTime, focusCellBelow, focusRequestedCellOnTab, t, isValid]
+    [
+      returnDepartureTimeCell,
+      returnCalculatedDepartureTimeCell,
+      returnStopDurationCell,
+      returnCalculatedArrivalTimeCell,
+      returnRequestedTimeHeader,
+      returnArrivalTimeCell,
+      returnRequestTheoreticalMarginCell,
+      returnBaseArrivalCell,
+      isValid,
+      t,
+    ]
   );
 
   const table = useTable({

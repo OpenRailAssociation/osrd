@@ -59,7 +59,7 @@ const MultiSelectSNCF = ({
           </div>
         );
       }),
-    [selectedValues]
+    [selectedValues, onChange]
   );
 
   useEffect(() => {

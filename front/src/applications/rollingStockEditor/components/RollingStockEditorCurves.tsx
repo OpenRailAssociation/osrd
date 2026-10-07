@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Dispatch, PropsWithChildren, SetStateAction } from 'react';
 
 import { isEmpty } from 'lodash';
@@ -62,19 +62,22 @@ const RollingStockEditorCurves = ({
     powerRestriction: string | null;
   }>(EMPTY_SELECTED_PARAMS);
 
-  const updateSelectedParams = (
-    key: 'comfortLevel' | 'tractionMode' | 'electricalProfile' | 'powerRestriction',
-    value: Comfort | string | null
-  ) => {
-    if (key === 'tractionMode') {
-      setSelectedTractionMode(value);
-    } else {
-      setSelectedParams((prevState) => ({
-        ...prevState,
-        [key]: value,
-      }));
-    }
-  };
+  const updateSelectedParams = useCallback(
+    (
+      key: 'comfortLevel' | 'tractionMode' | 'electricalProfile' | 'powerRestriction',
+      value: Comfort | string | null
+    ) => {
+      if (key === 'tractionMode') {
+        setSelectedTractionMode(value);
+      } else {
+        setSelectedParams((prevState) => ({
+          ...prevState,
+          [key]: value,
+        }));
+      }
+    },
+    [setSelectedTractionMode]
+  );
 
   const [hoveredRollingstockParam, setHoveredRollingstockParam] = useState<string | null>();
 
@@ -120,8 +123,10 @@ const RollingStockEditorCurves = ({
   }, [
     selectedParams.comfortLevel,
     selectedParams.electricalProfile,
+    selectedParams.powerRestriction,
     selectedTractionMode,
     effortCurves,
+    updateSelectedParams,
   ]);
 
   const { selectedCurveIndex, selectedCurve, selectedTractionModeCurves } = useMemo(() => {
@@ -172,6 +177,7 @@ const RollingStockEditorCurves = ({
     selectedParams.electricalProfile,
     selectedTractionMode,
     effortCurves,
+    rollingStockParams.powerRestrictions.length,
   ]);
 
   const showPowerRestriction = useMemo(

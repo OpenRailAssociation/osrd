@@ -84,7 +84,7 @@ const StdcmOperationalPoint = ({
           if (!isDuplicate) acc.push(newObject);
           return acc;
         }, []),
-    [searchResults]
+    [searchResults, searchTerm]
   );
 
   const handleCiSelect = async (selectedSuggestion?: StdcmOp) => {

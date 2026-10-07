@@ -51,7 +51,7 @@ const TrainScheduleSetSelect = ({
     const withoutName = normalized.filter((s) => !s.name || s.name.trim() === '');
 
     return [...withName, ...withoutName];
-  }, [trainScheduleSets, catalogSelected]);
+  }, [trainScheduleSets, catalogSelected, t]);
 
   const trainScheduleSetSelected =
     trainScheduleSetIdSelected === undefined

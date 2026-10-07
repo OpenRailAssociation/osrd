@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { BsArrowBarRight } from 'react-icons/bs';
@@ -36,7 +36,21 @@ export const Endpoints = ({
   const exitPoint = useMemo(
     () =>
       entity.properties.entry_point.id === NEW_ENTITY_ID ? null : entity.properties.exit_point,
-    [entity.properties.exit_point]
+    [entity.properties.entry_point.id, entity.properties.exit_point]
+  );
+
+  const onBeginWayPointInputChange = useCallback(
+    (e: WayPointEntity | null) => {
+      onExtremityChange(e, 'BEGIN');
+    },
+    [onExtremityChange]
+  );
+
+  const onEndWayPointInputChange = useCallback(
+    (e: WayPointEntity | null) => {
+      onExtremityChange(e, 'END');
+    },
+    [onExtremityChange]
   );
 
   return (
@@ -44,11 +58,7 @@ export const Endpoints = ({
       <h5 className="mt-4">
         <BsArrowBarRight /> {t('Editor.tools.routes-edition.start')}
       </h5>
-      <WayPointInput
-        endPoint="BEGIN"
-        wayPoint={entryPoint}
-        onChange={(e) => onExtremityChange(e, 'BEGIN')}
-      />
+      <WayPointInput endPoint="BEGIN" wayPoint={entryPoint} onChange={onBeginWayPointInputChange} />
 
       <div className="text-center">
         <button
@@ -63,11 +73,7 @@ export const Endpoints = ({
       <h5 className="mt-4">
         <FaFlagCheckered /> {t('Editor.tools.routes-edition.end')}
       </h5>
-      <WayPointInput
-        endPoint="END"
-        wayPoint={exitPoint}
-        onChange={(e) => onExtremityChange(e, 'END')}
-      />
+      <WayPointInput endPoint="END" wayPoint={exitPoint} onChange={onEndWayPointInputChange} />
     </>
   );
 };

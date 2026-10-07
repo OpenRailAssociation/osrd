@@ -108,22 +108,25 @@ const useLinkings = ({
         askedCreations.current.delete(asked);
       }
     },
-    [timetableId]
+    [timetableId, dispatch, createLinkings]
   );
 
-  const deleteLinking = useCallback(async (linkingId: number) => {
-    const deleted = currentLinkings.current.find(({ id }) => id === linkingId);
-    if (!deleted) return;
+  const deleteLinking = useCallback(
+    async (linkingId: number) => {
+      const deleted = currentLinkings.current.find(({ id }) => id === linkingId);
+      if (!deleted) return;
 
-    // Dropped right away, so that a second click finds it gone instead of deleting it again.
-    setLinkings((previous) => previous.filter(({ id }) => id !== linkingId));
-    try {
-      await deleteLinkings({ body: [linkingId] }).unwrap();
-    } catch (error) {
-      setLinkings((previous) => [...previous, deleted]);
-      dispatch(setFailure(castErrorToFailure(error)));
-    }
-  }, []);
+      // Dropped right away, so that a second click finds it gone instead of deleting it again.
+      setLinkings((previous) => previous.filter(({ id }) => id !== linkingId));
+      try {
+        await deleteLinkings({ body: [linkingId] }).unwrap();
+      } catch (error) {
+        setLinkings((previous) => [...previous, deleted]);
+        dispatch(setFailure(castErrorToFailure(error)));
+      }
+    },
+    [dispatch, deleteLinkings]
+  );
 
   return { linkings, createLinking, deleteLinking };
 };

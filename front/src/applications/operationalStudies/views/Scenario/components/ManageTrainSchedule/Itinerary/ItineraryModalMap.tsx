@@ -118,14 +118,14 @@ const ItineraryModalMap = ({
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [dispatch, updateMapSettingsAction]
   );
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
       dispatch(updateViewport(value));
     },
-    [dispatch]
+    [dispatch, updateViewport]
   );
 
   const [featureInfoClick, setFeatureInfoClick] = useState<FeatureInfoClick>();
@@ -232,7 +232,7 @@ const ItineraryModalMap = ({
         dispatch(setFailure(castErrorToFailure(error)));
       }
     },
-    [infraID, getInfraObjectEntity]
+    [infraID, getInfraObjectEntity, dispatch]
   );
 
   const onFeatureClick = (e: MapLayerMouseEvent) => {
@@ -314,7 +314,7 @@ const ItineraryModalMap = ({
       result.push('chartis/osrd_tvd_section/geo');
     }
     return result;
-  }, [layersSettings, isMapSelectionMode]);
+  }, [layersSettings]);
 
   return (
     <MapContextProvider
@@ -323,7 +323,6 @@ const ItineraryModalMap = ({
       updateMapSettings={updateMapSettings}
     >
       <MapButtons
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
         bearing={viewport.bearing}

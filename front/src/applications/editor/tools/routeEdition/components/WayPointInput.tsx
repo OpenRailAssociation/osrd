@@ -82,7 +82,7 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
         },
       });
     }
-  }, [endPoint, isPicking, setState, state]);
+  }, [endPoint, isPicking, setState, state, onChange]);
 
   const getButtonIcon = () => {
     if (!isPicking && isWayPointSelected) return <Pencil />;
