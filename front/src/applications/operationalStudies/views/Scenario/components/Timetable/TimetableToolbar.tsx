@@ -75,7 +75,7 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
   const dispatch = useAppDispatch();
 
-  const { infraId, timetableId } = useScenarioContext();
+  const { infraId, timetableId, scenario } = useScenarioContext();
   const { trainSchedules } = useTimetableContext();
 
   const { data: trainScheduleRoundTripsData } =
@@ -107,7 +107,8 @@ const TimetableToolbar = ({
     exportTrainSchedules(
       selectedTrainScheduleIds,
       trainSchedules,
-      trainScheduleRoundTripsData?.results
+      trainScheduleRoundTripsData?.results,
+      scenario.timetable_type
     );
   };
 

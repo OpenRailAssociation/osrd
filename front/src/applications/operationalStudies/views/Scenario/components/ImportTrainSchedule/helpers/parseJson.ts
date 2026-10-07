@@ -8,7 +8,9 @@ import type {
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
-import { type TrainSchedule } from 'common/api/osrdEditoastApi';
+import { type TimetableType, type TrainSchedule } from 'common/api/osrdEditoastApi';
+
+const TIMETABLE_TYPES: TimetableType[] = ['CALENDAR', 'HOURLY'];
 
 const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'constraint_distribution',
@@ -62,6 +64,7 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
   }
 
   const {
+    timetable_type: importedTimetableType,
     train_schedules: importedTrainSchedules,
     paced_trains: importedPacedTrains,
     round_trips: importedRoundTrips,
@@ -101,9 +104,14 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
     throw new Error('Invalid train schedules: some compulsory keys are missing');
   }
 
+  if (importedTimetableType !== undefined && !TIMETABLE_TYPES.includes(importedTimetableType)) {
+    throw new Error('Invalid timetable type');
+  }
+
   const roundTrips = validateRoundTrips(importedRoundTrips);
 
   return {
+    ...(importedTimetableType ? { timetable_type: importedTimetableType } : {}),
     train_schedules: allTrains,
     ...(roundTrips ? { round_trips: roundTrips } : {}),
   };
