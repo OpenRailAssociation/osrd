@@ -12,6 +12,23 @@ const CAPSULE_OUTLINE_WIDTH = 4;
 const STRIPE_WIDTH = OCCUPANCY_ZONE_HEIGHT - OCCUPANCY_SEPARATOR_WIDTH;
 const STRIPE_DASH_PATTERN = [6, 6];
 const OUTLINE_OVERHANG = CAPSULE_OUTLINE_WIDTH / 2;
+const TOUCHING_LINKING_WIDTH = 32;
+
+/**
+ * A linking between two occupancies that touch has no width. It is given a fixed one, centered on
+ * the time they meet, and so lies over the ends of both occupancies.
+ */
+export const getLinkingXRange = (
+  { getTimePixel }: Pick<SpaceTimeChartContextType, 'getTimePixel'>,
+  { startTime, endTime }: Linking
+) => {
+  const x1 = getTimePixel(startTime);
+  const x2 = getTimePixel(endTime);
+  if (startTime === endTime) {
+    return { x1: x1 - TOUCHING_LINKING_WIDTH / 2, x2: x1 + TOUCHING_LINKING_WIDTH / 2 };
+  }
+  return { x1, x2 };
+};
 
 // The capsule fills the gap between the two occupancies, and must touch them without covering them:
 // that is what the inset is for. The same path is also used to clip the stripes.
@@ -75,8 +92,7 @@ export const drawLinking = (
   stcContext: SpaceTimeChartContextType,
   { linking, position, yOffset }: { linking: Linking; position: number; yOffset: number }
 ) => {
-  const x1 = stcContext.getTimePixel(linking.startTime);
-  const x2 = stcContext.getTimePixel(linking.endTime);
+  const { x1, x2 } = getLinkingXRange(stcContext, linking);
   const yCenter = getOccupancyZonesY(stcContext, position) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
   const capsulePath = buildCapsulePath(x1, x2, yCenter, OUTLINE_OVERHANG);
   const bridgePath = buildCapsulePath(x1, x2, yCenter);
