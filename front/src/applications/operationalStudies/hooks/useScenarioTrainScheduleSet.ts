@@ -21,7 +21,7 @@ import { useScenarioContext } from './useScenarioContext';
 // it is created in, and it can never be updated afterwards (a set must stay homogeneous).
 export type TrainScheduleSetFormData = Omit<
   TrainScheduleSet,
-  'catalog_entry_id' | 'id' | 'timetable_type'
+  'catalog_entry_id' | 'id' | 'timetable_type' | 'timetable_id'
 > & {
   catalog?: { id: number; type: 'selected' } | { name: string; type: 'create' };
 };

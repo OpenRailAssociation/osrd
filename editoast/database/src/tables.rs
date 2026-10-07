@@ -840,6 +840,7 @@ diesel::table! {
     timetable (id) {
         id -> Int8,
         timetable_type -> TimetableType,
+        train_schedule_set_id -> Nullable<Int8>,
     }
 }
 
@@ -968,6 +969,7 @@ diesel::table! {
         description -> Text,
         published -> Bool,
         timetable_type -> TimetableType,
+        timetable_id -> Int8,
     }
 }
 

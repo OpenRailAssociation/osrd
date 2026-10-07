@@ -1536,14 +1536,16 @@ mod tests {
             .await
             .expect("Failed to create timetable");
 
-        let train_schedule_set = TrainScheduleSet::changeset()
-            .name(None)
-            .timetable_type(models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Hourly,
-            ))
-            .create(&mut conn)
-            .await
-            .expect("Failed to create train schedule set");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut conn,
+            TrainScheduleSet::changeset().name(None).timetable_type(
+                models::timetable_type::TimetableType(
+                    schemas::timetable_type::TimetableType::Hourly,
+                ),
+            ),
+        )
+        .await
+        .expect("Failed to create train schedule set");
 
         let train_schedule_set_id = train_schedule_set.id;
         let train_schedule_set_form = TrainScheduleSetForm {
@@ -1578,14 +1580,16 @@ mod tests {
             .await
             .expect("Failed to create timetable");
 
-        let train_schedule_set = TrainScheduleSet::changeset()
-            .name(None)
-            .timetable_type(models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Calendar,
-            ))
-            .create(&mut conn)
-            .await
-            .expect("Failed to create train schedule set");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut conn,
+            TrainScheduleSet::changeset().name(None).timetable_type(
+                models::timetable_type::TimetableType(
+                    schemas::timetable_type::TimetableType::Calendar,
+                ),
+            ),
+        )
+        .await
+        .expect("Failed to create train schedule set");
 
         let train_schedule_set_id = train_schedule_set.id;
         let train_schedule_set_form = TrainScheduleSetForm {

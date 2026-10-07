@@ -4368,6 +4368,7 @@ paths:
                   - description
                   - published
                   - timetable_type
+                  - timetable_id
                   properties:
                     catalog_entry_id:
                       type:
@@ -4385,6 +4386,9 @@ paths:
                       - 'null'
                     published:
                       type: boolean
+                    timetable_id:
+                      type: integer
+                      format: int64
                     timetable_type:
                       $ref: '#/components/schemas/TimetableType'
     post:
@@ -17395,6 +17399,7 @@ components:
       - description
       - published
       - timetable_type
+      - timetable_id
       properties:
         catalog_entry_id:
           type:
@@ -17412,6 +17417,9 @@ components:
           - 'null'
         published:
           type: boolean
+        timetable_id:
+          type: integer
+          format: int64
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
     TrainScheduleSetForm:

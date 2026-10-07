@@ -4515,6 +4515,7 @@ class TrainScheduleSet(BaseModel):
     id: int
     name: str | None = None
     published: bool
+    timetable_id: int
     timetable_type: TimetableType
 
 
