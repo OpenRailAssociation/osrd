@@ -15,7 +15,10 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
     try {
       const response = await fetch(`/api/timetable/${args.id}/stdcm?infra=${args.infra}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-osrd-stdcm-fallback': String(args['x-osrd-stdcm-fallback'] ?? false),
+        },
         body: JSON.stringify(args.body),
         signal: signal,
       });
