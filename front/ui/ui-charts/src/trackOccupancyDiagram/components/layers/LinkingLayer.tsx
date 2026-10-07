@@ -19,7 +19,7 @@ import {
   TRACK_HEIGHT_CONTAINER,
 } from '../../lib/consts';
 import type { Linking, LinkingPickingElement, Track } from '../../lib/types';
-import { drawLinking } from '../helpers/drawElements/drawLinkings';
+import { drawLinking, getLinkingXRange } from '../helpers/drawElements/drawLinkings';
 import { getOccupancyZonesY } from '../helpers/drawElements/drawOccupancyZones';
 
 const PICKING_MARGIN = 6;
@@ -65,9 +65,9 @@ const LinkingLayer = ({
   const pickingFunction = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       linkingsToDraw.forEach(({ linking, yOffset }) => {
-        const x = getTimePixel(linking.startTime);
+        const { x1, x2 } = getLinkingXRange({ getTimePixel }, linking);
         const y = getOccupancyZonesY({ getSpacePixel }, position) + yOffset;
-        const width = getTimePixel(linking.endTime) - x;
+        const width = x2 - x1;
 
         const pickingElement: LinkingPickingElement = {
           type: 'linking',
@@ -78,7 +78,7 @@ const LinkingLayer = ({
 
         drawAliasedRect(
           imageData,
-          { x: x - PICKING_MARGIN, y: y - PICKING_MARGIN },
+          { x: x1 - PICKING_MARGIN, y: y - PICKING_MARGIN },
           width + 2 * PICKING_MARGIN,
           OCCUPANCY_ZONE_HEIGHT + 2 * PICKING_MARGIN,
           color,
