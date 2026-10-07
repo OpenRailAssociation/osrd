@@ -15,7 +15,7 @@ async function readJsonFile(path: string): Promise<unknown> {
 
 vi.setSystemTime(new Date('2025-06-25T13:00:00.000Z'));
 
-const FIXTURES = ['roundTrip', 'oneWay', 'duplicateTrigrams', 'discontinuousTrainrun'];
+const FIXTURES = ['roundTrip', 'oneWay', 'duplicateShortNames', 'discontinuousTrainrun'];
 
 describe('convertNgeDtoToOsrd', () => {
   test.each(FIXTURES)('ngeToOsrd-inputDto-$0', async (name) => {

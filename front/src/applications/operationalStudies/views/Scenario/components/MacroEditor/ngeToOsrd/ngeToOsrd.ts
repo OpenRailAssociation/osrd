@@ -18,7 +18,7 @@ import {
   DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
   TRAINRUN_DIRECTIONS,
 } from '../consts';
-import type MacroEditorState from '../MacroEditorState';
+import MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId, localStorageFilterSettingKey } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
 import { castNgeNoteToOsrd, handleNoteOperation } from './note';
@@ -208,21 +208,22 @@ export const handleOperation = async ({
   }
 };
 
-export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
-  const trigramsToIds = new Map<string, number[]>();
+export const relabelDuplicateShortNames = (nodes: NodeDto[]): NodeDto[] => {
+  const shortNamesToIds = new Map<string, number[]>();
   for (const node of nodes) {
-    if (!trigramsToIds.has(node.betriebspunktName)) trigramsToIds.set(node.betriebspunktName, []);
-    trigramsToIds.get(node.betriebspunktName)!.push(node.id);
+    if (!shortNamesToIds.has(node.betriebspunktName))
+      shortNamesToIds.set(node.betriebspunktName, []);
+    shortNamesToIds.get(node.betriebspunktName)!.push(node.id);
   }
 
   return nodes.map((node) => {
-    const trigramIds = trigramsToIds.get(node.betriebspunktName)!;
-    if (trigramIds.length === 1) return node;
-    const idIndex = trigramIds.findIndex((id) => id === node.id);
-    const newTrigram = `${node.betriebspunktName}_${idIndex + 1}`;
+    const shortNameIds = shortNamesToIds.get(node.betriebspunktName)!;
+    if (shortNameIds.length === 1) return node;
+    const idIndex = shortNameIds.findIndex((id) => id === node.id);
+    const newShortName = `${node.betriebspunktName}_${idIndex + 1}`;
     return {
       ...node,
-      betriebspunktName: newTrigram,
+      betriebspunktName: newShortName,
     };
   });
 };
@@ -234,12 +235,16 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
   // it always produces absolute start times.
   const baseStartTime = defaultBaseStartTime('CALENDAR');
 
-  const dedupNodes = relabelDuplicateTrigrams(dto.nodes);
+  const dedupNodes = relabelDuplicateShortNames(dto.nodes);
   const macroNodes: MacroNodeForm[] = [];
   for (const node of dedupNodes) {
+    const domesticNodeLocation = MacroEditorState.decodeDomesticReference(node.betriebspunktName);
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
-      path_item_key: `domestic:${node.betriebspunktName}`,
+      node_location: {
+        type: 'operational_point_reference',
+        operational_point: domesticNodeLocation,
+      },
     });
   }
 

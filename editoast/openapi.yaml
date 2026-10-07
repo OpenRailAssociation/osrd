@@ -12496,7 +12496,7 @@ components:
       - position_x
       - position_y
       - labels
-      - path_item_key
+      - node_location
       properties:
         full_name:
           type:
@@ -12506,15 +12506,15 @@ components:
           type: boolean
         labels:
           $ref: '#/components/schemas/Tags'
-        path_item_key:
-          type: string
+        node_location:
+          $ref: '#/components/schemas/OperationalPointReferenceNode'
         position_x:
           type: integer
           format: int64
         position_y:
           type: integer
           format: int64
-        trigram:
+        short_name:
           type:
           - string
           - 'null'
@@ -12536,7 +12536,7 @@ components:
       - position_x
       - position_y
       - labels
-      - path_item_key
+      - node_location
       - is_collapsed
       properties:
         full_name:
@@ -12550,15 +12550,15 @@ components:
           type: boolean
         labels:
           $ref: '#/components/schemas/Tags'
-        path_item_key:
-          type: string
+        node_location:
+          $ref: '#/components/schemas/OperationalPointReferenceNode'
         position_x:
           type: integer
           format: int64
         position_y:
           type: integer
           format: int64
-        trigram:
+        short_name:
           type:
           - string
           - 'null'
@@ -13071,6 +13071,32 @@ components:
             format: int32
             description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
             minimum: 0
+    OperationalPointReferenceNode:
+      oneOf:
+      - allOf:
+        - $ref: '#/components/schemas/TrackOffset'
+        - type: object
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              enum:
+              - track_offset
+        title: OperationalPointReferenceNodeTrackOffset
+      - type: object
+        title: OperationalPointReferenceNodeOperationalPointReference
+        required:
+        - operational_point
+        - type
+        properties:
+          operational_point:
+            $ref: '#/components/schemas/OperationalPointReference'
+          type:
+            type: string
+            enum:
+            - operational_point_reference
+      description: The location represented by a macro node
     OptionsChangeGroup:
       type: object
       required:
