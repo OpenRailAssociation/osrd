@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::authz::resources::IncompatibleGrant;
 use crate::views::authz::resources::Resource;
@@ -1013,6 +1014,71 @@ pub(in crate::views) async fn list_groups(
     groups.sort_by_key(|g| g.id);
 
     Ok(Json(groups))
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "List all the users with their identities, roles and groups",
+        body = inline(Vec<UserInfo>),
+    ))
+)]
+pub(in crate::views) async fn list_users(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+) -> Result<Json<Vec<UserInfo>>> {
+    let ids_and_names = User::list(&mut db_pool.get().await?, SelectionSettings::new()).await?;
+
+    let futures = ids_and_names.into_iter().map(|user| {
+        let db_pool = db_pool.clone();
+        let openfga = openfga.clone();
+        async move {
+            let id = user.id;
+            let name = user.name;
+
+            // Fetch identities for the user from the database
+            let user_with_identities =
+                UserWithIdentities::stream_by_id(db_pool.get().await?, &[id])
+                    .await?
+                    .try_next()
+                    .await?
+                    .ok_or(AuthzError::UnknownUser { id })?;
+            let identities = user_with_identities.identities;
+
+            // Fetch roles and groups for the user from OpenFGA
+            let list_roles = authz::v2::subject_roles(authz::Subject::user(id));
+            let list_groups = authz::v2::user_groups(authz::User(id));
+
+            // Use the system authorizer to authorize the requests to OpenFGA
+            let system_authorizer = authz::authorizers::SystemAuthorizer::<Check>::new(&openfga);
+            let (roles, groups) = list_roles
+                .zip(list_groups)
+                .run::<AuthorizationError, _>(&system_authorizer)
+                .await?;
+
+            // Fetch group details from the database for the groups returned by OpenFGA
+            let (groups_from_db, _): (Vec<Group>, _) =
+                Group::retrieve_batch(&mut db_pool.get().await?, groups.into_iter().map(|g| g.0))
+                    .await?;
+
+            Ok::<UserInfo, InternalError>(UserInfo {
+                id,
+                name,
+                identities,
+                roles: HashSet::from_iter(roles),
+                groups: HashSet::from_iter(groups_from_db),
+            })
+        }
+    });
+
+    let users = futures::future::try_join_all(futures).await?;
+
+    Ok(Json(users))
 }
 
 #[cfg(test)]
