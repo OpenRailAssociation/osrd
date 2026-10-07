@@ -81,9 +81,7 @@ pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
 }
 
 pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
-    TrainScheduleSet::changeset()
-        .name(None)
-        .create(conn)
+    TrainScheduleSet::create_with_timetable(conn, TrainScheduleSet::changeset().name(None))
         .await
         .expect("Failed to create train schedule set")
 }
@@ -99,14 +97,14 @@ pub async fn create_hourly_timetable(conn: &mut DbConnection) -> Timetable {
 }
 
 pub async fn create_hourly_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
-    TrainScheduleSet::changeset()
-        .timetable_type(models::timetable_type::TimetableType(
-            schemas::timetable_type::TimetableType::Hourly,
-        ))
-        .name(None)
-        .create(conn)
-        .await
-        .expect("Failed to create hourly train schedule set")
+    TrainScheduleSet::create_with_timetable(
+        conn,
+        TrainScheduleSet::changeset().name(None).timetable_type(
+            models::timetable_type::TimetableType(schemas::timetable_type::TimetableType::Hourly),
+        ),
+    )
+    .await
+    .expect("Failed to create hourly train schedule set")
 }
 
 pub async fn create_catalog_entry_with_name(conn: &mut DbConnection, name: &str) -> CatalogEntry {
