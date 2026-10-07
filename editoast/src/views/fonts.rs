@@ -2,20 +2,12 @@ use axum::extract::Path;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use editoast_derive::ViewError;
-use thiserror::Error;
 use tower::ServiceExt as _;
 use tower_http::services::ServeFile;
 
 use crate::AppState;
 use crate::error::Result;
-
-#[derive(Debug, Error, ViewError)]
-#[error("File '{file}' not found")]
-#[view_error(status = NOT_FOUND, context, path = fonts::file_not_found)]
-pub(in crate::views) struct FileNotFound {
-    file: String,
-}
+use crate::views::FileNotFound;
 
 /// This endpoint is used by map libre to retrieve the fonts. They are separated by font and unicode block
 #[editoast_derive::route]

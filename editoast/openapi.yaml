@@ -1134,7 +1134,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:fonts:file_not_found
+                      - editoast:file_not_found
   /health:
     get:
       responses:
@@ -1164,6 +1164,38 @@ paths:
       responses:
         '200':
           description: The requested icon
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: File '{file}' not found
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - file
+                      properties:
+                        file:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:file_not_found
   /infra:
     get:
       tags:
@@ -7815,7 +7847,6 @@ components:
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
-      - $ref: '#/components/schemas/EditoastIconErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastInfraApiErrorDatabase'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
@@ -8092,31 +8123,6 @@ components:
           type: string
           enum:
           - editoast:infra:objects:ObjectIdNotFound
-    EditoastIconErrorsFileNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastIconErrorsFileNotFoundContext
-          required:
-          - file
-          properties:
-            file:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:icons:FileNotFound
     EditoastInfraApiErrorDatabase:
       type: object
       required:
