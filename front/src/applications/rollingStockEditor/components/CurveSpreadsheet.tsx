@@ -51,35 +51,46 @@ const CurveSpreadsheet = ({
     setNeedsSort(true);
   }, []);
 
-  const updateRollingStockCurve = (newCurve: DataSheetCurve[]) => {
-    // Format the new curve
-    const formattedCurve = formatCurve(newCurve);
+  const updateRollingStockCurve = useCallback(
+    (newCurve: DataSheetCurve[]) => {
+      // Format the new curve
+      const formattedCurve = formatCurve(newCurve);
 
-    // Create the updated selected curve
-    const updatedSelectedCurve = {
-      ...selectedCurve,
-      curve: formattedCurve,
-    };
+      // Create the updated selected curve
+      const updatedSelectedCurve = {
+        ...selectedCurve,
+        curve: formattedCurve,
+      };
 
-    // Replace the updated curve in the selected traction mode curves
-    const updatedCurves = replaceElementAtIndex(
-      selectedTractionModeCurves,
+      // Replace the updated curve in the selected traction mode curves
+      const updatedCurves = replaceElementAtIndex(
+        selectedTractionModeCurves,
+        selectedCurveIndex,
+        updatedSelectedCurve
+      );
+
+      // Update the effort curves
+      const updatedEffortCurve = {
+        ...effortCurves,
+        [selectedTractionMode]: {
+          ...effortCurves[selectedTractionMode],
+          curves: updatedCurves,
+          ...(isDefaultCurve ? { default_curve: formattedCurve } : {}),
+        },
+      };
+
+      setEffortCurves(updatedEffortCurve);
+    },
+    [
+      isDefaultCurve,
+      setEffortCurves,
       selectedCurveIndex,
-      updatedSelectedCurve
-    );
-
-    // Update the effort curves
-    const updatedEffortCurve = {
-      ...effortCurves,
-      [selectedTractionMode]: {
-        ...effortCurves[selectedTractionMode],
-        curves: updatedCurves,
-        ...(isDefaultCurve ? { default_curve: formattedCurve } : {}),
-      },
-    };
-
-    setEffortCurves(updatedEffortCurve);
-  };
+      effortCurves,
+      selectedTractionModeCurves,
+      selectedCurve,
+      selectedTractionMode,
+    ]
+  );
 
   const spreadsheetCurve = useMemo(() => {
     const { speeds, max_efforts } = selectedCurve.curve;
@@ -116,7 +127,7 @@ const CurveSpreadsheet = ({
       updateRollingStockCurve(sortedSpreadsheetValues);
       setNeedsSort(false);
     }
-  }, [needsSort]);
+  }, [needsSort, updateRollingStockCurve, spreadsheetCurve]);
 
   return (
     <div className="rollingstock-editor-spreadsheet">

@@ -348,7 +348,7 @@ const EntitySumUp = ({ entity, id, objType, classes, status, error }: EntitySumU
     };
 
     fetchEntities();
-  }, [entity, id, objType, infraID, state.type]);
+  }, [dispatch, entity, id, objType, infraID, state.type]);
 
   if (state.type === 'loading' || state.type === 'idle') return <LoaderFill displayDelay={500} />;
 

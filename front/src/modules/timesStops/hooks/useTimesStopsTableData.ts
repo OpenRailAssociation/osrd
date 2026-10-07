@@ -248,7 +248,7 @@ const useTimesStopsTableData = (
       setTrackSections(sections);
     };
     fetchTrackSections();
-  }, [trackIds]);
+  }, [trackIds, getTrackSectionsByIds]);
 
   const allRows = useMemo(() => {
     const startDate = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);

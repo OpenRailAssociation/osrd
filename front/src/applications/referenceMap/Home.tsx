@@ -34,7 +34,7 @@ const HomeReferenceMap = () => {
         }
       });
     }
-  }, [infraID, getInfraByInfraId, dispatch]);
+  }, [infraID, getInfraByInfraId, dispatch, updateInfraID]);
 
   return (
     <ModalProvider>

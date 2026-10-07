@@ -189,7 +189,7 @@ const usePathProjection = (
     if (pathfinding?.status === 'failure' && projectionType === 'trackProjection') {
       dispatch(updateProjectionType('operationalPointProjection'));
     }
-  }, [pathfinding, projectionType]);
+  }, [pathfinding, projectionType, dispatch]);
 
   return useMemo(() => {
     if (!pathUsedForProjection) {
@@ -303,6 +303,9 @@ const usePathProjection = (
     matchedOperationalPoints,
     pathUsedForProjection,
     projectingOnSimulatedPathException,
+    opRefs,
+    opRefPathItemIds,
+    t,
   ]);
 };
 

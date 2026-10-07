@@ -84,6 +84,7 @@ const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps)
           setItemsState({ type: 'error', message: err.message });
         });
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [itemsState]);
 
   useEffect(() => {

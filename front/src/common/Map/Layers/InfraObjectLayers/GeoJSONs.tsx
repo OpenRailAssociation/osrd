@@ -486,7 +486,7 @@ const GeoJSONs = ({
       ),
     [colors]
   );
-  const { mapStyle, showIGNBDORTHO } = useMapContext();
+  const { showIGNBDORTHO } = useMapContext();
   // This flag is used to unmount sources before mounting the new ones, when
   // fingerprint is updated;
   const [skipSources, setSkipSources] = useState(true);
@@ -506,7 +506,7 @@ const GeoJSONs = ({
       layersSettings,
       issuesSettings,
     }),
-    [colors, mapStyle, showIGNBDORTHO, layersSettings, issuesSettings]
+    [colors, showIGNBDORTHO, layersSettings, issuesSettings, isEmphasized]
   );
   const hiddenLayerContext: LayerContext = useMemo(
     () => ({

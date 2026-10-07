@@ -134,8 +134,6 @@ export default function AddOrEditProjectModal({
       try {
         if (tempProjectImage) {
           const imageId = await uploadImage(tempProjectImage);
-          // TODO: fix this lint
-          // eslint-disable-next-line react/immutability
           if (imageId) currentProject.image = imageId;
         }
         const request = postProject({
@@ -209,7 +207,7 @@ export default function AddOrEditProjectModal({
     }
   };
 
-  const removeProject = async () => {
+  const removeProject = useCallback(async () => {
     if (projectStudies) {
       // For each scenario in the project, clean the local storage if a manchette is saved
       cleanLocalStorageByProject(projectStudies, dispatch);
@@ -236,7 +234,7 @@ export default function AddOrEditProjectModal({
           )
         );
       });
-  };
+  }, [dispatch, project, projectStudies, closeModal, t, deleteProject, navigate]);
 
   const debouncedObjectives = useDebounce(currentProject.objectives, 500);
 
@@ -252,6 +250,7 @@ export default function AddOrEditProjectModal({
     if (safeWord !== '') {
       addTag(safeWord);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [safeWord]);
 
   useModalFocusTrap(modalRef, closeModal);

@@ -64,7 +64,7 @@ const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormPr
     if (newError !== error) newState.error = newError;
 
     if (!isEmpty(newState)) setState(newState);
-  }, [tagSpeedLimits, entity, error]);
+  }, [tagSpeedLimits, entity, error, setState]);
 
   return (
     <div>

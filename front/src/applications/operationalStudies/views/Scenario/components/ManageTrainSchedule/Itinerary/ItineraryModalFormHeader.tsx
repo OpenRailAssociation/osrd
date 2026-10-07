@@ -121,7 +121,7 @@ const ItineraryModalFormHeader = ({
       (rs) => getRollingStockLabel(rs) === rollingStockValue
     );
     return isValid ? undefined : t('unknownRollingStock');
-  }, [rollingStockValue, fullRollingStockList, t]);
+  }, [rollingStockValue, fullRollingStockList, t, getRollingStockLabel]);
 
   // Category warning
   useEffect(() => {
@@ -136,11 +136,11 @@ const ItineraryModalFormHeader = ({
       : currentSubCategory?.main_category !== rollingStock.primary_category;
 
     onCategoryWarningChange(isMismatch ? t('categoryMismatch') : undefined);
-  }, [rollingStock, modalFormState.category, currentSubCategory, t]);
+  }, [rollingStock, modalFormState.category, currentSubCategory, t, onCategoryWarningChange]);
 
   useEffect(() => {
     onRollingStockMessageChange(rollingStockMessage);
-  }, [rollingStockMessage]);
+  }, [rollingStockMessage, onRollingStockMessageChange]);
 
   return (
     <>

@@ -665,7 +665,7 @@ const TimeCell = ({
   // Skip sync while the user is editing (focusedSection !== null) — handled by the reducer guard.
   useEffect(() => {
     dispatch({ type: 'EXTERNAL_VALUE_CHANGED', value: controlledValue });
-  }, [controlledValue?.getTime()]);
+  }, [controlledValue]);
 
   useEffect(() => {
     if (state.focusedSection) {
@@ -678,6 +678,7 @@ const TimeCell = ({
     onChange?.({
       target: { value: displayValue },
     } as ChangeEvent<HTMLInputElement>);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [state.hours, state.minutes, state.seconds, onChange]);
 
   const isTimeComplete =

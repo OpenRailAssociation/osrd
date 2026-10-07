@@ -109,6 +109,7 @@ const StdcmResults = ({
 
   const simulationReportSheetNumber = useMemo(
     () => generateCodeNumber(),
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [selectedSimulation.index]
   );
   const isSelectedSimulationRetained =
@@ -131,7 +132,7 @@ const StdcmResults = ({
       departureTime: new Date(outputs.results.departure_time),
       pathfindingResult: outputs.results.pathfinding_result,
     }).filter(({ weight, stopType }) => stopType || (weight && weight >= MINIMUM_OP_WEIGHT));
-  }, [outputs]);
+  }, [outputs, hasSimulationResults, opIdsToExclude]);
 
   const markersInfo = useMemo(() => {
     if (hasSimulationResults) {
@@ -155,16 +156,16 @@ const StdcmResults = ({
 
   const [postSimilarTrains] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
 
-  const handleSubmitSuccess = (
-    isSuccessful: boolean,
-    railwayResponse: SendLastMinuteRequestResponse
-  ) => {
-    if (isSuccessful) {
-      setIsRailwayRequestSuccessful(isSuccessful);
-      setRailwayDemandId(railwayResponse.request_identifier);
-      setRailwayRequestUrl(railwayResponse.created_request_url);
-    }
-  };
+  const handleSubmitSuccess = useCallback(
+    (isSuccessful: boolean, railwayResponse: SendLastMinuteRequestResponse) => {
+      if (isSuccessful) {
+        setIsRailwayRequestSuccessful(isSuccessful);
+        setRailwayDemandId(railwayResponse.request_identifier);
+        setRailwayRequestUrl(railwayResponse.created_request_url);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     const searchForSimilarTrains = async () => {
@@ -287,6 +288,7 @@ const StdcmResults = ({
     if (isSelectedSimulationRetained) {
       searchForSimilarTrains();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSelectedSimulationRetained]);
 
   useEffect(() => {
@@ -348,6 +350,7 @@ const StdcmResults = ({
     simulationReportSheetNumber,
     similarTrains,
     pdfInstance.blob,
+    hasSimulationResults,
   ]);
 
   return (

@@ -15,6 +15,7 @@ const TimeRangeObserver = ({
     return { start: minPoint.time, end: maxPoint.time };
   }, [width, height, getData]);
 
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   useEffect(() => onChange(timeRange), [timeRange]);
 
   return null;

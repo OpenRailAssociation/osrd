@@ -221,7 +221,7 @@ const AddOrEditScenarioModal = ({
     }
   };
 
-  const removeScenario = () => {
+  const removeScenario = useCallback(() => {
     if (projectId && studyId && scenario?.id) {
       return deleteScenario({ scenarioId: scenario.id })
         .unwrap()
@@ -249,7 +249,7 @@ const AddOrEditScenarioModal = ({
     return Promise.reject(
       new Error('Cannot delete scenario: missing project, study or scenario id')
     );
-  };
+  }, [closeModal, studyId, scenario, projectId, t, navigate, dispatch, deleteScenario]);
 
   const openDeleteItemsModal = useCallback(() => {
     openModal(

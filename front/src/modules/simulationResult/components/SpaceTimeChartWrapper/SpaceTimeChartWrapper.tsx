@@ -341,7 +341,7 @@ const SpaceTimeChartWrapper = ({
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { cutProjectedTrains, cutConflicts: cutBaseConflicts } = useMemo(
     () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
-    [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
+    [projectedTrains, conflicts, operationalPoints, waypointsPanelData]
   );
 
   const cutConflicts = useMemo(
@@ -481,8 +481,6 @@ const SpaceTimeChartWrapper = ({
     [
       trackOccupancyDiagramsData,
       paths,
-      subCategories,
-      trainSchedulesWithDetails,
       selection,
       selectedTrainWaypointId,
       panelSelectionMode,
@@ -498,6 +496,7 @@ const SpaceTimeChartWrapper = ({
       hoveredLinking,
       linkingMode,
       repeatTimeRange,
+      activeWaypointId,
     ]
   );
 
@@ -557,6 +556,7 @@ const SpaceTimeChartWrapper = ({
         setTimeOrigin(minTime);
       }
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [selectedProjectionId, trainScheduleProjections.length]);
 
   const occupancyBlocks = useMemo(
@@ -674,9 +674,8 @@ const SpaceTimeChartWrapper = ({
     });
   }, [selectedTrainBy, hoveredItem, projectedTrains, panelSelectionMode, selectedTrainId]);
 
+  /* eslint-disable-next-line react-hooks/exhaustive-deps */
   const handlePan = useCallback(
-    // TODO: fix this lint
-    // eslint-disable-next-line react/use-memo
     configureHandlePan({
       spaceTimeChartOnPan: spaceTimeChartProps.onPan,
       handleTrainDrag,

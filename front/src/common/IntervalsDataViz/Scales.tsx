@@ -100,6 +100,7 @@ export const ResizingScale = ({
   useEffect(() => {
     const newTicks = computeTicks(begin, end, wrapper);
     setTicks(newTicks);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [begin, end, wrapper]);
 
   const debounceTimeoutRef = useRef<number>(undefined);
@@ -120,6 +121,7 @@ export const ResizingScale = ({
     return () => {
       window.removeEventListener('resize', debounceResize);
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [begin, end, wrapper]);
 
   return (

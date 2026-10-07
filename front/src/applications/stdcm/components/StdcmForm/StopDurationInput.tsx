@@ -39,7 +39,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
     }
 
     return undefined;
-  }, [pathStep.stopType, pathStep.stopFor, pathStep.consistChange]);
+  }, [pathStep.stopType, pathStep.stopFor, t]);
 
   useEffect(() => {
     setStopDuration(pathStep.stopFor !== undefined ? `${pathStep.stopFor.total('minute')}` : '');
@@ -57,6 +57,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
         })
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedStopDuration]);
 
   return (

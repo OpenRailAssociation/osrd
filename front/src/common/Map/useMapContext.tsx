@@ -37,7 +37,13 @@ export const MapContextProvider = ({
       highlightedOperationalPoints,
       updateMapSettings,
     }),
-    [infraId, mapSettings, updateMapSettings]
+    [
+      infraId,
+      mapSettings,
+      updateMapSettings,
+      highlightedTrackSections,
+      highlightedOperationalPoints,
+    ]
   );
 
   return <MapContext.Provider value={providedContext}>{children}</MapContext.Provider>;

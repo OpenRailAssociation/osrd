@@ -186,6 +186,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
     } else if (searchResults.length) {
       setSearchResults([]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedSearchTerm, inputText]);
 
   useEffect(() => {
@@ -194,6 +195,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
     } else {
       setOpList([]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedInputText]);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ResponsiveLine } from '@nivo/line';
 import type { LineSeries, PointTooltipProps } from '@nivo/line';
@@ -107,8 +107,10 @@ export default function RollingStockCurve({
   selectedElectricalParam?: string | null;
 }) {
   const { t, ready } = useTranslation();
-  const mode2name = (mode: string) =>
-    mode !== THERMAL_TRACTION_IDENTIFIER ? mode : t('rollingStock.thermal');
+  const mode2name = useCallback(
+    (mode: string) => (mode !== THERMAL_TRACTION_IDENTIFIER ? mode : t('rollingStock.thermal')),
+    [t]
+  );
 
   const transformedData = useMemo(() => {
     const transformedCurves: TransformedCurves = {};
@@ -135,7 +137,7 @@ export default function RollingStockCurve({
       });
     });
     return transformedCurves;
-  }, [data]);
+  }, [data, showPowerRestriction, isOnEditionMode, mode2name]);
 
   const [curves, setCurves] = useState<ParsedCurve[]>([]);
   const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
@@ -197,7 +199,13 @@ export default function RollingStockCurve({
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
-  }, [transformedData, comfortsStates, hoveredElectricalParam, selectedElectricalParam]);
+  }, [
+    transformedData,
+    comfortsStates,
+    hoveredElectricalParam,
+    selectedElectricalParam,
+    showPowerRestriction,
+  ]);
 
   useEffect(() => {
     if (curves && curvesVisibility) {
@@ -214,6 +222,7 @@ export default function RollingStockCurve({
     setCurvesVisibility((prevCurvesVisibility) =>
       setupCurvesVisibility(transformedData, prevCurvesVisibility)
     );
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [transformedData, ready]);
 
   const changeComfortState = (comfort: string) => {

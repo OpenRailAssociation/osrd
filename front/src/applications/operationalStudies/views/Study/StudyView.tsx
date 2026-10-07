@@ -183,41 +183,50 @@ const StudyView = () => {
     setIsLoading(false);
   };
 
-  function displayScenariosList() {
-    return !isLoading ? (
-      <div
-        className={cx('scenarios-list', {
-          'selection-mode': selectedScenarioIds.length > 0,
-        })}
-      >
-        <AddNewCard
-          testId="add-scenario-button"
-          className="scenario-card empty"
-          item="scenario"
-          onOpenModal={() => setOpenAddOrEditScenarioModal(true)}
-        />
-        {openAddOrEditScenarioModal ? (
-          <AddOrEditScenarioModal onCancel={() => setOpenAddOrEditScenarioModal(false)} />
-        ) : undefined}
-        {scenariosList.map((scenario) => (
-          <ScenarioCard
-            setFilterChips={setFilterChips}
-            scenario={scenario}
-            isSelected={scenario.id !== undefined && selectedScenarioIds.includes(scenario.id)}
-            toggleSelect={toggleScenarioSelection}
-            key={`study-displayScenariosList-${scenario.id}`}
+  const displayedScenariosList = useMemo(
+    () =>
+      !isLoading ? (
+        <div
+          className={cx('scenarios-list', {
+            'selection-mode': selectedScenarioIds.length > 0,
+          })}
+        >
+          <AddNewCard
+            testId="add-scenario-button"
+            className="scenario-card empty"
+            item="scenario"
+            onOpenModal={() => setOpenAddOrEditScenarioModal(true)}
           />
-        ))}
-      </div>
-    ) : (
-      <span className="mt-5 text-center">
-        <Spinner displayDelay={500} />
-      </span>
-    );
-  }
+          {openAddOrEditScenarioModal ? (
+            <AddOrEditScenarioModal onCancel={() => setOpenAddOrEditScenarioModal(false)} />
+          ) : undefined}
+          {scenariosList.map((scenario) => (
+            <ScenarioCard
+              setFilterChips={setFilterChips}
+              scenario={scenario}
+              isSelected={scenario.id !== undefined && selectedScenarioIds.includes(scenario.id)}
+              toggleSelect={toggleScenarioSelection}
+              key={`study-displayScenariosList-${scenario.id}`}
+            />
+          ))}
+        </div>
+      ) : (
+        <span className="mt-5 text-center">
+          <Spinner displayDelay={500} />
+        </span>
+      ),
+    [
+      isLoading,
+      toggleScenarioSelection,
+      openAddOrEditScenarioModal,
+      scenariosList,
+      selectedScenarioIds,
+    ]
+  );
 
   useEffect(() => {
     getScenarioList();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, scenarios]);
 
   return (
@@ -371,10 +380,7 @@ const StudyView = () => {
           />
         )}
 
-        {useMemo(
-          () => displayScenariosList(),
-          [scenariosList, selectedScenarioIds, openAddOrEditScenarioModal]
-        )}
+        {displayedScenariosList}
       </div>
     </main>
   );

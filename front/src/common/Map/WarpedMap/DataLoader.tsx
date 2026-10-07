@@ -124,6 +124,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
     }
 
     return undefined;
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [state, mapRef]);
 
   if (state === 'loaded') return null;

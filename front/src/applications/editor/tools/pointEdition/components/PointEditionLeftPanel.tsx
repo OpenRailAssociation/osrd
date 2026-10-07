@@ -68,6 +68,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
       submitBtnRef.current.click();
       setIsFormSubmited(false);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isFormSubmited]);
 
   useEffect(() => {
@@ -89,7 +90,15 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
         }
       });
     }
-  }, [infraID, setState, state, state.entity.properties.track, trackState.id, trackState.type]);
+  }, [
+    infraID,
+    setState,
+    state,
+    state.entity.properties.track,
+    trackState.id,
+    trackState.type,
+    dispatch,
+  ]);
 
   /**
    * When the ref of the initialEntity changed,

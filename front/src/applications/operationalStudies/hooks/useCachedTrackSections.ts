@@ -34,7 +34,7 @@ export default function useCachedTrackSections(infraId: number) {
 
       return { ...trackSectionsRef.current };
     },
-    [infraId]
+    [infraId, loadInfraObject]
   );
 
   return { getTrackSectionsByIds, isLoading };

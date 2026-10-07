@@ -177,7 +177,7 @@ const StdcmConfig = ({
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [updateMapSettingsAction, dispatch]
   );
 
   const {
@@ -292,7 +292,7 @@ const StdcmConfig = ({
     if (state) {
       dispatch(restoreStdcmConfig(state));
     }
-  }, []);
+  }, [dispatch]);
 
   useLayoutEffect(() => {
     const bannerElement = pathfindingBannerRef.current;
@@ -309,7 +309,7 @@ const StdcmConfig = ({
     return () => {
       bannerElement.removeEventListener('animationend', handleAnimationEnd);
     };
-  }, [showPathfindingStatusMessage]);
+  }, [showPathfindingStatusMessage, setShowPathfindingStatusMessage]);
 
   const isLoading = useMemo(
     () =>

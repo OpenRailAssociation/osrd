@@ -78,7 +78,7 @@ export default function InputGroupSNCF<U extends string | MultiUnit>({
       return value;
     }
     return '';
-  }, [currentValue.value, limitPrecision, disabled]);
+  }, [currentValue, limitPrecision, disabled]);
 
   const inputField = (
     <div

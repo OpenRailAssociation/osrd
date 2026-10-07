@@ -94,8 +94,6 @@ const Editor = () => {
     state: TOOLS[TOOL_NAMES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
   const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
-  // TODO: fix this lint
-  // eslint-disable-next-line react/purity
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
     setRenderingFingerprint(Date.now());
@@ -145,14 +143,14 @@ const Editor = () => {
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [dispatch, updateMapSettingsAction]
   );
 
   const setViewport = useCallback(
     (value: Partial<Viewport>) => {
       dispatch(updateViewportAction(value));
     },
-    [dispatch]
+    [dispatch, updateViewportAction]
   );
 
   const resetPitchBearing = () => {
@@ -197,10 +195,10 @@ const Editor = () => {
       toolAndState,
       openModal,
       closeModal,
-      infraID,
       t,
       forceRender,
       renderingFingerprint,
+      switchTool,
     ]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
@@ -257,6 +255,7 @@ const Editor = () => {
     if (isNil(urlInfra) && !isNil(infraID)) {
       navigate(`/editor/${infraID}`);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   /**
@@ -318,6 +317,7 @@ const Editor = () => {
         selectObjectsAndFocus(selectedEntities);
       }
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   // Decode the #map= hash param (uses the OpenStreetMap format #map=zoom/lat/lon)
@@ -335,6 +335,7 @@ const Editor = () => {
     onHashChange();
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   /**
@@ -349,6 +350,7 @@ const Editor = () => {
       dispatch(updateInfraID(infradID));
       dispatch(updateTotalsIssue(infradID));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [urlInfra]);
 
   // Lifecycle events on tools:
@@ -372,6 +374,7 @@ const Editor = () => {
     return () => {
       if (toolAndState.tool.onUnmount) toolAndState.tool.onUnmount(extendedContext);
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [toolAndState.tool]);
 
   /**
@@ -397,12 +400,14 @@ const Editor = () => {
         }
       }
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [toolAndState.state.entity?.properties.id]);
 
   useEffect(() => {
     if (infra) {
       dispatch(updateInfra(infra));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [infra]);
 
   return (
@@ -533,14 +538,12 @@ const Editor = () => {
                 />
                 {isSearchToolOpened && (
                   <MapSearch
-                    map={mapRef.current!}
                     closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
                     mapSettings={editorState.mapSettings}
                   />
                 )}
 
                 <MapButtons
-                  map={mapRef.current ?? undefined}
                   resetPitchBearing={resetPitchBearing}
                   withInfraButton
                   bearing={viewport.bearing}

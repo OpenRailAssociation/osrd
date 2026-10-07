@@ -54,6 +54,7 @@ const UserSettings = () => {
 
   useEffect(() => {
     if (!impersonatedUser) getUserList(inputValue);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [inputValue, impersonatedUser]);
 
   const getSubjectName = useCallback((subject: SearchResultItemUser) => subject.name, []);
@@ -71,6 +72,7 @@ const UserSettings = () => {
 
   useEffect(() => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedSafeWord]);
 
   const { t } = useTranslation(['translation', 'operational-studies']);

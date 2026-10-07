@@ -51,21 +51,12 @@ const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps)
       />,
       'lg'
     );
-  }, [
-    switchTool,
-    dispatch,
-    editorState,
-    mapRef,
-    getEntity,
-    closeModal,
-    selectEntities,
-    centerMapOnObject,
-  ]);
+  }, [switchTool, dispatch, editorState, mapRef, closeModal, openModal]);
 
   // ctrl+E opens the modal
   useEffect(() => {
     register({ code: 'KeyE', optionalKeys: { ctrlKey: true }, handler: displayErrors });
-  }, [displayErrors]);
+  }, [displayErrors, register]);
 
   return (
     <button

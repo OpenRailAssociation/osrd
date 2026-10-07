@@ -109,6 +109,7 @@ const RollingStockEditor = () => {
         window.scrollBy(0, -500);
       }, 1000);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [ref2scroll.current, isLoading]);
 
   const importFile = useCallback(
@@ -149,7 +150,7 @@ const RollingStockEditor = () => {
         failure(error);
       }
     },
-    [closeModal, dispatch, t]
+    [postRollingstock, closeModal, dispatch, t]
   );
 
   const openUploadFileModal = useCallback(() => {
@@ -168,7 +169,7 @@ const RollingStockEditor = () => {
         buttonText={t('common.confirm')}
       />
     );
-  }, [openModal, setPageMode]);
+  }, [openModal, setPageMode, t]);
 
   const asFullRollingStock = (
     rollingStock: LightRollingStockWithLiveries | RollingStockWithLiveries

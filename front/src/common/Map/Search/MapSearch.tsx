@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import type { MapRef } from 'react-map-gl/maplibre';
 
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
 import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
@@ -14,12 +13,11 @@ import { useAppDispatch } from 'store';
 import MapModalHeader from '../MapModalHeader';
 
 type MapSearchProps = {
-  map?: MapRef;
   closeMapSearchPopUp: () => void;
   mapSettings: MapSettings;
 };
 
-const MapSearch = ({ map, closeMapSearchPopUp, mapSettings }: MapSearchProps) => {
+const MapSearch = ({ closeMapSearchPopUp, mapSettings }: MapSearchProps) => {
   const { updateViewport } = useMapSettingsActions();
   const dispatch = useAppDispatch();
 
@@ -27,7 +25,7 @@ const MapSearch = ({ map, closeMapSearchPopUp, mapSettings }: MapSearchProps) =>
     (value: Partial<Viewport>) => {
       dispatch(updateViewport(value));
     },
-    [map]
+    [updateViewport, dispatch]
   );
 
   const { t } = useTranslation();

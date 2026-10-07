@@ -57,7 +57,7 @@ export default function RollingStockCardDetail({
 
   useEffect(() => {
     if (rollingStock) setCurvesComfortList(getCurvesComforts(rollingStock.effort_curves.modes));
-  }, [rollingStock]);
+  }, [rollingStock, setCurvesComfortList]);
 
   useEffect(() => {
     if (error) {
@@ -70,7 +70,7 @@ export default function RollingStockCardDetail({
         )
       );
     }
-  }, [error]);
+  }, [error, dispatch, t]);
 
   const leftColumn = (rs: RollingStockWithLiveries) => (
     <table className="rollingstock-details-table">

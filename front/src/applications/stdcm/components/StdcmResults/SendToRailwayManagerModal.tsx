@@ -154,7 +154,10 @@ const SendToRailwayManagerModal = ({
   const intermediatePoints = useMemo(() => steps.slice(1, -1), [steps]);
 
   const constraintOnDeparture = firstStep.arrivalType === 'preciseTime';
-  const realDepartureTime = new Date(stdcmData.departure_time);
+  const realDepartureTime = useMemo(
+    () => new Date(stdcmData.departure_time),
+    [stdcmData.departure_time]
+  );
   const tripDuration = stdcmData.simulation.final_output.times.at(-1)!;
   const selectableSlot = useMemo(() => {
     const dateBeforeDepartureTime = new Date(realDepartureTime);
@@ -377,12 +380,13 @@ const SendToRailwayManagerModal = ({
         )
       );
     }
-  }, [lastMinuteRequestError]);
+  }, [lastMinuteRequestError, t, mainT, dispatch]);
 
   useEffect(() => {
     if (isSuccess) {
       onSuccess(isSuccess, sendLMRResponse);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSuccess, sendLMRResponse]);
 
   return (

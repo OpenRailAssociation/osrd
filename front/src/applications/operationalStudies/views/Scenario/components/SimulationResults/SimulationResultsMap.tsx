@@ -77,7 +77,7 @@ const SimulationResultMap = ({
     (value: Partial<MapSettings>) => {
       dispatch(updateMapSettingsAction(value));
     },
-    [dispatch]
+    [dispatch, updateMapSettingsAction]
   );
 
   // Compute path items coordinates in order to place them on the map
@@ -207,6 +207,8 @@ const SimulationResultMap = ({
     pathStepsOperationalPoints,
     pathProperties?.operationalPoints,
     pathfindingResults,
+    getTrackSectionsByIds,
+    t,
   ]);
 
   const interactiveLayerIds = useMemo(
@@ -218,7 +220,7 @@ const SimulationResultMap = ({
     (value: Partial<Viewport>) => {
       dispatch(updateViewport(value));
     },
-    [dispatch]
+    [dispatch, updateViewport]
   );
 
   const resetPitchBearing = () => {
@@ -241,6 +243,7 @@ const SimulationResultMap = ({
       const newViewport = computeBBoxViewport(box, viewport);
       updateViewportChange(newViewport);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [geojsonPath, mapMarkers]);
 
   return (
@@ -250,7 +253,6 @@ const SimulationResultMap = ({
       updateMapSettings={updateMapSettings}
     >
       <MapButtons
-        map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
         bearing={viewport.bearing}
         withMapKeyButton

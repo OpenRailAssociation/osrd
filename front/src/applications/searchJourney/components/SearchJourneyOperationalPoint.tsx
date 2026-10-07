@@ -144,7 +144,7 @@ const SearchJourneyOperationalPoint = ({
       setSearchTerm('');
       setChSuggestions([]);
     }
-  }, [operationalPoint]);
+  }, [operationalPoint, setSearchTerm, chSuggestions]);
 
   useEffect(() => {
     // If we start a new query with inputs (ch suggestions will be empty at load),

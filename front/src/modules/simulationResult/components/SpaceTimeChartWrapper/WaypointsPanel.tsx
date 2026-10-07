@@ -134,6 +134,7 @@ const WaypointsPanel = ({
     if (waypointsPanelIsOpen) {
       openModal();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [waypointsPanelIsOpen]);
 
   // TODO : fix checkbox component in osrd-ui to handle shift + click because of a firefox bug (#510)

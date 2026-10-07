@@ -59,7 +59,7 @@ const MultiSelectSNCF = ({
           </div>
         );
       }),
-    [selectedValues]
+    [selectedValues, onChange]
   );
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const MultiSelectSNCF = ({
     } else if (selectAll && !isAllSelected) {
       setSelectAll(false);
     }
-  }, [selectedValues]);
+  }, [selectedValues, multiSelectOptions.length, selectAll]);
 
   const handleSelectAll = (newSelectAll: boolean) => {
     if (newSelectAll && multiSelectOptions) {

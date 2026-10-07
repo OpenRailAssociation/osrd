@@ -154,7 +154,7 @@ const usePathfindingV2 = () => {
       setPathfindingError(t(`pathfindingErrors.${pathfindingResult.error_type}`));
       setPathProperties(undefined);
     },
-    [infraId]
+    [infraId, postPathProperties, rollingStocks, t, postPathfindingBlocks]
   );
 
   return { launchPathfindingV2, pathProperties, pathfindingError };

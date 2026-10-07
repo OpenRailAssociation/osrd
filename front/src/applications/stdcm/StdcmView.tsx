@@ -113,7 +113,7 @@ const StdcmViewContent = ({
       selectedSimulationIndex === undefined ||
         !isEqual(currentSimulationInputs, simulationsList[selectedSimulationIndex].inputs)
     );
-  }, [currentSimulationInputs, selectedSimulationIndex]);
+  }, [currentSimulationInputs, selectedSimulationIndex, simulationsList]);
 
   useEffect(() => {
     switch (requestStatus) {
@@ -138,7 +138,7 @@ const StdcmViewContent = ({
         break;
       }
     }
-  }, [requestStatus, isReloading]);
+  }, [requestStatus, isReloading, setShowStatusBanner]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -250,7 +250,7 @@ const StdcmView = () => {
     if (!isDebugMode) {
       loadStdcmEnvironment();
     }
-  }, [isDebugMode]);
+  }, [isDebugMode, loadStdcmEnvironment]);
 
   // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
   // we let the error boundary manage it

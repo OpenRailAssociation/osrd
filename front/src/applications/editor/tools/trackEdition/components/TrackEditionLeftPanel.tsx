@@ -46,6 +46,7 @@ const TrackEditionLeftPanel = () => {
       submitBtnRef.current.click();
       setIsFormSubmited(false);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isFormSubmited]);
 
   const schema = useMemo(() => {

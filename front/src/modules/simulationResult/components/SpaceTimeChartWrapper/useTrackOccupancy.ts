@@ -293,7 +293,7 @@ const useTrackOccupancy = ({
 
       return zones;
     },
-    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled]
+    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled, timetableId]
   );
 
   const deployedWaypoints = useMemo(() => {
@@ -448,6 +448,7 @@ const useTrackOccupancy = ({
       pathOperationalPointsState,
       updatePathOperationalPointState,
       trainScheduleProjectionsById,
+      fetchTrackOccupancy,
     ]
   );
 
@@ -516,18 +517,19 @@ const useTrackOccupancy = ({
         );
       }
     },
-    [pathOpsByWaypointId, pathOperationalPointsState]
+    [pathOpsByWaypointId, pathOperationalPointsState, fetchTrackOccupancy]
   );
 
   // Abort all batch calls on unmount:
   // (the eslint rule is disabled for readability)
-  // eslint-disable-next-line
+  // eslint-disable-next-line arrow-body-style
   useEffect(() => {
     return () => {
       forEach(pathOperationalPointsState, ({ zones }) => {
         if (zones.type === 'loading' && zones.abort) zones.abort();
       });
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   // Load all tracks from all waypoints on mount / waypoints update:
@@ -616,6 +618,7 @@ const useTrackOccupancy = ({
     return () => {
       aborted = true;
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [pathOperationalPoints]);
 
   // Update train data for all deployed waypoints on trains update:
@@ -724,6 +727,7 @@ const useTrackOccupancy = ({
         );
       });
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleProjections]);
 
   // Load train origin and destination stations names:
@@ -813,6 +817,7 @@ const useTrackOccupancy = ({
     };
 
     fetchOperationalPoints();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleProjections, i18n.language]);
 
   return {

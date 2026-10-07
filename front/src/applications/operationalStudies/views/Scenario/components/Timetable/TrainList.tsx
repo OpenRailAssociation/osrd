@@ -22,7 +22,6 @@ import {
   getSelectedTrain,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
@@ -79,7 +78,6 @@ const TrainList = ({
 
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-  const dispatch = useAppDispatch();
 
   const { openItineraryModalToEdit } = useItineraryModalContext();
 
@@ -96,7 +94,7 @@ const TrainList = ({
 
       setSelectedTrainScheduleIds([...currentSelectedTrainIds]);
     },
-    [selectedTrainScheduleIds]
+    [selectedTrainScheduleIds, setSelectedTrainScheduleIds]
   );
 
   const handleExpandTrainSchedule = useCallback((id: number) => {
@@ -151,7 +149,7 @@ const TrainList = ({
       };
       openItineraryModalToEdit(editData);
     },
-    [openItineraryModalToEdit, dispatch]
+    [openItineraryModalToEdit]
   );
 
   const trainsToItems = useMemo(
@@ -219,6 +217,7 @@ const TrainList = ({
       timetableMode,
       trainIdUsedForProjection,
       workerStatus,
+      timetableId,
     ]
   );
 

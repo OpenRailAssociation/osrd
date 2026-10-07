@@ -94,7 +94,7 @@ export const OsrdContextLayout = ({ slice, selectors, mode }: OsrdContextLayoutP
       selectors,
       mode,
     }),
-    [slice, selectors]
+    [slice, selectors, mode]
   );
   return (
     <osrdContext.Provider value={value}>

@@ -95,7 +95,7 @@ const Timetable = ({
         ]);
       }
     },
-    [selectedTrainScheduleIds]
+    [selectedTrainScheduleIds, setSelectedTrainScheduleIds]
   );
 
   const openMoveDialog = useCallback((trainScheduleIds: number[]) => {
@@ -129,7 +129,13 @@ const Timetable = ({
         setTrainScheduleIdsToMove([]);
       }
     },
-    [trainScheduleIdsToMove, updateTrainSchedulesTssId, dispatch]
+    [
+      trainScheduleIdsToMove,
+      updateTrainSchedulesTssId,
+      dispatch,
+      trainSchedules,
+      upsertTrainSchedules,
+    ]
   );
 
   return (

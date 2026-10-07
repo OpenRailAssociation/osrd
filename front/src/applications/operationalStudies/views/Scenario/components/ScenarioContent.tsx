@@ -145,8 +145,8 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     scenario.id,
     scenario.timetable_id,
     scenario.timetable_type,
-    // eslint-disable-next-line react/use-memo
-    activeBoards.has('macro'),
+    activeBoards,
+    t,
   ]);
 
   const upsertTrainSchedulesWithNge = useCallback(
@@ -204,6 +204,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       if (!prevMacroActive) setNGEIsLoading(true);
       refreshNge();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [activeBoards.has('macro'), i18n.language, refreshNge]);
 
   const handleNGEOperation = (operation: Operation, netzgrafikDto: NetzgrafikDto) => {

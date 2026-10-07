@@ -60,7 +60,7 @@ const ScenarioExplorerModal = ({
     if (isProjectsError) {
       dispatch(setFailure(castErrorToFailure(projectsError)));
     }
-  }, [isProjectsError]);
+  }, [isProjectsError, projectsError, dispatch]);
 
   useEffect(() => {
     if (projectID && !isProjectsError) {
@@ -74,6 +74,7 @@ const ScenarioExplorerModal = ({
       setStudyID(undefined);
       setScenariosList([]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [projectID]);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ const ScenarioExplorerModal = ({
         .then(({ results }) => setScenariosList(results))
         .catch((error) => console.error(error));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [projectID, studyID, isProjectsError]);
 
   return (
