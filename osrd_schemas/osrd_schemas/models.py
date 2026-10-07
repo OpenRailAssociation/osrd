@@ -4543,6 +4543,7 @@ class TrainScheduleSet(BaseModel):
     id: int
     name: str | None = None
     published: bool
+    timetable_id: int
     timetable_type: TimetableType
 
 
@@ -6207,6 +6208,7 @@ class TimetableResult(BaseModel):
     Creation result for a Timetable
     """
 
+    is_train_schedule_set: bool
     timetable_id: int
     timetable_type: TimetableType
 
