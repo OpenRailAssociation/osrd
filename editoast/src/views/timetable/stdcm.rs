@@ -343,9 +343,10 @@ pub(in crate::views) async fn stdcm(
             )
         });
     if let Some(failure) = pathfinding_failures.pop() {
-        let payload = StdcmResponse::PreprocessingSimulationError {
-            error: failure.simulation,
-        };
+        let payload =
+            StdcmProgression::Completed(Box::new(StdcmResponse::PreprocessingSimulationError {
+                error: failure.simulation,
+            }));
         return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
     }
 
