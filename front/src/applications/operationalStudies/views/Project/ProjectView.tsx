@@ -171,36 +171,38 @@ const ProjectView = () => {
     setIsLoading(false);
   };
 
-  function displayStudiesList() {
-    return !isLoading ? (
-      <div
-        className={cx('studies-list', {
-          'selection-mode': selectedStudyIds.length > 0,
-        })}
-      >
-        <AddNewCard
-          testId="add-study-button"
-          className="study-card empty"
-          modalComponent={<AddOrEditStudyModal />}
-          item="study"
-        />
-
-        {studiesList.map((study) => (
-          <StudyCard
-            setFilterChips={setFilterChips}
-            study={study}
-            isSelected={study.id !== undefined && selectedStudyIds.includes(study.id)}
-            toggleSelect={toggleStudySelection}
-            key={`project-displayStudiesList-${study.id}`}
+  const displayedStudiesList = useMemo(
+    () =>
+      !isLoading ? (
+        <div
+          className={cx('studies-list', {
+            'selection-mode': selectedStudyIds.length > 0,
+          })}
+        >
+          <AddNewCard
+            testId="add-study-button"
+            className="study-card empty"
+            modalComponent={<AddOrEditStudyModal />}
+            item="study"
           />
-        ))}
-      </div>
-    ) : (
-      <span className="mt-5 text-center">
-        <Spinner displayDelay={500} />
-      </span>
-    );
-  }
+
+          {studiesList.map((study) => (
+            <StudyCard
+              setFilterChips={setFilterChips}
+              study={study}
+              isSelected={study.id !== undefined && selectedStudyIds.includes(study.id)}
+              toggleSelect={toggleStudySelection}
+              key={`project-displayStudiesList-${study.id}`}
+            />
+          ))}
+        </div>
+      ) : (
+        <span className="mt-5 text-center">
+          <Spinner displayDelay={500} />
+        </span>
+      ),
+    [selectedStudyIds, studiesList, isLoading, toggleStudySelection]
+  );
 
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSortOption(e.target.value as SortOptions);
@@ -208,7 +210,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     if (!projectId) throw new Error('Project id is undefined');
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     if (isProjectError && projectError) throw projectError;
@@ -216,6 +218,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     getStudiesList();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, projectStudies]);
 
   const openAddOrEditProjectModal = useCallback(() => {
@@ -364,7 +367,7 @@ const ProjectView = () => {
             dataTestId="deleteStudies"
           />
         )}
-        {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
+        {displayedStudiesList}
       </div>
     </main>
   );

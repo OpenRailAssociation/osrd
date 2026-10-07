@@ -163,6 +163,7 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
     } else {
       setSearchResults([]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedSearchTerm, debouncedSearchLine, signalSystem, selectedSettings]);
 
   const onResultClick = (result: SearchResultItemSignal) => {
@@ -185,11 +186,13 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
     } else {
       setSearchResults(sortedResults);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortFilter]);
 
   useEffect(() => {
     const lineNames = searchResults.map((result) => result.line_name);
     setAutocompleteLineNames([...new Set(lineNames)]);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [searchLineState]);
 
   useEffect(() => {
@@ -198,6 +201,7 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
       (signal) => SIGNAL_SETTINGS_DISPLAY[signal as keyof typeof SIGNAL_SETTINGS_DISPLAY]
     );
     setSignalSettings(displayed);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [signalSystem]);
 
   const formatSearchResults = () => (

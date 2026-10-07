@@ -106,7 +106,7 @@ const TrackSectionEndpointSelector = ({
     } else {
       setTrackSection(null);
     }
-  }, [formData?.track, infraID]);
+  }, [formData?.track, infraID, dispatch]);
 
   return (
     <div className="mb-4">

@@ -199,7 +199,13 @@ export default function RollingStockCurve({
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
-  }, [transformedData, comfortsStates, hoveredElectricalParam, selectedElectricalParam]);
+  }, [
+    transformedData,
+    comfortsStates,
+    hoveredElectricalParam,
+    selectedElectricalParam,
+    showPowerRestriction,
+  ]);
 
   useEffect(() => {
     if (curves && curvesVisibility) {
@@ -216,6 +222,7 @@ export default function RollingStockCurve({
     setCurvesVisibility((prevCurvesVisibility) =>
       setupCurvesVisibility(transformedData, prevCurvesVisibility)
     );
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [transformedData, ready]);
 
   const changeComfortState = (comfort: string) => {

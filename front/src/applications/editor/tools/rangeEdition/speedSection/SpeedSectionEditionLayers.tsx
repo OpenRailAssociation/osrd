@@ -179,6 +179,7 @@ export const SpeedSectionEditionLayers = () => {
         }
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [entity.properties?.track_ranges]);
 
   // Here is where we load hovered track sections that are not in ranges yet:
@@ -204,6 +205,7 @@ export const SpeedSectionEditionLayers = () => {
         }
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [hoveredItem]);
 
   const popUps = !isOnModeMove(interactionState.type) && (

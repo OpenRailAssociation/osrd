@@ -100,7 +100,7 @@ const DefaultBaseMap = ({
       const newViewport = computeBBoxViewport(bbox(points), viewport);
       updateViewportChange(newViewport);
     }
-  }, [geometry, pathStepMarkers]);
+  }, [geometry, pathStepMarkers, viewport, updateViewportChange]);
 
   return (
     <MapContextProvider

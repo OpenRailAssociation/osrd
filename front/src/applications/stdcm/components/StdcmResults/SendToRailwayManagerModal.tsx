@@ -380,12 +380,13 @@ const SendToRailwayManagerModal = ({
         )
       );
     }
-  }, [lastMinuteRequestError]);
+  }, [lastMinuteRequestError, t, mainT, dispatch]);
 
   useEffect(() => {
     if (isSuccess) {
       onSuccess(isSuccess, sendLMRResponse);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSuccess, sendLMRResponse]);
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -106,19 +106,22 @@ const StdcmOperationalPoint = ({
     setChSuggestions(extractChCodes(operationalPointParts, selectedSuggestion));
   };
 
-  const handleChSelect = (selectedChCode?: StdcmOp) => {
-    if (selectedChCode) {
-      dispatch(
-        updateStdcmPathStep({
-          id: pathStepId,
-          updates: {
-            operationalPoint: selectedChCode,
-          },
-        })
-      );
-      onItineraryChange();
-    }
-  };
+  const handleChSelect = useCallback(
+    (selectedChCode?: StdcmOp) => {
+      if (selectedChCode) {
+        dispatch(
+          updateStdcmPathStep({
+            id: pathStepId,
+            updates: {
+              operationalPoint: selectedChCode,
+            },
+          })
+        );
+        onItineraryChange();
+      }
+    },
+    [pathStepId, onItineraryChange, dispatch]
+  );
 
   const resetSuggestions = () => {
     if (searchTerm !== '' && !operationalPoint) {
@@ -142,6 +145,7 @@ const StdcmOperationalPoint = ({
       setSearchTerm('');
       setChSuggestions([]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [operationalPoint]);
 
   useEffect(() => {
@@ -155,7 +159,7 @@ const StdcmOperationalPoint = ({
 
   useEffect(() => {
     if (chSuggestions.length === 1) handleChSelect(chSuggestions[0]);
-  }, [chSuggestions]);
+  }, [chSuggestions, handleChSelect]);
 
   return (
     <div className="location-line">

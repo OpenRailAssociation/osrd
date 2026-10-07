@@ -255,6 +255,7 @@ const Editor = () => {
     if (isNil(urlInfra) && !isNil(infraID)) {
       navigate(`/editor/${infraID}`);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   /**
@@ -316,6 +317,7 @@ const Editor = () => {
         selectObjectsAndFocus(selectedEntities);
       }
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   // Decode the #map= hash param (uses the OpenStreetMap format #map=zoom/lat/lon)
@@ -333,6 +335,7 @@ const Editor = () => {
     onHashChange();
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   /**
@@ -347,6 +350,7 @@ const Editor = () => {
       dispatch(updateInfraID(infradID));
       dispatch(updateTotalsIssue(infradID));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [urlInfra]);
 
   // Lifecycle events on tools:
@@ -370,6 +374,7 @@ const Editor = () => {
     return () => {
       if (toolAndState.tool.onUnmount) toolAndState.tool.onUnmount(extendedContext);
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [toolAndState.tool]);
 
   /**
@@ -395,12 +400,14 @@ const Editor = () => {
         }
       }
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [toolAndState.state.entity?.properties.id]);
 
   useEffect(() => {
     if (infra) {
       dispatch(updateInfra(infra));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [infra]);
 
   return (

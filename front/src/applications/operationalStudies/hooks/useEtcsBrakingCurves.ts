@@ -95,6 +95,7 @@ const useEtcsBrakingCurves = (
     if (etcsBrakingCurves) {
       fetchEtcsBrakingCurves();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [simulation]);
 
   return isEtcs

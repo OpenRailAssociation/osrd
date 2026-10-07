@@ -134,8 +134,6 @@ export default function AddOrEditProjectModal({
       try {
         if (tempProjectImage) {
           const imageId = await uploadImage(tempProjectImage);
-          // TODO: fix this lint
-          // eslint-disable-next-line react/immutability
           if (imageId) currentProject.image = imageId;
         }
         const request = postProject({
@@ -252,6 +250,7 @@ export default function AddOrEditProjectModal({
     if (safeWord !== '') {
       addTag(safeWord);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [safeWord]);
 
   useModalFocusTrap(modalRef, closeModal);

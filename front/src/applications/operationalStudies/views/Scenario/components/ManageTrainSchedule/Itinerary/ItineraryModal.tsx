@@ -281,6 +281,7 @@ const ItineraryModal = ({
 
       setWasInitialized(true);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [wasInitialized, trainScheduleToEditData, scenario.timetable_type]);
 
   const { categoryColors, currentSubCategory } = useCategoryColors(modalFormState.category);
@@ -649,7 +650,7 @@ const ItineraryModal = ({
       initCustomTracksEntry(step.location);
     });
     setPathSteps(ensureTrailingEmptyStep(formattedPathSteps));
-  }, [trainState.pathSteps]);
+  }, [trainState.pathSteps, initCustomTracksEntry, setPathSteps]);
 
   const pathfindingStepsWithLocations = useMemo(
     () =>
@@ -695,6 +696,7 @@ const ItineraryModal = ({
     });
 
     return () => controller.abort();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [workerStatus, modalFormState.rollingStockId, modalFormState.speedLimitTag, pathfindingSteps]);
 
   const onPathfindingLoad = useEffectEvent((geometry: PathProperties['geometry']) => {
@@ -841,6 +843,7 @@ const ItineraryModal = ({
     if (locatedStepsCount < 2 || pathStepsMetadataByKey.size < 2) return;
 
     frameAllPathSteps();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [pathStepsMetadataByKey, hasInvalidPathStep]);
 
   const resetCategoryWarning = useCallback(() => {

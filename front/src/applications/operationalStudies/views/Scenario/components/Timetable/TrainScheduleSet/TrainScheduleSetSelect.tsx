@@ -60,7 +60,7 @@ const TrainScheduleSetSelect = ({
 
   useEffect(() => {
     setTrainScheduleSetIdSelected(undefined);
-  }, [catalogSelected]);
+  }, [catalogSelected, setTrainScheduleSetIdSelected]);
 
   return (
     <form

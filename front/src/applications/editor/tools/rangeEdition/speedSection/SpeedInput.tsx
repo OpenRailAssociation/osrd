@@ -19,7 +19,7 @@ const SpeedInput = ({ msSpeed, onChange, ...attrs }: SpeedInputProps) => {
   useEffect(() => {
     const newKmhSpeed = msToKmhString(msSpeed);
     if (+newKmhSpeed !== +kmhSpeed) setKmhSpeed(newKmhSpeed);
-  }, [msSpeed]);
+  }, [msSpeed, kmhSpeed]);
 
   return (
     <input

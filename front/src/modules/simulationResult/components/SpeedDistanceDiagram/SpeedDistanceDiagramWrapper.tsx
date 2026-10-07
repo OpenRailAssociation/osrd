@@ -98,20 +98,21 @@ const SpeedDistanceDiagramWrapper = ({
   };
 
   useEffect(() => {
+    const currentRoot = root.current;
     const updateCanvasSize = () => {
-      if (root.current) {
-        setContainerWidth(root.current.clientWidth);
+      if (currentRoot) {
+        setContainerWidth(currentRoot.clientWidth);
       }
     };
 
     const resizeObserver = new ResizeObserver(updateCanvasSize);
-    if (root.current) {
-      resizeObserver.observe(root.current);
+    if (currentRoot) {
+      resizeObserver.observe(currentRoot);
     }
 
     return () => {
-      if (root.current) {
-        resizeObserver.unobserve(root.current);
+      if (currentRoot) {
+        resizeObserver.unobserve(currentRoot);
       }
     };
   }, []);

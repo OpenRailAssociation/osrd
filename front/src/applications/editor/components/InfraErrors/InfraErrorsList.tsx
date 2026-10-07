@@ -83,7 +83,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
         : [...INFRA_ERRORS_BY_LEVEL[filterLevel]];
     const sortedTypes = sortBy(types, (type) => t(`Editor.infra-errors.error-type.${type}.name`));
     setErrorTypeList(sortedTypes);
-  }, [filterLevel]);
+  }, [t, filterLevel]);
 
   /**
    * When the infra or type or level changed

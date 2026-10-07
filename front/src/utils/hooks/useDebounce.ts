@@ -31,7 +31,7 @@ export const useDebouncedFunc = <T = number | string | null>(
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay]);
+  }, [value, delay, func]);
 };
 
 /**
@@ -47,5 +47,5 @@ export const useDebouncedEffect = (delay: number, effect: EffectCallback, deps: 
       clearTimeout(handler);
       if (destructor) destructor();
     };
-  }, [...deps, delay]);
+  }, [deps, delay, effect]);
 };

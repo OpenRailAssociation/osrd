@@ -109,6 +109,7 @@ const RollingStockEditor = () => {
         window.scrollBy(0, -500);
       }, 1000);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [ref2scroll.current, isLoading]);
 
   const importFile = useCallback(

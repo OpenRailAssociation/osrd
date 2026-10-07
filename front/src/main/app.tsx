@@ -131,7 +131,7 @@ export default function App() {
   useEffect(() => {
     // Blindly dispatch current front version for storage
     dispatch(updateLastInterfaceVersion(import.meta.env.VITE_OSRD_GIT_DESCRIBE));
-  }, []);
+  }, [dispatch]);
 
   const handleError = useCallback(
     (event: ErrorEvent) => {

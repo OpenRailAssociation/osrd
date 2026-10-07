@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdEditNote, MdList } from 'react-icons/md';
@@ -46,24 +46,28 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
 
   const debouncedFilter = useDebounce(filter, 250);
 
-  function filterInfras(infrasListLocal: Infra[]) {
-    if (debouncedFilter) {
-      infrasListLocal = infrasListLocal.filter(
-        (infra) =>
-          infra.name.toLowerCase().includes(debouncedFilter.toLowerCase()) ||
-          infra.id.toString().includes(debouncedFilter)
-      );
-    }
-    const filteredInfrasListLocal = infrasListLocal
-      .slice()
-      .sort((a, b) => a.name.localeCompare(b.name));
-    setFilteredInfrasList(filteredInfrasListLocal);
-  }
+  const filterInfras = useCallback(
+    (infrasListLocal: Infra[]) => {
+      if (debouncedFilter) {
+        infrasListLocal = infrasListLocal.filter(
+          (infra) =>
+            infra.name.toLowerCase().includes(debouncedFilter.toLowerCase()) ||
+            infra.id.toString().includes(debouncedFilter)
+        );
+      }
+      const filteredInfrasListLocal = infrasListLocal
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setFilteredInfrasList(filteredInfrasListLocal);
+    },
+    [debouncedFilter]
+  );
 
   useEffect(() => {
     if (infrasList?.results) {
       filterInfras(infrasList.results);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedFilter]);
 
   useEffect(() => {
@@ -76,12 +80,14 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
         )
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isError]);
 
   useEffect(() => {
     if (isSuccess && infrasList?.results && infrasList.results.length > 0) {
       filterInfras(infrasList.results);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSuccess, infrasList]);
 
   return (

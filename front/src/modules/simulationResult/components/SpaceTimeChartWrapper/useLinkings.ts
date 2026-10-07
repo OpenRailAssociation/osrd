@@ -80,6 +80,7 @@ const useLinkings = ({
         onError: (error) => dispatch(setFailure(castErrorToFailure(error))),
       }
     );
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [linkingsEnabled, timetableId, displayedTrains]);
 
   const createLinking = useCallback(

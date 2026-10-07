@@ -76,6 +76,7 @@ const OSRDTooltip = ({
       left: tooltipLeftPosition,
       bottom: undefined,
     });
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   return (

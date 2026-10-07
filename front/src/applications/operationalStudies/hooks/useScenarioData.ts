@@ -105,7 +105,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     return () => {
       trainSchedulesResult.unsubscribe();
     };
-  }, [scenario.timetable_id]);
+  }, [scenario.timetable_id, dispatch]);
 
   const {
     projectedTrainsById,
@@ -191,7 +191,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     if (trainSchedules && workerStatus === 'READY' && simulatedTrainsById.size === 0) {
       simulateTrainSchedules(trainSchedules);
     }
-  }, [trainSchedules, workerStatus, simulatedTrainsById]);
+  }, [trainSchedules, workerStatus, simulatedTrainsById, simulateTrainSchedules]);
 
   const broadcastChannel = useRef<BroadcastChannel>(null);
 
@@ -455,7 +455,13 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       channel.close();
       broadcastChannel.current = null;
     };
-  }, [scenario]);
+  }, [
+    scenario,
+    dispatch,
+    upsertTrainSchedules,
+    removeTrainSchedules,
+    setTrainScheduleDepartureTime,
+  ]);
 
   const results = useMemo(
     () => ({

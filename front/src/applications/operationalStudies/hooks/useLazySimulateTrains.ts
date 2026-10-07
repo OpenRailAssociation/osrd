@@ -85,6 +85,7 @@ export default function useLazySimulateTrains({
       loader.cancel();
       loaderRef.current = null;
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [infraId, electricalProfileSetId, rollingStocks]);
 
   const simulateTrainSchedules = useCallback((trainSchedules: TrainScheduleResponse[]) => {

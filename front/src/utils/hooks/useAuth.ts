@@ -31,6 +31,7 @@ function useAuth() {
     if (!isUserLogged && !isAuthenticateLoading) {
       login();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isUserLogged]);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ function useAuth() {
     if (data) {
       dispatch(updateAuthzUser({ userRoles: data.roles, userId: data.id }));
     }
-  }, [isUserLogged, data, impersonatedUser]);
+  }, [isUserLogged, data, impersonatedUser, dispatch]);
 
   /**
    * Function to impersonate the given user, or if undefined, stop the impersonation.

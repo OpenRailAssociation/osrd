@@ -109,6 +109,7 @@ const StdcmResults = ({
 
   const simulationReportSheetNumber = useMemo(
     () => generateCodeNumber(),
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
     [selectedSimulation.index]
   );
   const isSelectedSimulationRetained =
@@ -287,6 +288,7 @@ const StdcmResults = ({
     if (isSelectedSimulationRetained) {
       searchForSimilarTrains();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSelectedSimulationRetained]);
 
   useEffect(() => {

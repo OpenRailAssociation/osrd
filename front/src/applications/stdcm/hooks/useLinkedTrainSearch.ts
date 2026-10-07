@@ -210,7 +210,7 @@ const useLinkedTrainSearch = () => {
       setLinkedTrainDate(selectableSlot.start);
       resetLinkedTrainSearch();
     }
-  }, [selectableSlot]);
+  }, [selectableSlot, searchDatetimeWindow, linkedTrainDate]);
 
   return {
     displaySearchButton,

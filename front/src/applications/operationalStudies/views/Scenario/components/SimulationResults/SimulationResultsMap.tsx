@@ -207,6 +207,8 @@ const SimulationResultMap = ({
     pathStepsOperationalPoints,
     pathProperties?.operationalPoints,
     pathfindingResults,
+    getTrackSectionsByIds,
+    t,
   ]);
 
   const interactiveLayerIds = useMemo(
@@ -241,6 +243,7 @@ const SimulationResultMap = ({
       const newViewport = computeBBoxViewport(box, viewport);
       updateViewportChange(newViewport);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [geojsonPath, mapMarkers]);
 
   return (

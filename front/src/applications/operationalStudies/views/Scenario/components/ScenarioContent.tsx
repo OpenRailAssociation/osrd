@@ -204,6 +204,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       if (!prevMacroActive) setNGEIsLoading(true);
       refreshNge();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [activeBoards.has('macro'), i18n.language, refreshNge]);
 
   const handleNGEOperation = (operation: Operation, netzgrafikDto: NetzgrafikDto) => {

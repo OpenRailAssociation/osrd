@@ -197,7 +197,6 @@ export const useOperationalPointSearch = ({
     debouncedTrimmedInput,
     infraId,
     postSearch,
-    buildOpSuggestion,
     pageSize,
     minChars,
     resetOpSuggestions,
