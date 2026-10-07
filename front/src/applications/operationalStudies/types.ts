@@ -19,6 +19,7 @@ import type {
   MacroNoteForm,
   TrainScheduleResponse,
   PathfindingResult,
+  TimetableType,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { ProjectionWaypoint, PathWaypoint } from 'modules/simulationResult/types';
@@ -53,6 +54,7 @@ export type TrainScheduleFromJson = Omit<TrainSchedule, 'start_time' | 'category
 export type RoundTripsFromJson = ([number, number] | [number, null])[];
 
 export type TimetableJsonPayload = {
+  timetable_type?: TimetableType;
   train_schedules: TrainScheduleFromJson[];
   macro_nodes?: MacroNodeForm[];
   macro_notes?: MacroNoteForm[];
