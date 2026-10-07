@@ -11,7 +11,7 @@ export default function useCalendarPicker({
 }: Omit<CalendarPickerProps, 'modalPosition' | 'calendarPickerRef' | 'onDayClick'>) {
   validateSlots(selectedSlot, selectableSlot, initialDate);
 
-  const [activeDate, setActiveDate] = useState(new Date());
+  const [activeDate, setActiveDate] = useState(() => new Date());
 
   const displayedMonthsStartDates = generateSequentialDates(activeDate, numberOfMonths);
 

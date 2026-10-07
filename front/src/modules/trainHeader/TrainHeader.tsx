@@ -21,6 +21,8 @@ import { applyOccurrenceOnPacedTrain } from './utils/applyOccurrenceOnPacedTrain
 
 export type TrainHeaderProps = {
   train: Train;
+  // TODO: remove this eslint-disable (see ticket #19111)
+  // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
   path?: Omit<PathfindingResult, 'status'>;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
 };

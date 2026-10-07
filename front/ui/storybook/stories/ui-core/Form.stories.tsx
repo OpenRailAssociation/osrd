@@ -19,6 +19,8 @@ import { noop } from 'lodash';
 
 import '@osrd-project/ui-core/dist/theme.css';
 
+const now = new Date();
+
 const FormComponent = (fieldProps: {
   required: boolean;
   disabled: boolean;
@@ -156,14 +158,14 @@ const FormComponent = (fieldProps: {
       />
 
       <DatePicker
-        value={data.datepicker || new Date()}
+        value={data.datepicker || now}
         onDateChange={(e) => setData((prev) => ({ ...prev, datepicker: e }))}
         inputProps={{ id: 'datepicker', label: 'Date picker', ...fieldProps }}
       />
 
       <DatePicker
         isRangeMode={true}
-        value={data.datepickerRange || { start: new Date(), end: new Date() }}
+        value={data.datepickerRange || { start: now, end: now }}
         onDateChange={(_, e) => setData((prev) => ({ ...prev, datepickerRange: e }))}
         inputProps={{ id: 'daterangepicker', label: 'Date range picker', ...fieldProps }}
       />
