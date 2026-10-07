@@ -90,6 +90,10 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
+      getAuthzUsers: build.query<GetAuthzUsersApiResponse, GetAuthzUsersApiArg>({
+        query: () => ({ url: `/authz/users` }),
+        providesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1716,6 +1720,18 @@ export type PostAuthzUserInfoApiArg = {
     ids?: number[];
   };
 };
+export type GetAuthzUsersApiResponse =
+  /** status 200 List all the users with their identities, roles and groups */ {
+    groups: {
+      id: number;
+      name: string;
+    }[];
+    id: number;
+    identities: string[];
+    name: string;
+    roles: Role[];
+  }[];
+export type GetAuthzUsersApiArg = void;
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
   /** status 200 Get list of user that have a grant on the resource */ {
     grant: StandardGrant;

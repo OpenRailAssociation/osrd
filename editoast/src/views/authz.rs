@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -1013,6 +1014,80 @@ pub(in crate::views) async fn list_groups(
     groups.sort_by_key(|g| g.id);
 
     Ok(Json(groups))
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "List all the users with their identities, roles and groups",
+        body = inline(Vec<UserInfo>),
+    ))
+)]
+pub(in crate::views) async fn list_users(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+) -> Result<Json<Vec<UserInfo>>> {
+    let user_with_identities = UserWithIdentities::stream(db_pool.get().await?)
+        .await?
+        .try_collect::<Vec<_>>()
+        .await?;
+
+    // Fetch roles and groups for each user in parallel using OpenFGA
+    let protected_list = user_with_identities
+        .iter()
+        .map(|UserWithIdentities { user, .. }| {
+            let list_roles = authz::v2::subject_roles(authz::Subject::user(user.id));
+            let list_groups = authz::v2::user_groups(authz::User(user.id));
+            list_roles.zip(list_groups)
+        })
+        .collect_vec();
+
+    let protected = v2::Protected::from_iter(protected_list);
+
+    let all_users_roles_and_groups = protected
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
+
+    // Fetch groups from the database to get their names
+    // let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
+    let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
+        &mut db_pool.get().await?,
+        all_users_roles_and_groups
+            .iter()
+            .flat_map(|(_, groups)| groups.iter().map(|g| **g))
+            .collect_vec(),
+    )
+    .await?;
+
+    // Build the final response by combining user info, roles, and groups
+    let users = all_users_roles_and_groups
+        .into_iter()
+        .zip(user_with_identities)
+        .map(
+            |((roles, groups), UserWithIdentities { user, identities })| {
+                let groups = groups_from_db
+                    .iter()
+                    .filter(|g| groups.binary_search(&authz::Group(*g.0)).is_ok())
+                    .map(|(_, g)| g.clone())
+                    .collect::<Vec<_>>();
+                UserInfo {
+                    id: user.id,
+                    name: user.name,
+                    identities,
+                    roles: HashSet::from_iter(roles),
+                    groups: HashSet::from_iter(groups),
+                }
+            },
+        )
+        .collect::<Vec<UserInfo>>();
+
+    Ok(Json(users))
 }
 
 #[cfg(test)]
