@@ -269,6 +269,12 @@
       "S3Error": "Erreur d'accès au s3",
       "S3NotConfigured": "Editoast n'est pas configuré pour accéder au s3"
     },
+    "stdcm_request": {
+      "Database": "Erreur interne (base de données)",
+      "Forbidden": "Accès refusé",
+      "MalformedParameters": "Curseur de pagination invalide dans les paramètres de requête",
+      "NotUser": "Les paramètres de requête by=group et by=user nécessitent un utilisateur authentifié"
+    },
     "stdcm_search_env": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Environnement de recherche stdcm '{{env_id}}' non trouvé"

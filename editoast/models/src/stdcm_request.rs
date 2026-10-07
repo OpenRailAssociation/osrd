@@ -146,7 +146,8 @@ impl StdcmRequest {
 
         // We query one more than the limit to determine if there is a next page
         // If we get limit + 1 element back, there is a next page
-        query = query.limit(selection_settings.limit as i64 + 1);
+        let limit_with_next_page_probe = selection_settings.limit + 1;
+        query = query.limit(limit_with_next_page_probe as i64);
 
         let mut requests = query
             .load_stream::<(i64, String, i64, Option<String>)>(conn.write().await.deref_mut())
@@ -162,16 +163,16 @@ impl StdcmRequest {
             .await
             .map_err(crate::Error::from)?;
 
-        let is_last_page = requests.len() != selection_settings.limit + 1;
-        requests.truncate(selection_settings.limit); // Make sure we don't return the one extraneous element we queried for to check the next page
-        let requests = requests;
-
         if requests.is_empty() {
             return Ok(PaginatedList {
                 requests: vec![],
                 next: None,
             });
         }
+
+        let is_last_page = requests.len() != limit_with_next_page_probe;
+        requests.truncate(selection_settings.limit); // Make sure we don't return the one extraneous element we queried for to check the next page
+        let requests = requests;
 
         let next = is_last_page.not().then(|| requests[requests.len() - 1].id);
 

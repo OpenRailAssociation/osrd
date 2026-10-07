@@ -268,6 +268,12 @@
       "S3Error": "Error getting s3 data",
       "S3NotConfigured": "Editoast isn't configured to access s3"
     },
+    "stdcm_request": {
+      "Database": "Internal error (database)",
+      "Forbidden": "Access denied",
+      "MalformedParameters": "Invalid pagination cursor in query parameters",
+      "NotUser": "by=group and by=user query parameters require an authenticated user"
+    },
     "stdcm_search_env": {
       "Database": "Internal error (database)",
       "NotFound": "Stdcm search environment '{{env_id}}' could not be found"
