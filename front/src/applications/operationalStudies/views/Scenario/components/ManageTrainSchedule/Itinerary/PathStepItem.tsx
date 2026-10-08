@@ -4,8 +4,10 @@ import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
+  Check,
   FocusLocation,
   ArrowRight,
+  Infrastructure,
   Square,
   KebabHorizontal,
   X,
@@ -270,6 +272,15 @@ const PathStepItem = ({
     pathStepMetadata.trackName &&
     !pathStepMetadata.isValidLocalTrackName;
 
+  const isOpValid = !isInvalid && !!pathStep.location;
+
+  const opStatusIcon = (
+    <span className={cx('path-step-op-status-icon', { recognized: isOpValid })}>
+      <Infrastructure size={isOpValid ? 'sm' : 'lg'} />
+      {isOpValid && <Check size="sm" className="path-step-op-status-badge" />}
+    </span>
+  );
+
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
@@ -414,6 +425,7 @@ const PathStepItem = ({
               <ComboBox
                 id={`pathStep-name-${pathStep.key}`}
                 data-testid="path-step-combo-box"
+                leadingContent={opStatusIcon}
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
                 suggestions={visibleSuggestions}
