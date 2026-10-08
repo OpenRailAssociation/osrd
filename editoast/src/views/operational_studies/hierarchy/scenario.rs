@@ -8,7 +8,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -33,6 +32,7 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use models::Infra;
+use models::Timestamp;
 use models::project::Project;
 use models::scenario::Scenario;
 use models::study::Study;
@@ -63,8 +63,8 @@ impl ScenarioCreateForm {
         Scenario::changeset()
             .name(self.name)
             .description(self.description)
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
+            .creation_date(Timestamp::now())
+            .last_modification(Timestamp::now())
             .infra_id(self.infra_id)
             .timetable_id(self.timetable_id)
             .tags(self.tags)
@@ -275,7 +275,7 @@ impl ScenarioPatchForm {
             .flat_tags(self.tags)
             .flat_infra_id(self.infra_id)
             .flat_electrical_profile_set_id(self.electrical_profile_set_id)
-            .last_modification(Utc::now())
+            .last_modification(Timestamp::now())
     }
 }
 
