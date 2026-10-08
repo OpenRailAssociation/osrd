@@ -1,6 +1,7 @@
 import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
 import { clearCanvas, maxPositionValue } from '../../utils';
+import { ZOOM_CONFIG } from '../../const';
 
 const { MARGIN_LEFT, MARGIN_BOTTOM, CURVE_MARGIN_SIDES } = MARGINS;
 
@@ -8,10 +9,17 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   const { ratioX, leftOffset, cursor } = store;
 
   clearCanvas(ctx, width, height);
-
   ctx.save();
+
+  // Draw background
+  const positionY = height - MARGIN_BOTTOM;
+  const backgroundColor = 'rgb(250, 249, 245)';
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, positionY, width, MARGIN_BOTTOM);
+
   ctx.translate(leftOffset, 0);
 
+  // Draw ticks and text
   ctx.strokeStyle = 'rgb(121, 118, 113)';
   ctx.lineWidth = 0.5;
   ctx.font = 'normal 12px IBM Plex Sans';
@@ -47,7 +55,6 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
     nbTicks;
 
   ctx.beginPath();
-  const positionY = height - MARGIN_BOTTOM;
 
   for (let i = 0; i <= nbTicks; i++) {
     const positionX = MARGIN_LEFT + CURVE_MARGIN_SIDES / 2 + ticksOffset * i;
@@ -100,10 +107,20 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   ctx.closePath();
   ctx.stroke();
-
   ctx.restore();
 
-  // prevent overlapping with margins left and right
-  ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width, 0, width, height);
+  // prevent overlapping with slider
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(width - ZOOM_CONFIG.SLIDER_WIDTH - 21, positionY, width, MARGIN_BOTTOM);
+  ctx.fillRect(0, positionY, MARGIN_LEFT, MARGIN_BOTTOM);
+
+  // Draw separator line
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.lineWidth = 0.5;
+  ctx.moveTo(0, positionY);
+  ctx.lineTo(width, positionY);
+  ctx.closePath();
+  ctx.stroke();
+
 };

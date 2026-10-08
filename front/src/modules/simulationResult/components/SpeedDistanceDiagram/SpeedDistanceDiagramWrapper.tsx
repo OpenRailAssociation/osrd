@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import {
   SpeedSpaceChart,
+  type EtcsBrakingCurves,
   type LayerData,
   type PowerRestrictionValues,
-  type EtcsBrakingCurves,
 } from '@osrd-project/ui-charts';
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +30,6 @@ export type SpeedDistanceDiagramWrapperProps = {
 };
 
 const SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT = 400;
-const SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR = 'transparent';
 
 const SpeedDistanceDiagramWrapper = ({
   trainScheduleSimulation,
@@ -128,7 +127,6 @@ const SpeedDistanceDiagramWrapper = ({
           width={containerWidth || SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT}
           height={height}
           setHeight={setHeight}
-          backgroundColor={SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR}
           data={data}
           translations={translations}
           initialLayersDisplay={initialLayersDisplay}
