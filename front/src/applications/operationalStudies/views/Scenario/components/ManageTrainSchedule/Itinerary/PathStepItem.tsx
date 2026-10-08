@@ -5,6 +5,8 @@ import {
   AddedLocation,
   AddLocation,
   Check,
+  ChevronDown,
+  ChevronUp,
   FocusLocation,
   ArrowRight,
   Infrastructure,
@@ -99,6 +101,7 @@ const PathStepItem = ({
   const { updateViewport } = useMapSettingsActions();
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
+  const [isSubFormExpanded, setIsSubFormExpanded] = useState(false);
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -547,6 +550,19 @@ const PathStepItem = ({
           small
           data-testid="stop-pass-segmented-control"
         />
+        <button
+          type="button"
+          className="path-step-subform-toggle"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSubFormExpanded((prev) => !prev);
+          }}
+          aria-expanded={isSubFormExpanded}
+          aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+          data-testid="path-step-subform-toggle"
+        >
+          {isSubFormExpanded ? <ChevronUp size="sm" /> : <ChevronDown size="sm" />}
+        </button>
         <div className="map-interactions">
           <button
             type="button"
