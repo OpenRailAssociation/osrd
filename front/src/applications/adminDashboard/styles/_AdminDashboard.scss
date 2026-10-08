@@ -1,48 +1,87 @@
-
 #adm-dash-header {
-    // display: grid;
-    // grid-template-columns: auto 1fr auto auto;
-    // grid-auto-flow: dense;
-    align-items: center;
-    display: flex;
+  // display: grid;
+  // grid-template-columns: auto 1fr auto auto;
+  // grid-auto-flow: dense;
+  align-items: center;
+  display: flex;
 
-    #help {
-        margin-left: auto; // push to the left
-    }
+  #help {
+    margin-left: auto; // push to the left
+  }
 
-    #osrd {
-        margin: 6px 24px;
-        color: var(--black25);
-        font-family: IBMPlexSans-Bold, 'IBM Plex Sans', system-ui, sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: -0.22px;
+  #osrd {
+    margin: 6px 24px;
+    color: var(--black25);
+    font-family: IBMPlexSans-Bold, "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.22px;
+  }
 
-    }
+  /* TODO: vertically center the text */
+  #help {
+    --color: #b9c7c4;
+    --bg: rgba(185, 199, 196, 0.5);
 
-    /* TODO: vertically center the text */
-    #help {
-        --color: #B9C7C4;
-        --bg: rgba(185, 199, 196, 0.5);
+    width: 18px;
+    height: 18px;
+    box-shadow: 0 0 0 3px var(--bg);
+    border-radius: 12px;
+    background-color: white;
+    color: var(--color);
+    font-family: IBMPlexSans-SemiBold, "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+  }
 
-        width: 18px;
-        height: 18px;
-        box-shadow: 0 0 0 3px var(--bg);
-        border-radius: 12px;
-        background-color: white;
-        color: var(--color);
-        font-family: IBMPlexSans-SemiBold, 'IBM Plex Sans', system-ui, sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        text-align: center;
-    }
-
-    #username {
-        margin: 9px 16px;
-        color: var(--black25);
-        font-size: 14px;
-        font-weight: 400;
-        text-align: right;
-    }
+  #username {
+    margin: 9px 16px;
+    color: var(--black25);
+    font-size: 14px;
+    font-weight: 400;
+    text-align: right;
+  }
 }
 
+body:has(#adm-dash-user-table) {
+  background-color: rgb(235, 235, 234);
+}
+
+div:has(> #adm-dash-user-table) {
+  width: 60%;
+  margin: 48px auto;
+  box-shadow:
+    0 2px 4px 0 rgba(0, 0, 0, 0.16),
+    0 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0 1px 0 0 inset rgba(255, 255, 255, 1);
+  border-bottom-color: rgba(235, 235, 234, 1);
+  border-bottom-width: 24px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 1);
+  overflow: hidden;
+}
+
+#adm-dash-user-table {
+  width: 100%;
+
+  caption {
+    caption-side: top;
+
+    div {
+      height: 48px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      background-color: var(--grey5);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      button:nth-child(2) {
+        // edit groups
+        margin-left: auto; // float right
+      }
+    }
+  }
+}
