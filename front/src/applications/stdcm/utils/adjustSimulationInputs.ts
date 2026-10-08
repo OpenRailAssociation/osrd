@@ -15,9 +15,9 @@ export const adjustPayloadByDirection = (
   direction: 'upstream' | 'downstream'
 ): PostTimetableByIdStdcmApiArg => ({
   ...payload,
+  'x-osrd-stdcm-fallback': true,
   body: {
     ...payload.body,
-    is_fallback: true,
     steps: payload.body.steps.map((step, index, steps) => {
       if (index !== 0 && index !== steps.length - 1) return step;
       if (!step.timing_data) return step;

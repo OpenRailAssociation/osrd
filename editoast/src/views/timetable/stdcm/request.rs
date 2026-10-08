@@ -131,9 +131,6 @@ pub(crate) struct Request {
     #[serde(default)]
     pub(crate) allowed_track_sections: HashSet<String>,
     pub(crate) consist_schedule: ConsistSchedule,
-    /// Whether this request is a fallback, sent after an initial request failed to find a path
-    #[serde(default)]
-    pub(crate) is_fallback: bool,
 }
 
 impl Request {
