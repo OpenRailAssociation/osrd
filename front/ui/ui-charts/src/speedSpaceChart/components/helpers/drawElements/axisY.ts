@@ -8,11 +8,13 @@ const TEXT_POSITION_X = MARGIN_LEFT - TICK_WIDTH - 6;
 
 export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const maxSpeed = maxSpeedValue(store);
+  const { cursor } = store;
 
   clearCanvas(ctx, width, height);
 
   // Draw background
-  ctx.fillStyle = 'rgb(247, 246, 238)';
+  const cursorHover = cursor.x !== null && cursor.y !== null && cursor.x < MARGIN_LEFT && cursor.y < height - MARGIN_BOTTOM;
+  ctx.fillStyle = cursorHover ? 'white' : 'rgb(247, 246, 238)';
   ctx.fillRect(0, 0, MARGIN_LEFT, height);
 
   // Draw separator line

@@ -144,11 +144,11 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     CURVE_MARGIN_SIDES / 2;
 
   // Skip drawing the reticle if the cursor is outside the graph
-  if (cursor.x === null || cursor.y === null) {
+  if (cursor.x === null || cursor.y === null || cursor.x < MARGIN_LEFT || cursor.y > height - MARGIN_BOTTOM) {
     return;
   }
 
-  let reticleX = cursor.x + MARGIN_LEFT;
+  let reticleX = cursor.x;
 
   let cursorPosition = getCursorPosition(cursor.x, width, store);
   if (cursorPosition < 0 || cursorPosition > maxPosition) {

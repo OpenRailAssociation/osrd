@@ -8,12 +8,14 @@ const { MARGIN_LEFT, MARGIN_BOTTOM, CURVE_MARGIN_SIDES } = MARGINS;
 export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const { ratioX, leftOffset, cursor } = store;
 
+
   clearCanvas(ctx, width, height);
   ctx.save();
 
   // Draw background
   const positionY = height - MARGIN_BOTTOM;
-  const backgroundColor = 'rgb(250, 249, 245)';
+  const cursorHover = cursor.y !== null && cursor.y > height - MARGIN_BOTTOM;
+  const backgroundColor = cursorHover ? 'white' : 'rgb(250, 249, 245)';
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, positionY, width, MARGIN_BOTTOM);
 
@@ -74,7 +76,10 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
       const fadeWidth = textWidth * 2;
 
       // Reduce progressively opacity for text when text is near the cursor or borders
-      const cursorX = cursor.x ? cursor.x + MARGIN_LEFT - leftOffset : Infinity;
+      let cursorX = Infinity;
+      if (cursor.x !== null && cursor.y !== null && cursor.y < height - MARGIN_BOTTOM) {
+          cursorX = cursor.x + MARGIN_LEFT - leftOffset;
+      } 
       const distanceCursor = Math.abs(cursorX - positionX);
       // The -0.1 is to hide completely the text when it's near enougth the cursor.
       // Clamp the opacity value between 0.0 and 1.0.

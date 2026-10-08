@@ -123,7 +123,6 @@ const SpeedSpaceChart = ({
     powerRestrictionsTop,
     speedLimitTagsTop,
     electricalProfileLayerHeight,
-    interactivityLayerHeight,
   } = useMemo(() => {
     const _electricalProfilesOffset = store.layersDisplay.electricalProfiles
       ? LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT
@@ -144,21 +143,12 @@ const SpeedSpaceChart = ({
     const _powerRestrictionsTop = _baseLayerPosition + _electricalProfilesOffset;
     const _speedLimitTagsTop = _powerRestrictionsTop + _powerRestrictionsOffset;
 
-    const _interactivityLayerHeight =
-      _mainChartHeight -
-      MARGINS.MARGIN_BOTTOM -
-      MARGINS.MARGIN_TOP +
-      _electricalProfilesOffset +
-      _powerRestrictionsOffset +
-      _speedLimitTagsOffset;
-
     return {
       mainChartHeight: _mainChartHeight,
       powerRestrictionsTop: _powerRestrictionsTop,
       speedLimitTagsTop: _speedLimitTagsTop,
       electricalProfileLayerHeight:
         _mainChartHeight + LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT,
-      interactivityLayerHeight: _interactivityLayerHeight,
     };
   }, [height, store.layersDisplay]);
 
@@ -339,8 +329,8 @@ const SpeedSpaceChart = ({
         />
       )}
       <FrontInteractivityLayer
-        width={WIDTH_OFFSET}
-        height={interactivityLayerHeight}
+        width={width}
+        height={height}
         store={store}
         setStore={setStore}
       />
