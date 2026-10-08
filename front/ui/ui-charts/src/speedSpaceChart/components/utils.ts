@@ -344,7 +344,7 @@ export const getDisplayedStops = (
 export const getCursorPosition = (cursorX: number, width: number, store: Store) => {
   const { ratioX, leftOffset } = store;
   const maxPosition = maxPositionValue(store.speeds);
-  const x = cursorX - leftOffset - MARGINS.CURVE_MARGIN_SIDES / 2;
+  const x = cursorX - MARGINS.MARGIN_LEFT - leftOffset - MARGINS.CURVE_MARGIN_SIDES / 2;
   const maxX =
     (width - MARGINS.MARGIN_LEFT - MARGINS.CURVE_MARGIN_SIDES) * ratioX;
   return (x * maxPosition) / maxX;
@@ -382,7 +382,7 @@ export const getSnappedStop = (cursorX: number, width: number, store: Store) => 
   // Check if the closest stop is close enough to the cursor
   const stopPosition = filteredStops[closestStopIndex].position.start;
   const stopPosX = positionToPosX(stopPosition, maxPosition, width, ratioX, leftOffset);
-  if (Math.abs(stopPosX - (cursorX + MARGINS.MARGIN_LEFT)) < CURSOR_SNAP_DISTANCE) {
+  if (Math.abs(stopPosX - cursorX) < CURSOR_SNAP_DISTANCE) {
     return filteredStops[closestStopIndex];
   }
   return null;

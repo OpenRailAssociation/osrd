@@ -23,6 +23,7 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
   clearCanvas(ctx, width, height);
 
   const maxPosition = maxPositionValue(store.speeds);
+  const cursorX = (cursor.x && cursor.x > MARGIN_LEFT && cursor.y && cursor.y < height - MARGIN_BOTTOM) ? cursor.x : null;
 
   const filteredStops = getDisplayedStops(stops, ratioX, width, maxPosition);
 
@@ -49,7 +50,7 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.strokeStyle = GREY_50.hex();
   ctx.setLineDash([]);
 
-  const snappedStop = cursor.x ? getSnappedStop(cursor.x, width, store) : null;
+  const snappedStop = cursorX ? getSnappedStop(cursorX, width, store) : null;
 
   filteredStops.forEach(({ position }) => {
     if (snappedStop && position.start === snappedStop.position.start) {
@@ -78,12 +79,12 @@ export const drawSteps = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   filteredTextStops.forEach((stop) => {
     const posX = positionToPosX(stop.position.start, maxPosition, width, ratioX);
-    if (cursor.x && posX < cursor.x + MARGIN_LEFT - leftOffset) {
+    if (cursorX && posX < cursorX - leftOffset) {
       prevSteps.push(stop);
       if (prevSteps.length > 4) prevSteps.shift();
     }
 
-    if (cursor.x && posX > cursor.x + MARGIN_LEFT - leftOffset) {
+    if (cursorX && posX > cursorX - leftOffset) {
       if (nextSteps.length < 4) {
         nextSteps.push(stop);
       }
