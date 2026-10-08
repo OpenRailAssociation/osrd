@@ -4114,4 +4114,74 @@ mod tests {
             .await
             .assert_status_forbidden();
     }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_user() {
+        let app = test_app!().build();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user_1 = app
+            .user("user1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let user_2 = app
+            .user("user2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+
+        let user_to_delete = app
+            .user("user_to_delete", "User to Delete")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // Delete user_to_delete as admin
+        let path = format!("/authz/user/{}", user_to_delete.id);
+        app.delete(path.as_str())
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_no_content();
+
+        // Verify user_to_delete is no longer in the list of users
+        let users = app
+            .get("/authz/users")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfo>>();
+
+        assert!(!users.iter().any(|user| user.id == user_to_delete.id));
+        assert!(users.iter().any(|user| user.id == user_1.id));
+        assert!(users.iter().any(|user| user.id == user_2.id));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_user_forbidden_non_admin() {
+        let app = test_app!().build();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let user_to_delete = app
+            .user("user_to_delete", "User to Delete")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let path = format!("/authz/user/{}", user_to_delete.id);
+        app.delete(path.as_str())
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
 }
