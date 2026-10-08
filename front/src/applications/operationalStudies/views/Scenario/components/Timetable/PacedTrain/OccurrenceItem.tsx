@@ -253,7 +253,9 @@ const OccurrenceItem = ({
                   'start-time-exception': isStartTimeException,
                 })}
               >
-                <span title={trainName}>{trainName}</span>
+                <span title={trainName}>
+                  <bdi>{trainName}</bdi>
+                </span>
               </div>
             </div>
           </div>
