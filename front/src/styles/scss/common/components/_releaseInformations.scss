@@ -15,13 +15,35 @@
     }
 
     .table {
-      table-layout: fixed;
+        width: 100%;
+        table-layout: fixed;
 
-      .cell-inner > span {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
+        td {
+            vertical-align: middle;
+
+            .app-version {
+                display: flex;
+                gap: 0;
+                width: 100%;
+                color: var(--primary);
+
+                &:hover {
+                    color: var(--purple);
+                }
+
+                code {
+                    line-height: 24px; // align with icon
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    color: inherit;
+                }
+
+                .copy-icon {
+                    flex-shrink: 0;
+                }
+            }
+        }
     }
 
     .license-attributions {

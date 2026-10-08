@@ -10,6 +10,7 @@ import motriceParty from 'common/MotriceRelated/motriceParty';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import LicenseAttributions from './LicenseAttributions';
+import { Copy } from "@osrd-project/ui-icons";
 
 function ServiceRow({
   name,
@@ -19,6 +20,17 @@ function ServiceRow({
   version?: string | number | null;
 }) {
   const versionText = version?.toString();
+
+  async function copyTextToClipboard() {
+    if (versionText) {
+      try {
+        await navigator.clipboard.writeText(versionText);
+      } catch (e) {
+        console.error("Failed to copy text: ", e);
+      }
+    }
+  }
+
   return (
     <tr>
       <th scope="row">
@@ -27,9 +39,16 @@ function ServiceRow({
         </div>
       </th>
       <td>
-        <div className="cell-inner">
-          <span title={versionText}>{version}</span>
-        </div>
+        {versionText && (
+          <button
+            title={versionText}
+            className="app-version"
+            onClick={copyTextToClipboard}
+          >
+            <code title={versionText}>{version}</code>
+            <Copy className="copy-icon" />
+          </button>
+        )}
       </td>
     </tr>
   );
