@@ -11,30 +11,38 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import LicenseAttributions from './LicenseAttributions';
 
+function ServiceRow({
+  name,
+  version,
+}: {
+  name: string;
+  version?: string | number | null;
+}) {
+  const versionText = version?.toString();
+  return (
+    <tr>
+      <th scope="row">
+        <div className="cell-inner">
+          <span title={name}>{name}</span>
+        </div>
+      </th>
+      <td>
+        <div className="cell-inner">
+          <span title={versionText}>{version}</span>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 const ReleaseInformation = () => {
   const { t } = useTranslation();
   const deploymentSettings = useDeploymentSettings();
-  const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
+  const { data: editoastVersion } =
+    osrdEditoastApi.endpoints.getVersion.useQuery();
 
-  const osrdWebSite = 'https://osrd.fr/';
+  const osrdWebSite = "https://osrd.fr/";
 
-  function serviceRow(name: string, version?: string | number | null) {
-    const versionText = version?.toString();
-    return (
-      <tr>
-        <th scope="row">
-          <div className="cell-inner">
-            <span title={name}>{name}</span>
-          </div>
-        </th>
-        <td>
-          <div className="cell-inner">
-            <span title={versionText}>{version}</span>
-          </div>
-        </td>
-      </tr>
-    );
-  }
   return (
     <div className="informations-modal h-100">
       <ModalHeaderSNCF withCloseButton />
@@ -72,8 +80,14 @@ const ReleaseInformation = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {serviceRow('Editoast', editoastVersion?.git_describe)}
-                  {serviceRow('Front', import.meta.env.VITE_OSRD_GIT_DESCRIBE)}
+                  <ServiceRow
+                    name="Editoast"
+                    version={editoastVersion?.git_describe}
+                  />
+                  <ServiceRow
+                    name="Front"
+                    version={import.meta.env.VITE_OSRD_GIT_DESCRIBE}
+                  />
                 </tbody>
               </table>
             </div>
