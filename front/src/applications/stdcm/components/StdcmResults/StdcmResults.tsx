@@ -123,16 +123,28 @@ const StdcmResults = ({
 
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
+    const { simulationPathSteps, rollingStock } = outputs.results;
+    const maxConsistLength = Math.max(
+      selectedSimulation.inputs.consist.totalLength ?? rollingStock.length,
+      ...simulationPathSteps.map((step) => (step.isVia && step.consistChange?.totalLength) || 0)
+    );
+
     return getOperationalPointsWithTimes({
       operationalPoints: outputs.pathProperties?.operational_points || [],
       suggestedOperationalPoints: outputs.pathProperties?.suggestedOperationalPoints || [],
       opIdsToExclude,
       simulation: outputs.results.simulation,
-      simulationPathSteps: outputs.results.simulationPathSteps,
+      simulationPathSteps,
       departureTime: new Date(outputs.results.departure_time),
       pathfindingResult: outputs.results.pathfinding_result,
+      trainLength: maxConsistLength,
     }).filter(({ weight, stopType }) => stopType || (weight && weight >= MINIMUM_OP_WEIGHT));
-  }, [outputs, hasSimulationResults, opIdsToExclude]);
+  }, [
+    outputs,
+    hasSimulationResults,
+    opIdsToExclude,
+    selectedSimulation.inputs.consist.totalLength,
+  ]);
 
   const markersInfo = useMemo(() => {
     if (hasSimulationResults) {
@@ -384,7 +396,6 @@ const StdcmResults = ({
                     consist={selectedSimulation.inputs.consist}
                     isSimulationRetained={isSelectedSimulationRetained}
                     operationalPointsList={operationalPointsList}
-                    backtrackPathItemIndexes={backtrackPathItemIndexes}
                     simulationIndex={selectedSimulation.index}
                   />
                   {isSelectedSimulationRetained && (

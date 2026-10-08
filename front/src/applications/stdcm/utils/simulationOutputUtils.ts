@@ -35,16 +35,12 @@ export const formatStdcmDataForSimulationTable = (
   operationalPointsList: StdcmResultsOperationalPoint[],
   stdcmPathSteps: StdcmSuccessResponse['simulationPathSteps'],
   consist: ConsistParameters,
-  t: TFunction<'stdcm'>,
-  pathfindingResult: StdcmSuccessResponse['pathfinding_result']
+  t: TFunction<'stdcm'>
 ) => {
   let currentConsist = {
     totalLength: `${consist.length} m`,
     totalMass: `${consist.mass} t`,
   };
-  const backtrackPositions = (pathfindingResult?.backtrack_path_items ?? []).map(
-    (index) => pathfindingResult.path_item_positions[index]
-  );
   return operationalPointsList.map((op, index): SimulationTableRow => {
     const isFirst = index === 0;
     const isLast = index === operationalPointsList.length - 1;
@@ -53,8 +49,6 @@ export const formatStdcmDataForSimulationTable = (
     const isStop = op.stopDuration !== null && !isLast;
     const isVia = stdcmPathSteps.slice(1, -1).some((step) => step.operationalPoint!.id === op.opId);
     const isPathStep = isFirst || isVia || isLast;
-
-    const isBackTrack = backtrackPositions.includes(op.positionOnPath);
 
     const startTime = isFirst || isStop ? dateToHHMM(op.stopEndTime) : '';
     const endTime = isLast || isStop ? dateToHHMM(op.time) : '';
@@ -104,7 +98,7 @@ export const formatStdcmDataForSimulationTable = (
         : { weight: '=', length: '=', referenceEngine: '=' }),
       stopTypeLabel,
       stopType,
-      isBackTrack,
+      isBackTrack: op.isBackTrack,
       consistChanges,
       ...getRowStyle(op.stopDuration, isPathStep, isFirst, isLast),
     };
