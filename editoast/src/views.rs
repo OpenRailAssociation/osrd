@@ -107,6 +107,7 @@ fn service_router() -> server::router::DocumentedRouter {
                     .nests("/users", |path| {
                         path.route("/", post!(authz::create_user))
                             .route("/", get!(authz::list_users))
+                            .route("/{user_id}", delete!(authz::delete_user))
                     })
                     .nests("/groups", |path| {
                         path.route("/", get!(authz::list_groups))
