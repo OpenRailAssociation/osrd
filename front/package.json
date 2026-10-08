@@ -127,7 +127,7 @@
     "oxlint": "^1.82.0",
     "oxlint-tsgolint": "^7.0.2003",
     "pdfjs-dist": "^6.3.289",
-    "sass": "^1.104.1",
+    "sass": "^1.105.1",
     "stylelint": "^17.15.0",
     "stylelint-config-standard-scss": "^17.0.0",
     "tslib": "^2.8.1",
