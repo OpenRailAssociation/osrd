@@ -124,39 +124,39 @@ export default class MacroEditorState {
 
   /**
    * Check if we have duplicates
-   * Ex: one key is trigram and an other is uic (with the same trigram), we should keep trigram
+   * Ex: one key is short_name and an other is uic (with the same short_name), we should keep short_name
    * What we do :
-   *  - Make a list of key,trigram
-   *  - aggregate on trigram to build a list of key
+   *  - Make a list of key,short_name
+   *  - aggregate on short_name to build a list of key
    *  - filter if the array is of size 1 (ie, no dedup todo)
    *  - sort the keys by priority
    *  - add redirection in the nodesByPathKey
    */
   dedupNodes(): void {
-    const trigramAggreg = Object.entries(this.indexByNodeLocationKey)
+    const shortNameAggreg = Object.entries(this.indexByNodeLocationKey)
       .map(([_, indexInStorage]) => {
         const node = this.nodes[indexInStorage];
         return node
           ? {
               key: MacroEditorState.getPathKeyByNodeLocation(node.node_location),
-              trigram: node.trigram,
+              short_name: node.short_name,
             }
           : null;
       })
-      .filter((i) => i !== null && i.trigram)
+      .filter((i) => i !== null && i.short_name)
       .reduce(
         (acc, curr) => {
-          acc[curr!.trigram!] = [...(acc[curr!.trigram!] || []), curr!.key];
+          acc[curr!.short_name!] = [...(acc[curr!.short_name!] || []), curr!.key];
           return acc;
         },
         {} as Record<string, string[]>
       );
 
-    for (const trig of Object.keys(trigramAggreg)) {
-      if (trigramAggreg[trig].length < 2) {
-        delete trigramAggreg[trig];
+    for (const name of Object.keys(shortNameAggreg)) {
+      if (shortNameAggreg[name].length < 2) {
+        delete shortNameAggreg[name];
       }
-      trigramAggreg[trig] = sortBy(trigramAggreg[trig], (key) => {
+      shortNameAggreg[name] = sortBy(shortNameAggreg[name], (key) => {
         const node = this.nodes[this.indexByNodeLocationKey[key]];
         if (node?.dbId) return 0;
         if (key.startsWith('op_id:')) return 1;
@@ -167,7 +167,7 @@ export default class MacroEditorState {
       });
     }
 
-    Object.values(trigramAggreg).forEach((mergeList) => {
+    Object.values(shortNameAggreg).forEach((mergeList) => {
       const mainNodeKey = mergeList[0];
       const mainNodeIndex = this.indexByNodeLocationKey[mainNodeKey];
       mergeList.slice(1).forEach((key) => {

@@ -21,7 +21,7 @@ export const castNgeNode = (
   labels: NetzgrafikDto['labels']
 ): Omit<NodeIndexed, 'node_location' | 'dbId'> => ({
   ngeId: node.id,
-  trigram: node.betriebspunktName,
+  short_name: node.betriebspunktName,
   full_name: node.fullName,
   position_x: Math.round(node.positionX),
   position_y: Math.round(node.positionY),
@@ -66,8 +66,8 @@ export const handleNodeOperation = async ({
           let nodeLocation = indexNode.node_location;
           let domesticReference = node.betriebspunktName;
           let full_name = node.fullName;
-          const shouldSetTrigram = indexNode.trigram !== domesticReference;
-          if (nodeLocation.type === 'domestic' && (full_name === '' || shouldSetTrigram)) {
+          const shouldSetShortName = indexNode.short_name !== domesticReference;
+          if (nodeLocation.type === 'domestic' && (full_name === '' || shouldSetShortName)) {
             const decodedDomesticReference =
               MacroEditorState.decodeDomesticReference(domesticReference);
             const { main_code } = decodedDomesticReference;
@@ -78,9 +78,9 @@ export const handleNodeOperation = async ({
                 state.infraId,
                 dispatch
               );
-              if (shouldSetTrigram && fetched.secondary_code)
+              if (shouldSetShortName && fetched.secondary_code)
                 secondary_code = fetched.secondary_code;
-              if (shouldSetTrigram && fetched.country_code) country_code = fetched.country_code;
+              if (shouldSetShortName && fetched.country_code) country_code = fetched.country_code;
               if (full_name === '' && fetched.fullName) full_name = fetched.fullName;
             }
             domesticReference = MacroEditorState.encodeDomesticReference({
@@ -95,7 +95,7 @@ export const handleNodeOperation = async ({
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
             full_name,
-            trigram: domesticReference,
+            short_name: domesticReference,
             dbId: indexNode.dbId,
             node_location: nodeLocation,
           });

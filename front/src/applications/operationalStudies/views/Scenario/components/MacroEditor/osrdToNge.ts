@@ -251,7 +251,7 @@ const castNodeToNge = (
   labels: LabelDto[]
 ): NetzgrafikDto['nodes'][0] => ({
   id: node.ngeId,
-  betriebspunktName: node.trigram || '',
+  betriebspunktName: node.short_name || '',
   fullName: node.full_name || '',
   positionX: node.position_x,
   positionY: node.position_y,
@@ -324,7 +324,7 @@ export const loadAndIndexNge = async (
         const macroNode: NodeIndexed = {
           ngeId: nbNodesIndexed,
           node_location: nodeLocation,
-          trigram:
+          short_name:
             pathItem.location.type === 'operational_point_part_reference' &&
             pathItem.location.operational_point.type === 'domestic'
               ? pathItem.location.operational_point.main_code
@@ -347,7 +347,7 @@ export const loadAndIndexNge = async (
     for (const nodeLocation of MacroEditorState.getNodeLocations(op)) {
       state.updateNodeDataByNodeLocation(nodeLocation, {
         full_name: op.name,
-        trigram: MacroEditorState.encodeDomesticReference({ ...op, type: 'domestic' }),
+        short_name: MacroEditorState.encodeDomesticReference({ ...op, type: 'domestic' }),
         geocoord: op.geo ? { lng: op.geo.coordinates[0], lat: op.geo.coordinates[1] } : undefined,
       });
     }

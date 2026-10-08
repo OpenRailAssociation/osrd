@@ -2,7 +2,7 @@
   "macro_nodes": [
     {
       "ngeId": 6,
-      "trigram": "SS_1",
+      "short_name": "SS_1",
       "full_name": "Sursee",
       "is_collapsed": false,
       "position_x": 672,
@@ -12,7 +12,7 @@
     },
     {
       "ngeId": 7,
-      "trigram": "RTR",
+      "short_name": "RTR",
       "full_name": "Rothrist",
       "is_collapsed": false,
       "position_x": 320,
@@ -22,7 +22,7 @@
     },
     {
       "ngeId": 8,
-      "trigram": "SS_2",
+      "short_name": "SS_2",
       "full_name": "Sursee",
       "is_collapsed": false,
       "position_x": 320,
