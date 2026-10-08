@@ -5,14 +5,13 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { osrdEditoastApi, type Infra } from 'common/api/osrdEditoastApi';
+import type { Infra } from 'common/api/osrdEditoastApi';
 import GrantsManager from 'common/authorization/components/GrantsManager';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import useFitViewportToInfra from 'modules/infra/useFitViewportToInfra';
 import { useAppDispatch } from 'store';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
 
@@ -53,10 +52,7 @@ const InfraSelectorModalBodyStandard = ({
   const navigate = useNavigate();
   const { userId, getUserPrivileges } = useAuthz();
   const [redraw, setRedraw] = useState(0);
-  const { updateViewport } = useMapSettingsActions();
-  const { viewport } = useMapSettings();
-
-  const [getInfraBbox] = osrdEditoastApi.endpoints.getInfraByInfraIdBbox.useLazyQuery();
+  const fitViewportToInfra = useFitViewportToInfra();
 
   // Get the user privileges for infras
   const userPrivilegesByInfraId = useAsyncMemo(async () => {
@@ -68,16 +64,7 @@ const InfraSelectorModalBodyStandard = ({
   const changeInfrastructure = useCallback(
     async (id: number) => {
       dispatch(updateInfraID(id));
-      const { data: infraBbox } = await getInfraBbox({ infraId: id });
-      if (infraBbox) {
-        const { min_lat, min_lon, max_lat, max_lon } = infraBbox;
-
-        const newViewport = computeBBoxViewport([min_lon, min_lat, max_lon, max_lat], viewport, {
-          padding: 64,
-        });
-
-        dispatch(updateViewport(newViewport));
-      }
+      await fitViewportToInfra(id);
       if (isInEditor) {
         navigate(`/editor/${id}`);
       }
@@ -85,7 +72,7 @@ const InfraSelectorModalBodyStandard = ({
         closeModal();
       }
     },
-    [isInEditor, viewport]
+    [isInEditor, fitViewportToInfra]
   );
 
   return (
