@@ -104,7 +104,10 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val reachedSteps =
             lastExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
         val trainPath =
-            lastExplorer.getPathUntilPreviousBlock(infra.rawInfra, infra.blockInfra, reachedSteps)
+            lastExplorer.getNonEmptyPathUntilPreviousBlockOrCurrentBlock(
+                infra.rawInfra,
+                infra.blockInfra,
+            )
         val earliestReachableTime = lastNode.timeData.earliestReachableTime
         val geoPoint =
             lastNode.toGeoPoint(infra.rawInfra, infra.blockInfra, useLocationOnEdge = true)

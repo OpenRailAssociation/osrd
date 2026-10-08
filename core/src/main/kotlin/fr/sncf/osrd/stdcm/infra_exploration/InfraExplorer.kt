@@ -155,10 +155,22 @@ interface InfraExplorer {
      */
     fun getLookaheadEndOffset(): Offset<PhysicsPath>
 
-    fun getPathUntilPreviousBlock(
+    /** Builds path until given block range index */
+    fun buildPathUntilIndex(
         rawInfra: RawInfra,
         blockInfra: BlockInfra,
-        reachedSteps: List<LocatedStep>,
+        index: Int,
+        backtrackLocations: List<Offset<PhysicsPath>>,
+        electricalProfileMapping: ElectricalProfileMapping? = null,
+    ): TrainPath
+
+    /**
+     * Builds path until previous block, except if the current block is the first one, in which case
+     * it builds a path with just the current block.
+     */
+    fun getNonEmptyPathUntilPreviousBlockOrCurrentBlock(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
     ): TrainPath
 }
 
@@ -505,15 +517,37 @@ private class InfraExplorerImpl(
     override fun getLookaheadEndOffset(): Offset<PhysicsPath> =
         blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
 
-    override fun getPathUntilPreviousBlock(
+    override fun buildPathUntilIndex(
         rawInfra: RawInfra,
         blockInfra: BlockInfra,
-        reachedSteps: List<LocatedStep>,
+        index: Int,
+        backtrackLocations: List<Offset<PhysicsPath>>,
+        electricalProfileMapping: ElectricalProfileMapping?,
     ): TrainPath {
+        val blocks = blockRanges.subList(index).toList()
+        // TODO: Send only simulated routes, and not all explored ones
+        return buildTrainPathFromBlockRanges(
+            rawInfra,
+            blockInfra,
+            blocks,
+            backtrackLocations,
+            this.getExploredRoutes(),
+            electricalProfileMapping = electricalProfileMapping,
+        )
+    }
+
+    override fun getNonEmptyPathUntilPreviousBlockOrCurrentBlock(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
+    ): TrainPath {
+        assert(getAllBlocks().size > 0)
+        // Get rid of current block unless it's the only one
+        val nbBlocksToInclude = max(getPredecessorBlocks().size, 1)
+        val reachedSteps = getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
         val backtrackLocations = reachedSteps.mapNotNull { step ->
             if (step.isBacktracking) step.travelledPathOffset else null
         }
-        return buildPathUntilIndex(rawInfra, blockInfra, currentIndex, backtrackLocations)
+        return buildPathUntilIndex(rawInfra, blockInfra, nbBlocksToInclude, backtrackLocations)
     }
 
     /**
@@ -704,39 +738,6 @@ private class InfraExplorerImpl(
                 rawInfra.getTrackChunkLength(it.value).forceDirected()
             }
         return chunkRangesUnderTrainBeforeBacktracking.map { it.value.opposite }.asReversed()
-    }
-
-    /** Builds path until given block range index */
-    private fun buildPathUntilIndex(
-        rawInfra: RawInfra,
-        blockInfra: BlockInfra,
-        index: Int,
-        backtrackLocations: List<Offset<PhysicsPath>>,
-        electricalProfileMapping: ElectricalProfileMapping? = null,
-    ): TrainPath {
-        val blocks = blockRanges.subList(index).toList()
-        val blockRanges = blocks.ifEmpty {
-            val currentBlockRange = this.getCurrentBlockRange()
-            listOf(
-                BlockRange(
-                    currentBlockRange.value,
-                    currentBlockRange.objectBegin,
-                    currentBlockRange.objectEnd,
-                    currentBlockRange.pathBegin,
-                    currentBlockRange.pathEnd,
-                    currentBlockRange.objectLength,
-                )
-            )
-        }
-        // TODO: Send only simulated routes, and not all explored ones
-        return buildTrainPathFromBlockRanges(
-            rawInfra,
-            blockInfra,
-            blockRanges,
-            backtrackLocations,
-            this.getExploredRoutes(),
-            electricalProfileMapping = electricalProfileMapping,
-        )
     }
 }
 
