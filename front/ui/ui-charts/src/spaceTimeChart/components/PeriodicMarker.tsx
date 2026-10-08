@@ -8,8 +8,6 @@ import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { useIntervalPositions } from './useIntervalPositions';
 
-const MARKER_COLOR = BLACK_ALPHA_50;
-
 const PIN_RADIUS = 3;
 const PIN_STEM_WIDTH = 2;
 const PIN_STEM_HEIGHT = 7;
@@ -38,7 +36,7 @@ export const PeriodicMarker = ({ duration, origin = 0 }: PeriodicMarkerProps) =>
 
   const draw = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { height, captionSize }) => {
-      ctx.fillStyle = MARKER_COLOR;
+      ctx.fillStyle = BLACK_ALPHA_50;
       const yBase = height - captionSize;
       for (const x of positions) {
         // Top pin: circle + stem hanging down from TOP_CAPTION_HEIGHT
