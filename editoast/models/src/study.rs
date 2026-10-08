@@ -1,13 +1,11 @@
-use chrono::DateTime;
-use chrono::NaiveDate;
-use chrono::Utc;
-
 use database::DbConnection;
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::CivilDate;
+use crate::Timestamp;
 use crate::prelude::*;
 use crate::project::Project;
 use crate::tags::Tags;
@@ -21,11 +19,11 @@ pub struct Study {
     pub description: Option<String>,
     pub business_code: Option<String>,
     pub service_code: Option<String>,
-    pub creation_date: DateTime<Utc>,
-    pub last_modification: DateTime<Utc>,
-    pub start_date: Option<NaiveDate>,
-    pub expected_end_date: Option<NaiveDate>,
-    pub actual_end_date: Option<NaiveDate>,
+    pub creation_date: Timestamp,
+    pub last_modification: Timestamp,
+    pub start_date: Option<CivilDate>,
+    pub expected_end_date: Option<CivilDate>,
+    pub actual_end_date: Option<CivilDate>,
     pub budget: Option<i32>,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
@@ -98,7 +96,7 @@ impl Study {
             };
 
             Study::changeset()
-                .last_modification(Utc::now())
+                .last_modification(Timestamp::now())
                 .update(&mut conn, id)
                 .await?;
 
@@ -113,8 +111,8 @@ impl Study {
     pub fn fake(name: impl Into<String>, project_id: i64) -> Changeset<Self> {
         Self::changeset()
             .name(name.into())
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
+            .creation_date(Timestamp::now())
+            .last_modification(Timestamp::now())
             .budget(Some(0))
             .tags(Tags::default())
             .state("some_state".into())

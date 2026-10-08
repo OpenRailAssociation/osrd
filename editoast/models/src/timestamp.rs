@@ -10,6 +10,7 @@
 use diesel::deserialize;
 use diesel::deserialize::FromSql;
 use diesel::deserialize::FromSqlRow;
+use diesel::expression::AsExpression;
 use diesel::pg::Pg;
 use diesel::pg::PgValue;
 use diesel::serialize;
@@ -22,15 +23,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 #[derive(
-    Debug,
-    Clone,
-    diesel::expression::AsExpression,
-    Serialize,
-    Deserialize,
-    FromSqlRow,
-    PartialEq,
-    PartialOrd,
-    ToSchema,
+    Debug, Clone, AsExpression, Serialize, Deserialize, FromSqlRow, PartialEq, PartialOrd, ToSchema,
 )]
 #[diesel(sql_type = sql_types::Timestamptz)]
 pub struct Timestamp(jiff::Timestamp);
