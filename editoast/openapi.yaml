@@ -863,6 +863,107 @@ paths:
                       type: string
                       enum:
                       - editoast:database:unavailable
+  /authz/users/{user_id}:
+    delete:
+      tags:
+      - authz
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The user was successfully deleted
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: The user `{user_id}` does not exist
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - user_id
+                      properties:
+                        user_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:user:not_found
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /authz/{resource_type}/{resource_id}:
     get:
       tags:

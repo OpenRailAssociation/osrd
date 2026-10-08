@@ -120,6 +120,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['authz'],
       }),
+      deleteAuthzUsersByUserId: build.mutation<
+        DeleteAuthzUsersByUserIdApiResponse,
+        DeleteAuthzUsersByUserIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/users/${queryArg.userId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1846,6 +1856,10 @@ export type PostAuthzUsersApiArg = {
     name: string;
     roles: Role[];
   };
+};
+export type DeleteAuthzUsersByUserIdApiResponse = unknown;
+export type DeleteAuthzUsersByUserIdApiArg = {
+  userId: number;
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
   /** status 200 List of users and groups that have a grant on the resource. */ {
