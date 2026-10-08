@@ -11,6 +11,19 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   clearCanvas(ctx, width, height);
 
+  // Draw background
+  ctx.fillStyle = 'rgb(247, 246, 238)';
+  ctx.fillRect(0, 0, MARGIN_LEFT, height);
+
+  // Draw separator line
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.lineWidth = 0.5;
+  ctx.moveTo(MARGIN_LEFT, 0);
+  ctx.lineTo(MARGIN_LEFT, height);
+  ctx.closePath();
+  ctx.stroke();
+
   ctx.strokeStyle = 'rgb(121, 118, 113)';
   ctx.lineWidth = 0.5;
   ctx.font = 'normal 12px IBM Plex Sans';
