@@ -8,7 +8,7 @@ import {
 import { MAIN_API } from 'config/config';
 import type { RootState } from 'reducers';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
-import { getImpersonatedUser, getUserPreferences } from 'reducers/user/userSelectors';
+import { getImpersonatedUser, getFeatureFlags } from 'reducers/user/userSelectors';
 
 export type ApiError = {
   data: {
@@ -31,10 +31,9 @@ const prepareHeadersWithImpersonate = (headers: Headers, api: { getState: () => 
   return headers;
 };
 
-const prepareHeadersWithUserPreferences = (headers: Headers, api: { getState: () => unknown }) => {
-  const userPreferences = getUserPreferences(api.getState() as RootState);
-  for (const [flag, value] of Object.entries(userPreferences)) {
-    if (flag === 'safeWord') continue;
+const prepareHeadersWithFeatureFlags = (headers: Headers, api: { getState: () => unknown }) => {
+  const featureFlags = getFeatureFlags(api.getState() as RootState);
+  for (const [flag, value] of Object.entries(featureFlags)) {
     if (value) {
       headers.append('X-feature-flags', flag);
     }
@@ -43,7 +42,7 @@ const prepareHeadersWithUserPreferences = (headers: Headers, api: { getState: ()
 
 const prepareHeaders = async (headers: Headers, api: { getState: () => unknown }) => {
   prepareHeadersWithImpersonate(headers, api);
-  prepareHeadersWithUserPreferences(headers, api);
+  prepareHeadersWithFeatureFlags(headers, api);
 };
 
 // initialize an empty api service that we'll inject endpoints into later as needed

@@ -11,7 +11,8 @@ export const FEATURE_FLAGS = [
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];
 
-export type UserPreferences = Record<FeatureFlag, boolean> & {
+export type UserPreferences = {
+  featureFlags: Record<FeatureFlag, boolean>;
   safeWord: string;
 };
 
@@ -49,7 +50,7 @@ export const userInitialState: UserState = {
   impersonatedUser: undefined,
   loginError: undefined,
   username: '',
-  userPreferences: { safeWord: '', ...defaultFeatureFlags },
+  userPreferences: { safeWord: '', featureFlags: defaultFeatureFlags },
   userId: -1,
   userRoles: [],
   account: {},
@@ -92,8 +93,11 @@ export const userSlice = createSlice({
         state.userId = -1;
       }
     },
-    updateUserPreferences(state, action: PayloadAction<UserPreferences>) {
-      state.userPreferences = action.payload;
+    updateFeatureFlags(state, action: PayloadAction<UserPreferences['featureFlags']>) {
+      state.userPreferences.featureFlags = action.payload;
+    },
+    updateSafeWord(state, action: PayloadAction<string>) {
+      state.userPreferences.safeWord = action.payload;
     },
   },
 });
@@ -103,7 +107,8 @@ export const {
   loginError,
   logoutSuccess,
   setImpersonatedUser,
-  updateUserPreferences,
+  updateFeatureFlags,
+  updateSafeWord,
   updateAuthzUser,
 } = userSlice.actions;
 

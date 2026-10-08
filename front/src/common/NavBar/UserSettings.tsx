@@ -15,7 +15,7 @@ import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { FEATURE_FLAGS, updateUserPreferences } from 'reducers/user';
+import { FEATURE_FLAGS, updateFeatureFlags, updateSafeWord } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import useAuth from 'utils/hooks/useAuth';
@@ -70,7 +70,7 @@ const UserSettings = () => {
   );
 
   useEffect(() => {
-    dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
+    dispatch(updateSafeWord(debouncedSafeWord));
   }, [debouncedSafeWord]);
 
   const { t } = useTranslation(['translation', 'operational-studies']);
@@ -88,7 +88,7 @@ const UserSettings = () => {
           label={t('nav-bar.safeWord')}
           clearButton
           onClear={() => {
-            dispatch(updateUserPreferences({ ...userPreferences, safeWord: '' }));
+            dispatch(updateSafeWord(''));
             setSafeWordText('');
           }}
           placeholder={t('nav-bar.yourSafeWord')}
@@ -108,11 +108,11 @@ const UserSettings = () => {
             <Switch
               id={`feature-flag-${flag}`}
               label={t(`nav-bar.featureFlags.${flag}`)}
-              checked={userPreferences[flag] ?? false}
+              checked={userPreferences.featureFlags[flag] ?? false}
               onChange={(event) =>
                 dispatch(
-                  updateUserPreferences({
-                    ...userPreferences,
+                  updateFeatureFlags({
+                    ...userPreferences.featureFlags,
                     [flag]: event.target.checked,
                   })
                 )

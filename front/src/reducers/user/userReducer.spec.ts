@@ -6,9 +6,11 @@ import {
   loginError,
   logoutSuccess,
   type UserState,
-  updateUserPreferences,
+  updateSafeWord,
   updateAuthzUser,
   setImpersonatedUser,
+  updateFeatureFlags,
+  type FeatureFlag,
 } from 'reducers/user';
 import { createStoreWithoutMiddleware } from 'store';
 
@@ -93,17 +95,31 @@ describe('userReducer', () => {
     });
   });
 
-  it('should handle updateUserPreferences', () => {
+  it('should handle updateSafeWord', () => {
     const store = createStore(userInitialState);
-    const action = updateUserPreferences({
-      ...userInitialState.userPreferences,
-      safeWord: 'Test userSlice',
-    });
+    const action = updateSafeWord('Test userSlice');
     store.dispatch(action);
     const userState = store.getState().user;
     expect(userState).toEqual({
       ...userInitialState,
       userPreferences: { ...userInitialState.userPreferences, safeWord: 'Test userSlice' },
+    });
+  });
+
+  it('should handle updateFeatureFlags', () => {
+    const store = createStore(userInitialState);
+    const testFeatureFlags: Record<FeatureFlag, boolean> = {
+      linkings: true,
+      hourlyTimetables: false,
+      multipleTimetables: true,
+      unrecognizedWaypoints: false,
+    };
+    const action = updateFeatureFlags(testFeatureFlags);
+    store.dispatch(action);
+    const userState = store.getState().user;
+    expect(userState).toEqual({
+      ...userInitialState,
+      userPreferences: { ...userInitialState.userPreferences, featureFlags: testFeatureFlags },
     });
   });
 });

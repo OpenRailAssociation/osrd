@@ -12,7 +12,8 @@ const makeUserPreferencesSelector =
 export const getIsUserLogged = makeUserSelector('isLogged');
 export const getLoginError = makeUserSelector('loginError');
 export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
-export const getFeatureFlag = (flag: FeatureFlag) => makeUserPreferencesSelector(flag);
+export const getFeatureFlags = makeUserPreferencesSelector('featureFlags');
+export const getFeatureFlag = (flag: FeatureFlag) => makeSubSelector(getFeatureFlags)(flag);
 export const getUsername = makeUserSelector('username');
 export const getUserRoles = makeUserSelector('userRoles');
 export const getUserId = makeUserSelector('userId');
