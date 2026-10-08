@@ -15,7 +15,6 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import {
   getSearchDatetimeWindow,
-  getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
@@ -40,12 +39,9 @@ const useLinkedTrainSearch = () => {
   const dispatch = useAppDispatch();
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
-  const [postTrainSchedulesSimulationSummary] =
-    osrdEditoastApi.endpoints.postTrainSchedulesSimulationSummary.useLazyQuery();
   const [getTrainScheduleSets] =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useLazyQuery();
 
-  const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
@@ -98,20 +94,6 @@ const useLinkedTrainSearch = () => {
     [postSearch]
   );
 
-  const getTrainsSummaries = useCallback(
-    async (trainsIds: number[]) => {
-      const trainsSummaries = await postTrainSchedulesSimulationSummary({
-        body: {
-          infra_id: infraId,
-          timetable_id: timetableId,
-          ids: trainsIds,
-        },
-      }).unwrap();
-      return trainsSummaries;
-    },
-    [postTrainSchedulesSimulationSummary, infraId]
-  );
-
   const launchTrainScheduleSearch = useCallback(async () => {
     setLinkedTrainResults(undefined);
     if (!trainNameInput) return;
@@ -153,22 +135,17 @@ const useLinkedTrainSearch = () => {
         return;
       }
 
-      const filteredResultsSummaries = await getTrainsSummaries(results.map((r) => r.id));
-
       const newLinkedPathResults = await Promise.all(
         results.map(async (result) => {
-          if (!filteredResultsSummaries) return undefined;
-          const resultSummary = filteredResultsSummaries[result.id].train_schedule;
-          if (resultSummary.status !== 'success') return undefined;
-          const durationFromStartTime = new Duration({
-            milliseconds: resultSummary.path_item_times_final.at(-1)!,
-          });
+          if (result.schedule.at(-1)?.at !== result.path.at(-1)!.key) return undefined;
+          const durationFromStartTime = result.schedule.at(-1)?.arrival;
+          if (!durationFromStartTime) return undefined;
 
           const originDetails = await getExtremityDetails(result.path.at(0)!);
           const destinationDetails = await getExtremityDetails(result.path.at(-1)!);
           const computedOpSchedules = computeOpSchedules(
             new Date(result.start_time),
-            durationFromStartTime
+            Duration.parse(durationFromStartTime)
           );
 
           if (!originDetails || !destinationDetails) return undefined;
