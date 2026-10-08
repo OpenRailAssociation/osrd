@@ -486,6 +486,34 @@
               &.invalid {
                 border-radius: 3px;
               }
+
+              .path-step-op-status-icon {
+                position: relative;
+                display: flex;
+                align-items: center;
+              }
+
+              .path-step-op-status-badge {
+                position: absolute;
+                top: 40%;
+                right: -8px;
+                transform: translateY(-50%) scale(0.6);
+              }
+
+              .leading-content-wrapper {
+                width: 32px;
+                padding: 0 4px;
+
+                &:has(.path-step-op-status-icon.recognized) {
+                  background-color: var(--success5);
+                  color: rgba(0, 0, 0, 0.25);
+                }
+
+                &:has(.path-step-op-status-icon:not(.recognized)) {
+                  background-color: var(--warning5);
+                  color: rgba(0, 0, 0, 0.5);
+                }
+              }
             }
 
             .invalid-step-message {
