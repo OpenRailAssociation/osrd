@@ -6152,6 +6152,7 @@ components:
           description: |-
             List of `n` boundaries of the ranges.
             A boundary is a distance from the beginning of the path in mm.
+            Origin and Destination are not present (they are implicitly included).
         values:
           type: array
           items:
@@ -6779,6 +6780,7 @@ components:
           description: |-
             List of `n` boundaries of the ranges (block path).
             A boundary is a distance from the beginning of the path in mm.
+            Origin and Destination are not present (they are implicitly included).
         values:
           type: array
           items:
@@ -15709,6 +15711,7 @@ components:
               description: |-
                 List of `n` boundaries of the ranges (block path).
                 A boundary is a distance from the beginning of the path in mm.
+                Origin and Destination are not present (they are implicitly included).
             values:
               type: array
               items:
