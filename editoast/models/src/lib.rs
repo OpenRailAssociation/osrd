@@ -1,5 +1,6 @@
 pub mod authn;
 pub mod catalog_entry;
+pub mod civil_date;
 pub mod document;
 pub mod electrical_profiles;
 pub mod infra;
@@ -39,6 +40,7 @@ pub mod work_schedules;
 pub use authn::group::Group;
 pub use authn::user::User;
 pub use catalog_entry::CatalogEntry;
+pub use civil_date::CivilDate;
 pub use document::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use electrical_profiles::LightElectricalProfileSet;

@@ -8,8 +8,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::NaiveDate;
-use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
@@ -31,6 +29,8 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
+use models::CivilDate;
+use models::Timestamp;
 use models::prelude::*;
 use models::project::Error as ProjectModelError;
 use models::project::Project;
@@ -39,9 +39,9 @@ use models::study::Study;
 use models::tags::Tags;
 
 fn validate_study_dates(
-    start: Option<NaiveDate>,
-    expected_end: Option<NaiveDate>,
-    actual_end: Option<NaiveDate>,
+    start: Option<CivilDate>,
+    expected_end: Option<CivilDate>,
+    actual_end: Option<CivilDate>,
 ) -> Result<(), &'static str> {
     if let Some((start, expected_end)) = start.zip(expected_end)
         && start > expected_end
@@ -115,9 +115,12 @@ impl StudyResponse {
 pub(in crate::views) struct StudyCreateForm {
     pub name: String,
     pub description: Option<String>,
-    pub start_date: Option<NaiveDate>,
-    pub expected_end_date: Option<NaiveDate>,
-    pub actual_end_date: Option<NaiveDate>,
+    #[schema(value_type=Option<jiff::Date>)]
+    pub start_date: Option<CivilDate>,
+    #[schema(value_type=Option<jiff::Date>)]
+    pub expected_end_date: Option<CivilDate>,
+    #[schema(value_type=Option<jiff::Date>)]
+    pub actual_end_date: Option<CivilDate>,
     pub business_code: Option<String>,
     pub service_code: Option<String>,
     pub budget: Option<i32>,
@@ -151,8 +154,8 @@ impl StudyCreateForm {
             .description(self.description)
             .business_code(self.business_code)
             .service_code(self.service_code)
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
+            .creation_date(Timestamp::now())
+            .last_modification(Timestamp::now())
             .start_date(self.start_date)
             .expected_end_date(self.expected_end_date)
             .actual_end_date(self.actual_end_date)
@@ -292,11 +295,14 @@ pub(in crate::views) struct StudyPatchForm {
     #[serde(default, with = "double_option")]
     pub description: Option<Option<String>>,
     #[serde(default, with = "double_option")]
-    pub start_date: Option<Option<NaiveDate>>,
+    #[schema(value_type=Option<Option<jiff::Date>>)]
+    pub start_date: Option<Option<CivilDate>>,
     #[serde(default, with = "double_option")]
-    pub expected_end_date: Option<Option<NaiveDate>>,
+    #[schema(value_type=Option<Option<jiff::Date>>)]
+    pub expected_end_date: Option<Option<CivilDate>>,
     #[serde(default, with = "double_option")]
-    pub actual_end_date: Option<Option<NaiveDate>>,
+    #[schema(value_type=Option<Option<jiff::Date>>)]
+    pub actual_end_date: Option<Option<CivilDate>>,
     #[serde(default, with = "double_option")]
     pub business_code: Option<Option<String>>,
     #[serde(default, with = "double_option")]
