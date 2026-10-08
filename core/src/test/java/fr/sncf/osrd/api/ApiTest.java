@@ -26,15 +26,18 @@ public class ApiTest {
 
         ArgumentCaptor<Request> argument = ArgumentCaptor.forClass(Request.class);
         lenient().when(okHttpClient.newCall(argument.capture())).thenReturn(remoteCall);
-        lenient().when(remoteCall.execute()).thenAnswer(invocation -> new Response.Builder()
-                .protocol(Protocol.HTTP_1_1)
-                .request(argument.getValue())
-                .code(200)
-                .message("OK")
-                .addHeader("x-infra-version", "1")
-                .body(ResponseBody.create(
-                        parseMockRequest(argument.getValue(), regex), MediaType.get("application/json; charset=utf-8")))
-                .build());
+        lenient()
+                .when(remoteCall.execute())
+                .thenAnswer(invocation -> new Response.Builder()
+                        .protocol(Protocol.HTTP_1_1)
+                        .request(argument.getValue())
+                        .code(200)
+                        .message("OK")
+                        .addHeader("x-infra-version", "1")
+                        .body(ResponseBody.create(
+                                parseMockRequest(argument.getValue(), regex),
+                                MediaType.get("application/json; charset=utf-8")))
+                        .build());
 
         return okHttpClient;
     }
