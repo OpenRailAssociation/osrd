@@ -267,10 +267,6 @@ export const formatStdcmPayload = (
     electrical_profile_set_id: validConfig.electricalProfileSetId,
     allowed_track_sections: validConfig.allowedTrackSections,
     consist_schedule: validConfig.consistSchedule,
-    forced_op_stops:
-      validConfig.forcedOpStops?.map((op_stop) => ({
-        id: op_stop.id,
-        stop_type: op_stop.stop_type,
-      })) ?? [],
+    forced_op_stops: validConfig.forcedOpStops,
   },
 });
