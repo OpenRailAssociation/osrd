@@ -423,7 +423,9 @@
       "alertMissingRequestedPoint": "At least two path steps are required to define an itinerary",
       "cancel": "Cancel",
       "cancelMapSelection": "Cancel",
+      "collapseSubForm": "Collapse details",
       "destination": "Destination",
+      "expandSubForm": "Expand details",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "intermediateWaypointsPanel": {
