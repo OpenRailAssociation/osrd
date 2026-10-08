@@ -90,6 +90,16 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
+      deleteAuthzUserByResourceId: build.mutation<
+        DeleteAuthzUserByResourceIdApiResponse,
+        DeleteAuthzUserByResourceIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/user/${queryArg.resourceId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzUsers: build.query<GetAuthzUsersApiResponse, GetAuthzUsersApiArg>({
         query: () => ({ url: `/authz/users` }),
         providesTags: ['authz'],
@@ -1719,6 +1729,10 @@ export type PostAuthzUserInfoApiArg = {
     identities?: string[];
     ids?: number[];
   };
+};
+export type DeleteAuthzUserByResourceIdApiResponse = unknown;
+export type DeleteAuthzUserByResourceIdApiArg = {
+  resourceId: number;
 };
 export type GetAuthzUsersApiResponse =
   /** status 200 List all the users with their identities, roles and groups */ {

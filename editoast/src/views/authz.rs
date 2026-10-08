@@ -1081,6 +1081,59 @@ pub(in crate::views) async fn list_users(
     Ok(Json(users))
 }
 
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    delete,
+    path = "/user/{resource_id}",
+    tag = "authz",
+    params(ResourceIdParam),
+    responses((
+        status = 204,
+        description = "Delete the user with the given id from the database and OpenFGA",
+    )),
+)]
+pub(in crate::views) async fn delete_user(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
+) -> Result<impl IntoResponse> {
+    let mut conn = db_pool.get().await?;
+
+    // Check if the user exists in the database
+    let user = User::retrieve(conn.clone(), resource_id)
+        .await?
+        .ok_or(AuthzError::UnknownUser { id: resource_id })?;
+
+    // list user's groups
+    let groups = v2::user_groups(authz::User(resource_id))
+        .authorize(&authn_state.authorizer(&openfga))
+        .await?
+        .access()
+        .await?;
+
+    // Delete the user from its group(s) in OpenFGA
+    let system_authorizer = authz::authorizers::SystemAuthorizer::<Check>::new(&openfga);
+    let remove_from_groups = v2::Protected::from_iter(groups.into_iter().flat_map(|groups| {
+        groups.into_iter().map(|g| {
+            v2::remove_members(
+                authz::Group(g.0),
+                HashSet::from_iter([authz::User(resource_id)]),
+            )
+        })
+    }));
+
+    remove_from_groups
+        .run::<AuthorizationError, _>(&system_authorizer)
+        .await?;
+
+    // Delete the user from the database
+    User::delete(&user, &mut conn).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
