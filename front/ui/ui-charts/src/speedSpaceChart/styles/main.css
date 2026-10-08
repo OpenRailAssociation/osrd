@@ -13,10 +13,6 @@
   border-radius: 0;
 }
 
-#front-interactivity-layer {
-  box-shadow: var(--ui-charts-shadow-charts);
-}
-
 #interaction-button-container {
   align-items: center;
   overflow: hidden; 

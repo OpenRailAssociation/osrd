@@ -26,7 +26,6 @@ import { clamp, getActiveEtcsBrakingTypes, getGraphOffsets } from './utils';
 export type SpeedSpaceChartProps = {
   width: number;
   height: number;
-  backgroundColor: string;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
   fetchEtcsBrakingCurves?: () => Promise<void>;
   etcsBrakingCurves?: EtcsBrakingCurves;
@@ -74,7 +73,6 @@ export type SpeedSpaceChartProps = {
 const SpeedSpaceChart = ({
   width,
   height,
-  backgroundColor,
   data,
   setHeight,
   translations,
@@ -235,6 +233,7 @@ const SpeedSpaceChart = ({
       ...data,
     }));
   }, [data]);
+  const backgroundColor = 'rgb(247, 246, 238)';
 
   return (
     <div
