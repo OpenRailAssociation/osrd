@@ -9,7 +9,8 @@ export const HOUR = 60 * MINUTE;
 
 // ========== CONVERSION CONSTANTS ==========
 
-export const KM_TO_MM = 1_000_000;
+export const MILLIMETERS_PER_KM = 1_000_000;
+export const METERS_PER_KM = 1_000;
 
 // ========== FONT CONSTANTS ==========
 

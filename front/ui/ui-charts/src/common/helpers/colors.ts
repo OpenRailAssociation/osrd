@@ -20,7 +20,9 @@ export const PRIMARY_5 = 'rgb(227, 237, 252)';
 export const AMBIENT_B_15 = 'rgb(242, 240, 228)';
 export const AMBIENT_B_5 = 'rgb(250, 249, 245)';
 
+export const ERROR_80 = 'rgb(107, 0, 0)';
 export const ERROR_60 = 'rgb(217, 28, 28)';
+export const ERROR_30 = 'rgb(255, 104, 104)';
 
 export const WARNING_60 = 'rgb(125, 82, 30)';
 export const WARNING_30 = 'rgb(234, 167, 34)';
@@ -31,6 +33,7 @@ export const GREY_60 = 'rgb(92, 89, 85)';
 export const GREY_50 = 'rgb(121, 118, 113)';
 export const GREY_30 = 'rgb(182, 178, 175)';
 export const GREY_20 = 'rgb(211, 209, 207)';
+export const GREY_10 = 'rgb(235, 235, 235)';
 
 export const CYAN_300 = 'rgb(105, 255, 254)';
 
