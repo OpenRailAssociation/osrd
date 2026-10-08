@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 import { flatten, inRange } from 'lodash';
 
-import { indexToColor } from '../../common/helpers/colors';
+import { indexToColor, WHITE_ALPHA_100 } from '../../common/helpers/colors';
 import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
   CurveStyle,
@@ -475,7 +475,7 @@ export const PathLayer = ({
       const borderWidth = border.width || 1;
       const mainPathStyle = STYLES[level];
       const totalPathWidth = border.offset * 2 + mainPathStyle.width;
-      const backgroundColor = border.backgroundColor || '#fff';
+      const backgroundColor = border.backgroundColor || WHITE_ALPHA_100;
       const lines = getPathLines(stcContext);
       ctx.save();
       ctx.globalAlpha = opacity;

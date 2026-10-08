@@ -1,28 +1,18 @@
-import { SECOND, MINUTE, HOUR } from '../../common/consts';
+import { SECOND, MINUTE, HOUR, FONT_MONO, FONT_SANS } from '../../common/consts';
+import {
+  BLACK_ALPHA_100,
+  GREY_10,
+  GREY_30,
+  GREY_50,
+  SKY_700,
+  WHITE_ALPHA_100,
+} from '../../common/helpers/colors';
 import { type SpaceTimeChartTheme } from './types';
 
-export const BLACK = '#000000';
-export const BLUE = '#2170B9';
-export const GREY_10 = '#EDEDED';
-export const GREY_30 = '#B6B2AF';
-export const GREY_50 = '#797671';
-export const WHITE = '#FFFFFF';
-export const WHITE_75 = '#FFFFFFC0';
-export const AMBIANT_A10 = '#EFF3F5';
-export const ERROR_30 = '#FF6868';
-export const ERROR_60 = '#D91C1C';
-
-// Occupancy blocks colors :
-export const OCCUPANCY_FREE = '#CAEDDB';
-export const OCCUPANCY_SEMAPHORE = '#FFD4D8';
-export const OCCUPANCY_WARNING = '#FFEABF';
-
-// Fonts:
-export const FONT_SIZE = 10;
-export const FONT = 'IBM Plex Mono, monospace';
+export const FONT_SANS_REGULAR = `400 12px ${FONT_SANS}`
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
-  background: 'white',
+  background: WHITE_ALPHA_100,
   breakpoints: [0.2, 0.5, 1, 4, 16, 48, 72, Infinity],
   timeRanges: [
     10 * SECOND,
@@ -38,18 +28,18 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
     24 * HOUR,
   ],
   pathsStyles: {
-    fontSize: FONT_SIZE,
-    fontFamily: FONT,
+    fontSize: 10,
+    fontFamily: FONT_MONO,
   },
   spaceGraduationsStyles: {
     1: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.75,
     },
     2: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.25,
     },
     3: {
@@ -75,24 +65,24 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
   timeCaptionsStyles: {
     1: {
       color: GREY_50,
-      font: `12px ${FONT}`,
+      font: `12px ${FONT_MONO}`,
       topOffset: 12,
     },
     2: {
       color: GREY_30,
-      font: `12px ${FONT}`,
+      font: `12px ${FONT_MONO}`,
       topOffset: 12,
     },
     3: {
       color: GREY_30,
-      font: `10px ${FONT}`,
+      font: `10px ${FONT_MONO}`,
       topOffset: 6,
     },
   },
   dateCaptionsSize: 0,
   dateCaptionsStyle: {
     color: GREY_30,
-    font: `10px ${FONT}`,
+    font: `10px ${FONT_MONO}`,
     topOffset: 28,
     textAlign: 'left',
   },
@@ -113,35 +103,35 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
   timeGraduationsStyles: {
     1: {
       width: 0.75,
-      color: BLACK,
+      color: BLACK_ALPHA_100,
       opacity: 0.5,
     },
     2: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.7,
     },
     3: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.7,
       dashArray: [80, 8],
     },
     4: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.7,
       dashArray: [16, 4],
     },
     5: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.7,
       dashArray: [8, 8],
     },
     6: {
       width: 0.5,
-      color: BLUE,
+      color: SKY_700,
       opacity: 0.25,
     },
   },

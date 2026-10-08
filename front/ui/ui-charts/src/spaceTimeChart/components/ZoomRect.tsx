@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 
+import { BLACK_ALPHA_100, BLACK_ALPHA_50, WHITE_ALPHA_100 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
@@ -11,11 +12,11 @@ import { fillRect, type CanvasRect } from '../utils/canvas';
  */
 function squareDot(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
   ctx.save();
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = WHITE_ALPHA_100;
   ctx.fillRect(cx - 1, cy - 1, 3, 3);
   ctx.fill();
 
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = BLACK_ALPHA_100;
   ctx.fillRect(cx, cy, 1, 1);
   ctx.fill();
   ctx.restore();
@@ -28,7 +29,7 @@ export const ZoomRect = (rect: CanvasRect) => {
   const drawZoomRect = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, context) => {
       ctx.save();
-      ctx.fillStyle = '#0000000D'; /* black5 */
+      ctx.fillStyle = BLACK_ALPHA_50;
       const { width, height } = fillRect(ctx, rect, context);
       if (width && height) {
         ctx.lineWidth = LINE_WIDTH;

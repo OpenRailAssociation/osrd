@@ -7,6 +7,8 @@ import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { useIntervalPositions } from './useIntervalPositions';
+import { FONT_SANS_REGULAR } from '../lib/consts';
+import { BLACK_ALPHA_100 } from '../../common/helpers/colors';
 
 const BAR_HEIGHT = 24;
 const BAR_PADDING_LEFT = 8;
@@ -67,7 +69,7 @@ export const TrainInfoBar = ({
       if (positions.length < 2) return;
 
       const yTop = height - captionSize - BAR_BOTTOM_OFFSET - BAR_HEIGHT;
-      ctx.font = '400 12px IBM Plex Sans';
+      ctx.font = FONT_SANS_REGULAR;
       ctx.textBaseline = 'middle';
       const textY = yTop + BAR_HEIGHT / 2;
 
@@ -94,7 +96,7 @@ export const TrainInfoBar = ({
           BAR_HEIGHT
         );
         ctx.clip();
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = BLACK_ALPHA_100;
         ctx.textAlign = 'left';
         const text = `${name} | ${intervalLabel}`;
         const textWidth = width - BAR_PADDING_LEFT - BAR_PADDING_RIGHT;
