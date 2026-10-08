@@ -37,3 +37,58 @@
     text-align: right;
   }
 }
+
+body:has(#adm-dash-user-table) {
+  background-color: rgb(235, 235, 234);
+}
+
+div:has(> #adm-dash-user-table) {
+  width: 60%;
+  margin: 48px auto;
+  box-shadow:
+    0 2px 4px 0 rgba(0, 0, 0, 0.16),
+    0 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0 1px 0 0 inset rgba(255, 255, 255, 1);
+  border-bottom-color: rgba(235, 235, 234, 1);
+  border-bottom-width: 24px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 1);
+  overflow: hidden;
+}
+
+#adm-dash-user-table {
+  width: 100%;
+  color: black;
+
+  caption {
+    caption-side: top;
+    color: black;
+
+    div {
+      height: 48px;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      background-color: var(--grey5);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      p#user-count {
+        display: inline;
+        padding: 0 16px 2px 0; // vertical padding aligns the text with the buttons
+        margin: 0;
+        font-family: IBMPlexSans-Bold, 'IBM Plex Sans', system-ui, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+
+      button:nth-child(3) {
+        // edit groups
+        margin-left: auto; // float right
+      }
+    }
+  }
+}
