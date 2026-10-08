@@ -42,6 +42,7 @@ impl TrainScheduleSet {
         conn.transaction(async move |mut conn| {
             let timetable = crate::Timetable::changeset()
                 .timetable_type(timetable_type.clone())
+                .is_train_schedule_set(true)
                 .create(&mut conn)
                 .await?;
             let train_schedule_set = changeset
@@ -151,6 +152,7 @@ mod tests {
             TimetableType(schemas::timetable_type::TimetableType::Hourly)
         );
         assert_eq!(timetable.train_schedule_set_id, Some(train_schedule_set.id));
+        assert!(timetable.is_train_schedule_set);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

@@ -2,8 +2,11 @@ ALTER TABLE timetable
     ADD train_schedule_set_id int8 UNIQUE REFERENCES train_schedule_set(id)
     ON DELETE CASCADE;
 
-INSERT INTO timetable (timetable_type, train_schedule_set_id)
-SELECT timetable_type, id
+-- Whether this timetable is the one of a train schedule set
+ALTER TABLE timetable ADD is_train_schedule_set BOOLEAN NOT NULL DEFAULT false;
+
+INSERT INTO timetable (timetable_type, train_schedule_set_id, is_train_schedule_set)
+SELECT timetable_type, id, true
 FROM train_schedule_set;
 
 ALTER TABLE train_schedule_set ADD timetable_id int8 UNIQUE REFERENCES timetable(id);

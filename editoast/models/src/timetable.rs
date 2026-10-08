@@ -29,6 +29,8 @@ pub struct Timetable {
     pub id: i64,
     pub timetable_type: TimetableType,
     pub train_schedule_set_id: Option<i64>,
+    /// Whether this timetable is the one of a train schedule set
+    pub is_train_schedule_set: bool,
 }
 
 impl From<Timetable> for Option<i64> {
@@ -153,7 +155,7 @@ impl Timetable {
         use database::tables::timetable::dsl as timetable_dsl;
 
         diesel::delete(timetable_dsl::timetable)
-            .filter(timetable_dsl::train_schedule_set_id.is_null())
+            .filter(timetable_dsl::is_train_schedule_set.eq(false))
             .filter(diesel::dsl::not(diesel::dsl::exists(
                 scenario_dsl::scenario.filter(scenario_dsl::timetable_id.eq(timetable_dsl::id)),
             )))

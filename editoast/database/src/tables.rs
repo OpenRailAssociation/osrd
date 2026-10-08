@@ -841,6 +841,7 @@ diesel::table! {
         id -> Int8,
         timetable_type -> TimetableType,
         train_schedule_set_id -> Nullable<Int8>,
+        is_train_schedule_set -> Bool,
     }
 }
 
