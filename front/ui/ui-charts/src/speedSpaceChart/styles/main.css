@@ -3,7 +3,7 @@
 @import '../../common/styles/index.css';
 
 .base-margin-top {
-  margin-top: 27px;
+  margin-top: 6px;
 }
 
 #curve-layer,
@@ -18,26 +18,22 @@
 }
 
 #interaction-button-container {
-  display: flex;
-  position: absolute;
   align-items: center;
-  background: var(--color-white-100);
+  overflow: hidden; 
   border: 1px solid var(--color-black-10);
+  display: flex;
+  margin-right: 6px;
+  width: 63px;
+  height: 24px;
+  box-shadow: 0 0 0 8px var(--color-white-100), 0 0 0 1px inset var(--color-black-10);
   border-radius: 5px;
-  margin-right: 12px;
-  top: 7px;
-  right: 7px;
-  overflow: hidden;
+  background: var(--color-white-100);
 
   button {
     outline: none;
     background: var(--color-white-100);
     color: var(--color-black-100);
-    padding: 4px 8px;
-
-    &:first-child {
-      border-radius: 5px 0 0 5px;
-    }
+    padding: 0px 7px;
 
     &:not(:last-child) {
       border-right: 1px solid var(--color-black-10);
@@ -46,6 +42,11 @@
     &:hover {
       background-color: var(--color-primary-5);
     }
+  }
+
+  .icon {
+    display: block;
+    height: 24px;
   }
 
   .reset-button svg {
