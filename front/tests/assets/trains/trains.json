@@ -1545,7 +1545,7 @@
     "schedule": [
       {
         "at": "key3089",
-        "arrival": null,
+        "arrival": "PT10M",
         "stop_for": "PT100S",
         "reception_signal": "OPEN"
       }
@@ -1843,7 +1843,7 @@
     "schedule": [
       {
         "at": "key804",
-        "arrival": null,
+        "arrival": "PT7M",
         "stop_for": "P0D",
         "reception_signal": "OPEN"
       }
