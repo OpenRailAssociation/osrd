@@ -96,8 +96,7 @@ const StdcmSimulationReportSheet = ({
           mass: consist.totalMass ?? kgToT(rollingStock.mass),
           length: consist.totalLength ?? rollingStock.length,
         },
-        t,
-        stdcmData.pathfinding_result
+        t
       ),
     [operationalPointsList, rollingStock, stdcmData, consistData]
   );

@@ -59,6 +59,8 @@ export type SimilarTrainWithSecondaryCode = {
 export type StdcmResultsOperationalPoint = {
   opId?: string;
   positionOnPath: number;
+  pathItemIndex?: number;
+  isBackTrack?: boolean;
   time: Date;
   name?: string;
   consistChange?: ConsistData;
