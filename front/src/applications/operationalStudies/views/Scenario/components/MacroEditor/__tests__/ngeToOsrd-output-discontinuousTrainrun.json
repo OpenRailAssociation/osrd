@@ -2,7 +2,7 @@
   "macro_nodes": [
     {
       "ngeId": 6,
-      "trigram": "SS",
+      "short_name": "SS",
       "full_name": "Sursee",
       "is_collapsed": false,
       "position_x": 672,
@@ -12,7 +12,7 @@
     },
     {
       "ngeId": 7,
-      "trigram": "RTR",
+      "short_name": "RTR",
       "full_name": "Rothrist",
       "is_collapsed": false,
       "position_x": 320,
@@ -22,7 +22,7 @@
     },
     {
       "ngeId": 8,
-      "trigram": "LTH",
+      "short_name": "LTH",
       "full_name": "Langenthal",
       "is_collapsed": false,
       "position_x": 320,
@@ -38,7 +38,7 @@
       "node_location": { "main_code": "WLD", "country_code": "??", "type": "domestic" },
       "position_x": 960,
       "position_y": 960,
-      "trigram": "WLD"
+      "short_name": "WLD"
     },
     {
       "full_name": "Feldrain",
@@ -48,7 +48,7 @@
       "node_location": { "main_code": "FLR", "country_code": "??", "type": "domestic" },
       "position_x": 1120,
       "position_y": 1120,
-      "trigram": "FLR"
+      "short_name": "FLR"
     }
   ],
   "macro_notes": [],

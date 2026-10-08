@@ -4035,7 +4035,7 @@ export type MacroNodeResponse = {
   node_location: NodeLocation;
   position_x: number;
   position_y: number;
-  trigram?: string | null;
+  short_name?: string | null;
 };
 export type MacroNodeListResponse = PaginationStats & {
   results: MacroNodeResponse[];
@@ -4051,7 +4051,7 @@ export type MacroNodeForm = {
   node_location: NodeLocation;
   position_x: number;
   position_y: number;
-  trigram?: string | null;
+  short_name?: string | null;
 };
 export type MacroNodeBatchForm = {
   macro_nodes: MacroNodeForm[];
