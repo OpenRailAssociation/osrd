@@ -103,20 +103,13 @@ class MediumInfraCreator(SmallInfraCreator):
         super()._add_west_stations()
 
     def _add_west_loading_gauge_limits(self) -> None:
+        # Same ranges as small_infra (split around PI1), with the GA/GB gauges
+        # used by the e2e rolling stocks
         ta0, ti3 = self.tracks["TA0"], self.tracks["TI3"]
         ta0.add_loading_gauge_limit(begin=0, end=200, category=LoadingGaugeType.GB)
         ta0.add_loading_gauge_limit(begin=200, end=1750, category=LoadingGaugeType.GA)
         ti3.add_loading_gauge_limit(begin=0, end=150, category=LoadingGaugeType.GA)
         ta0.add_loading_gauge_limit(begin=100, end=1500, category=LoadingGaugeType.GB)
-
-    def _add_mid_west_stations(self) -> None:
-        """Unlike small_infra, there is no duplicate Mid_West station."""
-        self._add_station(
-            "Mid_West_station", "MWS", self._mid_west_station_parts(), uic=8733
-        )
-
-    def _add_level_crossings(self) -> None:
-        """Unlike small_infra, there are no level crossings."""
 
 
 def create_medium_infra(signaling_system: str) -> ScenarioData:

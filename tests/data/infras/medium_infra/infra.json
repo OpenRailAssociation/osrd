@@ -752,7 +752,52 @@
         }
     ],
     "extended_switch_types": [],
-    "level_crossings": [],
+    "level_crossings": [
+        {
+            "id": "lc1",
+            "name": "LC1",
+            "parts": [
+                {
+                    "pedal_downstream": 4000,
+                    "pedal_upstream": 4000,
+                    "position": 750.0,
+                    "track": "TB0"
+                }
+            ],
+            "short_zone_length": 2000
+        },
+        {
+            "id": "lc2",
+            "name": "LC2",
+            "parts": [
+                {
+                    "pedal_downstream": 6000,
+                    "pedal_upstream": 4000,
+                    "position": 125.0,
+                    "track": "TC0"
+                },
+                {
+                    "pedal_downstream": 5000,
+                    "pedal_upstream": 5000,
+                    "position": 120.0,
+                    "track": "TC1"
+                },
+                {
+                    "pedal_downstream": 5000,
+                    "pedal_upstream": 5000,
+                    "position": 110.0,
+                    "track": "TC2"
+                },
+                {
+                    "pedal_downstream": 6000,
+                    "pedal_upstream": 6000,
+                    "position": 115.0,
+                    "track": "TC3"
+                }
+            ],
+            "short_zone_length": 1500
+        }
+    ],
     "neutral_sections": [
         {
             "announcement_track_ranges": [
@@ -945,6 +990,38 @@
             "secondary_name": "0",
             "uic": 8733,
             "weight": 4
+        },
+        {
+            "country_code": "FR",
+            "id": "Mid_West_station_duplicate",
+            "is_passenger_station": true,
+            "main_code": "MWS",
+            "name": "Mid_West_station_duplicate",
+            "parts": [
+                {
+                    "local_track_name": "V1bis'",
+                    "position": 550.0,
+                    "track": "TC0"
+                },
+                {
+                    "local_track_name": "V1'",
+                    "position": 550.0,
+                    "track": "TC1"
+                },
+                {
+                    "local_track_name": "V2'",
+                    "position": 450.0,
+                    "track": "TC2"
+                },
+                {
+                    "local_track_name": "V2bis'",
+                    "position": 450.0,
+                    "track": "TC3"
+                }
+            ],
+            "secondary_code": "BV2",
+            "secondary_name": "Duplicate station",
+            "uic": 87332
         },
         {
             "country_code": "FR",

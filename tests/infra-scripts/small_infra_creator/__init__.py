@@ -429,12 +429,9 @@ class SmallInfraCreator:
         )
         self._add_mid_west_stations()
 
-    def _mid_west_station_parts(self) -> list[tuple[TrackSection, float]]:
-        t = self.tracks
-        return [(t["TC0"], 550), (t["TC1"], 550), (t["TC2"], 450), (t["TC3"], 450)]
-
     def _add_mid_west_stations(self) -> None:
-        parts = self._mid_west_station_parts()
+        t = self.tracks
+        parts = [(t["TC0"], 550), (t["TC1"], 550), (t["TC2"], 450), (t["TC3"], 450)]
         self._add_station("Mid_West_station", "MWS", parts, uic=8733)
         # Duplicate station (to test for duplicate OPs)
         mid_west_duplicate = self.builder.add_operational_point(
@@ -445,7 +442,8 @@ class SmallInfraCreator:
             secondary_name="Duplicate station",
         )
         for index, (track_section, offset) in enumerate(parts, start=1):
-            mid_west_duplicate.add_part(track_section, offset, f"V{index}'")
+            local_track_name = self._local_track_name(track_section, index)
+            mid_west_duplicate.add_part(track_section, offset, f"{local_track_name}'")
 
     # ================================
     #  Around station D: Mid-East
