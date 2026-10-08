@@ -206,7 +206,9 @@ export function convertGeomTopoTrackOffset(
     }
   }
 
-  if (index > 0) {
+  if (index === 0) {
+    return outputOffsets[0];
+  } else {
     const relativeInputOffset = offset - inputOffsets[index - 1];
     const inputTrackLength = inputOffsets[index] - inputOffsets[index - 1];
     const outputTrackLength = outputOffsets[index] - outputOffsets[index - 1];
@@ -214,7 +216,5 @@ export function convertGeomTopoTrackOffset(
       (relativeInputOffset / inputTrackLength) * outputTrackLength
     );
     return outputOffsets[index - 1] + relativeOutputOffset;
-  } else {
-    return inputOffsets[index];
   }
 }
