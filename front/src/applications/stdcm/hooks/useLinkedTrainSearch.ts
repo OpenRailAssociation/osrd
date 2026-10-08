@@ -15,6 +15,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import {
   getSearchDatetimeWindow,
+  getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
@@ -42,6 +43,7 @@ const useLinkedTrainSearch = () => {
   const [getTrainScheduleSets] =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useLazyQuery();
 
+  const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
@@ -60,26 +62,31 @@ const useLinkedTrainSearch = () => {
 
   const getExtremityDetails = useCallback(
     async (pathItem: PathItem) => {
-      if (
-        pathItem.location.type === 'track_offset' ||
-        (pathItem.location.operational_point.type !== 'id' &&
-          pathItem.location.operational_point.type !== 'uic')
-      )
-        return undefined;
+      if (pathItem.location.type === 'track_offset') return undefined;
 
-      const pathItemQuery =
-        pathItem.location.operational_point.type === 'id'
-          ? ['=', ['obj_id'], pathItem.location.operational_point.operational_point]
-          : ([
-              'and',
-              ['=', ['uic'], pathItem.location.operational_point.uic],
-              ['=', ['secondary_code'], pathItem.location.operational_point.secondary_code],
-            ] as SearchQuery);
+      const op = pathItem.location.operational_point;
+      let opQuery: SearchQuery;
+      switch (op.type) {
+        case 'id':
+          opQuery = ['=', ['obj_id'], op.operational_point];
+          break;
+        case 'uic':
+          opQuery = ['and', ['=', ['uic'], op.uic], ['=', ['secondary_code'], op.secondary_code]];
+          break;
+        case 'domestic':
+          opQuery = [
+            'and',
+            ['=', ['main_code'], op.main_code],
+            ['=', ['country_code'], op.country_code],
+            ['=', ['secondary_code'], op.secondary_code],
+          ];
+          break;
+      }
 
       try {
         const payloadOP: SearchPayload = {
           object: 'operationalpoint',
-          query: pathItemQuery,
+          query: ['and', opQuery, ['=', ['infra_id'], infraId]],
         };
         const opDetails = (await postSearch({
           searchPayload: payloadOP,
