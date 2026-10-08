@@ -3949,6 +3949,7 @@ class ElectricalProfiles(BaseModel):
     """
     List of `n` boundaries of the ranges (block path).
     A boundary is a distance from the beginning of the path in mm.
+    Origin and Destination are not present (they are implicitly included).
     """
     values: list[ElectricalProfileValueNoProfile | ElectricalProfileValueProfile]
     """
@@ -4855,6 +4856,7 @@ class CoreDriverActions(BaseModel):
     """
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
+    Origin and Destination are not present (they are implicitly included).
     """
     values: list[DriverAction]
     """
@@ -4945,6 +4947,7 @@ class CoreSpeedLimitProperties(BaseModel):
     """
     List of `n` boundaries of the ranges (block path).
     A boundary is a distance from the beginning of the path in mm.
+    Origin and Destination are not present (they are implicitly included).
     """
     values: list[CoreSpeedLimitProperty]
     """

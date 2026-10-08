@@ -168,6 +168,7 @@ pub enum DriverAction {
 pub struct DriverActions {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
+    /// Origin and Destination are not present (they are implicitly included).
     boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
     #[educe(Default(expression = vec![DriverAction::default()]))]
@@ -276,6 +277,7 @@ pub struct RoutingZoneRequirement {
 pub struct ElectricalProfiles {
     /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.
+    /// Origin and Destination are not present (they are implicitly included).
     pub boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
     #[schema(inline)]
@@ -319,6 +321,7 @@ pub struct SpeedLimitProperty {
 pub struct SpeedLimitProperties {
     /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.
+    /// Origin and Destination are not present (they are implicitly included).
     pub boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
     pub values: Vec<SpeedLimitProperty>,
