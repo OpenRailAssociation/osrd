@@ -1,11 +1,10 @@
-use chrono::DateTime;
-use chrono::Utc;
 use database::DbConnection;
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::Timestamp;
 use crate::document::Document;
 use crate::prelude::*;
 use crate::tags::Tags;
@@ -20,8 +19,8 @@ pub struct Project {
     pub description: Option<String>,
     pub funders: Option<String>,
     pub budget: Option<i32>,
-    pub creation_date: DateTime<Utc>,
-    pub last_modification: DateTime<Utc>,
+    pub creation_date: Timestamp,
+    pub last_modification: Timestamp,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
     #[model(column = database::tables::project::image_id)]
@@ -156,7 +155,7 @@ impl Project {
             };
 
             Project::changeset()
-                .last_modification(Utc::now())
+                .last_modification(Timestamp::now())
                 .update(&mut conn, id)
                 .await?;
 
@@ -172,8 +171,8 @@ impl Project {
         Self::changeset()
             .name(name.into())
             .budget(Some(0))
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
+            .creation_date(Timestamp::now())
+            .last_modification(Timestamp::now())
             .tags(Tags::default())
     }
 }
