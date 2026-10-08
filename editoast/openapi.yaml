@@ -273,6 +273,20 @@ paths:
                       items:
                         $ref: '#/components/schemas/Role'
                       uniqueItems: true
+  /authz/user/{resource_id}:
+    delete:
+      tags:
+      - authz
+      parameters:
+      - name: resource_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: Delete the user with the given id from the database and OpenFGA
   /authz/users:
     get:
       tags:

@@ -1081,6 +1081,34 @@ pub(in crate::views) async fn list_users(
     Ok(Json(users))
 }
 
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    delete,
+    path = "/user/{resource_id}",
+    tag = "authz",
+    params(ResourceIdParam),
+    responses((
+        status = 204,
+        description = "Delete the user with the given id from the database and OpenFGA",
+    )),
+)]
+pub(in crate::views) async fn delete_user(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
+) -> Result<impl IntoResponse> {
+    let mut conn = db_pool.get().await?;
+
+    // Check if the user exists in the database
+    let user = User::retrieve(conn.clone(), resource_id)
+        .await?
+        .ok_or(AuthzError::UnknownUser { id: resource_id })?;
+
+    // Delete the user from the database
+    User::delete(&user, &mut conn).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
@@ -4057,6 +4085,76 @@ mod tests {
 
         // Try to list users as non-admin
         app.get("/authz/users")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_user() {
+        let app = test_app!().build();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user_1 = app
+            .user("user1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let user_2 = app
+            .user("user2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+
+        let user_to_delete = app
+            .user("user_to_delete", "User to Delete")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // Delete user_to_delete as admin
+        let path = format!("/authz/user/{}", user_to_delete.id);
+        app.delete(path.as_str())
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_no_content();
+
+        // Verify user_to_delete is no longer in the list of users
+        let users = app
+            .get("/authz/users")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfo>>();
+
+        assert!(!users.iter().any(|user| user.id == user_to_delete.id));
+        assert!(users.iter().any(|user| user.id == user_1.id));
+        assert!(users.iter().any(|user| user.id == user_2.id));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_user_forbidden_non_admin() {
+        let app = test_app!().build();
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let user_to_delete = app
+            .user("user_to_delete", "User to Delete")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        let path = format!("/authz/user/{}", user_to_delete.id);
+        app.delete(path.as_str())
             .by_user(user.as_ref())
             .await
             .assert_status_forbidden();
