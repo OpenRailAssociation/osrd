@@ -2,10 +2,10 @@ import { useCallback } from 'react';
 
 import chroma from 'chroma-js';
 
+import { FONT_SANS_REGULAR } from '../../common/consts';
 import { BLACK_ALPHA_100 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../common/types';
-import { FONT_SANS_REGULAR } from '../lib/consts';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { useIntervalPositions } from './useIntervalPositions';
