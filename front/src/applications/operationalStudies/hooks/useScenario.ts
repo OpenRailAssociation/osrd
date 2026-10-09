@@ -9,6 +9,8 @@ import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
+import useUrlOrStorageParam from './useUrlOrStorageParam';
+
 type SimulationParams = {
   scenarioId: string;
 };
@@ -22,6 +24,8 @@ const useScenario = () => {
   const [sandboxId, setSandboxId] = useState<number>();
 
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
+
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   const {
     data: scenario,
@@ -56,6 +60,14 @@ const useScenario = () => {
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [scenario]);
+
+  // TODO(#18904): read the selected timetable from the URL instead of always using the first one.
+  useEffect(() => {
+    const currentTimetableId = scenario?.timetable_summaries.at(0)?.id;
+    if (currentTimetableId !== undefined) {
+      setParamsInUrlAndStorage('timetable', currentTimetableId.toString());
+    }
+  }, [scenario, setParamsInUrlAndStorage]);
 
   useEffect(() => {
     if (isScenarioError && errorScenario) throw errorScenario;
