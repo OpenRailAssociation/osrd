@@ -9,6 +9,8 @@ import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
+import useUrlOrStorageParam from './useUrlOrStorageParam';
+
 type SimulationParams = {
   scenarioId: string;
 };
@@ -22,6 +24,8 @@ const useScenario = () => {
   const [sandboxId, setSandboxId] = useState<number>();
 
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
+
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   const {
     data: scenario,
@@ -55,6 +59,15 @@ const useScenario = () => {
       dispatch(updateTrainIdUsedForProjection(undefined));
     }
   }, [scenario]);
+
+  // TODO(#18863): scenarios don't support multiple timetables yet, so this only mirrors
+  // the current one into the URL/local storage. Once the backend returns a list, prioritize
+  // `getParamFromUrlOrStorage('timetable')` here instead.
+  useEffect(() => {
+    if (scenario) {
+      setParamsInUrlAndStorage('timetable', scenario.timetable_id.toString());
+    }
+  }, [scenario, setParamsInUrlAndStorage]);
 
   useEffect(() => {
     if (isScenarioError && errorScenario) throw errorScenario;
