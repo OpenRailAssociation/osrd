@@ -1,0 +1,6 @@
+DROP TRIGGER trigger_check_train_schedule_set_timetable_id_is_immutable ON train_schedule_set;
+DROP FUNCTION check_train_schedule_set_timetable_id_is_immutable;
+ALTER TABLE train_schedule_set DROP COLUMN timetable_id;
+DELETE FROM timetable WHERE train_schedule_set_id IS NOT NULL;
+ALTER TABLE timetable DROP COLUMN is_train_schedule_set;
+ALTER TABLE timetable DROP COLUMN train_schedule_set_id;

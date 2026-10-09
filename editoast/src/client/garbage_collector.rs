@@ -247,6 +247,7 @@ mod tests {
     use crate::fixtures::create_project;
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
+    use crate::fixtures::create_train_schedule_set;
     use models::SearchJourneyEnvironment;
     use models::search_journey_environment::fixtures::search_journey_env_fixtures;
     use models::stdcm_search_environment::StdcmSearchEnvironment;
@@ -287,6 +288,9 @@ mod tests {
         .await
         .expect("Failed to create SearchJourneyEnvironment");
 
+        // Timetable of a train schedule set: only deleted along with its train schedule set
+        let train_schedule_set = create_train_schedule_set(conn).await;
+
         // Orphaned timetables
         let orphaned1 = create_timetable(conn).await;
         let orphaned2 = create_timetable(conn).await;
@@ -298,14 +302,17 @@ mod tests {
             assert!(!found, "Timetable should not exist anymore")
         }
 
-        for kept_id in [scenario_set.timetable.id, stdcm_timetable.id]
-            .into_iter()
-            .chain(
-                search_journey_timetables
-                    .iter()
-                    .map(|timetable| timetable.id),
-            )
-        {
+        for kept_id in [
+            scenario_set.timetable.id,
+            stdcm_timetable.id,
+            train_schedule_set.timetable_id,
+        ]
+        .into_iter()
+        .chain(
+            search_journey_timetables
+                .iter()
+                .map(|timetable| timetable.id),
+        ) {
             let found = Timetable::exists(conn, kept_id).await.unwrap();
             assert!(found, "Timetable should exist")
         }
@@ -320,20 +327,24 @@ mod tests {
         let scenario_set = create_scenario_fixtures_set(conn, "test_scenario").await;
 
         // Orphaned train schedule sets
-        let orphaned1 = TrainScheduleSet::changeset()
-            .name(Some("orphaned1".into()))
-            .description("description1".into())
-            .published(false)
-            .create(conn)
-            .await
-            .expect("Failed to create orphaned train schedule set");
-        let orphaned2 = TrainScheduleSet::changeset()
-            .name(Some("orphaned2".into()))
-            .description("description2".into())
-            .published(false)
-            .create(conn)
-            .await
-            .expect("Failed to create orphaned train schedule set");
+        let orphaned1 = TrainScheduleSet::create_with_timetable(
+            conn,
+            TrainScheduleSet::changeset()
+                .name(Some("orphaned1".into()))
+                .description("description1".into())
+                .published(false),
+        )
+        .await
+        .expect("Failed to create orphaned train schedule set");
+        let orphaned2 = TrainScheduleSet::create_with_timetable(
+            conn,
+            TrainScheduleSet::changeset()
+                .name(Some("orphaned2".into()))
+                .description("description2".into())
+                .published(false),
+        )
+        .await
+        .expect("Failed to create orphaned train schedule set");
 
         clean_orphaned_train_schedule_sets(&db_pool).await.unwrap();
 

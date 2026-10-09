@@ -95,7 +95,7 @@ pub(in crate::views) async fn post(
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
     let changeset = train_schedule_set_form.into_changeset();
-    let train_schedule_set = changeset.create(conn).await?;
+    let train_schedule_set = TrainScheduleSet::create_with_timetable(conn, changeset).await?;
 
     Ok((
         StatusCode::CREATED,
@@ -371,12 +371,14 @@ mod tests {
         conn: &mut DbConnection,
     ) -> (TrainScheduleSet, CatalogEntry) {
         let catalog_entry = create_catalog_entry(conn).await;
-        let train_schedule_set = TrainScheduleSet::changeset()
-            .catalog_entry_id(Some(catalog_entry.id))
-            .name(Some("test_with_catalog_entry".into()))
-            .create(conn)
-            .await
-            .expect("Failed to create train schedule set");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            conn,
+            TrainScheduleSet::changeset()
+                .catalog_entry_id(Some(catalog_entry.id))
+                .name(Some("test_with_catalog_entry".into())),
+        )
+        .await
+        .expect("Failed to create train schedule set");
         (train_schedule_set, catalog_entry)
     }
 
@@ -427,14 +429,16 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
-        let train_schedule_set = TrainScheduleSet::changeset()
-            .name(Some("hourly_train_schedule_set".into()))
-            .timetable_type(models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Hourly,
-            ))
-            .create(&mut pool.get_ok())
-            .await
-            .expect("Failed to create train schedule set");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut pool.get_ok(),
+            TrainScheduleSet::changeset()
+                .name(Some("hourly_train_schedule_set".into()))
+                .timetable_type(models::timetable_type::TimetableType(
+                    schemas::timetable_type::TimetableType::Hourly,
+                )),
+        )
+        .await
+        .expect("Failed to create train schedule set");
         let mut train_schedule_1 = simple_paced_train_base();
         let mut train_schedule_2 = simple_paced_train_base();
         train_schedule_1.train_occurrence.start_time = second::i64::new(5 * 60);
@@ -471,14 +475,16 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
-        let train_schedule_set = TrainScheduleSet::changeset()
-            .name(Some("hourly_train_schedule_set".into()))
-            .timetable_type(models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Hourly,
-            ))
-            .create(&mut pool.get_ok())
-            .await
-            .expect("Failed to create train schedule set");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut pool.get_ok(),
+            TrainScheduleSet::changeset()
+                .name(Some("hourly_train_schedule_set".into()))
+                .timetable_type(models::timetable_type::TimetableType(
+                    schemas::timetable_type::TimetableType::Hourly,
+                )),
+        )
+        .await
+        .expect("Failed to create train schedule set");
         let mut train_schedule_1 = simple_paced_train_base();
         let mut train_schedule_2 = simple_paced_train_base();
         train_schedule_1.train_occurrence.start_time = second::i64::new(5 * 60);
@@ -512,14 +518,16 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
-        let train_schedule_set = TrainScheduleSet::changeset()
-            .name(Some("hourly_train_schedule_set".into()))
-            .timetable_type(models::timetable_type::TimetableType(
-                schemas::timetable_type::TimetableType::Hourly,
-            ))
-            .create(&mut pool.get_ok())
-            .await
-            .expect("Failed to create train schedule set");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut pool.get_ok(),
+            TrainScheduleSet::changeset()
+                .name(Some("hourly_train_schedule_set".into()))
+                .timetable_type(models::timetable_type::TimetableType(
+                    schemas::timetable_type::TimetableType::Hourly,
+                )),
+        )
+        .await
+        .expect("Failed to create train schedule set");
         let mut train_schedule_1 = simple_paced_train_base();
         train_schedule_1.train_occurrence.start_time = second::i64::new(121 * 60);
         train_schedule_1.paced.as_mut().unwrap().time_window =
@@ -610,6 +618,7 @@ mod tests {
             description: String::default(),
             published: false,
             timetable_type: Default::default(),
+            timetable_id: response.train_schedule_set.timetable_id,
         };
 
         assert_eq!(
@@ -650,6 +659,7 @@ mod tests {
             timetable_type: models::timetable_type::TimetableType(
                 schemas::timetable_type::TimetableType::Calendar,
             ),
+            timetable_id: response.train_schedule_set.timetable_id,
         };
 
         assert_eq!(
@@ -684,6 +694,7 @@ mod tests {
                     description: String::default(),
                     published: false,
                     timetable_type: Default::default(),
+                    timetable_id: response.train_schedule_set.timetable_id,
                 },
                 train_schedule_count: 0
             }
@@ -715,6 +726,7 @@ mod tests {
                     description: String::default(),
                     published: false,
                     timetable_type: Default::default(),
+                    timetable_id: response.train_schedule_set.timetable_id,
                 },
                 train_schedule_count: 0
             }
@@ -723,14 +735,16 @@ mod tests {
 
     async fn create_train_schedule_set_published(conn: &mut DbConnection) -> TrainScheduleSet {
         let catalog_entry = create_catalog_entry(conn).await;
-        TrainScheduleSet::changeset()
-            .catalog_entry_id(Some(catalog_entry.id))
-            .name(Some("test".to_string()))
-            .description(String::default())
-            .published(true)
-            .create(conn)
-            .await
-            .expect("Failed to create train schedule set")
+        TrainScheduleSet::create_with_timetable(
+            conn,
+            TrainScheduleSet::changeset()
+                .catalog_entry_id(Some(catalog_entry.id))
+                .name(Some("test".to_string()))
+                .description(String::default())
+                .published(true),
+        )
+        .await
+        .expect("Failed to create train schedule set")
     }
 
     async fn create_train_schedule_set_with_timetable_type(
@@ -738,14 +752,16 @@ mod tests {
         timetable_type: models::timetable_type::TimetableType,
     ) -> TrainScheduleSet {
         let catalog_entry = create_catalog_entry(conn).await;
-        TrainScheduleSet::changeset()
-            .catalog_entry_id(Some(catalog_entry.id))
-            .name(Some("test".to_string()))
-            .description(String::default())
-            .timetable_type(timetable_type)
-            .create(conn)
-            .await
-            .expect("Failed to create train schedule set")
+        TrainScheduleSet::create_with_timetable(
+            conn,
+            TrainScheduleSet::changeset()
+                .catalog_entry_id(Some(catalog_entry.id))
+                .name(Some("test".to_string()))
+                .description(String::default())
+                .timetable_type(timetable_type.clone()),
+        )
+        .await
+        .expect("Failed to create train schedule set")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -889,6 +905,7 @@ mod tests {
                     timetable_type: models::timetable_type::TimetableType(
                         schemas::timetable_type::TimetableType::Calendar
                     ),
+                    timetable_id: response.train_schedule_set.timetable_id,
                 },
                 train_schedule_count: 0
             }
@@ -926,6 +943,7 @@ mod tests {
                     description: "test description".to_string(),
                     published: true,
                     timetable_type: Default::default(),
+                    timetable_id: response.train_schedule_set.timetable_id,
                 },
                 train_schedule_count: 0
             }

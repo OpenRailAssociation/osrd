@@ -34,6 +34,7 @@ const trainScheduleSet1: TrainScheduleSetItem = {
   published: true,
   timetable_type: 'CALENDAR',
   train_schedule_count: 5,
+  timetable_id: 2,
 };
 
 const trainScheduleSet2: TrainScheduleSetItem = {
@@ -44,6 +45,7 @@ const trainScheduleSet2: TrainScheduleSetItem = {
   published: true,
   timetable_type: 'CALENDAR',
   train_schedule_count: 2,
+  timetable_id: 3,
 };
 
 describe('useLoadCatalog', () => {
@@ -136,6 +138,7 @@ describe('useLoadCatalog', () => {
           description: 'TrainScheduleSet 1',
           published: true,
           timetable_type: 'CALENDAR',
+          timetable_id: 1,
         },
         {
           id: trainScheduleSet2.id,
@@ -143,6 +146,7 @@ describe('useLoadCatalog', () => {
           description: 'TrainScheduleSet 2',
           published: true,
           timetable_type: 'CALENDAR',
+          timetable_id: 2,
         },
       ],
     });

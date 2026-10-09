@@ -2622,6 +2622,7 @@ export type GetTimetableByIdTrainScheduleSetsApiResponse =
     id: number;
     name?: string | null;
     published: boolean;
+    timetable_id: number;
     timetable_type: TimetableType;
   }[];
 export type GetTimetableByIdTrainScheduleSetsApiArg = {
@@ -5225,6 +5226,7 @@ export type TrainScheduleSet = {
   id: number;
   name?: string | null;
   published: boolean;
+  timetable_id: number;
   timetable_type: TimetableType;
 };
 export type TrainScheduleSetResponse = TrainScheduleSet & {
