@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::authz::resources::IncompatibleGrant;
 use crate::views::authz::resources::Resource;
@@ -1013,6 +1014,71 @@ pub(in crate::views) async fn list_groups(
     groups.sort_by_key(|g| g.id);
 
     Ok(Json(groups))
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "List all the users with their identities, roles and groups",
+        body = inline(Vec<UserInfo>),
+    ))
+)]
+pub(in crate::views) async fn list_users(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+) -> Result<Json<Vec<UserInfo>>> {
+    let ids_and_names = User::list(&mut db_pool.get().await?, SelectionSettings::new()).await?;
+
+    let futures = ids_and_names.into_iter().map(|user| {
+        let db_pool = db_pool.clone();
+        let openfga = openfga.clone();
+        async move {
+            let id = user.id;
+            let name = user.name;
+
+            // Fetch identities for the user from the database
+            let user_with_identities =
+                UserWithIdentities::stream_by_id(db_pool.get().await?, &[id])
+                    .await?
+                    .try_next()
+                    .await?
+                    .ok_or(AuthzError::UnknownUser { id })?;
+            let identities = user_with_identities.identities;
+
+            // Fetch roles and groups for the user from OpenFGA
+            let list_roles = authz::v2::subject_roles(authz::Subject::user(id));
+            let list_groups = authz::v2::user_groups(authz::User(id));
+
+            // Use the system authorizer to authorize the requests to OpenFGA
+            let system_authorizer = authz::authorizers::SystemAuthorizer::<Check>::new(&openfga);
+            let (roles, groups) = list_roles
+                .zip(list_groups)
+                .run::<AuthorizationError, _>(&system_authorizer)
+                .await?;
+
+            // Fetch group details from the database for the groups returned by OpenFGA
+            let (groups_from_db, _): (Vec<Group>, _) =
+                Group::retrieve_batch(&mut db_pool.get().await?, groups.into_iter().map(|g| g.0))
+                    .await?;
+
+            Ok::<UserInfo, InternalError>(UserInfo {
+                id,
+                name,
+                identities,
+                roles: HashSet::from_iter(roles),
+                groups: HashSet::from_iter(groups_from_db),
+            })
+        }
+    });
+
+    let users = futures::future::try_join_all(futures).await?;
+
+    Ok(Json(users))
 }
 
 #[cfg(test)]
@@ -3902,6 +3968,95 @@ mod tests {
 
         // Try to list groups as non-admin
         app.get("/authz/groups")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_users() {
+        let app = test_app!().build();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user_1 = app
+            .user("user1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_2 = app
+            .user("user2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let group = app
+            .group("Group")
+            .with_members([&user_1, &user_2])
+            .create()
+            .await;
+
+        // List all users as admin
+        let users = app
+            .get("/authz/users")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfo>>();
+
+        // Verify all users are returned
+        let expected_users = vec![
+            UserInfo {
+                id: user_1.id,
+                name: "User 1".to_string(),
+                identities: user_1.info.identities.clone(),
+                roles: HashSet::from([Role::OperationalStudies]),
+                groups: HashSet::from([Group {
+                    id: group.id,
+                    name: group.info.name.clone(),
+                }]),
+            },
+            UserInfo {
+                id: user_2.id,
+                name: "User 2".to_string(),
+                identities: user_2.info.identities.clone(),
+                roles: HashSet::from([Role::Stdcm]),
+                groups: HashSet::from([Group {
+                    id: group.id,
+                    name: group.info.name.clone(),
+                }]),
+            },
+            UserInfo {
+                id: admin.id,
+                name: "Admin".to_string(),
+                identities: admin.info.identities.clone(),
+                roles: HashSet::from([Role::Admin]),
+                groups: HashSet::new(),
+            },
+        ];
+
+        assert_eq!(users.len(), expected_users.len());
+        for expected_user in expected_users {
+            assert!(users.contains(&expected_user));
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_users_forbidden_non_admin() {
+        let app = test_app!().build();
+
+        // Create a non-admin user
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // Try to list users as non-admin
+        app.get("/authz/users")
             .by_user(user.as_ref())
             .await
             .assert_status_forbidden();
