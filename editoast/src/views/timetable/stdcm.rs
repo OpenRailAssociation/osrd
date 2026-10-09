@@ -343,9 +343,10 @@ pub(in crate::views) async fn stdcm(
             )
         });
     if let Some(failure) = pathfinding_failures.pop() {
-        let payload = StdcmResponse::PreprocessingSimulationError {
-            error: failure.simulation,
-        };
+        let payload =
+            StdcmProgression::Completed(Box::new(StdcmResponse::PreprocessingSimulationError {
+                error: failure.simulation,
+            }));
         return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
     }
 
@@ -554,13 +555,13 @@ async fn fetch_operational_point(
 
 async fn enrich_conflicting_work_schedules(
     conflicting_work_schedules: Vec<ConflictingWorkSchedule>,
-    work_shedule_map: &HashMap<&str, &WorkSchedule>,
+    work_schedule_map: &HashMap<&str, &WorkSchedule>,
     infra: &Infra,
     conn: &mut DbConnection,
 ) -> Vec<StdcmConflictingWorkSchedule> {
     let mut enriched = Vec::with_capacity(conflicting_work_schedules.len());
     for ConflictingWorkSchedule { id, last_op_id } in conflicting_work_schedules {
-        let ws = work_shedule_map.get(id.as_str()).expect(
+        let ws = work_schedule_map.get(id.as_str()).expect(
             "the work schedule ID should exist since it has been sent to `core`, and returned back",
         );
         let op: OperationalPoint = fetch_operational_point(infra, conn, &last_op_id).await;
