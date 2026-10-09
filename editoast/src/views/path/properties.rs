@@ -143,6 +143,9 @@ mod tests {
     use crate::views::test_app::test_app;
 
     fn path_properties_response() -> core_client::path_properties::PathPropertiesResponse {
+        let geom_projection = GeometryProjection::try_new(vec![0, 1], vec![0, 0]);
+        assert!(geom_projection.is_some());
+        let geom_projection = geom_projection.unwrap();
         core_client::path_properties::PathPropertiesResponse {
             slopes: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
             curves: PropertyValuesF64::new(vec![0, 1], vec![0.0]),
@@ -155,7 +158,7 @@ mod tests {
             ]])),
             operational_points: vec![OperationalPointOnPath::new_test("1", 0, "1")],
             zones: PropertyZoneValues::new(vec![0, 1], vec!["Zone 1".into()]),
-            geom_projection: GeometryProjection::try_new(vec![0, 1], vec![0, 0]),
+            geom_projection,
         }
     }
 

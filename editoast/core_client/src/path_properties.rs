@@ -1,3 +1,5 @@
+use std::io::Error;
+
 use geos::geojson::Geometry;
 use schemas::infra::OperationalPointPart;
 use schemas::primitives::Identifier;
@@ -182,12 +184,14 @@ pub struct GeometryProjection {
 }
 
 impl GeometryProjection {
-    pub fn try_new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Self {
-        assert_eq!(topo_offsets.len(), geom_offsets.len());
-        assert!(topo_offsets.len() >= 2);
-        Self {
-            topo_offsets,
-            geom_offsets,
+    pub fn try_new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Option<GeometryProjection> {
+        if topo_offsets.len() != geom_offsets.len() || topo_offsets.len() < 2 {
+            None
+        } else {
+            Some(Self {
+                topo_offsets,
+                geom_offsets,
+            })
         }
     }
 }
