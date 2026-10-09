@@ -1176,6 +1176,9 @@ const injectedRtkApi = api
           url: `/timetable/${queryArg.id}/stdcm`,
           method: 'POST',
           body: queryArg.body,
+          headers: {
+            'x-osrd-stdcm-fallback': queryArg['x-osrd-stdcm-fallback'],
+          },
           params: {
             infra: queryArg.infra,
           },
@@ -2562,6 +2565,8 @@ export type PostTimetableByIdStdcmApiArg = {
   id: number;
   /** The infra id */
   infra: number;
+  /** Whether this request is a fallback, sent after an initial request failed to find a path */
+  'x-osrd-stdcm-fallback'?: boolean | null;
   body: {
     /** Set of authorized track section ids, empty means no restriction */
     allowed_track_sections?: string[];
