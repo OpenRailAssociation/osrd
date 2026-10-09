@@ -16,3 +16,9 @@ export const KM_TO_M = 1_000;
 
 export const FONT_MONO = 'IBM Plex Mono';
 export const FONT_SANS = 'IBM Plex Sans';
+
+export const FONT_MONO_REGULAR = `400 10px ${FONT_MONO}`;
+export const FONT_SANS_REGULAR = `400 12px ${FONT_SANS}`
+
+export const FONT_MONO_BOLD = `600 12px ${FONT_MONO}`;
+export const FONT_SANS_BOLD = `600 14px ${FONT_SANS}`;

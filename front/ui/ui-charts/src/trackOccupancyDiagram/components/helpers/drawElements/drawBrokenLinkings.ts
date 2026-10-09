@@ -6,9 +6,9 @@ import {
   WARNING_60,
   WHITE_ALPHA_100,
 } from '../../../../common/helpers/colors';
-import { FONT_MONO_BOLD } from '../../../lib/consts';
 import type { BrokenLinking } from '../../../lib/types';
 import { drawText, truncateTextToWidth } from '../../utils';
+import { FONT_MONO_BOLD } from '../../../../common/consts';
 
 const BADGE_NAME_MARGIN = 8;
 const BADGE_MAX_NAME_WIDTH = 100;

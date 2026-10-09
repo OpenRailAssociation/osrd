@@ -14,7 +14,6 @@ import {
 } from '../../../spaceTimeChart';
 import {
   CANVAS_PADDING,
-  FONT_MONO_BOLD,
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_ZONE_Y_START,
   TRACK_HEIGHT_CONTAINER,
@@ -26,6 +25,7 @@ import {
   getBrokenLinkingBadgeGeometry,
 } from '../helpers/drawElements/drawBrokenLinkings';
 import { getOccupancyZonesY } from '../helpers/drawElements/drawOccupancyZones';
+import { FONT_MONO_BOLD } from '../../../common/consts';
 
 const PICKING_MARGIN = 6;
 

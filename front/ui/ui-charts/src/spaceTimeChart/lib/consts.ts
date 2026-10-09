@@ -1,4 +1,4 @@
-import { SECOND, MINUTE, HOUR, FONT_MONO, FONT_SANS } from '../../common/consts';
+import { SECOND, MINUTE, HOUR, FONT_MONO } from '../../common/consts';
 import {
   BLACK_ALPHA_100,
   GREY_10,
@@ -8,8 +8,6 @@ import {
   WHITE_ALPHA_100,
 } from '../../common/helpers/colors';
 import { type SpaceTimeChartTheme } from './types';
-
-export const FONT_SANS_REGULAR = `400 12px ${FONT_SANS}`
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
   background: WHITE_ALPHA_100,

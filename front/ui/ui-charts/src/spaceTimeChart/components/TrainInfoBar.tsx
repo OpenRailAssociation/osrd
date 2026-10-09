@@ -7,8 +7,8 @@ import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { useIntervalPositions } from './useIntervalPositions';
-import { FONT_SANS_REGULAR } from '../lib/consts';
 import { BLACK_ALPHA_100 } from '../../common/helpers/colors';
+import { FONT_SANS_REGULAR } from '../../common/consts';
 
 const BAR_HEIGHT = 24;
 const BAR_PADDING_LEFT = 8;
