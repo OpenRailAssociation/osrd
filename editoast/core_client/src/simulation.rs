@@ -151,6 +151,28 @@ pub struct SimulationPowerRestrictionItem {
     pub value: String,
 }
 
+/// The action taken by the train driver at any given time
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum DriverAction {
+    #[default]
+    Tracting,
+    Braking,
+    Coasting,
+}
+
+/// Describes the driver actions at each point on the path
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default, PartialEq)]
+#[schema(as = CoreDriverActions)]
+pub struct DriverActions {
+    /// List of `n` boundaries of the ranges.
+    /// A boundary is a distance from the beginning of the path in mm.
+    /// Origin and Destination are not present (they are implicitly included).
+    boundaries: Vec<u64>,
+    /// List of `n+1` values associated to the ranges
+    values: Vec<DriverAction>,
+}
+
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 #[schema(as = CoreReportTrain)]
 pub struct ReportTrain {
@@ -175,6 +197,8 @@ pub struct ReportTrain {
     /// of 2s, then the path item time of B will be equal to the path item time
     /// of A plus 2s.
     pub path_item_times: Vec<u64>,
+    /// Describes the driver actions at each point on the path
+    pub driver_actions: DriverActions,
 }
 
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
@@ -251,6 +275,7 @@ pub struct RoutingZoneRequirement {
 pub struct ElectricalProfiles {
     /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.
+    /// Origin and Destination are not present (they are implicitly included).
     pub boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
     #[schema(inline)]
@@ -294,6 +319,7 @@ pub struct SpeedLimitProperty {
 pub struct SpeedLimitProperties {
     /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.
+    /// Origin and Destination are not present (they are implicitly included).
     pub boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
     pub values: Vec<SpeedLimitProperty>,

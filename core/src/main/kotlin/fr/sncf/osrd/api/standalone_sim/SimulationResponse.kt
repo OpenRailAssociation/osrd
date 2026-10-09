@@ -56,7 +56,8 @@ class CompleteReportTrain(
     @Json(name = "zone_updates") val zoneUpdates: List<ZoneUpdate>,
     @Json(name = "spacing_requirements") val spacingRequirements: List<RJSSpacingRequirement>,
     @Json(name = "routing_requirements") val routingRequirements: List<RJSRoutingRequirement>,
-) : ReportTrain(positions, times, speeds, energyConsumption, pathItemTimes)
+    @Json(name = "driver_actions") driverActions: RangeValues<DriverAction>,
+) : ReportTrain(positions, times, speeds, energyConsumption, pathItemTimes, driverActions)
 
 /**
  * A simulation report, containing the [times] and the [speeds] for each position in [positions].
@@ -82,7 +83,18 @@ open class ReportTrain(
      * plus the stop duration of B.
      */
     @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
+    @Json(name = "driver_actions") val driverActions: RangeValues<DriverAction>,
 )
+
+/**
+ * Action taken by the train driver at any given point. Note that this can't always be mapped to
+ * acceleration and deceleration because of slopes and similar factors.
+ */
+enum class DriverAction {
+    TRACTING,
+    BRAKING,
+    COASTING,
+}
 
 class SimulationFailed(@Json(name = "core_error") val coreError: OSRDError) : SimulationResponse
 

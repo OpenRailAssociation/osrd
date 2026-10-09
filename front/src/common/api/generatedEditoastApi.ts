@@ -4595,7 +4595,18 @@ export type SimDebugTrainZoneRequirement = {
   source?: null | RequirementId;
   zone_name: string;
 };
+export type DriverAction = 'TRACTING' | 'BRAKING' | 'COASTING';
+export type CoreDriverActions = {
+  /** List of `n` boundaries of the ranges.
+    A boundary is a distance from the beginning of the path in mm.
+    Origin and Destination are not present (they are implicitly included). */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: DriverAction[];
+};
 export type CoreReportTrain = {
+  /** Describes the driver actions at each point on the path */
+  driver_actions: CoreDriverActions;
   /** Total energy consumption */
   energy_consumption: number;
   /** Time in ms at which the train *arrives* at each path item given as input of the pathfinding
@@ -4692,7 +4703,8 @@ export type CoreSpeedLimitProperty = {
 };
 export type CoreSpeedLimitProperties = {
   /** List of `n` boundaries of the ranges (block path).
-    A boundary is a distance from the beginning of the path in mm. */
+    A boundary is a distance from the beginning of the path in mm.
+    Origin and Destination are not present (they are implicitly included). */
   boundaries: number[];
   /** List of `n+1` values associated to the ranges */
   values: CoreSpeedLimitProperty[];
@@ -4702,7 +4714,8 @@ export type SimulationResponseSuccess = {
   base: CoreReportTrain;
   electrical_profiles: {
     /** List of `n` boundaries of the ranges (block path).
-        A boundary is a distance from the beginning of the path in mm. */
+        A boundary is a distance from the beginning of the path in mm.
+        Origin and Destination are not present (they are implicitly included). */
     boundaries: number[];
     /** List of `n+1` values associated to the ranges */
     values: (
