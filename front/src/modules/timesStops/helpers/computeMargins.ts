@@ -1,6 +1,7 @@
 import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
+import { Duration } from 'utils/duration';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { marginsUndefined, MarginUnit } from '../consts';
@@ -22,6 +23,34 @@ function parseMarginValue(raw: string): MarginValue {
 
 function isCoreComputed(core: MarginsCore): core is MarginsCoreComputed {
   return core !== null && 'provisionalLostTime' in core;
+}
+
+const parseIsoToMs = (iso: string | null | undefined) => (iso ? Duration.parse(iso).ms : undefined);
+
+function computeMarginsWithoutPathItemTimes(
+  isOrigin: boolean,
+  theoreticalMargin: MarginValue,
+  nextSchedule?: ScheduleItem,
+  schedule?: ScheduleItem
+) {
+  const refBaseArrival = isOrigin ? 0 : parseIsoToMs(schedule?.reference_base_arrival);
+  const arrival = isOrigin ? 0 : parseIsoToMs(schedule?.arrival);
+  const nextRefBaseArrival = parseIsoToMs(nextSchedule?.reference_base_arrival);
+  const nextArrival = parseIsoToMs(nextSchedule?.arrival);
+
+  if (refBaseArrival === undefined || nextRefBaseArrival === undefined) {
+    return { provisionalLostTime: undefined, finalLostTime: undefined };
+  }
+
+  const refBaseDuration = nextRefBaseArrival - refBaseArrival;
+  return {
+    // TODO: handle min/100km margin
+    provisionalLostTime: Math.round(ms2sec(refBaseDuration) * (theoreticalMargin.value / 100)),
+    finalLostTime:
+      arrival !== undefined && nextArrival !== undefined
+        ? Math.round(ms2sec(nextArrival - arrival - refBaseDuration))
+        : undefined,
+  };
 }
 
 /** Extracts the theoretical margin for each path step in the train schedule,
@@ -74,17 +103,38 @@ function computeMarginsCore(
   const { theoreticalMargin: rawMargin, isBoundary } = stepTheoreticalMarginInfo;
   const theoreticalMargin = parseMarginValue(rawMargin);
 
-  if (!pathItemTimes) return { theoreticalMargin, isBoundary };
-
   // find the next pathStep where constraints are defined
   let nextIndex = path.length - 1;
 
   for (let index = pathStepIndex + 1; index < path.length; index += 1) {
     const curStepKey = path[index].key;
-    if (theoreticalMargins?.[curStepKey]?.isBoundary || scheduleByAt[curStepKey]?.arrival) {
+    if (
+      theoreticalMargins?.[curStepKey]?.isBoundary ||
+      scheduleByAt[curStepKey]?.arrival ||
+      scheduleByAt[curStepKey]?.reference_base_arrival
+    ) {
       nextIndex = index;
       break;
     }
+  }
+
+  if (!pathItemTimes) {
+    const nextPathStepKey = path[nextIndex].key;
+    const nextSchedule = scheduleByAt[nextPathStepKey];
+
+    const { provisionalLostTime, finalLostTime } = computeMarginsWithoutPathItemTimes(
+      pathStepIndex === 0,
+      theoreticalMargin,
+      nextSchedule,
+      schedule
+    );
+
+    return {
+      finalLostTime,
+      provisionalLostTime,
+      theoreticalMargin,
+      isBoundary,
+    };
   }
 
   // durations to go from the last pathStep with theoretical margin to the next pathStep
@@ -118,24 +168,25 @@ export function computeMargins(
     pathItemTimes
   );
   if (!core) return marginsUndefined;
-  if (!pathItemTimes)
-    return {
-      theoreticalMargin: core.theoreticalMargin,
-      isTheoreticalMarginBoundary: core.isBoundary,
-      theoreticalMarginSeconds: undefined,
-      calculatedMargin: undefined,
-      diffMargins: undefined,
-    };
 
   if (!isCoreComputed(core)) return marginsUndefined;
   const { theoreticalMargin, isBoundary, provisionalLostTime, finalLostTime } = core;
-  const diffMargins = finalLostTime - provisionalLostTime;
+
+  const diffMargins =
+    finalLostTime !== undefined && provisionalLostTime !== undefined
+      ? finalLostTime - provisionalLostTime
+      : undefined;
 
   return {
     theoreticalMargin,
     isTheoreticalMarginBoundary: isBoundary,
-    theoreticalMarginSeconds: { value: provisionalLostTime, unit: MarginUnit.second },
-    calculatedMargin: { value: finalLostTime, unit: MarginUnit.second },
-    diffMargins: { value: diffMargins, unit: MarginUnit.second },
+    theoreticalMarginSeconds:
+      provisionalLostTime !== undefined
+        ? { value: provisionalLostTime, unit: MarginUnit.second }
+        : undefined,
+    calculatedMargin:
+      finalLostTime !== undefined ? { value: finalLostTime, unit: MarginUnit.second } : undefined,
+    diffMargins:
+      diffMargins !== undefined ? { value: diffMargins, unit: MarginUnit.second } : undefined,
   };
 }

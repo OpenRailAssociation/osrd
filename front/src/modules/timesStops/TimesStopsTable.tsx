@@ -76,6 +76,7 @@ declare module '@tanstack/react-table' {
     onRequestedMarginChange: (row: TimesStopsRow, requestedMargin: MarginValue | null) => void;
     onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
     onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
+    onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
   }
 }
 
@@ -112,6 +113,31 @@ const getArrivalReferenceDate = (
     throw new Error('requestedDeparture and requestedArrival must be a Date');
   }
   return refDate;
+};
+
+/**
+ * Get the reference date for base arrival editing.
+ * Uses the previous stop's base arrival, so anything earlier than it is D+1.
+ * The first row displays its requested arrival as base arrival.
+ */
+const getBaseArrivalReferenceDate = (
+  row: TimesStopsRow,
+  allRows: TimesStopsRow[],
+  startTime: StartTime
+): Date | undefined => {
+  const previousRow = allRows.findLast((r) => {
+    if (r.opOnPathIndex >= row.opOnPathIndex) return false;
+    return (
+      (r.opOnPathIndex === allRows[0]?.opOnPathIndex
+        ? r.requestedArrival
+        : r.baseArrival) instanceof Date
+    );
+  });
+
+  if (!previousRow) return truncateStartTimeToDay(startTime) as Date;
+
+  const isPreviousFirstRow = previousRow.opOnPathIndex === allRows[0]?.opOnPathIndex;
+  return (isPreviousFirstRow ? previousRow.requestedArrival : previousRow.baseArrival) as Date;
 };
 
 /**
@@ -161,6 +187,7 @@ type TimesStopsTableProps = {
   onRequestedMarginChange: (row: TimesStopsRow, value: MarginValue | null) => void;
   onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
   onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
+  onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
 };
 
 const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
@@ -199,6 +226,7 @@ const TimesStopsTable = ({
   onRequestedMarginChange,
   onPowerRestrictionChange,
   onApplyTimesFromSimulation,
+  onReferenceBaseArrivalChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -290,7 +318,8 @@ const TimesStopsTable = ({
         ? row.requestedTheoreticalMargin
         : null;
     const isSpecifiedMargin =
-      (isFirstRow || row.isTheoreticalMarginBoundary) && row.requestedTheoreticalMargin;
+      (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
+      row.requestedTheoreticalMargin;
     return (
       <div data-testid="requested-theoretical-margin">
         <MarginCell
@@ -299,6 +328,7 @@ const TimesStopsTable = ({
           editable={!isLastRow}
           isInherited={!isSpecifiedMargin}
           isFirstRow={isFirstRow}
+          showUnitToggle={isValid && !scheduleNotHonored}
           onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
         />
       </div>
@@ -603,6 +633,44 @@ const TimesStopsTable = ({
     return requestedTimeHeader;
   };
 
+  const returnBaseArrivalCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>
+  ) => {
+    const row = info.row.original;
+    const { allRows } = info.table.options.meta!;
+    const isFirstRow = info.row.index === 0;
+
+    if (!isValid && !isFirstRow) {
+      return (
+        <StartTimeCell
+          type={startTimeCellType}
+          ref={registerTimeCellRef(info.row.index, 'baseArrival')}
+          cellContext={info}
+          referenceDate={getBaseArrivalReferenceDate(row, allRows, startTime)}
+          clearButtonTitle={t('clearRequestedBaseArrival')}
+          onEnterKeyDown={() => focusCellBelow(info.row.index, 'baseArrival')}
+          onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
+          disablePropagation
+        />
+      );
+    }
+
+    if (isFirstRow) {
+      return (
+        <span data-testid="first-base-arrival">
+          {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
+        </span>
+      );
+    }
+
+    const value = info.getValue();
+    return (
+      <span data-testid="computed-base-arrival">
+        {value ? formatTime(value, dateTimeLocale) : ''}
+      </span>
+    );
+  };
+
   const columns = useMemo(
     () =>
       columnHelper.columns([
@@ -726,7 +794,8 @@ const TimesStopsTable = ({
         }),
         columnHelper.accessor('realMargin', {
           header: () => t('realMargin'),
-          cell: (info) => returnMarginCell({ info, dataTestId: 'real-margin' }),
+          cell: (info) =>
+            returnMarginCell({ info, dataTestId: 'real-margin', showPolarity: !isValid }),
           meta: {
             className: 'col-real-margin computed computed-margin',
             title: t('realMargin'),
@@ -759,8 +828,17 @@ const TimesStopsTable = ({
             'data-testid': 'total-travel-time',
           },
         }),
+        columnHelper.accessor('baseArrival', {
+          header: () => t(isValid ? 'calculatedBaseArrival' : 'requestedBaseArrival'),
+          cell: returnBaseArrivalCell,
+          meta: {
+            className: cx('col-reference-base-arrival col-with-clock-time', { computed: isValid }),
+            title: t(isValid ? 'calculatedBaseArrival' : 'requestedBaseArrival'),
+            'data-testid': 'reference-base-arrival-cell',
+          },
+        }),
       ]),
-    [startTime, focusCellBelow, focusRequestedCellOnTab, t]
+    [startTime, focusCellBelow, focusRequestedCellOnTab, t, isValid]
   );
 
   const table = useTable({
@@ -780,6 +858,7 @@ const TimesStopsTable = ({
       onRequestedMarginChange,
       onPowerRestrictionChange,
       onApplyTimesFromSimulation,
+      onReferenceBaseArrivalChange,
     },
   });
 
@@ -834,7 +913,13 @@ const TimesStopsTable = ({
   let floor = 0;
 
   for (const [index, { original }] of tableRows.entries()) {
-    const { requestedArrival, computedArrival, requestedDeparture, computedDeparture } = original;
+    const {
+      requestedArrival,
+      computedArrival,
+      requestedDeparture,
+      computedDeparture,
+      baseArrival,
+    } = original;
     const arrival = readsSimulation[index]
       ? (computedArrival ?? requestedArrival)
       : requestedArrival;
@@ -842,7 +927,11 @@ const TimesStopsTable = ({
       ? (computedDeparture ?? requestedDeparture)
       : requestedDeparture;
 
-    const offset = arrival ? Math.max(computeDayOffset(arrival), floor) : floor;
+    const arrivalOffset = Math.max(
+      arrival ? computeDayOffset(arrival) : 0,
+      baseArrival ? computeDayOffset(baseArrival) : 0
+    );
+    const offset = Math.max(arrivalOffset, floor);
     effectiveDayOffsets.push(offset);
     floor = departure ? Math.max(offset, computeDayOffset(departure)) : offset;
   }
