@@ -1,9 +1,9 @@
 import cx from 'classnames';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
 
 export default function InfraLoadingState() {
-  const { workerStatus } = useScenarioContext();
+  const { workerStatus } = useScenarioContextWithOptionalTimetable();
 
   return (
     <div

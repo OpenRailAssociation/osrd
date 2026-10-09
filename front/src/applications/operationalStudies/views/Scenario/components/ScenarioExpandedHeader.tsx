@@ -6,7 +6,7 @@ import cx from 'classnames';
 import { sortBy, uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
   osrdEditoastApi,
   type ScenarioPatchForm,
@@ -49,7 +49,7 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
 
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
-  const { scenario, timetableId, workerStatus } = useScenarioContext();
+  const { scenario, timetableId, workerStatus } = useScenarioContextWithOptionalTimetable();
 
   const [patchScenario, { isLoading: isPatchingScenario }] =
     osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();

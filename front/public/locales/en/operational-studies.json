@@ -189,6 +189,8 @@
       "suggestions": "Suggestions",
       "todo": "Todo"
     },
+    "scenarioAddCalendarModalTitle": "New calendar timetable",
+    "scenarioAddHourlyPatternModalTitle": "New hourly pattern",
     "scenarioCancel": "Cancel",
     "scenarioCreateButton": "Create a scenario",
     "scenarioCreationTitle": "Create a scenario",
@@ -206,7 +208,11 @@
     "scenarioNameInvalid": "You have to set a name for scenario which does not exceed 128 characters",
     "scenarioNoDescription": "No description",
     "scenarioNoTags": "No tags",
+    "scenarioNoTimetableAddCalendar": "Add a calendar timetable",
+    "scenarioNoTimetableAddHourlyPattern": "Add an hourly pattern",
     "scenarioTags": "Tags",
+    "scenarioTimetableNameInvalid": "A name is required",
+    "scenarioTimetableNameLabel": "Name",
     "scenarioTimetableSections": {
       "CALENDAR": {
         "empty": "No calendar timetable",
