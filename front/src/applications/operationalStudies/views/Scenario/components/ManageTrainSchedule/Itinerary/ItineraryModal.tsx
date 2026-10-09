@@ -39,6 +39,7 @@ import type {
 import Banner from 'common/Banner';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
+import useFitViewportToInfra from 'modules/infra/useFitViewportToInfra';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
@@ -223,6 +224,7 @@ const ItineraryModal = ({
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
+  const fitViewportToInfra = useFitViewportToInfra();
 
   const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
     blankNewTrainState(defaultStartTime, scenario.timetable_type)
@@ -269,6 +271,7 @@ const ItineraryModal = ({
           category: train.category ?? undefined,
         });
       } else {
+        if (infraId) fitViewportToInfra(infraId);
         setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_type));
         setModalFormState({
           name: '',
