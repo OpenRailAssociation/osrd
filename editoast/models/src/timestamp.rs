@@ -1,3 +1,12 @@
+//! A wrapper type for `jiff::Timestamp`, compatible with `diesel`.
+//!
+//! Diesel doesn't plan on supporting jiff natively until it reaches version 1.0
+//! See: https://github.com/diesel-rs/diesel/discussions/4995
+//!
+//! `jiff-diesel` provides Diesel trait implementations, but `jiff_diesel::Timestamp` lacks implementations for `serde` and `utoipa`.
+//!
+//! This wrapper implements all the necessary traits in one place.
+
 use diesel::deserialize;
 use diesel::deserialize::FromSql;
 use diesel::deserialize::FromSqlRow;

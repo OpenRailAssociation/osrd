@@ -116,7 +116,7 @@ hostname = "0.4.2"
 http = "1.4"
 indexmap = "2.13"
 itertools = "0.15.0"
-jiff = { version = "0.2.37", features = ["serde"] }
+jiff = { version = "0.2.37", default-features = false, features = ["serde"] }
 jiff-diesel = { version = "0.1.3", features = ["postgres"] }
 lapin = { version = "4.7.4", default-features = false, features = ["tokio"] }
 linkme = "0.3.36"
