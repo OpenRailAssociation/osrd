@@ -126,7 +126,7 @@
     "oxc-transform-react": "^0.145.0",
     "oxlint": "^1.82.0",
     "oxlint-tsgolint": "^7.0.2003",
-    "pdfjs-dist": "^6.3.289",
+    "pdfjs-dist": "^6.4.299",
     "sass": "^1.105.1",
     "stylelint": "^17.15.0",
     "stylelint-config-standard-scss": "^17.0.0",
