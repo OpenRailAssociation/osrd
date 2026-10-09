@@ -207,6 +207,14 @@ pub(in crate::views) struct UserInfo {
     groups: HashSet<Group>,
 }
 
+#[derive(Serialize, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Debug, PartialEq, Eq))]
+pub(in crate::views) struct GroupInfo {
+    id: i64,
+    name: String,
+    roles: HashSet<Role>,
+}
+
 #[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     post,
@@ -1181,6 +1189,57 @@ pub(in crate::views) async fn create_user(
             groups,
         }),
     ))
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub(in crate::views) struct CreateGroupForm {
+    name: String,
+    roles: HashSet<Role>,
+}
+
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum CreateGroupError {
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    OpenFgaError(
+        #[from]
+        #[view_error]
+        OpenFgaError,
+    ),
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    put,
+    path = "",
+    tag = "authz",
+    request_body(
+        content = inline(CreateGroupForm),
+        description = "Group to create with its roles",
+    ),
+    responses((status = 201, description = "Group created", body = inline(GroupInfo)), CreateGroupError),
+)]
+pub(in crate::views) async fn create_group(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Json(CreateGroupForm { name, roles }): Json<CreateGroupForm>,
+) -> Result<(StatusCode, Json<GroupInfo>), CreateGroupError> {
+    let conn = db_pool.get().await?;
+    let group_info = conn
+        .transaction::<_, CreateGroupError, _, _>(async |conn| {
+            let models::Group { id, name } = models::Group::upsert(conn, name).await?;
+            let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+            v2::add_roles(authz::Subject::group(id), roles.clone())
+                .run::<OpenFgaError, _>(&system_authorizer)
+                .await?;
+            Ok(GroupInfo { id, name, roles })
+        })
+        .await?;
+    Ok((StatusCode::CREATED, Json(group_info)))
 }
 
 #[cfg(test)]
@@ -4190,6 +4249,50 @@ mod tests {
             }))
             .await
             .assert_status_conflict();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_group() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let create_group_form = CreateGroupForm {
+            name: "Sharknado Fanclub".to_string(),
+            roles: HashSet::from([Role::Stdcm, Role::Admin]),
+        };
+
+        let created_group = app
+            .put("/authz/groups")
+            .by_user(admin.as_ref())
+            .json(&create_group_form)
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json::<GroupInfo>();
+
+        // Check that the http response is correct:
+        let expected_group = GroupInfo {
+            id: created_group.id, // we don't care about that field in the comparison
+            name: create_group_form.name.clone(),
+            roles: create_group_form.roles.clone(),
+        };
+        assert_eq!(created_group, expected_group);
+
+        // Check that the group has been correctly persisted in the database:
+        let registered_group = models::Group::retrieve(conn, created_group.id)
+            .await
+            .expect("database error while retrieving the created group")
+            .expect("the new group has not been persisted in the database");
+
+        let expected_group = models::Group {
+            id: created_group.id,
+            name: created_group.name,
+        };
+        assert_eq!(registered_group, expected_group);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
