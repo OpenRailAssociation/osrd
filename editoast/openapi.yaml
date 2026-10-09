@@ -964,6 +964,250 @@ paths:
                       type: string
                       enum:
                       - editoast:database:unavailable
+    patch:
+      tags:
+      - authz
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The new values for the user to update
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - identities
+              - groups
+              - roles
+              properties:
+                groups:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                identities:
+                  type: array
+                  items:
+                    type: string
+                name:
+                  type: string
+                roles:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Role'
+                  uniqueItems: true
+        required: true
+      responses:
+        '200':
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - name
+                - identities
+                - roles
+                - groups
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - name
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                        name:
+                          type: string
+                    uniqueItems: true
+                  id:
+                    type: integer
+                    format: int64
+                  identities:
+                    type: array
+                    items:
+                      type: string
+                  name:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+                    uniqueItems: true
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: The user `{user_id}` does not exist
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - user_id
+                      properties:
+                        user_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:user:not_found
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: the provided identity `{identity:?}` is already associated with another user
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '409'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:update_user:identity_already_exists
+        '422':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: no identity provided for the new user
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '422'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:update_user:no_identity_provided
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+                - type: object
+                  description: 'openfga error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:authorization:open_fga
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /authz/{resource_type}/{resource_id}:
     get:
       tags:
