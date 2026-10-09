@@ -1,3 +1,4 @@
+import { FONT_SANS_REGULAR, FONT_MONO_REGULAR, FONT_MONO_BOLD } from '../../../../common/consts';
 import { BLACK_ALPHA_55, BLACK_ALPHA_70, WHITE_ALPHA_100 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
@@ -5,9 +6,6 @@ import {
   OCCUPANCY_ZONE_Y_START,
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_SEPARATOR_WIDTH,
-  FONT_MONO_BOLD,
-  FONT_MONO_REGULAR,
-  FONT_SANS_REGULAR,
 } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';

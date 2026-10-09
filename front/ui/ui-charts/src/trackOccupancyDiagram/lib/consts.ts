@@ -1,5 +1,3 @@
-import { FONT_MONO, FONT_SANS } from '../../common/consts';
-
 export const TRACK_HEIGHT_CONTAINER = 100;
 export const CANVAS_PADDING = 10;
 export const OCCUPANCY_ZONE_Y_START = TRACK_HEIGHT_CONTAINER / 2 - 1.5;
@@ -27,10 +25,3 @@ export const TICKS_PRIORITIES = [
   [0, 0, 3, 2, 1, 1, 1, 1, 1, 1, 1],
   [0, 0, 3, 2, 1, 1, 1, 1, 1, 1, 1],
 ];
-
-// ========== FONT CONSTANTS ==========
-
-export const FONT_MONO_REGULAR = `400 10px ${FONT_MONO}`;
-export const FONT_SANS_REGULAR = `400 12px ${FONT_SANS}`;
-
-export const FONT_MONO_BOLD = `600 12px ${FONT_MONO}`;
