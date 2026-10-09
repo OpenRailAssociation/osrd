@@ -11,6 +11,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   const { cursor } = store;
 
   clearCanvas(ctx, width, height);
+  ctx.save();
 
   // Draw background
   const cursorHover = cursor.x !== null && cursor.y !== null && cursor.x < MARGIN_LEFT && cursor.y < height - MARGIN_BOTTOM;
@@ -85,4 +86,27 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.lineTo(width, positionY);
   }
   ctx.stroke();
+
+  if (cursorHover) {
+    const unitBoxWidth = 57;
+    const unitBoxHeight = 32;
+    const unitBoxOffset = 8;
+    const unitBoxPostionX = MARGIN_LEFT + unitBoxOffset;
+    const unitBoxPositionY = (height - MARGIN_BOTTOM - unitBoxHeight) / 2;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+    ctx.beginPath();
+    ctx.roundRect(unitBoxPostionX, unitBoxPositionY, unitBoxWidth, unitBoxHeight, 4);
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = 'normal 14px IBM Plex Sans';
+    ctx.fillText("km/h", unitBoxPostionX + unitBoxWidth / 2, unitBoxPositionY + unitBoxHeight / 2 + 4);
+  }
+
+  ctx.restore();
 };
