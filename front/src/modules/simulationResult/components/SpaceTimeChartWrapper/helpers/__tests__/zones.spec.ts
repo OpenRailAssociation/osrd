@@ -39,6 +39,7 @@ function buildOccupancyZone({
     exceptionTypes: [],
     pathItemRelativeLocation: { type: 'exact_path_item', path_item_key: uuidV4() },
     paced,
+    timeWindow: paced?.timeWindow.ms,
     blockType: 'via',
     isStop: true,
     active: false,
@@ -113,37 +114,33 @@ describe('repeatOccupancyZonesInRange', () => {
     const repeatedZones = repeatOccupancyZonesInRange([...zonesA, ...zonesB], timeRange);
 
     expect(repeatedZones).toEqual([
-      zonesA[0],
+      { ...zonesA[0], repeatOffset: 0 },
       {
         ...zonesA[0],
-        ...buildOccupancyZoneTimes({
-          startTime: new Duration({ hours: 1, minutes: 20 }).ms,
-          endTime: new Duration({ hours: 1, minutes: 25 }).ms,
-        }),
+        startTime: new Duration({ hours: 1, minutes: 20 }).ms,
+        endTime: new Duration({ hours: 1, minutes: 25 }).ms,
+        repeatOffset: new Duration({ hours: 1 }).ms,
       },
       {
         ...zonesA[1],
-        ...buildOccupancyZoneTimes({
-          startTime: new Duration({ minutes: -30 + 20 }).ms,
-          endTime: new Duration({ minutes: -30 + 25 }).ms,
-        }),
+        startTime: new Duration({ minutes: -30 + 20 }).ms,
+        endTime: new Duration({ minutes: -30 + 25 }).ms,
+        repeatOffset: new Duration({ hours: -1 }).ms,
       },
-      zonesA[1],
+      { ...zonesA[1], repeatOffset: 0 },
       {
         ...zonesA[1],
-        ...buildOccupancyZoneTimes({
-          startTime: new Duration({ hours: 1, minutes: 30 + 20 }).ms,
-          endTime: new Duration({ hours: 1, minutes: 30 + 25 }).ms,
-        }),
+        startTime: new Duration({ hours: 1, minutes: 30 + 20 }).ms,
+        endTime: new Duration({ hours: 1, minutes: 30 + 25 }).ms,
+        repeatOffset: new Duration({ hours: 1 }).ms,
       },
       {
         ...zonesB[0],
-        ...buildOccupancyZoneTimes({
-          startTime: new Duration({ hours: -1, minutes: 5 }).ms,
-          endTime: new Duration({ hours: -1, minutes: 10 }).ms,
-        }),
+        startTime: new Duration({ hours: -1, minutes: 5 }).ms,
+        endTime: new Duration({ hours: -1, minutes: 10 }).ms,
+        repeatOffset: new Duration({ hours: -2 }).ms,
       },
-      zonesB[0],
+      { ...zonesB[0], repeatOffset: 0 },
     ]);
   });
   it('should repeat paced train zones dragged out of the time window', () => {
@@ -170,18 +167,16 @@ describe('repeatOccupancyZonesInRange', () => {
     const repeatedZones = repeatOccupancyZonesInRange([draggedZone], timeRange);
 
     expect(
-      repeatedZones.map(({ startTime, endTime, dbStartTime, dbEndTime }) => ({
+      repeatedZones.map(({ startTime, endTime, repeatOffset }) => ({
         startTime,
         endTime,
-        dbStartTime,
-        dbEndTime,
+        repeatOffset,
       }))
     ).toEqual(
       [-1, 0, 1].map((hours) => ({
         startTime: new Duration({ hours, minutes: 50 }).ms,
         endTime: new Duration({ hours, minutes: 55 }).ms,
-        dbStartTime: new Duration({ hours: hours + 3, minutes: 50 }).ms,
-        dbEndTime: new Duration({ hours: hours + 3, minutes: 55 }).ms,
+        repeatOffset: new Duration({ hours: hours + 3 }).ms,
       }))
     );
   });
