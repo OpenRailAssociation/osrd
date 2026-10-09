@@ -12,6 +12,8 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use itertools::Itertools as _;
 
+use crate::prelude::Retrieve as _;
+
 #[derive(Debug, Clone, PartialEq, Eq, Model)]
 #[model(table = database::tables::authn_user)]
 #[model(gen(ops = rd, batch_ops = r, list))]
@@ -87,6 +89,34 @@ impl User {
             }
             Err(err) => Err(AddIdentitiesError::from(err)),
         }
+    }
+
+    /// Remove one or more identities to this user.
+    ///
+    /// This method will delete the user if it leads to the removal of its last associated
+    /// identities. In such case, the model it was provided or any of its clones will become
+    /// obsolete. It is important when calling that method to use the optional model it returns
+    /// instead afterwards.
+    ///
+    /// Remember a model is valid in the scope of its transaction. So better run
+    /// this method in a transaction to avoid races.
+    #[tracing::instrument(skip_all, err)]
+    pub async fn remove_identities(
+        self,
+        conn: DbConnection,
+        identities: impl IntoIterator<Item = String> + Clone,
+    ) -> Result<Option<Self>, crate::Error> {
+        conn.transaction::<_, crate::Error, _, _>(async move |conn| {
+            diesel::dsl::delete(
+                authn_user_identity::table
+                    .filter(authn_user_identity::user_id.eq(self.id))
+                    .filter(authn_user_identity::identity.eq_any(identities.clone())),
+            )
+            .execute(&mut conn.write().await)
+            .await?;
+            User::retrieve(conn.clone(), self.id).await
+        })
+        .await
     }
 
     /// Return the identities for this user
