@@ -113,6 +113,7 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.closePath();
   ctx.stroke();
   ctx.restore();
+  ctx.save();
 
   // prevent overlapping with slider
   ctx.fillStyle = backgroundColor;
@@ -128,4 +129,26 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.closePath();
   ctx.stroke();
 
+
+  if (cursorHover) {
+    const unitBoxWidth = 44;
+    const unitBoxHeight = 32;
+    const unitBoxOffset = 8;
+    const unitBoxPostionX = (width - MARGIN_LEFT - CURVE_MARGIN_SIDES - unitBoxHeight) / 2;
+    const unitBoxPositionY = height - MARGIN_BOTTOM - unitBoxOffset - unitBoxHeight; 
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+    ctx.beginPath();
+    ctx.roundRect(unitBoxPostionX, unitBoxPositionY, unitBoxWidth, unitBoxHeight, 4);
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = 'normal 14px IBM Plex Sans';
+    ctx.fillText("km", unitBoxPostionX + unitBoxWidth / 2, unitBoxPositionY + unitBoxHeight / 2 + 4);
+  }
+  ctx.restore();
 };
