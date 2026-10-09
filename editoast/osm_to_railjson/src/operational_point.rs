@@ -73,6 +73,8 @@ pub(crate) fn operational_points(
                 suffix += 1;
             }
 
+            let (secondary_code, secondary_name) = default_secondary_code_and_name(&country_code);
+
             Some(OperationalPoint {
                 id: rel.id.0.to_string().into(),
                 parts,
@@ -83,11 +85,20 @@ pub(crate) fn operational_points(
                 country_code,
                 main_code: unique_main_code,
                 is_passenger_station: true,
-                secondary_code: None,
-                secondary_name: None,
+                secondary_code,
+                secondary_name,
             })
         })
         .collect()
+}
+
+fn default_secondary_code_and_name(
+    country_code: &NonBlankString,
+) -> (Option<NonBlankString>, Option<NonBlankString>) {
+    match country_code.as_str() {
+        "FR" => (Some("BV".into()), Some("BV".into())),
+        _ => (None, None),
+    }
 }
 
 struct NodeMetadata {
