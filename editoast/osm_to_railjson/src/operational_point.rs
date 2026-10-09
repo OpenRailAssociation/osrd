@@ -1,3 +1,4 @@
+use itertools::Itertools as _;
 use osm4routing::NodeId;
 use osm4routing::osmpbfreader::OsmPbfReader;
 use osm4routing::osmpbfreader::Relation;
@@ -29,22 +30,30 @@ pub(crate) fn operational_points(
     let mut marked_uic: HashSet<u32> = Default::default();
     let mut marked_domestic: HashSet<(NonBlankString, NonBlankString)> = Default::default();
     pbf.rewind().expect("Could not rewind file.");
-    pbf.iter()
+    let mut relations = pbf
+        .iter()
         .flatten()
         .filter(|obj| obj.tags().contains("public_transport", "stop_area"))
         .flat_map(|obj| match obj {
             osm4routing::osmpbfreader::OsmObj::Relation(rel) => Some(rel), // Only consider OSM relations
             _ => None,                                                     // Discard Nodes and Ways
         })
+        .collect_vec();
+
+    // Sort relations by id to ensure deterministic output.
+    // This is important to handle duplicate UIC codes and domestic codes consistently across runs.
+    relations.sort_by_key(|rel| rel.id);
+
+    relations.iter()
         .flat_map(|rel| {
-            let parts = parts(&rel, nodes_to_tracks, track_sections);
-            let main_code = main_code(&rel, &node_id_to_metadata);
+            let parts = parts(rel, nodes_to_tracks, track_sections);
+            let main_code = main_code(rel, &node_id_to_metadata);
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
             if parts.is_empty() {
                 return None;
             }
             let identifier_name = name(&rel.tags);
-            let mut identifier_uic = uic(&rel, &node_id_to_metadata);
+            let mut identifier_uic = uic(rel, &node_id_to_metadata);
 
             if identifier_uic.is_none() {
                 warn!("Operational point {identifier_name} has no UIC code. Setting it to None.");
@@ -56,7 +65,7 @@ pub(crate) fn operational_points(
             {
                 identifier_uic = None;
                 warn!(
-                    "UIC code {uic} is already used. Setting it to None for operational point {}",
+                    "UIC code '{uic}' is already used. Setting it to empty for operational point '{}'",
                     rel.id.0
                 );
             }
@@ -311,7 +320,7 @@ fn contry_code(uic: u32) -> NonBlankString {
         "98" => "LB", // Lebanon
         "99" => "IQ", // Iraq
         _ => {
-            warn!("UIC code {uic} has an unknown country code {uic_country}");
+            warn!("UIC code '{uic}' has an unknown country code {uic_country}");
             "??"
         }
     }
