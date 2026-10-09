@@ -80,7 +80,7 @@ private class WrapperSymbolProcessor(val context: GeneratorContext) : SymbolProc
         val symbols = resolver.getSymbolsWithAnnotation(ANNOTATION_QUALIFIED_NAME)
         val invalidSymbols = arrayListOf<KSAnnotated>()
         for (symbol in symbols) {
-            if (!symbol.validate()) {
+            if (!symbol.validate(enableNewFeatures = true)) {
                 invalidSymbols.add(symbol)
                 continue
             }
