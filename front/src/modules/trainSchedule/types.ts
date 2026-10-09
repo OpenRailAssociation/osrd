@@ -43,6 +43,7 @@ export type SuggestedOP = {
     trackName: string;
     trackNumber: number;
   };
+  pathItemIndex?: number;
 };
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
