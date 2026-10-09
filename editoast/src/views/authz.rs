@@ -1109,6 +1109,75 @@ pub(in crate::views) async fn delete_user(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub(in crate::views) struct CreateUserForm {
+    name: String,
+    identities: Vec<String>,
+    groups: Vec<i64>,
+    roles: Vec<Role>,
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    patch,
+    path = "/user/{resource_id}",
+    tag = "authz",
+    params(ResourceIdParam),
+    request_body(
+        content = inline(CreateUserForm),
+        description = "The new infos for the user to update",
+    ),
+    responses((
+        status = 201,
+        description = "Update the user with the given id in the database and OpenFGA",
+        body = inline(UserInfo),
+    )),
+)]
+pub(in crate::views) async fn update_user(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
+    Json(CreateUserForm {
+        name,
+        identities,
+        groups,
+        roles,
+    }): Json<CreateUserForm>,
+) -> Result<(StatusCode, Json<UserInfo>)> {
+    let mut conn = db_pool.get().await?;
+
+    // Check if the user exists in the database
+    let user = User::retrieve(conn.clone(), resource_id)
+        .await?
+        .ok_or(AuthzError::UnknownUser { id: resource_id })?;
+
+    // Update the user in the database
+
+    // Update the user in OpenFGA
+
+    // update roles if provided
+
+    // update groups if provided
+
+    // Fetch the updated user info from the database and OpenFGA
+
+    // Return the updated user info
+
+    Ok((
+        StatusCode::OK,
+        Json(UserInfo {
+            id,
+            name,
+            identities, // Fetch updated identities
+            roles,      // Fetch updated roles
+            groups,     // Fetch updated groups
+        }),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
