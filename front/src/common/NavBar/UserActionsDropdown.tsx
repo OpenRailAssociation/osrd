@@ -1,9 +1,11 @@
 import { type ReactNode } from 'react';
 
-import { Gear, Report, SignOut } from '@osrd-project/ui-icons';
+import { Gear, Report, SignOut, Tools } from '@osrd-project/ui-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
+import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles';
 import DropdownSNCF, { type DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
 import HelpModalSNCF from 'common/BootstrapSNCF/HelpModalSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -25,6 +27,7 @@ const UserActionsDropdown = ({
   type = 'transparent',
 }: UserActionsDropdownProps) => {
   const { logout } = useAuth();
+  const { adminDashboardAllowed } = useAllowedUserRoles();
   const { openModal } = useModal();
   const { t, i18n } = useTranslation();
 
@@ -41,9 +44,7 @@ const UserActionsDropdown = ({
           className="user-settings-btn btn-link text-reset"
           onClick={openUserSettingsModal}
         >
-          <span className="mr-2">
-            <Gear variant="fill" />
-          </span>
+          <Gear variant="fill" className="mr-2" />
           {t('nav-bar.userSettings')}
         </button>
       ),
@@ -63,9 +64,7 @@ const UserActionsDropdown = ({
     {
       node: (
         <button type="button" className="btn-link text-reset" onClick={openHelpModalSNCF}>
-          <span className="mr-2">
-            <Report />
-          </span>
+          <Report className="mr-2" />
           {t('nav-bar.help')}
         </button>
       ),
@@ -74,15 +73,25 @@ const UserActionsDropdown = ({
     {
       node: (
         <button type="button" className="btn-link text-reset" onClick={() => logout()}>
-          <span className="mr-2">
-            <SignOut />
-          </span>
+          <SignOut className="mr-2" />
           {t('nav-bar.disconnect')}
         </button>
       ),
       key: 'sign-out',
     },
   ];
+  if (adminDashboardAllowed) {
+    const adminDownItem = {
+      node: (
+        <Link to="/admin-dashboard">
+          <Tools className="mr-2" />
+          {t('nav-bar.adminDashboard')}
+        </Link>
+      ),
+      key: 'admin-dashboard',
+    };
+    dropdownItems.unshift(adminDownItem);
+  }
 
   return (
     <DropdownSNCF

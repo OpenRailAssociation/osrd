@@ -1,46 +1,47 @@
-import { Suspense, useEffect, useCallback } from 'react';
+import { Suspense, useEffect, useCallback } from "react";
 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import '../i18n';
-import HomeEditor from 'applications/editor/Home';
-import Project from 'applications/operationalStudies/views/Project';
-import ProjectList from 'applications/operationalStudies/views/ProjectList';
-import Scenario from 'applications/operationalStudies/views/Scenario';
-import Study from 'applications/operationalStudies/views/Study';
-import HomeMap from 'applications/referenceMap/Home';
-import RollingStockEditor from 'applications/rollingStockEditor/RollingStockEditorView';
-import SearchJourneyView from 'applications/searchJourney/SearchJourneyView';
-import StdcmDebugView from 'applications/stdcm/StdcmDebugView';
-import Stdcm from 'applications/stdcm/StdcmView';
-import Error403 from 'common/authorization/components/Error403';
-import InitialRedirect from 'common/authorization/components/InitialRedirect';
-import ErrorBoundary from 'common/ErrorBoundary';
-import { Loader } from 'common/Loaders';
-import NotificationsState from 'common/Notifications';
-import { OsrdContextLayout } from 'common/osrdContext';
-import { MODES } from 'main/consts';
-import { editorSlice } from 'reducers/editor';
-import editorSelectors from 'reducers/editor/selectors';
-import { setFailure, updateLastInterfaceVersion } from 'reducers/main';
-import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
-import simulationConfSelectors from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
-import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
-import { referenceMapSlice } from 'reducers/referenceMap';
-import referenceMapSelectors from 'reducers/referenceMap/selectors';
-import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
-import useAuth from 'utils/hooks/useAuth';
-import { DeploymentContextProvider } from 'utils/hooks/useDeploymentSettings';
+import "../i18n";
+import AdminDashboard from "applications/adminDashboard/AdminDashboard";
+import HomeEditor from "applications/editor/Home";
+import Project from "applications/operationalStudies/views/Project";
+import ProjectList from "applications/operationalStudies/views/ProjectList";
+import Scenario from "applications/operationalStudies/views/Scenario";
+import Study from "applications/operationalStudies/views/Study";
+import HomeMap from "applications/referenceMap/Home";
+import RollingStockEditor from "applications/rollingStockEditor/RollingStockEditorView";
+import SearchJourneyView from "applications/searchJourney/SearchJourneyView";
+import StdcmDebugView from "applications/stdcm/StdcmDebugView";
+import Stdcm from "applications/stdcm/StdcmView";
+import Error403 from "common/authorization/components/Error403";
+import InitialRedirect from "common/authorization/components/InitialRedirect";
+import ErrorBoundary from "common/ErrorBoundary";
+import { Loader } from "common/Loaders";
+import NotificationsState from "common/Notifications";
+import { OsrdContextLayout } from "common/osrdContext";
+import { MODES } from "main/consts";
+import { editorSlice } from "reducers/editor";
+import editorSelectors from "reducers/editor/selectors";
+import { setFailure, updateLastInterfaceVersion } from "reducers/main";
+import { operationalStudiesConfSlice } from "reducers/osrdconf/operationalStudiesConf";
+import simulationConfSelectors from "reducers/osrdconf/operationalStudiesConf/selectors";
+import { stdcmConfSlice } from "reducers/osrdconf/stdcmConf";
+import stdcmConfSelectors from "reducers/osrdconf/stdcmConf/selectors";
+import { referenceMapSlice } from "reducers/referenceMap";
+import referenceMapSelectors from "reducers/referenceMap/selectors";
+import { useAppDispatch } from "store";
+import { castErrorToFailure } from "utils/error";
+import useAuth from "utils/hooks/useAuth";
+import { DeploymentContextProvider } from "utils/hooks/useDeploymentSettings";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <InitialRedirect />,
   },
   {
-    path: 'map/*',
+    path: "map/*",
     element: (
       <OsrdContextLayout
         slice={referenceMapSlice}
@@ -48,46 +49,54 @@ const router = createBrowserRouter([
         mode={MODES.referenceMap}
       />
     ),
-    children: [{ path: '*', element: <HomeMap /> }],
+    children: [{ path: "*", element: <HomeMap /> }],
   },
   {
-    path: 'editor/*',
+    path: "editor/*",
     element: (
-      <OsrdContextLayout slice={editorSlice} selectors={editorSelectors} mode={MODES.editor} />
+      <OsrdContextLayout
+        slice={editorSlice}
+        selectors={editorSelectors}
+        mode={MODES.editor}
+      />
     ),
     children: [
       {
-        path: '*',
+        path: "*",
         element: <HomeEditor />,
       },
     ],
   },
   {
-    path: 'stdcm/*',
+    path: "stdcm/*",
     element: (
-      <OsrdContextLayout slice={stdcmConfSlice} selectors={stdcmConfSelectors} mode={MODES.stdcm} />
+      <OsrdContextLayout
+        slice={stdcmConfSlice}
+        selectors={stdcmConfSelectors}
+        mode={MODES.stdcm}
+      />
     ),
     children: [
       {
-        path: 'debug',
+        path: "debug",
         element: <StdcmDebugView />,
       },
       {
-        path: '*',
+        path: "*",
         element: <Stdcm />,
       },
     ],
   },
   {
-    path: 'rolling-stock-editor/*',
+    path: "rolling-stock-editor/*",
     element: <RollingStockEditor />,
   },
   {
-    path: 'search-journey/*',
+    path: "search-journey/*",
     element: <SearchJourneyView />,
   },
   {
-    path: 'operational-studies/',
+    path: "operational-studies/",
     element: (
       <OsrdContextLayout
         slice={operationalStudiesConfSlice}
@@ -98,29 +107,33 @@ const router = createBrowserRouter([
     errorElement: <ErrorBoundary />,
     children: [
       {
-        path: 'projects',
+        path: "projects",
         element: <ProjectList />,
       },
       {
-        path: 'projects/:projectId',
+        path: "projects/:projectId",
         element: <Project />,
       },
       {
-        path: 'projects/:projectId/studies/:studyId',
+        path: "projects/:projectId/studies/:studyId",
         element: <Study />,
       },
       {
-        path: 'projects/:projectId/studies/:studyId/scenarios/:scenarioId',
+        path: "projects/:projectId/studies/:studyId/scenarios/:scenarioId",
         element: <Scenario />,
       },
     ],
   },
   {
-    path: '403/*',
+    path: "admin-dashboard/",
+    element: <AdminDashboard />,
+  },
+  {
+    path: "403/*",
     element: <Error403 />,
   },
   {
-    path: '*',
+    path: "*",
     element: <ErrorBoundary />,
   },
 ]);
@@ -130,7 +143,9 @@ export default function App() {
 
   useEffect(() => {
     // Blindly dispatch current front version for storage
-    dispatch(updateLastInterfaceVersion(import.meta.env.VITE_OSRD_GIT_DESCRIBE));
+    dispatch(
+      updateLastInterfaceVersion(import.meta.env.VITE_OSRD_GIT_DESCRIBE),
+    );
   }, []);
 
   const handleError = useCallback((event: ErrorEvent) => {
@@ -140,9 +155,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener('error', handleError);
+    window.addEventListener("error", handleError);
     return () => {
-      window.removeEventListener('error', handleError);
+      window.removeEventListener("error", handleError);
     };
   }, [handleError]);
 
