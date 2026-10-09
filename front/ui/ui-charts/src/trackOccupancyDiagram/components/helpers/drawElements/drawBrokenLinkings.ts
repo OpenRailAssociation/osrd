@@ -1,12 +1,12 @@
 import chroma from 'chroma-js';
 
+import { FONT_MONO_BOLD } from '../../../../common/consts';
 import {
   ERROR_60,
   WARNING_30,
   WARNING_60,
   WHITE_ALPHA_100,
 } from '../../../../common/helpers/colors';
-import { FONT_MONO_BOLD } from '../../../lib/consts';
 import type { BrokenLinking } from '../../../lib/types';
 import { drawText, truncateTextToWidth } from '../../utils';
 

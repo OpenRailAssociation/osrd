@@ -1,12 +1,13 @@
-import { KM_TO_MM, SECOND } from '../../common/consts';
+import { MILLIMETERS_PER_KM, SECOND } from '../../common/consts';
 import { BASE_WAYPOINT_HEIGHT, FOOTER_HEIGHT } from '../consts';
 
 export const getHeightWithoutLastWaypoint = (height: number) =>
   height - FOOTER_HEIGHT - BASE_WAYPOINT_HEIGHT;
 
-export const positionMmToKm = (position: number) => Math.round((position / KM_TO_MM) * 10) / 10;
+export const positionMmToKm = (position: number) =>
+  Math.round((position / MILLIMETERS_PER_KM) * 10) / 10;
 
-export const positionKmToMm = (position: number) => position * KM_TO_MM;
+export const positionKmToMm = (position: number) => position * MILLIMETERS_PER_KM;
 
 export const msToS = (time: number) => time / SECOND;
 

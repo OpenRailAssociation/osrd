@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 
 import chroma from 'chroma-js';
 
+import { FONT_SANS_REGULAR } from '../../common/consts';
+import { BLACK_ALPHA_100 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
@@ -67,7 +69,7 @@ export const TrainInfoBar = ({
       if (positions.length < 2) return;
 
       const yTop = height - captionSize - BAR_BOTTOM_OFFSET - BAR_HEIGHT;
-      ctx.font = '400 12px IBM Plex Sans';
+      ctx.font = FONT_SANS_REGULAR;
       ctx.textBaseline = 'middle';
       const textY = yTop + BAR_HEIGHT / 2;
 
@@ -94,7 +96,7 @@ export const TrainInfoBar = ({
           BAR_HEIGHT
         );
         ctx.clip();
-        ctx.fillStyle = '#000000';
+        ctx.fillStyle = BLACK_ALPHA_100;
         ctx.textAlign = 'left';
         const text = `${name} | ${intervalLabel}`;
         const textWidth = width - BAR_PADDING_LEFT - BAR_PADDING_RIGHT;

@@ -1,4 +1,4 @@
-import { FONT_SANS_REGULAR } from '../lib/consts';
+import { FONT_SANS_REGULAR } from '../../common/consts';
 import { type TickPattern } from '../lib/types';
 
 type DrawTextType = {

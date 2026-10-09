@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { FONT_MONO_BOLD } from '../../../common/consts';
 import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
@@ -14,7 +15,6 @@ import {
 } from '../../../spaceTimeChart';
 import {
   CANVAS_PADDING,
-  FONT_MONO_BOLD,
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_ZONE_Y_START,
   TRACK_HEIGHT_CONTAINER,

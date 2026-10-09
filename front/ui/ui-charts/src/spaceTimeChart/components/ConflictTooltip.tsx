@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { METERS_PER_KM, SECOND } from '../../common/consts';
 import type { Point } from '../../common/types';
 import { Tooltip } from './Tooltip';
 
@@ -16,7 +17,7 @@ export type ConflictTooltipProps = {
 };
 
 const formatDistance = (meters: number) => {
-  const km = meters / 1000;
+  const km = meters / METERS_PER_KM;
   return km.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 };
 
@@ -38,7 +39,7 @@ export const ConflictTooltip = ({
     </div>
     <div className="type-and-duration">
       <div>{type}</div>
-      <div>{Math.round((timeEnd - timeStart) / 1000)}s</div>
+      <div>{Math.round((timeEnd - timeStart) / SECOND)}s</div>
     </div>
     <div className="trains">{trains.join(', ')}</div>
   </Tooltip>
