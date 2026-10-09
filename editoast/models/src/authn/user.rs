@@ -16,7 +16,7 @@ use crate::prelude::Retrieve as _;
 
 #[derive(Debug, Clone, PartialEq, Eq, Model)]
 #[model(table = database::tables::authn_user)]
-#[model(gen(ops = rd, batch_ops = r, list))]
+#[model(gen(ops = rud, batch_ops = r, list))]
 pub struct User {
     pub id: i64,
     pub name: String,
