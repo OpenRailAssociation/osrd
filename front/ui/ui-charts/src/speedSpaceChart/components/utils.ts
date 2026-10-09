@@ -23,13 +23,15 @@ export type VisibilityFilterOptions<T> = {
   minSpace: number;
 };
 
-export const getGraphOffsets = (width: number, height: number, declivities?: boolean) => {
-  let WIDTH_OFFSET = width - MARGINS.MARGIN_LEFT;
-  if (declivities) {
-    WIDTH_OFFSET -= MARGINS.RIGHT_TICK_MARGINS;
-  }
-  const HEIGHT_OFFSET = height - MARGINS.MARGIN_BOTTOM;
-  return { WIDTH_OFFSET, HEIGHT_OFFSET };
+export const getGraphHeight = (height: number) => {
+  const res = height - MARGINS.MARGIN_BOTTOM;
+  return  res;
+};
+
+export const getGraphWidth = (width: number, hasDeclivities: boolean) => {
+  let res = hasDeclivities ? width - MARGINS.OFFSET_RIGHT_AXIS : width;
+  res -= MARGINS.MARGIN_LEFT;
+  return res;
 };
 
 /**
@@ -271,16 +273,16 @@ export const binarySearch = <T>(data: T[], element: number, lambda: (element: T)
 /** Convert meters to kilometers */
 export const convertMToKm = (meters: number) => meters / 1000;
 
-/** Transform a position in km into a position on the x-axis in pixels */
+/** Transform a position in km into a position on the x-axis in pixels.  */
 export const positionToPosX = (
   position: number,
   maxPosition: number,
-  width: number,
+  graphWidth: number,
   ratioX: number,
   leftOffset = 0
 ) => {
-  const xWidth = width - MARGINS.MARGIN_LEFT - MARGINS.CURVE_MARGIN_SIDES;
-  const leftMargin = MARGINS.CURVE_MARGIN_SIDES / 2 + MARGINS.MARGIN_LEFT + leftOffset;
+  const xWidth = graphWidth - MARGINS.GRAPH_OFFSET * 2;
+  const leftMargin = MARGINS.GRAPH_OFFSET + leftOffset;
   return (position / maxPosition) * (xWidth * ratioX) + leftMargin;
 };
 
@@ -344,15 +346,16 @@ export const getDisplayedStops = (
 export const getCursorPosition = (cursorX: number, width: number, store: Store) => {
   const { ratioX, leftOffset } = store;
   const maxPosition = maxPositionValue(store.speeds);
-  const x = cursorX - MARGINS.MARGIN_LEFT - leftOffset - MARGINS.CURVE_MARGIN_SIDES / 2;
-  const maxX =
-    (width - MARGINS.MARGIN_LEFT - MARGINS.CURVE_MARGIN_SIDES) * ratioX;
+  const x = cursorX - MARGINS.MARGIN_LEFT - leftOffset - MARGINS.GRAPH_OFFSET;
+  const maxX = (width - MARGINS.GRAPH_OFFSET * 2) * ratioX;
   return (x * maxPosition) / maxX;
 };
 
 /**
  * Retrieve the snapped stop given the cursor position.
  * If the cursor is not close enough to a stop, return null.
+ * - width must be GRAPH_WIDTH
+ * - cursorX must be the cursor position on the canvas
  */
 export const getSnappedStop = (cursorX: number, width: number, store: Store) => {
   const { ratioX, leftOffset, stops } = store;
@@ -382,7 +385,7 @@ export const getSnappedStop = (cursorX: number, width: number, store: Store) => 
   // Check if the closest stop is close enough to the cursor
   const stopPosition = filteredStops[closestStopIndex].position.start;
   const stopPosX = positionToPosX(stopPosition, maxPosition, width, ratioX, leftOffset);
-  if (Math.abs(stopPosX - cursorX) < CURSOR_SNAP_DISTANCE) {
+  if (Math.abs(stopPosX - cursorX + MARGINS.MARGIN_LEFT) < CURSOR_SNAP_DISTANCE) {
     return filteredStops[closestStopIndex];
   }
   return null;

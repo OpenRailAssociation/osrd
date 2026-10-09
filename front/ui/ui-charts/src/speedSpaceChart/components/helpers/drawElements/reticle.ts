@@ -16,11 +16,11 @@ import {
   positionToPosX,
   getCursorPosition,
   getSnappedStop,
+  getGraphWidth,
 } from '../../utils';
 
 const {
   MARGIN_LEFT,
-  MARGIN_TOP,
   MARGIN_BOTTOM,
   CURVE_MARGIN_TOP,
   CURVE_MARGIN_SIDES,
@@ -135,7 +135,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   const maxSpeed = maxSpeedValue(store);
   const maxPosition = maxPositionValue(store.speeds);
 
-  const cursorBoxHeight = height - MARGIN_BOTTOM - MARGIN_TOP;
+  const cursorBoxHeight = height - MARGIN_BOTTOM;
   const cursorBoxWidth = width - MARGIN_LEFT;
 
   const xPositionReference = (ref: number) =>
@@ -158,11 +158,12 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   // Check if cursor is snapping to stop
   let snapToStop = false;
   if (layersDisplay.steps) {
-    const snappedStop = getSnappedStop(cursor.x, width, store);
+    const graphWidth = getGraphWidth(width, store.layersDisplay.declivities);
+    const snappedStop = getSnappedStop(cursor.x, graphWidth, store);
     if (snappedStop !== null) {
       snapToStop = true;
       cursorPosition = snappedStop.position.start;
-      reticleX = positionToPosX(cursorPosition, maxPosition, width, ratioX, leftOffset);
+      reticleX = positionToPosX(cursorPosition, maxPosition, graphWidth, ratioX, leftOffset) + MARGIN_LEFT;
       stopText = snappedStop.value.name;
     }
   }
@@ -226,7 +227,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   );
   speedText = speedValue.toFixed(1);
   const baseReticleY =
-    cursorBoxHeight - (speedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP) + MARGIN_TOP;
+    cursorBoxHeight - (speedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP);
 
   const prevEcoSpeed = ecoSpeeds[predecessorEcoSpeedIndex];
   const nextEcoSpeed = ecoSpeeds[predecessorEcoSpeedIndex + 1];
@@ -250,8 +251,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
 
   reticleY =
     cursorBoxHeight -
-    (ecoSpeedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP) +
-    MARGIN_TOP;
+    (ecoSpeedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP);
 
   previousGradientText = slopes.findLast(({ position }) => position.start <= cursorPosition)!.value;
 
@@ -338,8 +338,6 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     ctx.textAlign = 'end';
   }
   ctx.fillText(stopText, reticleX, height - MARGIN_BOTTOM + SNAPPED_STOP_TEXT_OFFSET);
-
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
 
   return {
     curveX: reticleX,

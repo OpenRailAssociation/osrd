@@ -2,7 +2,7 @@ import type { DrawFunctionParams } from '../../../types';
 import { MARGINS } from '../../const';
 import { clearCanvas, maxSpeedValue } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, CURVE_MARGIN_TOP } = MARGINS;
+const { MARGIN_LEFT, MARGIN_BOTTOM, CURVE_MARGIN_TOP } = MARGINS;
 const TICK_WIDTH = 6;
 const TEXT_POSITION_X = MARGIN_LEFT - TICK_WIDTH - 6;
 
@@ -46,7 +46,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   const maxTickSpeed = nbTicks * tickScale;
   const ratioRoundPositions = maxTickSpeed / maxSpeed;
   const ticksOffset =
-    ((height - MARGIN_BOTTOM - MARGIN_TOP - CURVE_MARGIN_TOP) * ratioRoundPositions) / nbTicks;
+    ((height - MARGIN_BOTTOM - CURVE_MARGIN_TOP) * ratioRoundPositions) / nbTicks;
 
   // Draw ticks with text
   ctx.beginPath();

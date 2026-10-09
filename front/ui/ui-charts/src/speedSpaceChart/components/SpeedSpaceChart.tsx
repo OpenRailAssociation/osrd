@@ -21,7 +21,7 @@ import {
   TickLayerX,
   TickLayerYRight,
 } from './layers/index';
-import { clamp, getActiveEtcsBrakingTypes, getGraphOffsets } from './utils';
+import { clamp, getActiveEtcsBrakingTypes, getGraphHeight, getGraphWidth } from './utils';
 
 export type SpeedSpaceChartProps = {
   width: number;
@@ -107,11 +107,11 @@ const SpeedSpaceChart = ({
     },
     layersDisplay: {
       steps: true,
-      declivities: false,
+      declivities: true, // TODO: RESET TO false
       speedLimits: false,
       electricalProfiles: false,
       powerRestrictions: false,
-      speedLimitTags: false,
+      speedLimitTags: false, 
       ...initialLayersDisplay,
     },
     etcsLayersDisplay: DEFAULT_ETCS_LAYERS_DISPLAY,
@@ -152,11 +152,8 @@ const SpeedSpaceChart = ({
     };
   }, [height, store.layersDisplay]);
 
-  const { WIDTH_OFFSET, HEIGHT_OFFSET } = getGraphOffsets(
-    width,
-    mainChartHeight,
-    store.layersDisplay.declivities
-  );
+  const GRAPH_HEIGHT = getGraphHeight(mainChartHeight);
+  const GRAPH_WIDTH = getGraphWidth(width, store.layersDisplay.declivities);
 
   const { OFFSET_RIGHT_AXIS } = MARGINS;
   const adjustedWidthRightAxis = store.layersDisplay.declivities
@@ -285,44 +282,44 @@ const SpeedSpaceChart = ({
         </div>
       )}
       {store.layersDisplay.declivities && (
-        <DeclivityLayer width={WIDTH_OFFSET} height={HEIGHT_OFFSET} store={store} />
+        <DeclivityLayer width={GRAPH_WIDTH} height={GRAPH_HEIGHT} store={store} />
       )}
-      <CurveLayer width={WIDTH_OFFSET} height={HEIGHT_OFFSET} store={store} />
+      <CurveLayer width={GRAPH_WIDTH} height={GRAPH_HEIGHT} store={store} />
       {store.layersDisplay.speedLimits && (
-        <SpeedLimitsLayer width={adjustedWidthRightAxis} height={mainChartHeight} store={store} />
+        <SpeedLimitsLayer width={width} height={mainChartHeight} store={store} />
       )}
       {store.layersDisplay.steps && (
-        <StepsLayer width={adjustedWidthRightAxis} height={mainChartHeight} store={store} />
+        <StepsLayer width={GRAPH_WIDTH} height={GRAPH_HEIGHT} store={store} />
       )}
       <AxisLayerY width={width} height={mainChartHeight} store={store} />
       {store.layersDisplay.electricalProfiles && (
         <ElectricalProfileLayer
-          width={adjustedWidthRightAxis}
+          width={width}
           height={electricalProfileLayerHeight}
           store={store}
         />
       )}
       {store.layersDisplay.powerRestrictions && (
         <PowerRestrictionsLayer
-          width={adjustedWidthRightAxis}
+          width={width}
           marginTop={powerRestrictionsTop}
           store={store}
         />
       )}
       {store.layersDisplay.speedLimitTags && (
         <SpeedLimitTagsLayer
-          width={adjustedWidthRightAxis}
+          width={width}
           marginTop={speedLimitTagsTop}
           store={store}
         />
       )}
-      <TickLayerX width={adjustedWidthRightAxis} height={height} store={store} />
+      <TickLayerX width={width} height={height} store={store} />
       {store.layersDisplay.declivities && (
         <TickLayerYRight width={width} height={mainChartHeight} store={store} />
       )}
       {!isMouseHoveringSettingsPanel && (
         <ReticleLayer
-          width={adjustedWidthRightAxis}
+          width={width}
           internalHeight={mainChartHeight}
           store={store}
           translations={translations}
