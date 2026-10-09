@@ -2,33 +2,33 @@
   "macro_nodes": [
     {
       "ngeId": 6,
-      "trigram": "SS",
+      "short_name": "SS",
       "full_name": "Sursee",
       "is_collapsed": false,
       "position_x": 672,
       "position_y": 800,
       "labels": [],
-      "path_item_key": "domestic:SS"
+      "node_location": { "main_code": "SS", "country_code": "??", "type": "domestic" }
     },
     {
       "ngeId": 7,
-      "trigram": "RTR",
+      "short_name": "RTR",
       "full_name": "Rothrist",
       "is_collapsed": false,
       "position_x": 320,
       "position_y": 32,
       "labels": [],
-      "path_item_key": "domestic:RTR"
+      "node_location": { "main_code": "RTR", "country_code": "??", "type": "domestic" }
     },
     {
       "ngeId": 8,
-      "trigram": "LTH",
+      "short_name": "LTH",
       "full_name": "Langenthal",
       "is_collapsed": false,
       "position_x": 320,
       "position_y": 192,
       "labels": [],
-      "path_item_key": "domestic:LTH"
+      "node_location": { "main_code": "LTH", "country_code": "??", "type": "domestic" }
     }
   ],
   "macro_notes": [],

@@ -34,6 +34,8 @@ import {
   type MacroNoteResponse,
   type TrainScheduleResponse,
   type TimetableType,
+  type PathItemLocation,
+  type NodeLocation,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -109,6 +111,15 @@ const distance = (a: [number, number], b: [number, number]): number => {
   return Math.hypot(dx, dy);
 };
 
+const convertPathItemLocationToNodeLocation = (
+  pathItemLocation: PathItemLocation
+): NodeLocation => {
+  if (pathItemLocation.type === 'track_offset') {
+    return pathItemLocation;
+  }
+  return pathItemLocation.operational_point;
+};
+
 type PositionedNodeIndexed = { nodeData: NodeIndexed; x: number; y: number };
 
 const avoidNodesOverlaps = (
@@ -178,13 +189,10 @@ const avoidNodesOverlaps = (
 const applyLayout = (state: MacroEditorState, trainSchedules: TrainScheduleResponse[]) => {
   const indexedNodes = uniqBy(
     trainSchedules.flatMap((trainSchedule) =>
-      trainSchedule.path.map((pathItem) => pathItem.location)
+      trainSchedule.path.map((pathItem) => convertPathItemLocationToNodeLocation(pathItem.location))
     ),
-    MacroEditorState.getPathKey
-  ).map((pathItem) => {
-    const key = MacroEditorState.getPathKey(pathItem);
-    return state.getNodeByKey(key)!;
-  });
+    MacroEditorState.getPathKeyByNodeLocation
+  ).map((nodeLocation) => state.getNodeByLocation(nodeLocation)!);
 
   const geoNodes = indexedNodes.filter((n) => n.geocoord);
   const xCoords = geoNodes.map((n) => n.geocoord!.lng);
@@ -227,7 +235,7 @@ const applyLayout = (state: MacroEditorState, trainSchedules: TrainScheduleRespo
   // Update positions.
   for (const n of nicerNodes) {
     const { nodeData, x: positionX, y: positionY } = n;
-    state.updateNodeDataByKey(nodeData.path_item_key, {
+    state.updateNodeDataByNodeLocation(nodeData.node_location, {
       position_x: positionX,
       position_y: positionY,
     });
@@ -243,7 +251,7 @@ const castNodeToNge = (
   labels: LabelDto[]
 ): NetzgrafikDto['nodes'][0] => ({
   id: node.ngeId,
-  betriebspunktName: node.trigram || '',
+  betriebspunktName: node.short_name || '',
   fullName: node.full_name || '',
   positionX: node.position_x,
   positionY: node.position_y,
@@ -311,12 +319,12 @@ export const loadAndIndexNge = async (
   trainSchedules
     .flatMap((trainSchedule) => trainSchedule.path)
     .forEach((pathItem) => {
-      const key = MacroEditorState.getPathKey(pathItem.location);
-      if (!state.getNodeByKey(key)) {
+      const nodeLocation = convertPathItemLocationToNodeLocation(pathItem.location);
+      if (!state.getNodeByLocation(nodeLocation)) {
         const macroNode: NodeIndexed = {
           ngeId: nbNodesIndexed,
-          path_item_key: key,
-          trigram:
+          node_location: nodeLocation,
+          short_name:
             pathItem.location.type === 'operational_point_part_reference' &&
             pathItem.location.operational_point.type === 'domestic'
               ? pathItem.location.operational_point.main_code
@@ -327,7 +335,7 @@ export const loadAndIndexNge = async (
           position_y: Math.trunc(nbNodesIndexed / 8),
           is_collapsed: false,
         };
-        state.indexNodeByKey(key, macroNode);
+        state.indexNodeByLocation(nodeLocation, macroNode);
         nbNodesIndexed += 1;
       }
     });
@@ -336,10 +344,10 @@ export const loadAndIndexNge = async (
     .flatMap((trainSchedule) => trainSchedule.pathOps)
     .filter((op) => op !== null);
   for (const op of pathOps) {
-    for (const pathKey of MacroEditorState.getPathKeys(op)) {
-      state.updateNodeDataByKey(pathKey, {
+    for (const nodeLocation of MacroEditorState.getNodeLocations(op)) {
+      state.updateNodeDataByNodeLocation(nodeLocation, {
         full_name: op.name,
-        trigram: MacroEditorState.encodeDomesticReference({ ...op, type: 'domestic' }),
+        short_name: MacroEditorState.encodeDomesticReference({ ...op, type: 'domestic' }),
         geocoord: op.geo ? { lng: op.geo.coordinates[0], lat: op.geo.coordinates[1] } : undefined,
       });
     }
@@ -356,10 +364,10 @@ export const loadAndIndexNge = async (
   ).unwrap();
   await Promise.all(
     savedNodes.map(async (n) => {
-      if (state.getNodeByKey(n.path_item_key) !== null) {
-        state.updateNodeDataByKey(n.path_item_key, { ...n, dbId: n.id });
+      if (state.getNodeByLocation(n.node_location) !== null) {
+        state.updateNodeDataByNodeLocation(n.node_location, { ...n, dbId: n.id });
       } else {
-        state.indexNodeByKey(n.path_item_key, { ...n, dbId: n.id, ngeId: nbNodesIndexed });
+        state.indexNodeByLocation(n.node_location, { ...n, dbId: n.id, ngeId: nbNodesIndexed });
         nbNodesIndexed += 1;
       }
     })
@@ -482,7 +490,8 @@ const getNgeTrainrunSectionsWithNodes = (
   const ngeNodesByPathKey: Record<string, NetzgrafikDto['nodes'][0]> = {};
   for (const node of state.nodes) {
     if (!node) continue;
-    ngeNodesByPathKey[node.path_item_key] = castNodeToNge(state, node, labels);
+    ngeNodesByPathKey[MacroEditorState.getPathKeyByNodeLocation(node.node_location)] =
+      castNodeToNge(state, node, labels);
   }
 
   let trainrunSectionId = 0;
@@ -490,8 +499,9 @@ const getNgeTrainrunSectionsWithNodes = (
     ([trainSchedule, returnTrainSchedule], index) => {
       // Figure out the primary node key for each path item
       const pathNodeKeys = trainSchedule.path.map((pathItem) => {
-        const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem.location));
-        return node!.path_item_key;
+        const nodeLocation = convertPathItemLocationToNodeLocation(pathItem.location);
+        const node = state.getNodeByLocation(nodeLocation)!;
+        return MacroEditorState.getPathKeyByNodeLocation(node.node_location);
       });
 
       const startTime = parseStartTime(trainSchedule.start_time, state.timetableType);

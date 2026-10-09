@@ -1,6 +1,6 @@
 import type { Operation, NetzgrafikDto, NodeDto } from '@osrd-project/netzgrafik-frontend';
 
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { NodeLocation, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 import MacroEditorState from '../MacroEditorState';
@@ -19,9 +19,9 @@ import { updateTrainrunsByNode } from './trainrun';
 export const castNgeNode = (
   node: NetzgrafikDto['nodes'][0],
   labels: NetzgrafikDto['labels']
-): Omit<NodeIndexed, 'path_item_key' | 'dbId'> => ({
+): Omit<NodeIndexed, 'node_location' | 'dbId'> => ({
   ngeId: node.id,
-  trigram: node.betriebspunktName,
+  short_name: node.betriebspunktName,
   full_name: node.fullName,
   position_x: Math.round(node.positionX),
   position_y: Math.round(node.positionY),
@@ -63,11 +63,11 @@ export const handleNodeOperation = async ({
       if (indexNode) {
         if (indexNode.dbId) {
           // Update the key if mainCode has changed and key is based on it
-          let nodeKey = indexNode.path_item_key;
+          let nodeLocation = indexNode.node_location;
           let domesticReference = node.betriebspunktName;
           let full_name = node.fullName;
-          const shouldSetTrigram = indexNode.trigram !== domesticReference;
-          if (nodeKey.startsWith('domestic:') && (full_name === '' || shouldSetTrigram)) {
+          const shouldSetShortName = indexNode.short_name !== domesticReference;
+          if (nodeLocation.type === 'domestic' && (full_name === '' || shouldSetShortName)) {
             const decodedDomesticReference =
               MacroEditorState.decodeDomesticReference(domesticReference);
             const { main_code } = decodedDomesticReference;
@@ -78,9 +78,9 @@ export const handleNodeOperation = async ({
                 state.infraId,
                 dispatch
               );
-              if (shouldSetTrigram && fetched.secondary_code)
+              if (shouldSetShortName && fetched.secondary_code)
                 secondary_code = fetched.secondary_code;
-              if (shouldSetTrigram && fetched.country_code) country_code = fetched.country_code;
+              if (shouldSetShortName && fetched.country_code) country_code = fetched.country_code;
               if (full_name === '' && fetched.fullName) full_name = fetched.fullName;
             }
             domesticReference = MacroEditorState.encodeDomesticReference({
@@ -89,18 +89,18 @@ export const handleNodeOperation = async ({
               country_code,
               type: 'domestic',
             });
-            nodeKey = `domestic:${domesticReference}`;
+            nodeLocation = { ...nodeLocation, main_code, secondary_code, country_code };
           }
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
             full_name,
-            trigram: domesticReference,
+            short_name: domesticReference,
             dbId: indexNode.dbId,
-            path_item_key: nodeKey,
+            node_location: nodeLocation,
           });
 
-          if (indexNode.path_item_key !== nodeKey) {
+          if (indexNode.node_location !== nodeLocation) {
             await updateTrainrunsByNode({
               state,
               netzgrafikDto,
@@ -123,18 +123,22 @@ export const handleNodeOperation = async ({
       } else {
         // It's an unknown node, we need to create it in the db
         // We assume that `betriebspunktName` follows the `${main_code}/${secondary_code}#${country_code}` format
-        const key = MacroEditorState.getPathKey({
-          type: 'operational_point_part_reference',
-          operational_point: MacroEditorState.decodeDomesticReference(node.betriebspunktName),
-          local_track_name: null,
-        });
+        // TODO unrecognized ops: handle cases for invalid uic/opId to put the corresponding NodeLocation in `betriebspunktName`
+        const { main_code, secondary_code, country_code } =
+          MacroEditorState.decodeDomesticReference(node.betriebspunktName);
+        const nodeLocation: NodeLocation = {
+          type: 'domestic',
+          main_code,
+          secondary_code,
+          country_code,
+        };
         // Create the node
         await createMacroNode(
           state,
           dispatch,
           {
             ...castNgeNode(node, netzgrafikDto.labels),
-            path_item_key: key,
+            node_location: nodeLocation,
           },
           node.id
         );
