@@ -103,6 +103,7 @@ fn service_router() -> server::router::DocumentedRouter {
                     })
                     .nests("/user", |path| {
                         path.route("/info", post!(authz::users_info))
+                            .route("/{resource_id}", post!(authz::update_user))
                             .route("/{resource_id}", delete!(authz::delete_user))
                     })
                     .nests("/users", |path| {
