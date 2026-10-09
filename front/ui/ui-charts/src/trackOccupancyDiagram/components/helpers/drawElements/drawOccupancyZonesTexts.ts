@@ -1,9 +1,11 @@
-import { FONT_MONO, FONT_MONO_REGULAR, FONT_SANS, FONT_SANS_REGULAR } from '../../../../common/consts';
-import { GREY_50, GREY_80, GREY_60 } from '../../../../common/helpers/colors';
 import {
-  MINUTES_TEXT_OFFSET,
-  STATION_TEXT_OFFSET,
-} from '../../../lib/consts';
+  FONT_MONO,
+  FONT_MONO_REGULAR,
+  FONT_SANS,
+  FONT_SANS_REGULAR,
+} from '../../../../common/consts';
+import { GREY_50, GREY_80, GREY_60 } from '../../../../common/helpers/colors';
+import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 import { drawText } from '../../utils';
 

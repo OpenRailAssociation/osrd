@@ -4,7 +4,8 @@ import { BASE_WAYPOINT_HEIGHT, FOOTER_HEIGHT } from '../consts';
 export const getHeightWithoutLastWaypoint = (height: number) =>
   height - FOOTER_HEIGHT - BASE_WAYPOINT_HEIGHT;
 
-export const positionMmToKm = (position: number) => Math.round((position / MILLIMETERS_PER_KM) * 10) / 10;
+export const positionMmToKm = (position: number) =>
+  Math.round((position / MILLIMETERS_PER_KM) * 10) / 10;
 
 export const positionKmToMm = (position: number) => position * MILLIMETERS_PER_KM;
 

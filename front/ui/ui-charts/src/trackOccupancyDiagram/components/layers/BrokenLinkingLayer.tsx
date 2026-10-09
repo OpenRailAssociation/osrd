@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { FONT_MONO_BOLD } from '../../../common/consts';
 import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
@@ -25,7 +26,6 @@ import {
   getBrokenLinkingBadgeGeometry,
 } from '../helpers/drawElements/drawBrokenLinkings';
 import { getOccupancyZonesY } from '../helpers/drawElements/drawOccupancyZones';
-import { FONT_MONO_BOLD } from '../../../common/consts';
 
 const PICKING_MARGIN = 6;
 
