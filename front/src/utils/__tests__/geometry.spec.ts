@@ -2,8 +2,11 @@ import { point, lineString, featureCollection } from '@turf/helpers';
 import type { Feature, Point } from 'geojson';
 import { describe, it, expect } from 'vitest';
 
-import type { GeoJsonLineString as LineString } from 'common/api/osrdEditoastApi';
-import { getTangent, nearestPointOnLine } from 'utils/geometry';
+import type {
+  GeoJsonLineString as LineString,
+  CorePropertyGeometryProjection as GeometryProjection,
+} from 'common/api/osrdEditoastApi';
+import { convertGeomTopoTrackOffset, getTangent, nearestPointOnLine } from 'utils/geometry';
 
 import lineNorthenLatitude from './assets/line-northern-latitude.json';
 import linePointOnLeft from './assets/line-point-on-left.json';
@@ -69,5 +72,30 @@ describe('nearestPointOnLine', () => {
       const result = nearestPointOnLine(line, pt);
       expect(result).toEqual(expected);
     });
+  });
+});
+
+describe('topoGeomOffsetConversion', () => {
+  const projection: GeometryProjection = {
+    topo_offsets: [0, 1000, 1000, 3000],
+    geom_offsets: [0, 700, 900, 2500],
+  };
+  it('topo to geom', () => {
+    const geomOffset1 = convertGeomTopoTrackOffset(projection, 500, 'topo_to_geom');
+    expect(geomOffset1).toEqual(350);
+    const geomOffset2 = convertGeomTopoTrackOffset(projection, 0, 'topo_to_geom');
+    expect(geomOffset2).toEqual(0);
+    const geomOffset3 = convertGeomTopoTrackOffset(projection, 3000, 'topo_to_geom');
+    expect(geomOffset3).toEqual(2500);
+  });
+  it('geom to topo', () => {
+    const topoOffset1 = convertGeomTopoTrackOffset(projection, 1200, 'geom_to_topo');
+    expect(topoOffset1).toEqual(1375);
+    const topoOffset2 = convertGeomTopoTrackOffset(projection, 800, 'geom_to_topo');
+    expect(topoOffset2).toEqual(1000);
+  });
+  it('edge case: several identic input offsets', () => {
+    const geomOffset = convertGeomTopoTrackOffset(projection, 1000, 'topo_to_geom');
+    expect(geomOffset).toEqual(800);
   });
 });
