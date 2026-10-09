@@ -1,5 +1,7 @@
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import { isNil, sortBy } from 'lodash';
+import type { ThunkDispatch, ThunkAction, Action } from '@reduxjs/toolkit';
+import type { StartQueryActionCreatorOptions } from '@reduxjs/toolkit/query';
 
 import type { TrainId } from 'reducers/osrdconf/types';
 import {
@@ -26,6 +28,7 @@ import {
   type RelatedOperationalPoint,
   type SimulationResponse,
   type StdcmResponse,
+  type PaginationStats,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
@@ -64,6 +67,62 @@ const compressedQuery = async <Response>(
   return result as { data: Response } | { error: ApiError };
 };
 
+//type Foo = typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules.Types.ResultType;
+//const foo: Foo = 42;
+
+//type Endpoints = (typeof osrdEditoastApi)['endpoints'];
+type Endpoints = {
+  getTimetableByIdTrainSchedules: (typeof generatedEditoastApi)['endpoints']['getTimetableByIdTrainSchedules'],
+  getInfra: (typeof generatedEditoastApi)['endpoints']['getInfra'],
+};
+
+type PaginatedEndpointKey = 'getTimetableByIdTrainSchedules' | 'getInfra';
+type PaginatedEndpoint =
+  | typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules
+  | typeof generatedEditoastApi.endpoints.getInfra;
+
+/*const foo = <const Endpoint extends PaginatedEndpoint>(endpoint: Endpoint): Endpoint['Types']['ResultType'] => {
+  return null as unknown as Endpoint['Types']['ResultType'];
+};*/
+
+//const a: number = foo/*<typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules>*/(generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules);
+
+type PaginatedEndpointArg<E> = E extends { Types: { QueryArg: infer A } }
+  ? (A extends { page?: number } ? A : never)
+  : never;
+type PaginatedEndpointResult<E> = E extends { Types: { ResultType: { results: (infer R)[] } } }
+  ? R
+  : never;
+type Mdr = PaginatedEndpointResult<PaginatedEndpoint>;
+
+const fetchAllPages = async <
+  E extends PaginatedEndpoint,
+  I extends PaginatedEndpointArg<E>,
+  R extends PaginatedEndpointResult<E>
+>(
+  endpoint: E,
+  //args: PaginatedEndpointArg<'getTimetableByIdTrainSchedules'>,
+  args: I,
+  dispatch: ThunkDispatch<unknown, unknown, Action>
+): Promise<PaginatedEndpointResult<'getTimetableByIdTrainSchedules' | 'getInfra'>[]> => {
+  let page = 1;
+  let reachEnd = false;
+  const results: R[] = [];
+  while (!reachEnd) {
+    const data = await dispatch(
+      endpoint.initiate(
+        //{ ...args, page },
+        Object.assign(args, { page }),
+        { subscribe: false }
+      )
+    ).unwrap();
+    results.push(...data.results);
+    reachEnd = isNil(data?.next);
+    page += 1;
+  }
+  return results;
+};
+
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -71,27 +130,13 @@ const osrdEditoastApi = generatedEditoastApi
         TrainScheduleResponse[],
         { timetableId: number }
       >({
-        queryFn: async ({ timetableId }, { dispatch }) => {
-          const pageSize = 200;
-          let page = 1;
-          let reachEnd = false;
-          const result: TrainScheduleResponse[] = [];
-          while (!reachEnd) {
-            const data = await dispatch(
-              osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules.initiate(
-                {
-                  id: timetableId,
-                  pageSize,
-                  page,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-            result.push(...data.results);
-            reachEnd = isNil(data.next);
-            page += 1;
-          }
-          return { data: result };
+        queryFn: async ({ timetableId }, { dispatch }): Promise<{ data: TrainScheduleResponse[] }> => {
+          const data: TrainScheduleResponse[] /* TODO: drop */ = await fetchAllPages(
+            osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules,
+            { id: timetableId, pageSize: 200 },
+            dispatch
+          );
+          return { data };
         },
         providesTags: ['timetable', 'train_schedule', 'train_schedule_exceptions'],
       }),
