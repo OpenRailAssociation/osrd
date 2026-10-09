@@ -24,9 +24,7 @@ pub(crate) fn operational_points(
 ) -> Vec<OperationalPoint> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
     let mut pbf: OsmPbfReader<std::fs::File> = osm4routing::osmpbfreader::OsmPbfReader::new(file);
-    let node_id_to_main_code = map_node_id_to_main_code(&mut pbf);
-    pbf.rewind().expect("Could not rewind file.");
-    let node_id_to_uic = map_node_id_to_uic(&mut pbf);
+    let node_id_to_metadata = map_node_id_to_metadata(&mut pbf);
 
     let mut marked_uic: HashSet<u32> = Default::default();
     let mut marked_domestic: HashSet<(NonBlankString, NonBlankString)> = Default::default();
@@ -40,13 +38,13 @@ pub(crate) fn operational_points(
         })
         .flat_map(|rel| {
             let parts = parts(&rel, nodes_to_tracks, track_sections);
-            let main_code = main_code(&rel, &node_id_to_main_code);
+            let main_code = main_code(&rel, &node_id_to_metadata);
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
             if parts.is_empty() {
                 return None;
             }
             let identifier_name = name(&rel.tags);
-            let mut identifier_uic = uic(&rel, &node_id_to_uic);
+            let mut identifier_uic = uic(&rel, &node_id_to_metadata);
 
             if identifier_uic.is_none() {
                 warn!("Operational point {identifier_name} has no UIC code. Setting it to None.");
@@ -92,35 +90,35 @@ pub(crate) fn operational_points(
         .collect()
 }
 
-/// Find all nodes that have a `railway:ref` tag and create a mapping from their id to the value of this tag.
-fn map_node_id_to_main_code(
-    pbf: &mut OsmPbfReader<std::fs::File>,
-) -> HashMap<osm4routing::osmpbfreader::NodeId, NonBlankString> {
-    pbf.iter()
-        .flatten()
-        .filter_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Node(node) => node
-                .tags
-                .get("railway:ref")
-                .map(|tag| (node.id, NonBlankString::from(tag.to_string()))),
-            _ => None,
-        })
-        .collect()
+struct NodeMetadata {
+    main_code: Option<NonBlankString>,
+    uic: Option<u32>,
 }
 
-/// Find all nodes that have a `uic_ref` tag and create a mapping from their id to the value of this tag.
-fn map_node_id_to_uic(
+/// Find all nodes that have a `railway:ref` and `uic_ref` tag and create a mapping from their id to their metadata.
+fn map_node_id_to_metadata(
     pbf: &mut OsmPbfReader<std::fs::File>,
-) -> HashMap<osm4routing::osmpbfreader::NodeId, u32> {
+) -> HashMap<osm4routing::osmpbfreader::NodeId, NodeMetadata> {
     pbf.iter()
         .flatten()
         .filter_map(|obj| match obj {
-            osm4routing::osmpbfreader::OsmObj::Node(node) => node
+            osm4routing::osmpbfreader::OsmObj::Node(node) => Some(node),
+            _ => None,
+        })
+        .filter_map(|node| {
+            let main_code = node
+                .tags
+                .get("railway:ref")
+                .map(|tag| NonBlankString::from(tag.to_string()));
+            let uic = node
                 .tags
                 .get("uic_ref")
-                .and_then(|tag| tag.parse::<u32>().ok())
-                .map(|uic| (node.id, uic)),
-            _ => None,
+                .and_then(|tag| tag.parse::<u32>().ok());
+            if uic.is_none() && main_code.is_none() {
+                None
+            } else {
+                Some((node.id, NodeMetadata { main_code, uic }))
+            }
         })
         .collect()
 }
@@ -179,7 +177,7 @@ fn local_track_name_fallback(
 /// Look through the nodes members of the relation and find one that has a "railway:ref" tag.
 fn main_code(
     relation: &Relation,
-    node_id_to_main_code: &HashMap<NodeId, NonBlankString>,
+    node_id_to_metadata: &HashMap<NodeId, NodeMetadata>,
 ) -> NonBlankString {
     relation
         .refs
@@ -188,13 +186,17 @@ fn main_code(
             osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
             _ => None,
         })
-        .find_map(|node_id| node_id_to_main_code.get(&node_id).cloned())
+        .find_map(|node_id| {
+            node_id_to_metadata
+                .get(&node_id)
+                .and_then(|meta| meta.main_code.clone())
+        })
         .unwrap_or(NonBlankString::from(Uuid::new_v4().to_string()))
 }
 
 /// Extract UIC code.
 /// Search in both the relation and nodes members of the relation.
-fn uic(rel: &Relation, node_id_to_uic: &HashMap<NodeId, u32>) -> Option<u32> {
+fn uic(rel: &Relation, node_id_to_metadata: &HashMap<NodeId, NodeMetadata>) -> Option<u32> {
     let find_from_nodes = || {
         rel.refs
             .iter()
@@ -202,7 +204,7 @@ fn uic(rel: &Relation, node_id_to_uic: &HashMap<NodeId, u32>) -> Option<u32> {
                 osm4routing::osmpbfreader::OsmId::Node(id) => Some(id),
                 _ => None,
             })
-            .find_map(|node_id| node_id_to_uic.get(&node_id).cloned())
+            .find_map(|node_id| node_id_to_metadata.get(&node_id).and_then(|meta| meta.uic))
     };
 
     rel.tags
