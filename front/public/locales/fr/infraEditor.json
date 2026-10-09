@@ -414,12 +414,26 @@
   "OperationalPoint": {
     "description": "Décrit les points remarquables de l’infrastructure correspondante.",
     "properties": {
+      "country_code": {
+        "description": "Code pays du point remarquable (e.g. FR pour France)",
+        "title": "Code pays"
+      },
       "id": {
         "description": "Identifiant unique de l'objet",
         "title": "Identifiant"
       },
+      "is_passenger_station": {
+        "title": "Est une gare de voyageurs"
+      },
+      "name": {
+        "description": "Nom du point remarquable",
+        "title": "Nom"
+      },
       "parts": {
         "title": "Parties de point remarquable"
+      },
+      "secondary_code": {
+        "title": "Code secondaire"
       },
       "weight": {
         "description": "représente l'importance du PR",
