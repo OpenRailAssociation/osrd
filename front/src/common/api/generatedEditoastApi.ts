@@ -55,6 +55,14 @@ const injectedRtkApi = api
         query: () => ({ url: `/authz/groups` }),
         providesTags: ['authz'],
       }),
+      putAuthzGroups: build.mutation<PutAuthzGroupsApiResponse, PutAuthzGroupsApiArg>({
+        query: (queryArg) => ({
+          url: `/authz/groups`,
+          method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
         query: () => ({ url: `/authz/me` }),
         providesTags: ['authz'],
@@ -1670,6 +1678,18 @@ export type GetAuthzGroupsApiResponse = /** status 200 List all the groups */ {
   name: string;
 }[];
 export type GetAuthzGroupsApiArg = void;
+export type PutAuthzGroupsApiResponse = /** status 201 Group created */ {
+  id: number;
+  name: string;
+  roles: ('Admin' | 'Stdcm' | 'OperationalStudies')[];
+};
+export type PutAuthzGroupsApiArg = {
+  /** Group to create with its roles */
+  body: {
+    name: string;
+    roles: Role[];
+  };
+};
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;
   name: string;
