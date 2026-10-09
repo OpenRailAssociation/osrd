@@ -91,6 +91,50 @@ pub fn remove_members(group: Group, members: HashSet<User>) -> Protected<()> {
         .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
+/// Adds a user to several groups
+///
+/// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+pub fn add_groups(user: User, groups: HashSet<Group>) -> Protected<()> {
+    user_groups(user)
+        .then(move |openfga, existing_groups| {
+            async move {
+                let existing_groups = HashSet::from_iter(existing_groups);
+                let new_groups = groups.difference(&existing_groups);
+                let mut writes = openfga.prepare_writes();
+                for group in new_groups {
+                    writes.push(&Group::member().tuple(&user, group));
+                    writes.push(&User::group().tuple(group, &user));
+                }
+                writes.execute().await?;
+                Ok(())
+            }
+            .boxed()
+        })
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+}
+
+/// Removes a user from several groups
+///
+/// Idempotent but not atomic due to the lack of transactions in OpenFGA.
+pub fn remove_groups(user: User, groups: HashSet<Group>) -> Protected<()> {
+    user_groups(user)
+        .then(move |openfga, existing_groups| {
+            async move {
+                let existing_groups = HashSet::from_iter(existing_groups);
+                let expelled = groups.intersection(&existing_groups);
+                let mut writes = openfga.prepare_deletes();
+                for group in expelled {
+                    writes.push(&Group::member().tuple(&user, group));
+                    writes.push(&User::group().tuple(group, &user));
+                }
+                writes.execute().await?;
+                Ok(())
+            }
+            .boxed()
+        })
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+}
+
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
@@ -197,6 +241,97 @@ mod tests {
             openfga.group_members(&Group(1)).await,
             HashSet::from_iter([])
         );
+    }
+
+    #[tokio::test]
+    async fn add_groups_idempotent() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .add_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(1), Group(2)])
+        );
+
+        openfga
+            .add_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(1), Group(2)])
+        );
+    }
+
+    #[tokio::test]
+    async fn add_groups_intersecting_calls() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .add_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(1), Group(2)])
+        );
+
+        openfga
+            .add_groups(User(1), HashSet::from_iter([Group(1), Group(3)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(1), Group(2), Group(3)])
+        );
+    }
+
+    #[tokio::test]
+    async fn remove_groups_idempotent() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .add_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(1), Group(2)])
+        );
+
+        openfga
+            .remove_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(openfga.user_groups(User(1)).await, HashSet::from_iter([]));
+
+        openfga
+            .remove_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(openfga.user_groups(User(1)).await, HashSet::from_iter([]));
+    }
+
+    #[tokio::test]
+    async fn remove_groups_intersecting_calls() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .add_groups(User(1), HashSet::from_iter([Group(1), Group(2), Group(3)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(1), Group(2), Group(3)])
+        );
+
+        openfga
+            .remove_groups(User(1), HashSet::from_iter([Group(1), Group(2)]))
+            .await;
+        assert_eq!(
+            openfga.user_groups(User(1)).await,
+            HashSet::from_iter([Group(3)])
+        );
+
+        openfga
+            .remove_groups(User(1), HashSet::from_iter([Group(1), Group(3)]))
+            .await;
+        assert_eq!(openfga.user_groups(User(1)).await, HashSet::from_iter([]));
     }
 
     #[tokio::test]
