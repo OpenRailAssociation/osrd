@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import type { PacedTrainException, PathItem } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
+import { Duration } from 'utils/duration';
 
 import getLinkableOccupancyData from '../getLinkableOccupancyData';
 
@@ -195,5 +196,31 @@ describe('getLinkableOccupancyData', () => {
     );
 
     expect(active).toBe(true);
+  });
+
+  it('should give the duration of the service of a paced train', () => {
+    const { timeWindow } = getLinkableOccupancyData(
+      { type: 'exact_path_item', path_item_key: 'origin' },
+      {
+        ...TRAIN,
+        paced: {
+          timeWindow: new Duration({ hours: 2 }),
+          interval: new Duration({ minutes: 30 }),
+          exceptions: [],
+          exceptionProjections: new Map(),
+        },
+      }
+    );
+
+    expect(timeWindow).toBe(new Duration({ hours: 2 }).ms);
+  });
+
+  it('should give no service duration for a unique train', () => {
+    const { timeWindow } = getLinkableOccupancyData(
+      { type: 'exact_path_item', path_item_key: 'origin' },
+      TRAIN
+    );
+
+    expect(timeWindow).toBeUndefined();
   });
 });

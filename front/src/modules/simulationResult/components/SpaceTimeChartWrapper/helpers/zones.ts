@@ -26,6 +26,8 @@ type DrawableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   exceptionTypes: CurveStyleExceptionType[];
   pathItemRelativeLocation: PathItemRelativeLocation;
   paced: TrainScheduleWithDetails['paced'];
+  /** Offset the zone was repeated on over an hourly pattern, in ms. Nil when not repeated. */
+  repeatOffset?: number;
 };
 
 /** An occupancy zone, carrying the data needed to compute the linkings of its track as well. */
@@ -172,36 +174,36 @@ export function getMovableOccupancyZone(
   };
 }
 
-export const repeatOccupancyZonesInRange = (
-  occupancyZones: (OccupancyZone & MovableOccupancyZone)[],
+/**
+ * Repeats the zones of paced trains every time window, to fill a time range. Each copy keeps in
+ * `repeatOffset` how far it was shifted from the given zone. Unique trains are returned as is.
+ */
+export const repeatOccupancyZonesInRange = <
+  Zone extends Pick<LinkableOccupancy, 'startTime' | 'endTime' | 'timeWindow'>,
+>(
+  zones: Zone[],
   range: TimeRange
-): (OccupancyZone & MovableOccupancyZone)[] =>
-  occupancyZones.flatMap((zone) => {
-    if (!zone.paced) return [zone];
+): (Zone & { repeatOffset?: number })[] =>
+  zones.flatMap((zone) => {
+    if (!zone.timeWindow) return [zone];
 
+    const period = new Duration({ milliseconds: zone.timeWindow });
     // A zone dragged out of the first time window is repeated from its copy inside it.
-    const firstPeriodOffset = getFirstPeriodOffset(zone.startTime, zone.paced.timeWindow);
-    const firstPeriodZone = {
-      ...zone,
-      startTime: zone.startTime - firstPeriodOffset,
-      endTime: zone.endTime - firstPeriodOffset,
-      dbStartTime: zone.dbStartTime - firstPeriodOffset,
-      dbEndTime: zone.dbEndTime - firstPeriodOffset,
-    };
-
+    const firstPeriodOffset = getFirstPeriodOffset(zone.startTime, period);
     const repeatOffsets = getTimetableRepeatOffsets({
-      period: zone.paced.timeWindow,
+      period,
       // Note, occupancy zones are relative to their train's start time, so we
       // need to *not* subtract the zone's own startTime here
-      maxItemDuration: new Duration({ milliseconds: firstPeriodZone.endTime }),
+      maxItemDuration: new Duration({ milliseconds: zone.endTime - firstPeriodOffset }),
       range,
     });
-
-    return repeatOffsets.map((offset) => ({
-      ...firstPeriodZone,
-      startTime: firstPeriodZone.startTime + offset.ms,
-      endTime: firstPeriodZone.endTime + offset.ms,
-      dbStartTime: firstPeriodZone.dbStartTime + offset.ms,
-      dbEndTime: firstPeriodZone.dbEndTime + offset.ms,
-    }));
+    return repeatOffsets.map((offset) => {
+      const repeatOffset = offset.ms - firstPeriodOffset;
+      return {
+        ...zone,
+        startTime: zone.startTime + repeatOffset,
+        endTime: zone.endTime + repeatOffset,
+        repeatOffset,
+      };
+    });
   });

@@ -17,6 +17,11 @@ export type LinkableOccupancy = {
   /** Whether the schedule of the train holds a stop here. Not read on `via` blocks. */
   isStop: boolean;
   active: boolean;
+  /**
+   * Duration of the service of the train (the one of `paced` on a zone), in ms. Nil for a unique
+   * train.
+   */
+  timeWindow?: number;
 };
 
 /**
