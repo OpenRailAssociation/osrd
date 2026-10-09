@@ -8,6 +8,7 @@ import type {
   RollingStock,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
+import useStartTimeWrappedWarning from 'modules/trainSchedule/hooks/useStartTimeWrappedWarning';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import type { StartTime } from 'utils/duration';
@@ -58,6 +59,7 @@ const TimeStopsTableWrapper = ({
   isSimulationDataLoading = false,
   rollingStock,
 }: TimeStopsTableWrapperProps) => {
+  const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
   const { scenario } = useScenarioContext();
 
   // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
@@ -171,7 +173,8 @@ const TimeStopsTableWrapper = ({
 
   const commitUpdate = (update: CellUpdate) => {
     if (isAwaitingSimulation) return;
-    const { patch, edits } = computeTrainUpdate(update);
+    const { patch, edits, isStartTimeWrapped } = computeTrainUpdate(update);
+    if (isStartTimeWrapped) displayStartTimeWrappedWarning();
     setPinnedState({
       edits,
       forSchedule: selectedTrain.schedule,
