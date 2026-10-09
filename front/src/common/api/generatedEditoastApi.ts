@@ -130,6 +130,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['authz'],
       }),
+      patchAuthzUsersByUserId: build.mutation<
+        PatchAuthzUsersByUserIdApiResponse,
+        PatchAuthzUsersByUserIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/users/${queryArg.userId}`,
+          method: 'PATCH',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1884,6 +1895,26 @@ export type PostAuthzUsersInfoApiArg = {
 export type DeleteAuthzUsersByUserIdApiResponse = unknown;
 export type DeleteAuthzUsersByUserIdApiArg = {
   userId: number;
+};
+export type PatchAuthzUsersByUserIdApiResponse = /** status 200 The updated user */ {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+};
+export type PatchAuthzUsersByUserIdApiArg = {
+  userId: number;
+  /** The new values for the user to update */
+  body: {
+    groups: number[];
+    identities: string[];
+    name: string;
+    roles: Role[];
+  };
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
   /** status 200 List of users and groups that have a grant on the resource. */ {
