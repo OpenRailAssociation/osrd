@@ -1434,6 +1434,156 @@ pub(in crate::views) async fn delete_user(
     }
 }
 
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum UpdateUserError {
+    #[error("no identity provided for the new user")]
+    #[view_error(status = UNPROCESSABLE_ENTITY)]
+    NoIdentityProvided,
+    #[error(transparent)]
+    UserNotFound(
+        #[from]
+        #[view_error]
+        UserNotFound,
+    ),
+    #[error("the provided identity `{identity:?}` is already associated with another user")]
+    #[view_error(status = CONFLICT)]
+    IdentityAlreadyExists { identity: String },
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    OpenFgaError(
+        #[from]
+        #[view_error]
+        OpenFgaError,
+    ),
+}
+
+impl From<models::authn::user::AddIdentitiesError> for UpdateUserError {
+    fn from(value: models::authn::user::AddIdentitiesError) -> Self {
+        match value {
+            models::authn::user::AddIdentitiesError::DuplicateIdentity(identity) => {
+                UpdateUserError::IdentityAlreadyExists { identity }
+            }
+            models::authn::user::AddIdentitiesError::Error(error) => {
+                UpdateUserError::Database(DatabaseError::from(error))
+            }
+        }
+    }
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    patch,
+    path = "/user/{user_id}",
+    tag = "authz",
+    params(UserIdParam),
+    request_body(
+        content = inline(CreateUserForm),
+        description = "The new values for the user to update",
+    ),
+    responses((
+        status = 200,
+        description = "The updated user",
+        body = inline(UserInfo),
+    )),
+)]
+pub(in crate::views) async fn update_user(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Path(UserIdParam { user_id }): Path<UserIdParam>,
+    Json(CreateUserForm {
+        name,
+        identities,
+        groups,
+        roles,
+    }): Json<CreateUserForm>,
+) -> Result<(StatusCode, Json<UserInfo>), UpdateUserError> {
+    if identities.is_empty() {
+        return Err(UpdateUserError::NoIdentityProvided);
+    }
+
+    let conn = db_pool.get().await?;
+    let user_info = conn
+        .transaction::<_, UpdateUserError, _, _>(async move |mut conn| {
+            let user = User::changeset()
+                .name(name)
+                .update_or_fail(&mut conn, user_id, || {
+                    UpdateUserError::UserNotFound(UserNotFound { user_id })
+                })
+                .await?;
+
+            // Update the user identities
+            let existing_identities = user.get_identities(conn.clone()).await?;
+            let identities_to_add = identities
+                .clone()
+                .into_iter()
+                .filter(|identity| !existing_identities.contains(identity))
+                .collect_vec();
+            let identities_to_remove = existing_identities
+                .clone()
+                .into_iter()
+                .filter(|identity| !identities.contains(identity))
+                .collect_vec();
+            user.add_identities(conn.clone(), identities_to_add).await?;
+            let user = user
+                .remove_identities(conn.clone(), identities_to_remove)
+                .await?
+                .expect("we already checked that identities were provided and only the extra existing identities");
+
+            // Update the user roles and groups
+            let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+            let subject = authz::Subject::user(user_id);
+
+            let current_roles = v2::subject_roles(subject)
+                .run::<OpenFgaError, _>(&system_authorizer)
+                .await?
+                .into_iter()
+                .collect::<HashSet<_>>();
+            let roles_to_add = roles.difference(&current_roles).copied().collect();
+            let roles_to_remove = current_roles.difference(&roles).copied().collect();
+
+            let user_authz = authz::User(user_id);
+            let new_groups = groups.into_iter().map(authz::Group).collect::<HashSet<_>>();
+            let current_groups = v2::user_groups(user_authz)
+                .run::<OpenFgaError, _>(&system_authorizer)
+                .await?
+                .into_iter()
+                .collect::<HashSet<_>>();
+            let groups_to_add = new_groups
+                .difference(&current_groups)
+                .copied()
+                .collect::<HashSet<_>>();
+            let groups_to_remove = current_groups
+                .difference(&new_groups)
+                .copied()
+                .collect::<HashSet<_>>();
+
+            let user_groups: HashSet<Group> =
+                Group::retrieve_batch_unchecked(&mut conn, new_groups.iter().map(|group| **group))
+                    .await?;
+
+            v2::add_roles(subject, roles_to_add)
+                .zip(v2::remove_roles(subject, roles_to_remove))
+                .zip(v2::add_groups(user_authz, groups_to_add))
+                .zip(v2::remove_groups(user_authz, groups_to_remove))
+                .run::<OpenFgaError, _>(&system_authorizer)
+                .await?;
+
+            Ok(UserInfo {
+                id: user_id,
+                name: user.name,
+                identities,
+                roles,
+                groups: user_groups,
+            })
+        })
+        .await?;
+
+    Ok((StatusCode::OK, Json(user_info)))
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
@@ -4772,5 +4922,274 @@ mod tests {
             .by_user(user.as_ref())
             .await
             .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_user() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user = app
+            .user("Walter White", "Teacher")
+            .with_roles([Role::Stdcm, Role::OperationalStudies])
+            .create()
+            .await;
+
+        let _group_being_removed = app
+            .group("group_1")
+            .with_members(vec![&user])
+            .create()
+            .await;
+        let group_being_kept = app
+            .group("group_2")
+            .with_members(vec![&user])
+            .create()
+            .await;
+        let group_being_added = app.group("group_3").create().await; // not assigned yet
+
+        let new_groups = HashSet::from([group_being_kept, group_being_added]);
+        let new_roles = HashSet::from([Role::Admin, Role::Stdcm]);
+
+        let update_user_form = CreateUserForm {
+            name: "Heisenberg".to_string(),
+            identities: vec![
+                "Criminal Mastermind".to_string(),
+                "Pork pie hat enthusiast".to_string(),
+            ],
+            groups: new_groups
+                .iter()
+                .map(|group| group.id)
+                .collect::<HashSet<_>>(),
+            roles: new_roles,
+        };
+
+        let created_user = app
+            .patch(&format!("/authz/users/{}", user.id))
+            .by_user(admin.as_ref())
+            .json(&update_user_form)
+            .await
+            .assert_status_ok()
+            .json::<UserInfo>();
+
+        let expected_user_info = UserInfo {
+            id: user.id,
+            name: update_user_form.name.clone(),
+            identities: update_user_form.identities.clone(),
+            roles: update_user_form.roles.clone(),
+            groups: HashSet::from_iter(new_groups.iter().map(|group| models::Group {
+                id: group.id,
+                name: group.info.name.clone(),
+            })),
+        };
+        assert_eq!(created_user, expected_user_info);
+
+        // Check that the tuples of the user groups and roles have been created in openfga:
+
+        let openfga = app.openfga();
+        let user_roles = openfga
+            .subject_roles(&authz::Subject::user(created_user.id))
+            .await;
+        assert_eq!(user_roles, HashSet::from([Role::Admin, Role::Stdcm]));
+
+        let user_groups = openfga.user_groups(authz::User(created_user.id)).await;
+        assert_eq!(
+            user_groups,
+            update_user_form
+                .groups
+                .into_iter()
+                .map(authz::Group)
+                .collect::<HashSet<_>>()
+        );
+
+        // Check that the created user is persisted and matches its new list of identities:
+
+        let users = UserWithIdentities::retrieve_by_identity(
+            conn.clone(),
+            &created_user
+                .identities
+                .first()
+                .expect("returned user contains no identities"),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            users,
+            Some(UserWithIdentities {
+                user: models::User {
+                    id: created_user.id,
+                    name: created_user.name
+                },
+                identities: created_user.identities
+            })
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_user_identity_owned_by_another_user() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user = app.user("Walter White", "Teacher").create().await;
+        let other_user = app
+            .user("Gustavo Fring", "Criminal Mastermind")
+            .create()
+            .await;
+
+        let user_form_new_identity = CreateUserForm {
+            name: "Heisenberg".to_string(),
+            identities: vec!["Loving father, husband, teacher".to_string()],
+            groups: HashSet::new(),
+            roles: HashSet::new(),
+        };
+
+        // The endpoint call should fail:
+
+        let user_form_stealing_identity = CreateUserForm {
+            name: "Heisenberg".to_string(),
+            identities: vec![other_user.info.identities[0].clone()],
+            groups: HashSet::new(),
+            roles: HashSet::new(),
+        };
+
+        app.patch(&format!("/authz/users/{}", user.id))
+            .by_user(admin.as_ref())
+            .json(&user_form_stealing_identity)
+            .await
+            .assert_status_conflict();
+
+        // The users should not have been updated in the DB:
+
+        let new_walter = UserWithIdentities::retrieve_by_identity(
+            conn.clone(),
+            &user
+                .info
+                .identities
+                .first()
+                .expect("returned user contains no identities"),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            new_walter,
+            Some(UserWithIdentities {
+                user: models::User {
+                    id: user.id,
+                    name: user.info.name
+                },
+                identities: user.info.identities
+            })
+        );
+
+        let new_gustavo = UserWithIdentities::retrieve_by_identity(
+            conn.clone(),
+            &other_user
+                .info
+                .identities
+                .first()
+                .expect("returned user contains no identities"),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            new_gustavo,
+            Some(UserWithIdentities {
+                user: models::User {
+                    id: other_user.id,
+                    name: other_user.info.name
+                },
+                identities: other_user.info.identities
+            })
+        );
+
+        // The user update should succeed if an unassigned identity is given:
+
+        app.patch(&format!("/authz/users/{}", user.id))
+            .by_user(admin.as_ref())
+            .json(&user_form_new_identity)
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_user_no_identity_provided() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user = app.user("Walter White", "Teacher").create().await;
+
+        let user_form_missing_identities = CreateUserForm {
+            name: "Heisenberg".to_string(),
+            identities: vec![],
+            groups: HashSet::new(),
+            roles: HashSet::new(),
+        };
+
+        let user_form_with_identity = CreateUserForm {
+            name: "Heisenberg".to_string(),
+            identities: vec!["identity".to_string()],
+            groups: HashSet::new(),
+            roles: HashSet::new(),
+        };
+
+        // The user update should fail if no identity is provided:
+
+        app.patch(&format!("/authz/users/{}", user.id))
+            .by_user(admin.as_ref())
+            .json(&user_form_missing_identities)
+            .await
+            .assert_status_unprocessable_entity();
+
+        // The user and its identities should not have been altered in the DB:
+
+        let users = UserWithIdentities::retrieve_by_identity(
+            conn.clone(),
+            &user
+                .info
+                .identities
+                .first()
+                .expect("returned user contains no identities"),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            users,
+            Some(UserWithIdentities {
+                user: models::User {
+                    id: user.id,
+                    name: user.info.name
+                },
+                identities: user.info.identities
+            })
+        );
+
+        // The user update should succeed if an unassigned identity is given:
+
+        app.patch(&format!("/authz/users/{}", user.id))
+            .by_user(admin.as_ref())
+            .json(&user_form_with_identity)
+            .await
+            .assert_status_ok();
     }
 }
