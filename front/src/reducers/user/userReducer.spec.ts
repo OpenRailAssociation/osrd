@@ -6,7 +6,7 @@ import {
   loginError,
   logoutSuccess,
   type UserState,
-  updateUserPreferences,
+  updateSafeWord,
   updateAuthzUser,
   setImpersonatedUser,
 } from 'reducers/user';
@@ -93,12 +93,9 @@ describe('userReducer', () => {
     });
   });
 
-  it('should handle updateUserPreferences', () => {
+  it('should handle updateSafeWord', () => {
     const store = createStore(userInitialState);
-    const action = updateUserPreferences({
-      ...userInitialState.userPreferences,
-      safeWord: 'Test userSlice',
-    });
+    const action = updateSafeWord('Test userSlice');
     store.dispatch(action);
     const userState = store.getState().user;
     expect(userState).toEqual({
