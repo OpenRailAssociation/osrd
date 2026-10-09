@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { KM_TO_M, SECOND } from '../../common/consts';
+import { METERS_PER_KM, SECOND } from '../../common/consts';
 import type { Point } from '../../common/types';
 import { Tooltip } from './Tooltip';
 
@@ -17,7 +17,7 @@ export type ConflictTooltipProps = {
 };
 
 const formatDistance = (meters: number) => {
-  const km = meters / KM_TO_M;
+  const km = meters / METERS_PER_KM;
   return km.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 };
 
