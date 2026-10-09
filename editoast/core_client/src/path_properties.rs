@@ -1,3 +1,5 @@
+use std::io::Error;
+
 use geos::geojson::Geometry;
 use schemas::infra::OperationalPointPart;
 use schemas::primitives::Identifier;
@@ -35,6 +37,8 @@ pub struct PathPropertiesResponse {
     pub operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path
     pub zones: PropertyZoneValues,
+    // Projection from topological offset to geometric offset (or vice versa)
+    pub geom_projection: GeometryProjection,
 }
 
 /// Property f64 values along a path. Each value is associated to a range of the path.
@@ -159,6 +163,36 @@ impl PropertyZoneValues {
     pub fn new(boundaries: Vec<u64>, values: Vec<String>) -> Self {
         assert!(boundaries.len() == values.len() + 1);
         Self { boundaries, values }
+    }
+}
+
+/// Describes a monotonic curve to be used to project topological offset to geometric offset (or reversed).
+/// For example on a path:
+/// * Coordinates of the points are built by cumulating **track-section's** ranges lengths (respectively topological or geometric) along the path.
+/// * `topo_offsets` and `geom_offsets` are the same size, both start with `0` and both end with path's lengths (respectively topological or geometric).
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = CorePropertyGeometryProjection)]
+pub struct GeometryProjection {
+    /// Topological offsets in millimeters.
+    /// Starts with 0 and is increasing.
+    #[schema(min_items = 2)]
+    topo_offsets: Vec<u64>,
+    /// Geometric offsets in millimeters, processed using haversine formula.
+    /// Starts with 0 and is increasing.
+    #[schema(min_items = 2)]
+    geom_offsets: Vec<u64>,
+}
+
+impl GeometryProjection {
+    pub fn try_new(topo_offsets: Vec<u64>, geom_offsets: Vec<u64>) -> Option<GeometryProjection> {
+        if topo_offsets.len() != geom_offsets.len() || topo_offsets.len() < 2 {
+            None
+        } else {
+            Some(Self {
+                topo_offsets,
+                geom_offsets,
+            })
+        }
     }
 }
 
