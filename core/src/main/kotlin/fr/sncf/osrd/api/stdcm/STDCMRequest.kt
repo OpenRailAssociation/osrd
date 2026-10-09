@@ -8,6 +8,7 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.TimetableId
 import fr.sncf.osrd.api.WorkSchedule
+import fr.sncf.osrd.api.pathfinding.OperationalPointStop
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.MarginValueAdapter
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
@@ -58,6 +59,8 @@ class STDCMRequest(
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
     @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
     @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String> = emptySet(),
+    // List of mandatory operational point stops
+    @Json(name = "forced_op_stops") val forcedOpStops: List<OperationalPointStop> = emptyList(),
 )
 
 data class STDCMTemporarySpeedLimit(

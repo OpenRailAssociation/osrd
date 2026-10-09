@@ -30,7 +30,19 @@ class PathfindingBlockRequest(
 
     // Set of authorized track section ids, empty set means no restriction
     @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String> = emptySet(),
+    // List of mandatory operational point stops
+    @Json(name = "forced_op_stops") val forcedOpStops: List<OperationalPointStop> = emptyList(),
 )
+
+class OperationalPointStop(
+    val id: String,
+    val stop_type: ForcedStopType,
+)
+
+enum class ForcedStopType {
+    GENERAL_STOP,
+    OVERTAKE,
+}
 
 val pathfindingRequestAdapter: JsonAdapter<PathfindingBlockRequest> =
     Moshi.Builder()

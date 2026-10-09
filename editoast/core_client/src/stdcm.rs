@@ -11,6 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::pathfinding::OperationalPointStop;
 use super::pathfinding::PathItem;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
@@ -34,6 +35,8 @@ pub struct Request {
     pub path_items: Vec<STDCMPathItem>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: HashSet<String>,
+    /// List of mandatory operational point stops
+    pub forced_op_stops: Vec<OperationalPointStop>,
 
     // Simulation inputs
     /// The comfort of the train

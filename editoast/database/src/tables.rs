@@ -751,6 +751,7 @@ diesel::table! {
         default_speed_limit_tag -> Nullable<Varchar>,
         operational_points_id_filtered -> Array<Nullable<Text>>,
         allowed_tracks -> Jsonb,
+        forced_op_stops -> Jsonb,
     }
 }
 

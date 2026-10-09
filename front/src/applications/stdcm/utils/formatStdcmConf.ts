@@ -6,6 +6,7 @@ import type {
   ConsistSchedule,
   StdcmPathfindingItem,
   PostTimetableByIdStdcmApiArg,
+  OperationalPointStop,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
@@ -28,6 +29,7 @@ type ValidStdcmConfig = {
   electricalProfileSetId?: number;
   allowedTrackSections?: string[];
   consistSchedule: ConsistSchedule;
+  forcedOpStops?: OperationalPointStop[];
 };
 
 export const checkStdcmConf = (
@@ -53,6 +55,7 @@ export const checkStdcmConf = (
     maxSpeed,
     loadingGauge,
     trackSectionIdsByLoadingGauge,
+    forcedOpStops,
   } = osrdconf;
   let error = false;
 
@@ -244,6 +247,7 @@ export const checkStdcmConf = (
     electricalProfileSetId,
     allowedTrackSections,
     consistSchedule,
+    forcedOpStops,
   };
 };
 
@@ -263,5 +267,6 @@ export const formatStdcmPayload = (
     electrical_profile_set_id: validConfig.electricalProfileSetId,
     allowed_track_sections: validConfig.allowedTrackSections,
     consist_schedule: validConfig.consistSchedule,
+    forced_op_stops: validConfig.forcedOpStops,
   },
 });

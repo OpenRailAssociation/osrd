@@ -5,6 +5,8 @@ use diesel::ExpressionMethods as _;
 use diesel::QueryDsl as _;
 use diesel_async::RunQueryDsl as _;
 use editoast_derive::Model;
+use schemas::primitives::Identifier;
+use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -56,6 +58,24 @@ pub struct StdcmSearchEnvironment {
     #[model(json)]
     #[schema(required)]
     pub allowed_tracks: Option<HashMap<String, HashSet<String>>>,
+    /// List of mandatory operational point stops
+    #[model(json)]
+    #[schema(required)]
+    pub forced_op_stops: Option<Vec<OperationalPointStop>>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ForcedStopType {
+    GeneralStop,
+    Overtake,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema)]
+pub struct OperationalPointStop {
+    #[schema(inline)]
+    pub id: Identifier,
+    pub stop_type: ForcedStopType,
 }
 
 impl StdcmSearchEnvironment {

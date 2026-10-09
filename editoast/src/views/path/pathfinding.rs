@@ -15,6 +15,7 @@ use axum::extract::State;
 use common::units;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::pathfinding::OperationalPointStop;
 use core_client::pathfinding::PathfindingCoreResult;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
@@ -76,6 +77,9 @@ pub(in crate::views) struct PathfindingInput {
     /// Set of authorized track section ids, empty means no restriction
     #[serde(default)]
     allowed_track_sections: BTreeSet<String>,
+    /// List of mandatory operational point stops
+    #[serde(default)]
+    forced_op_stops: Vec<OperationalPointStop>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema, Hash)]
@@ -123,6 +127,7 @@ impl PathfindingInput {
             speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
             stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
             allowed_track_sections: BTreeSet::new(),
+            forced_op_stops: Vec::new(),
         }
     }
 
@@ -454,6 +459,7 @@ fn build_pathfinding_request(
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
         stops_at_end_of_block: pathfinding_input.stops_at_end_of_block,
         allowed_track_sections: pathfinding_input.allowed_track_sections.clone(),
+        forced_op_stops: pathfinding_input.forced_op_stops.clone(),
     })
 }
 
@@ -543,6 +549,7 @@ pub mod tests {
             speed_limit_tag: None,
             stops_at_end_of_block: None,
             allowed_track_sections: BTreeSet::new(),
+            forced_op_stops: Vec::new(),
             path_items,
         }
     }

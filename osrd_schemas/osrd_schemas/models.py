@@ -169,6 +169,11 @@ class CoreConflictType(Enum):
     Routing = "Routing"
 
 
+class CoreForcedStopType(Enum):
+    GENERAL_STOP = "GENERAL_STOP"
+    OVERTAKE = "OVERTAKE"
+
+
 class CoreObjectRange(BaseModel):
     """
     A range on a linear object (usually block or route)
@@ -202,6 +207,11 @@ class Plc(RootModel[str]):
 
 class SecondaryName(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class CoreOperationalPointStop(BaseModel):
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    stop_type: CoreForcedStopType
 
 
 class PathfindingInputErrorNotEnoughPathItems(BaseModel):
@@ -2873,6 +2883,11 @@ class Endpoint(Enum):
     END = "END"
 
 
+class ForcedStopType(Enum):
+    GENERAL_STOP = "GENERAL_STOP"
+    OVERTAKE = "OVERTAKE"
+
+
 class Identifier(RootModel[str]):
     root: Annotated[str, Field(max_length=255, min_length=1)]
 
@@ -3148,6 +3163,11 @@ class OperationalPointReferenceUic(BaseModel):
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
     """
+
+
+class OperationalPointStop(BaseModel):
+    id: Annotated[str, Field(max_length=255, min_length=1)]
+    stop_type: ForcedStopType
 
 
 class PaginationStats(BaseModel):
@@ -4179,6 +4199,10 @@ class StdcmSearchEnvironment(BaseModel):
     The time window end point where the environment is enabled.
     This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
     """
+    forced_op_stops: list[OperationalPointStop] | None
+    """
+    List of mandatory operational point stops
+    """
     id: int
     infra_id: int
     operational_points: list[int]
@@ -4226,6 +4250,10 @@ class StdcmSearchEnvironmentResponse(BaseModel):
     electrical_profile_set_id: int | None = None
     enabled_from: AwareDatetime
     enabled_until: AwareDatetime
+    forced_op_stops: list[OperationalPointStop] | None = None
+    """
+    List of mandatory operational point stops
+    """
     id: int
     infra_id: int
     operational_points: list[int] | None = None
@@ -6710,6 +6738,10 @@ class PathfindingInput(BaseModel):
     allowed_track_sections: list[str] | None = None
     """
     Set of authorized track section ids, empty means no restriction
+    """
+    forced_op_stops: list[CoreOperationalPointStop] | None = None
+    """
+    List of mandatory operational point stops
     """
     path_items: list[PathfindingItem]
     """
