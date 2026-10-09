@@ -121,6 +121,23 @@
     "weight": "weight",
     "withoutWarranty": "Path simulation without guaranteed availability"
   },
+  "requestsSentModal": {
+    "applicationDate": "Application date",
+    "asap": "a.s.a.p.",
+    "destination": "Destination",
+    "origin": "Origin",
+    "requestNumber": "Request N°",
+    "status": "Status",
+    "statuses": {
+      "ACCEPTED": "Allocated",
+      "CANCELLED": "Cancelled",
+      "CREATED": "Sent",
+      "PROCESSING": "In progress",
+      "REFUSED": "Non allocated"
+    },
+    "title": "GESICO requests",
+    "updateDate": "Updated"
+  },
   "scenario": "Scenario",
   "scenarioExplorer": {
     "infraLegend": "infra",
