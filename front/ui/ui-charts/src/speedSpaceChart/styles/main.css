@@ -6,12 +6,16 @@
   margin-top: 6px;
 }
 
+#tick-layer-y,
+#tick-layer-y-right,
 #curve-layer,
 #declivity-layer,
 #front-interactivity-layer {
   border-radius: 0;
 }
 
+#declivity-layer,
+#steps-layer,
 #curve-layer {
   margin-left: 40px;
 }

@@ -167,7 +167,7 @@ export const computeTooltip = ({
 }: DrawFunctionParams): tooltipInfos | null => {
   const { speedLimitTags, ratioX, leftOffset, cursor } = store;
 
-  const { MARGIN_TOP, MARGIN_LEFT } = MARGINS;
+  const { MARGIN_LEFT } = MARGINS;
 
   const maxPosition = maxPositionValue(store.speeds);
 
@@ -191,8 +191,8 @@ export const computeTooltip = ({
     if (
       cursor.x >= x - MARGIN_LEFT + leftOffset &&
       cursor.x <= x - MARGIN_LEFT + leftOffset + tagWidth &&
-      cursor.y >= marginTop - MARGIN_TOP + Y_POSITION - 2 &&
-      cursor.y <= marginTop - MARGIN_TOP + Y_POSITION - 1 + RECT_HEIGHT
+      cursor.y >= marginTop + Y_POSITION - 2 &&
+      cursor.y <= marginTop + Y_POSITION - 1 + RECT_HEIGHT
     ) {
       return {
         cursorX: cursor.x + MARGIN_LEFT,

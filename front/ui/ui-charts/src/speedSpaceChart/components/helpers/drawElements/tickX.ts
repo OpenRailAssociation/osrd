@@ -8,7 +8,6 @@ const { MARGIN_LEFT, MARGIN_BOTTOM, CURVE_MARGIN_SIDES } = MARGINS;
 export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const { ratioX, leftOffset, cursor } = store;
 
-
   clearCanvas(ctx, width, height);
   ctx.save();
 
@@ -128,7 +127,6 @@ export const drawTickX = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.lineTo(width, positionY);
   ctx.closePath();
   ctx.stroke();
-
 
   if (cursorHover) {
     const unitBoxWidth = 44;

@@ -1,55 +1,98 @@
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
+import { MARGINS } from '../../const';
 import { clearCanvas, slopesValues } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
+const { MARGIN_BOTTOM, RIGHT_TICK_MARGINS, CURVE_MARGIN_TOP } = MARGINS;
+const TICK_WIDTH = 6; // Width of the tick mark on the right Y-axis
+const NB_TICKS = 6; // Half number of ticks to draw on the right Y-axis
+
+export const computeCenterY = (availableHeight: number) => {
+  return availableHeight / 2 + CURVE_MARGIN_TOP;;
+}
+
+export const computeRoundedMaxAbsGradient = (minGradient: number, maxGradient: number) => {
+  const maxAbsGradient = Math.max(Math.abs(maxGradient), Math.abs(minGradient));
+  return Math.ceil(maxAbsGradient / NB_TICKS) * NB_TICKS;
+}
 
 export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams) => {
-  clearCanvas(ctx, width, height);
+  const { cursor } = store;
 
   const { minGradient, maxGradient } = slopesValues(store);
 
   // Calculate total height available for ticks excluding the margins
-  const availableHeight = height - MARGIN_TOP - MARGIN_BOTTOM - RIGHT_TICK_MARGINS;
+  const availableHeight = height - MARGIN_BOTTOM - CURVE_MARGIN_TOP * 2;
 
-  const tickSpacing = availableHeight / 12; // 12 intervals for 13 ticks
+  const tickSpacing = availableHeight / (NB_TICKS * 2); 
 
   // Calculate the vertical center of the chart
-  const centerY =
-    MARGIN_TOP + RIGHT_TICK_MARGINS / 2 + availableHeight / 2 + RIGHT_TICK_HEIGHT_OFFSET;
+  const centerY = computeCenterY(availableHeight);
 
-  const textOffsetX = width - MARGIN_LEFT + 10;
-  const tickWidth = 6;
+  const tickX = width - RIGHT_TICK_MARGINS;
+  const textOffsetX = tickX + TICK_WIDTH + 5; 
+
+
+  clearCanvas(ctx, width, height);
+  ctx.save();
+
+  // Draw background
+  const cursorHover = cursor.x !== null && cursor.y !== null && cursor.x > tickX && cursor.y < height - MARGIN_BOTTOM;
+  ctx.fillStyle = cursorHover ? 'white' : 'rgb(247, 246, 238)';
+  ctx.fillRect(tickX, 0, RIGHT_TICK_MARGINS, height - MARGIN_BOTTOM);
+
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.lineWidth = 0.5;
+  ctx.moveTo(tickX, 0);
+  ctx.lineTo(tickX, height);
+  ctx.closePath();
+  ctx.stroke();
 
   ctx.font = 'normal 12px IBM Plex Sans';
   ctx.lineWidth = 0.5;
 
   // Calculate gradient step to avoid decimals
-  const maxAbsGradient = Math.max(maxGradient, minGradient);
-  const roundedMaxAbsGradient = Math.ceil(maxAbsGradient / 6) * 6;
-  const gradientStep = roundedMaxAbsGradient / 6;
+  const roundedMaxAbsGradient = computeRoundedMaxAbsGradient(minGradient, maxGradient);
+  const gradientStep = roundedMaxAbsGradient / NB_TICKS;
 
   ctx.beginPath();
-  for (let i = -6; i <= 6; i++) {
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = `rgb(121, 118, 113)`;
+  for (let i = -NB_TICKS; i <= NB_TICKS; i++) {
     const tickValue = i * gradientStep;
     const tickY = centerY - i * tickSpacing;
 
-    ctx.moveTo(width - MARGIN_LEFT - tickWidth, tickY);
-    ctx.lineTo(width - MARGIN_LEFT, tickY);
-    ctx.strokeStyle = 'rgb(121, 118, 113)';
-
-    ctx.textAlign = 'left';
-    const text = tickValue.toString();
+    ctx.moveTo(tickX, tickY);
+    ctx.lineTo(tickX + TICK_WIDTH, tickY);
+    const text = tickValue > 0 ? `+${tickValue}` : tickValue.toString();
     const textPositionYRight = tickY + 4;
-    const opacity = 1;
 
-    ctx.fillStyle = `rgba(182, 179, 175, ${opacity})`;
     ctx.fillText(text, textOffsetX, textPositionYRight);
   }
   ctx.stroke();
+  ctx.restore();
+  ctx.save();
 
-  // prevent overlapping with margin top
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
-  ctx.clearRect(width - MARGIN_LEFT, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
-  ctx.clearRect(0, height - MARGIN_BOTTOM + 6, width - MARGIN_LEFT, MARGIN_BOTTOM);
+  if (cursorHover) {
+    const unitBoxWidth = 43;
+    const unitBoxHeight = 32;
+    const unitBoxOffset = 8;
+    const unitBoxPostionX = tickX - unitBoxOffset - unitBoxWidth;
+    const unitBoxPositionY = centerY + unitBoxHeight / 2;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+    ctx.beginPath();
+    ctx.roundRect(unitBoxPostionX, unitBoxPositionY, unitBoxWidth, unitBoxHeight, 4);
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = 'normal 14px IBM Plex Sans';
+    ctx.fillText("‰", unitBoxPostionX + unitBoxWidth / 2, unitBoxPositionY + unitBoxHeight / 2 + 4);
+  }
+  ctx.restore();
 };

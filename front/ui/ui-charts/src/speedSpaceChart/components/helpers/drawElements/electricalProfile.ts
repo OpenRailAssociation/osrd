@@ -27,7 +27,6 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
   ctx.translate(leftOffset, 0);
   const maxPosition = maxPositionValue(store.speeds);
   const {
-    MARGIN_TOP,
     MARGIN_BOTTOM,
     MARGIN_LEFT,
     CURVE_MARGIN_SIDES,
@@ -78,19 +77,14 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
         if (
           cursor.y &&
           cursor.x &&
-          cursor.y <= topLayer - MARGIN_BOTTOM + MARGIN_TOP &&
-          cursor.y >= topLayer - MARGIN_BOTTOM + MARGIN_TOP - ELECTRICAL_PROFILES_HEIGHT &&
+          cursor.y <= topLayer - MARGIN_BOTTOM &&
+          cursor.y >= topLayer - MARGIN_BOTTOM - ELECTRICAL_PROFILES_HEIGHT &&
           cursor.x - leftOffset >= xStart - MARGIN_LEFT &&
           cursor.x - leftOffset <= xStart + profileWidth - MARGIN_LEFT
         ) {
           // Draw selection bar
           ctx.globalAlpha = 0.2;
-          ctx.fillRect(
-            xStart,
-            MARGIN_TOP,
-            profileWidth,
-            topLayer - SELECTION_BAR_HEIGHT_AJUSTEMENT
-          );
+          ctx.fillRect(xStart, 0, profileWidth, topLayer - SELECTION_BAR_HEIGHT_AJUSTEMENT);
           ctx.globalAlpha = 1;
 
           const profileNameWidth = Math.floor(ctx.measureText(electricalProfile).width);
@@ -139,8 +133,8 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
   if (
     cursor.y &&
-    cursor.y <= topLayer - MARGIN_BOTTOM + MARGIN_TOP &&
-    cursor.y >= topLayer - MARGIN_BOTTOM + MARGIN_TOP - ELECTRICAL_PROFILES_HEIGHT &&
+    cursor.y <= topLayer - MARGIN_BOTTOM &&
+    cursor.y >= topLayer - MARGIN_BOTTOM - ELECTRICAL_PROFILES_HEIGHT &&
     currentBoundaryProfileIndex !== -1
   ) {
     const { start, end } = electricalProfiles[currentBoundaryProfileIndex].position;
