@@ -199,13 +199,8 @@
         ]
       }
     ],
-
-    "react/capitalized-calls": "off",
     "react/exhaustive-effect-dependencies": "off",
-    "react/hooks": "off",
     "react/memo-dependencies": "off",
-    "react/no-deriving-state-in-effects": "off",
-    "react/preserve-manual-memoization": "off",
     "react/refs": "off",
     "react/set-state-in-effect": "off",
 
@@ -255,12 +250,9 @@
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
 
-        "react/capitalized-calls": "error",
         "react/exhaustive-deps": "warn",
         "react/exhaustive-effect-dependencies": "error",
-        "react/hooks": "error",
         "react/memo-dependencies": "error",
-        "react/preserve-manual-memoization": "error",
         "react/react-in-jsx-scope": "error",
         "react/refs": "error",
         "react/set-state-in-effect": "error",

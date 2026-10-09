@@ -6,7 +6,9 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
+import useConsistFieldStatus, {
+  type UseConsistFieldStatusCommonParams,
+} from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useFilterTowedRollingStock from 'applications/stdcm/hooks/useFilterTowedRollingStock';
 import type { ConsistData, ConsistErrors } from 'applications/stdcm/types';
 import calculateConsistMaxSpeed from 'applications/stdcm/utils/calculateConsistMaxSpeed';
@@ -128,19 +130,17 @@ const StdcmConsist = ({
     onConsistErrorsChange
   );
 
-  const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
-    useConsistFieldStatus(
-      field,
-      statusWithMessage,
-      consistErrors,
-      statusMessagesVisible,
-      rollingStock,
-      towedRollingStock
-    );
+  const fieldStatusArgs: UseConsistFieldStatusCommonParams = [
+    statusWithMessage,
+    consistErrors,
+    statusMessagesVisible,
+    rollingStock,
+    towedRollingStock,
+  ];
 
-  const massFieldStatus = useFieldStatus('totalMass');
-  const lengthFieldStatus = useFieldStatus('totalLength');
-  const speedFieldStatus = useFieldStatus('maxSpeed');
+  const massFieldStatus = useConsistFieldStatus('totalMass', ...fieldStatusArgs);
+  const lengthFieldStatus = useConsistFieldStatus('totalLength', ...fieldStatusArgs);
+  const speedFieldStatus = useConsistFieldStatus('maxSpeed', ...fieldStatusArgs);
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock({
     isStdcm: true,

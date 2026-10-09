@@ -202,13 +202,13 @@ const OccurrenceItem = ({
     return items;
   }, [menuItems, exceptionChangeGroups]);
 
-  const occurrenceMenu = AnchoredMenu({
-    children: isMenuOpen && (
-      <OSRDMenu menuRef={menuRef} items={filteredMenuItems} className="occurrence-menu" />
-    ),
-    anchorRef: menuButtonRef,
-    onDismiss: closeMenu,
-  });
+  const occurrenceMenu = (
+    <AnchoredMenu anchorRef={menuButtonRef} onDismiss={closeMenu}>
+      {isMenuOpen && (
+        <OSRDMenu menuRef={menuRef} items={filteredMenuItems} className="occurrence-menu" />
+      )}
+    </AnchoredMenu>
+  );
 
   return (
     <div

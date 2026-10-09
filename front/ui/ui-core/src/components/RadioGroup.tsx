@@ -35,7 +35,7 @@ const RadioGroup = ({
   const [selectedValue, setSelectedValue] = useState<string | undefined>(value);
 
   useEffect(() => {
-    /* eslint-disable-next-line react/set-state-in-effect */
+    /* eslint-disable-next-line react/set-state-in-effect react/no-deriving-state-in-effects */
     setSelectedValue(value);
   }, [value]);
 

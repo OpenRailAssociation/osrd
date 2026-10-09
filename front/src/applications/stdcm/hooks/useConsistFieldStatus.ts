@@ -85,3 +85,6 @@ const useConsistFieldStatus = (
 };
 
 export default useConsistFieldStatus;
+
+type DropFirst<T extends unknown[]> = T extends [unknown, ...infer U] ? U : never;
+export type UseConsistFieldStatusCommonParams = DropFirst<Parameters<typeof useConsistFieldStatus>>;

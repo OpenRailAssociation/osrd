@@ -59,23 +59,23 @@ const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) =
     onClick?.(e);
   };
 
-  const menu = AnchoredMenu({
-    children: isMenuOpen && (
-      <OSRDMenu
-        menuRef={menuRef}
-        items={items.map((item) => ({
-          ...item,
-          onClick: () => {
-            item.onClick?.();
-            closeMenu();
-          },
-        }))}
-        className={menuClassName ? menuClassName : 'menu-trigger'}
-      />
-    ),
-    anchorRef: menuButtonRef,
-    onDismiss: closeMenu,
-  });
+  const menu = (
+    <AnchoredMenu anchorRef={menuButtonRef} onDismiss={closeMenu}>
+      {isMenuOpen && (
+        <OSRDMenu
+          menuRef={menuRef}
+          items={items.map((item) => ({
+            ...item,
+            onClick: () => {
+              item.onClick?.();
+              closeMenu();
+            },
+          }))}
+          className={menuClassName ? menuClassName : 'menu-trigger'}
+        />
+      )}
+    </AnchoredMenu>
+  );
 
   return (
     <>
