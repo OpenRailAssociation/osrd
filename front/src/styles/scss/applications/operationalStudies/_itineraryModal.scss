@@ -371,7 +371,7 @@
             display: grid;
             grid-template-columns:
               24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-              auto;
+              auto auto;
             align-items: center;
             column-gap: 8px;
             padding-block: 8px;
@@ -486,6 +486,33 @@
               &.invalid {
                 border-radius: 3px;
               }
+
+              .path-step-op-status-icon {
+                position: relative;
+                display: flex;
+                align-items: center;
+                color: var(--black10);
+              }
+
+              .path-step-op-status-badge {
+                position: absolute;
+                top: 40%;
+                right: -8px;
+                transform: translateY(-50%) scale(0.6);
+              }
+
+              .leading-content-wrapper {
+                width: 32px;
+                padding: 0 4px;
+
+                &:has(.path-step-op-status-icon.recognized) {
+                  background-color: var(--success5);
+                }
+
+                &:has(.path-step-op-status-icon:not(.recognized)) {
+                  background-color: var(--black5);
+                }
+              }
             }
 
             .invalid-step-message {
@@ -503,6 +530,17 @@
             .track-name.unknown-track {
               border-radius: 3px;
               box-shadow: 0 0 0 1.5px var(--grey50);
+            }
+
+            .path-step-subform-toggle {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--grey50);
+
+              &:hover {
+                color: var(--grey80);
+              }
             }
 
             .map-interactions {

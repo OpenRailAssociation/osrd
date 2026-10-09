@@ -4,8 +4,12 @@ import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
+  Check,
+  ChevronDown,
+  ChevronUp,
   FocusLocation,
   ArrowRight,
+  Infrastructure,
   Square,
   KebabHorizontal,
   X,
@@ -97,6 +101,7 @@ const PathStepItem = ({
   const { updateViewport } = useMapSettingsActions();
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
+  const [isSubFormExpanded, setIsSubFormExpanded] = useState(false);
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -270,6 +275,15 @@ const PathStepItem = ({
     pathStepMetadata.trackName &&
     !pathStepMetadata.isValidLocalTrackName;
 
+  const isOpValid = !isInvalid && !!pathStep.location;
+
+  const opStatusIcon = (
+    <span className={cx('path-step-op-status-icon', { recognized: isOpValid })}>
+      <Infrastructure size={isOpValid ? 'sm' : 'lg'} />
+      {isOpValid && <Check size="sm" className="path-step-op-status-badge" />}
+    </span>
+  );
+
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
@@ -414,6 +428,7 @@ const PathStepItem = ({
               <ComboBox
                 id={`pathStep-name-${pathStep.key}`}
                 data-testid="path-step-combo-box"
+                leadingContent={opStatusIcon}
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
                 suggestions={visibleSuggestions}
@@ -535,6 +550,19 @@ const PathStepItem = ({
           small
           data-testid="stop-pass-segmented-control"
         />
+        <button
+          type="button"
+          className="path-step-subform-toggle"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsSubFormExpanded((prev) => !prev);
+          }}
+          aria-expanded={isSubFormExpanded}
+          aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+          data-testid="path-step-subform-toggle"
+        >
+          {isSubFormExpanded ? <ChevronUp size="sm" /> : <ChevronDown size="sm" />}
+        </button>
         <div className="map-interactions">
           <button
             type="button"
