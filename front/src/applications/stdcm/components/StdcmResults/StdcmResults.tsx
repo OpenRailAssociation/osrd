@@ -317,9 +317,9 @@ const StdcmResults = ({
   const downloadPdf = useCallback(() => {
     fileDownload(
       pdfInstance.blob!,
-      `${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`
+      `${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}${traceId ? `-${traceId}` : ''}.pdf`
     );
-  }, [pdfInstance, deploymentSettings, simulationReportSheetNumber]);
+  }, [pdfInstance, deploymentSettings, simulationReportSheetNumber, traceId]);
 
   const openSendToRailwayManagerModal = useCallback(() => {
     if (hasSimulationResults) {
