@@ -50,6 +50,23 @@ impl User {
         .await
     }
 
+    /// Updates the name of this user
+    ///
+    /// Remember a model is valid in the scope of its transaction. So better run
+    /// this method in a transaction to avoid races.
+    #[tracing::instrument(skip_all, err)]
+    pub async fn update_name(
+        &self,
+        conn: DbConnection,
+        new_name: String,
+    ) -> Result<(), database::DatabaseError> {
+        diesel::dsl::update(authn_user::table.filter(authn_user::id.eq(self.id)))
+            .set(authn_user::name.eq(&new_name))
+            .execute(conn.write().await.deref_mut())
+            .await?;
+        Ok(())
+    }
+
     /// Add one or more identity to this user
     ///
     /// Remember a model is valid in the scope of its transaction. So better run
@@ -103,6 +120,23 @@ impl User {
             .filter(authn_user_identity::user_id.eq(self.id))
             .load::<String>(conn.write().await.deref_mut())
             .await?)
+    }
+
+    /// Delete all the identities for this user
+    ///
+    /// Remember a model is valid in the scope of its transaction. So better run
+    /// this method in a transaction to avoid races.
+    #[tracing::instrument(skip_all, err)]
+    pub async fn delete_identities(
+        &self,
+        conn: DbConnection,
+    ) -> Result<(), database::DatabaseError> {
+        diesel::dsl::delete(
+            authn_user_identity::table.filter(authn_user_identity::user_id.eq(self.id)),
+        )
+        .execute(conn.write().await.deref_mut())
+        .await?;
+        Ok(())
     }
 
     /// Return the [User] with the provided identity, if any
