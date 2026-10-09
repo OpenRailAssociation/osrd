@@ -16,8 +16,10 @@ type ScenarioContextType = {
   workerStatus: WorkerStatus;
   isInfraLoaded: boolean;
   scenario: ScenarioResponse;
-  timetableId: number;
-  sandboxId: number;
+  /** Undefined when the scenario has no timetable yet */
+  timetableId?: number;
+  /** Undefined when the scenario has no timetable yet (the sandbox is linked to a timetable) */
+  sandboxId?: number;
   electricalProfileSetId?: number;
   trackSectionsLoading: boolean;
   getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
@@ -26,7 +28,7 @@ const ScenarioContext = createContext<ScenarioContextType>(null);
 
 type ScenarioContextProviderProps = {
   scenario: ScenarioResponse;
-  sandboxId: number;
+  sandboxId?: number;
   children: ReactNode;
 };
 
@@ -52,7 +54,8 @@ export const ScenarioContextProvider = ({
       workerStatus,
       isInfraLoaded: workerStatus === 'READY',
       scenario,
-      timetableId: scenario.timetable_summaries[0].id, // TODO: adapt once the front handles multiple timetable per scenario
+      // TODO(#18904): use the selected timetable instead of the first one
+      timetableId: scenario.timetable_summaries.at(0)?.id,
       sandboxId,
       electricalProfileSetId: scenario.electrical_profile_set_id,
       trackSectionsLoading,
@@ -64,10 +67,27 @@ export const ScenarioContextProvider = ({
   return <ScenarioContext.Provider value={providedContext}>{children}</ScenarioContext.Provider>;
 };
 
-export const useScenarioContext = () => {
+/**
+ * Scenario context that can be used even when the scenario has no timetable yet.
+ */
+export const useScenarioContextWithOptionalTimetable = () => {
   const context = useContext(ScenarioContext);
   if (!context) {
-    throw new Error('useScenarioContext must be used within a ScenarioContextProvider');
+    throw new Error(
+      'useScenarioContextWithOptionalTimetable must be used within a ScenarioContextProvider'
+    );
   }
   return context;
+};
+
+/**
+ * Scenario context for everything that needs a timetable.
+ */
+export const useScenarioContext = () => {
+  const context = useScenarioContextWithOptionalTimetable();
+  const { timetableId, sandboxId } = context;
+  if (timetableId === undefined || sandboxId === undefined) {
+    throw new Error('useScenarioContext must be used in a scenario with a timetable');
+  }
+  return { ...context, timetableId, sandboxId };
 };
