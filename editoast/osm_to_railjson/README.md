@@ -18,6 +18,8 @@ Example for Germany:
     cargo run --release -p osm_to_railjson -- <path/to/germany-latest.osm.pbf> <path/to/germany_railjson.json>
     ```
 	Use ```--generate-signals``` to automatically generate realistics signals.
+
+  With ```--max-route-length 30000```, you can limit the maximum route length to 30 km.
 3. Load railjson (also possible through [a script](../../scripts/load-railjson-infra.sh) or OSRD's web interface):
     ```sh
     cargo run --release -- infra import-railjson --generate "Germany" <path/to/germany_railjson.json>
