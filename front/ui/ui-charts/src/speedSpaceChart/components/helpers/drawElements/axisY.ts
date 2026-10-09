@@ -85,14 +85,4 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.lineTo(width, positionY);
   }
   ctx.stroke();
-
-  // Prevent overlapping with margin top
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
-  ctx.clearRect(MARGIN_LEFT - 6, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
-  ctx.clearRect(0, height - MARGIN_BOTTOM + 6, MARGIN_LEFT, MARGIN_BOTTOM);
-
-  ctx.fillStyle = 'rgb(182, 179, 175)';
-  ctx.textAlign = 'center';
-  ctx.shadowOffsetY = 0;
-  ctx.shadowBlur = 0;
 };
