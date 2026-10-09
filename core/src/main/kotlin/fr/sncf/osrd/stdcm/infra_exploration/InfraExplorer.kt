@@ -160,7 +160,6 @@ interface InfraExplorer {
         rawInfra: RawInfra,
         blockInfra: BlockInfra,
         index: Int,
-        backtrackLocations: List<Offset<PhysicsPath>>,
         electricalProfileMapping: ElectricalProfileMapping? = null,
     ): TrainPath
 
@@ -437,14 +436,16 @@ private class InfraExplorerImpl(
             rawInfra,
             blockInfra,
             blockRanges.size,
-            getSeenBacktrackLocations(),
             electricalProfileMapping,
         )
     }
 
-    private fun getSeenBacktrackLocations(): List<Offset<PhysicsPath>> {
+    private fun getSeenBacktrackLocations(
+        maximumPathOffset: Offset<PhysicsPath>? = null
+    ): List<Offset<PhysicsPath>> {
         return stepTracker
             .iterateSeenStepsBackwards()
+            .filter { maximumPathOffset == null || it.travelledPathOffset <= maximumPathOffset }
             .mapNotNull { if (it.isBacktracking) it.travelledPathOffset else null }
             .toList()
             .asReversed()
@@ -521,10 +522,11 @@ private class InfraExplorerImpl(
         rawInfra: RawInfra,
         blockInfra: BlockInfra,
         index: Int,
-        backtrackLocations: List<Offset<PhysicsPath>>,
         electricalProfileMapping: ElectricalProfileMapping?,
     ): TrainPath {
         val blocks = blockRanges.subList(index).toList()
+        val endOffset = blocks.last().pathEnd
+        val backtrackLocations = getSeenBacktrackLocations(endOffset)
         // TODO: Send only simulated routes, and not all explored ones
         return buildTrainPathFromBlockRanges(
             rawInfra,
@@ -547,7 +549,7 @@ private class InfraExplorerImpl(
         val backtrackLocations = reachedSteps.mapNotNull { step ->
             if (step.isBacktracking) step.travelledPathOffset else null
         }
-        return buildPathUntilIndex(rawInfra, blockInfra, nbBlocksToInclude, backtrackLocations)
+        return buildPathUntilIndex(rawInfra, blockInfra, nbBlocksToInclude)
     }
 
     /**
