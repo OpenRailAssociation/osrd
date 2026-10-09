@@ -306,7 +306,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   ctx.stroke();
 
   // we need to draw the vertical line along the axis after all the other lines to clear them without this one
-  const roundedCursorPosition = Math.round(cursorPosition * 10) / 10;
+  const roundedCursorPosition = Math.floor(cursorPosition * 10) / 10;
   const textPosition = roundedCursorPosition.toFixed(1).toString();
 
   ctx.textAlign = 'center';
