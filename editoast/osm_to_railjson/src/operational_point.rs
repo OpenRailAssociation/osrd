@@ -56,7 +56,7 @@ pub(crate) fn operational_points(
             let mut identifier_uic = uic(rel, &node_id_to_metadata);
 
             if identifier_uic.is_none() {
-                warn!("Operational point {identifier_name} has no UIC code. Setting it to None.");
+                warn!("Operational point '{identifier_name}' has no UIC code. Setting it to empty.");
             }
 
             // Check uic uniqueness. If the uic is already used, we set it to None to avoid duplicates.
