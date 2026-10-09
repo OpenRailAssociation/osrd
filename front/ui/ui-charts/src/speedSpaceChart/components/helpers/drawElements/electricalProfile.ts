@@ -27,10 +27,8 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
   ctx.translate(leftOffset, 0);
   const maxPosition = maxPositionValue(store.speeds);
   const {
-    MARGIN_TOP,
     MARGIN_BOTTOM,
     MARGIN_LEFT,
-    MARGIN_RIGHT,
     CURVE_MARGIN_SIDES,
     ELECTRICAL_PROFILES_MARGIN_TOP,
   } = MARGINS;
@@ -79,19 +77,14 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
         if (
           cursor.y &&
           cursor.x &&
-          cursor.y <= topLayer - MARGIN_BOTTOM + MARGIN_TOP &&
-          cursor.y >= topLayer - MARGIN_BOTTOM + MARGIN_TOP - ELECTRICAL_PROFILES_HEIGHT &&
+          cursor.y <= topLayer - MARGIN_BOTTOM &&
+          cursor.y >= topLayer - MARGIN_BOTTOM - ELECTRICAL_PROFILES_HEIGHT &&
           cursor.x - leftOffset >= xStart - MARGIN_LEFT &&
           cursor.x - leftOffset <= xStart + profileWidth - MARGIN_LEFT
         ) {
           // Draw selection bar
           ctx.globalAlpha = 0.2;
-          ctx.fillRect(
-            xStart,
-            MARGIN_TOP,
-            profileWidth,
-            topLayer - SELECTION_BAR_HEIGHT_AJUSTEMENT
-          );
+          ctx.fillRect(xStart, 0, profileWidth, topLayer - SELECTION_BAR_HEIGHT_AJUSTEMENT);
           ctx.globalAlpha = 1;
 
           const profileNameWidth = Math.floor(ctx.measureText(electricalProfile).width);
@@ -140,8 +133,8 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
   if (
     cursor.y &&
-    cursor.y <= topLayer - MARGIN_BOTTOM + MARGIN_TOP &&
-    cursor.y >= topLayer - MARGIN_BOTTOM + MARGIN_TOP - ELECTRICAL_PROFILES_HEIGHT &&
+    cursor.y <= topLayer - MARGIN_BOTTOM &&
+    cursor.y >= topLayer - MARGIN_BOTTOM - ELECTRICAL_PROFILES_HEIGHT &&
     currentBoundaryProfileIndex !== -1
   ) {
     const { start, end } = electricalProfiles[currentBoundaryProfileIndex].position;
@@ -160,7 +153,7 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
       const xEnd =
         positionOnGraphScale(end!, maxPosition, width, ratioX, MARGINS) ||
-        width - MARGIN_RIGHT - CURVE_MARGIN_SIDES / 2;
+        width - CURVE_MARGIN_SIDES / 2;
 
       const profileWidth = xEnd - xStart;
       const profileHeight = PROFILE_HEIGHT_MAX - heightLevelMax * 4;
@@ -179,7 +172,6 @@ export const drawElectricalProfile = ({ ctx, width, height, store }: DrawFunctio
 
   ctx.restore();
 
-  // Prevent overlapping with margins left and right
+  // Prevent overlapping with margins
   ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, MARGIN_RIGHT, height);
 };

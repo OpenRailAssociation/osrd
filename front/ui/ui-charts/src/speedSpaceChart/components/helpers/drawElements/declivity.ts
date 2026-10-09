@@ -2,7 +2,7 @@ import type { DrawFunctionParams } from '../../../types';
 import { MARGINS, SLOPE_FILL_COLOR } from '../../const';
 import { clearCanvas, maxPositionValue, slopesValues } from '../../utils';
 
-const { CURVE_MARGIN_SIDES, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
+const { CURVE_MARGIN_SIDES, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
 
 export const drawDeclivity = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const { slopes, ratioX, leftOffset } = store;
@@ -21,10 +21,10 @@ export const drawDeclivity = ({ ctx, width, height, store }: DrawFunctionParams)
   ctx.translate(leftOffset, 0);
 
   // Calculate total height available for drawing, excluding the margins
-  const availableHeight = height - MARGIN_TOP - MARGIN_BOTTOM - RIGHT_TICK_MARGINS / 2;
+  const availableHeight = height - MARGIN_BOTTOM - RIGHT_TICK_MARGINS / 2;
 
   // Calculate the vertical center of the chart
-  const centerY = MARGIN_TOP + RIGHT_TICK_MARGINS / 2 + availableHeight / 2;
+  const centerY = RIGHT_TICK_MARGINS / 2 + availableHeight / 2;
 
   ctx.fillStyle = SLOPE_FILL_COLOR;
 

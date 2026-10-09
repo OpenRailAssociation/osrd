@@ -16,12 +16,11 @@ import {
   positionToPosX,
   getCursorPosition,
   getSnappedStop,
+  getGraphWidth,
 } from '../../utils';
 
 const {
   MARGIN_LEFT,
-  MARGIN_RIGHT,
-  MARGIN_TOP,
   MARGIN_BOTTOM,
   CURVE_MARGIN_TOP,
   CURVE_MARGIN_SIDES,
@@ -136,8 +135,8 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   const maxSpeed = maxSpeedValue(store);
   const maxPosition = maxPositionValue(store.speeds);
 
-  const cursorBoxHeight = height - MARGIN_BOTTOM - MARGIN_TOP;
-  const cursorBoxWidth = width - MARGIN_LEFT - MARGIN_RIGHT;
+  const cursorBoxHeight = height - MARGIN_BOTTOM;
+  const cursorBoxWidth = width - MARGIN_LEFT;
 
   const xPositionReference = (ref: number) =>
     ref * ((cursorBoxWidth - CURVE_MARGIN_SIDES) / maxPosition) * ratioX +
@@ -145,11 +144,11 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     CURVE_MARGIN_SIDES / 2;
 
   // Skip drawing the reticle if the cursor is outside the graph
-  if (cursor.x === null || cursor.y === null) {
+  if (cursor.x === null || cursor.y === null || cursor.x < MARGIN_LEFT || cursor.y > height - MARGIN_BOTTOM) {
     return;
   }
 
-  let reticleX = cursor.x + MARGIN_LEFT;
+  let reticleX = cursor.x;
 
   let cursorPosition = getCursorPosition(cursor.x, width, store);
   if (cursorPosition < 0 || cursorPosition > maxPosition) {
@@ -159,11 +158,12 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   // Check if cursor is snapping to stop
   let snapToStop = false;
   if (layersDisplay.steps) {
-    const snappedStop = getSnappedStop(cursor.x, width, store);
+    const graphWidth = getGraphWidth(width, store.layersDisplay.declivities);
+    const snappedStop = getSnappedStop(cursor.x, graphWidth, store);
     if (snappedStop !== null) {
       snapToStop = true;
       cursorPosition = snappedStop.position.start;
-      reticleX = positionToPosX(cursorPosition, maxPosition, width, ratioX, leftOffset);
+      reticleX = positionToPosX(cursorPosition, maxPosition, graphWidth, ratioX, leftOffset) + MARGIN_LEFT;
       stopText = snappedStop.value.name;
     }
   }
@@ -227,7 +227,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   );
   speedText = speedValue.toFixed(1);
   const baseReticleY =
-    cursorBoxHeight - (speedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP) + MARGIN_TOP;
+    cursorBoxHeight - (speedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP);
 
   const prevEcoSpeed = ecoSpeeds[predecessorEcoSpeedIndex];
   const nextEcoSpeed = ecoSpeeds[predecessorEcoSpeedIndex + 1];
@@ -251,8 +251,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
 
   reticleY =
     cursorBoxHeight -
-    (ecoSpeedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP) +
-    MARGIN_TOP;
+    (ecoSpeedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP);
 
   previousGradientText = slopes.findLast(({ position }) => position.start <= cursorPosition)!.value;
 
@@ -307,7 +306,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   ctx.stroke();
 
   // we need to draw the vertical line along the axis after all the other lines to clear them without this one
-  const roundedCursorPosition = Math.round(cursorPosition * 10) / 10;
+  const roundedCursorPosition = Math.floor(cursorPosition * 10) / 10;
   const textPosition = roundedCursorPosition.toFixed(1).toString();
 
   ctx.textAlign = 'center';
@@ -339,8 +338,6 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     ctx.textAlign = 'end';
   }
   ctx.fillText(stopText, reticleX, height - MARGIN_BOTTOM + SNAPPED_STOP_TEXT_OFFSET);
-
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
 
   return {
     curveX: reticleX,

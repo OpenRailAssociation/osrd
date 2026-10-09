@@ -13,7 +13,7 @@ import {
   positionOnGraphScale,
 } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_RIGHT } = MARGINS;
+const { MARGIN_LEFT } = MARGINS;
 const LEFT_VERTICAL_LINE_HEIGHT = 24;
 const LEFT_VERTICAL_LINE_PADDING_TOP = 8;
 const RIGHT_VERTICAL_LINE_HEIGHT = 12;
@@ -129,12 +129,6 @@ export const drawPowerRestrictions = ({
 
   ctx.restore();
 
-  // prevent overlapping with margins left and right
+  // prevent overlapping with margins
   ctx.clearRect(0, 0, MARGIN_LEFT, LINEAR_LAYERS_HEIGHTS.POWER_RESTRICTIONS_HEIGHT);
-  ctx.clearRect(
-    width - MARGIN_RIGHT,
-    0,
-    MARGIN_RIGHT,
-    LINEAR_LAYERS_HEIGHTS.POWER_RESTRICTIONS_HEIGHT
-  );
 };

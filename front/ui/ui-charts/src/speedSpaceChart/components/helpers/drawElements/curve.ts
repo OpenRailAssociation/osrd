@@ -18,7 +18,7 @@ import {
   maxSpeedValue,
 } from '../../utils';
 
-const { CURVE_MARGIN_TOP, CURVE_MARGIN_SIDES } = MARGINS;
+const { CURVE_MARGIN_TOP, GRAPH_OFFSET } = MARGINS;
 
 const computeCurvePoints = (
   canvasConfig: { width: number; height: number },
@@ -28,8 +28,7 @@ const computeCurvePoints = (
   const { maxSpeed, maxPosition, ratioX } = curveConfig;
   const { width, height } = canvasConfig;
 
-  const adjustedWidth = width - CURVE_MARGIN_SIDES;
-  const halfCurveMarginSides = CURVE_MARGIN_SIDES / 2;
+  const adjustedWidth = width - GRAPH_OFFSET * 2;
   const adjustedHeight = height - CURVE_MARGIN_TOP;
   const xcoef = (adjustedWidth / maxPosition) * ratioX;
   const points: { x: number; y: number }[] = [];
@@ -37,14 +36,14 @@ const computeCurvePoints = (
   specificSpeeds.forEach(({ position, value }) => {
     // normalize speed based on range of values
     const normalizedSpeed = value / maxSpeed;
-    const x = position.start * xcoef + halfCurveMarginSides;
+    const x = position.start * xcoef + GRAPH_OFFSET;
     const y = height - normalizedSpeed * adjustedHeight;
     points.push({ x, y });
   });
 
   // Close the path
-  points.push({ x: maxPosition * xcoef + halfCurveMarginSides, y: height });
-  points.push({ x: halfCurveMarginSides, y: height });
+  points.push({ x: maxPosition * xcoef + GRAPH_OFFSET, y: height });
+  points.push({ x: GRAPH_OFFSET, y: height });
   return points;
 };
 

@@ -8,7 +8,7 @@ import {
   positionToPosX,
 } from '../../utils';
 
-const { CURVE_MARGIN_TOP, MARGIN_RIGHT, MARGIN_LEFT, MARGIN_BOTTOM, MARGIN_TOP } = MARGINS;
+const { CURVE_MARGIN_TOP, MARGIN_LEFT, MARGIN_BOTTOM } = MARGINS;
 const GRADIENT_HEIGHT = 16;
 const TRAIN_LENGTH_MARKER_HEIGHT = 8;
 
@@ -22,7 +22,7 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
   ctx.save();
   ctx.translate(leftOffset, 0);
 
-  const realHeight = height - MARGIN_BOTTOM - MARGIN_TOP;
+  const realHeight = height - MARGIN_BOTTOM;
   const maxSpeed = maxSpeedValue(store);
   const maxPosition = maxPositionValue(store.speeds);
 
@@ -37,7 +37,7 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
     const currentBoundary = isLastValue ? maxPosition : mrsp.boundaries[i];
     const currentBoundaryX = positionToPosX(currentBoundary, maxPosition, width, ratioX);
 
-    const speedY = realHeight - (speed / maxSpeed) * (realHeight - CURVE_MARGIN_TOP) + MARGIN_TOP;
+    const speedY = realHeight - (speed / maxSpeed) * (realHeight - CURVE_MARGIN_TOP);
     // Draw vertical line joining 2 speed limits
     if (previousSpeedY !== null) {
       ctx.beginPath();
@@ -96,5 +96,4 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
 
   // Prevent overlapping with y axis
   ctx.clearRect(0, 0, MARGIN_LEFT, height);
-  ctx.clearRect(width - MARGIN_RIGHT, 0, MARGIN_RIGHT, height);
 };

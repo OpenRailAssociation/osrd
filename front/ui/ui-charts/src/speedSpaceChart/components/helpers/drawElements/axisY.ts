@@ -1,16 +1,31 @@
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, TICK_TITLE_MARGINS } from '../../const';
+import { MARGINS } from '../../const';
 import { clearCanvas, maxSpeedValue } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, CURVE_MARGIN_TOP, MARGIN_RIGHT } = MARGINS;
-const { Y_LEFT_VERTICAL, Y_LEFT_HORIZONTAL } = TICK_TITLE_MARGINS;
+const { MARGIN_LEFT, MARGIN_BOTTOM, CURVE_MARGIN_TOP } = MARGINS;
 const TICK_WIDTH = 6;
-const TEXT_POSITION_X = 36;
+const TEXT_POSITION_X = MARGIN_LEFT - TICK_WIDTH - 6;
 
 export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const maxSpeed = maxSpeedValue(store);
+  const { cursor } = store;
 
   clearCanvas(ctx, width, height);
+  ctx.save();
+
+  // Draw background
+  const cursorHover = cursor.x !== null && cursor.y !== null && cursor.x < MARGIN_LEFT && cursor.y < height - MARGIN_BOTTOM;
+  ctx.fillStyle = cursorHover ? 'white' : 'rgb(247, 246, 238)';
+  ctx.fillRect(0, 0, MARGIN_LEFT, height);
+
+  // Draw separator line
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.lineWidth = 0.5;
+  ctx.moveTo(MARGIN_LEFT, 0);
+  ctx.lineTo(MARGIN_LEFT, height);
+  ctx.closePath();
+  ctx.stroke();
 
   ctx.strokeStyle = 'rgb(121, 118, 113)';
   ctx.lineWidth = 0.5;
@@ -31,11 +46,11 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   const maxTickSpeed = nbTicks * tickScale;
   const ratioRoundPositions = maxTickSpeed / maxSpeed;
   const ticksOffset =
-    ((height - MARGIN_BOTTOM - MARGIN_TOP - CURVE_MARGIN_TOP) * ratioRoundPositions) / nbTicks;
+    ((height - MARGIN_BOTTOM - CURVE_MARGIN_TOP) * ratioRoundPositions) / nbTicks;
 
   // Draw ticks with text
   ctx.beginPath();
-  for (let i = 0; i <= nbTicks; i++) {
+  for (let i = 1; i <= nbTicks; i++) {
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT - TICK_WIDTH, positionY);
     ctx.lineTo(MARGIN_LEFT, positionY);
@@ -55,7 +70,7 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
   for (let i = 3; i <= nbTicks; i += 3) {
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT, positionY);
-    ctx.lineTo(width - MARGIN_RIGHT, positionY);
+    ctx.lineTo(width, positionY);
   }
   ctx.stroke();
 
@@ -68,23 +83,30 @@ export const drawAxisY = ({ ctx, width, height, store }: DrawFunctionParams) => 
     }
     const positionY = height - MARGIN_BOTTOM - ticksOffset * i;
     ctx.moveTo(MARGIN_LEFT, positionY);
-    ctx.lineTo(width - MARGIN_RIGHT, positionY);
+    ctx.lineTo(width, positionY);
   }
   ctx.stroke();
 
-  // Prevent overlapping with margin top
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
-  ctx.clearRect(MARGIN_LEFT - 6, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
-  ctx.clearRect(0, height - MARGIN_BOTTOM + 6, MARGIN_LEFT, MARGIN_BOTTOM);
+  if (cursorHover) {
+    const unitBoxWidth = 57;
+    const unitBoxHeight = 32;
+    const unitBoxOffset = 8;
+    const unitBoxPostionX = MARGIN_LEFT + unitBoxOffset;
+    const unitBoxPositionY = (height - MARGIN_BOTTOM - unitBoxHeight) / 2;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+    ctx.beginPath();
+    ctx.roundRect(unitBoxPostionX, unitBoxPositionY, unitBoxWidth, unitBoxHeight, 4);
+    ctx.fill();
 
-  ctx.fillStyle = 'rgb(182, 179, 175)';
-  ctx.textAlign = 'center';
-  ctx.shadowOffsetY = 0;
-  ctx.shadowBlur = 0;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    ctx.font = 'normal 14px IBM Plex Sans';
+    ctx.fillText("km/h", unitBoxPostionX + unitBoxWidth / 2, unitBoxPositionY + unitBoxHeight / 2 + 4);
+  }
 
-  // Draw km/h axis title
-  ctx.beginPath();
-  ctx.fillText('km/h', Y_LEFT_VERTICAL, Y_LEFT_HORIZONTAL);
-  ctx.closePath();
-  ctx.stroke();
+  ctx.restore();
 };

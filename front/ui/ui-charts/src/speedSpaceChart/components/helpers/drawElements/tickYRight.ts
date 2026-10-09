@@ -1,9 +1,8 @@
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
+import { MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
 import { clearCanvas, slopesValues } from '../../utils';
 
-const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
-const { Y_RIGHT_VERTICAL, Y_RIGHT_HORIZONTAL } = TICK_TITLE_MARGINS;
+const { MARGIN_LEFT, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
 
 export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams) => {
   clearCanvas(ctx, width, height);
@@ -11,13 +10,12 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
   const { minGradient, maxGradient } = slopesValues(store);
 
   // Calculate total height available for ticks excluding the margins
-  const availableHeight = height - MARGIN_TOP - MARGIN_BOTTOM - RIGHT_TICK_MARGINS;
+  const availableHeight = height - MARGIN_BOTTOM - RIGHT_TICK_MARGINS;
 
   const tickSpacing = availableHeight / 12; // 12 intervals for 13 ticks
 
   // Calculate the vertical center of the chart
-  const centerY =
-    MARGIN_TOP + RIGHT_TICK_MARGINS / 2 + availableHeight / 2 + RIGHT_TICK_HEIGHT_OFFSET;
+  const centerY = RIGHT_TICK_MARGINS / 2 + availableHeight / 2 + RIGHT_TICK_HEIGHT_OFFSET;
 
   const textOffsetX = width - MARGIN_LEFT + 10;
   const tickWidth = 6;
@@ -46,13 +44,10 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
 
     ctx.fillStyle = `rgba(182, 179, 175, ${opacity})`;
     ctx.fillText(text, textOffsetX, textPositionYRight);
-
-    ctx.fillText('‰', width - Y_RIGHT_HORIZONTAL, Y_RIGHT_VERTICAL);
   }
   ctx.stroke();
 
   // prevent overlapping with margin top
-  ctx.clearRect(0, 0, width, MARGIN_TOP);
   ctx.clearRect(width - MARGIN_LEFT, height - MARGIN_BOTTOM, width, MARGIN_BOTTOM);
   ctx.clearRect(0, height - MARGIN_BOTTOM + 6, width - MARGIN_LEFT, MARGIN_BOTTOM);
 };
