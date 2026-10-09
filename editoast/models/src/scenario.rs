@@ -1,7 +1,5 @@
 use std::ops::DerefMut as _;
 
-use chrono::DateTime;
-use chrono::Utc;
 use diesel::ExpressionMethods as _;
 use diesel::QueryDsl as _;
 use diesel_async::RunQueryDsl as _;
@@ -12,6 +10,7 @@ use utoipa::ToSchema;
 use database::DbConnection;
 use editoast_derive::Model;
 
+use crate::Timestamp;
 use crate::prelude::*;
 use crate::project::Project;
 use crate::study::Study;
@@ -27,8 +26,8 @@ pub struct Scenario {
     pub infra_id: i64,
     pub name: String,
     pub description: String,
-    pub creation_date: DateTime<Utc>,
-    pub last_modification: DateTime<Utc>,
+    pub creation_date: Timestamp,
+    pub last_modification: Timestamp,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
     pub timetable_id: i64,
@@ -106,7 +105,7 @@ impl Scenario {
             };
 
             Scenario::changeset()
-                .last_modification(Utc::now())
+                .last_modification(Timestamp::now())
                 .update(&mut conn, id)
                 .await?;
 
@@ -127,8 +126,8 @@ impl Scenario {
         Self::changeset()
             .name(name.into())
             .description(String::new())
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
+            .creation_date(Timestamp::now())
+            .last_modification(Timestamp::now())
             .tags(Tags::default())
             .study_id(study_id)
             .infra_id(infra_id)

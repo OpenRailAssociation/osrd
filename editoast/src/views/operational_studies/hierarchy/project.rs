@@ -18,11 +18,11 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use models::Document;
+use models::Timestamp;
 use models::prelude::*;
 use models::project::Project;
 use models::tags::Tags;
@@ -93,8 +93,8 @@ impl ProjectCreateForm {
             .budget(self.budget)
             .image(self.image)
             .tags(self.tags)
-            .creation_date(Utc::now())
-            .last_modification(Utc::now())
+            .creation_date(Timestamp::now())
+            .last_modification(Timestamp::now())
     }
 }
 
@@ -339,7 +339,7 @@ impl ProjectPatchForm {
             .flat_budget(self.budget)
             .flat_image(self.image)
             .flat_tags(self.tags)
-            .last_modification(Utc::now())
+            .last_modification(Timestamp::now())
     }
 }
 

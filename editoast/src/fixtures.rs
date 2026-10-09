@@ -27,6 +27,7 @@ use schemas::rolling_stock::SubCategoryColor;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use models::Infra;
+use models::Timestamp;
 use models::TrainScheduleSet;
 
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
@@ -198,8 +199,8 @@ pub fn scenario_changeset(
     Scenario::changeset()
         .name(name.to_string())
         .description("test_scenario description".to_string())
-        .creation_date(Utc::now())
-        .last_modification(Utc::now())
+        .creation_date(Timestamp::now())
+        .last_modification(Timestamp::now())
         .tags(Tags::default())
         .timetable_id(timetable_id)
         .study_id(study_id)
