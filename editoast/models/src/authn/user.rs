@@ -14,7 +14,7 @@ use itertools::Itertools as _;
 
 #[derive(Debug, Clone, PartialEq, Eq, Model)]
 #[model(table = database::tables::authn_user)]
-#[model(gen(ops = rd, batch_ops = r, list))]
+#[model(gen(ops = rud, batch_ops = r, list))]
 pub struct User {
     pub id: i64,
     pub name: String,
@@ -24,6 +24,16 @@ pub struct User {
 pub enum AddIdentitiesError {
     #[error("duplicate identity \"{0}\"")]
     DuplicateIdentity(String),
+    #[error(transparent)]
+    #[from(forward)]
+    Error(crate::Error),
+}
+
+#[derive(Debug, thiserror::Error, derive_more::From)]
+#[cfg_attr(test, derive(PartialEq))]
+pub enum RemoveIdentitiesError {
+    #[error("cannot remove all the identities of user \"{user_id}\"")]
+    NoRemainingIdentities { user_id: i64 },
     #[error(transparent)]
     #[from(forward)]
     Error(crate::Error),
@@ -87,6 +97,41 @@ impl User {
             }
             Err(err) => Err(AddIdentitiesError::from(err)),
         }
+    }
+
+    /// Removes the provided identities from this user and returns the removed identities.
+    ///
+    /// Identities which do not belong to this user are ignored.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RemoveIdentitiesError::NoRemainingIdentities`] without removing anything if the
+    /// operation would leave this user with no identities. Database errors are propagated.
+    #[tracing::instrument(skip_all, err)]
+    pub async fn remove_identities(
+        &self,
+        conn: DbConnection,
+        identities: impl IntoIterator<Item = String>,
+    ) -> Result<Vec<String>, RemoveIdentitiesError> {
+        conn.transaction::<_, RemoveIdentitiesError, _, _>(async move |conn| {
+            let existing_identities = self.get_identities(conn.clone()).await?;
+            let identities_to_remove = identities
+                .into_iter()
+                .filter(|identity| existing_identities.contains(identity))
+                .collect_vec();
+            if existing_identities == identities_to_remove {
+                return Err(RemoveIdentitiesError::NoRemainingIdentities { user_id: self.id });
+            }
+            diesel::dsl::delete(
+                authn_user_identity::table
+                    .filter(authn_user_identity::user_id.eq(self.id))
+                    .filter(authn_user_identity::identity.eq_any(&identities_to_remove)),
+            )
+            .execute(&mut conn.write().await)
+            .await?;
+            Ok(identities_to_remove)
+        })
+        .await
     }
 
     /// Return the identities for this user
@@ -255,6 +300,7 @@ impl UserWithIdentities {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::prelude::*;
     use futures::stream::TryStreamExt as _;
     use pretty_assertions::assert_eq;
 
@@ -358,6 +404,175 @@ mod tests {
                 .sorted()
                 .collect_vec(),
             vec!["grosminet", "titi", "toto"]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn remove_identities() {
+        let pool = database::DbConnectionPool::for_tests();
+        let conn = pool.get_ok();
+
+        let user = User::register(
+            conn.clone(),
+            vec![
+                "first_head".to_string(),
+                "second_head".to_string(),
+                "third_head".to_string(),
+            ],
+            "Lernaean Hydra".to_owned(),
+        )
+        .await
+        .unwrap();
+
+        let removed_identities = user
+            .remove_identities(
+                conn.clone(),
+                vec!["first_head".to_owned(), "third_head".to_owned()],
+            )
+            .await
+            .expect("removing existing identities should succeed");
+
+        assert_eq!(
+            vec!["second_head".to_owned()],
+            user.get_identities(conn)
+                .await
+                .unwrap()
+                .into_iter()
+                .sorted()
+                .collect_vec(),
+        );
+        assert_eq!(removed_identities, vec!["first_head", "third_head"]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn remove_identity_of_another_user() {
+        let pool = database::DbConnectionPool::for_tests();
+        let conn = pool.get_ok();
+
+        let user = User::register(
+            conn.clone(),
+            vec![
+                "first_head".to_string(),
+                "second_head".to_string(),
+                "third_head".to_string(),
+            ],
+            "Lernaean Hydra".to_owned(),
+        )
+        .await
+        .unwrap();
+
+        let user_2 = User::register(
+            conn.clone(),
+            vec!["Alcides".to_string()],
+            "Heracles".to_owned(),
+        )
+        .await
+        .unwrap();
+
+        let removed_identities = user
+            .remove_identities(
+                conn.clone(),
+                vec!["Alcides".to_string(), "second_head".to_string()],
+            )
+            .await
+            .expect("removing existing identities should succeed");
+
+        // The returned identities should be up to date:
+        assert_eq!(
+            vec!["first_head", "third_head"],
+            user.get_identities(conn.clone())
+                .await
+                .unwrap()
+                .into_iter()
+                .sorted()
+                .collect_vec(),
+        );
+
+        // The other identities that were provided should have been removed:
+        assert_eq!(removed_identities, vec!["second_head"]);
+
+        // The other user should still own its identity:
+        assert_eq!(
+            user_2
+                .get_identities(conn.clone())
+                .await
+                .unwrap()
+                .into_iter()
+                .sorted()
+                .collect_vec(),
+            vec!["Alcides"]
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn remove_nonexistent_identity() {
+        let pool = database::DbConnectionPool::for_tests();
+        let conn = pool.get_ok();
+
+        let user = User::register(
+            conn.clone(),
+            vec!["Craig Steven Wright".to_string(), "Craig".to_string()],
+            "Craig Wright".to_owned(),
+        )
+        .await
+        .unwrap();
+
+        let removed_identities = user
+            .remove_identities(
+                conn.clone(),
+                vec!["Satoshi Nakamoto".to_string(), "Craig".to_string()],
+            )
+            .await
+            .expect("trying to remove a nonexistent identity should succeed");
+
+        // The other valid identities that were given should have been removed:
+        assert_eq!(
+            vec!["Craig Steven Wright"],
+            user.get_identities(conn)
+                .await
+                .unwrap()
+                .into_iter()
+                .sorted()
+                .collect_vec(),
+        );
+
+        assert_eq!(removed_identities, vec!["Craig"]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn remove_last_identity() {
+        let pool = database::DbConnectionPool::for_tests();
+        let conn = pool.get_ok();
+
+        let user = User::register(
+            conn.clone(),
+            vec!["The Mittani".to_string()],
+            "Goonswarm Overlord".to_owned(),
+        )
+        .await
+        .unwrap();
+
+        let result = user
+            .remove_identities(conn.clone(), vec!["The Mittani".to_string()])
+            .await;
+
+        assert_eq!(
+            result,
+            Err(RemoveIdentitiesError::NoRemainingIdentities { user_id: user.id })
+        );
+
+        // The user should still exist:
+        let existing_user = User::retrieve(conn.clone(), user.id).await.unwrap();
+        assert!(existing_user.is_some());
+
+        // The user should have the same identities as before:
+        assert_eq!(
+            user.get_identities(conn)
+                .await
+                .unwrap()
+                .into_iter()
+                .collect_vec(),
+            ["The Mittani"]
         );
     }
 
