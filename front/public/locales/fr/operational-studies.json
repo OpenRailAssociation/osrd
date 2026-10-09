@@ -189,6 +189,8 @@
       "suggestions": "Suggestions",
       "todo": "À traiter"
     },
+    "scenarioAddCalendarModalTitle": "Nouvelle grille calendaire",
+    "scenarioAddHourlyPatternModalTitle": "Nouvelle trame",
     "scenarioCancel": "Annuler",
     "scenarioCreateButton": "Créer le scénario",
     "scenarioCreationTitle": "Créer un scénario",
@@ -206,7 +208,11 @@
     "scenarioNameInvalid": "Vous devez renseigner un nom pour le scénario qui ne dépasse pas 128 caractères",
     "scenarioNoDescription": "Pas de description",
     "scenarioNoTags": "Pas d'étiquette",
+    "scenarioNoTimetableAddCalendar": "Ajouter une grille calendaire",
+    "scenarioNoTimetableAddHourlyPattern": "Ajouter une trame",
     "scenarioTags": "Étiquettes",
+    "scenarioTimetableNameInvalid": "Un nom est requis",
+    "scenarioTimetableNameLabel": "Nom",
     "scenarioTimetableSections": {
       "CALENDAR": {
         "empty": "Pas de grille calendaire",
