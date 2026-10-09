@@ -71,7 +71,7 @@ pub(crate) fn operational_points(
             }
 
             // Check domestic code uniqueness. If the domestic code is already used, we add a suffix to it to avoid duplicates.
-            let country_code: NonBlankString = identifier_uic.map_or("??".into(), contry_code);
+            let country_code: NonBlankString = identifier_uic.and_then(country_code).unwrap_or_else(|| "??".into());
             let mut suffix = 1;
             let mut unique_main_code = main_code.clone();
             loop {
@@ -246,83 +246,79 @@ fn name(tags: &osm4routing::osmpbfreader::Tags) -> NonBlankString {
 }
 
 /// Extract country code from UIC code. The country code is encoded in the first two digits of the UIC code.
-/// If the UIC code is not recognized, we return "??" and log a warning.
-fn contry_code(uic: u32) -> NonBlankString {
+/// If the UIC code is not recognized, we return None.
+fn country_code(uic: u32) -> Option<NonBlankString> {
     let uic = uic.to_string();
     let uic_country = uic.chars().take(2).collect::<String>();
     // Source: https://en.wikipedia.org/wiki/List_of_UIC_country_codes
     match uic_country.as_str() {
-        "10" => "FI", // Finland
-        "20" => "RU", // Russia
-        "21" => "BY", // Belarus
-        "22" => "UA", // Ukraine
-        "23" => "MD", // Moldova
-        "24" => "LT", // Lithuania
-        "25" => "LV", // Latvia
-        "26" => "EE", // Estonia
-        "27" => "KZ", // Kazakhstan
-        "28" => "GE", // Georgia
-        "29" => "UZ", // Uzbekistan
-        "30" => "KP", // North Korea
-        "31" => "MN", // Mongolia
-        "32" => "VN", // Vietnam
-        "33" => "CN", // China
-        "34" => "LA", // Laos
-        "40" => "CU", // Cuba
-        "41" => "AL", // Albania
-        "42" => "JP", // Japan
-        "44" => "BA", // Bosnia and Herzegovina, Serb Republic of
-        "49" => "BA", // Bosnia and Herzegovina
-        "50" => "BA", // Bosnia and Herzegovina, Muslim-Croat Federation
-        "51" => "PL", // Poland
-        "52" => "BG", // Bulgaria
-        "53" => "RO", // Romania
-        "54" => "CZ", // Czech Republic
-        "55" => "HU", // Hungary
-        "56" => "SK", // Slovakia
-        "57" => "AZ", // Azerbaijan
-        "58" => "AM", // Armenia
-        "59" => "KG", // Kyrgyzstan
-        "60" => "IE", // Ireland
-        "61" => "KR", // South Korea
-        "62" => "ME", // Montenegro
-        "65" => "MK", // North Macedonia
-        "66" => "TJ", // Tajikistan
-        "67" => "TM", // Turkmenistan
-        "68" => "AF", // Afghanistan
-        "70" => "GB", // United Kingdom
-        "71" => "ES", // Spain
-        "72" => "RS", // Serbia
-        "73" => "GR", // Greece
-        "74" => "SE", // Sweden
-        "75" => "TR", // Turkey
-        "76" => "NO", // Norway
-        "78" => "HR", // Croatia
-        "79" => "SI", // Slovenia
-        "80" => "DE", // Germany
-        "81" => "AT", // Austria
-        "82" => "LU", // Luxembourg
-        "83" => "IT", // Italy
-        "84" => "NL", // Netherlands
-        "85" => "CH", // Switzerland
-        "86" => "DK", // Denmark
-        "87" => "FR", // France
-        "88" => "BE", // Belgium
-        "89" => "TZ", // Tanzania
-        "90" => "EG", // Egypt
-        "91" => "TN", // Tunisia
-        "92" => "DZ", // Algeria
-        "93" => "MA", // Morocco
-        "94" => "PT", // Portugal
-        "95" => "IL", // Israel
-        "96" => "IR", // Iran
-        "97" => "SY", // Syria
-        "98" => "LB", // Lebanon
-        "99" => "IQ", // Iraq
-        _ => {
-            warn!("UIC code '{uic}' has an unknown country code {uic_country}");
-            "??"
-        }
+        "10" => Some("FI".into()), // Finland
+        "20" => Some("RU".into()), // Russia
+        "21" => Some("BY".into()), // Belarus
+        "22" => Some("UA".into()), // Ukraine
+        "23" => Some("MD".into()), // Moldova
+        "24" => Some("LT".into()), // Lithuania
+        "25" => Some("LV".into()), // Latvia
+        "26" => Some("EE".into()), // Estonia
+        "27" => Some("KZ".into()), // Kazakhstan
+        "28" => Some("GE".into()), // Georgia
+        "29" => Some("UZ".into()), // Uzbekistan
+        "30" => Some("KP".into()), // North Korea
+        "31" => Some("MN".into()), // Mongolia
+        "32" => Some("VN".into()), // Vietnam
+        "33" => Some("CN".into()), // China
+        "34" => Some("LA".into()), // Laos
+        "40" => Some("CU".into()), // Cuba
+        "41" => Some("AL".into()), // Albania
+        "42" => Some("JP".into()), // Japan
+        "44" => Some("BA".into()), // Bosnia and Herzegovina, Serb Republic of
+        "49" => Some("BA".into()), // Bosnia and Herzegovina
+        "50" => Some("BA".into()), // Bosnia and Herzegovina, Muslim-Croat Federation
+        "51" => Some("PL".into()), // Poland
+        "52" => Some("BG".into()), // Bulgaria
+        "53" => Some("RO".into()), // Romania
+        "54" => Some("CZ".into()), // Czech Republic
+        "55" => Some("HU".into()), // Hungary
+        "56" => Some("SK".into()), // Slovakia
+        "57" => Some("AZ".into()), // Azerbaijan
+        "58" => Some("AM".into()), // Armenia
+        "59" => Some("KG".into()), // Kyrgyzstan
+        "60" => Some("IE".into()), // Ireland
+        "61" => Some("KR".into()), // South Korea
+        "62" => Some("ME".into()), // Montenegro
+        "65" => Some("MK".into()), // North Macedonia
+        "66" => Some("TJ".into()), // Tajikistan
+        "67" => Some("TM".into()), // Turkmenistan
+        "68" => Some("AF".into()), // Afghanistan
+        "70" => Some("GB".into()), // United Kingdom
+        "71" => Some("ES".into()), // Spain
+        "72" => Some("RS".into()), // Serbia
+        "73" => Some("GR".into()), // Greece
+        "74" => Some("SE".into()), // Sweden
+        "75" => Some("TR".into()), // Turkey
+        "76" => Some("NO".into()), // Norway
+        "78" => Some("HR".into()), // Croatia
+        "79" => Some("SI".into()), // Slovenia
+        "80" => Some("DE".into()), // Germany
+        "81" => Some("AT".into()), // Austria
+        "82" => Some("LU".into()), // Luxembourg
+        "83" => Some("IT".into()), // Italy
+        "84" => Some("NL".into()), // Netherlands
+        "85" => Some("CH".into()), // Switzerland
+        "86" => Some("DK".into()), // Denmark
+        "87" => Some("FR".into()), // France
+        "88" => Some("BE".into()), // Belgium
+        "89" => Some("TZ".into()), // Tanzania
+        "90" => Some("EG".into()), // Egypt
+        "91" => Some("TN".into()), // Tunisia
+        "92" => Some("DZ".into()), // Algeria
+        "93" => Some("MA".into()), // Morocco
+        "94" => Some("PT".into()), // Portugal
+        "95" => Some("IL".into()), // Israel
+        "96" => Some("IR".into()), // Iran
+        "97" => Some("SY".into()), // Syria
+        "98" => Some("LB".into()), // Lebanon
+        "99" => Some("IQ".into()), // Iraq
+        _ => None,
     }
-    .into()
 }
