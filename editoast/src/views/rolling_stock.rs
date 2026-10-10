@@ -26,7 +26,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use image::DynamicImage;
 use image::GenericImage as _;
@@ -263,7 +263,7 @@ pub(in crate::views) async fn get_by_name(
     )
 )]
 pub(in crate::views) async fn get_power_restrictions(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<Json<Vec<String>>> {
     let conn = &mut db_pool.get().await?;
     let power_restrictions = RollingStock::get_power_restrictions(conn).await?;

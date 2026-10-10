@@ -260,7 +260,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn register_twice_fails() {
-        let pool = database::DbConnectionPoolV2::for_tests();
+        let pool = database::DbConnectionPool::for_tests();
         let conn = pool.get_ok();
 
         let identity = "toto".to_string();
@@ -295,7 +295,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream() {
-        let pool = database::DbConnectionPoolV2::for_tests();
+        let pool = database::DbConnectionPool::for_tests();
         let conn = pool.get_ok();
 
         let alice = User::register(
@@ -332,7 +332,7 @@ mod tests {
     }
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn add_duplicate_identity_fails() {
-        let pool = database::DbConnectionPoolV2::for_tests();
+        let pool = database::DbConnectionPool::for_tests();
         let conn = pool.get_ok();
 
         let user = User::register(conn.clone(), vec!["toto".to_owned()], "Toto".to_owned())
@@ -363,7 +363,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream_by_id() {
-        let pool = database::DbConnectionPoolV2::for_tests();
+        let pool = database::DbConnectionPool::for_tests();
         let conn = pool.get_ok();
 
         let alice = User::register(
@@ -400,7 +400,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stream_by_identity() {
-        let pool = database::DbConnectionPoolV2::for_tests();
+        let pool = database::DbConnectionPool::for_tests();
         let conn = pool.get_ok();
 
         let alice = User::register(

@@ -127,11 +127,11 @@ pub mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_retrieve() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let created_project = Project::fake("test_project_name")
             .create(&mut db_pool.get_ok())
             .await
@@ -154,7 +154,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sort_study() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let created_project = Project::fake("test_project_name")
             .create(&mut db_pool.get_ok())

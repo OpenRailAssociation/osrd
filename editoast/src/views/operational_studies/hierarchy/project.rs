@@ -20,7 +20,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::Utc;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use models::Document;
 use models::prelude::*;
@@ -288,7 +288,7 @@ pub(in crate::views) async fn get(
 )]
 pub(in crate::views) async fn delete(
     Path(project_id): Path<i64>,
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<impl IntoResponse> {
     db_pool
         .get()
@@ -358,7 +358,7 @@ impl ProjectPatchForm {
     )
 )]
 pub(in crate::views) async fn patch(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(project_id): Path<i64>,
     Json(mut form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {

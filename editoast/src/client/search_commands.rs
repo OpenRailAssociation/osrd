@@ -5,7 +5,7 @@ use std::sync::Arc;
 use clap::Args;
 use clap::Subcommand;
 use colored::Colorize as _;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl as _;
 use search::SearchConfigStore as _;
@@ -112,7 +112,7 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> anyhow::Result<()> {
 
 pub async fn refresh_search_tables(
     args: RefreshArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let objects = if args.objects.is_empty() {
         SearchConfigFinder::all()

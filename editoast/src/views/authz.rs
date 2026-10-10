@@ -26,7 +26,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use futures::TryStreamExt as _;
 use itertools::Itertools as _;
@@ -1006,7 +1006,7 @@ impl RevokeBody {
     ))
 )]
 pub(in crate::views) async fn list_groups(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<Json<Vec<Group>>> {
     let mut groups = Group::list(&mut db_pool.get().await?, SelectionSettings::new()).await?;
 

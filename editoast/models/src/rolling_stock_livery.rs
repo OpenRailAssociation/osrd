@@ -60,12 +60,12 @@ impl RollingStockLivery {
 pub mod tests {
     use super::*;
 
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use schemas::RollingStock;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_delete_rolling_stock_livery() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let image = crate::Document::changeset()
             .content_type("text/fake_data".into())

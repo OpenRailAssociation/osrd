@@ -243,7 +243,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "search")]
@@ -360,7 +360,7 @@ struct SearchDBResult {
     )
 )]
 pub(in crate::views) async fn search(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,

@@ -1,6 +1,6 @@
 use axum::extract::Query;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use models::prelude::*;
@@ -90,7 +90,7 @@ pub(in crate::views) struct TrainScheduleSetIdParam {
     ),
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(train_schedule_set_form): Json<TrainScheduleSetForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -125,7 +125,7 @@ pub(in crate::views) struct TrainScheduleSetQueryParams {
     ),
 )]
 pub(in crate::views) async fn get_by_id(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
@@ -153,7 +153,7 @@ pub(in crate::views) async fn get_by_id(
     ),
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(TrainScheduleSetQueryParams {
         catalog_entry_id,
         published,
@@ -222,7 +222,7 @@ impl TrainScheduleSetUpdateForm {
     ),
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
@@ -255,7 +255,7 @@ pub(in crate::views) async fn put(
     ),
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
@@ -284,7 +284,7 @@ pub(in crate::views) async fn delete(
     )
 )]
 pub(in crate::views) async fn post_train_schedule(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
@@ -325,7 +325,7 @@ pub(in crate::views) async fn post_train_schedule(
     )
 )]
 pub(in crate::views) async fn get_train_schedules(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,

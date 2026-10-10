@@ -224,9 +224,9 @@ impl DerefMut for WriteHandle {
 /// This ensures complete isolation between tests without requiring transaction rollbacks.
 /// The test database is automatically created when the pool is initialized and cleaned up when dropped.
 ///
-/// A new pool is expected to be initialized for each test, see `DbConnectionPoolV2::for_tests`.
+/// A new pool is expected to be initialized for each test, see `DbConnectionPool::for_tests`.
 #[derive(Clone)]
-pub struct DbConnectionPoolV2 {
+pub struct DbConnectionPool {
     pool: Arc<Pool<AsyncPgConnection>>,
     #[cfg(any(test, feature = "testing"))]
     osrd_pool: Arc<Pool<AsyncPgConnection>>,
@@ -235,7 +235,7 @@ pub struct DbConnectionPoolV2 {
 }
 
 #[cfg(any(test, feature = "testing"))]
-impl Default for DbConnectionPoolV2 {
+impl Default for DbConnectionPool {
     fn default() -> Self {
         Self::for_tests()
     }
@@ -254,15 +254,10 @@ pub enum DatabasePoolError {
     DatabaseError(DatabaseError),
 }
 
-impl DbConnectionPoolV2 {
-    /// Get inner pool for retro compatibility
-    pub fn pool_v1(&self) -> Arc<Pool<AsyncPgConnection>> {
-        self.pool.clone()
-    }
-
+impl DbConnectionPool {
     /// Creates a connection pool with the given settings
     ///
-    /// In a testing environment, you should use `DbConnectionPoolV2::for_tests` instead.
+    /// In a testing environment, you should use `DbConnectionPool::for_tests` instead.
     pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, DatabasePoolBuildError> {
         let pool = create_connection_pool(url, max_size)?.into();
         #[cfg(any(test, feature = "testing"))]
@@ -312,7 +307,7 @@ impl DbConnectionPoolV2 {
     ///
     /// In unit tests, this is the preferred way to get a connection
     ///
-    /// See [DbConnectionPoolV2::get] for more information on how connections should be used
+    /// See [DbConnectionPool::get] for more information on how connections should be used
     /// in tests.
     #[cfg(any(test, feature = "testing"))]
     pub fn get_ok(&self) -> DbConnection {
@@ -339,10 +334,10 @@ impl DbConnectionPoolV2 {
     ///    #[cfg(not(any(test, feature = "testing")))]
     ///    let pool = {
     ///        let url = "postgresql://postgres:password@localhost/osrd".parse().unwrap();
-    ///        futures::executor::block_on(database::DbConnectionPoolV2::try_initialize(url, 1)).unwrap()
+    ///        futures::executor::block_on(database::DbConnectionPool::try_initialize(url, 1)).unwrap()
     ///    };
     ///    #[cfg(any(test, feature = "testing"))]
-    ///    let pool = database::DbConnectionPoolV2::for_tests();
+    ///    let pool = database::DbConnectionPool::for_tests();
     ///    let operations =
     ///        items.into_iter()
     ///            .zip(pool.iter_conn())
@@ -394,7 +389,7 @@ impl DbConnectionPoolV2 {
 }
 
 #[cfg(any(test, feature = "testing"))]
-impl Drop for DbConnectionPoolV2 {
+impl Drop for DbConnectionPool {
     fn drop(&mut self) {
         use tokio::sync::oneshot::error::TryRecvError;
 
@@ -503,7 +498,7 @@ mod tests {
     async fn connection_pool() {
         let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
         let test_name = format!("test_{uuid_str}");
-        let db = DbConnectionPoolV2::new_test(test_name).await.unwrap();
+        let db = DbConnectionPool::new_test(test_name).await.unwrap();
 
         let osrd_conn = db.osrd_pool.get().await.expect("Failed to get connection");
         let osrd_conn = DbConnection::new(Arc::new(RwLock::new(osrd_conn)));

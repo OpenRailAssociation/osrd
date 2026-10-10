@@ -183,7 +183,7 @@ impl From<diesel::result::Error> for Error {
 mod tests {
     use std::collections::HashSet;
 
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use editoast_derive::Model;
     use itertools::Itertools as _;
     use pretty_assertions::assert_eq;
@@ -205,7 +205,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn batch() {
-        let pool = DbConnectionPoolV2::for_tests();
+        let pool = DbConnectionPool::for_tests();
 
         let changesets = (0..5).map(|i| {
             Document::changeset()
@@ -311,7 +311,7 @@ mod tests {
             data: Data,
         }
 
-        let pool = DbConnectionPoolV2::for_tests();
+        let pool = DbConnectionPool::for_tests();
         let docs = Document::create_batch::<_, Vec<_>>(
             &mut pool.get_ok(),
             [
@@ -351,7 +351,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list() {
         // GIVEN
-        let pool = DbConnectionPoolV2::for_tests();
+        let pool = DbConnectionPool::for_tests();
 
         let (multiple_ct, unique_ct) = ("models_test_list/multiple", "models_test_list/unique");
         let changesets = (0..20).map(|i| {

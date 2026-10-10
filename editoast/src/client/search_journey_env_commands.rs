@@ -1,7 +1,7 @@
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use models::Infra;
 use models::prelude::*;
 use models::scenario::Scenario;
@@ -19,7 +19,7 @@ pub enum SearchJourneyEnvCommands {
 
 pub async fn handle_search_journey_env_command(
     command: SearchJourneyEnvCommands,
-    db_pool: DbConnectionPoolV2,
+    db_pool: DbConnectionPool,
 ) -> anyhow::Result<()> {
     let conn = &mut db_pool.get().await?;
     match command {
@@ -124,13 +124,13 @@ async fn show_search_journey_env(conn: &mut DbConnection) -> anyhow::Result<()> 
 mod tests {
     use super::*;
     use crate::fixtures::create_scenario_fixtures_set;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use models::search_journey_environment::fixtures::search_journey_env_fixtures;
     use std::collections::HashSet;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn set_search_journey_env_from_scenario_works() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let scenario_fixture_set =
@@ -155,7 +155,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn set_search_journey_env_from_scratch_works() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let (infra, timetables) = search_journey_env_fixtures(conn).await;

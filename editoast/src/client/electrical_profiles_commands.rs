@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use clap::Args;
 use clap::Subcommand;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use schemas::infra::ElectricalProfileSetData;
 
 use models::ElectricalProfileSet;
@@ -50,7 +50,7 @@ pub struct ListProfileSetArgs {
 
 pub async fn electrical_profile_set_import(
     args: ImportProfileSetArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
 
@@ -67,7 +67,7 @@ pub async fn electrical_profile_set_import(
 
 pub async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let electrical_profile_sets =
         ElectricalProfileSet::list_light(&mut db_pool.get().await?).await?;
@@ -85,7 +85,7 @@ pub async fn electrical_profile_set_list(
 
 pub async fn electrical_profile_set_delete(
     args: DeleteProfileSetArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     for profile_set_id in args.profile_set_ids {
         let deleted =
@@ -108,7 +108,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn electrical_profile_set_delete_works() {
         // GIVEN
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let db_pool = Arc::new(db_pool);
         let electrical_profile_set = create_electrical_profile_set(&mut db_pool.get_ok()).await;
 
@@ -132,7 +132,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn electrical_profile_set_list_doesnt_fail() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let db_pool = Arc::new(db_pool);
         let _ = create_electrical_profile_set(&mut db_pool.get_ok()).await;
         for quiet in [true, false] {

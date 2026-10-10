@@ -135,7 +135,7 @@ mod tests {
 
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
@@ -147,7 +147,7 @@ mod tests {
     async fn worker_load_test(#[case] loaded: bool, #[case] expected: WorkerStatus) {
         use crate::views::test_app::test_app;
 
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let mut core = MockingClient::default();

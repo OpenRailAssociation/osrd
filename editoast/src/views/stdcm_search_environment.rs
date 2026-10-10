@@ -11,7 +11,7 @@ use axum::response::IntoResponse;
 use axum::response::Response;
 use chrono::DateTime;
 use chrono::Utc;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use models::prelude::*;
@@ -201,7 +201,7 @@ impl From<models::stdcm_search_environment::StdcmSearchEnvironment>
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -219,7 +219,7 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn retrieve_latest(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<Response> {
     let conn = &mut db_pool.get().await?;
     let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
@@ -247,7 +247,7 @@ pub(in crate::views) struct StdcmSearchEnvIdParam {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(StdcmSearchEnvIdParam { env_id }): Path<StdcmSearchEnvIdParam>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -278,7 +278,7 @@ pub(in crate::views) struct StdcmSearchEnvListResponse {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<StdcmSearchEnvListResponse>> {
     let mut conn = db_pool.get().await?;

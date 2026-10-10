@@ -52,7 +52,7 @@ use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::operation::CacheOperation;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use models::Infra;
 use models::prelude::*;
 
@@ -86,7 +86,7 @@ pub trait GeneratedData {
     }
 
     async fn refresh_pool(
-        pool: Arc<DbConnectionPoolV2>,
+        pool: Arc<DbConnectionPool>,
         infra: i64,
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabasePoolError> {
@@ -114,7 +114,7 @@ pub enum InfraErrorLevel {
 pub trait InfraGeneratedData {
     async fn refresh(
         &mut self,
-        db_pool: Arc<DbConnectionPoolV2>,
+        db_pool: Arc<DbConnectionPool>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool, database::DatabasePoolError>;
@@ -144,7 +144,7 @@ impl InfraGeneratedData for Infra {
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
     async fn refresh(
         &mut self,
-        db_pool: Arc<DbConnectionPoolV2>,
+        db_pool: Arc<DbConnectionPool>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool, database::DatabasePoolError> {
@@ -277,7 +277,7 @@ impl InfraGeneratedData for Infra {
 /// Refresh all the generated data of a given infra
 #[tracing::instrument(level = "debug", skip_all, fields(infra_id))]
 pub async fn refresh_all(
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
     infra_id: i64,
     infra_cache: &InfraCache,
 ) -> Result<(), database::DatabasePoolError> {
@@ -360,13 +360,13 @@ pub mod tests {
     use crate::generated_data::clear_all;
     use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // Slow test
-    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPool::get] for more information
     async fn refresh_all_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         assert!(
             refresh_all(db_pool.into(), infra.id, &Default::default())
@@ -377,7 +377,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_all_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         assert!(
             update_all(&mut db_pool.get_ok(), infra.id, &[], &Default::default())
@@ -388,7 +388,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn clear_all_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         assert!(clear_all(&mut db_pool.get_ok(), infra.id).await.is_ok());
     }

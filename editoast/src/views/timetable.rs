@@ -34,7 +34,7 @@ use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use itertools::izip;
@@ -152,7 +152,7 @@ impl TimetableForm {
     ),
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(timetable_form): Json<TimetableForm>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -175,7 +175,7 @@ pub(in crate::views) async fn post(
     ),
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -202,7 +202,7 @@ pub(in crate::views) struct TrainScheduleIdParam {
     ),
 )]
 pub(in crate::views) async fn get_train_schedule_by_id(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Path(TrainScheduleIdParam { train_schedule_id }): Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResponse>> {
@@ -259,7 +259,7 @@ pub(in crate::views) struct ListTrainSchedulesResponse {
     ),
 )]
 pub(in crate::views) async fn get_train_schedules(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<200>>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
@@ -867,7 +867,7 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
     ),
 )]
 pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(TrainScheduleSetForm {
         train_schedule_set_ids,
@@ -905,7 +905,7 @@ pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
     ),
 )]
 pub(in crate::views) async fn get_train_schedule_sets_from_timetable(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<Json<Vec<TrainScheduleSet>>> {
     Timetable::exists_or_fail(&mut db_pool.get().await?, timetable_id, || {

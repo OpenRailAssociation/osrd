@@ -182,12 +182,12 @@ impl Project {
 pub mod tests {
     use super::*;
 
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use pretty_assertions::assert_eq;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_creation() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let project_name = "test_project_name";
         let created_project = Project::fake(project_name)
             .create(&mut db_pool.get_ok())
@@ -198,7 +198,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_retrieve() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let created_project = Project::fake("test_project_name")
             .create(&mut db_pool.get_ok())
             .await
@@ -215,7 +215,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_update() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let mut created_project = Project::fake("test_project_name")
             .create(&mut db_pool.get_ok())
             .await
@@ -243,7 +243,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sort_project() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         Project::fake("test_project_name_1")
             .create(&mut db_pool.get_ok())
             .await
@@ -269,7 +269,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_project_prune_document() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let mut project1 = Project::fake("Project 1")
             .create(&mut db_pool.get_ok())
             .await
@@ -324,7 +324,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_project_prune_document() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let mut project1 = Project::fake("Project 1")
             .create(&mut db_pool.get_ok())

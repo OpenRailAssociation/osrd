@@ -4,7 +4,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse as _;
 use axum::response::Response;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 
 use models::search_journey_environment::SearchJourneyEnvironmentWithTimetables;
 use serde::Deserialize;
@@ -41,7 +41,7 @@ impl From<SearchJourneyEnvironmentWithTimetables> for SearchJourneyEnvironmentRe
     )
 )]
 pub(in crate::views) async fn retrieve_latest(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<Response> {
     let conn = &mut db_pool.get().await?;
     let env = SearchJourneyEnvironmentWithTimetables::retrieve_latest(conn).await?;

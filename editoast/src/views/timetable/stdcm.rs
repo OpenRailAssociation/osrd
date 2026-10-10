@@ -42,7 +42,7 @@ use core_client::stdcm::LastReachedOperationalPoint;
 use core_client::stdcm::Request as StdcmRequest;
 use core_client::stdcm::UndirectedTrackRange;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use futures::StreamExt as _;
 use futures::stream;
@@ -590,7 +590,7 @@ struct VirtualTrainRun {
 impl VirtualTrainRun {
     // TODO: `too_many_arguments` can probably be removed (but might need some refacto)
     async fn simulate_consists_sequence(
-        db_pool: Arc<DbConnectionPoolV2>,
+        db_pool: Arc<DbConnectionPool>,
         valkey_client: Arc<cache::Client>,
         core_client: Arc<CoreClient>,
         app_version: Option<&str>,

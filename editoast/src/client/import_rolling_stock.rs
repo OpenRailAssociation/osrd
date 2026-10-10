@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use clap::Args;
 use colored::Colorize as _;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 
 use models::TowedRollingStock;
 use models::prelude::*;
@@ -24,7 +24,7 @@ pub struct ImportRollingStockArgs {
 
 pub async fn import_rolling_stock(
     args: ImportRollingStockArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     for rolling_stock_path in args.rolling_stock_path {
         let mut conn = db_pool.get().await?;
@@ -85,7 +85,7 @@ pub async fn import_rolling_stock(
 
 pub async fn import_towed_rolling_stock(
     args: ImportRollingStockArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     for towed_rolling_stock_path in args.rolling_stock_path {
         let towed_rolling_stock_file = File::open(towed_rolling_stock_path)?;
@@ -124,7 +124,7 @@ mod tests {
         use crate::client::generate_temp_file;
 
         use common::units;
-        use database::DbConnectionPoolV2;
+        use database::DbConnectionPool;
 
         fn get_fast_rolling_stock_schema(
             name: &str,
@@ -137,7 +137,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_rolling_stock_ko_file_not_found() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
                 force: false,
@@ -153,7 +153,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_non_electric_rs_without_startup_and_panto_values() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
@@ -184,7 +184,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_non_electric_rs_with_startup_and_panto_values() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
@@ -219,7 +219,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_electric_rs_without_startup_and_panto_values() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
@@ -250,7 +250,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_electric_rs_with_startup_and_panto_values() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_electric_rs_with_startup_and_panto_values";
@@ -283,7 +283,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_existing_rolling_stock_without_force() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let existing_rolling_stock_name = "existing_rolling_stock";
             let existing_rolling_stock_form =
@@ -326,7 +326,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_existing_rolling_stock_with_force() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let existing_rolling_stock_name = "existing_rolling_stock";
             let existing_rolling_stock_form =
@@ -371,12 +371,12 @@ mod tests {
 
         use crate::client::generate_temp_file;
 
-        use database::DbConnectionPoolV2;
+        use database::DbConnectionPool;
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_towed_rolling_stock_ko_file_not_found() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
                 force: false,
@@ -392,7 +392,7 @@ mod tests {
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_valid_towed_rolling_stock() {
             // GIVEN
-            let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = DbConnectionPool::for_tests();
             let db_pool = Arc::new(db_pool);
             let towed_rolling_stock_name = "towed";
             let mut towed_rolling_stock_form: schemas::TowedRollingStock =

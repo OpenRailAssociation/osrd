@@ -60,13 +60,13 @@ impl ElectricalProfileSet {
 
 #[cfg(test)]
 mod tests {
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     use super::*;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn list_light() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let set_1 = ElectricalProfileSet::outer_space()
             .create(&mut db_pool.get_ok())
             .await

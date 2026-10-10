@@ -5,7 +5,7 @@ use authz::Group;
 use authz::v2::Authorizer as _;
 use clap::Args;
 use clap::Subcommand;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use models::prelude::*;
 
 use std::collections::HashSet;
@@ -67,14 +67,14 @@ pub struct DeleteArgs {
 
 pub async fn create_group(
     CreateArgs { name }: CreateArgs,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let models::Group { id, .. } = models::Group::upsert(pool.get().await?, name).await?;
     println!("{id}");
     Ok(())
 }
 
-pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
+pub async fn list_group(pool: Arc<DbConnectionPool>) -> anyhow::Result<()> {
     let mut conn = pool.get().await?;
     let groups = models::Group::list(&mut conn, Default::default()).await?;
     if groups.is_empty() {
@@ -90,7 +90,7 @@ pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
 pub async fn group_info(
     InfoArgs { name }: InfoArgs,
     openfga_config: OpenfgaConfig,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
     let conn = pool.get().await?;
@@ -131,7 +131,7 @@ pub async fn group_info(
 pub async fn exclude_group(
     ExcludeArgs { group_name, users }: ExcludeArgs,
     openfga_config: OpenfgaConfig,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     if users.is_empty() {
         bail!("No user specified");
@@ -170,7 +170,7 @@ pub async fn exclude_group(
 pub async fn include_group(
     IncludeArgs { group_name, users }: IncludeArgs,
     openfga_config: OpenfgaConfig,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     if users.is_empty() {
         bail!("No user specified");
@@ -208,7 +208,7 @@ pub async fn include_group(
 pub async fn delete_group(
     DeleteArgs { name }: DeleteArgs,
     openfga_config: OpenfgaConfig,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
     let mut conn = pool.get().await?;

@@ -1,4 +1,4 @@
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -59,7 +59,7 @@ pub(in crate::views) struct CatalogEntryIdParam {
     ),
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(catalog_entry_create_form): Json<CatalogEntryForm>,
 ) -> Result<impl IntoResponse> {
     let catalog_entry_changeset = catalog_entry_create_form.into_changeset();
@@ -87,7 +87,7 @@ pub(in crate::views) struct CatalogEntryPage {
     ),
 )]
 pub(in crate::views) async fn list_paginated(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<CatalogEntryPage>> {
     let settings = pagination_params.into_selection_settings();
@@ -112,7 +112,7 @@ pub(in crate::views) async fn list_paginated(
     ),
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,
@@ -139,7 +139,7 @@ pub(in crate::views) async fn put(
 ),
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,

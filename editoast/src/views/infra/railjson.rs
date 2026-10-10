@@ -249,7 +249,7 @@ mod tests {
     use schemas::infra::SwitchType;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPool::get] for more information
     async fn get_railjson() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
@@ -306,7 +306,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPool::get] for more information
     async fn post_railjson() {
         let app = test_app!().build();
         let db_pool = app.db_pool();

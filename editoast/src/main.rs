@@ -35,7 +35,7 @@ use client::user::UserCommand;
 use common::tracing::SpanUploading;
 use common::tracing::TracingConfig;
 use common::tracing::create_tracing_subscriber;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use opentelemetry_otlp::WithExportConfig as _;
 use std::io::IsTerminal as _;
 use std::process::exit;
@@ -117,7 +117,7 @@ async fn run() -> anyhow::Result<()> {
 
     let pg_config = client.postgres_config;
     let db_pool =
-        DbConnectionPoolV2::try_initialize(pg_config.database_url.clone(), pg_config.pool_size)
+        DbConnectionPool::try_initialize(pg_config.database_url.clone(), pg_config.pool_size)
             .await?;
 
     let valkey_config = client.valkey_config;

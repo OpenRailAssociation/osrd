@@ -111,7 +111,7 @@ pub mod fixtures {
 mod tests {
     use super::fixtures::search_journey_env_fixtures;
     use super::*;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use database::tables::search_journey_environment_timetable::dsl;
     use diesel::ExpressionMethods as _;
     use diesel::QueryDsl as _;
@@ -120,7 +120,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_with_timetables() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let (infra, timetables) = search_journey_env_fixtures(conn).await;
@@ -151,7 +151,7 @@ mod tests {
         use crate::timetable::Timetable;
         use crate::timetable_type::TimetableType;
 
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let infra = Infra::changeset()
@@ -188,7 +188,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_latest() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let (infra, timetables) = search_journey_env_fixtures(conn).await;
@@ -219,7 +219,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_latest_empty() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let result = SearchJourneyEnvironmentWithTimetables::retrieve_latest(&mut db_pool.get_ok())
             .await
             .expect("retrieve_latest should not fail on an empty table");

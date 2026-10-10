@@ -15,7 +15,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::ContentType;
 use crate::views::DatabaseError;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use models::Document;
 use models::prelude::*;
 
@@ -58,7 +58,7 @@ pub(in crate::views) enum DocumentError {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse, DocumentError> {
     let conn = &mut db_pool.get().await?;
@@ -98,7 +98,7 @@ struct NewDocumentResponse {
     )
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     ContentType(content_type): ContentType,
     bytes: Bytes,
 ) -> Result<impl IntoResponse, DatabaseError> {
@@ -133,7 +133,7 @@ pub(in crate::views) async fn post(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse, DocumentError> {
     let conn = &mut db_pool.get().await?;

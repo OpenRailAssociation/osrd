@@ -1090,7 +1090,7 @@ pub mod tests {
     use std::sync::Arc;
 
     use database::DbConnection;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use models::Infra;
     use models::prelude::*;
     use schemas::infra::ApplicableDirections;
@@ -1156,7 +1156,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_infra_cache() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = dashmap::DashMap::new();
         let valkey_client = Arc::new(cache::Client::new(
@@ -1187,7 +1187,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_infra_cache_mut() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = dashmap::DashMap::new();
         let valkey_client = Arc::new(cache::Client::new(
@@ -1218,7 +1218,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_track_section() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let track =
             create_infra_object(&mut db_pool.get_ok(), infra.id, TrackSection::default()).await;
@@ -1232,7 +1232,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_signal() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let signal = create_infra_object(&mut db_pool.get_ok(), infra.id, Signal::default()).await;
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
@@ -1246,7 +1246,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_speed_section() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let speed = create_infra_object(
             &mut db_pool.get_ok(),
@@ -1268,7 +1268,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_route() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let route = create_infra_object(&mut db_pool.get_ok(), infra.id, Route::default()).await;
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
@@ -1280,7 +1280,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_operational_point() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let op = create_infra_object(
             &mut db_pool.get_ok(),
@@ -1303,7 +1303,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_switch() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let switch = create_infra_object(
             &mut db_pool.get_ok(),
@@ -1323,7 +1323,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_switch_type() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let s_type =
             create_infra_object(&mut db_pool.get_ok(), infra.id, SwitchType::default()).await;
@@ -1336,7 +1336,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_detector() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let detector =
             create_infra_object(&mut db_pool.get_ok(), infra.id, Detector::default()).await;
@@ -1351,7 +1351,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_buffer_stop() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let bs = create_infra_object(&mut db_pool.get_ok(), infra.id, BufferStop::default()).await;
         let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
@@ -1365,7 +1365,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_electrification() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let electrification = create_infra_object(
             &mut db_pool.get_ok(),
@@ -1392,7 +1392,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_level_crossing() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let lc = create_infra_object(
             &mut db_pool.get_ok(),

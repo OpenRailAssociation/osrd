@@ -5,7 +5,7 @@ mod tables_patch;
 
 pub use db_connection_pool::DatabasePoolError;
 pub use db_connection_pool::DbConnection;
-pub use db_connection_pool::DbConnectionPoolV2;
+pub use db_connection_pool::DbConnectionPool;
 
 /// Generic error type to forward errors from the database
 ///
