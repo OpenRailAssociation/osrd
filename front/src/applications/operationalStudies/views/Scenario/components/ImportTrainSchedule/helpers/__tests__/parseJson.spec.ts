@@ -33,7 +33,8 @@ describe('processJsonFile', () => {
       const exportPayload = buildTimetableExportPayload(
         new Map(payloadTrains.map((ts) => [ts.id, ts])),
         payloadTrains.map(({ id }) => id),
-        payloadRoundTrips
+        payloadRoundTrips,
+        'HOURLY'
       );
       const importPayload = processJsonFile(
         JSON.stringify(exportPayload),
@@ -46,8 +47,25 @@ describe('processJsonFile', () => {
             ({ id: _id, train_schedule_set_id: _train_schedule_set_id, ...rest }) => rest
           ),
           round_trips: [[0, 1]],
+          timetable_type: 'HOURLY',
         })
       );
+    });
+  });
+
+  describe('timetable type', () => {
+    it('should not set a timetable type when it is missing', () => {
+      const payload: TimetableJsonPayload = { train_schedules: [train0] };
+
+      const rawPayload = processJsonFile(JSON.stringify(payload), 'application/json', tMock);
+
+      expect(rawPayload).not.toHaveProperty('timetable_type');
+    });
+
+    it('should throw when the timetable type is invalid', () => {
+      const payload = { timetable_type: 'WEEKLY', train_schedules: [train0] };
+
+      expect(() => processJsonFile(JSON.stringify(payload), 'application/json', tMock)).toThrow();
     });
   });
 
