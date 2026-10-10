@@ -7,7 +7,7 @@ use clap::Args;
 use clap::Subcommand;
 use colored::Colorize as _;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use schemas::infra::RailJson;
 
 use crate::generated_data::InfraGeneratedData as _;
@@ -70,7 +70,7 @@ pub struct ImportRailjsonArgs {
 
 pub async fn clone_infra(
     infra_args: InfraCloneArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_args.id as i64, || {
         anyhow::anyhow!("Infrastructure not found, ID: {}", infra_args.id)
@@ -90,7 +90,7 @@ pub async fn clone_infra(
 
 pub async fn import_railjson(
     args: ImportRailjsonArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let railjson_file = match File::open(args.railjson_path.clone()) {
         Ok(file) => file,
@@ -149,7 +149,7 @@ pub async fn import_railjson(
 /// This command clear all generated data for the given infra
 pub async fn clear_infra(
     args: ClearArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
     valkey_config: ValkeyConfig,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
@@ -182,7 +182,7 @@ pub async fn clear_infra(
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
 pub async fn generate_infra(
     args: GenerateArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
     valkey_config: ValkeyConfig,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
@@ -281,7 +281,7 @@ mod tests {
         };
 
         // WHEN
-        let result = import_railjson(args.clone(), DbConnectionPoolV2::for_tests().into()).await;
+        let result = import_railjson(args.clone(), DbConnectionPool::for_tests().into()).await;
 
         // THEN
         assert!(result.is_err());
@@ -309,7 +309,7 @@ mod tests {
         };
 
         // WHEN
-        let result = import_railjson(args, DbConnectionPoolV2::for_tests().into()).await;
+        let result = import_railjson(args, DbConnectionPool::for_tests().into()).await;
 
         // THEN
         assert!(result.is_ok());

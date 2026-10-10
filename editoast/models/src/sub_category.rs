@@ -94,11 +94,11 @@ impl SubCategory {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn unique_code() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let _sub_category1 = SubCategory::fake(
             "code",

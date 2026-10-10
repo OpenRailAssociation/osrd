@@ -32,7 +32,7 @@ use common::tracing::create_tracing_subscriber;
 use core_client::CoreClient;
 use core_client::mocking::MockingClient;
 use dashmap::DashMap;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use fga::client::Limits;
 use futures::executor::block_on;
 use opentelemetry_sdk::error::OTelSdkResult;
@@ -83,7 +83,7 @@ impl SpanExporter for NoopSpanExporter {
 /// The `db_pool_v1` parameter is only relevant while the pool migration is ongoing.
 pub(crate) struct TestAppBuilder {
     test_name: String,
-    db_pool: Option<DbConnectionPoolV2>,
+    db_pool: Option<DbConnectionPool>,
     core_client: Option<CoreClient>,
     enable_authorization: bool,
     enable_telemetry: bool,
@@ -105,7 +105,7 @@ impl TestAppBuilder {
         }
     }
 
-    pub fn db_pool(mut self, db_pool: DbConnectionPoolV2) -> Self {
+    pub fn db_pool(mut self, db_pool: DbConnectionPool) -> Self {
         self.db_pool = Some(db_pool);
         self
     }
@@ -198,7 +198,7 @@ impl TestAppBuilder {
         let valkey = cache::Client::new(config.valkey_config.clone(), "TEST_APP").into();
 
         // Create database pool
-        let db_pool_v2 = Arc::new(self.db_pool.unwrap_or_else(DbConnectionPoolV2::for_tests));
+        let db_pool_v2 = Arc::new(self.db_pool.unwrap_or_else(DbConnectionPool::for_tests));
 
         // Setup infra cache map
         let infra_caches = DashMap::<i64, InfraCache>::default().into();
@@ -325,7 +325,7 @@ impl TestApp {
         format!("{}_{}", self.test_name, resource_name)
     }
 
-    pub fn db_pool(&self) -> Arc<DbConnectionPoolV2> {
+    pub fn db_pool(&self) -> Arc<DbConnectionPool> {
         self.app_state.db_pool.clone()
     }
 

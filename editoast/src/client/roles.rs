@@ -12,7 +12,7 @@ use authz::v2::Authorizer as _;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use itertools::Itertools as _;
 use models::Group;
 use models::prelude::*;
@@ -138,7 +138,7 @@ async fn parse_and_fetch_subject(subject: &String, conn: DbConnection) -> anyhow
 
 pub async fn list_subject_roles(
     ListArgs { subject }: ListArgs,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
@@ -170,7 +170,7 @@ fn parse_role_case_insensitive(tag: &str) -> anyhow::Result<Role> {
 
 pub async fn add_roles(
     AddArgs { subject, roles }: AddArgs,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let openfga = &openfga_config.into_client().await?;
@@ -197,7 +197,7 @@ pub async fn add_roles(
 
 pub async fn remove_roles(
     RemoveArgs { subject, roles }: RemoveArgs,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let openfga = &openfga_config.into_client().await?;

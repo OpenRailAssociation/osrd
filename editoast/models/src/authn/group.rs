@@ -37,7 +37,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn group_upsert() {
-        let pool = database::DbConnectionPoolV2::for_tests();
+        let pool = database::DbConnectionPool::for_tests();
 
         let created = Group::upsert(pool.get_ok(), "tom and jerry".to_string())
             .await

@@ -419,7 +419,7 @@ mod tests_persist {
         ($obj:ident, $test_fn:ident) => {
             #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
-                let db_pool = database::DbConnectionPoolV2::for_tests();
+                let db_pool = database::DbConnectionPool::for_tests();
                 let railjson = schemas::fixtures::small_infra();
                 let infra = Infra::changeset()
                     .name("small_infra".to_owned())
@@ -454,7 +454,7 @@ mod tests_persist {
 
 #[cfg(test)]
 mod tests_retrieve {
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -462,7 +462,7 @@ mod tests_retrieve {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_main_codes() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let railjson = schemas::fixtures::small_infra();
         let small_infra = Infra::changeset()
             .name("small_infra".to_owned())
@@ -487,7 +487,7 @@ mod tests_retrieve {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_uic() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let railjson = schemas::fixtures::small_infra();
         let small_infra = Infra::changeset()
             .name("small_infra".to_owned())

@@ -8,7 +8,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use derive_more::From;
 use editoast_derive::ViewError;
 use schemas::infra::ElectricalProfileSetData;
@@ -59,7 +59,7 @@ pub(in crate::views) enum ElectricalProfilesError {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
@@ -77,7 +77,7 @@ pub(in crate::views) async fn list(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>, ElectricalProfilesError> {
     let ep_set = ElectricalProfileSet::retrieve_or_fail(
@@ -112,7 +112,7 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_level_order(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>, ElectricalProfilesError> {
     let ep_set = ElectricalProfileSet::retrieve_or_fail(
@@ -140,7 +140,7 @@ pub(in crate::views) async fn get_level_order(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<impl IntoResponse, DatabaseError> {
     let conn = &mut db_pool.get().await?;
@@ -171,7 +171,7 @@ pub(in crate::views) struct ElectricalProfileQueryArgs {
     )
 )]
 pub(in crate::views) async fn post_electrical_profile(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
     Json(ep_data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>, DatabaseError> {

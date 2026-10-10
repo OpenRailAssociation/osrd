@@ -7,7 +7,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use serde::Deserialize;
@@ -152,7 +152,7 @@ pub(in crate::views) struct ListMacroNodesQueryParams {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(ListMacroNodesQueryParams { scenario_id }): Query<ListMacroNodesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<MacroNodeListResponse>> {
@@ -188,7 +188,7 @@ pub(in crate::views) async fn list(
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(MacroNodeBatchForm {
         macro_nodes,
         scenario_id,
@@ -231,7 +231,7 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
@@ -256,7 +256,7 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn update(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
@@ -302,7 +302,7 @@ pub(in crate::views) async fn update(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
 ) -> Result<impl IntoResponse> {
     let conn = db_pool.get().await?;

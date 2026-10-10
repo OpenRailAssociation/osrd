@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use axum::extract::State;
 use core_client::CoreClient;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use database::db_connection_pool::ping_database;
 use editoast_derive::EditoastError;
 use futures::TryFutureExt as _;
@@ -57,7 +57,7 @@ pub(in crate::views) async fn health(
 
 #[tracing::instrument(skip_all)]
 pub async fn check_health(
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
     valkey_client: Arc<cache::Client>,
     core_client: Arc<CoreClient>,
     openfga: &fga::Client,

@@ -465,7 +465,7 @@ async fn retrieve_op_from_ids(
 
 #[cfg(test)]
 mod tests {
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use schemas::infra::OperationalPoint;
     use schemas::primitives::Identifier;
 
@@ -497,7 +497,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn cache_cross_indexing() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let mut conn = db_pool.get_ok();
         let infra = create_empty_infra(&mut conn).await;
 

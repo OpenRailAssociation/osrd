@@ -4,7 +4,7 @@ use authz;
 use authz::v2::Authorizer as _;
 use clap::Args;
 use clap::Subcommand;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use futures::TryStreamExt as _;
 use models::Group;
 use models::User;
@@ -79,7 +79,7 @@ pub struct DeleteArgs {
 pub async fn list_user(
     ListArgs { without_groups }: ListArgs,
     openfga_config: OpenfgaConfig,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let openfga = openfga_config.into_client().await?;
     let system = SystemAuthorizer::new_infallible(&openfga);
@@ -137,7 +137,7 @@ pub async fn add_user(
         identities,
         skip_if_exists,
     }: AddArgs,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     if identities.is_empty() {
         println!("No identities provided.");
@@ -163,7 +163,7 @@ pub async fn add_user(
 pub async fn user_info(
     InfoArgs { id_or_identity }: InfoArgs,
     openfga_config: OpenfgaConfig,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let uid = if let Ok(id) = id_or_identity.parse::<i64>() {
         id
@@ -204,7 +204,7 @@ pub async fn user_info(
 /// Delete a user
 pub async fn delete_user(
     DeleteArgs { user }: DeleteArgs,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let uid = if let Ok(id) = user.parse::<i64>() {
         id
@@ -234,7 +234,7 @@ pub async fn add_identities(
         user_identity,
         new_identities,
     }: AddIdentitiesArg,
-    pool: Arc<DbConnectionPoolV2>,
+    pool: Arc<DbConnectionPool>,
 ) -> anyhow::Result<()> {
     let conn = pool.get().await?;
     let user = match (user_id, user_identity) {
@@ -270,7 +270,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn add_identities_multiple_times() {
-        let pool = Arc::new(database::DbConnectionPoolV2::for_tests());
+        let pool = Arc::new(database::DbConnectionPool::for_tests());
 
         let conn = pool.get_ok();
         let user = User::register(conn.clone(), vec!["toto".to_owned()], "Toto".to_owned())
@@ -316,7 +316,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn add_identities_wrong_user_id() {
-        let pool = Arc::new(database::DbConnectionPoolV2::for_tests());
+        let pool = Arc::new(database::DbConnectionPool::for_tests());
         add_identities(
             AddIdentitiesArg {
                 user_id: Some(i64::MAX),
@@ -331,7 +331,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn add_identities_wrong_identity() {
-        let pool = Arc::new(database::DbConnectionPoolV2::for_tests());
+        let pool = Arc::new(database::DbConnectionPool::for_tests());
         add_identities(
             AddIdentitiesArg {
                 user_id: None,

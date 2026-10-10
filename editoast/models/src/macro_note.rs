@@ -29,12 +29,12 @@ pub mod test {
     use crate::scenario::Scenario;
     use crate::study::Study;
     use crate::timetable::Timetable;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use pretty_assertions::assert_eq;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn macro_note_create_and_get() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = Infra::changeset()
             .name("empty_infra".to_owned())
             .last_railjson_version()

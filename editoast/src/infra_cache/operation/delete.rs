@@ -72,7 +72,7 @@ mod tests {
     use diesel::sql_types::BigInt;
 
     use database::DbConnection;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use models::Infra;
     use models::prelude::*;
     use schemas::infra::BufferStop;
@@ -111,7 +111,7 @@ mod tests {
                 use diesel_async::RunQueryDsl;
                 use std::ops::DerefMut;
 
-                let db_pool = DbConnectionPoolV2::for_tests();
+                let db_pool = DbConnectionPool::for_tests();
                 let infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
                 let railjson_object = schemas::infra::InfraObject::$obj {

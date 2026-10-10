@@ -7,7 +7,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use models::prelude::*;
 use models::timetable::Timetable;
@@ -126,7 +126,7 @@ impl From<TrainScheduleExceptionForm> for TrainScheduleExceptionChangeset {
     )
 )]
 pub(in crate::views) async fn create_train_schedule_exception(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(train_schedule_exception_form): Json<TrainScheduleExceptionForm>,
 ) -> Result<impl IntoResponse> {
@@ -198,7 +198,7 @@ pub(in crate::views) async fn create_train_schedule_exception(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(ExceptionIdsParam { ids: exception_ids }): Json<ExceptionIdsParam>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -223,7 +223,7 @@ pub(in crate::views) async fn delete(
     )
 )]
 pub(in crate::views) async fn update(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(ExceptionIdParam { id: exception_id }): Path<ExceptionIdParam>,
     Json(train_schedule_exception_form): Json<TrainScheduleExceptionForm>,
 ) -> Result<impl IntoResponse> {

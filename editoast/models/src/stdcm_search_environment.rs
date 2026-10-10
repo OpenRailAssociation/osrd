@@ -167,14 +167,14 @@ mod tests {
     use chrono::Utc;
     use pretty_assertions::assert_eq;
 
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     use super::fixtures::stdcm_search_env_fixtures;
     use super::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_latest() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let (
             infra,
@@ -238,7 +238,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_latest_empty() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         StdcmSearchEnvironment::delete_all(&mut db_pool.get_ok())
             .await
             .expect("Failed to delete all search environments");

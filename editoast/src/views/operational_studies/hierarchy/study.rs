@@ -11,7 +11,7 @@ use axum::response::IntoResponse;
 use chrono::NaiveDate;
 use chrono::Utc;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -175,7 +175,7 @@ impl StudyCreateForm {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(data): Json<StudyCreateForm>,
 ) -> Result<impl IntoResponse> {
     let study = Project::transactional_content_update(
@@ -214,7 +214,7 @@ pub(in crate::views) struct StudyIdParam {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
 ) -> Result<impl IntoResponse> {
     let conn = db_pool.get().await?;
@@ -358,7 +358,7 @@ impl StudyPatchForm {
     )
 )]
 pub(in crate::views) async fn patch(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(StudyIdParam { study_id }): Path<StudyIdParam>,
     Json(data): Json<StudyPatchForm>,
 ) -> Result<Json<StudyWithScenarioCount>> {

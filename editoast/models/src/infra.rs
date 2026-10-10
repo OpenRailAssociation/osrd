@@ -302,7 +302,7 @@ pub mod tests {
     use pretty_assertions::assert_eq;
 
     use database::DbConnection;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
@@ -338,7 +338,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_infra() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         assert_eq!(infra.owner, Uuid::nil());
@@ -349,10 +349,10 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPool::get] for more information
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let old_modification_date = empty_infra.modified;
         let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
@@ -370,7 +370,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn persists_railjson_ko_version() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let railjson_with_invalid_version = RailJson {
             version: "0".to_string(),
             ..Default::default()
@@ -390,7 +390,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_change_updates_modification_date() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let mut infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let old = infra.modified;
 
@@ -423,7 +423,7 @@ pub mod tests {
             version: RAILJSON_VERSION.to_string(),
         };
 
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = Infra::changeset()
             .name("persist_railjson_ok_infra".to_owned())
             .last_railjson_version()

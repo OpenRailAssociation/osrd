@@ -18,7 +18,7 @@ use chrono::Duration;
 use core_client::CoreClient;
 use core_client::mq_client;
 use dashmap::DashMap;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use fga::client::Limits;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
@@ -96,11 +96,11 @@ pub struct Server {
 
 /// The state of the whole Editoast service, available to all handlers
 ///
-/// If only the database is needed, use `State<database::DbConnectionPoolV2>`.
+/// If only the database is needed, use `State<database::DbConnectionPool>`.
 #[derive(Clone)]
 pub struct AppState {
     pub config: Arc<ServerConfig>,
-    pub db_pool: Arc<DbConnectionPoolV2>,
+    pub db_pool: Arc<DbConnectionPool>,
     pub valkey_client: Arc<cache::Client>,
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
@@ -111,7 +111,7 @@ pub struct AppState {
     pub s3_client: Option<Arc<AmazonS3>>,
 }
 
-impl FromRef<AppState> for Arc<DbConnectionPoolV2> {
+impl FromRef<AppState> for Arc<DbConnectionPool> {
     fn from_ref(input: &AppState) -> Self {
         input.db_pool.clone()
     }
@@ -138,8 +138,8 @@ impl AppState {
                 database_url,
                 pool_size,
             }: PostgresConfig,
-        ) -> anyhow::Result<Arc<DbConnectionPoolV2>> {
-            let pool = DbConnectionPoolV2::try_initialize(database_url, pool_size).await?;
+        ) -> anyhow::Result<Arc<DbConnectionPool>> {
+            let pool = DbConnectionPool::try_initialize(database_url, pool_size).await?;
             Ok(Arc::new(pool))
         }
         let db_pool_fut =

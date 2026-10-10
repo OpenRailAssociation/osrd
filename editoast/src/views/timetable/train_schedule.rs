@@ -28,7 +28,7 @@ use core_task::Correlated;
 use core_task::SimulationOutput;
 use core_task::pathfinding_request_from_consist_constraints;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use futures::StreamExt as _;
 use itertools::Either;
@@ -174,7 +174,7 @@ pub(in crate::views) struct TrainScheduleIdParam {
     )
 )]
 pub(in crate::views) async fn get_by_id(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -204,7 +204,7 @@ pub(in crate::views) async fn get_by_id(
     )
 )]
 pub(in crate::views) async fn update_train_schedule(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -260,7 +260,7 @@ pub(in crate::views) struct TrainScheduleIds {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(TrainScheduleIds {
         ids: train_schedule_ids,
     }): Json<TrainScheduleIds>,
@@ -2186,7 +2186,7 @@ pub(in crate::views) struct MoveTrainSchedulesForm {
     ),
 )]
 pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(MoveTrainSchedulesForm {
         train_schedule_ids,
         train_schedule_set_id,
@@ -2272,7 +2272,7 @@ mod tests {
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use models::TrainScheduleException;
 
     use models::rolling_stock::TrainMainCategory;
@@ -2650,7 +2650,7 @@ mod tests {
     }
 
     async fn simulation_tests_initial_setup() -> SimulationTestsSetup {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
@@ -3243,7 +3243,7 @@ mod tests {
         // Setup tests tools
         let core = mocked_core_pathfinding_sim_and_proj();
         let app = test_app!()
-            .db_pool(DbConnectionPoolV2::for_tests())
+            .db_pool(DbConnectionPool::for_tests())
             .core_client(core.into())
             .build();
         let db_pool = app.db_pool();
@@ -3454,7 +3454,7 @@ mod tests {
     async fn paced_train_simulation_summary_with_all_occurrences_disabled() {
         let core = mocked_core_pathfinding_sim_and_proj();
         let app = test_app!()
-            .db_pool(DbConnectionPoolV2::for_tests())
+            .db_pool(DbConnectionPool::for_tests())
             .core_client(core.into())
             .build();
         let db_pool = app.db_pool();
@@ -4114,7 +4114,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_project_path() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let (timetable, train_schedule_set) =

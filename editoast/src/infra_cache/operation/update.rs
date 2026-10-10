@@ -153,7 +153,7 @@ mod tests {
     use super::UpdateOperation;
     use crate::infra_cache::operation::OperationError;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use schemas::infra::TrackSection;
     use schemas::primitives::OSRDIdentified as _;
     use schemas::primitives::ObjectType;
@@ -196,7 +196,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_track() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let track =
             create_infra_object(&mut db_pool.get_ok(), infra.id, TrackSection::default()).await;
@@ -230,7 +230,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn invalid_update_track() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let track =
             create_infra_object(&mut db_pool.get_ok(), infra.id, TrackSection::default()).await;
@@ -252,7 +252,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_signal() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let signal = create_infra_object(&mut db_pool.get_ok(), infra.id, Signal::default()).await;
         let update_signal = UpdateOperation {
@@ -285,7 +285,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_switch_extension() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let switch = create_infra_object(&mut db_pool.get_ok(), infra.id, Switch::default()).await;
         let update_switch = UpdateOperation {
@@ -318,7 +318,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_speed() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let speed =
             create_infra_object(&mut db_pool.get_ok(), infra.id, SpeedSection::default()).await;
@@ -352,7 +352,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn wrong_id_update_track() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let update_track = UpdateOperation {
             obj_id: "non_existent_id".to_string(),

@@ -505,7 +505,7 @@ mod tests {
     use super::OccurrenceId;
     use super::TrainSchedule;
     use common::units::quantities::Offset;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
@@ -956,7 +956,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_both_categories_check_post() {
-        let pool = DbConnectionPoolV2::for_tests();
+        let pool = DbConnectionPool::for_tests();
 
         let timetable = Timetable::changeset()
             .create(&mut pool.get_ok())

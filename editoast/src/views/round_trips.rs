@@ -8,7 +8,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use models::prelude::*;
@@ -97,7 +97,7 @@ fn schema_round_trips() -> RefOr<Schema> {
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
 pub(in crate::views) async fn upsert(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(round_trips): Json<RoundTrips>,
 ) -> Result<impl IntoResponse> {
     if round_trips.has_duplicates() {
@@ -150,7 +150,7 @@ pub(in crate::views) async fn upsert(
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(train_schedule_ids): Json<HashSet<i64>>,
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
@@ -177,7 +177,7 @@ pub(in crate::views) struct RoundTripsPage {
     responses((status = 200, body = inline(RoundTripsPage), description = "The paginated list of round trips / one-ways"))
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<RoundTripsPage>> {

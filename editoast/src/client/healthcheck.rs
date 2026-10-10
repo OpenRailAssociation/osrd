@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::anyhow;
 use core_client::CoreClient;
 use core_client::mq_client;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 
 use crate::views;
 use cache;
@@ -13,7 +13,7 @@ use super::openfga_config::OpenfgaConfig;
 use super::runserver::CoreArgs;
 
 pub async fn healthcheck_cmd(
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
     valkey_config: ValkeyConfig,
     core_config: CoreArgs,
     openfga_config: OpenfgaConfig,

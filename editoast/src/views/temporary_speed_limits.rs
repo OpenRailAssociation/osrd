@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use models::prelude::*;
 use schemas::infra::DirectionalTrackRange;
@@ -119,7 +119,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
     )
 )]
 pub(in crate::views) async fn create_temporary_speed_limit_group(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(TemporarySpeedLimitCreateForm {
         speed_limit_group_name,
         speed_limits,

@@ -5,7 +5,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use schemas::rolling_stock::SubCategory;
@@ -63,7 +63,7 @@ pub(in crate::views) struct SubCategoryPage {
     ),
 )]
 pub(in crate::views) async fn get_sub_categories(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<SubCategoryPage>> {
     let mut conn = db_pool.get().await?;
@@ -92,7 +92,7 @@ pub(in crate::views) async fn get_sub_categories(
     ),
 )]
 pub(in crate::views) async fn create_sub_categories(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Json(data): Json<Vec<SubCategory>>,
 ) -> Result<Json<Vec<SubCategory>>> {
     let conn = &mut db_pool.get().await?;
@@ -124,7 +124,7 @@ struct SubCategoryCodeParam {
     ),
 )]
 pub(in crate::views) async fn delete_sub_category(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(code): Path<String>,
 ) -> Result<impl IntoResponse> {
     let conn = db_pool.get().await?;

@@ -68,11 +68,11 @@ pub struct WorkSchedule {
 mod tests {
     use super::*;
     use crate::prelude::*;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     #[tokio::test(flavor = "multi_thread")]
     async fn unique_group_name() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         WorkScheduleGroup::changeset()
             .name("UNIQUE_NAME".to_string())

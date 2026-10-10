@@ -11,7 +11,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use models::TowedRollingStock;
 use models::prelude::*;
@@ -57,7 +57,7 @@ pub(in crate::views) struct PostTowedRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(query_params): Query<PostTowedRollingStockQueryParams>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
@@ -91,7 +91,7 @@ pub(in crate::views) struct TowedRollingStockCountList {
     )
 )]
 pub(in crate::views) async fn get_list(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Query(page_settings): Query<PaginationQueryParams<50>>,
 ) -> Result<Json<TowedRollingStockCountList>> {
     let settings = page_settings
@@ -121,7 +121,7 @@ pub struct TowedRollingStockIdParam {
     )
 )]
 pub(in crate::views) async fn get_by_id(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
@@ -147,7 +147,7 @@ pub(in crate::views) async fn get_by_id(
     )
 )]
 pub(in crate::views) async fn put_by_id(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
@@ -210,7 +210,7 @@ pub(in crate::views) struct TowedRollingStockLockedForm {
     )
 )]
 pub(in crate::views) async fn patch_by_id_locked(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(towed_rolling_stock_id): Path<i64>,
     Json(TowedRollingStockLockedForm { locked }): Json<TowedRollingStockLockedForm>,
 ) -> Result<StatusCode> {

@@ -22,7 +22,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use common::geometry::GeoJsonPoint;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use geos::Geom as _;
 use itertools::Itertools as _;
@@ -430,7 +430,7 @@ impl InfraPatchForm {
     ),
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
     Path(infra): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
@@ -615,7 +615,7 @@ pub(in crate::views) async fn get_voltages(
     )
 )]
 pub(in crate::views) async fn get_all_voltages(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPool>>,
 ) -> Result<Json<Vec<String>>> {
     let voltages = Infra::get_all_voltages(&mut db_pool.get().await?).await?;
     Ok(Json(voltages.into_iter().map(|el| el.voltage).collect()))
@@ -1032,7 +1032,7 @@ pub mod tests {
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn delete() {
-            let pool = DbConnectionPoolV2::for_tests();
+            let pool = DbConnectionPool::for_tests();
             let app = test_app!()
                 .db_pool(pool)
                 .core_client(CoreClient::Mocked(MockingClient::default()))

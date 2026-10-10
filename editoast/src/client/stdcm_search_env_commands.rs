@@ -5,7 +5,7 @@ use clap::Args;
 use clap::Subcommand;
 use common::units::millisecond;
 use database::DbConnection;
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use models::ElectricalProfileSet;
 use models::Infra;
 use models::WorkScheduleGroup;
@@ -28,7 +28,7 @@ pub enum StdcmSearchEnvCommands {
 
 pub async fn handle_stdcm_search_env_command(
     command: StdcmSearchEnvCommands,
-    db_pool: DbConnectionPoolV2,
+    db_pool: DbConnectionPool,
 ) -> anyhow::Result<()> {
     let conn = &mut db_pool.get().await?;
     match command {
@@ -324,7 +324,7 @@ mod tests {
     use chrono::Utc;
     use common::units::quantities::Offset;
     use database::DbConnection;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
     use rstest::rstest;
     use schemas::fixtures::ms_since_epoch;
     use serde_json::json;
@@ -379,7 +379,7 @@ mod tests {
         #[case] expected_begin: DateTime<Utc>,
         #[case] expected_end: DateTime<Utc>,
     ) {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
@@ -406,7 +406,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn fail_resolve_search_window_on_empty_timetable() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let timetable = create_timetable(conn).await;
@@ -430,7 +430,7 @@ mod tests {
         #[case] search_window_begin: Option<DateTime<Utc>>,
         #[case] search_window_end: Option<DateTime<Utc>>,
     ) {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
@@ -451,7 +451,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_set_search_env_from_scenario_with_allowed_tracks() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let scenario_fixture_set =
@@ -535,7 +535,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn set_stdcm_search_env_from_scratch_works() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;

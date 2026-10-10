@@ -208,11 +208,11 @@ pub mod tests {
     use super::TrainMainCategory;
 
     use crate::prelude::*;
-    use database::DbConnectionPoolV2;
+    use database::DbConnectionPool;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let rs_name = "fast_rolling_stock_name";
 
         let created_fast_rolling_stock =
@@ -244,7 +244,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_failure_name_already_used() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         // GIVEN
         // Creating the first rolling stock
@@ -283,7 +283,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn primary_category_with_empty_other_categories() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
 
         let created_fast_rolling_stock =
             Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
@@ -302,7 +302,7 @@ pub mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_categories() {
-        let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = DbConnectionPool::for_tests();
         let rolling_stock =
             Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
                 .name("fast_rolling_stock_with_categories".to_string())

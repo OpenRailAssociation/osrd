@@ -1,4 +1,4 @@
-use database::DbConnectionPoolV2;
+use database::DbConnectionPool;
 use models::timetable::Timetable;
 use std::sync::Arc;
 
@@ -23,7 +23,7 @@ struct ExistingEntities {
 }
 
 pub async fn run_garbage_collector(
-    db_pool: Arc<DbConnectionPoolV2>,
+    db_pool: Arc<DbConnectionPool>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     clean_orphaned_timetables(&db_pool).await?;
@@ -33,7 +33,7 @@ pub async fn run_garbage_collector(
 }
 
 /// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment or SearchJourneyEnvironment
-async fn clean_orphaned_timetables(db_pool: &Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
+async fn clean_orphaned_timetables(db_pool: &Arc<DbConnectionPool>) -> anyhow::Result<()> {
     let conn = &mut db_pool.get().await?;
 
     println!("🧹 Removing orphaned timetables...");
@@ -48,9 +48,7 @@ async fn clean_orphaned_timetables(db_pool: &Arc<DbConnectionPoolV2>) -> anyhow:
 }
 
 /// Deletes train schedule sets that are not published or linked to a timetable
-async fn clean_orphaned_train_schedule_sets(
-    db_pool: &Arc<DbConnectionPoolV2>,
-) -> anyhow::Result<()> {
+async fn clean_orphaned_train_schedule_sets(db_pool: &Arc<DbConnectionPool>) -> anyhow::Result<()> {
     let conn = &mut db_pool.get().await?;
 
     println!("🧹 Removing orphaned train schedule sets...");
@@ -69,7 +67,7 @@ async fn clean_orphaned_train_schedule_sets(
 
 /// Deletes OpenFGA tuples that are not related to any existing infra, group or user
 async fn clean_orphaned_openfga_tuples(
-    db_pool: &Arc<DbConnectionPoolV2>,
+    db_pool: &Arc<DbConnectionPool>,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     println!("🧹 Removing orphaned openfga tuples...");
@@ -86,7 +84,7 @@ async fn clean_orphaned_openfga_tuples(
 
 async fn delete_orphaned_tuples(
     client: &fga::Client,
-    db_pool: &Arc<DbConnectionPoolV2>,
+    db_pool: &Arc<DbConnectionPool>,
 ) -> anyhow::Result<usize> {
     let entities = load_existing_entities(db_pool).await?;
 
@@ -104,7 +102,7 @@ async fn delete_orphaned_tuples(
 }
 
 async fn load_existing_entities(
-    db_pool: &Arc<DbConnectionPoolV2>,
+    db_pool: &Arc<DbConnectionPool>,
 ) -> anyhow::Result<ExistingEntities> {
     let conn = &mut db_pool.get().await?;
 
@@ -254,7 +252,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn clean_orphaned_timetables_works() {
-        let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
+        let db_pool = Arc::new(DbConnectionPool::for_tests());
         let conn = &mut db_pool.get_ok();
 
         // Timetable referenced by Scenario
@@ -313,7 +311,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn clean_orphaned_train_schedule_sets_works() {
-        let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
+        let db_pool = Arc::new(DbConnectionPool::for_tests());
         let conn = &mut db_pool.get_ok();
 
         // Train schedule set referenced by Scenario
@@ -363,7 +361,7 @@ mod tests {
         .expect("FGA migrations should succeed");
 
         // Create entities in DB
-        let db_pool = Arc::new(DbConnectionPoolV2::for_tests());
+        let db_pool = Arc::new(DbConnectionPool::for_tests());
 
         let (fga_infra, orphan_infra) = {
             let conn = &mut db_pool.get_ok();
