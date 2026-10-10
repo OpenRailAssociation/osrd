@@ -273,6 +273,82 @@ paths:
                       items:
                         $ref: '#/components/schemas/Role'
                       uniqueItems: true
+  /authz/users:
+    put:
+      tags:
+      - authz
+      requestBody:
+        description: User to create, with its identities, groups, and roles
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - identities
+              - groups
+              - roles
+              properties:
+                groups:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                identities:
+                  type: array
+                  items:
+                    type: string
+                name:
+                  type: string
+                roles:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Role'
+                  uniqueItems: true
+        required: true
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - name
+                - identities
+                - roles
+                - groups
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - name
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                        name:
+                          type: string
+                    uniqueItems: true
+                  id:
+                    type: integer
+                    format: int64
+                  identities:
+                    type: array
+                    items:
+                      type: string
+                  name:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+                    uniqueItems: true
   /authz/{resource_type}/{resource_id}:
     get:
       tags:
@@ -7269,6 +7345,54 @@ components:
           type: string
           enum:
           - editoast:authz:Database
+    EditoastAuthzErrorEmptyIdentities:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzErrorEmptyIdentitiesContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:authz:EmptyIdentities
+    EditoastAuthzErrorIdentityAlreadyExists:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthzErrorIdentityAlreadyExistsContext
+          required:
+          - conflicting_user
+          - identity
+          properties:
+            conflicting_user:
+              type: object
+            identity:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:authz:IdentityAlreadyExists
     EditoastAuthzErrorIncompatibleGrant:
       type: object
       required:
@@ -7788,6 +7912,8 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorOpenFga'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthzErrorDatabase'
+      - $ref: '#/components/schemas/EditoastAuthzErrorEmptyIdentities'
+      - $ref: '#/components/schemas/EditoastAuthzErrorIdentityAlreadyExists'
       - $ref: '#/components/schemas/EditoastAuthzErrorIncompatibleGrant'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownIdentities'
       - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'

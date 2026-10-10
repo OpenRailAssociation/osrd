@@ -14,12 +14,12 @@ pub struct User {
     pub id: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GroupInfo {
     pub name: GroupName,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Group {
     pub info: GroupInfo,
     pub id: i64,

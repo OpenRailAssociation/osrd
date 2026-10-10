@@ -618,6 +618,32 @@ class EditoastAuthzErrorDatabase(BaseModel):
     type: Literal["editoast:authz:Database"] = "editoast:authz:Database"
 
 
+class EditoastAuthzErrorEmptyIdentities(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastAuthzErrorEmptyIdentitiesContext")
+    ] = None
+    message: str
+    status: Literal[422] = 422
+    type: Literal["editoast:authz:EmptyIdentities"] = "editoast:authz:EmptyIdentities"
+
+
+class EditoastAuthzErrorIdentityAlreadyExistsContext(BaseModel):
+    conflicting_user: dict[str, Any]
+    identity: str
+
+
+class EditoastAuthzErrorIdentityAlreadyExists(BaseModel):
+    context: Annotated[
+        EditoastAuthzErrorIdentityAlreadyExistsContext | None,
+        Field(title="EditoastAuthzErrorIdentityAlreadyExistsContext"),
+    ] = None
+    message: str
+    status: Literal[409] = 409
+    type: Literal["editoast:authz:IdentityAlreadyExists"] = (
+        "editoast:authz:IdentityAlreadyExists"
+    )
+
+
 class EditoastAuthzErrorIncompatibleGrantContext(BaseModel):
     grant: dict[str, Any]
     resource_type: dict[str, Any]
@@ -4936,6 +4962,8 @@ class EditoastError(
         | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorDatabase
+        | EditoastAuthzErrorEmptyIdentities
+        | EditoastAuthzErrorIdentityAlreadyExists
         | EditoastAuthzErrorIncompatibleGrant
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
@@ -5111,6 +5139,8 @@ class EditoastError(
         | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
         | EditoastAuthzErrorDatabase
+        | EditoastAuthzErrorEmptyIdentities
+        | EditoastAuthzErrorIdentityAlreadyExists
         | EditoastAuthzErrorIncompatibleGrant
         | EditoastAuthzErrorUnknownIdentities
         | EditoastAuthzErrorUnknownResource
