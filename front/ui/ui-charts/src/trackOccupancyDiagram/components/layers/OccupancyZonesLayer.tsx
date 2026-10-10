@@ -95,7 +95,8 @@ const OccupancyZonesLayer = ({
         // * if the zone is overlapping with the previous one and the counter is higher than the max zones
         // * draw the remaining trains box
         // *
-        if (startTime > lastEndTime) {
+        // a zone taking the track when the previous one leaves it is adjacent, not overlapping
+        if (startTime >= lastEndTime) {
           // reset to initial value if the zone is not overlapping
           yPosition = OCCUPANCY_ZONE_Y_START;
           primaryStartTime = startTime;
