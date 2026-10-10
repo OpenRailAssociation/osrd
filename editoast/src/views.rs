@@ -104,7 +104,10 @@ fn service_router() -> server::router::DocumentedRouter {
                     .nests("/users", |path| {
                         path.route("/", put!(authz::create_user))
                     })
-                    .route("/groups", get!(authz::list_groups))
+                    .nests("/groups", |path| {
+                        path.route("/", get!(authz::list_groups))
+                            .route("/", put!(authz::create_group))
+                    })
             })
             //
             // infra & map
