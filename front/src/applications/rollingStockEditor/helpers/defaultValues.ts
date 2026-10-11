@@ -1,5 +1,6 @@
 import type { Comfort, RollingStock } from 'common/api/osrdEditoastApi';
 import { THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+import { convertRollingResistanceToDisplay } from 'modules/rollingStock/helpers/rollingResistance';
 import type { MultiUnitsParameter } from 'modules/rollingStock/types';
 import { msToKmh } from 'utils/physics';
 import type { ValueOf } from 'utils/types';
@@ -49,62 +50,69 @@ const getDefaultMultiUnitsParameter = (parameter: string): MultiUnitsParameter =
 
 export const getRollingStockEditorDefaultValues = (
   rollingStockData?: RollingStock
-): RollingStockParametersValues =>
-  rollingStockData
-    ? {
-        railjsonVersion: rollingStockData.railjson_version,
-        name: rollingStockData.name,
-        detail: rollingStockData.metadata?.detail || '',
-        family: rollingStockData.metadata?.family || '',
-        grouping: rollingStockData.metadata?.grouping || '',
-        number: rollingStockData.metadata?.number || '',
-        reference: rollingStockData.metadata?.reference || '',
-        series: rollingStockData.metadata?.series || '',
-        subseries: rollingStockData.metadata?.subseries || '',
-        type: rollingStockData.metadata?.type || '',
-        unit: rollingStockData.metadata?.unit || '',
-        length: rollingStockData.length,
-        mass: {
-          ...getDefaultMultiUnitsParameter('mass'),
-          value: rollingStockData.mass / 1000, // The mass received is in kg and should appear in tons.
-        },
-        maxSpeed: {
-          ...getDefaultMultiUnitsParameter('maxSpeed'),
-          value: msToKmh(rollingStockData.max_speed), // The speed received is in m/s and should appear in km/h.
-        },
-        startupTime: rollingStockData.startup_time,
-        startupAcceleration: rollingStockData.startup_acceleration,
-        comfortAcceleration: rollingStockData.comfort_acceleration,
-        constGamma: rollingStockData.const_gamma,
-        inertiaCoefficient: rollingStockData.inertia_coefficient,
-        loadingGauge: rollingStockData.loading_gauge,
-        rollingResistanceA: {
-          ...getDefaultMultiUnitsParameter('rollingResistanceA'),
-          value: rollingStockData.rolling_resistance.A / 1000, // The b resistance received is in N and should appear in kN.
-        },
-        rollingResistanceB: {
-          ...getDefaultMultiUnitsParameter('rollingResistanceB'),
-          value: rollingStockData.rolling_resistance.B / (1000 * 3.6), // The b resistance received is in N/(m/s) and should appear in kN/(km/h).
-        },
-        rollingResistanceC: {
-          ...getDefaultMultiUnitsParameter('rollingResistanceC'),
-          value: rollingStockData.rolling_resistance.C / (1000 * 3.6 ** 2), // The c resistance received is in N/(m/s)² and should appear in kN/(km/h)².
-        },
-        electricalPowerStartupTime: rollingStockData.electrical_power_startup_time || null,
-        raisePantographTime: rollingStockData.raise_pantograph_time || null,
-        basePowerClass: rollingStockData.base_power_class || null,
-        powerRestrictions: rollingStockData.power_restrictions,
-        supportedSignalingSystems: rollingStockData.supported_signaling_systems,
-        primaryCategory: rollingStockData.primary_category,
-        categories: new Set([
-          ...rollingStockData.other_categories,
-          rollingStockData.primary_category,
-        ]),
-      }
-    : {
-        ...newRollingStockValues,
-        categories: new Set(),
-      };
+): RollingStockParametersValues => {
+  if (rollingStockData) {
+    const rollingResistance = convertRollingResistanceToDisplay(
+      rollingStockData.rolling_resistance
+    );
+
+    return {
+      railjsonVersion: rollingStockData.railjson_version,
+      name: rollingStockData.name,
+      detail: rollingStockData.metadata?.detail || '',
+      family: rollingStockData.metadata?.family || '',
+      grouping: rollingStockData.metadata?.grouping || '',
+      number: rollingStockData.metadata?.number || '',
+      reference: rollingStockData.metadata?.reference || '',
+      series: rollingStockData.metadata?.series || '',
+      subseries: rollingStockData.metadata?.subseries || '',
+      type: rollingStockData.metadata?.type || '',
+      unit: rollingStockData.metadata?.unit || '',
+      length: rollingStockData.length,
+      mass: {
+        ...getDefaultMultiUnitsParameter('mass'),
+        value: rollingStockData.mass / 1000, // The mass received is in kg and should appear in tons.
+      },
+      maxSpeed: {
+        ...getDefaultMultiUnitsParameter('maxSpeed'),
+        value: msToKmh(rollingStockData.max_speed), // The speed received is in m/s and should appear in km/h.
+      },
+      startupTime: rollingStockData.startup_time,
+      startupAcceleration: rollingStockData.startup_acceleration,
+      comfortAcceleration: rollingStockData.comfort_acceleration,
+      constGamma: rollingStockData.const_gamma,
+      inertiaCoefficient: rollingStockData.inertia_coefficient,
+      loadingGauge: rollingStockData.loading_gauge,
+      rollingResistanceA: {
+        ...getDefaultMultiUnitsParameter('rollingResistanceA'),
+        value: rollingResistance.A,
+      },
+      rollingResistanceB: {
+        ...getDefaultMultiUnitsParameter('rollingResistanceB'),
+        value: rollingResistance.B,
+      },
+      rollingResistanceC: {
+        ...getDefaultMultiUnitsParameter('rollingResistanceC'),
+        value: rollingResistance.C,
+      },
+      electricalPowerStartupTime: rollingStockData.electrical_power_startup_time || null,
+      raisePantographTime: rollingStockData.raise_pantograph_time || null,
+      basePowerClass: rollingStockData.base_power_class || null,
+      powerRestrictions: rollingStockData.power_restrictions,
+      supportedSignalingSystems: rollingStockData.supported_signaling_systems,
+      primaryCategory: rollingStockData.primary_category,
+      categories: new Set([
+        ...rollingStockData.other_categories,
+        rollingStockData.primary_category,
+      ]),
+    };
+  }
+
+  return {
+    ...newRollingStockValues,
+    categories: new Set(),
+  };
+};
 
 export const createEmptyCurve = (
   comfort: Comfort,
