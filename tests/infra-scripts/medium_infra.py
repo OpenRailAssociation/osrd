@@ -4,6 +4,11 @@ that uses different CH codes for the same Operational Point.
 
 The North_West branch joins West station's V1 at the PI1 switch, TI3_LENGTH before PA2:
 small_infra's TA0 is split into TA0 and TI3.
+
+The North_West_Branch line ends at Branch_station, and is only connected to the
+rest of the infra through a reversal (rebroussement): its TJ0 track and North_West
+station's track B (TI1) are both legs of the PI2 switch, so trains must run into the
+TI4 headshunt and backtrack there.
 """
 
 import sys
@@ -26,6 +31,7 @@ from small_infra_creator import (
 )
 
 NORTH_WEST_PARKING = Line("North_West_Parking", 404040)
+NORTH_WEST_BRANCH = Line("North_West_Branch", 484848)
 
 
 class MediumInfraCreator(SmallInfraCreator):
@@ -48,6 +54,8 @@ class MediumInfraCreator(SmallInfraCreator):
         self._add_track("TI1", 650, NORTH_WEST_PARKING, TrackId("B", 1))
         self._add_track("TI2", 2350, NORTH_WEST_PARKING, TrackId("A-B", 1))
         self._add_track("TI3", self.TI3_LENGTH, WEST_PARKING, V1)
+        self._add_track("TI4", 1000, NORTH_WEST_PARKING, TrackId("B", 1))
+        self._add_track("TJ0", 1500, NORTH_WEST_BRANCH, V1)
         super()._add_west_tracks()
 
     def _add_west_switches(self) -> None:
@@ -69,6 +77,17 @@ class MediumInfraCreator(SmallInfraCreator):
         self.switches["PI1"] = pi1
         self._add_switch_signals(pi1, {"A": ("DI2", "SI2")})
         pi1.set_coords(-0.37, LAT_0)
+        # TI1 and TJ0 are both legs: going from one to the other requires backtracking
+        pi2 = self.builder.add_point_switch(
+            label="PI2",
+            base=t["TI4"].end(),
+            left=t["TI1"].begin(),
+            right=t["TJ0"].begin(),
+        )
+        self._add_switch_signals(
+            pi2, {"A": ("DI4", "SI4"), "B1": ("DI5", "SI5"), "B2": ("DJ0", "SJ0")}
+        )
+        pi2.set_coords(-0.399908223, 49.509952495)
         super()._add_west_switches()
 
     def _set_west_coords(self) -> None:
@@ -76,10 +95,11 @@ class MediumInfraCreator(SmallInfraCreator):
         t["TI0"].set_remaining_coords(
             [(-0.399905989, 49.511371919), (-0.392118223, 49.511488984)]
         )
-        t["TI1"].set_remaining_coords([(-0.399908223, 49.509952495)])
         t["TI2"].set_remaining_coords(
             [(-0.374246119, 49.510219813), (-0.370160915, 49.507828941)]
         )
+        t["TI4"].set_remaining_coords([(-0.413, 49.509952495)])
+        t["TJ0"].set_remaining_coords([(-0.3985, 49.5085), (-0.3855, 49.5065)])
         super()._set_west_coords()
 
     def _add_west_detectors(self) -> None:
@@ -98,6 +118,10 @@ class MediumInfraCreator(SmallInfraCreator):
             uic=8799,
             id="North_West_station_1",
         )
+        # Names don't start with North/South, not to change e2e search results.
+        # The reversal point is 800m from PI2, for trains to clear it before backtracking.
+        self._add_station("Branch_reversal", "BRR", [(t["TI4"], 200)], uic=8801)
+        self._add_station("Branch_station", "BRS", [(t["TJ0"], 1200)], uic=8800)
         super()._add_west_stations()
 
     def _add_west_loading_gauge_limits(self) -> None:

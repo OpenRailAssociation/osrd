@@ -8,45 +8,50 @@
         {
             "id": "buffer_stop.1",
             "position": 0.0,
-            "track": "TI1"
+            "track": "TI4"
         },
         {
             "id": "buffer_stop.2",
-            "position": 0.0,
-            "track": "TA0"
+            "position": 1500.0,
+            "track": "TJ0"
         },
         {
             "id": "buffer_stop.3",
             "position": 0.0,
-            "track": "TA1"
+            "track": "TA0"
         },
         {
             "id": "buffer_stop.4",
             "position": 0.0,
-            "track": "TA2"
+            "track": "TA1"
         },
         {
             "id": "buffer_stop.5",
             "position": 0.0,
-            "track": "TB0"
+            "track": "TA2"
         },
         {
             "id": "buffer_stop.6",
+            "position": 0.0,
+            "track": "TB0"
+        },
+        {
+            "id": "buffer_stop.7",
             "position": 6500.0,
             "track": "TF1"
         },
         {
-            "id": "buffer_stop.7",
+            "id": "buffer_stop.8",
             "position": 2000.0,
             "track": "TG4"
         },
         {
-            "id": "buffer_stop.8",
+            "id": "buffer_stop.9",
             "position": 2000.0,
             "track": "TG5"
         },
         {
-            "id": "buffer_stop.9",
+            "id": "buffer_stop.10",
             "position": 5000.0,
             "track": "TH1"
         }
@@ -56,6 +61,11 @@
             "id": "DI0",
             "position": 570.0,
             "track": "TI0"
+        },
+        {
+            "id": "DI5",
+            "position": 180.0,
+            "track": "TI1"
         },
         {
             "id": "DI1",
@@ -71,6 +81,16 @@
             "id": "DI3",
             "position": 125.0,
             "track": "TI3"
+        },
+        {
+            "id": "DI4",
+            "position": 820.0,
+            "track": "TI4"
+        },
+        {
+            "id": "DJ0",
+            "position": 180.0,
+            "track": "TJ0"
         },
         {
             "id": "DA2",
@@ -558,6 +578,18 @@
                 {
                     "applicable_directions": "BOTH",
                     "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "applicable_directions": "BOTH",
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
+                },
+                {
+                    "applicable_directions": "BOTH",
+                    "begin": 0.0,
                     "end": 1950.0,
                     "track": "TA1"
                 },
@@ -871,6 +903,40 @@
         },
         {
             "country_code": "FR",
+            "id": "Branch_reversal",
+            "is_passenger_station": true,
+            "main_code": "BRR",
+            "name": "Branch_reversal",
+            "parts": [
+                {
+                    "local_track_name": "B",
+                    "position": 200.0,
+                    "track": "TI4"
+                }
+            ],
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8801
+        },
+        {
+            "country_code": "FR",
+            "id": "Branch_station",
+            "is_passenger_station": true,
+            "main_code": "BRS",
+            "name": "Branch_station",
+            "parts": [
+                {
+                    "local_track_name": "V1",
+                    "position": 1200.0,
+                    "track": "TJ0"
+                }
+            ],
+            "secondary_code": "BV",
+            "secondary_name": "0",
+            "uic": 8800
+        },
+        {
+            "country_code": "FR",
             "id": "West_station",
             "is_passenger_station": true,
             "main_code": "WS",
@@ -1082,17 +1148,19 @@
         },
         {
             "entry_point": {
+                "id": "DI5",
+                "type": "Detector"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
                 "id": "buffer_stop.1",
                 "type": "BufferStop"
             },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "id": "DI1",
-                "type": "Detector"
-            },
-            "id": "rt.buffer_stop.1->DI1",
+            "id": "rt.DI5->buffer_stop.1",
             "release_detectors": [],
-            "switches_directions": {}
+            "switches_directions": {
+                "PI2": "A_B1"
+            }
         },
         {
             "entry_point": {
@@ -1134,10 +1202,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.2",
+                "id": "buffer_stop.3",
                 "type": "BufferStop"
             },
-            "id": "rt.DI2->buffer_stop.2",
+            "id": "rt.DI2->buffer_stop.3",
             "release_detectors": [],
             "switches_directions": {
                 "PI1": "A_B2"
@@ -1145,7 +1213,83 @@
         },
         {
             "entry_point": {
+                "id": "buffer_stop.1",
+                "type": "BufferStop"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "id": "DI4",
+                "type": "Detector"
+            },
+            "id": "rt.buffer_stop.1->DI4",
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "entry_point": {
+                "id": "DI4",
+                "type": "Detector"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "id": "DI1",
+                "type": "Detector"
+            },
+            "id": "rt.DI4->DI1",
+            "release_detectors": [],
+            "switches_directions": {
+                "PI2": "A_B1"
+            }
+        },
+        {
+            "entry_point": {
+                "id": "DI4",
+                "type": "Detector"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
                 "id": "buffer_stop.2",
+                "type": "BufferStop"
+            },
+            "id": "rt.DI4->buffer_stop.2",
+            "release_detectors": [],
+            "switches_directions": {
+                "PI2": "A_B2"
+            }
+        },
+        {
+            "entry_point": {
+                "id": "buffer_stop.2",
+                "type": "BufferStop"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "id": "DJ0",
+                "type": "Detector"
+            },
+            "id": "rt.buffer_stop.2->DJ0",
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "entry_point": {
+                "id": "DJ0",
+                "type": "Detector"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "id": "buffer_stop.1",
+                "type": "BufferStop"
+            },
+            "id": "rt.DJ0->buffer_stop.1",
+            "release_detectors": [],
+            "switches_directions": {
+                "PI2": "A_B2"
+            }
+        },
+        {
+            "entry_point": {
+                "id": "buffer_stop.3",
                 "type": "BufferStop"
             },
             "entry_point_direction": "START_TO_STOP",
@@ -1153,7 +1297,7 @@
                 "id": "DA2",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.2->DA2",
+            "id": "rt.buffer_stop.3->DA2",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -1164,10 +1308,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.1",
-                "type": "BufferStop"
+                "id": "DI5",
+                "type": "Detector"
             },
-            "id": "rt.DA2->buffer_stop.1",
+            "id": "rt.DA2->DI5",
             "release_detectors": [],
             "switches_directions": {
                 "PI1": "A_B2",
@@ -1193,7 +1337,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.3",
+                "id": "buffer_stop.4",
                 "type": "BufferStop"
             },
             "entry_point_direction": "START_TO_STOP",
@@ -1201,7 +1345,7 @@
                 "id": "DA0",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.3->DA0",
+            "id": "rt.buffer_stop.4->DA0",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -1241,7 +1385,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.4",
+                "id": "buffer_stop.5",
                 "type": "BufferStop"
             },
             "entry_point_direction": "START_TO_STOP",
@@ -1249,7 +1393,7 @@
                 "id": "DA1",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.4->DA1",
+            "id": "rt.buffer_stop.5->DA1",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -1277,10 +1421,10 @@
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "id": "buffer_stop.3",
+                "id": "buffer_stop.4",
                 "type": "BufferStop"
             },
-            "id": "rt.DA3->buffer_stop.3",
+            "id": "rt.DA3->buffer_stop.4",
             "release_detectors": [],
             "switches_directions": {
                 "PA2": "A_B1",
@@ -1294,10 +1438,10 @@
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "id": "buffer_stop.1",
-                "type": "BufferStop"
+                "id": "DI5",
+                "type": "Detector"
             },
-            "id": "rt.DA3->buffer_stop.1",
+            "id": "rt.DA3->DI5",
             "release_detectors": [],
             "switches_directions": {
                 "PA2": "A_B2",
@@ -1362,10 +1506,10 @@
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "id": "buffer_stop.4",
+                "id": "buffer_stop.5",
                 "type": "BufferStop"
             },
-            "id": "rt.DA4->buffer_stop.4",
+            "id": "rt.DA4->buffer_stop.5",
             "release_detectors": [],
             "switches_directions": {
                 "PA3": "A_B1",
@@ -1379,10 +1523,10 @@
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "id": "buffer_stop.5",
+                "id": "buffer_stop.6",
                 "type": "BufferStop"
             },
-            "id": "rt.DA4->buffer_stop.5",
+            "id": "rt.DA4->buffer_stop.6",
             "release_detectors": [],
             "switches_directions": {
                 "PA3": "A_B1",
@@ -1396,10 +1540,10 @@
             },
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
-                "id": "buffer_stop.3",
+                "id": "buffer_stop.4",
                 "type": "BufferStop"
             },
-            "id": "rt.DA4->buffer_stop.3",
+            "id": "rt.DA4->buffer_stop.4",
             "release_detectors": [],
             "switches_directions": {
                 "PA3": "A_B2",
@@ -1440,7 +1584,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.5",
+                "id": "buffer_stop.6",
                 "type": "BufferStop"
             },
             "entry_point_direction": "START_TO_STOP",
@@ -1448,7 +1592,7 @@
                 "id": "DB0",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.5->DB0",
+            "id": "rt.buffer_stop.6->DB0",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -1828,10 +1972,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.6",
+                "id": "buffer_stop.7",
                 "type": "BufferStop"
             },
-            "id": "rt.DE0->buffer_stop.6",
+            "id": "rt.DE0->buffer_stop.7",
             "release_detectors": [],
             "switches_directions": {
                 "PD1": "STATIC",
@@ -1840,7 +1984,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.6",
+                "id": "buffer_stop.7",
                 "type": "BufferStop"
             },
             "entry_point_direction": "STOP_TO_START",
@@ -1848,7 +1992,7 @@
                 "id": "DD5",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.6->DD5",
+            "id": "rt.buffer_stop.7->DD5",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -2068,10 +2212,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.7",
+                "id": "buffer_stop.8",
                 "type": "BufferStop"
             },
-            "id": "rt.DG3->buffer_stop.7",
+            "id": "rt.DG3->buffer_stop.8",
             "release_detectors": [],
             "switches_directions": {
                 "PG0": "A_B1"
@@ -2084,10 +2228,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.8",
+                "id": "buffer_stop.9",
                 "type": "BufferStop"
             },
-            "id": "rt.DG3->buffer_stop.8",
+            "id": "rt.DG3->buffer_stop.9",
             "release_detectors": [],
             "switches_directions": {
                 "PG0": "A_B2",
@@ -2117,10 +2261,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.8",
+                "id": "buffer_stop.9",
                 "type": "BufferStop"
             },
-            "id": "rt.DG4->buffer_stop.8",
+            "id": "rt.DG4->buffer_stop.9",
             "release_detectors": [],
             "switches_directions": {
                 "PG1": "A_B1"
@@ -2128,7 +2272,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.7",
+                "id": "buffer_stop.8",
                 "type": "BufferStop"
             },
             "entry_point_direction": "STOP_TO_START",
@@ -2136,7 +2280,7 @@
                 "id": "DG5",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.7->DG5",
+            "id": "rt.buffer_stop.8->DG5",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -2158,7 +2302,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.8",
+                "id": "buffer_stop.9",
                 "type": "BufferStop"
             },
             "entry_point_direction": "STOP_TO_START",
@@ -2166,7 +2310,7 @@
                 "id": "DG6",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.8->DG6",
+            "id": "rt.buffer_stop.9->DG6",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -2258,10 +2402,10 @@
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
-                "id": "buffer_stop.9",
+                "id": "buffer_stop.10",
                 "type": "BufferStop"
             },
-            "id": "rt.DH2->buffer_stop.9",
+            "id": "rt.DH2->buffer_stop.10",
             "release_detectors": [],
             "switches_directions": {
                 "PH1": "A_B2"
@@ -2269,7 +2413,7 @@
         },
         {
             "entry_point": {
-                "id": "buffer_stop.9",
+                "id": "buffer_stop.10",
                 "type": "BufferStop"
             },
             "entry_point_direction": "STOP_TO_START",
@@ -2277,7 +2421,7 @@
                 "id": "DH3",
                 "type": "Detector"
             },
-            "id": "rt.buffer_stop.9->DH3",
+            "id": "rt.buffer_stop.10->DH3",
             "release_detectors": [],
             "switches_directions": {}
         },
@@ -2325,6 +2469,33 @@
             "position": 550.0,
             "sight_distance": 400.0,
             "track": "TI0"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "SI5",
+                    "side": "LEFT"
+                }
+            },
+            "id": "SI5",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 200.0,
+            "sight_distance": 400.0,
+            "track": "TI1"
         },
         {
             "direction": "START_TO_STOP",
@@ -2379,6 +2550,60 @@
             "position": 2150.0,
             "sight_distance": 400.0,
             "track": "TI2"
+        },
+        {
+            "direction": "START_TO_STOP",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "SI4",
+                    "side": "LEFT"
+                }
+            },
+            "id": "SI4",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 800.0,
+            "sight_distance": 400.0,
+            "track": "TI4"
+        },
+        {
+            "direction": "STOP_TO_START",
+            "extensions": {
+                "sncf": {
+                    "kp": "",
+                    "label": "SJ0",
+                    "side": "LEFT"
+                }
+            },
+            "id": "SJ0",
+            "logical_signals": [
+                {
+                    "conditional_parameters": [],
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "signaling_system": "BAL"
+                }
+            ],
+            "position": 200.0,
+            "sight_distance": 400.0,
+            "track": "TJ0"
         },
         {
             "direction": "START_TO_STOP",
@@ -5278,6 +5503,18 @@
                 {
                     "applicable_directions": "BOTH",
                     "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "applicable_directions": "BOTH",
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
+                },
+                {
+                    "applicable_directions": "BOTH",
+                    "begin": 0.0,
                     "end": 1750.0,
                     "track": "TA0"
                 },
@@ -5545,6 +5782,30 @@
                 "B2": {
                     "endpoint": "END",
                     "track": "TA0"
+                }
+            },
+            "switch_type": "point_switch"
+        },
+        {
+            "extensions": {
+                "sncf": {
+                    "label": "PI2"
+                }
+            },
+            "group_change_delay": 0.0,
+            "id": "PI2",
+            "ports": {
+                "A": {
+                    "endpoint": "END",
+                    "track": "TI4"
+                },
+                "B1": {
+                    "endpoint": "BEGIN",
+                    "track": "TI1"
+                },
+                "B2": {
+                    "endpoint": "BEGIN",
+                    "track": "TJ0"
                 }
             },
             "switch_type": "point_switch"
@@ -6099,6 +6360,66 @@
                     "end": 150.0
                 }
             ],
+            "slopes": []
+        },
+        {
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 404040,
+                    "line_name": "North_West_Parking",
+                    "track_name": "B",
+                    "track_number": 1
+                }
+            },
+            "geo": {
+                "coordinates": [
+                    [
+                        -0.413,
+                        49.509952495
+                    ],
+                    [
+                        -0.399908223,
+                        49.509952495
+                    ]
+                ],
+                "type": "LineString"
+            },
+            "id": "TI4",
+            "length": 1000.0,
+            "loading_gauge_limits": [],
+            "slopes": []
+        },
+        {
+            "curves": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 484848,
+                    "line_name": "North_West_Branch",
+                    "track_name": "V1",
+                    "track_number": 1
+                }
+            },
+            "geo": {
+                "coordinates": [
+                    [
+                        -0.399908223,
+                        49.509952495
+                    ],
+                    [
+                        -0.3985,
+                        49.5085
+                    ],
+                    [
+                        -0.3855,
+                        49.5065
+                    ]
+                ],
+                "type": "LineString"
+            },
+            "id": "TJ0",
+            "length": 1500.0,
+            "loading_gauge_limits": [],
             "slopes": []
         },
         {
