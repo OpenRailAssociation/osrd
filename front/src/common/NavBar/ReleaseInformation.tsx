@@ -10,7 +10,8 @@ import motriceParty from 'common/MotriceRelated/motriceParty';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import LicenseAttributions from './LicenseAttributions';
-import { Copy } from "@osrd-project/ui-icons";
+import { Check, Copy } from "@osrd-project/ui-icons";
+import { useEffect, useState } from "react";
 
 function ServiceRow({
   name,
@@ -19,17 +20,29 @@ function ServiceRow({
   name: string;
   version?: string | number | null;
 }) {
+  const [copied, setCopied] = useState(false);
+
   const versionText = version?.toString();
 
   async function copyTextToClipboard() {
     if (versionText) {
       try {
         await navigator.clipboard.writeText(versionText);
+        setCopied(true);
       } catch (e) {
         console.error("Failed to copy text: ", e);
       }
     }
   }
+
+  useEffect(() => {
+    if (!copied) return;
+
+    const timer = setTimeout(() => {
+      setCopied(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   return (
     <tr>
@@ -46,7 +59,11 @@ function ServiceRow({
             onClick={copyTextToClipboard}
           >
             <code title={versionText}>{version}</code>
-            <Copy className="copy-icon" />
+            {copied ? (
+              <Check className="copy-icon" />
+            ) : (
+              <Copy className="copy-icon" />
+            )}
           </button>
         )}
       </td>
