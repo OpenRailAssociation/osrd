@@ -73,6 +73,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['authz'],
       }),
+      patchAuthzGroupsById: build.mutation<
+        PatchAuthzGroupsByIdApiResponse,
+        PatchAuthzGroupsByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/groups/${queryArg.id}`,
+          method: 'PATCH',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
         query: () => ({ url: `/authz/me` }),
         providesTags: ['authz'],
@@ -1704,6 +1715,20 @@ export type DeleteAuthzGroupsByIdApiResponse = unknown;
 export type DeleteAuthzGroupsByIdApiArg = {
   /** The group id */
   id: number;
+};
+export type PatchAuthzGroupsByIdApiResponse = /** status 200 Group updated */ {
+  id: number;
+  name: string;
+  roles: ('Admin' | 'Stdcm' | 'OperationalStudies')[];
+};
+export type PatchAuthzGroupsByIdApiArg = {
+  /** The group id */
+  id: number;
+  /** Group to update with its roles */
+  body: {
+    name: string;
+    roles: Role[];
+  };
 };
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;

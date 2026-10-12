@@ -109,6 +109,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/", put!(authz::create_group))
                             .nests("/{id}", |path| {
                                 path.route("/", delete!(authz::delete_group))
+                                    .route("/", patch!(authz::update_group))
                             })
                     })
             })

@@ -124,6 +124,61 @@ paths:
       responses:
         '204':
           description: Delete a group
+    patch:
+      tags:
+      - authz
+      parameters:
+      - name: id
+        in: path
+        description: The group id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Group to update with its roles
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - roles
+              properties:
+                name:
+                  type: string
+                roles:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Role'
+                  uniqueItems: true
+        required: true
+      responses:
+        '200':
+          description: Group updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - name
+                - roles
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  name:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                      enum:
+                      - Admin
+                      - Stdcm
+                      - OperationalStudies
+                    uniqueItems: true
   /authz/me:
     get:
       tags:
