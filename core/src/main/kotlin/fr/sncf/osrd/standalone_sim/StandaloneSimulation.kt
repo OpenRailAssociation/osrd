@@ -152,14 +152,28 @@ fun runStandaloneSimulation(
                 DistanceRangeMap.RangeMapEntry(0.meters, finalEnvelope.endPos.meters, rollingStock)
             )
         )
+    val waypointOffsets = schedule.map { i -> i.pathOffset }
     val maxEffortResult =
-        makeSimpleReportTrain(maxEffortEnvelope, trainPath, rollingStocks, schedule)
+        makeSimpleReportTrain(
+            maxEffortEnvelope,
+            trainPath,
+            waypointOffsets,
+            rollingStocks,
+            schedule,
+        )
     val provisionalResult =
-        makeSimpleReportTrain(provisionalEnvelope, trainPath, rollingStocks, schedule)
+        makeSimpleReportTrain(
+            provisionalEnvelope,
+            trainPath,
+            waypointOffsets,
+            rollingStocks,
+            schedule,
+        )
     val finalEnvelopeResult =
         runScheduleMetadataExtractor(
             finalEnvelope,
             trainPath,
+            waypointOffsets,
             // TODO path migration
             infra,
             rollingStocks,
