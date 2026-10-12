@@ -292,7 +292,7 @@ const StdcmConfig = ({
     if (state) {
       dispatch(restoreStdcmConfig(state));
     }
-  }, []);
+  }, [dispatch]);
 
   useLayoutEffect(() => {
     const bannerElement = pathfindingBannerRef.current;

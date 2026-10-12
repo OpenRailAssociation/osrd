@@ -192,13 +192,13 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   /* Notify API errors */
   useEffect(() => {
     if (createStudyError) dispatch(setFailure(castErrorToFailure(createStudyError)));
-  }, [createStudyError]);
+  }, [createStudyError, dispatch]);
   useEffect(() => {
     if (patchStudyError) dispatch(setFailure(castErrorToFailure(patchStudyError)));
-  }, [patchStudyError]);
+  }, [patchStudyError, dispatch]);
   useEffect(() => {
     if (deleteStudyError) dispatch(setFailure(castErrorToFailure(deleteStudyError)));
-  }, [deleteStudyError]);
+  }, [deleteStudyError, dispatch]);
 
   useModalFocusTrap(modalRef, closeModal);
 

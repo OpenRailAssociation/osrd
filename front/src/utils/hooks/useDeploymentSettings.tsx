@@ -182,7 +182,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
     };
 
     fetchInternalProd();
-  }, []);
+  }, [dispatch]);
 
   return (
     <deploymentSettingsContext.Provider value={customizedDeploymentSetting}>

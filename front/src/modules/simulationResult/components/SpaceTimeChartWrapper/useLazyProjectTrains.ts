@@ -111,6 +111,7 @@ const useLazyProjectTrains = ({
     operationalPointReferences,
     operationalPointDistances,
     isSimulationEnabled,
+    dispatch,
   ]);
 
   const projectTrainSchedules = useCallback((trainSchedules: TrainScheduleResponse[]) => {

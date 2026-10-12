@@ -158,7 +158,7 @@ const RoundTripsModal = ({
     const roundTripGroups = groupRoundTrips(trainSchedulesWithOpsById, trainScheduleRoundtrips);
 
     setPairingItems(formatPairingItems(roundTripGroups, t));
-  }, [trainScheduleRoundtrips, trainSchedulesWithOpsById]);
+  }, [trainScheduleRoundtrips, trainSchedulesWithOpsById, t]);
 
   useEffect(() => {
     if (roundTripsModalIsOpen) {

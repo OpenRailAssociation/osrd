@@ -60,7 +60,7 @@ const ScenarioExplorerModal = ({
     if (isProjectsError) {
       dispatch(setFailure(castErrorToFailure(projectsError)));
     }
-  }, [isProjectsError]);
+  }, [isProjectsError, dispatch]);
 
   useEffect(() => {
     if (projectID && !isProjectsError) {

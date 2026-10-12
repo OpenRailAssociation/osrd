@@ -70,7 +70,7 @@ export default function RollingStockCardDetail({
         )
       );
     }
-  }, [error]);
+  }, [error, dispatch, t]);
 
   const leftColumn = (rs: RollingStockWithLiveries) => (
     <table className="rollingstock-details-table">

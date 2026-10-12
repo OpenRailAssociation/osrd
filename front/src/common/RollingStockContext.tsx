@@ -42,7 +42,7 @@ export const RollingStockContextProvider = ({ children }: RollingStockContextPro
         })
       );
     }
-  }, [isError]);
+  }, [isError, dispatch, t]);
 
   const value = useMemo(() => {
     const rollingStocks = data?.results ?? [];
