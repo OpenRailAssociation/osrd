@@ -680,6 +680,7 @@ const TimeCell = ({
     onChange?.({
       target: { value: displayValue },
     } as ChangeEvent<HTMLInputElement>);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [state.hours, state.minutes, state.seconds, onChange]);
 
   const isTimeComplete =

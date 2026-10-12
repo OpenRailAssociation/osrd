@@ -204,6 +204,7 @@ const SimulationWarpedMap = ({
       }
     });
     // We call the function only if the state's type change otherwise we go to an infinite loop
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [state.type]);
 
   return (

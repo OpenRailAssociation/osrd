@@ -455,6 +455,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       channel.close();
       broadcastChannel.current = null;
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [scenario, dispatch]);
 
   const results = useMemo(

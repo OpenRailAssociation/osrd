@@ -113,6 +113,7 @@ const StdcmViewContent = ({
       selectedSimulationIndex === undefined ||
         !isEqual(currentSimulationInputs, simulationsList[selectedSimulationIndex].inputs)
     );
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [currentSimulationInputs, selectedSimulationIndex]);
 
   useEffect(() => {

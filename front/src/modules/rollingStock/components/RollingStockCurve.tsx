@@ -222,6 +222,7 @@ export default function RollingStockCurve({
     setCurvesVisibility((prevCurvesVisibility) =>
       setupCurvesVisibility(transformedData, prevCurvesVisibility)
     );
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [transformedData, ready]);
 
   const changeComfortState = (comfort: string) => {

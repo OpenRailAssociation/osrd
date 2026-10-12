@@ -136,6 +136,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
       setMin(0);
       setMax(0);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [data, field]);
 
   /**
@@ -162,6 +163,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
     setFullLength(nFullLength);
     setAdditionalData4viz(croppedAdditionalData);
     setOperationalPoints4viz(nOperationalPoints);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [data, viewBox]);
 
   /**
@@ -178,6 +180,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
       );
       setOperationalPoints4viz(nOperationalPoints);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [operationalPoints, fullLength]);
 
   const debounceTimeoutRef = useRef<number>(undefined);
@@ -217,6 +220,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
       ) as LinearMetadataItem[] as AdditionalDataItem[];
       setAdditionalData4viz(croppedAdditionalData);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [additionalData, fullLength]);
 
   /**
@@ -316,6 +320,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
         document.removeEventListener('mousemove', fnMove, true);
       }
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [resizing, onResize, wrapper, fullLength]);
 
   return (

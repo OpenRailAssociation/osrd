@@ -57,6 +57,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
         })
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedStopDuration]);
 
   return (

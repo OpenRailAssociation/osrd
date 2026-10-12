@@ -161,6 +161,7 @@ const ProjectListView = () => {
 
   useEffect(() => {
     getProjectList();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, safeWord, allProjects]);
 
   return (

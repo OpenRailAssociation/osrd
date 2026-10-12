@@ -88,6 +88,7 @@ const SwitchEditionLayers = () => {
           });
         });
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [hoveredTrackId]);
 
   // Update the hoveredPoint value in the state:
@@ -119,6 +120,7 @@ const SwitchEditionLayers = () => {
         },
       },
     });
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trackStatus, mousePosition, t]);
 
   const [geometryState, setGeometryState] = useState<
@@ -157,6 +159,7 @@ const SwitchEditionLayers = () => {
         }
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [entity?.properties?.ports, infraID, switchType]);
 
   return (

@@ -218,6 +218,7 @@ const useFilterRollingStock = ({
     if (isError && error) {
       dispatch(setFailure(castErrorToFailure(error)));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isError]);
 
   useEffect(() => {

@@ -201,12 +201,14 @@ const SpeedSectionEditionLeftPanel = () => {
     if (switchesRouteCandidates.length) {
       handleRouteClicked(true)(switchesRouteCandidates[0]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [routeElements]);
 
   useEffect(() => {
     if (isSpeedRestriction && !isEmpty(selectedSwitches)) {
       searchRoutesFromSwitch();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [selectedSwitches]);
 
   // The 2 main checkboxes

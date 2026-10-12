@@ -218,6 +218,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     getStudiesList();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, projectStudies]);
 
   const openAddOrEditProjectModal = useCallback(() => {

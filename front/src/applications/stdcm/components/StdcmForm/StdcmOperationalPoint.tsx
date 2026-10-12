@@ -144,6 +144,7 @@ const StdcmOperationalPoint = ({
       setSearchTerm('');
       setChSuggestions([]);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [operationalPoint]);
 
   useEffect(() => {

@@ -97,7 +97,8 @@ const MapSearchLine = ({
     } else if (searchResults.length !== 0) {
       setSearchResults([]);
     }
-  }, [debouncedSearchTerm, searchResults.length]);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [debouncedSearchTerm]);
 
   return (
     <div className="mt-2">

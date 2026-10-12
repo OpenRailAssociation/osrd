@@ -181,6 +181,7 @@ const IncompatibleConstraints = ({
     setTotal(nextConstraints.length);
     setSelectedConstraint(new Set([]));
     setHoveredConstraint(new Set([]));
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [incompatibleConstraints]);
 
   const filteredConstraints = useMemo(
