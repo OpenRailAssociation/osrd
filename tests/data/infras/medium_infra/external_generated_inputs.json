@@ -219,6 +219,16 @@
                 },
                 {
                     "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
+                },
+                {
+                    "begin": 0.0,
                     "end": 1950.0,
                     "track": "TA1"
                 },
@@ -377,6 +387,16 @@
                     "begin": 0.0,
                     "end": 2350.0,
                     "track": "TI2"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
                 },
                 {
                     "begin": 0.0,
@@ -541,6 +561,16 @@
                 },
                 {
                     "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
+                },
+                {
+                    "begin": 0.0,
                     "end": 1950.0,
                     "track": "TA1"
                 },
@@ -702,6 +732,16 @@
                 },
                 {
                     "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
+                },
+                {
+                    "begin": 0.0,
                     "end": 1950.0,
                     "track": "TA1"
                 },
@@ -860,6 +900,16 @@
                     "begin": 0.0,
                     "end": 2350.0,
                     "track": "TI2"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1000.0,
+                    "track": "TI4"
+                },
+                {
+                    "begin": 0.0,
+                    "end": 1500.0,
+                    "track": "TJ0"
                 },
                 {
                     "begin": 0.0,
