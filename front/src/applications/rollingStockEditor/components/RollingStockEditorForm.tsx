@@ -61,7 +61,6 @@ const RollingStockEditorForm = ({ rollingStockData, setPageMode }: RollingStockP
   );
 
   useEffect(() => {
-    /* eslint-disable-next-line react/no-deriving-state-in-effects */
     setRollingStockValues(getRollingStockEditorDefaultValues(rollingStockData));
   }, [rollingStockData]);
 
@@ -69,6 +68,7 @@ const RollingStockEditorForm = ({ rollingStockData, setPageMode }: RollingStockP
     if (prevRsEffortCurve !== undefined) {
       setRollingStockValues(modifyRollingStockElectricalValues(rollingStockValues, effortCurves));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [effortCurves]);
 
   const [powerRestrictionsClass, setPowerRestrictionsClass] = useState<
@@ -222,6 +222,7 @@ const RollingStockEditorForm = ({ rollingStockData, setPageMode }: RollingStockP
 
   useEffect(() => {
     setRollingStockValues({ ...rollingStockValues, powerRestrictions: powerRestrictionsClass });
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [powerRestrictionsClass]);
 
   const tabRollingStockDetails: TabProps = {

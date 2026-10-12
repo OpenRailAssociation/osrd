@@ -68,6 +68,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
       submitBtnRef.current.click();
       setIsFormSubmited(false);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isFormSubmited]);
 
   useEffect(() => {

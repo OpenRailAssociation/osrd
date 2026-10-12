@@ -103,6 +103,7 @@ export default function useKeyboardShortcuts(shortcuts?: Shortcut[]): {
       registery.current = {};
       document.body.removeEventListener('keydown', eventFunction);
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
 
   return { registery: Object.freeze(registery.current), register, unRegister };

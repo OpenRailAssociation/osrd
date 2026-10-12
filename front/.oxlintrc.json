@@ -35,7 +35,6 @@
     "consistent-return": "off",
     "control-has-associated-label": "off",
     "eslint/require-await": "off",
-    "exhaustive-deps": "off",
     "iframe-missing-sandbox": "off",
     "max-classes-per-file": "off",
     "max-dependencies": "off",

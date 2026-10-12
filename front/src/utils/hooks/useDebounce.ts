@@ -31,6 +31,7 @@ export const useDebouncedFunc = <T = number | string | null>(
     return () => {
       clearTimeout(handler);
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [value, delay]);
 };
 
@@ -47,5 +48,6 @@ export const useDebouncedEffect = (delay: number, effect: EffectCallback, deps: 
       clearTimeout(handler);
       if (destructor) destructor();
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [...deps, delay]);
 };

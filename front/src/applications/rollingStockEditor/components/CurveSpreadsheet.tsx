@@ -116,6 +116,7 @@ const CurveSpreadsheet = ({
       updateRollingStockCurve(sortedSpreadsheetValues);
       setNeedsSort(false);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [needsSort]);
 
   return (

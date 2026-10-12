@@ -224,6 +224,7 @@ export const usePathStepsMetadata = (
       setPathStepsMetadataByKey(newPathStepsMetadataByKey);
     };
     fetchAndSetMetadata();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [pathStepsOperationalPoints, pathSteps, localTrackNamesData]);
 
   const setPathStepMetadata = useCallback(

@@ -64,6 +64,7 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
     if (infrasList?.results) {
       filterInfras(infrasList.results);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [debouncedFilter]);
 
   useEffect(() => {
@@ -76,12 +77,14 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
         )
       );
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isError]);
 
   useEffect(() => {
     if (isSuccess && infrasList?.results && infrasList.results.length > 0) {
       filterInfras(infrasList.results);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSuccess, infrasList]);
 
   return (

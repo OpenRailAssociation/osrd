@@ -47,6 +47,7 @@ const TrackSplitLeftPanel = () => {
       setIsFormSubmited(false);
       submit(state);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isFormSubmited, setIsFormSubmited]);
 
   const isValid = isOffsetValid(state.offset, state.track);

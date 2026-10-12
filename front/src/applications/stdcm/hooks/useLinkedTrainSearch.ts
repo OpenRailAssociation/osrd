@@ -210,6 +210,7 @@ const useLinkedTrainSearch = () => {
       setLinkedTrainDate(selectableSlot.start);
       resetLinkedTrainSearch();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [selectableSlot]);
 
   return {

@@ -34,6 +34,7 @@ const useProjectedConflicts = (
     if (path) {
       fetchProjectedZones(path);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [path]);
 
   const conflictReqsByZone = useMemo(() => {

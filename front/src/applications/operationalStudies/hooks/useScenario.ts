@@ -54,6 +54,7 @@ const useScenario = () => {
       dispatch(updateInfraID(undefined));
       dispatch(updateTrainIdUsedForProjection(undefined));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [scenario]);
 
   useEffect(() => {
@@ -96,6 +97,7 @@ const useScenario = () => {
     }
 
     checkAndCreateSandbox(scenario.timetable_id, scenario.timetable_type);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleSets, scenario?.timetable_id, scenario?.timetable_type]);
 
   return { scenario, sandboxId };

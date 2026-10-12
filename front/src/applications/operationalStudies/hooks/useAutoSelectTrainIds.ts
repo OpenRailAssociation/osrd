@@ -168,6 +168,7 @@ const useAutoSelectTrainIds = (
       dispatch(updateSelectedTrain({ id: trainScheduleId, by: 'timetable' }));
       if (!isProjectedTrainIdValid) dispatch(updateTrainIdUsedForProjection(trainScheduleId));
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainSchedulesWithDetails, setIdsFromUrlOrStorage, parametersLoaded, dispatch]);
 };
 

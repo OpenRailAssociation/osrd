@@ -117,6 +117,7 @@ const WarpedMap = ({
 
     mapRef.fitBounds(boundingBox);
     mapRef.resize();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [boundingBox]);
 
   return (

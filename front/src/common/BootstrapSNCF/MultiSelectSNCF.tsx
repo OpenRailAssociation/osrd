@@ -73,6 +73,7 @@ const MultiSelectSNCF = ({
     } else if (selectAll && !isAllSelected) {
       setSelectAll(false);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [selectedValues]);
 
   const handleSelectAll = (newSelectAll: boolean) => {

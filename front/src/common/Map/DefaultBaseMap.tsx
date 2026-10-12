@@ -100,6 +100,7 @@ const DefaultBaseMap = ({
       const newViewport = computeBBoxViewport(bbox(points), viewport);
       updateViewportChange(newViewport);
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [geometry, pathStepMarkers]);
 
   return (

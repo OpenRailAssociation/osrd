@@ -41,6 +41,7 @@ const SelectionLeftPanel = () => {
       if (newUrlSelection && newUrlSelection !== currentUrlSelection)
         setSearchParams({ selection: newUrlSelection }, { replace: true });
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [selection]);
 
   if (!selection.length)
