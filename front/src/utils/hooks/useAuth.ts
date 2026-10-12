@@ -40,7 +40,7 @@ function useAuth() {
     if (data) {
       dispatch(updateAuthzUser({ userRoles: data.roles, userId: data.id }));
     }
-  }, [isUserLogged, data, impersonatedUser]);
+  }, [isUserLogged, data, impersonatedUser, dispatch]);
 
   /**
    * Function to impersonate the given user, or if undefined, stop the impersonation.

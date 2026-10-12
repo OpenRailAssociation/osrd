@@ -70,7 +70,7 @@ const useFilterTowedRollingStock = ({ isDebugMode }: { isDebugMode: boolean }) =
     if (isError && error) {
       dispatch(setFailure(castErrorToFailure(error)));
     }
-  }, [isError]);
+  }, [isError, dispatch]);
 
   useEffect(() => {
     const newFilteredTowedRollingStocks = filterTowedRollingStocks(allTowedRollingStocks, filters);

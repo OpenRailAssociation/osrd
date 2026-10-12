@@ -105,7 +105,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     return () => {
       trainSchedulesResult.unsubscribe();
     };
-  }, [scenario.timetable_id]);
+  }, [scenario.timetable_id, dispatch]);
 
   const {
     projectedTrainsById,
@@ -455,7 +455,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       channel.close();
       broadcastChannel.current = null;
     };
-  }, [scenario]);
+  }, [scenario, dispatch]);
 
   const results = useMemo(
     () => ({

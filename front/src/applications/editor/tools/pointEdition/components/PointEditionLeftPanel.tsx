@@ -89,7 +89,15 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
         }
       });
     }
-  }, [infraID, setState, state, state.entity.properties.track, trackState.id, trackState.type]);
+  }, [
+    infraID,
+    setState,
+    state,
+    state.entity.properties.track,
+    trackState.id,
+    trackState.type,
+    dispatch,
+  ]);
 
   /**
    * When the ref of the initialEntity changed,

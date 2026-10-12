@@ -89,7 +89,7 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
         setNgeError(error);
       }
     }
-  }, [dto, ngeRootElement]);
+  }, [dto, ngeRootElement, dispatch]);
 
   useEffect(() => {
     if (ngeRootElement && activeFilterSettingId !== undefined) {

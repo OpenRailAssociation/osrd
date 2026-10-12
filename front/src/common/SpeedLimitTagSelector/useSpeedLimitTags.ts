@@ -36,7 +36,7 @@ const useSpeedLimitTags = (infraID: number | undefined) => {
         setFailure(castErrorToFailure(error, { name: t('errorMessages.unableToRetrieveTags') }))
       );
     }
-  }, [error]);
+  }, [error, dispatch, t]);
 
   return useMemo(() => uniq(speedLimitsTagsByInfraId).sort(), [speedLimitsTagsByInfraId]);
 };
