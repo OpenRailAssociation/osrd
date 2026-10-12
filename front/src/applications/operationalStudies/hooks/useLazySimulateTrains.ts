@@ -11,6 +11,7 @@ import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/forma
 import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useAppDispatch } from 'store';
+import { msToStartTime } from 'utils/duration';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 
@@ -122,7 +123,10 @@ export default function useLazySimulateTrains({
         const next = new Map(prev);
         next.set(
           id,
-          withPacedExceptions({ ...result, startTime: newDeparture }, shiftedExceptions)
+          withPacedExceptions(
+            { ...result, startTime: msToStartTime(newDeparture.getTime(), result.startTime) },
+            shiftedExceptions
+          )
         );
         return next;
       });
