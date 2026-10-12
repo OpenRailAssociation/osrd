@@ -109,6 +109,21 @@ paths:
                       - Stdcm
                       - OperationalStudies
                     uniqueItems: true
+  /authz/groups/{id}:
+    delete:
+      tags:
+      - authz
+      parameters:
+      - name: id
+        in: path
+        description: The group id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: Delete a group
   /authz/me:
     get:
       tags:
