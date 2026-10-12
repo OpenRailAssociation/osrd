@@ -56,7 +56,7 @@ const useMapBlankStyle = (): MapProps['mapStyle'] => {
       }
     };
     fetchData();
-  }, [signalingSystems]);
+  }, [signalingSystems, getSpriteData]);
 
   const props: MapProps['mapStyle'] = useMemo(() => {
     const sprite: SpriteSpecification = validSprites;

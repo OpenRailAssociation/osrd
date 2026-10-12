@@ -12,7 +12,7 @@ export function usePersistScenarioHeader(scenarioId: number | undefined, default
 
   useEffect(() => {
     if (!storageKey) setActiveBoards(new Set(defaultBoards));
-  }, [storageKey]);
+  }, [storageKey, defaultBoards]);
 
   useEffect(() => {
     if (!storageKey) return;

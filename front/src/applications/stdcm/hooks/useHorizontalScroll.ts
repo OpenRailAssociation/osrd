@@ -108,7 +108,7 @@ const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: num
       };
     }
     return () => {};
-  }, [debouncedUpdateButtonsVisibility]);
+  }, [debouncedUpdateButtonsVisibility, updateButtonsVisibility]);
 
   return { scrollableRef, showLeftBtn, showRightBtn, scrollLeft, scrollRight };
 };

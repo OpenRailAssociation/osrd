@@ -188,7 +188,7 @@ const DebugSpaceTimeChart = ({ simData }: DebugSpaceTimeChartProps) => {
 
   useEffect(() => {
     setTimeOrigin(chartData.departureMs);
-  }, [chartData]);
+  }, [chartData, setTimeOrigin]);
 
   const [hoveredBlock, setHoveredBlock] = useState<DebugBlock | null>(null);
   const [mousePos, setMousePos] = useState<{ clientX: number; clientY: number } | null>(null);

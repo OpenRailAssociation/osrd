@@ -69,7 +69,7 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
     return () => {
       frame.removeEventListener('load', handleFrameLoad);
     };
-  }, []);
+  }, [onLoad]);
 
   useEffect(() => {
     if (ngeRootElement && i18n.language) {

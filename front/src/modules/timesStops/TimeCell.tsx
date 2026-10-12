@@ -667,7 +667,7 @@ const TimeCell = ({
   // Skip sync while the user is editing (focusedSection !== null) — handled by the reducer guard.
   useEffect(() => {
     dispatch({ type: 'EXTERNAL_VALUE_CHANGED', value: controlledValue });
-  }, [controlledValue?.getTime()]);
+  }, [controlledValue]);
 
   useEffect(() => {
     if (state.focusedSection) {

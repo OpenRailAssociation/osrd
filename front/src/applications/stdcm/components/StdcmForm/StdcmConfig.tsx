@@ -309,7 +309,7 @@ const StdcmConfig = ({
     return () => {
       bannerElement.removeEventListener('animationend', handleAnimationEnd);
     };
-  }, [showPathfindingStatusMessage]);
+  }, [showPathfindingStatusMessage, setShowPathfindingStatusMessage]);
 
   const isLoading = useMemo(
     () =>

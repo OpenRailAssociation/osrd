@@ -56,7 +56,7 @@ const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps)
   // ctrl+E opens the modal
   useEffect(() => {
     register({ code: 'KeyE', optionalKeys: { ctrlKey: true }, handler: displayErrors });
-  }, [displayErrors]);
+  }, [displayErrors, register]);
 
   return (
     <button

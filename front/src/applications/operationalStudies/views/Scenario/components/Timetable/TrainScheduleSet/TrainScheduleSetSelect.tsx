@@ -58,9 +58,10 @@ const TrainScheduleSetSelect = ({
       ? undefined
       : trainScheduleSetsSorted.find((tts) => tts.id === trainScheduleSetIdSelected);
 
+  // TODO: This should probably we done in the events, and we should probably move it closer (not in Timetable)
   useEffect(() => {
     setTrainScheduleSetIdSelected(undefined);
-  }, [catalogSelected]);
+  }, [catalogSelected, setTrainScheduleSetIdSelected]);
 
   return (
     <form
