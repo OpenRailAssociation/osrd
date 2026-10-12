@@ -151,6 +151,7 @@ enum class StepType(
         true,
         false,
     ), // infra location used for overtake only, so stop is forced when passing-by
+    PATH_WAYPOINT(4, false, false), // via met but not requested by the user
 }
 
 /** Converts a DistanceRangeMap into an API compatible RangeValues. */

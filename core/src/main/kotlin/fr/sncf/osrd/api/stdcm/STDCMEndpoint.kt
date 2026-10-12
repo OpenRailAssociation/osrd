@@ -686,8 +686,9 @@ fun parseMarginValue(margin: MarginValue): AllowanceValue? {
 private fun parseSimulationScheduleItems(
     trainStops: List<TrainStop>,
 ): List<SimulationScheduleItem> {
+    val trainInputSteps = trainStops.filter { stop -> stop.stepTypes.any { it.isInput } }
     return dedupScheduleItems(
-        trainStops.map {
+        trainInputSteps.map {
             val duration = if (it.duration > 0.0) it.duration.seconds else null
             val stopDetails =
                 if (duration != null) StopDetails(duration, it.receptionSignal, false) else null

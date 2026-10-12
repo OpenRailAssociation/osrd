@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -17,6 +18,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.isTimeStrictlyPositive
 import fr.sncf.osrd.utils.toGeoPoint
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -69,8 +71,17 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 stops,
                 updatedTimeData,
             )
-
         val seenInputSteps = lastExplorer.getStepTracker().getSeenInputSteps()
+        val maxRollingStockLength = rollingStocks.maxOf { it.length }.meters
+
+        val inputOpOffsets = seenInputSteps.mapIndexedNotNull { index, step ->
+            when {
+                index == 0 || index == seenInputSteps.lastIndex -> step.travelledPathOffset
+                step.originalStep.isStop -> null
+                else -> step.travelledPathOffset - maxRollingStockLength
+            }
+        }
+
         val res =
             STDCMCompleteResult(
                 trainPath,
@@ -85,7 +96,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 updatedTimeData.departureTime,
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
-                makePathStops(stops, trainPath),
+                makePathStops(stops, trainPath, inputOpOffsets),
                 withAllowance.engineeringAllowanceRanges,
             )
         return if (res.envelope.totalTime > maxRunTime) {
@@ -233,10 +244,16 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     }
 
     /** Builds the list of stops from OP */
-    private fun makeOpStops(trainPath: TrainPath): List<TrainStop> {
+    private fun makeOpStops(
+        trainPath: TrainPath,
+        inputOpOffsets: List<Offset<PhysicsPath>>,
+    ): List<TrainStop> {
         val res = ArrayList<TrainStop>()
         for ((_, offset) in trainPath.getOperationalPointParts()) {
-            res.add(TrainStop(offset.meters, 0.0, OPEN, listOf(StepType.INPUT_STOP)))
+            val stepTypes =
+                if (inputOpOffsets.contains(offset)) setOf(StepType.INPUT_WAYPOINT)
+                else setOf(StepType.PATH_WAYPOINT)
+            res.add(TrainStop(offset.meters, 0.0, OPEN, stepTypes))
         }
         return res
     }
@@ -261,9 +278,13 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * Make the path's ordered list of stops, in order. Both user-defined stops and operational
      * points.
      */
-    private fun makePathStops(stops: List<TrainStop>, trainPath: TrainPath): List<TrainStop> {
+    private fun makePathStops(
+        stops: List<TrainStop>,
+        trainPath: TrainPath,
+        inputOpOffsets: List<Offset<PhysicsPath>>,
+    ): List<TrainStop> {
         val mutStops = stops.toMutableList()
-        mutStops.addAll(makeOpStops(trainPath))
+        mutStops.addAll(makeOpStops(trainPath, inputOpOffsets))
         return sortAndMergeStopsDuplicates(mutStops)
     }
 }
