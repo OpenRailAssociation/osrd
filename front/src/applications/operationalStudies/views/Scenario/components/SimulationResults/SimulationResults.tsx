@@ -124,7 +124,11 @@ const SimulationResults = ({
       timeStopsTableRef.current?.scrollIntoView();
       setIsScrollingToTimeStopsTable(false);
     }
-  }, [simulationResults?.pathProperties, isScrollingToTimeStopsTable]);
+  }, [
+    simulationResults?.pathProperties,
+    isScrollingToTimeStopsTable,
+    setIsScrollingToTimeStopsTable,
+  ]);
 
   const enrichedProjections = useHandleInvalidProjections({
     trainSchedulesWithDetails,

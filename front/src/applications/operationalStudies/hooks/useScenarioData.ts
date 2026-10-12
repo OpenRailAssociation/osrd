@@ -191,7 +191,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     if (trainSchedules && workerStatus === 'READY' && simulatedTrainsById.size === 0) {
       simulateTrainSchedules(trainSchedules);
     }
-  }, [trainSchedules, workerStatus, simulatedTrainsById]);
+  }, [trainSchedules, workerStatus, simulatedTrainsById, simulateTrainSchedules]);
 
   const broadcastChannel = useRef<BroadcastChannel>(null);
 

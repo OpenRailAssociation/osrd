@@ -57,7 +57,7 @@ export default function RollingStockCardDetail({
 
   useEffect(() => {
     if (rollingStock) setCurvesComfortList(getCurvesComforts(rollingStock.effort_curves.modes));
-  }, [rollingStock]);
+  }, [rollingStock, setCurvesComfortList]);
 
   useEffect(() => {
     if (error) {

@@ -53,7 +53,7 @@ const SwitchEditionLeftPanel = () => {
       submitBtnRef.current.click();
       setIsFormSubmited(false);
     }
-  }, [isFormSubmited]);
+  }, [isFormSubmited, setIsFormSubmited]);
 
   if (!switchType || !flatSwitchEntity) return null;
   return (

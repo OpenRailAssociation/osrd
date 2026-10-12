@@ -207,6 +207,7 @@ const SimulationResultMap = ({
     pathStepsOperationalPoints,
     pathProperties?.operationalPoints,
     pathfindingResults,
+    getTrackSectionsByIds,
     t,
   ]);
 
