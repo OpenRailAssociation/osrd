@@ -15,7 +15,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
-import fr.sncf.osrd.stdcm.tracing.FailureExplainer
+import fr.sncf.osrd.stdcm.tracing.FailureRegister
 import fr.sncf.osrd.stdcm.tracing.ProgressCallback
 import fr.sncf.osrd.stdcm.tracing.ProgressLogger
 import fr.sncf.osrd.train.RollingStock
@@ -66,8 +66,7 @@ fun findPath(
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
-    fullFailureExplainer: FailureExplainer? = null,
-    workSchedulesFailureExplainer: FailureExplainer? = null,
+    failureRegister: FailureRegister? = null,
     progressCallback: ProgressCallback? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
@@ -85,8 +84,7 @@ fun findPath(
             pathfindingTimeout,
             temporarySpeedLimitManager,
             searchMetadata,
-            fullFailureExplainer,
-            workSchedulesFailureExplainer,
+            failureRegister,
             progressCallback,
         )
         .findPath()
@@ -107,8 +105,7 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata?,
-    fullFailureExplainer: FailureExplainer?,
-    workSchedulesFailureExplainer: FailureExplainer?,
+    failureRegister: FailureRegister?,
     private val progressCallback: ProgressCallback? = null,
 ) {
 
@@ -128,8 +125,7 @@ class STDCMPathfinding(
             standardAllowance,
             temporarySpeedLimitManager,
             searchMetadata,
-            fullFailureExplainer,
-            workSchedulesFailureExplainer,
+            failureRegister,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
