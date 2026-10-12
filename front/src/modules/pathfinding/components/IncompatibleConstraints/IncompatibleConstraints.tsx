@@ -92,8 +92,9 @@ const IncompatibleConstraints = ({
 
   // On map mounted, we listen some events
   useEffect(() => {
+    const currentMap = map.current;
     const fnMouseMove = (e: MapLayerMouseEvent) => {
-      if (map.current?.getLayer('pathfinding-incompatible-constraints')) {
+      if (currentMap?.getLayer('pathfinding-incompatible-constraints')) {
         const nearestResult = getMapMouseEventNearestFeature(e, {
           layersId: ['pathfinding-incompatible-constraints'],
         });
@@ -104,10 +105,10 @@ const IncompatibleConstraints = ({
         }
       }
     };
-    map.current?.on('mousemove', fnMouseMove);
+    currentMap?.on('mousemove', fnMouseMove);
 
     const fnMouseClick = (e: MapLayerMouseEvent) => {
-      if (map.current?.getLayer('pathfinding-incompatible-constraints')) {
+      if (currentMap?.getLayer('pathfinding-incompatible-constraints')) {
         const nearestResult = getMapMouseEventNearestFeature(e, {
           layersId: ['pathfinding-incompatible-constraints'],
         });
@@ -128,11 +129,11 @@ const IncompatibleConstraints = ({
         }
       }
     };
-    map.current?.on('mousedown', fnMouseClick);
+    currentMap?.on('mousedown', fnMouseClick);
 
     return () => {
-      map.current?.off('mousemove', fnMouseMove);
-      map.current?.off('mousedown', fnMouseClick);
+      currentMap?.off('mousemove', fnMouseMove);
+      currentMap?.off('mousedown', fnMouseClick);
     };
   }, [map]);
 
