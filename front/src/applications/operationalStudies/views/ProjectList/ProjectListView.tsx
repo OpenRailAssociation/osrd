@@ -127,35 +127,37 @@ const ProjectListView = () => {
     setSortOption(e.target.value as SortOptions);
   };
 
-  function displayCards() {
-    return !isLoading ? (
-      <div
-        className={cx('projects-list', {
-          'selection-mode': selectedProjectIds.length > 0,
-        })}
-      >
-        <AddNewCard
-          testId="add-project"
-          className="project-card empty"
-          modalComponent={<AddOrEditProjectModal />}
-          item="project"
-        />
-        {projectsList.map((project) => (
-          <ProjectCard
-            project={project}
-            setFilterChips={setFilterChips}
-            isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
-            toggleSelect={toggleProjectSelection}
-            key={`home-projectsList-${project.id}`}
+  const displayedCards = useMemo(
+    () =>
+      !isLoading ? (
+        <div
+          className={cx('projects-list', {
+            'selection-mode': selectedProjectIds.length > 0,
+          })}
+        >
+          <AddNewCard
+            testId="add-project"
+            className="project-card empty"
+            modalComponent={<AddOrEditProjectModal />}
+            item="project"
           />
-        ))}
-      </div>
-    ) : (
-      <span className="mt-5 text-center">
-        <Spinner displayDelay={500} />
-      </span>
-    );
-  }
+          {projectsList.map((project) => (
+            <ProjectCard
+              project={project}
+              setFilterChips={setFilterChips}
+              isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
+              toggleSelect={toggleProjectSelection}
+              key={`home-projectsList-${project.id}`}
+            />
+          ))}
+        </div>
+      ) : (
+        <span className="mt-5 text-center">
+          <Spinner displayDelay={500} />
+        </span>
+      ),
+    [isLoading, selectedProjectIds, toggleProjectSelection, projectsList]
+  );
 
   useEffect(() => {
     getProjectList();
@@ -190,7 +192,7 @@ const ProjectListView = () => {
           />
         )}
 
-        {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
+        {displayedCards}
       </div>
     </main>
   );
