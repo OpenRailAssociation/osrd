@@ -210,7 +210,7 @@ const ProjectView = () => {
 
   useEffect(() => {
     if (!projectId) throw new Error('Project id is undefined');
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     if (isProjectError && projectError) throw projectError;

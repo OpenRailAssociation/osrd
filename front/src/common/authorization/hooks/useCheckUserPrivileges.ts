@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 
 import type { Privilege, ResourceType } from '../types';
 import useAuthz from './useAuthz';
@@ -21,17 +21,21 @@ export default function useCheckUserPrivileges({
   const { checkUserPrivileges } = useAuthz();
   const [hasPrivileges, setHasPrivileges] = useState(false);
 
+  const onResourceChange = useEffectEvent((type: ResourceType, id: number) => {
+    checkUserPrivileges(type, id, privileges)
+      .then((result) => setHasPrivileges(result))
+      .catch((error) => {
+        console.error('Error checking user privileges:', error);
+        setHasPrivileges(false);
+      });
+  });
+
   useEffect(() => {
     if (!resourceId) setHasPrivileges(false);
     else {
-      checkUserPrivileges(resourceType, resourceId, privileges)
-        .then((result) => setHasPrivileges(result))
-        .catch((error) => {
-          console.error('Error checking user privileges:', error);
-          setHasPrivileges(false);
-        });
+      onResourceChange(resourceType, resourceId);
     }
-  }, [checkUserPrivileges, resourceType, resourceId, privileges]);
+  }, [checkUserPrivileges, resourceType, resourceId]);
 
   return hasPrivileges;
 }

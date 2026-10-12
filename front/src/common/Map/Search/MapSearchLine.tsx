@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +37,7 @@ const MapSearchLine = ({
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const searchLine = async () => {
+  const onSearch = useEffectEvent(async () => {
     const searchQuery = [
       'or',
       ['search', ['line_name'], debouncedSearchTerm],
@@ -63,7 +63,7 @@ const MapSearchLine = ({
       .catch(() => {
         setSearchResults([]);
       });
-  };
+  });
 
   const coordinates = ({ min_lon, max_lon, min_lat, max_lat }: BoundingBox) => [
     [min_lon, min_lat],
@@ -93,11 +93,11 @@ const MapSearchLine = ({
 
   useEffect(() => {
     if (debouncedSearchTerm) {
-      searchLine();
+      onSearch();
     } else if (searchResults.length !== 0) {
       setSearchResults([]);
     }
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, searchResults.length]);
 
   return (
     <div className="mt-2">
