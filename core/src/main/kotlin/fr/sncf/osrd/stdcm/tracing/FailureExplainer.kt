@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.S3Context
 import fr.sncf.osrd.conflicts.RequirementId
+import fr.sncf.osrd.conflicts.RequirementType
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -33,7 +34,8 @@ class FailureExplainer(
     val blockInfra: BlockInfra,
     maxLargestConflicts: Int = 10,
     maxClosestConflicts: Int = 10,
-) {
+    val conflictTypesToRegister: Set<RequirementType>? = null,
+) : FailureRegister {
     private val largestConflicts = SmallestNValues(maxLargestConflicts) { -it.timeLost }
     private val closestConflicts = SmallestNValues(maxClosestConflicts) { it.bestRemainingTime }
 
@@ -129,12 +131,18 @@ class FailureExplainer(
         @Json(name = "path_geometry") val pathGeometry: RJSLineString,
     )
 
-    /** Register a new conflict. */
-    fun conflictCallback(parentNode: STDCMNode, timeLost: Double, cause: RequirementId) {
-        val pendingConflict =
-            PendingConflict(parentNode, timeLost, cause, parentNode.remainingTimeEstimation)
-        largestConflicts.register(pendingConflict)
-        closestConflicts.register(pendingConflict)
+    override fun conflictCallback(
+        parentNode: STDCMNode,
+        timeLost: Double,
+        cause: RequirementId,
+        type: RequirementType,
+    ) {
+        if (conflictTypesToRegister == null || conflictTypesToRegister.contains(type)) {
+            val pendingConflict =
+                PendingConflict(parentNode, timeLost, cause, parentNode.remainingTimeEstimation)
+            largestConflicts.register(pendingConflict)
+            closestConflicts.register(pendingConflict)
+        }
     }
 
     /** Generates a JSON serializable report object. */
