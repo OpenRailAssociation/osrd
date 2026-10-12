@@ -20,7 +20,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.nextBacktrackLocation
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
-import fr.sncf.osrd.stdcm.tracing.FailureExplainer
+import fr.sncf.osrd.stdcm.tracing.FailureRegister
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
@@ -49,8 +49,7 @@ class STDCMGraph(
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     val searchMetadata: SearchMetadata?,
-    fullFailureExplainer: FailureExplainer?,
-    workSchedulesFailureExplainer: FailureExplainer?,
+    failureRegister: FailureRegister?,
 ) : Graph<STDCMNode, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
@@ -62,8 +61,7 @@ class STDCMGraph(
             blockAvailability,
             this,
             timeStep,
-            fullFailureExplainer,
-            workSchedulesFailureExplainer,
+            failureRegister,
         )
     val allowanceManager = EngineeringAllowanceManager(this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)

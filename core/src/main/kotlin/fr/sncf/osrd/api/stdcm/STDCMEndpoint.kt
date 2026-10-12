@@ -19,6 +19,7 @@ import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
 import fr.sncf.osrd.cli.*
 import fr.sncf.osrd.conflicts.ParsedRequirements
+import fr.sncf.osrd.conflicts.RequirementType
 import fr.sncf.osrd.envelope.concatenateAndShiftEnvelopes
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
@@ -47,6 +48,7 @@ import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
+import fr.sncf.osrd.stdcm.tracing.FailureCombiner
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.stdcm.tracing.ProgressCallback
 import fr.sncf.osrd.stdcm.tracing.STDCMProgress
@@ -175,7 +177,11 @@ class STDCMEndpoint(
                     infra.blockInfra,
                     maxLargestConflicts = 2,
                     maxClosestConflicts = 1,
+                    conflictTypesToRegister = setOf(RequirementType.WORK_SCHEDULE),
                 )
+
+            val failureCombiner =
+                FailureCombiner(listOf(fullFailureExplainer, workSchedulesFailureExplainer))
 
             var callback: ProgressCallback? = null
             if (ctx != null) {
@@ -205,8 +211,7 @@ class STDCMEndpoint(
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
-                    fullFailureExplainer,
-                    workSchedulesFailureExplainer,
+                    failureCombiner,
                     callback,
                 )
 
