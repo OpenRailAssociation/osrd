@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -120,6 +120,8 @@ const StdcmOperationalPoint = ({
     }
   };
 
+  const handleChSelectEffect = useEffectEvent(handleChSelect);
+
   const resetSuggestions = () => {
     if (searchTerm !== '' && !operationalPoint) {
       setSearchTerm('');
@@ -154,7 +156,7 @@ const StdcmOperationalPoint = ({
   }, [searchResults, operationalPoint, chSuggestions]);
 
   useEffect(() => {
-    if (chSuggestions.length === 1) handleChSelect(chSuggestions[0]);
+    if (chSuggestions.length === 1) handleChSelectEffect(chSuggestions[0]);
   }, [chSuggestions]);
 
   return (

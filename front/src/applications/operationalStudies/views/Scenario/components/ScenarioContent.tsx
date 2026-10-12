@@ -229,7 +229,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     });
   };
 
-  const handleNGELoad = () => setNGEIsLoading(false);
+  const handleNGELoad = useCallback(() => setNGEIsLoading(false), []);
 
   const defaultStartTime = useMemo(
     () =>
