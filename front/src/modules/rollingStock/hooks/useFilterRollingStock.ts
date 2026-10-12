@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import type { CategoryOption } from 'applications/rollingStockEditor/types';
-import { STDCM_ROLLING_STOCKS } from 'assets/rollingStock/freightRollingStocks';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   LightRollingStock,
@@ -156,13 +155,7 @@ function computeCategoryFilter(filters: RollingStockFilters, category?: Category
   return { ...filters, category: category?.id };
 }
 
-const useFilterRollingStock = ({
-  isStdcm = false,
-  isDebugMode = false,
-}: {
-  isStdcm?: boolean;
-  isDebugMode?: boolean;
-} = {}) => {
+const useFilterRollingStock = () => {
   const dispatch = useAppDispatch();
 
   const [filters, setFilters] = useState<RollingStockFilters>(initialFilters);
@@ -175,14 +168,6 @@ const useFilterRollingStock = ({
   } = osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
     pageSize: 1000,
   });
-
-  const usefulRollingStocks = useMemo(
-    () =>
-      isStdcm && !isDebugMode
-        ? allRollingStocks.filter((rs) => STDCM_ROLLING_STOCKS.includes(rs.name))
-        : allRollingStocks,
-    [isStdcm, isDebugMode, allRollingStocks]
-  );
 
   const [searchIsLoading, setSearchIsLoading] = useState(true);
 
@@ -221,13 +206,13 @@ const useFilterRollingStock = ({
   }, [isError]);
 
   useEffect(() => {
-    const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
+    const newFilteredRollingStock = filterRollingStocks(allRollingStocks, filters);
     if (isFetching) return;
     setTimeout(() => {
       setFilteredRollingStockList(newFilteredRollingStock);
       setSearchIsLoading(false);
     }, 0);
-  }, [filters, usefulRollingStocks, isFetching]);
+  }, [filters, allRollingStocks, isFetching]);
 
   return {
     filteredRollingStockList,
