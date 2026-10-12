@@ -43,20 +43,21 @@ const PicturePlaceholder = ({ image, isValid, tempProjectImage }: PicturePlaceho
   const { t } = useTranslation('operational-studies');
   const [projectImage, setProjectImage] = useState<Blob>();
 
-  const getProjectImageBlob = async () => {
-    if (image) {
-      try {
-        const imageBlob = await getDocument(image);
-        setProjectImage(imageBlob);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
-
   useEffect(() => {
+    const getProjectImageBlob = async () => {
+      if (image) {
+        try {
+          const imageBlob = await getDocument(image);
+          setProjectImage(imageBlob);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+
     getProjectImageBlob();
   }, [image]);
+
   if (tempProjectImage) {
     return <img src={URL.createObjectURL(tempProjectImage)} alt="Project illustration" />;
   }
