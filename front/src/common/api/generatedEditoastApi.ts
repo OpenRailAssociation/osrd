@@ -63,6 +63,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['authz'],
       }),
+      deleteAuthzGroupsById: build.mutation<
+        DeleteAuthzGroupsByIdApiResponse,
+        DeleteAuthzGroupsByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/groups/${queryArg.id}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
         query: () => ({ url: `/authz/me` }),
         providesTags: ['authz'],
@@ -1689,6 +1699,11 @@ export type PutAuthzGroupsApiArg = {
     name: string;
     roles: Role[];
   };
+};
+export type DeleteAuthzGroupsByIdApiResponse = unknown;
+export type DeleteAuthzGroupsByIdApiArg = {
+  /** The group id */
+  id: number;
 };
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;
