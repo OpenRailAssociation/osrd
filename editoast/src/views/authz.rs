@@ -1197,6 +1197,57 @@ pub(in crate::views) async fn delete_group(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    patch,
+    path = "",
+    tag = "authz",
+    params(("id" = i64, Path, description = "The group id")),
+    request_body(
+        content = inline(CreateGroupForm),
+        description = "Group to update with its roles",
+    ),
+    responses((status = 200, description = "Group updated", body = inline(GroupInfo))),
+)]
+pub(in crate::views) async fn update_group(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    Path(group_id): Path<i64>,
+    Json(CreateGroupForm { name, roles }): Json<CreateGroupForm>,
+) -> Result<Json<GroupInfo>> {
+    let authorizer = authn_state.authorizer(&openfga);
+
+    // Update the existing group in postgres to match the provided input:
+    let models::Group { id, name } = models::Group::changeset()
+        .name(name)
+        .update_or_fail(&mut db_pool.get().await?, group_id, || {
+            AuthzError::UnknownSubject {
+                subject_id: group_id,
+            }
+        })
+        .await?;
+
+    // Add the missing roles to the group in OpenFGA and remove its extra roles:
+
+    // TODO review: do we want to remove the existing extra roles ?
+    let group = authz::Subject::group(id);
+    let current_roles = v2::subject_roles(group)
+        .run::<AuthorizationError, _>(&authorizer)
+        .await?
+        .into_iter()
+        .collect::<HashSet<_>>();
+    let roles_to_add = roles.difference(&current_roles).copied().collect();
+    let roles_to_remove = current_roles.difference(&roles).copied().collect();
+    v2::add_roles(group, roles_to_add)
+        .zip(v2::remove_roles(group, roles_to_remove))
+        .run::<AuthorizationError, _>(&authorizer)
+        .await?;
+
+    Ok(Json(GroupInfo { id, name, roles }))
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
@@ -4263,6 +4314,126 @@ mod tests {
             name: created_group.name,
         };
         assert_eq!(registered_group, expected_group);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_group() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let group = app
+            .group("Sharknado Fanclub")
+            .with_roles([Role::Stdcm, Role::OperationalStudies])
+            .create()
+            .await;
+        let update_group_form = CreateGroupForm {
+            name: "Mortal Kombat Fanclub".to_string(),
+            roles: HashSet::from([Role::OperationalStudies]),
+        };
+
+        let updated_group = app
+            .patch(&format!("/authz/groups/{}", group.id))
+            .by_user(admin.as_ref())
+            .json(&update_group_form)
+            .await
+            .assert_status_ok()
+            .json::<GroupInfo>();
+
+        // The endpoint response body should match the provided input:
+        assert_eq!(
+            updated_group,
+            GroupInfo {
+                id: group.id,
+                name: update_group_form.name.clone(),
+                roles: update_group_form.roles.clone(),
+            }
+        );
+
+        // The group should have been correctly persisted in the postgres database:
+        let group_from_db = models::Group::retrieve(app.db_pool().get_ok(), group.id)
+            .await
+            .expect("database error while retrieving the updated group")
+            .expect("the updated group has not been persisted in the database");
+        assert_eq!(
+            group_from_db,
+            Group {
+                id: group.id,
+                name: update_group_form.name,
+            }
+        );
+
+        // the group roles should have been correctly written in OpenFGA:
+        assert_eq!(
+            app.openfga()
+                .subject_roles(&authz::Subject::group(group.id))
+                .await,
+            update_group_form.roles
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_group_requires_admin_role() {
+        let app = test_app!().build();
+        let regular_user = app.user("bill", "Bill").create().await;
+        let group = app
+            .group("Blizzard")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+
+        // The endpoint should return a 403 Forbidden:
+        app.patch(&format!("/authz/groups/{}", group.id))
+            .by_user(regular_user.as_ref())
+            .json(&CreateGroupForm {
+                name: "Microsoft".to_string(),
+                roles: HashSet::from([Role::OperationalStudies]),
+            })
+            .await
+            .assert_status_forbidden();
+
+        // The group should not have been updated in the database:
+        let group_from_db = models::Group::retrieve(app.db_pool().get_ok(), group.id)
+            .await
+            .expect("database error while retrieving the group")
+            .expect("the group does not exist in the database");
+        assert_eq!(
+            group_from_db,
+            Group {
+                id: group.id,
+                name: group.info.name,
+            }
+        );
+
+        // The group roles in OpenFGA should not have been updated either:
+        assert_eq!(
+            app.openfga()
+                .subject_roles(&authz::Subject::group(group.id))
+                .await,
+            HashSet::from([Role::Stdcm])
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_group_not_found() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let missing_group_id = i64::MAX;
+
+        app.patch(&format!("/authz/groups/{missing_group_id}"))
+            .by_user(admin.as_ref())
+            .json(&CreateGroupForm {
+                name: "No such group".to_string(),
+                roles: HashSet::from([Role::Stdcm]),
+            })
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
