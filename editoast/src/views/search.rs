@@ -817,6 +817,7 @@ pub(super) struct SearchResultItemStudy {
 }
 
 #[derive(Search, Serialize, ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
     table = "search_scenario",
     migration(src_table = "scenario"),
@@ -858,7 +859,7 @@ pub(super) struct SearchResultItemScenario {
     #[search(sql = "infra.name")]
     infra_name: String,
     #[search(
-        sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains INNER JOIN timetable_train_schedule_set AS ttss ON trains.train_schedule_set_id = ttss.train_schedule_set_id WHERE ttss.timetable_id = scenario.timetable_id)"
+        sql = "(SELECT COUNT(DISTINCT trains.id) FROM train_schedule AS trains INNER JOIN timetable_train_schedule_set AS ttss ON trains.train_schedule_set_id = ttss.train_schedule_set_id INNER JOIN scenario_timetable AS scenario_tt ON scenario_tt.timetable_id = ttss.timetable_id WHERE scenario_tt.scenario_id = scenario.id)"
     )]
     train_schedules_count: u64,
     #[search(sql = "scenario.description")]
@@ -996,11 +997,13 @@ pub mod tests {
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
     use crate::fixtures::create_train_schedule_set;
     use crate::generated_data::InfraGeneratedData as _;
     use crate::infra_cache::InfraCache;
     use crate::views::test_app;
     use crate::views::test_app::TestRequestExt as _;
+    use models::scenario_timetable::ScenarioTimetable;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn search_trainschedule_post_found() {
@@ -1055,6 +1058,40 @@ pub mod tests {
             .json();
 
         assert_eq!(response.len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_scenario_train_schedules_count() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "search_scenario").await;
+        create_simple_paced_train(&mut pool.get_ok(), fixtures.train_schedule_set.id).await;
+
+        // Link a second timetable (with its own train) to the same scenario
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+        ScenarioTimetable::changeset()
+            .scenario_id(fixtures.scenario.id)
+            .timetable_id(timetable.id)
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to link scenario to timetable");
+        create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+
+        let response: Vec<SearchResultItemScenario> = app
+            .post("/search")
+            .json(&json!({
+                "object": "scenario",
+                "query": ["=", ["study_id"], fixtures.scenario.study_id],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 1);
+        assert_eq!(response[0].id, fixtures.scenario.id as u64);
+        assert_eq!(response[0].train_schedules_count, 2);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
