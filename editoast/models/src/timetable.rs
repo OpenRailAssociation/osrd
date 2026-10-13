@@ -4,6 +4,8 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
 #[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
@@ -11,13 +13,17 @@ use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use itertools::Itertools as _;
+use serde::Deserialize;
+use serde::Serialize;
 use std::collections::HashSet;
 use std::ops::DerefMut as _;
 use unit_system::quantities::Offset;
 use unit_system::units::millisecond;
+use utoipa::ToSchema;
 
 use database::DbConnection;
 
+use crate::Scenario;
 use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
 use crate::timetable_type::TimetableType;
 
@@ -153,7 +159,7 @@ impl Timetable {
     pub async fn delete_orphaned(
         conn: &mut DbConnection,
     ) -> Result<usize, database::DatabaseError> {
-        use database::tables::scenario::dsl as scenario_dsl;
+        use database::tables::scenario_timetable::dsl as st_dsl;
         use database::tables::search_journey_environment_timetable::dsl as timetable_search_journey_env_dsl;
         use database::tables::stdcm_search_environment::dsl as stdcm_dsl;
         use database::tables::timetable::dsl as timetable_dsl;
@@ -161,7 +167,7 @@ impl Timetable {
         diesel::delete(timetable_dsl::timetable)
             .filter(timetable_dsl::is_train_schedule_set.eq(false))
             .filter(diesel::dsl::not(diesel::dsl::exists(
-                scenario_dsl::scenario.filter(scenario_dsl::timetable_id.eq(timetable_dsl::id)),
+                st_dsl::scenario_timetable.filter(st_dsl::timetable_id.eq(timetable_dsl::id)),
             )))
             .filter(diesel::dsl::not(diesel::dsl::exists(
                 stdcm_dsl::stdcm_search_environment
@@ -184,6 +190,8 @@ pub struct TimetableWithTrains {
     pub id: i64,
     #[diesel(sql_type = sql_types::TimetableType)]
     pub timetable_type: TimetableType,
+    #[diesel(sql_type = Nullable<Text>)]
+    pub name: Option<String>,
     #[diesel(sql_type = Array<BigInt>)]
     pub paced_train_ids: Vec<i64>,
 }
@@ -222,5 +230,37 @@ impl TimetableWithTrains {
             Ok(None) => Err(fail()),
             Err(e) => Err(E::from(e)),
         }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+pub struct TimetableSummary {
+    pub id: i64,
+    pub r#type: TimetableType,
+    pub name: Option<String>,
+}
+
+impl TimetableSummary {
+    pub async fn from_scenario(
+        scenario: &Scenario,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<Self>, database::DatabaseError> {
+        use database::tables::scenario_timetable;
+        use database::tables::timetable;
+
+        let result = timetable::table
+            .select((timetable::id, timetable::timetable_type, timetable::name))
+            .inner_join(scenario_timetable::table)
+            .filter(scenario_timetable::scenario_id.eq(scenario.id))
+            .load::<(i64, TimetableType, Option<String>)>(conn.write().await.deref_mut())
+            .await?
+            .into_iter()
+            .map(|(id, timetable_type, name)| TimetableSummary {
+                id,
+                r#type: timetable_type,
+                name,
+            })
+            .collect();
+        Ok(result)
     }
 }

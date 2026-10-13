@@ -1,6 +1,7 @@
 use std::ops::DerefMut as _;
 
 use diesel::ExpressionMethods as _;
+use diesel::JoinOnDsl as _;
 use diesel::QueryDsl as _;
 use diesel_async::RunQueryDsl as _;
 use serde::Deserialize;
@@ -15,7 +16,6 @@ use crate::prelude::*;
 use crate::project::Project;
 use crate::study::Study;
 use crate::tags::Tags;
-use crate::timetable::Timetable;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = database::tables::scenario)]
@@ -63,7 +63,41 @@ impl Scenario {
         &self,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        Timetable::train_schedules_count(self.timetable_id, conn).await
+        use database::tables::scenario_timetable;
+        use database::tables::timetable_train_schedule_set;
+        use database::tables::train_schedule;
+        use diesel::dsl::count;
+        use diesel::expression_methods::AggregateExpressionMethods as _;
+
+        scenario_timetable::table
+            .inner_join(timetable_train_schedule_set::table.on(
+                timetable_train_schedule_set::timetable_id.eq(scenario_timetable::timetable_id),
+            ))
+            .inner_join(
+                train_schedule::table.on(train_schedule::train_schedule_set_id
+                    .eq(timetable_train_schedule_set::train_schedule_set_id)),
+            )
+            .filter(scenario_timetable::scenario_id.eq(self.id))
+            .select(count(train_schedule::id).aggregate_distinct())
+            .first(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
+
+    /// Returns the IDs of the timetables linked to this scenario, ordered by ID
+    pub async fn timetable_ids(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<i64>, database::DatabaseError> {
+        use database::tables::scenario_timetable::dsl;
+
+        dsl::scenario_timetable
+            .filter(dsl::scenario_id.eq(self.id))
+            .select(dsl::timetable_id)
+            .order(dsl::timetable_id.asc())
+            .load(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
     }
 
     /// Opens a transaction, retrieves the [Scenario], its [Study] and [Project] and
@@ -116,12 +150,7 @@ impl Scenario {
 
 #[cfg(any(test, feature = "testing"))]
 impl Scenario {
-    pub fn fake(
-        name: impl Into<String>,
-        study_id: i64,
-        infra_id: i64,
-        timetable_id: i64,
-    ) -> Changeset<Self> {
+    pub fn fake(name: impl Into<String>, study_id: i64, infra_id: i64) -> Changeset<Self> {
         Self::changeset()
             .name(name.into())
             .description(String::new())
@@ -130,6 +159,5 @@ impl Scenario {
             .tags(Tags::default())
             .study_id(study_id)
             .infra_id(infra_id)
-            .timetable_id(timetable_id)
     }
 }
