@@ -9,6 +9,7 @@ import { MAIN_API } from 'config/config';
 import type { RootState } from 'reducers';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { getImpersonatedUser, getFeatureFlags } from 'reducers/user/userSelectors';
+import { camelToScreamingSnake } from 'utils/strings';
 
 export type ApiError = {
   data: {
@@ -35,7 +36,7 @@ const prepareHeadersWithFeatureFlags = (headers: Headers, api: { getState: () =>
   const featureFlags = getFeatureFlags(api.getState() as RootState);
   for (const [flag, value] of Object.entries(featureFlags)) {
     if (value) {
-      headers.append('X-feature-flags', flag);
+      headers.append('X-feature-flags', camelToScreamingSnake(flag));
     }
   }
 };
