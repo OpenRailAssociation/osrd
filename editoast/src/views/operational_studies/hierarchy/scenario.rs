@@ -35,9 +35,10 @@ use models::Infra;
 use models::Timestamp;
 use models::project::Project;
 use models::scenario::Scenario;
+use models::scenario_timetable::ScenarioTimetable;
 use models::study::Study;
 use models::tags::Tags;
-use models::timetable::Timetable;
+use models::timetable::TimetableSummary;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioIdParam {
@@ -66,7 +67,6 @@ impl ScenarioCreateForm {
             .creation_date(Timestamp::now())
             .last_modification(Timestamp::now())
             .infra_id(self.infra_id)
-            .timetable_id(self.timetable_id)
             .tags(self.tags)
             .electrical_profile_set_id(self.electrical_profile_set_id)
             .study_id(self.study_id)
@@ -83,10 +83,6 @@ pub enum ScenarioError {
     #[error("Scenario '{scenario_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { scenario_id: i64 },
-
-    #[error("Timetable '{timetable_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    TimetableNotFound { timetable_id: i64 },
 
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
@@ -126,7 +122,7 @@ pub struct ScenarioWithDetails {
     pub scenario: Scenario,
     pub infra_name: String,
     pub train_schedules_count: i64,
-    pub timetable_type: schemas::timetable_type::TimetableType,
+    pub timetable_summaries: Vec<TimetableSummary>,
 }
 
 impl ScenarioWithDetails {
@@ -134,17 +130,13 @@ impl ScenarioWithDetails {
         scenario: Scenario,
         conn: &mut DbConnection,
     ) -> Result<Self, ScenarioError> {
-        let timetable = Timetable::retrieve_or_fail(conn.clone(), scenario.timetable_id, || {
-            ScenarioError::TimetableNotFound {
-                timetable_id: scenario.timetable_id,
-            }
-        })
-        .await?;
+        let timetable_summaries = TimetableSummary::from_scenario(&scenario, conn).await?;
+
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
             train_schedules_count: scenario.train_schedules_count(conn).await?,
             scenario,
-            timetable_type: timetable.timetable_type.0,
+            timetable_summaries,
         })
     }
 }
@@ -157,7 +149,7 @@ pub struct ScenarioResponse {
     pub train_schedules_count: i64,
     pub project: Project,
     pub study: Study,
-    pub timetable_type: schemas::timetable_type::TimetableType,
+    pub timetable_summaries: Vec<TimetableSummary>,
 }
 
 impl ScenarioResponse {
@@ -172,7 +164,7 @@ impl ScenarioResponse {
             train_schedules_count: scenarios_with_details.train_schedules_count,
             project,
             study,
-            timetable_type: scenarios_with_details.timetable_type,
+            timetable_summaries: scenarios_with_details.timetable_summaries,
         }
     }
 }
@@ -193,6 +185,7 @@ pub(in crate::views) async fn create(
 ) -> Result<impl IntoResponse> {
     let infra_id = data.infra_id;
     let study_id = data.study_id;
+    let timetable_id = data.timetable_id;
     let scenario_cs = data.into_changeset();
 
     let details = Study::transactional_content_update(
@@ -205,6 +198,11 @@ pub(in crate::views) async fn create(
             .await?;
 
             let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
+            ScenarioTimetable::changeset()
+                .scenario_id(scenario.id)
+                .timetable_id(timetable_id)
+                .create(&mut conn)
+                .await?;
 
             let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
             Ok::<_, InternalError>(details)
@@ -697,7 +695,7 @@ mod tests {
         assert_eq!(response.scenario.name, scenario_name);
         assert_eq!(response.scenario.description, scenario_description);
         assert_eq!(response.scenario.infra_id, scenario_infra_id);
-        assert_eq!(response.scenario.timetable_id, scenario_timetable_id);
+        assert_eq!(response.timetable_summaries[0].id, scenario_timetable_id);
         assert_eq!(response.scenario.tags, scenario_tags);
         assert_eq!(response.scenario.study_id, study.id);
 
@@ -709,7 +707,13 @@ mod tests {
         assert_eq!(created_scenario.name, scenario_name);
         assert_eq!(created_scenario.description, scenario_description);
         assert_eq!(created_scenario.infra_id, scenario_infra_id);
-        assert_eq!(created_scenario.timetable_id, scenario_timetable_id);
+        assert_eq!(
+            created_scenario
+                .timetable_ids(&mut pool.get_ok())
+                .await
+                .expect("Failed to retrieve scenario's timetables"),
+            vec![scenario_timetable_id]
+        );
         assert_eq!(created_scenario.tags, scenario_tags);
         assert_eq!(created_scenario.study_id, study.id);
     }
