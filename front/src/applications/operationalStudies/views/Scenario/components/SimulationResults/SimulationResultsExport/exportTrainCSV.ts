@@ -5,6 +5,7 @@ import type {
 import type {
   CoreReportTrain,
   CoreSpeedLimitProperties,
+  DriverAction,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
@@ -28,6 +29,7 @@ type ElectrificationInfo = {
 type StepInfo = {
   speedLimit?: number;
   electrification?: ElectrificationInfo;
+  driverAction?: DriverAction;
   kinematics: KinematicInfo[];
   op?: OpInfo;
 };
@@ -45,6 +47,7 @@ const CSV_KEYS = [
   'electrificationType',
   'electrificationMode',
   'electrificationProfile',
+  'driverAction',
 ] as const;
 
 type CSVLine = Record<(typeof CSV_KEYS)[number], string>;
@@ -86,6 +89,12 @@ function buildStepInfoByPosition(
     stepInfoByPosition[pos].speedLimit = speedLimit.speed;
   });
 
+  trainRegime.driver_actions.values.forEach((driverAction, i) => {
+    const pos = i === 0 ? 0 : trainRegime.driver_actions.boundaries[i - 1];
+    stepInfoByPosition[pos] ??= { kinematics: [] };
+    stepInfoByPosition[pos].driverAction = driverAction;
+  });
+
   electrificationRanges.forEach((electrification) => {
     const electrificationType = electrification.electrificationUsage.type;
     const electricalProfileType = electrification.electrificationUsage.electrical_profile_type;
@@ -120,10 +129,11 @@ function buildCsvLines(
   trainRegime: CoreReportTrain,
   trainStartTime: number
 ) {
-  let curSpeedLimit = stepInfoByPosition[0].speedLimit
+  let curDriverAction = stepInfoByPosition[0]?.driverAction ?? '';
+  let curSpeedLimit = stepInfoByPosition[0]?.speedLimit
     ? pointToComma(msToKmhRounded(stepInfoByPosition[0].speedLimit))
     : '';
-  let curElectrification = stepInfoByPosition[0].electrification ?? {
+  let curElectrification = stepInfoByPosition[0]?.electrification ?? {
     electrificationType: '',
     electrificationMode: '',
     electrificationProfile: '',
@@ -158,18 +168,23 @@ function buildCsvLines(
         electrificationType: curElectrification.electrificationType,
         electrificationMode: curElectrification.electrificationMode,
         electrificationProfile: curElectrification.electrificationProfile,
+        driverAction: curDriverAction,
       };
       csvLines.push(csvLine);
 
       const isStop =
         kinematics.length >= 2 && kinematics[0].time !== kinematics[kinematics.length - 1].time;
-      const isBoundary = position !== 0 && (step.speedLimit || step.electrification);
+      const isBoundary =
+        position !== 0 && (step.speedLimit || step.electrification || step.driverAction);
+
       if (isStop || isBoundary) {
+        curDriverAction = step.driverAction ?? curDriverAction;
         curSpeedLimit = step.speedLimit
           ? pointToComma(msToKmhRounded(step.speedLimit))
           : curSpeedLimit;
         curElectrification = step.electrification ?? curElectrification;
         const finalKinematics = kinematics[kinematics.length - 1];
+
         csvLines.push({
           ...csvLine,
           time: formatLocalTime(new Date(finalKinematics.time)),
@@ -179,6 +194,7 @@ function buildCsvLines(
           electrificationType: curElectrification.electrificationType,
           electrificationMode: curElectrification.electrificationMode,
           electrificationProfile: curElectrification.electrificationProfile,
+          driverAction: curDriverAction,
         });
       }
     });
