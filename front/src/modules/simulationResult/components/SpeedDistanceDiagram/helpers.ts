@@ -8,7 +8,11 @@ import type {
 } from '@osrd-project/ui-charts';
 
 import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
-import type { CoreReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type {
+  CoreDriverActions,
+  CoreReportTrain,
+  SimulationResponseSuccess,
+} from 'common/api/osrdEditoastApi';
 import { TAG_COLORS } from 'modules/simulationResult/consts';
 import type { PathWaypoint, SpeedLimitTagValue } from 'modules/simulationResult/types';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';
@@ -96,6 +100,11 @@ export const formatSpeeds = (simulation: CoreReportTrain) => {
 const formatMrsp = (mrsp: SimulationResponseSuccess['mrsp']) => ({
   boundaries: mrsp.boundaries.map((pos) => mmToKm(pos)),
   values: mrsp.values.map((speed) => ({ speed: msToKmh(speed.speed), isTemporary: false })),
+});
+
+const formatDriverActions = (driverActions: CoreDriverActions) => ({
+  boundaries: driverActions.boundaries.map((pos) => mmToKm(pos)),
+  values: driverActions.values,
 });
 
 export const formatStops = (operationalPoints: PathWaypoint[]) =>
@@ -215,6 +224,7 @@ export const formatData = (
     pathLength
   );
   const mrsp = formatMrsp(simulation.mrsp);
+  const driverActions = formatDriverActions(simulation.final_output.driver_actions);
 
   return {
     speeds,
@@ -226,6 +236,7 @@ export const formatData = (
     powerRestrictions,
     speedLimitTags,
     mrsp,
+    driverActions,
     trainLength,
   };
 };

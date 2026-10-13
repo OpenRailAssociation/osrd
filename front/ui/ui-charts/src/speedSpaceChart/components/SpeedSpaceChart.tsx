@@ -68,6 +68,11 @@ export type SpeedSpaceChartProps = {
         guidance: string;
       };
     };
+    driverActions: {
+      BRAKING: string;
+      COASTING: string;
+      TRACTING: string;
+    };
   };
 };
 
@@ -89,6 +94,7 @@ const SpeedSpaceChart = ({
     electrifications: [],
     slopes: [],
     mrsp: undefined,
+    driverActions: { values: [], boundaries: [] },
     powerRestrictions: undefined,
     electricalProfiles: undefined,
     speedLimitTags: undefined,

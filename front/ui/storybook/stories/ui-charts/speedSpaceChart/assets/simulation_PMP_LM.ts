@@ -11,6 +11,28 @@ export const simulationPmpLm: Simulation = {
       33.333,
     ],
   },
+  driverActions: {
+    boundaries: [
+      300_000, 1_200_000, 7_400_000, 11_000_000, 46_000_000, 104_000_000, 129_000_000, 149_000_000,
+      162_000_000, 180_000_000, 182_000_000, 183_000_000, 191_000_000,
+    ],
+    values: [
+      'TRACTING',
+      'COASTING',
+      'TRACTING',
+      'BRAKING',
+      'TRACTING',
+      'COASTING',
+      'BRAKING',
+      'TRACTING',
+      'BRAKING',
+      'COASTING',
+      'BRAKING',
+      'TRACTING',
+      'COASTING',
+      'BRAKING',
+    ],
+  },
   base: {
     positions: [
       0, 922, 3688, 14738, 33127, 74410, 132026, 179431, 312522, 1181000, 1288529, 1410584, 1593713,
