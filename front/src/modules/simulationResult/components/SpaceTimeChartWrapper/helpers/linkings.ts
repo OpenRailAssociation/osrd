@@ -17,6 +17,7 @@ import {
   isTrainId,
 } from 'utils/trainId';
 
+import type { PossibleLinkings } from './computePossibleLinkings';
 import type { MovableOccupancyZone } from './zones';
 
 /** A linking stored by editoast, whose ends have been converted to front train IDs. */
@@ -127,7 +128,7 @@ export default function buildWaypointLinkings({
   showSuggestions,
 }: {
   zones: MovableOccupancyZone[];
-  possibleLinkings: Map<TrainId, TrainId>;
+  possibleLinkings: PossibleLinkings;
   existingLinkings: ExistingLinking[];
   trainNames: (trainId: TrainId) => string | undefined;
   showSuggestions: boolean;
@@ -139,6 +140,27 @@ export default function buildWaypointLinkings({
     if (zone.blockType === 'incoming') arrivals.set(zone.trainId, zone);
     if (zone.blockType === 'outgoing') departures.set(zone.trainId, zone);
   }
+
+  /**
+   * The zones are those of the first repetition of an hourly pattern only: a linking is drawn
+   * there when it is possible on that repetition, and when its target is not the occurrence of the
+   * next one.
+   *
+   * TODO: remove once the linkings are drawn on every repetition (#18912), which needs all of them.
+   */
+  const isDrawable = (
+    source: TrainId,
+    target: TrainId,
+    arrival: MovableOccupancyZone,
+    departure: MovableOccupancyZone
+  ) => {
+    const possibleLinking = possibleLinkings.get(source);
+    return (
+      possibleLinking?.target === target &&
+      possibleLinking.sourceOffsets.has(0) &&
+      arrival.endTime <= departure.startTime
+    );
+  };
 
   const linkings: PositionedLinking[] = [];
   const brokenLinkings: BrokenLinking[] = [];
@@ -158,7 +180,7 @@ export default function buildWaypointLinkings({
 
     const linkingId = formatLinkingId({ linkingId: id });
 
-    if (arrival && departure && possibleLinkings.get(source) === target) {
+    if (arrival && departure && isDrawable(source, target, arrival, departure)) {
       linkings.push({
         id: linkingId,
         targetTrainId: target,
@@ -193,11 +215,11 @@ export default function buildWaypointLinkings({
 
   // Suggest the possible linkings which do not exist yet:
   if (showSuggestions) {
-    for (const [source, target] of possibleLinkings) {
+    for (const [source, { target }] of possibleLinkings) {
       if (linkedSources.has(source) || linkedTargets.has(target)) continue;
       const arrival = arrivals.get(source);
       const departure = departures.get(target);
-      if (!arrival || !departure) continue;
+      if (!arrival || !departure || !isDrawable(source, target, arrival, departure)) continue;
 
       linkings.push({
         id: formatLinkingId({ source, target }),
