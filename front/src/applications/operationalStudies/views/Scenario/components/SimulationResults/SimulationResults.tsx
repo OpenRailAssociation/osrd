@@ -156,6 +156,7 @@ const SimulationResults = ({
     timetableId,
     pathOperationalPoints: filteredOperationalPoints,
     trainScheduleProjections,
+    hourlyTimetableDuration,
   });
 
   const displayedTrainScheduleIds = useMemo(
