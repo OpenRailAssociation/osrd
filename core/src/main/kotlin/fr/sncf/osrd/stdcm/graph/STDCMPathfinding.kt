@@ -18,11 +18,11 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.stdcm.tracing.ProgressCallback
 import fr.sncf.osrd.stdcm.tracing.ProgressLogger
+import fr.sncf.osrd.stdcm.tracing.recordSTDCMMetadata
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
@@ -166,11 +166,12 @@ class STDCMPathfinding(
         val travelTime = res.envelope.totalTime
         val stopTime = res.stopResults.sumOf { it.duration }
         val relativeTimeUsed = (travelTime + stopTime) / maxRunTime
-        Span.current().setAttribute("departure delay", res.departureTime.toString())
-        Span.current().setAttribute("total movement duration", travelTime.toString())
-        Span.current().setAttribute("total stops duration", stopTime.toString())
-        Span.current()
-            .setAttribute("(arrival time - departure time) / duration limit", relativeTimeUsed)
+        recordSTDCMMetadata("departure_delay", res.departureTime)
+        recordSTDCMMetadata("total_movement_duration", travelTime)
+        recordSTDCMMetadata("total_stops_duration", stopTime)
+        recordSTDCMMetadata("backtracks", res.backtrackIndexes.toString())
+        // (arrival time - departure time) / duration limit
+        recordSTDCMMetadata("relative_time_used", relativeTimeUsed)
         logger.info(
             "departure delay = +${res.departureTime.toInt()}s, " +
                 "total movement duration = ${res.envelope.totalTime.toInt()}s, " +
