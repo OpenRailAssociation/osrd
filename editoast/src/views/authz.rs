@@ -1109,6 +1109,97 @@ pub(in crate::views) async fn delete_user(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub(in crate::views) struct CreateUserForm {
+    name: String,
+    identities: Vec<String>,
+    groups: Vec<i64>,
+    roles: Vec<Role>,
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    patch,
+    path = "/user/{resource_id}",
+    tag = "authz",
+    params(ResourceIdParam),
+    request_body(
+        content = inline(CreateUserForm),
+        description = "The new infos for the user to update",
+    ),
+    responses((
+        status = 200,
+        description = "Update the user with the given id in the database and OpenFGA",
+        body = inline(UserInfo),
+    )),
+)]
+pub(in crate::views) async fn update_user(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
+    Json(CreateUserForm {
+        name,
+        identities,
+        groups,
+        roles,
+    }): Json<CreateUserForm>,
+) -> Result<(StatusCode, Json<UserInfo>)> {
+    let conn = db_pool.get().await?;
+
+    // Check if the user exists in the database
+    let user = User::retrieve(conn.clone(), resource_id)
+        .await?
+        .ok_or(AuthzError::UnknownUser { id: resource_id })?;
+
+    // Check that the input groups all exist:
+    let (retrived_groups, missing): (HashSet<Group>, _) =
+        Group::retrieve_batch(&mut db_pool.get().await?, groups.clone()).await?;
+    if let Some(subject_id) = missing.into_iter().next() {
+        return Err(AuthzError::UnknownSubject { subject_id }.into());
+    }
+
+    // Update the user's name in the database
+    User::update_name(&user, conn.clone(), name.clone()).await?;
+
+    // Update the user's identities in the database
+    User::delete_identities(&user, conn.clone()).await?;
+    User::add_identities(&user, conn.clone(), identities.clone()).await?;
+
+    // Update the roles and groups in OpenFGA
+    let system_authorizer = authz::authorizers::SystemAuthorizer::<Check>::new(&openfga);
+
+    // Update roles
+    let update_roles = v2::add_roles(
+        authz::Subject::user(authz::User(user.id)),
+        HashSet::from_iter(roles.clone()),
+    );
+
+    // Update groups
+    let update_groups =
+        v2::Protected::from_iter(groups.clone().into_iter().map(|group| {
+            v2::add_members(authz::Group(group), HashSet::from([authz::User(user.id)]))
+        }));
+
+    update_groups
+        .zip(update_roles)
+        .run::<AuthorizationError, _>(&system_authorizer)
+        .await?;
+
+    Ok((
+        StatusCode::OK,
+        Json(UserInfo {
+            id: user.id,
+            name,
+            identities,
+            roles: HashSet::from_iter(roles),
+            groups: retrived_groups,
+        }),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
