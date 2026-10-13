@@ -11,6 +11,7 @@ use models::prelude::*;
 use models::project::Project;
 use models::rolling_stock::RollingStock;
 use models::scenario::Scenario;
+use models::scenario_timetable::ScenarioTimetable;
 use models::study::Study;
 use models::tags::Tags;
 use models::timetable::Timetable;
@@ -193,19 +194,13 @@ pub async fn create_train_schedule_exception(
         .expect("Failed to create exception")
 }
 
-pub fn scenario_changeset(
-    name: &str,
-    study_id: i64,
-    timetable_id: i64,
-    infra_id: i64,
-) -> Changeset<Scenario> {
+pub fn scenario_changeset(name: &str, study_id: i64, infra_id: i64) -> Changeset<Scenario> {
     Scenario::changeset()
         .name(name.to_string())
         .description("test_scenario description".to_string())
         .creation_date(Timestamp::now())
         .last_modification(Timestamp::now())
         .tags(Tags::default())
-        .timetable_id(timetable_id)
         .study_id(study_id)
         .infra_id(infra_id)
 }
@@ -217,11 +212,17 @@ pub async fn create_scenario(
     timetable_id: i64,
     infra_id: i64,
 ) -> Scenario {
-    let scenario = scenario_changeset(name, study_id, timetable_id, infra_id);
-    scenario
+    let scenario = scenario_changeset(name, study_id, infra_id)
         .create(conn)
         .await
-        .expect("Failed to create scenario")
+        .expect("Failed to create scenario");
+    ScenarioTimetable::changeset()
+        .scenario_id(scenario.id)
+        .timetable_id(timetable_id)
+        .create(conn)
+        .await
+        .expect("Failed to link scenario to timetable");
+    scenario
 }
 
 pub struct ScenarioFixtureSet {

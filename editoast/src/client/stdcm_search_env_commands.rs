@@ -159,8 +159,12 @@ async fn set_stdcm_search_env_from_scenario(
     })
     .await?;
 
+    let Some(timetable_id) = scenario.timetable_ids(conn).await?.into_iter().next() else {
+        anyhow::bail!("Scenario {} is not linked to any timetable", scenario.id);
+    };
+
     let (begin, end) = resolve_search_window(
-        scenario.timetable_id,
+        timetable_id,
         args.search_window_begin,
         args.search_window_end,
         conn,
@@ -171,7 +175,7 @@ async fn set_stdcm_search_env_from_scenario(
         .infra_id(scenario.infra_id)
         .electrical_profile_set_id(scenario.electrical_profile_set_id)
         .work_schedule_group_id(args.work_schedule_group_id)
-        .timetable_id(scenario.timetable_id)
+        .timetable_id(timetable_id)
         .search_window_begin(begin)
         .search_window_end(end)
         .enabled_from(Utc::now())
