@@ -213,8 +213,7 @@
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
       "NotFound": "Szenario nicht gefunden",
-      "StudyNotFound": "Studie '{{study_id}}' nicht gefunden",
-      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"
+      "StudyNotFound": "Studie '{{study_id}}' nicht gefunden"
     },
     "search": {
       "ArgMissing": "Erwartetes Argument vom Typ {{expected}} an Position {{arg_pos}} fehlt",

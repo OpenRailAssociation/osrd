@@ -39,10 +39,10 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
     () =>
-      scenario.timetable_type === 'HOURLY'
+      scenario.timetable_summaries[0].type === 'HOURLY'
         ? BOARDS.filter((board) => board !== 'chronogram')
         : BOARDS,
-    [scenario.timetable_type]
+    [scenario.timetable_summaries]
   );
 
   const { totalConflictsCount } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQueryState(

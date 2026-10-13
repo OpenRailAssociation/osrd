@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   Infra,
   Project,
-  Scenario,
+  ScenarioWithDetails,
   Study,
   TimetableResult,
   TrainScheduleSet,
@@ -17,7 +17,7 @@ type SetupResult = {
   mediumInfra: Infra;
   project: Project;
   study: Study;
-  scenario: Scenario;
+  scenario: ScenarioWithDetails;
   timetableResult: TimetableResult;
   trainScheduleSet: TrainScheduleSet;
 };
@@ -73,7 +73,7 @@ export default async function createScenario(
   const scenarioNameFinal = scenarioName || `${SCENARIO_DATA.name} ${uuidv4()}`;
 
   // Create a new scenario with the provided or generated name
-  const scenario: Scenario = await postApiRequest(
+  const scenario: ScenarioWithDetails = await postApiRequest(
     `/api/scenarios`,
     {
       ...SCENARIO_DATA,

@@ -50,8 +50,7 @@ vi.mock('common/api/osrdEditoastApi', () => ({
 const mockScenario = {
   id: 42,
   infra_id: 10,
-  timetable_id: 100,
-  timetable_type: 'CALENDAR',
+  timetable_summaries: [{ id: 100, type: 'CALENDAR' }],
   name: 'Test Scenario',
 };
 
@@ -133,14 +132,14 @@ describe('useScenario', () => {
       },
     });
     expect(mocks.linkTrainScheduleSets).toHaveBeenCalledWith({
-      id: mockScenario.timetable_id,
+      id: mockScenario.timetable_summaries[0].id,
       body: { train_schedule_set_ids: [999] },
     });
   });
 
   it('should create the sandbox with the timetable type of the scenario', async () => {
     mocks.useGetScenario.mockReturnValue({
-      data: { ...mockScenario, timetable_type: 'HOURLY' },
+      data: { ...mockScenario, timetable_summaries: [{ id: 100, type: 'HOURLY' }] },
       isError: false,
       error: undefined,
     });

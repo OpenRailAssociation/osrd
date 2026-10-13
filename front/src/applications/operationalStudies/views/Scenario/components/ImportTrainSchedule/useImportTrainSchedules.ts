@@ -59,15 +59,15 @@ const useImportTrainSchedules = () => {
     try {
       const rawPayload = await processFile(file);
       const timetableJsonPayload =
-        getPayloadTimetableType(rawPayload) === scenario.timetable_type
+        getPayloadTimetableType(rawPayload) === scenario.timetable_summaries[0].type
           ? rawPayload
-          : adaptPayloadForTargetTimetable(rawPayload, scenario.timetable_type, [
+          : adaptPayloadForTargetTimetable(rawPayload, scenario.timetable_summaries[0].type, [
               ...trainSchedules.values(),
             ]);
 
       const importedTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_id,
+        scenario.timetable_summaries[0].id,
         scenario.id,
         timetableJsonPayload,
         subCategories,
