@@ -40,6 +40,14 @@ const formatMrsp = (mrsp: Simulation['mrsp']) => {
   };
 };
 
+const formatDriverActions = (driverActions: Simulation['driverActions']) => {
+  const { boundaries, values } = driverActions;
+  return {
+    boundaries: boundaries.map(convertMmToKM),
+    values: values,
+  };
+};
+
 const formatStops = (operationalPoints: PathProperties['operational_points']) =>
   operationalPoints.map(({ position, extensions }) => ({
     position: {
@@ -153,6 +161,7 @@ export const formatData = (
   const speeds = formatSpeed(simulation.base);
   const ecoSpeeds = formatEcoSpeeds(simulation.final_output);
   const mrsp = formatMrsp(simulation.mrsp);
+  const driverActions = formatDriverActions(simulation.driverActions);
   const stops = formatStops(pathProperties.operational_points);
   const electrifications = formatElectrifications(pathProperties.electrifications);
   const slopes = formatSlopes(pathProperties.slopes);
@@ -165,6 +174,7 @@ export const formatData = (
     speeds,
     ecoSpeeds,
     mrsp,
+    driverActions,
     stops,
     electrifications,
     slopes,

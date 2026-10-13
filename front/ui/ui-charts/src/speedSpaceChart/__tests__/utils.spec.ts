@@ -32,6 +32,7 @@ const store: Store = {
   electrifications: [],
   slopes: [],
   mrsp: undefined,
+  driverActions: { values: [], boundaries: [] },
   powerRestrictions: [],
   electricalProfiles: [],
   speedLimitTags: [],

@@ -21,6 +21,10 @@ export type Simulation = {
     boundaries: number[];
     values: number[];
   };
+  driverActions: {
+    boundaries: number[];
+    values: ('TRACTING' | 'BRAKING' | 'COASTING')[];
+  };
 };
 
 export type PathProperties = {
