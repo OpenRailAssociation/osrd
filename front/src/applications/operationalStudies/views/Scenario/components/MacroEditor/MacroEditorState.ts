@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 
 import type {
   MacroNodeResponse,
-  NodeLocation,
+  OperationalPointReferenceNode,
   OperationalPoint,
   OperationalPointReference,
   PathItemLocation,
@@ -183,7 +183,7 @@ export default class MacroEditorState {
   /**
    * Store and index the node.
    */
-  indexNodeByLocation(nodeLocation: NodeLocation, node: NodeIndexed) {
+  indexNodeByLocation(nodeLocation: OperationalPointReferenceNode, node: NodeIndexed) {
     const nodeLocationKey = MacroEditorState.getPathKeyByNodeLocation(nodeLocation);
     let nodeIndexInStorage = this.indexByNodeLocationKey[nodeLocationKey];
     if (nodeIndexInStorage !== undefined) {
@@ -212,7 +212,10 @@ export default class MacroEditorState {
   /**
    * Update node's data by its node location
    */
-  updateNodeDataByNodeLocation(nodeLocation: NodeLocation, data: Partial<NodeIndexed>) {
+  updateNodeDataByNodeLocation(
+    nodeLocation: OperationalPointReferenceNode,
+    data: Partial<NodeIndexed>
+  ) {
     const indexedNode = this.getNodeByLocation(nodeLocation);
     if (indexedNode) {
       this.indexNodeByLocation(nodeLocation, { ...indexedNode, ...data });
@@ -233,7 +236,7 @@ export default class MacroEditorState {
   /**
    * Get a node by its node location.
    */
-  getNodeByLocation(nodeLocation: NodeLocation): NodeIndexed | null {
+  getNodeByLocation(nodeLocation: OperationalPointReferenceNode): NodeIndexed | null {
     const index =
       this.indexByNodeLocationKey[MacroEditorState.getPathKeyByNodeLocation(nodeLocation)];
     return this.nodes[index] || null;
@@ -270,13 +273,14 @@ export default class MacroEditorState {
     this.nodes[indexInStorage] = null;
   }
 
-  static getPathKeyByNodeLocation(item: NodeLocation): string {
+  static getPathKeyByNodeLocation(item: OperationalPointReferenceNode): string {
     if (item.type === 'track_offset') return `track_offset:${item.track}+${item.offset}`;
-    if (item.type === 'domestic') {
-      return `domestic:${MacroEditorState.encodeDomesticReference(item)}`;
+    if (item.operational_point.type === 'domestic') {
+      return `domestic:${MacroEditorState.encodeDomesticReference(item.operational_point)}`;
     }
-    if (item.type === 'id') return `op_id:${item.operational_point}`;
-    return `uic:${item.uic}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
+    if (item.operational_point.type === 'id')
+      return `op_id:${item.operational_point.operational_point}`;
+    return `uic:${item.operational_point.uic}${item.operational_point.secondary_code ? `/${item.operational_point.secondary_code}` : ''}`;
   }
 
   /**
@@ -294,28 +298,38 @@ export default class MacroEditorState {
   /**
    * Given a search result item, returns all possible node locations, ordered by weight.
    */
-  static getNodeLocations(op: OperationalPoint): NodeLocation[] {
+  static getNodeLocations(op: OperationalPoint): OperationalPointReferenceNode[] {
     const { main_code, secondary_code, uic, country_code } = op;
 
-    const result: NodeLocation[] = [{ type: 'id', operational_point: op.id }];
+    const result: OperationalPointReferenceNode[] = [
+      {
+        type: 'operational_point_reference',
+        operational_point: { type: 'id', operational_point: op.id },
+      },
+    ];
     if (main_code) {
-      result.push({ main_code, secondary_code, country_code, type: 'domestic' });
+      result.push({
+        type: 'operational_point_reference',
+        operational_point: { main_code, secondary_code, country_code, type: 'domestic' },
+      });
     }
-    if (uic) result.push({ type: 'uic', uic, secondary_code });
+    if (uic)
+      result.push({
+        type: 'operational_point_reference',
+        operational_point: { type: 'uic', uic, secondary_code },
+      });
     for (const opPart of op.parts) {
       result.push({ type: 'track_offset', track: opPart.track, offset: opPart.position });
     }
     return result;
   }
 
-  static parseNodeLocation(nodeLocation: NodeLocation): PathItemLocation {
+  static parseNodeLocation(nodeLocation: OperationalPointReferenceNode): PathItemLocation {
     switch (nodeLocation.type) {
-      case 'id':
-      case 'domestic':
-      case 'uic': {
+      case 'operational_point_reference': {
         return {
           type: 'operational_point_part_reference',
-          operational_point: nodeLocation,
+          operational_point: nodeLocation.operational_point,
         };
       }
       case 'track_offset': {

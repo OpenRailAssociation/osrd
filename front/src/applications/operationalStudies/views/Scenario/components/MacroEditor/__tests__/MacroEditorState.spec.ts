@@ -35,10 +35,13 @@ describe('MacroEditorState.parseNodeLocation', () => {
   test('wraps an operational point reference node location into a PathItemLocation', () => {
     expect(
       MacroEditorState.parseNodeLocation({
-        type: 'domestic',
-        main_code: 'ORL',
-        secondary_code: 'BV',
-        country_code: 'FR',
+        type: 'operational_point_reference',
+        operational_point: {
+          type: 'domestic',
+          main_code: 'ORL',
+          secondary_code: 'BV',
+          country_code: 'FR',
+        },
       })
     ).toEqual({
       type: 'operational_point_part_reference',

@@ -8,7 +8,10 @@
       "position_x": 672,
       "position_y": 800,
       "labels": [],
-      "node_location": { "main_code": "SS", "country_code": "??", "type": "domestic" }
+      "node_location": {
+        "type": "operational_point_reference",
+        "operational_point": { "main_code": "SS", "country_code": "??", "type": "domestic" }
+      }
     },
     {
       "ngeId": 7,
@@ -18,7 +21,10 @@
       "position_x": 320,
       "position_y": 32,
       "labels": [],
-      "node_location": { "main_code": "RTR", "country_code": "??", "type": "domestic" }
+      "node_location": {
+        "type": "operational_point_reference",
+        "operational_point": { "main_code": "RTR", "country_code": "??", "type": "domestic" }
+      }
     },
     {
       "ngeId": 8,
@@ -28,7 +34,10 @@
       "position_x": 320,
       "position_y": 192,
       "labels": [],
-      "node_location": { "main_code": "LTH", "country_code": "??", "type": "domestic" }
+      "node_location": {
+        "type": "operational_point_reference",
+        "operational_point": { "main_code": "LTH", "country_code": "??", "type": "domestic" }
+      }
     }
   ],
   "macro_notes": [

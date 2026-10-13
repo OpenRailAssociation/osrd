@@ -35,7 +35,7 @@ import {
   type TrainScheduleResponse,
   type TimetableType,
   type PathItemLocation,
-  type NodeLocation,
+  type OperationalPointReferenceNode,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -113,11 +113,14 @@ const distance = (a: [number, number], b: [number, number]): number => {
 
 const convertPathItemLocationToNodeLocation = (
   pathItemLocation: PathItemLocation
-): NodeLocation => {
+): OperationalPointReferenceNode => {
   if (pathItemLocation.type === 'track_offset') {
     return pathItemLocation;
   }
-  return pathItemLocation.operational_point;
+  return {
+    operational_point: pathItemLocation.operational_point,
+    type: 'operational_point_reference',
+  };
 };
 
 type PositionedNodeIndexed = { nodeData: NodeIndexed; x: number; y: number };

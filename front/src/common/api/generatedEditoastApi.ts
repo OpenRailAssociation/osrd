@@ -4037,7 +4037,7 @@ export type MacroNodeResponse = {
   id: number;
   is_collapsed: boolean;
   labels: Tags;
-  node_location: NodeLocation;
+  node_location: OperationalPointReferenceNode;
   position_x: number;
   position_y: number;
   short_name?: string | null;
@@ -4048,12 +4048,16 @@ export type MacroNodeListResponse = PaginationStats & {
 export type MacroNodeBatchResponse = {
   macro_nodes: MacroNodeResponse[];
 };
-export type NodeLocation = OperationalPointReference | (TrackOffset & { type: 'track_offset' });
+export type OperationalPointReferenceNode =
+  | (TrackOffset & {
+      type: 'track_offset';
+    })
+  | { operational_point: OperationalPointReference; type: 'operational_point_reference' };
 export type MacroNodeForm = {
   full_name?: string | null;
   is_collapsed?: boolean;
   labels: Tags;
-  node_location: NodeLocation;
+  node_location: OperationalPointReferenceNode;
   position_x: number;
   position_y: number;
   short_name?: string | null;

@@ -1,6 +1,9 @@
 import type { Operation, NetzgrafikDto, NodeDto } from '@osrd-project/netzgrafik-frontend';
 
-import type { NodeLocation, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPointReferenceNode,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 import MacroEditorState from '../MacroEditorState';
@@ -67,7 +70,11 @@ export const handleNodeOperation = async ({
           let domesticReference = node.betriebspunktName;
           let full_name = node.fullName;
           const shouldSetShortName = indexNode.short_name !== domesticReference;
-          if (nodeLocation.type === 'domestic' && (full_name === '' || shouldSetShortName)) {
+          if (
+            nodeLocation.type === 'operational_point_reference' &&
+            nodeLocation.operational_point.type === 'domestic' &&
+            (full_name === '' || shouldSetShortName)
+          ) {
             const decodedDomesticReference =
               MacroEditorState.decodeDomesticReference(domesticReference);
             const { main_code } = decodedDomesticReference;
@@ -89,7 +96,15 @@ export const handleNodeOperation = async ({
               country_code,
               type: 'domestic',
             });
-            nodeLocation = { ...nodeLocation, main_code, secondary_code, country_code };
+            nodeLocation = {
+              type: 'operational_point_reference',
+              operational_point: {
+                type: 'domestic',
+                main_code,
+                secondary_code,
+                country_code,
+              },
+            };
           }
           await updateMacroNode(state, dispatch, {
             ...indexNode,
@@ -123,14 +138,17 @@ export const handleNodeOperation = async ({
       } else {
         // It's an unknown node, we need to create it in the db
         // We assume that `betriebspunktName` follows the `${main_code}/${secondary_code}#${country_code}` format
-        // TODO unrecognized ops: handle cases for invalid uic/opId to put the corresponding NodeLocation in `betriebspunktName`
+        // TODO unrecognized ops: handle cases for invalid uic/opId to put the corresponding OperationalPointReferenceNode in `betriebspunktName`
         const { main_code, secondary_code, country_code } =
           MacroEditorState.decodeDomesticReference(node.betriebspunktName);
-        const nodeLocation: NodeLocation = {
-          type: 'domestic',
-          main_code,
-          secondary_code,
-          country_code,
+        const nodeLocation: OperationalPointReferenceNode = {
+          type: 'operational_point_reference',
+          operational_point: {
+            type: 'domestic',
+            main_code,
+            secondary_code,
+            country_code,
+          },
         };
         // Create the node
         await createMacroNode(

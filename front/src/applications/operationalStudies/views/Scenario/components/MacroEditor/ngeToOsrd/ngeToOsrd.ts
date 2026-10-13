@@ -240,7 +240,10 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
     const domesticNodeLocation = MacroEditorState.decodeDomesticReference(node.betriebspunktName);
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
-      node_location: domesticNodeLocation,
+      node_location: {
+        type: 'operational_point_reference',
+        operational_point: domesticNodeLocation,
+      },
     });
   }
 
