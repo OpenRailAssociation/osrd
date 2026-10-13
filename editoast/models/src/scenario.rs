@@ -30,7 +30,6 @@ pub struct Scenario {
     pub last_modification: Timestamp,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
-    pub timetable_id: i64,
     pub study_id: i64,
     #[schema(nullable = false)]
     #[serde(skip_serializing_if = "Option::is_none")]
