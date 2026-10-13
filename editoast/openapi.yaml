@@ -6,6 +6,11 @@ info:
     name: LGPL
     url: https://www.gnu.org/licenses/lgpl-3.0.html
   version: 0.1.0
+servers:
+- url: https://demo.osrd.fr/editoast/
+  description: Demo instance
+- url: http://localhost:4000/api/
+  description: Local development
 paths:
   /authz/grants:
     post:
