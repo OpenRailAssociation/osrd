@@ -5,6 +5,7 @@ extern crate diesel;
 mod authentication;
 mod client;
 mod error;
+mod feature_flags;
 #[cfg(test)]
 mod fixtures;
 mod generated_data;

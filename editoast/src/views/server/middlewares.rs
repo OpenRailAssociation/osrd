@@ -1,4 +1,6 @@
+use std::collections::HashSet;
 use std::convert::Infallible;
+use std::str::FromStr as _;
 
 use authz::Role;
 use authz::v2::special_authorizers;
@@ -12,6 +14,7 @@ use models::authn::user::AddIdentitiesError;
 use crate::AppState;
 use crate::authentication::AuthenticationParameters;
 use crate::error::Result;
+use crate::feature_flags::FeatureFlag;
 use crate::views::AuthorizationError;
 
 #[tracing::instrument(skip_all, fields(authn))]
@@ -216,4 +219,133 @@ pub(in crate::views) async fn authentication_validation_middleware(
     req.extensions_mut().insert(user);
     req.extensions_mut().remove::<crate::authentication::Mode>();
     Ok(next.run(req).await)
+}
+
+#[tracing::instrument(level = "debug", skip_all, fields(feature_flags))]
+pub(in crate::views) async fn feature_flags_extraction_middleware(
+    mut req: Request,
+    next: Next,
+) -> Result<Response> {
+    const FLAGS: &str = "x-feature-flags";
+    let header = req.headers().get(FLAGS).and_then(|h| h.to_str().ok());
+    let feature_flags = header.map_or(HashSet::new(), |h| {
+        h.split(',')
+            .map(|s| s.trim())
+            .filter_map(|value| FeatureFlag::from_str(value).ok())
+            .collect::<HashSet<_>>()
+    });
+    tracing::Span::current().record("feature_flags", tracing::field::debug(&feature_flags));
+    req.extensions_mut().insert(feature_flags);
+    Ok(next.run(req).await)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use axum::Extension;
+    use axum::Router;
+    use axum::handler::Handler;
+    use axum::http::StatusCode;
+    use axum::middleware;
+    use axum::routing::get;
+    use itertools::Itertools as _;
+    use proptest::prelude::*;
+    use proptest::strategy::Union;
+    use strum::EnumCount as _;
+    use strum::IntoEnumIterator as _;
+    use tokio::runtime::Builder;
+
+    use super::feature_flags_extraction_middleware;
+    use crate::feature_flags::FeatureFlag;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::test_app;
+
+    fn single_endpoint_app<H, T>(handler: H) -> TestApp
+    where
+        H: Handler<T, ()>,
+        T: 'static,
+    {
+        let router = Router::new()
+            .route("/test", get(handler))
+            .layer(middleware::from_fn(feature_flags_extraction_middleware));
+
+        test_app!().router(router).build()
+    }
+
+    fn feature_flags_set_strategy() -> impl Strategy<Value = HashSet<FeatureFlag>> {
+        if FeatureFlag::COUNT == 0 {
+            Just(HashSet::<FeatureFlag>::default()).boxed()
+        } else {
+            proptest::collection::hash_set(Union::new(FeatureFlag::iter().map(Just)), 0..10).boxed()
+        }
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(10))]
+
+        #[test]
+        fn valid_feature_flags(hashset in feature_flags_set_strategy()) {
+            // proptest! macro doesn't work with tokio::test, we need to create our own Runtime
+            // See: https://github.com/proptest-rs/proptest/issues/179
+            Builder::new_multi_thread().enable_all().worker_threads(1).build().unwrap().block_on(async {
+                let feature_flags = hashset.iter().join(", ");
+                let app = single_endpoint_app(
+                    |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                        assert_eq!(
+                            flags,
+                            hashset,
+                        );
+                        StatusCode::OK
+                    },
+                );
+
+                app.get("/test")
+                    .add_header("x-feature-flags", feature_flags)
+                    .await
+                    .assert_status_ok();
+            })
+        }
+
+        #[test]
+        fn unknown_feature_flags_are_ignored(hashset in feature_flags_set_strategy()) {
+            Builder::new_multi_thread().enable_all().worker_threads(1).build().unwrap().block_on(async {
+                let feature_flags = hashset.iter().join(",") + ", antimeme";
+                let app = single_endpoint_app(
+                    |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                        assert_eq!(
+                            flags,
+                            hashset,
+                        );
+                        StatusCode::OK
+                    },
+                );
+
+                app.get("/test")
+                    .add_header("x-feature-flags", feature_flags)
+                    .await
+                    .assert_status_ok();
+            })
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn no_feature_flags_still_succeeds() {
+        // The middleware should create the feature flag extension and the endpoint handlers should
+        // be able to retrieve it even when no valid feature flag was present in the request
+        let app = single_endpoint_app(
+            |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                assert!(flags.is_empty());
+            },
+        );
+
+        // No feature flags header:
+        app.get("/test").await.assert_status_ok();
+
+        // All the feature flags in the header are invalid:
+        app.get("/test")
+            .add_header("x-feature-flags", "none,of,these,exist")
+            .await
+            .assert_status_ok();
+    }
 }

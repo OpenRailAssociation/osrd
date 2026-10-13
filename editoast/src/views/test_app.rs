@@ -88,6 +88,7 @@ pub(crate) struct TestAppBuilder {
     enable_authorization: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
+    router: Option<Router>,
     trains_traffic: TrainsTrafficPool,
 }
 
@@ -101,6 +102,7 @@ impl TestAppBuilder {
             enable_authorization: true,
             enable_telemetry: true,
             root_url: None,
+            router: None,
             trains_traffic: TrainsTrafficPool::new(),
         }
     }
@@ -122,6 +124,11 @@ impl TestAppBuilder {
 
     pub fn root_url(mut self, root_url: Url) -> Self {
         self.root_url = Some(root_url);
+        self
+    }
+
+    pub fn router(mut self, router: Router) -> Self {
+        self.router = Some(router);
         self
     }
 
@@ -256,19 +263,24 @@ impl TestAppBuilder {
         };
 
         // Configure the axum router
-        let router: Router<()> = axum::Router::<AppState>::new()
-            .merge(service_router().router)
-            .route_layer(axum::middleware::from_fn_with_state(
-                app_state.clone(),
-                crate::views::server::middlewares::authentication_validation_middleware,
-            ))
-            .route_layer(axum::middleware::from_fn_with_state(
-                app_state.clone(),
-                crate::views::server::middlewares::authentication_extraction_middleware,
-            ))
-            .layer(OtelAxumLayer::default())
-            .layer(TraceLayer::new_for_http())
-            .with_state(app_state.clone());
+        let router: Router<()> = self.router.unwrap_or(
+            axum::Router::<AppState>::new()
+                .merge(service_router().router)
+                .route_layer(axum::middleware::from_fn_with_state(
+                    app_state.clone(),
+                    crate::views::server::middlewares::authentication_validation_middleware,
+                ))
+                .route_layer(axum::middleware::from_fn_with_state(
+                    app_state.clone(),
+                    crate::views::server::middlewares::authentication_extraction_middleware,
+                ))
+                .layer(axum::middleware::from_fn(
+                    crate::views::server::middlewares::feature_flags_extraction_middleware,
+                ))
+                .layer(OtelAxumLayer::default())
+                .layer(TraceLayer::new_for_http())
+                .with_state(app_state.clone()),
+        );
 
         // Run server
         let server = TestServer::new(router);
