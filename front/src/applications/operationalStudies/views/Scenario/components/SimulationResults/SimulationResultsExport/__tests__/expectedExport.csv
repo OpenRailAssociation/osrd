@@ -2,12 +2,12 @@ Date: 1/1/2024, 12:00:00 PM
 Name: Test train
 Type: final_output
 
-op;secondaryCode;trackName;lineCode;position;time;seconds;speed;speedLimit;electrificationType;electrificationMode;electrificationProfile
-Op A;;A;10;0;10:00:00;1704103200;36;90;;;
-Op B;BV;V2;20;0,1;10:00:10;1704103210;72;90;;;
-Op B;BV;V2;20;0,1;10:00:20;1704103220;0;90;;;
-;;;;0,2;10:00:25;1704103225;27;90;;;
-;;;;0,2;10:00:25;1704103225;27;54;electrification;25000V;ProfileA
-Op C;AT;UNIQUE;10;0,23;10:00:24;1704103224;0;54;electrification;25000V;ProfileA
-Op C;AT;UNIQUE;10;0,23;10:00:24;1704103224;0;90;electrification;25000V;ProfileA
-;;;;0,3;10:00:30;1704103230;54;90;electrification;25000V;ProfileA
+op;secondaryCode;trackName;lineCode;position;time;seconds;speed;speedLimit;electrificationType;electrificationMode;electrificationProfile;driverAction
+Op A;;A;10;0;10:00:00;1704103200;36;90;;;;TRACTING
+Op B;BV;V2;20;0,1;10:00:10;1704103210;72;90;;;;TRACTING
+Op B;BV;V2;20;0,1;10:00:20;1704103220;0;90;;;;TRACTING
+;;;;0,2;10:00:25;1704103225;27;90;;;;TRACTING
+;;;;0,2;10:00:25;1704103225;27;54;electrification;25000V;ProfileA;TRACTING
+Op C;AT;UNIQUE;10;0,23;10:00:24;1704103224;0;54;electrification;25000V;ProfileA;TRACTING
+Op C;AT;UNIQUE;10;0,23;10:00:24;1704103224;0;90;electrification;25000V;ProfileA;TRACTING
+;;;;0,3;10:00:30;1704103230;54;90;electrification;25000V;ProfileA;TRACTING

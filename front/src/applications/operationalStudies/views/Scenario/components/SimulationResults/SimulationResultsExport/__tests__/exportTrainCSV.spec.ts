@@ -51,6 +51,7 @@ describe('exportTrainCSV', () => {
       positions: [0, 100_000, 100_000, 300_000],
       speeds: [10, 20, 0, 15],
       times: [0, 10_000, 20_000, 30_000],
+      driver_actions: { boundaries: [], values: ['TRACTING'] },
     };
 
     const mrsp: CoreSpeedLimitProperties = {
