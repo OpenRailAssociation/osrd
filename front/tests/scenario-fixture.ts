@@ -79,7 +79,7 @@ export default function setupScenarioFixture({
     );
     scenarioContext.scenarioItems = scenario;
     scenarioContext.trainScheduleSet = trainScheduleSet;
-    await sendTrains(trainScheduleSet.id, trains, scenario.timetable_id);
+    await sendTrains(trainScheduleSet.id, trains, scenario.timetable_summaries[0].id);
   };
 
   const deleteCreatedScenario = () =>

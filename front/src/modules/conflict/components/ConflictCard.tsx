@@ -45,14 +45,14 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
   const { scenario } = useScenarioContext();
-  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
+  const isHourlyTimetable = scenario.timetable_summaries[0].type === 'HOURLY';
 
   const startTime = timeToLocaleString(
-    parseStartTime(conflict.start_time, scenario.timetable_type),
+    parseStartTime(conflict.start_time, scenario.timetable_summaries[0].type),
     dateTimeLocale
   );
   const endTime = timeToLocaleString(
-    parseStartTime(conflict.start_time + conflict.duration, scenario.timetable_type),
+    parseStartTime(conflict.start_time + conflict.duration, scenario.timetable_summaries[0].type),
     dateTimeLocale
   );
   const startDate = isHourlyTimetable
