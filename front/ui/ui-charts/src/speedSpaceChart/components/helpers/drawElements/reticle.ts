@@ -13,6 +13,7 @@ import {
   type LayerData,
 } from '../../../types';
 import { MARGINS } from '../../consts';
+import type { SpeedSpaceChartProps } from '../../SpeedSpaceChart';
 import {
   clearCanvas,
   binarySearch,
@@ -111,7 +112,13 @@ const getEtcsSpeedsAtPosition = (curves: EtcsBrakingCurves, position: number) =>
   return result;
 };
 
-export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) => {
+export const drawCursor = ({
+  ctx,
+  width,
+  height,
+  store,
+  translations,
+}: DrawFunctionParams & { translations: SpeedSpaceChartProps['translations'] }) => {
   clearCanvas(ctx, width, height);
 
   const {
@@ -126,12 +133,13 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     slopes,
     electricalProfiles,
     powerRestrictions,
+    driverActions,
   } = store;
 
   let speedText = '';
   let ecoSpeedText = '';
   let stopText = '';
-  let effortText = 'coasting';
+  let effortText = translations?.driverActions[driverActions.values[0]] ?? '';
   let electricalModeText = '';
   let electricalProfileText = '';
   let powerRestrictionText = '';
@@ -245,10 +253,11 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     cursorPosition
   );
   ecoSpeedText = ecoSpeedValue.toFixed(1);
-  if (prevEcoSpeed.value < nextEcoSpeed.value) {
-    effortText = 'accelerating';
-  } else if (prevEcoSpeed.value > nextEcoSpeed.value) {
-    effortText = 'decelerating';
+
+  if (cursorPosition > driverActions.boundaries[0]) {
+    const driverActionIndex =
+      binarySearch(driverActions.boundaries, cursorPosition, (pos) => pos) + 1;
+    effortText = translations?.driverActions[driverActions.values[driverActionIndex]] ?? '';
   }
 
   const etcsSpeedValues = etcsBrakingCurves

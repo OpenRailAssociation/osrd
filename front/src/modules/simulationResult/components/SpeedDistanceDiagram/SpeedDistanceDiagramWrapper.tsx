@@ -95,6 +95,11 @@ const SpeedDistanceDiagramWrapper = ({
         guidance: t('speedDistanceSettings.etcs.guidance'),
       },
     },
+    driverActions: {
+      BRAKING: t('speedDistanceSettings.driverActions.braking'),
+      COASTING: t('speedDistanceSettings.driverActions.coasting'),
+      TRACTING: t('speedDistanceSettings.driverActions.tracting'),
+    },
   };
 
   useEffect(() => {

@@ -44,6 +44,8 @@ type ValuesAlongPath<T> = {
   values: T[];
 };
 
+type DriverAction = 'TRACTING' | 'BRAKING' | 'COASTING';
+
 type SpeedLimit = {
   // The speed limit in km/h.
   speed: number;
@@ -58,6 +60,7 @@ export type Data = {
   stops: LayerData<OperationalPoints>[];
   electrifications: LayerData<ElectrificationValues>[];
   slopes: LayerData<number>[];
+  driverActions: ValuesAlongPath<DriverAction>;
   mrsp?: ValuesAlongPath<SpeedLimit>;
   electricalProfiles?: LayerData<ElectricalProfileValues>[];
   powerRestrictions?: LayerData<PowerRestrictionValues>[];

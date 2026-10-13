@@ -28,13 +28,13 @@ const ReticleLayer = ({
     const ctx = currentCanvas.getContext('2d') as CanvasRenderingContext2D;
     // The tooltip shouldn't be displayed when hovering on the linear layers
     if (store.cursor.y && store.cursor.y < height - MARGINS.MARGIN_TOP - MARGINS.MARGIN_BOTTOM) {
-      const detailsBox = drawCursor({ ctx, width, height, store });
+      const detailsBox = drawCursor({ ctx, width, height, store, translations });
       setTrainDetails(detailsBox || null);
     } else {
       clearCanvas(ctx, width, height);
       setTrainDetails(null);
     }
-  }, [width, height, store]);
+  }, [width, height, store, translations]);
 
   return (
     <>

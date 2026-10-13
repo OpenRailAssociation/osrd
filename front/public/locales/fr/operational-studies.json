@@ -635,6 +635,11 @@
     "speedDistanceDiagram": "GEV",
     "speedDistanceSettings": {
       "context": "Contexte",
+      "driverActions": {
+        "braking": "Freinage",
+        "coasting": "Marche sur l'erre",
+        "tracting": "Traction"
+      },
       "electricalProfiles": "Profils électrique",
       "energySource": "Source d'énergie",
       "etcs": {
