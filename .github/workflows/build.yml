@@ -353,7 +353,7 @@ jobs:
 
       - name: Download built images
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-front
           path: .
@@ -391,7 +391,7 @@ jobs:
 
       - name: Download built images
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-core
           path: .
@@ -434,7 +434,7 @@ jobs:
 
       - name: Download built editoast-test image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-editoast
           path: .
@@ -485,7 +485,7 @@ jobs:
 
       - name: Download built images
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-editoast
           path: .
@@ -535,13 +535,13 @@ jobs:
 
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-editoast
           path: .
       - name: Download built front-tests image
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-front
           path: .
@@ -584,7 +584,7 @@ jobs:
 
       - name: Download built images
         if: needs.build-gateway.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-gateway
           path: .
@@ -639,7 +639,7 @@ jobs:
 
       - name: Download built images
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-osrdyne
           path: .
@@ -711,7 +711,7 @@ jobs:
 
       - name: Download built images
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-front
           path: .
@@ -771,19 +771,19 @@ jobs:
           persist-credentials: false
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-core
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-osrdyne
           path: .
@@ -851,19 +851,19 @@ jobs:
           persist-credentials: false
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-core
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-osrdyne
           path: .
@@ -924,31 +924,31 @@ jobs:
           persist-credentials: false
       - name: Download built front-tests image
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-front
           path: .
       - name: Download built editoast image
         if: needs.build-editoast.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-editoast
           path: .
       - name: Download built core image
         if: needs.build-core.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-core
           path: .
       - name: Download built gateway-front image
         if: needs.build-gateway.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-gateway
           path: .
       - name: Download built osrdyne image
         if: needs.build-osrdyne.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-osrdyne
           path: .
@@ -1076,7 +1076,7 @@ jobs:
     steps:
       - name: Download built front-tests image
         if: needs.build-front.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: images-front
           path: .
@@ -1087,7 +1087,7 @@ jobs:
           docker load --input ./osrd-front-tests.tar
 
       - name: Download blob reports from all shards
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           pattern: blob-report-*
           path: front/all-blob-reports
