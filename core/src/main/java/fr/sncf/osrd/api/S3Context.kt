@@ -38,15 +38,22 @@ data class S3Context(
     /** Write a new file. */
     @WithSpan(value = "Writing S3 file", kind = SpanKind.SERVER)
     private fun writeFile(fileName: String, requestBody: RequestBody) {
-        runAsync {
-            try {
-                s3Logger.info { "Writing $fileName" }
-                val putObjectRequest =
-                    PutObjectRequest.builder().bucket(bucketName).key(fileName).build()
-                s3Client.putObject(putObjectRequest, requestBody)
-            } catch (e: Exception) {
-                s3Logger.error { e }
-            }
+        runAsync { writeFileSync(fileName, requestBody) }
+    }
+
+    /** Write a new file, blocking until it's done. */
+    fun writeFileSync(fileName: String, content: String) {
+        writeFileSync(fileName, RequestBody.fromString(content))
+    }
+
+    private fun writeFileSync(fileName: String, requestBody: RequestBody) {
+        try {
+            s3Logger.info { "Writing $fileName" }
+            val putObjectRequest =
+                PutObjectRequest.builder().bucket(bucketName).key(fileName).build()
+            s3Client.putObject(putObjectRequest, requestBody)
+        } catch (e: Exception) {
+            s3Logger.error { e }
         }
     }
 
