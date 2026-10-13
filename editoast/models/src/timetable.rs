@@ -4,6 +4,8 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
 #[expect(
     clippy::unused_trait_names,
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
@@ -153,7 +155,7 @@ impl Timetable {
     pub async fn delete_orphaned(
         conn: &mut DbConnection,
     ) -> Result<usize, database::DatabaseError> {
-        use database::tables::scenario::dsl as scenario_dsl;
+        use database::tables::scenario_timetable::dsl as st_dsl;
         use database::tables::search_journey_environment_timetable::dsl as timetable_search_journey_env_dsl;
         use database::tables::stdcm_search_environment::dsl as stdcm_dsl;
         use database::tables::timetable::dsl as timetable_dsl;
@@ -161,7 +163,7 @@ impl Timetable {
         diesel::delete(timetable_dsl::timetable)
             .filter(timetable_dsl::is_train_schedule_set.eq(false))
             .filter(diesel::dsl::not(diesel::dsl::exists(
-                scenario_dsl::scenario.filter(scenario_dsl::timetable_id.eq(timetable_dsl::id)),
+                st_dsl::scenario_timetable.filter(st_dsl::timetable_id.eq(timetable_dsl::id)),
             )))
             .filter(diesel::dsl::not(diesel::dsl::exists(
                 stdcm_dsl::stdcm_search_environment
@@ -184,6 +186,8 @@ pub struct TimetableWithTrains {
     pub id: i64,
     #[diesel(sql_type = sql_types::TimetableType)]
     pub timetable_type: TimetableType,
+    #[diesel(sql_type = Nullable<Text>)]
+    pub name: Option<String>,
     #[diesel(sql_type = Array<BigInt>)]
     pub paced_train_ids: Vec<i64>,
 }

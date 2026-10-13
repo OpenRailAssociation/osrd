@@ -68,12 +68,11 @@ impl RollingStock {
                 scenario_timetable::table
                     .on(timetable_train_schedule_set::timetable_id
                         .eq(scenario_timetable::timetable_id))
-                    .inner_join(study::table.inner_join(project::table)),
-            )
-            .inner_join(
-                scenario::table
-                    .on(scenario_timetable::timetable_id.eq(scenario::id))
-                    .inner_join(study::table.inner_join(project::table)),
+                    .inner_join(
+                        scenario::table
+                            .on(scenario_timetable::scenario_id.eq(scenario::id))
+                            .inner_join(study::table.inner_join(project::table)),
+                    ),
             )
             .select((
                 project::id,
@@ -85,6 +84,7 @@ impl RollingStock {
             ))
             .filter(rolling_stock::id.eq(self.id))
             .filter(train_schedule::id.is_not_null())
+            .distinct()
             .load::<SchedulesFromRollingStock>(conn.write().await.deref_mut())
             .await?;
         let schedules = schedules.into_iter().map_into().collect();
