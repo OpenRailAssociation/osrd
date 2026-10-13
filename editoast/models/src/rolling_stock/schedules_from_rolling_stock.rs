@@ -14,6 +14,7 @@ use database::DbConnection;
 use database::tables::project;
 use database::tables::rolling_stock;
 use database::tables::scenario;
+use database::tables::scenario_timetable;
 use database::tables::study;
 use database::tables::timetable_train_schedule_set;
 use database::tables::train_schedule;
@@ -64,8 +65,14 @@ impl RollingStock {
                     .eq(timetable_train_schedule_set::train_schedule_set_id)),
             )
             .inner_join(
+                scenario_timetable::table
+                    .on(timetable_train_schedule_set::timetable_id
+                        .eq(scenario_timetable::timetable_id))
+                    .inner_join(study::table.inner_join(project::table)),
+            )
+            .inner_join(
                 scenario::table
-                    .on(timetable_train_schedule_set::timetable_id.eq(scenario::timetable_id))
+                    .on(scenario_timetable::timetable_id.eq(scenario::id))
                     .inner_join(study::table.inner_join(project::table)),
             )
             .select((
