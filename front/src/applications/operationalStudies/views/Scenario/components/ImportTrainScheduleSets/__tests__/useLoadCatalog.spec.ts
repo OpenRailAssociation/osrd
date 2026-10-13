@@ -53,7 +53,10 @@ describe('useLoadCatalog', () => {
     vi.clearAllMocks();
 
     mockUseScenarioContext.mockReturnValue({
-      scenario: { timetable_id: TIMETABLE_ID, timetable_type: 'CALENDAR' },
+      scenario: {
+        timetable_ids: [TIMETABLE_ID],
+        timetable_type: 'CALENDAR',
+      },
     });
 
     getAllCatalogEntries.mockResolvedValue({
@@ -111,7 +114,7 @@ describe('useLoadCatalog', () => {
 
   it('should only request train schedule sets matching the timetable type', async () => {
     mockUseScenarioContext.mockReturnValue({
-      scenario: { timetable_id: TIMETABLE_ID, timetable_type: 'HOURLY' },
+      scenario: { timetable_ids: [TIMETABLE_ID], timetable_type: 'HOURLY' },
     });
 
     const { result } = renderHookWithStore(() => useLoadCatalog());

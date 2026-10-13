@@ -214,6 +214,7 @@
     "scenario": {
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "NoTimetable": "Le scénario n'a pas de grille horaire associée",
       "NotFound": "Scénario non trouvé",
       "StudyNotFound": "Étude '{{study_id}}' non trouvée",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"

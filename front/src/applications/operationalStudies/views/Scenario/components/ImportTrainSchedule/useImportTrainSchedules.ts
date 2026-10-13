@@ -67,7 +67,7 @@ const useImportTrainSchedules = () => {
 
       const importedTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_id,
+        scenario.timetable_ids[0],
         scenario.id,
         timetableJsonPayload,
         subCategories,

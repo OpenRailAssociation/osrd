@@ -226,7 +226,7 @@ const AddOrEditScenarioModal = ({
       return deleteScenario({ scenarioId: scenario.id })
         .unwrap()
         .then(() => {
-          cleanScenarioLocalStorage(scenario.timetable_id);
+          cleanScenarioLocalStorage(scenario.timetable_ids[0]);
           navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(

@@ -134,18 +134,18 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     const state = new MacroEditorState(
       infraId,
       scenario.id,
-      scenario.timetable_id,
+      scenario.timetable_ids[0],
       scenario.timetable_type
     );
 
-    const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
+    const dto = await loadNgeDto(state, scenario.timetable_ids[0], dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
   }, [
     dispatch,
     infraId,
     scenario.id,
-    scenario.timetable_id,
+    scenario.timetable_ids,
     scenario.timetable_type,
     activeBoards,
     t,

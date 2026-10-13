@@ -29,7 +29,7 @@ export default function useLoadCatalog() {
   const [getTrainScheduleSets] = osrdEditoastApi.endpoints.getTrainScheduleSets.useLazyQuery();
 
   const { data: tsss = [] } = osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({
-    id: scenario.timetable_id,
+    id: scenario.timetable_ids[0],
   });
 
   const trainScheduleSetsAlreadyImported = new Set(

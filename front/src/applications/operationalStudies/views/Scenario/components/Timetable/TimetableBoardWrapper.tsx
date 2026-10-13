@@ -219,7 +219,7 @@ const TimetableBoardWrapper = ({
 
       const newTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_id,
+        scenario.timetable_ids[0],
         scenario.id,
         importedPayload,
         subCategories,
@@ -247,7 +247,7 @@ const TimetableBoardWrapper = ({
     upsertTrainSchedules,
     setSelectedTrainScheduleIds,
     t,
-    scenario.timetable_id,
+    scenario.timetable_ids,
     scenario.timetable_type,
     scenario.id,
     dispatch,

@@ -273,7 +273,7 @@ const ExpandedTrainForm = ({
   const { data: linkings } = osrdEditoastApi.endpoints.postTrainSchedulesLinkings.useQuery(
     {
       body: {
-        timetable_id: scenario.timetable_id,
+        timetable_id: scenario.timetable_ids[0],
         train_schedules: [extractEditoastIdFromTrainId(train.id)],
       },
     },

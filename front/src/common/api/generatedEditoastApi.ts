@@ -4339,11 +4339,11 @@ export type Scenario = {
   name: string;
   study_id: number;
   tags: Tags;
-  timetable_id: number;
 };
 export type TimetableType = 'CALENDAR' | 'HOURLY';
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
+  timetable_ids: number[];
   timetable_type: TimetableType;
   train_schedules_count: number;
 };
@@ -4377,6 +4377,7 @@ export type ScenarioResponse = Scenario & {
   infra_name: string;
   project: Project;
   study: Study;
+  timetable_ids: number[];
   timetable_type: TimetableType;
   train_schedules_count: number;
 };
