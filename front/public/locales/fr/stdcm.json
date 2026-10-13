@@ -125,6 +125,7 @@
     "applicationDate": "Date d'application",
     "asap": "d.q.p.",
     "destination": "Destination",
+    "noRequests": "Aucune demande n’a pu être récupérée.",
     "origin": "Origine",
     "requestNumber": "N° de demande",
     "status": "État",

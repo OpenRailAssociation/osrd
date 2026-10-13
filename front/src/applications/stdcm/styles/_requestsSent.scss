@@ -1,11 +1,22 @@
 .stdcm-requests-sent-modal-body {
   padding: 0 !important;
   min-height: 600px;
+  min-width: 906px;
   background-color: var(--ambientA10);
 }
 
 .stdcm-requests-sent-modal-footer {
   display: none !important;
+}
+
+.stdcm-requests-sent-no-requests {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 600px;
+  color: var(--info60);
+  font-size: 14px;
 }
 
 .stdcm-requests-sent-table-container {
