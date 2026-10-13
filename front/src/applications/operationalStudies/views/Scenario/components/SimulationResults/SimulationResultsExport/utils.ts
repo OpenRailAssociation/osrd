@@ -7,46 +7,13 @@ import {
   type TrackSection,
   type SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
-import { fastFindFirstGreater, interpolateValue } from 'modules/simulationResult/helpers/utils';
+import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { Train } from 'reducers/osrdconf/types';
-import type { SpeedRanges } from 'reducers/simulationResults/types';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { mmToM, msToKmhRounded } from 'utils/physics';
+import { mmToM } from 'utils/physics';
 
 export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;
-}
-
-// On the next function, we need to check if the found index is included in the array
-// to prevent a white screen when data are computing and synchronizing when switching the selected train schedule
-
-/**
- * Get the Vmax values at a givenPosition (in meters), using vmax (MRSP in m/s)
- * Returns a list containing only the current Vmax if in the middle of an interval,
- * or the Vmax values before and after if exactly at a bound.
- */
-export function findActualVmaxs(givenPosition: number, vmax: SpeedRanges): number[] {
-  // givenPosition is in meters
-  const vmaxUpperBoundIndex = fastFindFirstGreater(vmax.internalBoundaries, givenPosition);
-  // Error case: vmax doesn't respect the SpeedRanges specifications on the lists' lengths
-  if (
-    vmaxUpperBoundIndex > vmax.speeds.length - 1 ||
-    (vmaxUpperBoundIndex === vmax.speeds.length - 1 &&
-      vmax.internalBoundaries[vmaxUpperBoundIndex] === givenPosition)
-  )
-    return [0];
-  if (vmax.internalBoundaries[vmaxUpperBoundIndex] === givenPosition)
-    return [vmax.speeds[vmaxUpperBoundIndex], vmax.speeds[vmaxUpperBoundIndex + 1]];
-  return [vmax.speeds[vmaxUpperBoundIndex]];
-}
-
-/**
- * Given the position in m and the Vmax in m/s (boundaries in m too),
- * return the actual Vmax at the givenPosition in km/h (or the Vmaxs before and after if exactly at a bound).
- */
-export function getActualVmaxs(givenPosition: number, vmax: SpeedRanges) {
-  const actualVMaxs = findActualVmaxs(givenPosition, vmax);
-  return actualVMaxs.map((actualVMax) => msToKmhRounded(actualVMax));
 }
 
 const getTimeAndSpeed = (
