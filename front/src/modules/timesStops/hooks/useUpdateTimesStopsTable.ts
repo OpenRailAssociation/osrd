@@ -27,6 +27,7 @@ import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/typ
 import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
 import { Duration, startTimeToMs, subtractStartTime } from 'utils/duration';
+import { kmToMm } from 'utils/physics';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -63,6 +64,7 @@ import type {
   UpdateCellStatus,
   BatchTimesUpdate,
   ReferenceBaseArrivalUpdate,
+  DistanceUpdate,
 } from '../types';
 
 /** The train fields an edit can change. */
@@ -364,6 +366,28 @@ const useUpdateTimesStopsTable = (
     [selectedTrain, allRows, scenario.timetable_type]
   );
 
+  const computeDistance = useCallback(
+    (update: DistanceUpdate): ComputedUpdate => {
+      const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
+      const currentSchedule = selectedTrain.schedule ?? [];
+
+      const referencePosition = update.value !== null ? kmToMm(update.value) : null;
+
+      const updatedSchedule = upsertScheduleItem(currentSchedule, updatedPath, {
+        at: pathStepKey,
+        reference_position: referencePosition,
+      });
+
+      return {
+        patch: {
+          schedule: updatedSchedule,
+        },
+        edits: [{ rowId: update.row.id, field: 'distance', value: update.value }],
+      };
+    },
+    [selectedTrain, allRows]
+  );
+
   /** Compute the updated train fields for a cell update, and the edits to display meanwhile. */
   const computeTrainUpdate = useCallback(
     (update: CellUpdate): ComputedUpdate => {
@@ -372,6 +396,7 @@ const useUpdateTimesStopsTable = (
       if (update.field === 'requestedTheoreticalMargin') return computeMarginUpdate(update);
       if (update.field === 'receptionSignal') return computeReceptionSignalUpdate(update);
       if (update.field === 'referenceBaseArrival') return computeReferenceBaseArrival(update);
+      if (update.field === 'distance') return computeDistance(update);
       return computeTimesUpdate(update);
     },
     [
@@ -381,6 +406,7 @@ const useUpdateTimesStopsTable = (
       computeReceptionSignalUpdate,
       computeTimesUpdate,
       computeReferenceBaseArrival,
+      computeDistance,
     ]
   );
 
