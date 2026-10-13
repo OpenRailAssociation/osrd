@@ -291,6 +291,9 @@ impl Server {
                 app_state.clone(),
                 middlewares::authentication_extraction_middleware,
             ))
+            .layer(axum::middleware::from_fn(
+                middlewares::feature_flags_extraction_middleware,
+            ))
             .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
             .layer(RequestDecompressionLayer::new())
