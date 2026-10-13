@@ -125,6 +125,7 @@
     "applicationDate": "Application date",
     "asap": "a.s.a.p.",
     "destination": "Destination",
+    "noRequests": "No request could be fetched.",
     "origin": "Origin",
     "requestNumber": "Request N°",
     "status": "Status",

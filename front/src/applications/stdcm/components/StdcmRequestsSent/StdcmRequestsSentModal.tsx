@@ -149,6 +149,9 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <tbody>{requestsSentRows()}</tbody>
         </table>
       </div>
+      {requestsHistory.length === 0 && (
+        <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
+      )}
     </Dialog>
   );
 };
