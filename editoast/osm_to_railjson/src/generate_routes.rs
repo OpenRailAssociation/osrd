@@ -110,7 +110,7 @@ impl Graph {
                 EdgeType::ToDetector,
                 detector.position,
             );
-            debug_assert!(length - detector.position >= 0.0);
+            debug_assert!((0.0..=length).contains(detector.position));
             self.add_directed_edge(
                 d.clone(),
                 v.clone(),
@@ -266,7 +266,7 @@ impl Graph {
         succ: &Node,
         parent: &HashMap<&Node, &Node>,
     ) -> bool {
-        let (edge, _length) = self
+        let (edge, _) = self
             .edges
             .get(&(current.clone(), succ.clone()))
             .expect("Edge does not exist");
