@@ -67,6 +67,8 @@ function getTrackOccupancyOperationalPointReference(
  * - trains: An array with all visible TrainSpaceTimeData items in the SpaceTimeChart.
  * - pathOperationalPoints:
  *   An array with all ProjectionWaypoint items along the current path
+ * - hourlyTimetableDuration:
+ *   The duration of the hourly pattern the linkings repeat on, nil for a calendar timetable
  *
  * It outputs:
  * - deployedWaypoints:
@@ -83,11 +85,13 @@ const useTrackOccupancy = ({
   timetableId,
   trainScheduleProjections,
   pathOperationalPoints,
+  hourlyTimetableDuration,
 }: {
   infraId: number;
   timetableId: number;
   trainScheduleProjections: TrainSpaceTimeData[];
   pathOperationalPoints: ProjectionWaypoint[];
+  hourlyTimetableDuration?: Duration;
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
@@ -345,7 +349,10 @@ const useTrackOccupancy = ({
           operationalPointPosition: op.position,
           operationalPointName: op.name,
           zones: resolvedZones,
-          possibleLinkings: computePossibleLinkings(resolvedZones ?? []),
+          possibleLinkings: computePossibleLinkings(
+            resolvedZones ?? [],
+            hourlyTimetableDuration?.ms
+          ),
           loading: opState.zones.type === 'loading',
           tracks: sortTracks(infraTracks, virtualTracks),
         });
@@ -353,7 +360,7 @@ const useTrackOccupancy = ({
     });
 
     return res;
-  }, [pathOperationalPointsState, pathOpsByWaypointId, tracksState, t]);
+  }, [pathOperationalPointsState, pathOpsByWaypointId, tracksState, t, hourlyTimetableDuration]);
 
   const toggleWaypoint = useCallback(
     (waypointId: string, selectedState?: boolean) => {
