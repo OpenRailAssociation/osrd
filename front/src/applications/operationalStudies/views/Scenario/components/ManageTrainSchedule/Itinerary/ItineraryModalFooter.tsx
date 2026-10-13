@@ -43,7 +43,7 @@ export default function ItineraryModalFooter({
       />
       {mode === 'new' ? (
         <div className="itinerary-modal-submit-buttons">
-          {scenario.timetable_type !== 'HOURLY' && (
+          {scenario.timetable_summaries[0].type !== 'HOURLY' && (
             <Button
               label={t('submit.addSingleTrain')}
               variant="Normal"

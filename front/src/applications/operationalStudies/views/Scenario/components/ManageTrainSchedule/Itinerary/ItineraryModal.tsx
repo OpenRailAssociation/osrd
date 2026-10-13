@@ -227,7 +227,7 @@ const ItineraryModal = ({
   const fitViewportToInfra = useFitViewportToInfra();
 
   const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
-    blankNewTrainState(defaultStartTime, scenario.timetable_type)
+    blankNewTrainState(defaultStartTime, scenario.timetable_summaries[0].type)
   );
 
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -259,7 +259,7 @@ const ItineraryModal = ({
         setTrainState(
           setupStateWithTrainSchedule(
             train,
-            scenario.timetable_type,
+            scenario.timetable_summaries[0].type,
             !!trainScheduleToEditData.occurrenceId
           )
         );
@@ -272,7 +272,7 @@ const ItineraryModal = ({
         });
       } else {
         if (infraId) fitViewportToInfra(infraId);
-        setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_type));
+        setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_summaries[0].type));
         setModalFormState({
           name: '',
           rollingStockName: '',
@@ -288,7 +288,7 @@ const ItineraryModal = ({
   }, [
     wasInitialized,
     trainScheduleToEditData,
-    scenario.timetable_type,
+    scenario.timetable_summaries,
     infraId,
     fitViewportToInfra,
   ]);

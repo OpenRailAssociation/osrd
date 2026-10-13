@@ -135,22 +135,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     const state = new MacroEditorState(
       infraId,
       scenario.id,
-      scenario.timetable_id,
-      scenario.timetable_type
+      scenario.timetable_summaries[0].id,
+      scenario.timetable_summaries[0].type
     );
 
-    const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
+    const dto = await loadNgeDto(state, scenario.timetable_summaries[0].id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
-  }, [
-    dispatch,
-    infraId,
-    scenario.id,
-    scenario.timetable_id,
-    scenario.timetable_type,
-    activeBoards,
-    t,
-  ]);
+  }, [dispatch, infraId, scenario.id, scenario.timetable_summaries, activeBoards, t]);
 
   const upsertTrainSchedulesWithNge = useCallback(
     (updatedTrainSchedules: TrainScheduleResponse[]) => {
@@ -235,10 +227,10 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const defaultStartTime = useMemo(
     () =>
-      scenario.timetable_type === 'CALENDAR'
+      scenario.timetable_summaries[0].type === 'CALENDAR'
         ? computeLatestMidnight([...trainSchedulesById.values()], now)
         : Duration.zero,
-    [scenario.timetable_type, trainSchedulesById]
+    [scenario.timetable_summaries, trainSchedulesById]
   );
 
   return (
@@ -322,7 +314,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                 </BoardWrapper>
               )}
               {/* CHRONOGRAM */}
-              {scenario.timetable_type === 'CALENDAR' &&
+              {scenario.timetable_summaries[0].type === 'CALENDAR' &&
                 isInfraLoaded &&
                 trainSchedulesWithDetails.length > 0 && (
                   <BoardWrapper

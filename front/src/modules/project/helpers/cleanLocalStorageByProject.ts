@@ -18,7 +18,7 @@ const cleanLocalStorageByProject = async (
   const scenarios = await Promise.all(promisedScenarios);
 
   scenarios.flat().forEach((scenario) => {
-    if (scenario) cleanScenarioLocalStorage(scenario.timetable_id);
+    if (scenario) cleanScenarioLocalStorage(scenario.timetable_summaries[0].id);
   });
 };
 

@@ -216,8 +216,7 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Scénario non trouvé",
-      "StudyNotFound": "Étude '{{study_id}}' non trouvée",
-      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+      "StudyNotFound": "Étude '{{study_id}}' non trouvée"
     },
     "search": {
       "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",

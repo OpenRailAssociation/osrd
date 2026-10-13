@@ -108,7 +108,7 @@ const TimetableToolbar = ({
       selectedTrainScheduleIds,
       trainSchedules,
       trainScheduleRoundTripsData?.results,
-      scenario.timetable_type
+      scenario.timetable_summaries[0].type
     );
   };
 

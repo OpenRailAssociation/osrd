@@ -52,7 +52,7 @@ export const ScenarioContextProvider = ({
       workerStatus,
       isInfraLoaded: workerStatus === 'READY',
       scenario,
-      timetableId: scenario.timetable_id,
+      timetableId: scenario.timetable_summaries[0].id,
       sandboxId,
       electricalProfileSetId: scenario.electrical_profile_set_id,
       trackSectionsLoading,

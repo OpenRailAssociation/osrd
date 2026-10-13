@@ -26,7 +26,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
   const { scenario } = useScenarioContext();
   // An hourly timetable only ever contains paced trains, so the mission/single
   // train filter would be a no-op.
-  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
+  const isHourlyTimetable = scenario.timetable_summaries[0].type === 'HOURLY';
 
   const {
     nameLabelFilter,

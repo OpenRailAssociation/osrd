@@ -4343,12 +4343,16 @@ export type Scenario = {
   name: string;
   study_id: number;
   tags: Tags;
-  timetable_id: number;
 };
 export type TimetableType = 'CALENDAR' | 'HOURLY';
+export type TimetableSummary = {
+  id: number;
+  name?: string | null;
+  type: TimetableType;
+};
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
-  timetable_type: TimetableType;
+  timetable_summaries: TimetableSummary[];
   train_schedules_count: number;
 };
 export type ScenarioCreateForm = {
@@ -4381,7 +4385,7 @@ export type ScenarioResponse = Scenario & {
   infra_name: string;
   project: Project;
   study: Study;
-  timetable_type: TimetableType;
+  timetable_summaries: TimetableSummary[];
   train_schedules_count: number;
 };
 export type ScenarioPatchForm = {

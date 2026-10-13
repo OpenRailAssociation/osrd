@@ -122,8 +122,8 @@ const TimeStopsTableWrapper = ({
   }, [rows, optimisticEdits]);
 
   const startTime = useMemo(
-    () => getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type),
-    [selectedTrain, scenario.timetable_type]
+    () => getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_summaries[0].type),
+    [selectedTrain, scenario.timetable_summaries]
   );
 
   const availablePowerRestrictions = useMemo(

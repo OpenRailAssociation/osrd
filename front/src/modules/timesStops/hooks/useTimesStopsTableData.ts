@@ -287,7 +287,10 @@ const useTimesStopsTableData = (
   }, [trackIds, getTrackSectionsByIds]);
 
   const allRows = useMemo(() => {
-    const startDate = getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type);
+    const startDate = getTruncatedToSecondStartTime(
+      selectedTrain,
+      scenario.timetable_summaries[0].type
+    );
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathKeyToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
 
@@ -461,7 +464,7 @@ const useTimesStopsTableData = (
 
     return formattedRows;
   }, [
-    scenario.timetable_type,
+    scenario.timetable_summaries,
     selectedTrain,
     stableIsValid,
     stableTrain,
