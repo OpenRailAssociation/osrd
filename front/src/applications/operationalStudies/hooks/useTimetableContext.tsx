@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import type { TrainId } from 'reducers/osrdconf/types';
+import type { Duration } from 'utils/duration';
 
 /**
  * TimetableContextType holds timetable-specific data, such as train schedules
@@ -12,6 +13,7 @@ import type { TrainId } from 'reducers/osrdconf/types';
  */
 export type TimetableContextType = {
   trainSchedules: Map<number, TrainScheduleResponse>;
+  hourlyTimetableDuration?: Duration;
   removeTrainSchedules: (ids: number[]) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   updateTrainScheduleDepartureTime: (
