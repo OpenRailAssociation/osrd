@@ -8,6 +8,7 @@ import {
   formatEditoastIdToTrainScheduleId,
 } from 'utils/trainId';
 
+import type { PossibleLinkings } from '../computePossibleLinkings';
 import buildWaypointLinkings, {
   formatLinkingId,
   formatTrainIdToLinkingOccurrence,
@@ -136,7 +137,9 @@ describe('buildWaypointLinkings', () => {
     endTime: 40 * MINUTE,
   });
 
-  const POSSIBLE = new Map([[TRAIN_1, TRAIN_2]]);
+  const POSSIBLE: PossibleLinkings = new Map([
+    [TRAIN_1, { target: TRAIN_2, sourceOffsets: new Set([0]) }],
+  ]);
   const TRAIN_NAMES: Partial<Record<TrainId, string>> = { [TRAIN_1]: '4655', [TRAIN_2]: '8795' };
   const EXISTING: ExistingLinking[] = [{ id: 42, source: TRAIN_1, target: TRAIN_2 }];
 
@@ -270,5 +273,38 @@ describe('buildWaypointLinkings', () => {
     });
 
     expect(brokenLinkings.map(({ trackId }) => trackId)).toEqual([TRACK_A, TRACK_B]);
+  });
+
+  it('should not suggest a linking which is only possible on another repetition', () => {
+    const { linkings } = buildLinkings({
+      possibleLinkings: new Map([
+        [TRAIN_1, { target: TRAIN_2, sourceOffsets: new Set([60 * MINUTE]) }],
+      ]),
+      showSuggestions: true,
+    });
+
+    expect(linkings).toEqual([]);
+  });
+
+  it('should not suggest a linking whose target departs on the next repetition', () => {
+    const { linkings } = buildLinkings({
+      zones: [
+        zone({
+          trainId: TRAIN_1,
+          blockType: 'incoming',
+          startTime: 45 * MINUTE,
+          endTime: 55 * MINUTE,
+        }),
+        zone({
+          trainId: TRAIN_2,
+          blockType: 'outgoing',
+          startTime: 5 * MINUTE,
+          endTime: 12 * MINUTE,
+        }),
+      ],
+      showSuggestions: true,
+    });
+
+    expect(linkings).toEqual([]);
   });
 });

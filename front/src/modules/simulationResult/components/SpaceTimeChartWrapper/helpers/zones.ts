@@ -16,7 +16,7 @@ import { Duration } from 'utils/duration';
 import { isTrainId } from 'utils/trainId';
 
 import type { BaseTrainProjection, CurveStyleExceptionType } from '../../../types';
-import type { LinkableOccupancy } from './computePossibleLinkings';
+import type { LinkableOccupancy, PossibleLinkings } from './computePossibleLinkings';
 
 type DrawableOccupancyZone = Omit<OccupancyZone, 'curveStyle'> & {
   curveStyle?: OccupancyZone['curveStyle'];
@@ -38,7 +38,7 @@ export type DeployedWaypoint = {
   operationalPointPosition: number;
   operationalPointName?: string;
   zones?: MovableOccupancyZone[];
-  possibleLinkings: Map<TrainId, TrainId>;
+  possibleLinkings: PossibleLinkings;
   tracks?: Track[];
   loading?: boolean;
 };
