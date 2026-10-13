@@ -78,6 +78,7 @@ type BuildTableRowParams = {
   schedule?: ScheduleItem;
   computedArrival?: Duration;
   computedBaseArrival?: Duration;
+  distance?: number;
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
@@ -101,6 +102,7 @@ const buildTableRow = ({
   schedule,
   computedArrival,
   computedBaseArrival,
+  distance,
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
@@ -198,6 +200,7 @@ const buildTableRow = ({
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
     baseArrival,
+    distance,
   };
 };
 
