@@ -84,6 +84,10 @@ fn merge_path_items(mut a: PathItem, b: PathItem) -> PathItem {
         description = "All HTTP endpoints of Editoast",
         license(name = "LGPL", url = "https://www.gnu.org/licenses/lgpl-3.0.html"),
     ),
+    servers(
+        (url = "https://demo.osrd.fr/editoast/", description = "Demo instance"),
+        (url = "http://localhost:4000/api/", description = "Local development")
+    ),
     components(schemas(
         json_patch::AddOperation,
         json_patch::CopyOperation,
