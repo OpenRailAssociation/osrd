@@ -60,11 +60,12 @@ pub struct ListStdcmRequestResponse {
 
 impl From<PaginatedList> for ListStdcmRequestResponse {
     fn from(list: PaginatedList) -> Self {
+        use base64::prelude::*;
         ListStdcmRequestResponse {
             requests: list.requests,
             links: Links {
-                prev: list.prev.map(|cursor| cursor.to_string()),
-                next: list.next.map(|cursor| cursor.to_string()),
+                prev: list.prev.map(|cursor| BASE64_URL_SAFE.encode(cursor)),
+                next: list.next.map(|cursor| BASE64_URL_SAFE.encode(cursor)),
             },
         }
     }
@@ -73,8 +74,8 @@ impl From<PaginatedList> for ListStdcmRequestResponse {
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "stdcm_request")]
 pub enum StdcmRequestError {
-    #[error("Malformed parameters")]
-    #[editoast_error(status = 400)]
+    #[error("Invalid cursors in query parameters")]
+    #[editoast_error(status = 422)]
     MalformedParameters,
     #[error("Specifying both after and before cursor is not supported")]
     #[editoast_error(status = 400)]
@@ -87,8 +88,22 @@ pub enum StdcmRequestError {
     Forbidden,
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(models::Error, database::DatabaseError)]
     Database(models::Error),
+}
+
+impl From<models::stdcm_request::Error> for StdcmRequestError {
+    fn from(value: models::stdcm_request::Error) -> Self {
+        match value {
+            models::stdcm_request::Error::DecodeError(_) => StdcmRequestError::MalformedParameters,
+            models::stdcm_request::Error::Database(error) => StdcmRequestError::Database(error),
+        }
+    }
+}
+
+impl From<base64::DecodeError> for StdcmRequestError {
+    fn from(_value: base64::DecodeError) -> Self {
+        StdcmRequestError::MalformedParameters
+    }
 }
 
 /// Return a list of stdcm requests
@@ -109,6 +124,7 @@ pub(in crate::views) async fn list(
     Query(pagination_params): Query<PaginationQueryParams>,
     Extension(authn_state): Extension<crate::authentication::State>,
 ) -> Result<Json<ListStdcmRequestResponse>> {
+    use base64::prelude::*;
     let mut settings = SelectionSettings::new();
     if pagination_params.after.is_some() && pagination_params.before.is_some() {
         return Err(StdcmRequestError::RangePaginationNotSupported.into());
@@ -118,16 +134,16 @@ pub(in crate::views) async fn list(
     };
     if let Some(after) = pagination_params.after {
         settings = settings.cursor(SelectionCursor::AfterCursor(
-            after
-                .parse::<i64>()
-                .map_err(|_| StdcmRequestError::MalformedParameters)?,
+            BASE64_URL_SAFE
+                .decode(after)
+                .map_err(StdcmRequestError::from)?,
         ))
     };
     if let Some(before) = pagination_params.before {
         settings = settings.cursor(SelectionCursor::BeforeCursor(
-            before
-                .parse::<i64>()
-                .map_err(|_| StdcmRequestError::MalformedParameters)?,
+            BASE64_URL_SAFE
+                .decode(before)
+                .map_err(StdcmRequestError::from)?,
         ))
     };
     if let Some(user) = authn_state.user() {
@@ -159,7 +175,11 @@ pub(in crate::views) async fn list(
 
     let settings = settings;
     let mut conn = db_pool.get().await?;
-    Ok(Json(StdcmRequest::list(&mut conn, settings).await?.into()))
+    let requests = StdcmRequest::list(&mut conn, settings)
+        .await
+        .map_err(StdcmRequestError::from)?
+        .into();
+    Ok(Json(requests))
 }
 
 #[cfg(test)]
@@ -396,7 +416,9 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn list_paginated_before_ok() {
+    async fn list_paginated_ok() {
+        // The goal of the test is to check pagination of an intermediary page using a before cursor, as it is the most complex thus bug prone pagination case
+        // It also incidentally tests extremities pages pagination as it is required to access and check the aforementioned intermediary pagination
         let app = test_app!().build();
         let mut conn = app.db_pool().get_ok();
         let user = app.user("Alice", "Alice").create().await;
@@ -406,29 +428,79 @@ pub mod tests {
             request_fixture(&mut conn, "Alice_req_3", user.id).await,
             request_fixture(&mut conn, "Alice_req_4", user.id).await,
         ];
-        let response = app
+        // To obtain a cursor on the 4th request, we need to perform a couple of preliminary queries (as we need a page starting with the 4th request)
+        // We need this cursor in order to build our aforementioned goal page
+        let preliminary_response_1: ListStdcmRequestResponse = app
             .get(&format!("/stdcm_requests"))
             .skip_authz()
-            .add_query_param("before", created_requests[3].id)
+            .add_query_param("size", 3)
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            preliminary_response_1.requests,
+            vec![
+                created_requests[0].clone(),
+                created_requests[1].clone(),
+                created_requests[2].clone()
+            ]
+        );
+        assert_eq!(preliminary_response_1.links.prev, None);
+        let cursor_on_alice_req_3 = preliminary_response_1
+            .links
+            .next
+            .expect("Next cursor should be present");
+        let preliminary_response_2: ListStdcmRequestResponse = app
+            .get(&format!("/stdcm_requests"))
+            .skip_authz()
+            .add_query_param("after", &cursor_on_alice_req_3)
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            preliminary_response_2.requests,
+            vec![created_requests[3].clone()]
+        );
+        assert_eq!(preliminary_response_2.links.next, None);
+        let cursor_on_alice_req_4 = preliminary_response_2
+            .links
+            .prev
+            .expect("Prev cursor should be present");
+
+        // The intermediary page being tested
+        let response: ListStdcmRequestResponse = app
+            .get(&format!("/stdcm_requests"))
+            .skip_authz()
+            .add_query_param("before", &cursor_on_alice_req_4)
             .add_query_param("size", 2)
             .await
             .assert_status_ok()
             .json();
+        assert_eq!(
+            response.requests,
+            vec![created_requests[1].clone(), created_requests[2].clone()]
+        );
+        assert_eq!(response.links.next, Some(cursor_on_alice_req_3.clone()));
+        let prev_cursor = response.links.prev.expect("Prev cursor should be present");
 
-        let expected_stdcm_requests =
-            vec![created_requests[1].clone(), created_requests[2].clone()];
-        let expected_response = ListStdcmRequestResponse {
-            links: Links {
-                prev: Some(expected_stdcm_requests[0].id.to_string()),
-                next: Some(expected_stdcm_requests[1].id.to_string()),
-            },
-            requests: expected_stdcm_requests,
-        };
-        assert_eq!(expected_response, response);
+        // At this point we know that the returned next cursor is correct, as we can check it against an already known cursor on the 3rd request
+        // However, we still need to check the returned prev cursor points to the second request, using a final follow up query
+        let before_response: ListStdcmRequestResponse = app
+            .get(&format!("/stdcm_requests"))
+            .skip_authz()
+            .add_query_param("before", &prev_cursor)
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(before_response.requests, vec![created_requests[0].clone()]);
+        assert_eq!(before_response.links.prev, None);
+        assert!(before_response.links.next.is_some());
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn list_paginated_after_ok() {
+    async fn list_paginated_filtered_ok() {
+        // The goal of the test is to check pagination of an page while filtering users
+        // To obtain the appropriate cursor, we first need to perform a preliminary query
         let app = test_app!().build();
         let mut conn = app.db_pool().get_ok();
         let user1 = app
@@ -444,40 +516,48 @@ pub mod tests {
             request_fixture(&mut conn, "Alice_req_3", user1.id).await,
             request_fixture(&mut conn, "Bob_req_2", user2.id).await,
         ];
-        let response = app
+
+        let preliminary_response_1: ListStdcmRequestResponse = app
+            .get(&format!("/stdcm_requests"))
+            .skip_authz()
+            .add_query_param("size", 1)
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(
+            preliminary_response_1.requests,
+            vec![created_requests[0].clone()]
+        );
+        assert_eq!(preliminary_response_1.links.prev, None);
+        let cursor_on_alice_req_1 = preliminary_response_1
+            .links
+            .next
+            .expect("Next cursor should be present");
+
+        let response: ListStdcmRequestResponse = app
             .get(&format!("/stdcm_requests"))
             .by_user(user1.as_ref())
-            .add_query_param("after", created_requests[0].id)
+            .add_query_param("after", cursor_on_alice_req_1)
             .add_query_param("by", "user")
             .await
             .assert_status_ok()
             .json();
-
-        let expected_stdcm_requests =
-            vec![created_requests[1].clone(), created_requests[3].clone()];
-        let expected_response = ListStdcmRequestResponse {
-            links: Links {
-                prev: Some(expected_stdcm_requests[0].id.to_string()),
-                next: None,
-            },
-            requests: expected_stdcm_requests,
-        };
-        assert_eq!(expected_response, response);
+        assert_eq!(
+            response.requests,
+            vec![created_requests[1].clone(), created_requests[3].clone()]
+        );
+        assert!(response.links.prev.is_some());
+        assert_eq!(response.links.next, None);
+        // Next cursor is None as while Bob_req_2 is after Alice_req_3 (created_requests[3]), it doesn't match the user
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_paginated_range_pagination_not_supported() {
         let app = test_app!().build();
-        let mut conn = app.db_pool().get_ok();
-        let user = app.user("Alice", "Alice").create().await;
-        let created_requests = vec![
-            request_fixture(&mut conn, "Alice_req_1", user.id).await,
-            request_fixture(&mut conn, "Alice_req_2", user.id).await,
-        ];
         app.get(&format!("/stdcm_requests"))
             .skip_authz()
-            .add_query_param("before", created_requests[0].id)
-            .add_query_param("after", created_requests[1].id)
+            .add_query_param("before", "placeholder")
+            .add_query_param("after", "placeholder")
             .await
             .assert_status_bad_request();
     }
