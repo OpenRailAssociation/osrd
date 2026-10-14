@@ -4698,9 +4698,11 @@ class SimulatedStep(BaseModel):
     """
     The identifier of the operational point reached at this step
     """
-    stop_for: Annotated[int | None, Field(title="Stop For")] = None
+    matching_requested_step_index: Annotated[
+        int | None, Field(title="Matching Requested Step Index")
+    ] = None
     """
-    The duration in ms if a stop occurs at this operational point
+    The index of the requested step.
     """
 
 

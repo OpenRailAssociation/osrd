@@ -224,8 +224,8 @@ components:
           $ref: '#/components/schemas/StepType'
       type: object
       required:
-      - duration
-      - location
+        - duration
+        - location
       title: RequestedStep
     SimulatedStep:
       properties:
@@ -241,12 +241,10 @@ components:
           type: string
           title: Operational Point Identifier
           description: The identifier of the operational point reached at this step
-        stop_for:
-          anyOf:
-            - type: integer
-            - type: 'null'
-          title: Stop For
-          description: The duration in ms if a stop occurs at this operational point
+        matching_requested_step_index:
+          type: integer
+          title: Matching Requested Step Index
+          description: The index of the requested step.
       title: Simulated Step
       required:
         - path_item_time

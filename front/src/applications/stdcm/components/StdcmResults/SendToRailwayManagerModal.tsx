@@ -75,13 +75,19 @@ function simulatedStepsFromPathProperties(
   const interp = (position: number): number =>
     Math.trunc(interpolateValue(simulation.final_output, position, 'times'));
   let remainingViaSteps = pathSteps
-    .map((ps) =>
-      ps.operationalPoint && ps.isVia ? { opId: ps.operationalPoint.id, stopFor: ps.stopFor } : null
+    .map((ps, index) =>
+      ps.operationalPoint && ps.isVia
+        ? {
+            opId: ps.operationalPoint.id,
+            matching_requested_step_index: index,
+          }
+        : null
     )
     .filter((ps) => ps !== null);
   const result = pathProperties.operational_points.map((op) => {
     const index = remainingViaSteps.findIndex((ps) => ps.opId === op.id);
-    let stopFor: number | undefined;
+    const matchingStep = remainingViaSteps[index] || null;
+
     if (index >= 0) {
       if (index !== 0) {
         console.error(
@@ -89,14 +95,13 @@ function simulatedStepsFromPathProperties(
           remainingViaSteps.slice(0, index)
         );
       }
-      stopFor = remainingViaSteps[index].stopFor?.ms;
       remainingViaSteps = remainingViaSteps.slice(index + 1);
     }
     return {
       op_id: op.id,
       path_item_time: interp(op.position),
       path_item_position: op.position,
-      stop_for: stopFor,
+      matching_requested_step_index: matchingStep?.matching_requested_step_index,
     };
   });
   if (remainingViaSteps.length > 0) {
