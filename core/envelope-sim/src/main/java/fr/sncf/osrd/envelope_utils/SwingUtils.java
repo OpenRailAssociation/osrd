@@ -11,6 +11,7 @@ import javax.swing.*;
 @SuppressFBWarnings({"WA_AWAIT_NOT_IN_LOOP"})
 public class SwingUtils {
     /** Creates a new frame, adds a pane and synchronously wait for the frame to be closed */
+    @SuppressFBWarnings({"CWO_CLOSED_WITHOUT_OPENED"})
     public static void debugPanel(String windowName, Supplier<JPanel> panelSupplier) {
         final var lock = new ReentrantLock();
         final var windowClosed = lock.newCondition();

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 
 /** This class represents a stop on the train path */
@@ -16,7 +15,6 @@ public class RJSTrainStop {
     /**
      * Stop location, as a position on a track One must be specified between position and location
      */
-    @SuppressFBWarnings("UWF_NULL_FIELD")
     public RJSTrackLocation location;
 
     /**
