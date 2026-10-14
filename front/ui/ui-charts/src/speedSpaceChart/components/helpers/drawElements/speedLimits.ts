@@ -1,5 +1,8 @@
+import chroma from 'chroma-js';
+
+import { ERROR_30, ERROR_60, WARNING_30 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
-import { ERROR_30, ERROR_60, MARGINS, WARNING_30 } from '../../const';
+import { MARGINS } from '../../consts';
 import {
   clearCanvas,
   maxPositionValue,
@@ -41,7 +44,7 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
     // Draw vertical line joining 2 speed limits
     if (previousSpeedY !== null) {
       ctx.beginPath();
-      ctx.strokeStyle = ERROR_30.alpha(0.5).hex();
+      ctx.strokeStyle = chroma(ERROR_30).alpha(0.5).hex();
       ctx.lineWidth = 0.5;
       ctx.moveTo(previousBoundaryX, previousSpeedY);
       ctx.lineTo(previousBoundaryX, speedY);
@@ -53,11 +56,11 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
     // Draw gradient
     const gradient = ctx.createLinearGradient(0, speedY, 0, speedY - GRADIENT_HEIGHT);
     if (isTemporary) {
-      gradient.addColorStop(0, speedColor.alpha(0.23).hex());
+      gradient.addColorStop(0, chroma(speedColor).alpha(0.23).hex());
     } else {
-      gradient.addColorStop(0, speedColor.alpha(0.15).hex());
+      gradient.addColorStop(0, chroma(speedColor).alpha(0.15).hex());
     }
-    gradient.addColorStop(1, speedColor.alpha(0).hex());
+    gradient.addColorStop(1, chroma(speedColor).alpha(0).hex());
     ctx.fillStyle = gradient;
     ctx.rect(previousBoundaryX, speedY, currentBoundaryX - previousBoundaryX, -GRADIENT_HEIGHT);
     ctx.fill();
@@ -76,7 +79,7 @@ export const drawSpeedLimits = ({ ctx, width, height, store }: DrawFunctionParam
     // Draw main line
     ctx.beginPath();
     ctx.lineWidth = 1;
-    ctx.strokeStyle = speedColor.hex();
+    ctx.strokeStyle = chroma(speedColor).hex();
     ctx.moveTo(previousBoundaryX, speedY);
     ctx.lineTo(extendedBoundaryX ?? currentBoundaryX, speedY);
 

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import type { TrainDetails, Store } from '../../types';
 import DetailsBox from '../common/DetailsBox';
-import { MARGINS } from '../const';
+import { MARGINS } from '../consts';
 import { drawCursor } from '../helpers/drawElements/reticle';
 import type { SpeedSpaceChartProps } from '../SpeedSpaceChart';
 import { clearCanvas } from '../utils';

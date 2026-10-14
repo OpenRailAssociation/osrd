@@ -2,7 +2,7 @@ import * as d3selection from 'd3-selection';
 import * as d3zoom from 'd3-zoom';
 
 import type { Store } from '../../types';
-import { FRONT_INTERACTIVITY_LAYER_ID } from '../const';
+import { FRONT_INTERACTIVITY_LAYER_ID } from '../consts';
 
 export const resetZoom = () =>
   d3zoom.zoom().transform(d3selection.select(FRONT_INTERACTIVITY_LAYER_ID), d3zoom.zoomIdentity);

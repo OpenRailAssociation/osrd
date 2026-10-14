@@ -1,5 +1,9 @@
+import chroma from 'chroma-js';
+
+import { FONT_SANS_REGULAR } from '../../../../common/consts';
+import { GREY_30, GREY_50 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../const';
+import { MARGINS, TICK_TITLE_MARGINS, RIGHT_TICK_HEIGHT_OFFSET } from '../../consts';
 import { clearCanvas, slopesValues } from '../../utils';
 
 const { MARGIN_LEFT, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;
@@ -22,7 +26,7 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
   const textOffsetX = width - MARGIN_LEFT + 10;
   const tickWidth = 6;
 
-  ctx.font = 'normal 12px IBM Plex Sans';
+  ctx.font = FONT_SANS_REGULAR;
   ctx.lineWidth = 0.5;
 
   // Calculate gradient step to avoid decimals
@@ -37,14 +41,14 @@ export const drawTickYRight = ({ ctx, width, height, store }: DrawFunctionParams
 
     ctx.moveTo(width - MARGIN_LEFT - tickWidth, tickY);
     ctx.lineTo(width - MARGIN_LEFT, tickY);
-    ctx.strokeStyle = 'rgb(121, 118, 113)';
+    ctx.strokeStyle = GREY_50;
 
     ctx.textAlign = 'left';
     const text = tickValue.toString();
     const textPositionYRight = tickY + 4;
     const opacity = 1;
 
-    ctx.fillStyle = `rgba(182, 179, 175, ${opacity})`;
+    ctx.fillStyle = chroma(GREY_30).alpha(opacity).css();
     ctx.fillText(text, textOffsetX, textPositionYRight);
 
     ctx.fillText('‰', width - Y_RIGHT_HORIZONTAL, Y_RIGHT_VERTICAL);
