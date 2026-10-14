@@ -1,7 +1,7 @@
 import { compact } from 'lodash';
 
 import type {
-  GeoJsonLineString,
+  GeoJsonMultiLineString,
   LightRollingStock,
   LoadingGaugeType,
   PathProperties,
@@ -11,7 +11,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
-import { getPointOnTrackCoordinates } from 'utils/geometry';
+import { getPointOnTracksCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 
 export const formatSuggestedOperationalPoints = (
@@ -20,7 +20,7 @@ export const formatSuggestedOperationalPoints = (
       metadata?: NonNullable<SuggestedOP['metadata']>;
     }
   >,
-  geometry: GeoJsonLineString,
+  geometry: GeoJsonMultiLineString,
   pathLength: number
 ): SuggestedOP[] =>
   operationalPoints.map((op) => ({
@@ -37,7 +37,7 @@ export const formatSuggestedOperationalPoints = (
     track: op.part.track,
     trackName: op.part.local_track_name,
     positionOnPath: op.position,
-    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position)!,
+    coordinates: getPointOnTracksCoordinates(geometry, pathLength, op.position)!,
     metadata: op?.metadata,
   }));
 
