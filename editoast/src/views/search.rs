@@ -226,6 +226,7 @@ use editoast_derive::Search;
 use editoast_derive::SearchConfigStore;
 use geos::geojson::Geometry;
 use itertools::Itertools as _;
+use models::macro_node::OperationalPointReferenceNode;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PowerRestrictionItem;
@@ -282,6 +283,7 @@ enum SearchObjectType {
     OperationalPoint,
     User,
     Group,
+    MacroNode,
 }
 
 /// The payload of a search request
@@ -373,7 +375,8 @@ pub(in crate::views) async fn search(
         | SearchObjectType::Signal
         | SearchObjectType::Project
         | SearchObjectType::Study
-        | SearchObjectType::Scenario => Some(authz::Role::OperationalStudies),
+        | SearchObjectType::Scenario
+        | SearchObjectType::MacroNode => Some(authz::Role::OperationalStudies),
         SearchObjectType::TrainSchedule
         | SearchObjectType::OperationalPoint
         | SearchObjectType::User
@@ -829,6 +832,54 @@ pub(super) struct SearchResultItemScenario {
 #[derive(Search, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
+    table = "search_macro_node",
+    migration(src_table = "macro_node"),
+    joins = "INNER JOIN macro_node ON macro_node.id = search_macro_node.id",
+    column(
+        name = "short_name",
+        data_type = "TEXT",
+        sql = "macro_node.short_name",
+        textual_search
+    ),
+    column(
+        name = "full_name",
+        data_type = "TEXT",
+        sql = "macro_node.full_name",
+        textual_search
+    ),
+    column(
+        name = "scenario_id",
+        data_type = "BIGINT",
+        sql = "macro_node.scenario_id"
+    )
+)]
+/// A search result item for a query with `object = "macronode"`
+pub(super) struct SearchResultItemMacroNode {
+    #[search(sql = "macro_node.id")]
+    id: u64,
+    #[search(sql = "macro_node.scenario_id")]
+    scenario_id: u64,
+    #[search(sql = "macro_node.position_x")]
+    position_x: i64,
+    #[search(sql = "macro_node.position_y")]
+    position_y: i64,
+    #[search(sql = "macro_node.short_name")]
+    #[schema(required)]
+    short_name: Option<String>,
+    #[search(sql = "macro_node.full_name")]
+    #[schema(required)]
+    full_name: Option<String>,
+    #[search(sql = "macro_node.labels")]
+    labels: Vec<Option<String>>,
+    #[search(sql = "macro_node.node_location")]
+    node_location: OperationalPointReferenceNode,
+    #[search(sql = "macro_node.is_collapsed")]
+    is_collapsed: bool,
+}
+
+#[derive(Search, Serialize, ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
+#[search(
     table = "train_schedule",
     column(name = "train_schedule_set_id", data_type = "integer"),
     column(name = "train_name", data_type = "string"),
@@ -882,6 +933,7 @@ pub(super) struct SearchResultItemTrainSchedule {
     object(name = "trainschedule", config = SearchResultItemTrainSchedule),
     object(name = "user", config = SearchResultItemUser),
     object(name = "group", config = SearchResultItemGroup),
+    object(name = "macronode", config = SearchResultItemMacroNode),
 )]
 pub struct SearchConfigFinder;
 
@@ -894,12 +946,14 @@ pub mod tests {
     use pretty_assertions::assert_eq;
 
     use schemas::infra::OperationalPoint;
+    use schemas::infra::TrackOffset;
     use schemas::primitives::Identifier;
     use schemas::primitives::NonBlankString;
     use serde_json::json;
 
     use super::*;
     use crate::fixtures::create_project;
+    use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_train_schedule_set;
@@ -1230,5 +1284,65 @@ pub mod tests {
                 .collect_vec();
             assert_eq!(project_ids, expected_projects);
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_macro_node() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario").await;
+        let scenario_id = fixtures.scenario.id;
+        models::MacroNode::create_batch::<_, Vec<_>>(
+            &mut pool.get_ok(),
+            [("PNO", "Paris Nord", 0), ("LYS", "Lyon Saint-Exupéry", 1)].map(
+                |(short_name, full_name, offset)| {
+                    models::MacroNode::changeset()
+                        .scenario_id(scenario_id)
+                        .position_x(0)
+                        .position_y(0)
+                        .full_name(Some(full_name.to_string()))
+                        .labels(models::tags::Tags::default())
+                        .short_name(Some(short_name.to_string()))
+                        .node_location(OperationalPointReferenceNode::TrackOffset(
+                            TrackOffset::new("track", offset),
+                        ))
+                        .is_collapsed(false)
+                },
+            ),
+        )
+        .await
+        .unwrap();
+
+        for (query, expected_short_name) in [
+            (json!(["search", ["short_name"], "pno"]), "PNO"),
+            (json!(["search", ["full_name"], "exupery"]), "LYS"),
+        ] {
+            let response: Vec<SearchResultItemMacroNode> = app
+                .post("/search")
+                .json(&json!({
+                    "object": "macronode",
+                    "query": ["and", query, ["=", ["scenario_id"], scenario_id]],
+                }))
+                .await
+                .assert_status_ok()
+                .json();
+
+            assert_eq!(response.len(), 1);
+            assert_eq!(response[0].scenario_id, scenario_id as u64);
+            assert_eq!(response[0].short_name.as_deref(), Some(expected_short_name));
+        }
+
+        let response: Vec<SearchResultItemMacroNode> = app
+            .post("/search")
+            .json(&json!({
+                "object": "macronode",
+                "query": ["and", ["search", ["full_name"], "paris"],
+                                 ["=", ["scenario_id"], scenario_id + 1]],
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 0);
     }
 }

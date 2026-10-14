@@ -4516,6 +4516,17 @@ export type SearchResultItemGroup = {
   id: number;
   name: string;
 };
+export type SearchResultItemMacroNode = {
+  full_name: string | null;
+  id: number;
+  is_collapsed: boolean;
+  labels: (string | null)[];
+  node_location: OperationalPointReferenceNode;
+  position_x: number;
+  position_y: number;
+  scenario_id: number;
+  short_name: string | null;
+};
 export type SearchResultItem =
   | SearchResultItemTrack
   | SearchResultItemOperationalPoint
@@ -4525,7 +4536,8 @@ export type SearchResultItem =
   | SearchResultItemScenario
   | SearchResultItemTrainSchedule
   | SearchResultItemUser
-  | SearchResultItemGroup;
+  | SearchResultItemGroup
+  | SearchResultItemMacroNode;
 export type SearchObjectType =
   | 'track'
   | 'signal'
@@ -4535,7 +4547,8 @@ export type SearchObjectType =
   | 'trainschedule'
   | 'operationalpoint'
   | 'user'
-  | 'group';
+  | 'group'
+  | 'macronode';
 export type SearchQuery = boolean | number | number | string | object;
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
