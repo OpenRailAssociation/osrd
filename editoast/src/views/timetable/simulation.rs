@@ -207,13 +207,14 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
     res
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema, strum::EnumDiscriminants)]
 #[serde(tag = "status", rename_all = "snake_case")]
 #[expect(
     clippy::large_enum_variant,
     reason = "We accepted the difference of memory size taken by variants since there is only one success and others are error cases"
 )]
 #[schema(as = SimulationResponse, title_variants)]
+#[strum_discriminants(name(ResponseVariant), derive(Serialize))]
 pub enum Response {
     Success(SimulationResponseSuccess),
     PathfindingFailed {
