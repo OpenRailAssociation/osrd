@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
-import { lineString, multiLineString } from '@turf/helpers';
+import { multiLineString } from '@turf/helpers';
 import length from '@turf/length';
-import type { Feature, FeatureCollection, LineString, MultiLineString } from 'geojson';
+import type { Feature, FeatureCollection, MultiLineString } from 'geojson';
 import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
-import { type GeoJsonLineStringValue, type PathProperties } from 'common/api/osrdEditoastApi';
+import { type GeoJsonMultiLineStringValue, type PathProperties } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import WarpedMap from 'common/Map/WarpedMap';
 import { getImprovedOSRDData, type BBox2d } from 'common/Map/WarpedMap/core/helpers';
@@ -28,7 +28,7 @@ import { MapContextProvider } from '../useMapContext';
 const WIDTH = 300;
 
 type PathStatePayload = {
-  path: Feature<LineString>;
+  path: Feature<MultiLineString>;
   pathBBox: BBox2d;
   warpedBBox: BBox2d;
   transform: WarpingFunction;
@@ -93,8 +93,10 @@ const SimulationWarpedMap = ({
 
       // we don't clip the path
       const transformedPath = transform(path, false)!;
-      const latStart = first(transformedPath.geometry.coordinates)![1];
-      const latEnd = last(transformedPath.geometry.coordinates)![1];
+      const firstSegment = first(transformedPath.geometry.coordinates)!;
+      const lastSegment = last(transformedPath.geometry.coordinates)!;
+      const latStart = first(firstSegment)![1];
+      const latEnd = last(lastSegment)![1];
 
       /*
        * Here, `y` is the function provided by d3 to scale distance in meters from the beginning of the path to pixels
@@ -168,8 +170,8 @@ const SimulationWarpedMap = ({
     return undefined;
   }, [itineraryState, state]);
 
-  const updateWarpedMapState = (coordinates: GeoJsonLineStringValue) => {
-    const path = lineString(coordinates);
+  const updateWarpedMapState = (coordinates: GeoJsonMultiLineStringValue) => {
+    const path = multiLineString(coordinates);
     const pathBBox = bbox(path) as BBox2d;
     const { warpedBBox, transform } = getWarping(path);
     setState({ type: 'pathLoaded', path, pathBBox, warpedBBox, transform });
@@ -180,8 +182,7 @@ const SimulationWarpedMap = ({
    */
   useEffect(() => {
     setState({ type: 'loading' });
-    if (pathGeometry)
-      pathGeometry.coordinates.forEach((coordinates) => updateWarpedMapState(coordinates));
+    if (pathGeometry) updateWarpedMapState(pathGeometry.coordinates);
   }, [pathGeometry]);
 
   /**
