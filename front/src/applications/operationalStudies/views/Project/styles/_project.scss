@@ -58,11 +58,17 @@
       gap: 16px;
       margin-bottom: 8px;
 
+      .project-details-title-aside {
+        display: flex;
+        flex-direction: column;
+      }
+
       .project-details-title-img {
         overflow: hidden;
         border-radius: 4px;
+        flex: 1 1 auto;
+        min-height: 120px;
         max-height: 30vh;
-        height: 100%;
         margin-bottom: 8px;
 
         img {
