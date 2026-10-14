@@ -83,18 +83,20 @@ const TrainList = ({
 
   const handleSelectTrainSchedule = useCallback(
     (id: number) => {
-      const currentSelectedTrainIds: number[] = selectedTrainScheduleIds;
-      const index = currentSelectedTrainIds.indexOf(id);
+      setSelectedTrainScheduleIds((previous) => {
+        const currentSelectedTrainIds: number[] = [...previous];
+        const index = currentSelectedTrainIds.indexOf(id);
 
-      if (index === -1) {
-        currentSelectedTrainIds.push(id);
-      } else {
-        currentSelectedTrainIds.splice(index, 1);
-      }
+        if (index === -1) {
+          currentSelectedTrainIds.push(id);
+        } else {
+          currentSelectedTrainIds.splice(index, 1);
+        }
 
-      setSelectedTrainScheduleIds([...currentSelectedTrainIds]);
+        return currentSelectedTrainIds;
+      });
     },
-    [selectedTrainScheduleIds, setSelectedTrainScheduleIds]
+    [setSelectedTrainScheduleIds]
   );
 
   const handleExpandTrainSchedule = useCallback((id: number) => {
