@@ -1,3 +1,5 @@
+import { FONT_SANS } from '../../../../common/consts';
+import { BLACK_ALPHA_10, GREY_70, WHITE_ALPHA_100 } from '../../../../common/helpers/colors';
 import type {
   DrawFunctionParams,
   SpeedLimitTagsLayerDrawFunctionParams,
@@ -6,11 +8,12 @@ import type {
 import {
   COLOR_DICTIONARY,
   LINEAR_LAYER_SEPARATOR_HEIGHT,
-  LINEAR_LAYERS_BACKGROUND_COLOR,
+  LINEAR_LAYERS_BOTH_BACKGROUND_COLOR,
+  LINEAR_LAYERS_DEFAULT_BACKGROUND_COLOR,
   LINEAR_LAYERS_HEIGHTS,
+  LINEAR_LAYERS_SINGLE_BACKGROUND_COLOR,
   MARGINS,
-  WHITE,
-} from '../../const';
+} from '../../consts';
 import {
   clearCanvas,
   drawLinearLayerBackground,
@@ -24,13 +27,15 @@ import {
 const RECT_HEIGHT = 17;
 const Y_POSITION = 12;
 const RECTANGLE_SPACING = 1;
+
+const FIRST_TAG_LEFT_PADDING = 8;
 const TEXT_LEFT_PADDING = 4;
 const TEXT_RIGHT_PADDING = 8;
-const FIRST_TAG_LEFT_PADDING = 8;
+const TEXT_PADDING_TOP = 1;
+
 const ICON_WIDTH = 16;
 const ICON_HEIGHT = 16;
 const ICON_OFFSET = 4;
-const TEXT_PADDING_TOP = 1;
 const ICON_BACKGROUND_WIDTH = 24;
 const ICON_BACKGROUND_HEIGHT = 24;
 
@@ -57,15 +62,15 @@ export const drawSpeedLimitTags = ({
 
   const maxPosition = maxPositionValue(store.speeds);
 
-  let speedLimitTagsBackgroundColor = LINEAR_LAYERS_BACKGROUND_COLOR.FIRST;
+  let speedLimitTagsBackgroundColor = LINEAR_LAYERS_DEFAULT_BACKGROUND_COLOR;
 
   if (electricalProfiles && powerRestrictions) {
-    speedLimitTagsBackgroundColor = LINEAR_LAYERS_BACKGROUND_COLOR.THIRD;
+    speedLimitTagsBackgroundColor = LINEAR_LAYERS_BOTH_BACKGROUND_COLOR;
   } else if (electricalProfiles || powerRestrictions) {
-    speedLimitTagsBackgroundColor = LINEAR_LAYERS_BACKGROUND_COLOR.SECOND;
+    speedLimitTagsBackgroundColor = LINEAR_LAYERS_SINGLE_BACKGROUND_COLOR;
   }
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, LINEAR_LAYER_SEPARATOR_HEIGHT);
+  drawSeparatorLinearLayer(ctx, BLACK_ALPHA_10, MARGINS, width, LINEAR_LAYER_SEPARATOR_HEIGHT);
   drawLinearLayerBackground(
     ctx,
     speedLimitTagsBackgroundColor,
@@ -88,7 +93,7 @@ export const drawSpeedLimitTags = ({
       const secondaryColor = COLOR_DICTIONARY[color] || color;
 
       ctx.fillStyle = color;
-      ctx.strokeStyle = tag === 'UU' ? '#494641' : color;
+      ctx.strokeStyle = tag === 'UU' ? GREY_70 : color;
       ctx.lineWidth = 1;
 
       ctx.beginPath();
@@ -140,11 +145,11 @@ export const drawSpeedLimitTags = ({
             iconYPosition + ICON_OFFSET,
             ICON_WIDTH,
             ICON_HEIGHT,
-            WHITE.hex()
+            WHITE_ALPHA_100
           );
       } else {
-        ctx.fillStyle = 'white';
-        ctx.font = '600 12px "IBM Plex Sans"';
+        ctx.fillStyle = WHITE_ALPHA_100;
+        ctx.font = `600 12px ${FONT_SANS}`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         const textPosition = x + TEXT_LEFT_PADDING;
@@ -153,7 +158,7 @@ export const drawSpeedLimitTags = ({
     }
   });
 
-  drawSeparatorLinearLayer(ctx, 'rgba(0,0,0,0.1)', MARGINS, width, marginTop);
+  drawSeparatorLinearLayer(ctx, BLACK_ALPHA_10, MARGINS, width, marginTop);
   ctx.restore();
 
   // prevent overlapping with margins left and right

@@ -5,7 +5,7 @@ import { Slider } from '@osrd-project/ui-core';
 import type { Data, EtcsBrakingCurves, Store } from '../types';
 import InteractionButtons from './common/InteractionButtons';
 import SettingsPanel from './common/SettingsPanel';
-import { DEFAULT_ETCS_LAYERS_DISPLAY, LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './const';
+import { DEFAULT_ETCS_LAYERS_DISPLAY, LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './consts';
 import { computeLeftOffsetOnZoom, resetZoom } from './helpers/layersManager';
 import {
   AxisLayerY,

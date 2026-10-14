@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import type { Store, tooltipInfos } from '../../types';
 import Tooltip from '../common/Tooltip';
-import { LINEAR_LAYERS_HEIGHTS } from '../const';
+import { LINEAR_LAYERS_HEIGHTS } from '../consts';
 import { drawSpeedLimitTags, computeTooltip } from '../helpers/drawElements/speedLimitTags';
 import { createSvgBlobUrl, loadSvgImage } from '../utils';
 

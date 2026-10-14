@@ -1,5 +1,3 @@
-import type chroma from 'chroma-js';
-
 export type ElectricalProfileValues = {
   electricalProfile: string;
   color?: string;
@@ -181,5 +179,4 @@ export type EtcsSpeedValue = {
   etcsEndOfCurvePos: number;
 };
 
-export type EtcsColorDictionary = Record<EtcsBrakingCurveType, chroma.Color>;
-export type EtcsAlphaDictionary = Record<EtcsBrakingCurveType, number>;
+export type EtcsColorDictionary = Record<EtcsBrakingCurveType, string>;

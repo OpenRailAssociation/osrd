@@ -5,7 +5,9 @@ export const BLACK_ALPHA_100 = 'rgb(0, 0, 0)';
 export const BLACK_ALPHA_70 = 'rgb(0 0 0 / 0.70)';
 export const BLACK_ALPHA_55 = 'rgb(0 0 0 / 0.55)';
 export const BLACK_ALPHA_50 = 'rgb(0 0 0 / 0.5)';
+export const BLACK_ALPHA_40 = 'rgb(0 0 0 / 0.4)';
 export const BLACK_ALPHA_25 = 'rgb(0 0 0 / 0.25)';
+export const BLACK_ALPHA_20 = 'rgb(0 0 0 / 0.20)';
 export const BLACK_ALPHA_10 = 'rgb(0 0 0 / 0.1)';
 
 export const WHITE_ALPHA_100 = 'rgb(255, 255, 255)';
@@ -18,6 +20,7 @@ export const PRIMARY_30 = 'rgb(114, 168, 247)';
 export const PRIMARY_5 = 'rgb(227, 237, 252)';
 
 export const AMBIENT_B_15 = 'rgb(242, 240, 228)';
+export const AMBIENT_B_10 = 'rgb(247, 246, 238)';
 export const AMBIENT_B_5 = 'rgb(250, 249, 245)';
 
 export const ERROR_80 = 'rgb(107, 0, 0)';
@@ -29,6 +32,7 @@ export const WARNING_30 = 'rgb(234, 167, 34)';
 
 export const GREY_90 = 'rgb(31, 27, 23)';
 export const GREY_80 = 'rgb(49, 46, 43)';
+export const GREY_70 = 'rgb(73, 70, 65)';
 export const GREY_60 = 'rgb(92, 89, 85)';
 export const GREY_50 = 'rgb(121, 118, 113)';
 export const GREY_30 = 'rgb(182, 178, 175)';

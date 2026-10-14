@@ -7,7 +7,7 @@ import {
   type LAYERS_SELECTION,
   ETCS_BRAKING_SELECTION,
   ETCS_CURVE_SELECTION,
-} from './const';
+} from './consts';
 
 type SlopesValues = {
   minGradient: number;
