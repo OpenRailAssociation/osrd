@@ -343,8 +343,8 @@ export type SimulatedStep = {
   path_item_position: number;
   /** The identifier of the operational point reached at this step */
   op_id: string;
-  /** The duration in ms if a stop occurs at this operational point */
-  stop_for?: number | null;
+  /** The index of the requested step. */
+  matching_requested_step_index?: number;
 };
 export type ConsistChange = {
   rolling_stock: string;
