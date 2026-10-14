@@ -48,7 +48,11 @@ const usePathOps = (
   return useMemo(() => {
     const relatedOps = operationalPoints?.related_operational_points;
     return new Map(relatedOps?.map((op, index) => [pathStepKeys[index], op]));
-  }, [operationalPoints, pathStepKeys]);
+
+    // TODO: We should depend on pathStepKeys here, but we can't if we want to keep
+    //       them synchronized across the API call. (see usePathProjection for the same problem)
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [operationalPoints]);
 };
 
 export default usePathOps;
