@@ -239,7 +239,7 @@ const ProjectView = () => {
           <div className="project-details">
             <div className="project-details-title">
               <div className="row w-100 no-gutters">
-                <div className={'col-lg-4 col-md-4'}>
+                <div className="col-lg-4 col-md-4 project-details-title-aside">
                   <div className="project-details-title-img">
                     <img src={imageUrl} alt={t('project.projectImage')} />
                   </div>
