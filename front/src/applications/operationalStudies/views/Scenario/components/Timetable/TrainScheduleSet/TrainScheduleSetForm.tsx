@@ -178,7 +178,7 @@ const TrainScheduleSetForm = ({
     [t]
   );
 
-  const isEditing = useMemo(() => {
+  const wasModified = useMemo(() => {
     const catalogEntryChanged =
       catalogEntry?.type === 'create' || trainScheduleSet?.catalog_entry_id !== catalogEntry?.id;
 
@@ -190,8 +190,8 @@ const TrainScheduleSetForm = ({
   }, [trainScheduleSet, name, description, catalogEntry]);
 
   useEffect(() => {
-    setIsEditing(isEditing);
-  }, [isEditing, setIsEditing]);
+    setIsEditing(wasModified);
+  }, [wasModified, setIsEditing]);
 
   return (
     <form
