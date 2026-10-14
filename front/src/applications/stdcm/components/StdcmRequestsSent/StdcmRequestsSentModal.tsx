@@ -1,8 +1,13 @@
 import { Dialog } from '@osrd-project/ui-core';
 import { X } from '@osrd-project/ui-icons';
+import dayjs from 'dayjs';
+import calendar from 'dayjs/plugin/calendar';
+import 'dayjs/locale/fr';
 import { useTranslation } from 'react-i18next';
 
 import { useDateTimeLocale } from 'utils/date';
+
+dayjs.extend(calendar);
 
 type StdcmRequestsSentModalProps = {
   onClose: () => void;
@@ -31,7 +36,7 @@ const requestsHistory: mockedRequestsHistory[] = [
     begin_op: { name: 'Woippy', start_time: '2026-10-01T09:00:00Z', main_code: 'DT' },
     end_op: { name: 'Ébange', start_time: null, main_code: 'FM' },
     created_at: '2026-09-28T08:15:00Z',
-    updated_at: '2026-09-28T08:15:00Z',
+    updated_at: '2026-10-14T08:15:00Z',
     application_date: '2026-09-15T07:15:00Z',
   },
   {
@@ -61,15 +66,23 @@ const requestsHistory: mockedRequestsHistory[] = [
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
 
-  const { t } = useTranslation(['stdcm', 'translation']);
+  const { t, i18n } = useTranslation(['stdcm', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
+
+  const calendarDays = {
+    sameDay: t('requestsSentModal.calendar.sameDay'),
+    nextDay: t('requestsSentModal.calendar.nextDay'),
+    nextWeek: t('requestsSentModal.calendar.nextWeek'),
+    lastDay: t('requestsSentModal.calendar.lastDay'),
+    lastWeek: t('requestsSentModal.calendar.lastWeek'),
+    sameElse: t('requestsSentModal.calendar.sameElse'),
+  };
 
   const requestsSentRows = () =>
     requestsHistory.map((request, index) => {
-      const updateDate = new Date(request.updated_at).toLocaleString(dateTimeLocale, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      });
+      const updateDate = dayjs(request.updated_at)
+        .locale(i18n.language)
+        .calendar(null, calendarDays);
 
       const beginStartTime = new Date(request.begin_op.start_time!).toLocaleString(dateTimeLocale, {
         timeStyle: 'short',
@@ -82,10 +95,9 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
             })
           : t('requestsSentModal.asap');
 
-      const applicationDate = new Date(request.application_date).toLocaleString(dateTimeLocale, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      });
+      const applicationDate = dayjs(request.application_date)
+        .locale(i18n.language)
+        .calendar(null, calendarDays);
 
       return (
         <tr key={`request-${index}`}>

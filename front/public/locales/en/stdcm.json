@@ -124,6 +124,14 @@
   "requestsSentModal": {
     "applicationDate": "Application date",
     "asap": "a.s.a.p.",
+    "calendar": {
+      "lastDay": "[Yes. -] HH:mm",
+      "lastWeek": "ddd MM/DD",
+      "nextDay": "[Tom. -] HH:mm",
+      "nextWeek": "ddd MM/DD",
+      "sameDay": "[Tod. -] HH:mm",
+      "sameElse": "ddd MM/DD"
+    },
     "destination": "Destination",
     "noRequests": "No request could be fetched.",
     "origin": "Origin",
