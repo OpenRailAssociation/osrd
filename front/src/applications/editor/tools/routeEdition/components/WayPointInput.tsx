@@ -62,17 +62,17 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
   const onBtnClick = useCallback(() => {
     // Cancel current selection:
     if (isPicking) {
-      setState({
-        ...state,
+      setState((prev) => ({
+        ...prev,
         extremityState: {
           type: 'idle',
         },
-      });
+      }));
     }
     // Start selecting:
     else {
-      setState({
-        ...state,
+      setState((prev) => ({
+        ...prev,
         isComplete: false,
         extremityState: {
           type: 'selection',
@@ -80,9 +80,9 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
           hoveredPoint: null,
           onSelect: onChange,
         },
-      });
+      }));
     }
-  }, [endPoint, isPicking, setState, state, onChange]);
+  }, [endPoint, isPicking, setState, onChange]);
 
   const getButtonIcon = () => {
     if (!isPicking && isWayPointSelected) return <Pencil />;
