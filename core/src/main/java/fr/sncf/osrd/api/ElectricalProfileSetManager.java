@@ -85,7 +85,6 @@ public class ElectricalProfileSetManager extends APIClient {
         }
     }
 
-    @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
     protected static class CacheEntry {
         protected CacheStatus status;
         private ElectricalProfileMapping mapping;
