@@ -1493,7 +1493,6 @@ pub(in crate::views) async fn project_path_op(
                 | OccurrenceId::Created {
                     train_schedule_id,
                     exception_id,
-                    ..
                 } => {
                     if !Arc::ptr_eq(&base_project_path, &projected_train) {
                         results
