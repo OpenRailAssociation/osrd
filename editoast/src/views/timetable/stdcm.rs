@@ -1,3 +1,4 @@
+pub(crate) mod metadata;
 pub(crate) mod request;
 
 use crate::AppState;
@@ -5,6 +6,7 @@ use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
+use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
@@ -48,6 +50,8 @@ use futures::stream;
 use geos::geojson::Geometry;
 use geos::geojson::Value;
 use itertools::Itertools as _;
+use metadata::ConsistPreprocessing;
+use metadata::StdcmMetadata;
 use models::Infra;
 use models::WorkSchedule;
 use models::prelude::*;
@@ -231,14 +235,17 @@ pub(in crate::views) async fn stdcm(
         valkey_client,
         core_client,
         openfga,
+        s3_client,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(user): Extension<Option<models::User>>,
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     headers: HeaderMap,
     Json(request): Json<Request>,
 ) -> Result<Response> {
+    let request_time = Utc::now();
     let consist_schedule_values = &request.consist_schedule.values;
     if authn_state.user().is_some() {
         let authorizer = authn_state.authorizer(&openfga);
@@ -345,6 +352,11 @@ pub(in crate::views) async fn stdcm(
     )
     .await?;
 
+    let preprocessing_metadata: Vec<_> = virtual_train_runs
+        .iter()
+        .map(ConsistPreprocessing::from)
+        .collect();
+
     let (mut pathfinding_failures, runs): (Vec<_>, Vec<_>) =
         virtual_train_runs.into_iter().partition(|run| {
             matches!(
@@ -352,14 +364,6 @@ pub(in crate::views) async fn stdcm(
                 simulation::Response::PathfindingFailed { .. }
             )
         });
-    if let Some(failure) = pathfinding_failures.pop() {
-        let payload =
-            StdcmProgression::Completed(Box::new(StdcmResponse::PreprocessingSimulationError {
-                error: failure.simulation,
-            }));
-        return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
-    }
-
     let total_simulation_run_time = runs
         .iter()
         .map(|run| run.simulation.simulation_run_time())
@@ -368,6 +372,34 @@ pub(in crate::views) async fn stdcm(
 
     let earliest_departure_time = request.get_earliest_departure_time(total_simulation_run_time);
     let latest_simulation_end = request.get_latest_simulation_end(total_simulation_run_time);
+    let maximum_departure_delay = request.get_maximum_departure_delay(total_simulation_run_time);
+    let maximum_run_time = request.get_maximum_run_time(total_simulation_run_time);
+
+    let metadata = StdcmMetadata {
+        request_time,
+        app_version: config.app_version.clone(),
+        user_name: user.map(|user| user.name),
+        roles: authn_state.roles().to_vec(),
+        infra_id,
+        timetable_id,
+        is_fallback: is_fallback_request(&headers),
+        steps: request.steps.clone(),
+        preprocessing: preprocessing_metadata,
+        earliest_departure_time,
+        maximum_departure_delay,
+        maximum_run_time,
+    };
+    if let Some(s3) = s3_client {
+        tokio::spawn(async move { metadata.save(&s3).await }.in_current_span());
+    }
+
+    if let Some(failure) = pathfinding_failures.pop() {
+        let payload =
+            StdcmProgression::Completed(Box::new(StdcmResponse::PreprocessingSimulationError {
+                error: failure.simulation,
+            }));
+        return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
+    }
 
     let stdcm_consist_schedule_values = physics_consists_parameters
         .iter()
@@ -399,8 +431,8 @@ pub(in crate::views) async fn stdcm(
         comfort: request.comfort,
         path_items: request.get_stdcm_path_items(conn.clone(), infra_id).await?,
         start_time: earliest_departure_time,
-        maximum_departure_delay: request.get_maximum_departure_delay(total_simulation_run_time),
-        maximum_run_time: request.get_maximum_run_time(total_simulation_run_time),
+        maximum_departure_delay,
+        maximum_run_time,
         time_gap_before: request.time_gap_before,
         time_gap_after: request.time_gap_after,
         margin: request.margin,
@@ -586,6 +618,7 @@ async fn enrich_conflicting_work_schedules(
 
 struct VirtualTrainRun {
     simulation: simulation::Response,
+    path_length: Option<u64>,
 }
 
 impl VirtualTrainRun {
@@ -669,8 +702,12 @@ impl VirtualTrainRun {
         )
         .await?
         .into_iter()
-        .map(|(simulation, _)| Self {
+        .map(|(simulation, pathfinding)| Self {
             simulation: Arc::unwrap_or_clone(simulation),
+            path_length: match pathfinding.as_ref() {
+                PathfindingResult::Success(path) => Some(path.length),
+                PathfindingResult::Failure(_) => None,
+            },
         })
         .collect();
 
