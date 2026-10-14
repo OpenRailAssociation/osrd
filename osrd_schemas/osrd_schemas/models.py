@@ -3785,6 +3785,7 @@ class SearchObjectType(Enum):
     operationalpoint = "operationalpoint"
     user = "user"
     group = "group"
+    macronode = "macronode"
 
 
 class SearchResultItemGroup(BaseModel):
@@ -5971,6 +5972,25 @@ class SearchResultItemSearchResultItemGroup(RootModel[SearchResultItemGroup]):
     """
 
 
+class SearchResultItemMacroNode(BaseModel):
+    """
+    A search result item for a query with `object = "macronode"`
+    """
+
+    full_name: str | None
+    id: Annotated[int, Field(ge=0)]
+    labels: list[str | None]
+    node_location: (
+        OperationalPointReferenceNodeTrackOffset
+        | OperationalPointReferenceNodeOperationalPointReference
+    )
+    """
+    The location represented by a macro node
+    """
+    scenario_id: Annotated[int, Field(ge=0)]
+    short_name: str | None
+
+
 class SearchResultItemOperationalPoint(BaseModel):
     """
     A search result item for a query with `object = "operationalpoint"`
@@ -7010,6 +7030,16 @@ class SearchResultItemSearchResultItemSignal(RootModel[SearchResultItemSignal]):
     """
 
 
+class SearchResultItemSearchResultItemMacroNode(RootModel[SearchResultItemMacroNode]):
+    root: Annotated[
+        SearchResultItemMacroNode,
+        Field(title="SearchResultItemSearchResultItemMacroNode"),
+    ]
+    """
+    A search result item that depends on the query's `object`
+    """
+
+
 class SearchResultItemTrainSchedule(BaseModel):
     """
     A search result item for a query with `object = "trainschedule"`
@@ -7498,6 +7528,7 @@ class SearchResultItem(
         | SearchResultItemSearchResultItemTrainSchedule
         | SearchResultItemSearchResultItemUser
         | SearchResultItemSearchResultItemGroup
+        | SearchResultItemSearchResultItemMacroNode
     ]
 ):
     root: (
@@ -7510,6 +7541,7 @@ class SearchResultItem(
         | SearchResultItemSearchResultItemTrainSchedule
         | SearchResultItemSearchResultItemUser
         | SearchResultItemSearchResultItemGroup
+        | SearchResultItemSearchResultItemMacroNode
     )
     """
     A search result item that depends on the query's `object`

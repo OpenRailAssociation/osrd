@@ -405,6 +405,7 @@ const osrdEditoastApi = generatedEditoastApi
               signal: ['infra'],
               operationalpoint: ['infra'],
               trainschedule: ['train_schedule'],
+              macronode: ['scenarios'],
             }) as const
           )[args.searchPayload.object] ?? [],
       },
