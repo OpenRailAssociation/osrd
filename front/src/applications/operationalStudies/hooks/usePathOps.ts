@@ -16,22 +16,20 @@ const usePathOps = (
   infraId: number,
   path?: Train['path']
 ): Map<string, RelatedOperationalPoint | null> => {
-  const opRefMap: Map<string, OperationalPointReference> = useMemo(
-    () =>
-      new Map(
-        path
-          ?.map((pathItem) => {
-            if (pathItem.location.type === 'operational_point_part_reference') {
-              return [pathItem.key, pathItem.location.operational_point] as const;
-            }
-            return null;
-          })
-          .filter((entry) => entry !== null)
-      ),
-    [path]
-  );
+  const [pathStepKeys, operationalPointReferences]: [string[], OperationalPointReference[]] =
+    useMemo(() => {
+      const stepKeys = [];
+      const stepOpRefs = [];
 
-  const operationalPointReferences = useMemo(() => [...opRefMap.values()], [opRefMap]);
+      for (const pathItem of path ?? []) {
+        if (pathItem.location.type === 'operational_point_part_reference') {
+          stepKeys.push(pathItem.key);
+          stepOpRefs.push(pathItem.location.operational_point);
+        }
+      }
+
+      return [stepKeys, stepOpRefs];
+    }, [path]);
 
   const { data: operationalPoints } =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
@@ -49,9 +47,8 @@ const usePathOps = (
   // as there are input OP refs, in the same order
   return useMemo(() => {
     const relatedOps = operationalPoints?.related_operational_points;
-    const pathStepKeys = [...opRefMap.keys()];
     return new Map(relatedOps?.map((op, index) => [pathStepKeys[index], op]));
-  }, [operationalPoints, opRefMap]);
+  }, [operationalPoints, pathStepKeys]);
 };
 
 export default usePathOps;
