@@ -9,7 +9,7 @@ version = '1.0.0'
 kotlin {
     jvm {
         compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25
         }
     }
     linuxX64()

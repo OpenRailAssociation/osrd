@@ -64,7 +64,7 @@
 
             # Core
             gradle_9
-            jdk21
+            jdk25
 
             # Front
             fixedNode
