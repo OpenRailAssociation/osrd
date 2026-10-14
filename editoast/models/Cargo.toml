@@ -8,6 +8,7 @@ edition.workspace = true
 testing = []
 
 [dependencies]
+bilrost = "0.1016.1"
 chrono.workspace = true
 common.workspace = true
 database.workspace = true
