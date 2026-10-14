@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::authz::resources::IncompatibleGrant;
 use crate::views::authz::resources::Resource;
@@ -1031,52 +1030,60 @@ pub(in crate::views) async fn list_users(
     State(AppState {
         db_pool, openfga, ..
     }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
 ) -> Result<Json<Vec<UserInfo>>> {
-    let ids_and_names = User::list(&mut db_pool.get().await?, SelectionSettings::new()).await?;
+    let user_with_identities = UserWithIdentities::stream(db_pool.get().await?)
+        .await?
+        .try_collect::<Vec<_>>()
+        .await?;
 
-    let futures = ids_and_names.into_iter().map(|user| {
-        let db_pool = db_pool.clone();
-        let openfga = openfga.clone();
-        async move {
-            let id = user.id;
-            let name = user.name;
+    // Fetch roles and groups for each user in parallel using OpenFGA
+    let protected_list = user_with_identities
+        .iter()
+        .map(|UserWithIdentities { user, .. }| {
+            let list_roles = authz::v2::subject_roles(authz::Subject::user(user.id));
+            let list_groups = authz::v2::user_groups(authz::User(user.id));
+            list_roles.zip(list_groups)
+        })
+        .collect_vec();
 
-            // Fetch identities for the user from the database
-            let user_with_identities =
-                UserWithIdentities::stream_by_id(db_pool.get().await?, &[id])
-                    .await?
-                    .try_next()
-                    .await?
-                    .ok_or(AuthzError::UnknownUser { id })?;
-            let identities = user_with_identities.identities;
+    let protected = v2::Protected::from_iter(protected_list);
 
-            // Fetch roles and groups for the user from OpenFGA
-            let list_roles = authz::v2::subject_roles(authz::Subject::user(id));
-            let list_groups = authz::v2::user_groups(authz::User(id));
+    let all_users_roles_and_groups = protected
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
 
-            // Use the system authorizer to authorize the requests to OpenFGA
-            let system_authorizer = authz::authorizers::SystemAuthorizer::<Check>::new(&openfga);
-            let (roles, groups) = list_roles
-                .zip(list_groups)
-                .run::<AuthorizationError, _>(&system_authorizer)
-                .await?;
+    // Fetch groups from the database to get their names
+    let groups_from_db: Vec<_> = Group::retrieve_batch_unchecked(
+        &mut db_pool.get().await?,
+        all_users_roles_and_groups
+            .iter()
+            .flat_map(|(_, groups)| groups.iter().map(|g| **g))
+            .collect_vec(),
+    )
+    .await?;
 
-            // Fetch group details from the database for the groups returned by OpenFGA
-            let (groups_from_db, _): (Vec<Group>, _) =
-                Group::retrieve_batch(&mut db_pool.get().await?, groups.into_iter().map(|g| g.0))
-                    .await?;
-
-            Ok::<UserInfo, InternalError>(UserInfo {
-                id,
-                name,
-                identities,
-                roles: HashSet::from_iter(roles),
-                groups: HashSet::from_iter(groups_from_db),
-            })
-        }
-    });
-
-    let users = futures::future::try_join_all(futures).await?;
+    // Build the final response by combining user info, roles, and groups
+    let users = all_users_roles_and_groups
+        .into_iter()
+        .zip(user_with_identities)
+        .map(
+            |((roles, groups), UserWithIdentities { user, identities })| {
+                let groups = groups_from_db
+                    .iter()
+                    .filter(|g| groups.contains(&authz::Group(g.id)))
+                    .cloned()
+                    .collect::<HashSet<_>>();
+                UserInfo {
+                    id: user.id,
+                    name: user.name,
+                    identities,
+                    roles: HashSet::from_iter(roles),
+                    groups,
+                }
+            },
+        )
+        .collect::<Vec<UserInfo>>();
 
     Ok(Json(users))
 }
