@@ -1,3 +1,7 @@
+#![expect(
+    clippy::redundant_field_names,
+    reason = "https://github.com/TedDriggs/darling/issues/440 fixed but not yet released"
+)]
 extern crate proc_macro;
 
 mod annotate_units;
