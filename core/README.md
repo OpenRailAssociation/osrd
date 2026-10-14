@@ -29,7 +29,7 @@ expected unit and underlying type (generally Long and mm/ms).
 
 ## Getting Started
 
-You'll need **Java 21**
+You'll need **Java 25**
 
 
 ### Server usage (preferred)
