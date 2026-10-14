@@ -34,6 +34,11 @@ export const defaultTranslations = {
       guidance: 'GUI',
     },
   },
+  driverActions: {
+    BRAKING: 'BRAKING',
+    COASTING: 'COASTING',
+    TRACTING: 'TRACTING',
+  },
 };
 
 export const electricalProfilesDesignValues = {

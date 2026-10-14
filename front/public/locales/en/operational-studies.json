@@ -635,6 +635,11 @@
     "speedDistanceDiagram": "SDD",
     "speedDistanceSettings": {
       "context": "Context",
+      "driverActions": {
+        "braking": "Braking",
+        "coasting": "Coasting",
+        "tracting": "Tracting"
+      },
       "electricalProfiles": "Electrical profiles",
       "energySource": "Energy source",
       "etcs": {

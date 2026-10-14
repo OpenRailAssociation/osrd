@@ -358,6 +358,7 @@ class STDCMEndpoint(
                     reportTrain.speeds,
                     reportTrain.energyConsumption,
                     reportTrain.pathItemTimes,
+                    reportTrain.driverActions,
                 )
             val speedLimits =
                 concatenateAndShiftEnvelopes(

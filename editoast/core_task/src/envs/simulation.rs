@@ -357,6 +357,7 @@ pub(crate) mod test_data {
                     speeds: vec![],
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 10],
+                    driver_actions: Default::default(),
                 },
                 provisional: core_client::simulation::ReportTrain {
                     positions: vec![],
@@ -364,6 +365,7 @@ pub(crate) mod test_data {
                     speeds: vec![],
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 10],
+                    driver_actions: Default::default(),
                 },
                 final_output: core_client::simulation::CompleteReportTrain {
                     report_train: core_client::simulation::ReportTrain {
@@ -372,6 +374,7 @@ pub(crate) mod test_data {
                         speeds: vec![],
                         energy_consumption: 0.0,
                         path_item_times: vec![0, 10],
+                        driver_actions: Default::default(),
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],

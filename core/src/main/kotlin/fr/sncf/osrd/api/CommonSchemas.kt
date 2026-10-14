@@ -119,3 +119,15 @@ data class WorkSchedule(
     @Json(name = "start_time") val startTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
 )
+
+/** Converts a DistanceRangeMap into an API compatible RangeValues. */
+fun <T> DistanceRangeMap<T>.toRangeValues(): RangeValues<T> {
+    val boundaries = mutableListOf<Offset<PhysicsPath>>()
+    val values = mutableListOf<T>()
+    this.forEach { _, upper, value ->
+        boundaries.add(Offset(upper))
+        values.add(value)
+    }
+    boundaries.removeLast()
+    return RangeValues(boundaries, values)
+}

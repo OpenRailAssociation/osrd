@@ -23,6 +23,10 @@ describe('formatSpeeds', () => {
     ];
     expect(
       formatSpeeds({
+        driver_actions: {
+          boundaries: [],
+          values: [],
+        },
         positions: [0, 1000000, 2000000, 3000000],
         speeds: [0, 10, 20],
         energy_consumption: 0,
