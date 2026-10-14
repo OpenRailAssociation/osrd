@@ -1,3 +1,4 @@
+use bilrost::{Message, OwnedMessage as _};
 use database::DbConnection;
 use editoast_derive::Model;
 use serde::Deserialize;
@@ -13,8 +14,10 @@ pub struct StdcmRequest {
     pub created_by: i64,
     pub trace_id: Option<String>,
 }
+#[derive(Message)]
+struct DecodedCursor(i64);
 
-type Cursor = i64;
+type Cursor = Vec<u8>;
 
 /// Cursor used for pagination (selecting results with id strictly after the AfterCursor or before the BeforeCursor)
 pub enum SelectionCursor {
@@ -59,17 +62,47 @@ impl SelectionSettings {
     }
 }
 
+#[cfg(test)]
+impl SelectionSettings {
+    pub fn decoded_after_cursor(self, id: i64) -> Self {
+        Self {
+            cursor: Some(SelectionCursor::AfterCursor(
+                DecodedCursor(id).encode_to_vec(),
+            )),
+            ..self
+        }
+    }
+    pub fn decoded_before_cursor(self, id: i64) -> Self {
+        Self {
+            cursor: Some(SelectionCursor::BeforeCursor(
+                DecodedCursor(id).encode_to_vec(),
+            )),
+            ..self
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct PaginatedList {
     pub requests: Vec<StdcmRequest>,
     pub prev: Option<Cursor>,
     pub next: Option<Cursor>,
 }
 
+#[derive(thiserror::Error, derive_more::From, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    DecodeError(#[from] bilrost::DecodeError),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(crate::Error),
+}
+
 impl StdcmRequest {
     pub async fn list(
         conn: &mut DbConnection,
         selection_settings: SelectionSettings,
-    ) -> Result<PaginatedList, crate::Error> {
+    ) -> Result<PaginatedList, Error> {
         use database::tables::stdcm_request::dsl;
         use diesel::ExpressionMethods as _;
         use diesel::QueryDsl as _;
@@ -82,11 +115,13 @@ impl StdcmRequest {
             query = query.filter(dsl::created_by.eq_any(user_ids));
         }
 
-        query = match selection_settings.cursor {
-            Some(SelectionCursor::AfterCursor(id)) => {
+        query = match &selection_settings.cursor {
+            Some(SelectionCursor::AfterCursor(cursor)) => {
+                let id = DecodedCursor::decode(cursor.as_slice())?.0;
                 query.order_by(dsl::id.asc()).filter(dsl::id.gt(id))
             }
-            Some(SelectionCursor::BeforeCursor(id)) => {
+            Some(SelectionCursor::BeforeCursor(cursor)) => {
+                let id = DecodedCursor::decode(cursor.as_slice())?.0;
                 query.order_by(dsl::id.desc()).filter(dsl::id.lt(id))
             }
             None => query.order_by(dsl::id.asc()),
@@ -142,8 +177,8 @@ impl StdcmRequest {
 
         Ok(PaginatedList {
             requests,
-            prev,
-            next,
+            prev: prev.map(|id| DecodedCursor(id).encode_to_vec()),
+            next: next.map(|id| DecodedCursor(id).encode_to_vec()),
         })
     }
 }
@@ -155,8 +190,9 @@ pub mod tests {
     use crate::User;
     use crate::prelude::Changeset;
     use crate::prelude::Create;
-    use crate::stdcm_request::SelectionCursor::AfterCursor;
-    use crate::stdcm_request::SelectionCursor::BeforeCursor;
+    use crate::stdcm_request::DecodedCursor;
+    use crate::stdcm_request::PaginatedList;
+    use bilrost::Message;
     use database::DbConnection;
     use database::DbConnectionPool;
 
@@ -190,9 +226,12 @@ pub mod tests {
             .await
             .expect("Failed to list stdcm requests");
 
-        assert_eq!(listed_requests.requests, created_requests);
-        assert_eq!(listed_requests.prev, None);
-        assert_eq!(listed_requests.next, None);
+        let expected_paginated_list = PaginatedList {
+            requests: created_requests,
+            prev: None,
+            next: None,
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -204,9 +243,12 @@ pub mod tests {
             .await
             .expect("Failed to list stdcm requests");
 
-        assert_eq!(listed_requests.requests, vec![]);
-        assert_eq!(listed_requests.prev, None);
-        assert_eq!(listed_requests.next, None);
+        let expected_paginated_list = PaginatedList {
+            requests: vec![],
+            prev: None,
+            next: None,
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -224,13 +266,12 @@ pub mod tests {
             .await
             .expect("Failed to list stdcm requests");
 
-        let expected_requests = vec![created_requests[0].clone()];
-        assert_eq!(listed_requests.requests, expected_requests);
-        assert_eq!(listed_requests.prev, None);
-        assert_eq!(
-            listed_requests.next.expect("Next cursor should be filled"),
-            expected_requests[0].id
-        );
+        let expected_paginated_list = PaginatedList {
+            requests: vec![created_requests[0].clone()],
+            prev: None,
+            next: Some(DecodedCursor(created_requests[0].id).encode_to_vec()),
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -246,22 +287,18 @@ pub mod tests {
             request_fixture(&mut conn, "Bob_req_2", user_id2).await,
         ];
         let settings = SelectionSettings::new()
-            .cursor(AfterCursor(created_requests[0].id))
+            .decoded_after_cursor(created_requests[0].id)
             .limit(2);
         let listed_requests = StdcmRequest::list(&mut conn, settings)
             .await
             .expect("Failed to list stdcm requests");
 
-        let expected_requests = vec![created_requests[1].clone(), created_requests[2].clone()];
-        assert_eq!(listed_requests.requests, expected_requests);
-        assert_eq!(
-            listed_requests.prev.expect("Prev cursor should be filled"),
-            expected_requests[0].id
-        );
-        assert_eq!(
-            listed_requests.next.expect("Next cursor should be filled"),
-            expected_requests[1].id
-        );
+        let expected_paginated_list = PaginatedList {
+            requests: vec![created_requests[1].clone(), created_requests[2].clone()],
+            prev: Some(DecodedCursor(created_requests[1].id).encode_to_vec()),
+            next: Some(DecodedCursor(created_requests[2].id).encode_to_vec()),
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -277,22 +314,18 @@ pub mod tests {
             request_fixture(&mut conn, "Bob_req_2", user_id2).await,
         ];
         let settings = SelectionSettings::new()
-            .cursor(BeforeCursor(created_requests[3].id))
+            .decoded_before_cursor(created_requests[3].id)
             .limit(2);
         let listed_requests = StdcmRequest::list(&mut conn, settings)
             .await
             .expect("Failed to list stdcm requests");
 
-        let expected_requests = vec![created_requests[1].clone(), created_requests[2].clone()];
-        assert_eq!(listed_requests.requests, expected_requests);
-        assert_eq!(
-            listed_requests.prev.expect("Prev cursor should be filled"),
-            expected_requests[0].id
-        );
-        assert_eq!(
-            listed_requests.next.expect("Next cursor should be filled"),
-            expected_requests[1].id
-        );
+        let expected_paginated_list = PaginatedList {
+            requests: vec![created_requests[1].clone(), created_requests[2].clone()],
+            prev: Some(DecodedCursor(created_requests[1].id).encode_to_vec()),
+            next: Some(DecodedCursor(created_requests[2].id).encode_to_vec()),
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -308,22 +341,18 @@ pub mod tests {
             request_fixture(&mut conn, "Bob_req_2", user_id2).await,
         ];
         let settings = SelectionSettings::new()
-            .cursor(BeforeCursor(created_requests[2].id))
+            .decoded_before_cursor(created_requests[2].id)
             .limit(1);
         let listed_requests = StdcmRequest::list(&mut conn, settings)
             .await
             .expect("Failed to list stdcm requests");
 
-        let expected_requests = vec![created_requests[1].clone()];
-        assert_eq!(listed_requests.requests, expected_requests);
-        assert_eq!(
-            listed_requests.prev.expect("Prev cursor should be filled"),
-            expected_requests[0].id
-        );
-        assert_eq!(
-            listed_requests.next.expect("Next cursor should be filled"),
-            expected_requests[0].id
-        );
+        let expected_paginated_list = PaginatedList {
+            requests: vec![created_requests[1].clone()],
+            prev: Some(DecodedCursor(created_requests[1].id).encode_to_vec()),
+            next: Some(DecodedCursor(created_requests[1].id).encode_to_vec()),
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -341,18 +370,17 @@ pub mod tests {
             request_fixture(&mut conn, "Bob_req_2", user_id2).await,
         ];
         let settings = SelectionSettings::new()
-            .cursor(BeforeCursor(created_requests[3].id))
+            .decoded_before_cursor(created_requests[3].id)
             .user_filter(vec![user_id1, user_id3]);
         let listed_requests = StdcmRequest::list(&mut conn, settings)
             .await
             .expect("Failed to list stdcm requests");
 
-        let expected_requests = vec![created_requests[0].clone(), created_requests[2].clone()];
-        assert_eq!(listed_requests.requests, expected_requests);
-        assert_eq!(listed_requests.prev, None);
-        assert_eq!(
-            listed_requests.next.expect("Next cursor should be filled"),
-            expected_requests[1].id
-        );
+        let expected_paginated_list = PaginatedList {
+            requests: vec![created_requests[0].clone(), created_requests[2].clone()],
+            prev: None,
+            next: Some(DecodedCursor(created_requests[2].id).encode_to_vec()),
+        };
+        assert_eq!(listed_requests, expected_paginated_list);
     }
 }
