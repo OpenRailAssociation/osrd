@@ -4017,6 +4017,13 @@ mod tests {
         // Verify all users are returned
         let expected_users = vec![
             UserInfo {
+                id: admin.id,
+                name: "Admin".to_string(),
+                identities: admin.info.identities.clone(),
+                roles: HashSet::from([Role::Admin]),
+                groups: HashSet::new(),
+            },
+            UserInfo {
                 id: user_1.id,
                 name: "User 1".to_string(),
                 identities: user_1.info.identities.clone(),
@@ -4036,19 +4043,9 @@ mod tests {
                     name: group.info.name.clone(),
                 }]),
             },
-            UserInfo {
-                id: admin.id,
-                name: "Admin".to_string(),
-                identities: admin.info.identities.clone(),
-                roles: HashSet::from([Role::Admin]),
-                groups: HashSet::new(),
-            },
         ];
 
-        assert_eq!(users.len(), expected_users.len());
-        for expected_user in expected_users {
-            assert!(users.contains(&expected_user));
-        }
+        assert_eq!(users, expected_users);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
