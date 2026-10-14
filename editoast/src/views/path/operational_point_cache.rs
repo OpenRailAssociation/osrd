@@ -416,9 +416,7 @@ fn collect_path_item_ids(
             OperationalPointReference::Uic { uic, .. } => {
                 ops_uic.insert(*uic);
             }
-            OperationalPointReference::Id {
-                operational_point, ..
-            } => {
+            OperationalPointReference::Id { operational_point } => {
                 ops_id.insert(operational_point.clone().0);
             }
         }

@@ -440,8 +440,8 @@ impl crate::error::EditoastError for crate::infra_cache::operation::OperationErr
                 ),
             ]
             .into(),
-            Self::EmptyId { .. } => Default::default(),
-            Self::ModifyId { .. } => Default::default(),
+            Self::EmptyId {} => Default::default(),
+            Self::ModifyId {} => Default::default(),
             Self::InvalidPatch { error } => {
                 [("error".to_string(), serde_json::to_value(error).unwrap())].into()
             }
