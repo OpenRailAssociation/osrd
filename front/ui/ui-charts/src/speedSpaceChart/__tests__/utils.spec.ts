@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_ETCS_LAYERS_DISPLAY, MARGINS } from '../components/const';
+import { DEFAULT_ETCS_LAYERS_DISPLAY, MARGINS } from '../components/consts';
 import {
   clearCanvas,
   getGraphOffsets,

@@ -1,5 +1,5 @@
 import type { DrawFunctionParams } from '../../../types';
-import { MARGINS, SLOPE_FILL_COLOR } from '../../const';
+import { MARGINS, SLOPE_FILL_COLOR } from '../../consts';
 import { clearCanvas, maxPositionValue, slopesValues } from '../../utils';
 
 const { CURVE_MARGIN_SIDES, MARGIN_TOP, MARGIN_BOTTOM, RIGHT_TICK_MARGINS } = MARGINS;

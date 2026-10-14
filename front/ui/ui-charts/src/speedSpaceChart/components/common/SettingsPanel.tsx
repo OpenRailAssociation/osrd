@@ -9,11 +9,9 @@ import {
   type ETCS_BRAKING_SELECTION,
   ETCS_CURVE_SELECTION,
   LAYERS_SELECTION,
-} from '../const';
+} from '../consts';
 import type { SpeedSpaceChartProps } from '../SpeedSpaceChart';
 import { getActiveEtcsBrakingTypes, isLayerActive } from '../utils';
-
-const SETTINGS_PANEL_BASE_HEIGHT = 442;
 
 type SettingsPanelProps = {
   color: string;
@@ -74,7 +72,7 @@ const SettingsPanel = ({
       data-testid={testIdPrefix}
       style={{
         background: `rgba(${color.substring(4, color.length - 1)}, 0.4)`,
-        height: `${SETTINGS_PANEL_BASE_HEIGHT}px`,
+        height: '442px',
       }}
       className="font-sans"
       onMouseEnter={() => setIsMouseHoveringSettingsPanel(true)}
