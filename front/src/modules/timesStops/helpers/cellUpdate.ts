@@ -183,13 +183,14 @@ export const upsertScheduleItem = (
 ): ScheduleItem[] | undefined => {
   const index = schedule.findIndex((i) => i.at === item.at);
   const newItem = item.at === path[0].key ? { ...item, arrival: null } : item;
+  const mergedItem = index >= 0 ? { ...schedule[index], ...newItem } : newItem;
 
   // Nothing left to schedule: remove the item entirely
-  if (!newItem.arrival && !newItem.stop_for && !newItem.reference_base_arrival)
+  if (!mergedItem.arrival && !mergedItem.stop_for && !mergedItem.reference_base_arrival)
     return index < 0 ? undefined : removeElementAtIndex(schedule, index);
 
   return index >= 0
-    ? replaceElementAtIndex(schedule, index, { ...schedule[index], ...newItem })
+    ? replaceElementAtIndex(schedule, index, mergedItem)
     : insertScheduleItemInOrder(schedule, newItem, path);
 };
 
