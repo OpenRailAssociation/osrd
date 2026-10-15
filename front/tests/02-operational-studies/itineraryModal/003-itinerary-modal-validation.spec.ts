@@ -5,8 +5,13 @@ import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi
 import test from '../../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
+import { readJsonFile } from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
 import { deleteScenario } from '../../utils/teardown-utils';
+import type {
+  ManageTrainScheduleTranslations,
+  TimetableFilterTranslations,
+} from '../../utils/types';
 import {
   ROLLING_STOCK_DEFAULT_CATEGORY,
   ROLLING_STOCK_NAME,
@@ -14,21 +19,24 @@ import {
   TRAIN_NAME,
   NORTH_STATION_BV,
   SOUTH_STATION_BV,
-  MISSING_DESTINATION_ERROR,
   UNKNOWN_PR_VALUE,
-  SOUTH_STATION_WITHOUT_SECONDARY_CODE,
+  SOUTH_STATION,
   SOUTH_STATION_WRONG_SECONDARY_CODE,
   SOUTH_STATION_SUGGESTION,
   TRACK_NAME_2,
   MID_EAST_STATION,
-  MISSING_BLOCK_BANNER,
-  MISSING_BLOCK,
   NORTH_EAST_STATION,
   IMPROBABLE_RS,
-  UNRECOGNIZED_TRIGRAM,
-  CATEGORY_MISMATCH_WARNING,
   ROCKET_SEARCH_INPUT,
 } from './itinerary-modal.consts';
+
+const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
+  manageTrainSchedule: ManageTrainScheduleTranslations;
+}>('public/locales/fr/operational-studies.json').manageTrainSchedule;
+
+const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/fr/operational-studies.json').main;
 
 test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] }, () => {
   let project: Project;
@@ -72,6 +80,12 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
         await itineraryModalPage.fillTrainName(TRAIN_NAME);
         await itineraryModalPage.clickNextButton();
         await itineraryModalPage.checkFormIsOpen();
+        await itineraryModalPage.checkRollingStockMessage(
+          frManageTrainScheduleTranslations.noRollingStock
+        );
+        await itineraryModalPage.checkMissingStepError(
+          frManageTrainScheduleTranslations.itineraryModal.alertMissingRequestedPoint
+        );
       });
 
       await test.step('Fill origin and destination', async () => {
@@ -88,16 +102,14 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
 
       await test.step('Click Next with only one valid point and check destination error', async () => {
         await itineraryModalPage.clickNextButton();
-        await itineraryModalPage.checkMissingStepError(MISSING_DESTINATION_ERROR);
+        await itineraryModalPage.checkMissingStepError(
+          frManageTrainScheduleTranslations.itineraryModal.alertMissingDestination
+        );
         await itineraryModalPage.checkFormIsOpen();
       });
 
       await test.step('Add a second valid point and check pathfinding becomes possible', async () => {
         await itineraryModalPage.fillLastPathStep(SOUTH_STATION_BV, 3, SOUTH_STATION_SUGGESTION);
-        await itineraryModalPage.checkPathStepMarkers([
-          { name: NORTH_STATION_BV, index: 1 },
-          { name: SOUTH_STATION_BV, index: 2 },
-        ]);
       });
 
       await test.step('Select a rolling stock', async () => {
@@ -119,6 +131,15 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
     opSimulationResultPage,
     ngePage,
   }) => {
+    await test.step('Type an unknown PR on a valid itinerary and check the field is cleared', async () => {
+      await itineraryModalPage.fillFirstPathStep(NORTH_STATION_BV, 2);
+      await itineraryModalPage.fillLastPathStep(SOUTH_STATION_BV, 3, SOUTH_STATION_SUGGESTION);
+      await itineraryModalPage.clearAndReplacePathStepValue(1, UNKNOWN_PR_VALUE);
+      await itineraryModalPage.checkPathStepValue(1, '');
+      await itineraryModalPage.checkNoInvalidPathStepMessage();
+      await itineraryModalPage.checkNoInvalidOpBanner();
+    });
+
     // We can't yet add invalid ops from the itinerary modal, so we will have to create 2 invalid ops from NGE.
     await test.step('Add invalid operational points from NGE and check invalid row state', async () => {
       await itineraryModalPage.cancelItineraryEdition();
@@ -136,22 +157,39 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
       await expect(ngePage.trainLines).toHaveCount(1);
 
       await itineraryModalPage.launchEditTrain();
+      await itineraryModalPage.checkInvalidPathStepMessage(
+        0,
+        `${frManageTrainScheduleTranslations.itineraryModal.invalidOP}${frManageTrainScheduleTranslations.itineraryModal.mainCode} ABC`
+      );
+      await itineraryModalPage.checkInvalidPathStepMessage(
+        1,
+        `${frManageTrainScheduleTranslations.itineraryModal.invalidOP}${frManageTrainScheduleTranslations.itineraryModal.mainCode} DEF`
+      );
+      await itineraryModalPage.checkInvalidOpBanner(
+        `${frManageTrainScheduleTranslations.itineraryModal.alertInvalidOP}. ${frManageTrainScheduleTranslations.itineraryModal.noComputation}.`
+      );
+      await itineraryModalPage.checkPathStepMarkers([]);
+    });
 
+    await test.step('Submit the invalid itinerary and check the train stays invalid', async () => {
       await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
       await itineraryModalPage.fillTrainName(TRAIN_NAME);
-      await itineraryModalPage.clearAndReplacePathStepValue(1, UNKNOWN_PR_VALUE);
-      await itineraryModalPage.checkInvalidPathStep(1);
-      await itineraryModalPage.checkInvalidPathStepMessage(1, UNRECOGNIZED_TRIGRAM);
+      await itineraryModalPage.submitEdit();
+      await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
+      await itineraryModalPage.checkInvalidReasonInTimetable(
+        frScenarioTranslations.timetable.invalid.invalid_path_items
+      );
     });
 
     await test.step('Replace the invalid PR with a valid PR requiring a secondary code and check the recognized point', async () => {
+      await itineraryModalPage.launchEditTrain();
       await itineraryModalPage.fillPathStepByName(1, SOUTH_STATION_BV, SOUTH_STATION_SUGGESTION);
       await itineraryModalPage.selectFirstOpSuggestion();
       await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
     });
 
     await test.step('Remove the prefilled secondary code and check the fallback behavior', async () => {
-      await itineraryModalPage.clearChValue(1, SOUTH_STATION_WITHOUT_SECONDARY_CODE);
+      await itineraryModalPage.clearChValue(1, SOUTH_STATION);
       await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
     });
 
@@ -174,26 +212,27 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
       await itineraryModalPage.fillTrainName(TRAIN_NAME);
       await itineraryModalPage.fillFirstPathStep(MID_EAST_STATION, 2);
       await itineraryModalPage.fillLastPathStep(SOUTH_STATION_BV, 3, SOUTH_STATION_SUGGESTION);
-      await itineraryModalPage.checkPathStepMarkers([
-        { name: MID_EAST_STATION, index: 1 },
-        { name: SOUTH_STATION_BV, index: 2 },
-      ]);
     });
 
     await test.step('Select an incompatible track for a valid PR and check the point stays recognized while the route becomes invalid', async () => {
       await itineraryModalPage.selectIncompatibleTrack(0, TRACK_NAME_2);
-      await itineraryModalPage.checkMapIncompatibilityDetails(MISSING_BLOCK_BANNER);
+      await itineraryModalPage.checkMapIncompatibilityDetails(
+        `${frManageTrainScheduleTranslations.pathfindingErrors.not_found_in_blocks}. ${frManageTrainScheduleTranslations.itineraryModal.noComputation}.`
+      );
       await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
     });
 
     await test.step('Submit despite invalid route state and check train creation failure', async () => {
       await itineraryModalPage.createTrain();
       await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
-      await itineraryModalPage.checkInvalidReasonInTimetable(MISSING_BLOCK);
+      await itineraryModalPage.checkInvalidReasonInTimetable(
+        frScenarioTranslations.timetable.invalid.not_found_in_blocks
+      );
     });
 
     await test.step('Enter a recognized but non-computable combination of points and relaunch pathfinding', async () => {
       await itineraryModalPage.launchEditTrain();
+      await itineraryModalPage.clearTrack(0);
       await itineraryModalPage.replacePathStepValueWithSuggestion(1, 'NS');
       await itineraryModalPage.checkPathStepValue(1, NORTH_STATION_BV);
       await itineraryModalPage.replacePathStepValueWithSuggestion(2, 'NE');
@@ -201,27 +240,29 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
     });
 
     await test.step('Check the pathfinding failure error banner and no complete path on the map', async () => {
-      await itineraryModalPage.checkMissingBlock(MISSING_BLOCK_BANNER);
-      await itineraryModalPage.checkPathStepMarkers([
-        { name: MID_EAST_STATION, index: 1 },
-        { name: NORTH_STATION_BV, index: 2 },
-        { name: NORTH_EAST_STATION, index: 3 },
-      ]);
+      await itineraryModalPage.checkMissingBlock(
+        `${frManageTrainScheduleTranslations.pathfindingErrors.not_found_in_blocks}. ${frManageTrainScheduleTranslations.itineraryModal.noComputation}.`
+      );
     });
 
     await test.step('Submit despite the failure and check train creation failure', async () => {
       await itineraryModalPage.submitEdit();
       await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
-      await itineraryModalPage.checkInvalidReasonInTimetable(MISSING_BLOCK);
+      await itineraryModalPage.checkInvalidReasonInTimetable(
+        frScenarioTranslations.timetable.invalid.not_found_in_blocks
+      );
+      await itineraryModalPage.launchEditTrain();
+      await itineraryModalPage.checkPathStepValue(0, MID_EAST_STATION);
+      await itineraryModalPage.checkPathStepValue(1, NORTH_STATION_BV);
+      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION);
     });
 
     await test.step('Fix the itinerary then select a rolling stock incompatible with the infrastructure', async () => {
-      await itineraryModalPage.launchEditTrain();
       await itineraryModalPage.replacePathStepValueWithSuggestion(1, SOUTH_STATION_BV);
+      await itineraryModalPage.deleteNumberedRow(2, 3);
       await itineraryModalPage.checkPathStepMarkers([
         { name: MID_EAST_STATION, index: 1 },
         { name: SOUTH_STATION_BV, index: 2 },
-        { name: NORTH_EAST_STATION, index: 3 },
       ]);
       await itineraryModalPage.fillRollingStock(IMPROBABLE_RS);
       await itineraryModalPage.checkRollingStock(IMPROBABLE_RS);
@@ -239,7 +280,9 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
       await itineraryModalPage.fillTrainName(TRAIN_NAME);
       await itineraryModalPage.launchRocketSearch(ROCKET_SEARCH_INPUT);
       await itineraryModalPage.checkRollingStock(IMPROBABLE_RS);
-      await itineraryModalPage.checkIncompatibleCategoryWarning(CATEGORY_MISMATCH_WARNING);
+      await itineraryModalPage.checkIncompatibleCategoryWarning(
+        frManageTrainScheduleTranslations.categoryMismatch
+      );
     });
     await test.step('Submit the form and check the train is created despite the warning', async () => {
       await itineraryModalPage.createTrain();
@@ -247,7 +290,9 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
     });
     await test.step('Replace with a coherent rolling stock and check the warning disappears', async () => {
       await itineraryModalPage.launchEditTrain();
-      await itineraryModalPage.checkIncompatibleCategoryWarning(CATEGORY_MISMATCH_WARNING);
+      await itineraryModalPage.checkIncompatibleCategoryWarning(
+        frManageTrainScheduleTranslations.categoryMismatch
+      );
       await itineraryModalPage.selectAndCheckCategory(ROLLING_STOCK_DEFAULT_CATEGORY);
       await itineraryModalPage.checkNoWarningBanner();
     });

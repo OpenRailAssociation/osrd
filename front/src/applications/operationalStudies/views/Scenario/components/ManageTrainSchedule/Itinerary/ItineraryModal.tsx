@@ -867,12 +867,25 @@ const ItineraryModal = ({
           />
         </div>
         <div className="itinerary-modal-form-body" data-testid="itinerary-modal-form-body">
-          {categoryWarning && <Banner message={categoryWarning} onClose={resetCategoryWarning} />}
-          {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
+          {categoryWarning && (
+            <Banner
+              message={categoryWarning}
+              onClose={resetCategoryWarning}
+              dataTestId="category-warning-banner"
+            />
+          )}
+          {rollingStockMessage && (
+            <Banner
+              type="info"
+              message={rollingStockMessage}
+              dataTestId="rolling-stock-message-banner"
+            />
+          )}
           {(hasInvalidPathStepDisplay || invalidTrackSteps.length > 0) && (
             <div key={`invalid-op-${bannerWiggle}`}>
               <Banner
                 type="info"
+                dataTestId="invalid-op-banner"
                 message={
                   invalidTrackSteps.length > 0
                     ? `${t('unknownTrack', {
@@ -885,7 +898,11 @@ const ItineraryModal = ({
           )}
           {!hasInvalidPathStepDisplay && invalidTrackSteps.length === 0 && pathfindingError && (
             <div key={`pathfinding-${bannerWiggle}`}>
-              <Banner type="info" message={`${pathfindingError}. ${t('noComputation')}.`} />
+              <Banner
+                type="info"
+                message={`${pathfindingError}. ${t('noComputation')}.`}
+                dataTestId="pathfinding-error-banner"
+              />
             </div>
           )}
           {submitAttempted &&
@@ -894,6 +911,7 @@ const ItineraryModal = ({
               <div key={`missing-step-${bannerWiggle}`}>
                 <Banner
                   type="error"
+                  dataTestId="missing-step-banner"
                   message={t(
                     locatedStepsCount === 0
                       ? 'alertMissingRequestedPoint'

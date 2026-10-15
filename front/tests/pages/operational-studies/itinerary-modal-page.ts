@@ -3,6 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { expectFieldsToHaveValues, handleAndVerifyInput, selectAndCheckOption } from '../../utils';
 
 class ItineraryModalPage {
+  private readonly page: Page;
   private readonly itineraryModal: Locator;
   private readonly itineraryModalTab: Locator;
   private readonly itineraryModalFormHeader: Locator;
@@ -40,15 +41,18 @@ class ItineraryModalPage {
   private readonly timestopsTrainRollingStockName: Locator;
   private readonly timestopsTrainCompositionCode: Locator;
   private readonly waypointName: Locator;
-  private readonly infoBannerText: Locator;
-  private readonly errorBannerText: Locator;
-  private readonly warningBannerText: Locator;
+  private readonly categoryWarningBanner: Locator;
+  private readonly rollingStockMessageBanner: Locator;
+  private readonly invalidOpBanner: Locator;
+  private readonly pathfindingErrorBanner: Locator;
+  private readonly missingStepBanner: Locator;
   private readonly trainNameRequiredField: Locator;
   private readonly invalidReason: Locator;
   private readonly invalidPathStepMessage: Locator;
   private readonly editTrainButton: Locator;
 
   constructor(page: Page) {
+    this.page = page;
     this.itineraryModal = page.getByTestId('itinerary-modal');
     this.itineraryModalTab = page.getByTestId('itinerary-modal-form');
     this.itineraryModalFormHeader = page.getByTestId('itinerary-modal-form-header');
@@ -92,12 +96,13 @@ class ItineraryModalPage {
     this.timestopsTrainCompositionCode = page.getByTestId('train-composition-code');
     this.waypointName = page.getByTestId('waypoint-name');
     this.editTrainButton = page.getByTestId('edit-train');
-    this.warningBannerText = page.getByTestId('banner-text-warning');
-    this.infoBannerText = page.getByTestId('banner-text-info');
-    this.errorBannerText = page.getByTestId('banner-text-error');
+    this.categoryWarningBanner = page.getByTestId('category-warning-banner');
+    this.rollingStockMessageBanner = page.getByTestId('rolling-stock-message-banner');
+    this.invalidOpBanner = page.getByTestId('invalid-op-banner');
+    this.pathfindingErrorBanner = page.getByTestId('pathfinding-error-banner');
+    this.missingStepBanner = page.getByTestId('missing-step-banner');
     this.trainNameRequiredField = page.getByTestId('status-message-error');
     this.invalidReason = page.getByTestId('invalid-reason');
-    this.pathStepWrapper = page.getByTestId('path-step-wrapper');
     this.invalidPathStepMessage = page.getByTestId('invalid-step-message');
   }
 
@@ -106,6 +111,10 @@ class ItineraryModalPage {
       .nth(pathStepIndex)
       .getByTestId('path-step-op-name')
       .getByTestId('clear-icon');
+  }
+
+  private getTrackNameClearIcon(pathStepIndex: number): Locator {
+    return this.pathStepWrapper.nth(pathStepIndex).locator('.track-name').getByTestId('clear-icon');
   }
 
   async checkCategory(value: string) {
@@ -333,10 +342,10 @@ class ItineraryModalPage {
     await expect(this.itineraryModal).not.toBeVisible();
   }
 
-  async checkTrainPresenceInTimetable(name: string) {
-    await expect(this.timetableItem).toBeVisible();
-    await expect(this.timetableItemName).toBeVisible();
-    await expect(this.timetableItemName).toHaveText(name);
+  async checkTrainPresenceInTimetable(name: string, index = 0) {
+    await expect(this.timetableItem.nth(index)).toBeVisible();
+    await expect(this.timetableItemName.nth(index)).toBeVisible();
+    await expect(this.timetableItemName.nth(index)).toHaveText(name);
   }
 
   async verifyTrainColorInTimetable(color: string) {
@@ -390,11 +399,11 @@ class ItineraryModalPage {
     await this.pathStepCounter.nth(position).click();
   }
 
-  async launchEditTrain() {
-    await expect(this.timetableItem.first()).toBeVisible();
-    await this.timetableItem.first().hover();
-    await expect(this.editTrainButton.first()).toBeVisible();
-    await this.editTrainButton.first().click();
+  async launchEditTrain(index = 0) {
+    await expect(this.timetableItem.nth(index)).toBeVisible();
+    await this.timetableItem.nth(index).hover();
+    await expect(this.editTrainButton.nth(index)).toBeVisible();
+    await this.editTrainButton.nth(index).click();
     await expect(this.itineraryModalTab).toBeVisible();
   }
 
@@ -437,15 +446,27 @@ class ItineraryModalPage {
   }
 
   async checkMissingStepError(error: string) {
-    await expect(this.errorBannerText).toBeVisible();
-    await expect(this.errorBannerText).toBeVisible();
-    await expect(this.errorBannerText).toHaveText(error);
+    await expect(this.missingStepBanner).toBeVisible();
+    await expect(this.missingStepBanner).toHaveText(error);
+  }
+
+  async checkRollingStockMessage(message: string) {
+    await expect(this.rollingStockMessageBanner).toBeVisible();
+    await expect(this.rollingStockMessageBanner).toHaveText(message);
+  }
+
+  async checkInvalidOpBanner(message: string) {
+    await expect(this.invalidOpBanner).toBeVisible();
+    await expect(this.invalidOpBanner).toHaveText(message);
+  }
+
+  async checkNoInvalidOpBanner() {
+    await expect(this.invalidOpBanner).not.toBeVisible();
   }
 
   async checkMissingBlock(error: string) {
-    await expect(this.infoBannerText).toBeVisible();
-    await expect(this.infoBannerText).toBeVisible();
-    await expect(this.infoBannerText).toHaveText(error);
+    await expect(this.pathfindingErrorBanner).toBeVisible();
+    await expect(this.pathfindingErrorBanner).toHaveText(error);
   }
 
   async replacePathStepValueWithSuggestion(index: number, value: string) {
@@ -459,7 +480,11 @@ class ItineraryModalPage {
   async clearAndReplacePathStepValue(index: number, value: string) {
     await this.comboBox.nth(index).click();
     await this.comboBox.nth(index).fill('');
+    const searchResponse = this.page.waitForResponse(
+      (response) => response.url().includes('/api/search') && response.request().method() === 'POST'
+    );
     await this.comboBox.nth(index).fill(value);
+    await searchResponse;
     await this.comboBox.nth(index).press('Enter');
   }
 
@@ -468,12 +493,6 @@ class ItineraryModalPage {
     await this.comboBox.nth(index).fill(value);
     await expect(this.opSuggestion).toHaveCount(0);
     await this.comboBox.nth(index).press('Enter');
-  }
-
-  async checkInvalidPathStep(index: number) {
-    await expect(this.comboBox.nth(index)).toBeVisible();
-    await expect(this.pathStepWrapper.nth(index)).toBeVisible();
-    await expect(this.pathStepWrapper.nth(index)).toHaveClass(/is-invalid/);
   }
 
   async checkInvalidPathStepMessage(index: number, expectedMessage: string) {
@@ -485,22 +504,24 @@ class ItineraryModalPage {
     await expect(invalidPathStepMessage).toHaveText(expectedMessage);
   }
 
+  async checkNoInvalidPathStepMessage() {
+    await expect(this.invalidPathStepMessage).toHaveCount(0);
+  }
+
   async checkIncompatibleCategoryWarning(expectedMessage: string) {
-    await expect(this.warningBannerText).toBeVisible();
-    await expect(this.warningBannerText).toBeVisible();
-    await expect(this.warningBannerText).toHaveText(expectedMessage);
+    await expect(this.categoryWarningBanner).toBeVisible();
+    await expect(this.categoryWarningBanner).toHaveText(expectedMessage);
   }
 
   async checkNoWarningBanner() {
-    await expect(this.warningBannerText).not.toBeVisible();
+    await expect(this.categoryWarningBanner).not.toBeVisible();
   }
 
   async clearChValue(index: number, value: string) {
     await expect(this.comboBox.nth(index)).toBeVisible();
     await this.comboBox.nth(index).click();
     await this.comboBox.nth(index).fill(value);
-    await expect(this.itineraryModalFormFooter).toBeVisible();
-    await this.itineraryModalFormFooter.click();
+    await this.comboBox.nth(index).blur();
   }
 
   async selectIncompatibleTrack(trackNameIndex: number, incompatibleTrackName: string) {
@@ -511,14 +532,24 @@ class ItineraryModalPage {
     await trackNameSelector.press('Enter');
   }
 
-  async checkMapIncompatibilityDetails(expectedText: string) {
-    await expect(this.infoBannerText).toBeVisible();
-    await expect(this.infoBannerText).toHaveText(expectedText);
+  async clearTrack(trackNameIndex: number) {
+    const trackNameSelector = this.trackNameSelector.nth(trackNameIndex);
+    const trackNameClearIcon = this.getTrackNameClearIcon(trackNameIndex);
+    await expect(trackNameClearIcon).toBeVisible();
+    await trackNameClearIcon.click();
+    await trackNameSelector.press('Tab');
+    await expect(trackNameSelector).toHaveValue('');
   }
 
-  async checkInvalidReasonInTimetable(value: string) {
-    await expect(this.invalidReason).toBeVisible();
-    await expect(this.invalidReason).toHaveText(value);
+  async checkMapIncompatibilityDetails(expectedText: string) {
+    await expect(this.pathfindingErrorBanner).toBeVisible();
+    await expect(this.pathfindingErrorBanner).toHaveText(expectedText);
+  }
+
+  async checkInvalidReasonInTimetable(value: string, index = 0) {
+    const invalidReason = this.timetableItem.nth(index).locator(this.invalidReason);
+    await expect(invalidReason).toBeVisible();
+    await expect(invalidReason).toHaveText(value);
   }
 }
 export default ItineraryModalPage;
