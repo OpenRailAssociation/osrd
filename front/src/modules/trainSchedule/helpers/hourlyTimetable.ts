@@ -35,14 +35,13 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
   });
 }
 
-/** Wrap `value` into `[0, period)`, also for negative values. */
-const wrap = (value: number, period: number) => ((value % period) + period) % period;
-
 /**
- * Wrap a time offset of an hourly timetable into `[0, period)`, so that a time dragged before the
- * timetable start or after its end comes back in from the other side (-00:05 → 01:55 for 2h).
+ * Wrap `value` into `[0, period)`, also for negative values. Used for time offsets of an hourly
+ * timetable, so that a time dragged before the timetable start or after its end comes back in from
+ * the other side (-00:05 → 01:55 for 2h), and for occurrence indexes.
  */
-export const wrapHourlyTime = (ms: number, period: Duration): number => wrap(ms, period.ms);
+export const wrapHourlyTime = (value: number, period: number): number =>
+  ((value % period) + period) % period;
 
 export function wrapHourlyPacedTrainStartTime(
   startTimeMs: number,
@@ -59,10 +58,10 @@ export function wrapHourlyPacedTrainStartTime(
     exceptions: exceptions.map((exception) => ({
       ...exception,
       ...(isNumber(exception.occurrence_index) && {
-        occurrence_index: wrap(exception.occurrence_index + shift, occurrencesCount),
+        occurrence_index: wrapHourlyTime(exception.occurrence_index + shift, occurrencesCount),
       }),
       ...(exception.start_time && {
-        start_time: { value: wrapHourlyTime(exception.start_time.value, timeWindow) },
+        start_time: { value: wrapHourlyTime(exception.start_time.value, timeWindow.ms) },
       }),
     })),
   };

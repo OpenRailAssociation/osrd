@@ -335,7 +335,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
           start_time: isHourlyTimetable
             ? wrapHourlyTime(
                 newDeparture.getTime(),
-                Duration.parse(trainSchedule.paced.time_window)
+                Duration.parse(trainSchedule.paced.time_window).ms
               )
             : newDeparture.getTime(),
         };
