@@ -16,7 +16,9 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use models::Timetable;
 use models::TrainScheduleSet;
+use models::TrainScheduleSetWithTimetable;
 use models::train_schedule::TrainScheduleChangeset;
 use serde::Deserialize;
 use serde::Serialize;
@@ -37,14 +39,14 @@ pub enum TrainScheduleSetError {
 #[derive(Serialize, Deserialize, ToSchema, Debug, PartialEq)]
 pub(in crate::views) struct TrainScheduleSetResponse {
     #[serde(flatten)]
-    train_schedule_set: TrainScheduleSet,
+    train_schedule_set: TrainScheduleSetWithTimetable,
     train_schedule_count: u64,
 }
 
 impl TrainScheduleSetResponse {
     pub async fn try_fetch(
         conn: &mut DbConnection,
-        train_schedule_set: TrainScheduleSet,
+        train_schedule_set: TrainScheduleSetWithTimetable,
     ) -> Result<Self> {
         let train_schedule_count =
             TrainScheduleSet::train_schedule_count(train_schedule_set.id, conn).await? as u64;
@@ -64,8 +66,8 @@ pub(in crate::views) struct TrainScheduleSetForm {
 }
 
 impl TrainScheduleSetForm {
-    pub fn into_changeset(self) -> Changeset<TrainScheduleSet> {
-        TrainScheduleSet::changeset()
+    pub fn into_changeset(self) -> Changeset<Timetable> {
+        Timetable::changeset()
             .catalog_entry_id(self.catalog_entry_id)
             .name(self.name)
             .description(self.description)
@@ -131,12 +133,11 @@ pub(in crate::views) async fn get_by_id(
     }): Path<TrainScheduleSetIdParam>,
 ) -> Result<Json<TrainScheduleSetResponse>> {
     let train_schedule_set =
-        TrainScheduleSet::retrieve_or_fail(db_pool.get().await?, train_schedule_set_id, || {
-            TrainScheduleSetError::NotFound {
+        TrainScheduleSetWithTimetable::retrieve(&mut db_pool.get().await?, train_schedule_set_id)
+            .await?
+            .ok_or(TrainScheduleSetError::NotFound {
                 train_schedule_set_id,
-            }
-        })
-        .await?;
+            })?;
 
     let train_schedule_set_response =
         TrainScheduleSetResponse::try_fetch(&mut db_pool.get().await?, train_schedule_set).await?;
@@ -165,22 +166,20 @@ pub(in crate::views) async fn get(
     let mut settings = SelectionSettings::new();
 
     if let Some(catalog_entry_id) = catalog_entry_id {
-        settings =
-            settings.filter(move || TrainScheduleSet::CATALOG_ENTRY_ID.eq(Some(catalog_entry_id)));
+        settings = settings.filter(move || Timetable::CATALOG_ENTRY_ID.eq(Some(catalog_entry_id)));
     }
 
     if let Some(published) = published {
-        settings = settings.filter(move || TrainScheduleSet::PUBLISHED.eq(published));
+        settings = settings.filter(move || Timetable::PUBLISHED.eq(published));
     }
 
     if let Some(timetable_type) = timetable_type {
         settings = settings.filter(move || {
-            TrainScheduleSet::TIMETABLE_TYPE
-                .eq(models::timetable_type::TimetableType(timetable_type))
+            Timetable::TIMETABLE_TYPE.eq(models::timetable_type::TimetableType(timetable_type))
         });
     }
 
-    let train_schedule_sets = TrainScheduleSet::list(conn, settings).await?;
+    let train_schedule_sets = TrainScheduleSetWithTimetable::list(conn, settings).await?;
 
     let results = train_schedule_sets
         .into_iter()
@@ -202,8 +201,8 @@ pub(in crate::views) struct TrainScheduleSetUpdateForm {
 }
 
 impl TrainScheduleSetUpdateForm {
-    pub fn into_changeset(self) -> Changeset<TrainScheduleSet> {
-        TrainScheduleSet::changeset()
+    pub fn into_changeset(self) -> Changeset<Timetable> {
+        Timetable::changeset()
             .catalog_entry_id(self.catalog_entry_id)
             .name(self.name)
             .description(self.description)
@@ -230,13 +229,12 @@ pub(in crate::views) async fn put(
 ) -> Result<Json<TrainScheduleSetResponse>> {
     let conn = &mut db_pool.get().await?;
     let changeset = train_schedule_set_form.into_changeset();
-    let train_schedule_set = changeset
-        .update_or_fail(conn, train_schedule_set_id, || {
-            TrainScheduleSetError::NotFound {
+    let train_schedule_set =
+        TrainScheduleSetWithTimetable::update(conn, train_schedule_set_id, changeset)
+            .await?
+            .ok_or(TrainScheduleSetError::NotFound {
                 train_schedule_set_id,
-            }
-        })
-        .await?;
+            })?;
 
     let train_schedule_set_response =
         TrainScheduleSetResponse::try_fetch(&mut db_pool.get().await?, train_schedule_set).await?;
@@ -362,18 +360,20 @@ mod tests {
     use chrono::Duration;
     use database::DbConnection;
     use models::CatalogEntry;
+    use models::Timetable;
     use models::TrainScheduleSet;
+    use models::TrainScheduleSetWithTimetable;
     use models::prelude::*;
     use reqwest::StatusCode;
     use unit_system::units::second;
 
     async fn create_train_schedule_set_linked_to_catalog_entry(
         conn: &mut DbConnection,
-    ) -> (TrainScheduleSet, CatalogEntry) {
+    ) -> (TrainScheduleSetWithTimetable, CatalogEntry) {
         let catalog_entry = create_catalog_entry(conn).await;
         let train_schedule_set = TrainScheduleSet::create_with_timetable(
             conn,
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .catalog_entry_id(Some(catalog_entry.id))
                 .name(Some("test_with_catalog_entry".into())),
         )
@@ -431,7 +431,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::create_with_timetable(
             &mut pool.get_ok(),
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .name(Some("hourly_train_schedule_set".into()))
                 .timetable_type(models::timetable_type::TimetableType(
                     schemas::timetable_type::TimetableType::Hourly,
@@ -477,7 +477,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::create_with_timetable(
             &mut pool.get_ok(),
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .name(Some("hourly_train_schedule_set".into()))
                 .timetable_type(models::timetable_type::TimetableType(
                     schemas::timetable_type::TimetableType::Hourly,
@@ -520,7 +520,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::create_with_timetable(
             &mut pool.get_ok(),
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .name(Some("hourly_train_schedule_set".into()))
                 .timetable_type(models::timetable_type::TimetableType(
                     schemas::timetable_type::TimetableType::Hourly,
@@ -611,7 +611,7 @@ mod tests {
             .assert_status(StatusCode::CREATED)
             .json();
 
-        let expected_response = TrainScheduleSet {
+        let expected_response = TrainScheduleSetWithTimetable {
             id: 1,
             catalog_entry_id: None,
             name: Some("test".to_string()),
@@ -650,7 +650,7 @@ mod tests {
             .assert_status(StatusCode::CREATED)
             .json();
 
-        let expected_response = TrainScheduleSet {
+        let expected_response = TrainScheduleSetWithTimetable {
             id: 1,
             catalog_entry_id: Some(catalog_entry_id),
             name: Some("test".to_string()),
@@ -687,7 +687,7 @@ mod tests {
         assert_eq!(
             response,
             TrainScheduleSetResponse {
-                train_schedule_set: TrainScheduleSet {
+                train_schedule_set: TrainScheduleSetWithTimetable {
                     id: 1,
                     catalog_entry_id: None,
                     name: None,
@@ -719,7 +719,7 @@ mod tests {
         assert_eq!(
             response,
             TrainScheduleSetResponse {
-                train_schedule_set: TrainScheduleSet {
+                train_schedule_set: TrainScheduleSetWithTimetable {
                     id: 1,
                     catalog_entry_id: Some(catalog_entry.id),
                     name: Some("test_with_catalog_entry".into()),
@@ -733,11 +733,13 @@ mod tests {
         );
     }
 
-    async fn create_train_schedule_set_published(conn: &mut DbConnection) -> TrainScheduleSet {
+    async fn create_train_schedule_set_published(
+        conn: &mut DbConnection,
+    ) -> TrainScheduleSetWithTimetable {
         let catalog_entry = create_catalog_entry(conn).await;
         TrainScheduleSet::create_with_timetable(
             conn,
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .catalog_entry_id(Some(catalog_entry.id))
                 .name(Some("test".to_string()))
                 .description(String::default())
@@ -750,11 +752,11 @@ mod tests {
     async fn create_train_schedule_set_with_timetable_type(
         conn: &mut DbConnection,
         timetable_type: models::timetable_type::TimetableType,
-    ) -> TrainScheduleSet {
+    ) -> TrainScheduleSetWithTimetable {
         let catalog_entry = create_catalog_entry(conn).await;
         TrainScheduleSet::create_with_timetable(
             conn,
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .catalog_entry_id(Some(catalog_entry.id))
                 .name(Some("test".to_string()))
                 .description(String::default())
@@ -896,7 +898,7 @@ mod tests {
         assert_eq!(
             response,
             TrainScheduleSetResponse {
-                train_schedule_set: TrainScheduleSet {
+                train_schedule_set: TrainScheduleSetWithTimetable {
                     id: train_schedule_set_id,
                     catalog_entry_id: None,
                     name: Some("test_updated".to_string()),
@@ -936,7 +938,7 @@ mod tests {
         assert_eq!(
             response,
             TrainScheduleSetResponse {
-                train_schedule_set: TrainScheduleSet {
+                train_schedule_set: TrainScheduleSetWithTimetable {
                     id: train_schedule_set_id,
                     catalog_entry_id: Some(catalog_entry.id),
                     name: Some("test_updated".to_string()),
