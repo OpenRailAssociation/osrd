@@ -2231,6 +2231,30 @@ class EditoastStdcmRequestErrorNotUser(BaseModel):
     type: Literal["editoast:stdcm_request:NotUser"] = "editoast:stdcm_request:NotUser"
 
 
+class EditoastStdcmRequestPostErrorDatabase(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmRequestPostErrorDatabaseContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[500] = 500
+    type: Literal["editoast:stdcm_request_post:Database"] = (
+        "editoast:stdcm_request_post:Database"
+    )
+
+
+class EditoastStdcmRequestPostErrorNotUser(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmRequestPostErrorNotUserContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[401] = 401
+    type: Literal["editoast:stdcm_request_post:NotUser"] = (
+        "editoast:stdcm_request_post:NotUser"
+    )
+
+
 class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
@@ -4292,6 +4316,11 @@ class StdcmRequest(BaseModel):
     trace_id: StrictStr | None = None
 
 
+class StdcmRequestForm(BaseModel):
+    rmi_id: StrictStr
+    trace_id: StrictStr | None = None
+
+
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"] = "internal_error"
@@ -5268,6 +5297,8 @@ class EditoastError(
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
         | EditoastStdcmRequestErrorNotUser
+        | EditoastStdcmRequestPostErrorDatabase
+        | EditoastStdcmRequestPostErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
@@ -5448,6 +5479,8 @@ class EditoastError(
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
         | EditoastStdcmRequestErrorNotUser
+        | EditoastStdcmRequestPostErrorDatabase
+        | EditoastStdcmRequestPostErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
