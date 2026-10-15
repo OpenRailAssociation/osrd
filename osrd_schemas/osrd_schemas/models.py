@@ -2190,6 +2190,34 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
     )
 
 
+class EditoastStdcmRequestDeleteErrorDatabase(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmRequestDeleteErrorDatabaseContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[500] = 500
+    type: Literal["editoast:stdcm_request_delete:Database"] = (
+        "editoast:stdcm_request_delete:Database"
+    )
+
+
+class EditoastStdcmRequestDeleteErrorNotFoundContext(BaseModel):
+    id: StrictInt
+
+
+class EditoastStdcmRequestDeleteErrorNotFound(BaseModel):
+    context: Annotated[
+        EditoastStdcmRequestDeleteErrorNotFoundContext | None,
+        Field(title="EditoastStdcmRequestDeleteErrorNotFoundContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[404] = 404
+    type: Literal["editoast:stdcm_request_delete:NotFound"] = (
+        "editoast:stdcm_request_delete:NotFound"
+    )
+
+
 class EditoastStdcmRequestErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorDatabaseContext")
@@ -5293,6 +5321,8 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
+        | EditoastStdcmRequestDeleteErrorDatabase
+        | EditoastStdcmRequestDeleteErrorNotFound
         | EditoastStdcmRequestErrorDatabase
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
@@ -5475,6 +5505,8 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
+        | EditoastStdcmRequestDeleteErrorDatabase
+        | EditoastStdcmRequestDeleteErrorNotFound
         | EditoastStdcmRequestErrorDatabase
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters

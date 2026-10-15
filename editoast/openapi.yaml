@@ -3686,6 +3686,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmRequest'
+  /stdcm_requests/{id}:
+    delete:
+      tags:
+      - stdcm
+      summary: Delete an stdcm request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The stdcm request was deleted successfully
   /studies:
     get:
       tags:
@@ -8064,6 +8079,8 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTowedRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTrainSimulationFail'
+      - $ref: '#/components/schemas/EditoastStdcmRequestDeleteErrorDatabase'
+      - $ref: '#/components/schemas/EditoastStdcmRequestDeleteErrorNotFound'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorForbidden'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorMalformedParameters'
@@ -10199,6 +10216,51 @@ components:
           type: string
           enum:
           - editoast:stdcm:TrainSimulationFail
+    EditoastStdcmRequestDeleteErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestDeleteErrorDatabaseContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request_delete:Database
+    EditoastStdcmRequestDeleteErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestDeleteErrorNotFoundContext
+          required:
+          - id
+          properties:
+            id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request_delete:NotFound
     EditoastStdcmRequestErrorDatabase:
       type: object
       required:

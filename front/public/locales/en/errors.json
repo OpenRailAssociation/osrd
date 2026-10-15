@@ -275,6 +275,10 @@
       "MalformedParameters": "Invalid pagination cursor in query parameters",
       "NotUser": "by=group and by=user query parameters require an authenticated user"
     },
+    "stdcm_request_delete": {
+      "Database": "Internal error (database)",
+      "NotFound": "Stdcm request '{{id}}' not found"
+    },
     "stdcm_request_post": {
       "Database": "Internal error (database)",
       "NotUser": "Creating a request requires an authenticated user"
