@@ -3680,6 +3680,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmRequest'
+  /stdcm_requests/{id}:
+    delete:
+      tags:
+      - stdcm
+      summary: Delete an stdcm request
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The stdcm request was deleted successfully
   /studies:
     get:
       tags:
@@ -8037,6 +8052,7 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorForbidden'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorMalformedParameters'
+      - $ref: '#/components/schemas/EditoastStdcmRequestErrorNotFound'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorNotUser'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
@@ -10227,6 +10243,26 @@ components:
           type: string
           enum:
           - editoast:stdcm_request:MalformedParameters
+    EditoastStdcmRequestErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestErrorNotFoundContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request:NotFound
     EditoastStdcmRequestErrorNotUser:
       type: object
       required:
