@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::convert::Infallible;
 
 use authz::Role;
@@ -219,20 +220,20 @@ pub(in crate::views) async fn authentication_validation_middleware(
     Ok(next.run(req).await)
 }
 
-#[tracing::instrument(skip_all, fields(x_feature_flags,))]
+#[tracing::instrument(skip_all, fields(x_feature_flags, extracted_flags))]
 pub(in crate::views) async fn feature_flags_extraction_middleware(
     State(AppState { .. }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
     const FLAGS: &str = "x-feature-flags";
+    let mut feature_flags = HashSet::new();
     if let Some(header) = req.headers().get(FLAGS).and_then(|h| h.to_str().ok()) {
-        let feature_flags = extract_feature_flags(header);
-
+        extract_feature_flags(header, &mut feature_flags);
         tracing::info!("feature flags extracted");
         tracing::Span::current().record("x_feature_flags", tracing::field::debug(header));
         tracing::Span::current().record("extracted_flags", tracing::field::debug(&feature_flags));
-        req.extensions_mut().insert(feature_flags);
     }
+    req.extensions_mut().insert(feature_flags);
     Ok(next.run(req).await)
 }
