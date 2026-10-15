@@ -640,20 +640,31 @@ fun sortAndMergeRequirements(
 }
 
 /**
- * Extend/create corresponding automatons for all the sub-paths of the sub-path extremities,
- * using/enriching the existing list of spacing automatons given as a parameter.
+ * Extend/create corresponding automatons for all the sub-paths delimited by the sub-path
+ * extremities = [startOffset, backtrackingLocations, endOffset], enriching some spacing automatons
+ * and/or adding new ones to [mutableSpacingAutomatons] given as a parameter.
  */
 fun extendAutomatonsPath(
-    subpathExtremities: List<Offset<PhysicsPath>>,
+    mutableSpacingAutomatons:
+        MutableList<SpacingResourceGenerator>, // Will be modified by the method.
+    startOffset: Offset<PhysicsPath>,
+    endOffset: Offset<PhysicsPath>,
     backtrackingLocations: List<Offset<PhysicsPath>>,
-    spacingAutomatons: MutableList<SpacingResourceGenerator>,
     referenceAutomaton: SpacingResourceGenerator,
-    lookaheadEndOffset: Offset<PhysicsPath>,
     blockRanges: List<BlockRange>,
     routeRanges: List<RouteRange>,
     stops: List<PathStop>,
     isPathComplete: Boolean,
 ) {
+    // Split the path so that we generate spacing resources just as if it was a succession of
+    // trains ending on a backtracking location/the final destination.
+    val subpathExtremities = backtrackingLocations.toMutableList()
+    if (backtrackingLocations.firstOrNull() != startOffset) {
+        subpathExtremities.addFirst(startOffset)
+    }
+    if (backtrackingLocations.lastOrNull() != endOffset || subpathExtremities.size < 2) {
+        subpathExtremities.addLast(endOffset)
+    }
     for ((subPathBegin, subPathEnd) in subpathExtremities.zipWithNext()) {
         val subBlockRanges = blockRanges.subRange(subPathBegin, subPathEnd).toMutableList()
         val subRouteRanges = routeRanges.subRange(subPathBegin, subPathEnd).toMutableList()
@@ -677,15 +688,16 @@ fun extendAutomatonsPath(
             ) {
                 // There should either be an existing automaton starting at this offset OR
                 // we need to create one.
-                val subSpacingAutomaton = spacingAutomatons.lastOrNull {
+                val subSpacingAutomaton = mutableSpacingAutomatons.lastOrNull {
                     it.startOffset == subPathBegin
                 }
                 if (subSpacingAutomaton != null) subSpacingAutomaton
                 else {
                     val lastAutomatonStartOffset =
-                        spacingAutomatons.lastOrNull()?.startOffset ?: Offset(Int.MIN_VALUE.meters)
+                        mutableSpacingAutomatons.lastOrNull()?.startOffset
+                            ?: Offset(Int.MIN_VALUE.meters)
                     require(lastAutomatonStartOffset < subPathBegin)
-                    spacingAutomatons.add(
+                    mutableSpacingAutomatons.add(
                         SpacingResourceGenerator(
                             referenceAutomaton.rawInfra,
                             referenceAutomaton.blockInfra,
@@ -695,19 +707,19 @@ fun extendAutomatonsPath(
                             referenceAutomaton.context,
                         )
                     )
-                    spacingAutomatons.last()
+                    mutableSpacingAutomatons.last()
                 }
             } else {
                 // Nominal case: we take the last automaton starting before the
                 // subPathBegin, and it SHOULD exist.
-                spacingAutomatons.last {
+                mutableSpacingAutomatons.last {
                     it.startOffset <= subPathBegin && it.startOffset < subPathEnd
                 }
             }
         val endsAtDifferentBacktracking =
             (subPathEnd in backtrackingLocations) &&
                 subPathEnd != subSpacingRequirementAutomaton.startOffset
-        val endsAtDestination = isPathComplete && (subPathEnd == lookaheadEndOffset)
+        val endsAtDestination = isPathComplete && (subPathEnd == endOffset)
         val isSubpathComplete = endsAtDifferentBacktracking || endsAtDestination
         subSpacingRequirementAutomaton.extendPath(
             subBlockRanges,

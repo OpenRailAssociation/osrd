@@ -108,30 +108,21 @@ fun runScheduleMetadataExtractor(
     val backtrackingLocations = trainPath.getBacktrackLocations()
     val startOffset = Offset<PhysicsPath>(0.meters)
     val endOffset = Offset<PhysicsPath>(trainPath.length.meters)
-    val subpathExtremities = listOf(startOffset) + backtrackingLocations + listOf(endOffset)
-    val subpath =
-        trainPath.subPath(
-            startOffset,
-            endOffset,
-            resetOffsets = false,
-            includeExactStart = true,
-            includeExactEnd = true,
-        )
-    val blocksInRange = subpath.getBlocks()
-    val routesInRange = subpath.getRoutes()
-    val bisSpacingAutomatons = mutableListOf<SpacingResourceGenerator>()
+    val blockRanges = trainPath.getBlocks()
+    val routeRanges = trainPath.getRoutes()
+    val spacingAutomatons = mutableListOf<SpacingResourceGenerator>()
     extendAutomatonsPath(
-        subpathExtremities,
-        backtrackingLocations,
-        bisSpacingAutomatons,
-        SpacingResourceGenerator(fullInfra, startOffset, context),
+        spacingAutomatons,
+        startOffset,
         endOffset,
-        blocksInRange,
-        routesInRange,
+        backtrackingLocations,
+        SpacingResourceGenerator(fullInfra, startOffset, context),
+        blockRanges,
+        routeRanges,
         pathStops,
         isPathComplete = true,
     )
-    for (spacingAutomaton in bisSpacingAutomatons) {
+    for (spacingAutomaton in spacingAutomatons) {
         spacingRequirements.addAll(spacingAutomaton.processUpdate(envelopeAdapter)!!)
     }
 
