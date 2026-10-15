@@ -276,6 +276,10 @@
       "MalformedParameters": "Curseur de pagination invalide dans les paramètres de requête",
       "NotUser": "Les paramètres de requête by=group et by=user nécessitent un utilisateur authentifié"
     },
+    "stdcm_request_post": {
+      "Database": "Erreur interne (base de données)",
+      "NotUser": "La création d'une requête nécessite un utilisateur authentifié"
+    },
     "stdcm_search_env": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Environnement de recherche stdcm '{{env_id}}' non trouvé"
