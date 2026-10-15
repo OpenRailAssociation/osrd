@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::str::FromStr;
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
@@ -21,13 +20,4 @@ impl FromStr for FeatureFlag {
             _ => Err("Unrecognized feature flag"),
         }
     }
-}
-
-#[inline]
-pub fn extract_feature_flags(header: &str) -> HashSet<FeatureFlag> {
-    header
-        .split(',')
-        .map(|s| s.trim())
-        .filter_map(|value| FeatureFlag::from_str(value).ok())
-        .collect::<HashSet<_>>()
 }

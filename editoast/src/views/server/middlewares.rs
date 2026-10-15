@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::convert::Infallible;
+use std::str::FromStr as _;
 
 use authz::Role;
 use authz::v2::special_authorizers;
@@ -13,7 +14,7 @@ use models::authn::user::AddIdentitiesError;
 use crate::AppState;
 use crate::authentication::AuthenticationParameters;
 use crate::error::Result;
-use crate::feature_flags::extract_feature_flags;
+use crate::feature_flags::FeatureFlag;
 use crate::views::AuthorizationError;
 
 #[tracing::instrument(skip_all, fields(authn))]
@@ -228,7 +229,12 @@ pub(in crate::views) async fn feature_flags_extraction_middleware(
 ) -> Result<Response> {
     const FLAGS: &str = "x-feature-flags";
     let header = req.headers().get(FLAGS).and_then(|h| h.to_str().ok());
-    let feature_flags = header.map_or(HashSet::new(), extract_feature_flags);
+    let feature_flags = header.map_or(HashSet::new(), |h| {
+        h.split(',')
+            .map(|s| s.trim())
+            .filter_map(|value| FeatureFlag::from_str(value).ok())
+            .collect::<HashSet<_>>()
+    });
     tracing::info!("feature flags extracted");
     tracing::Span::current().record("x_feature_flags", tracing::field::debug(header));
     tracing::Span::current().record("extracted_flags", tracing::field::debug(&feature_flags));
