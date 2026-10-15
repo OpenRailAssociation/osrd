@@ -10,10 +10,10 @@ import {
   type PostInfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
-import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { mToMm } from 'utils/physics';
 
-const usePathfindingV2 = () => {
+const usePathfinding = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
 
   const { infraId } = useScenarioContext();
@@ -27,7 +27,7 @@ const usePathfindingV2 = () => {
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
 
-  const launchPathfindingV2 = useCallback(
+  const launchPathfinding = useCallback(
     async ({
       pathSteps,
       pathStepsMetadataByKey,
@@ -35,7 +35,7 @@ const usePathfindingV2 = () => {
       speedLimitTag,
       signal,
     }: {
-      pathSteps: PathStepV2['location'][];
+      pathSteps: PathStep['location'][];
       pathStepsMetadataByKey: Map<string, PathStepMetadata>;
       rollingStockId: number;
       speedLimitTag?: string | null;
@@ -157,7 +157,7 @@ const usePathfindingV2 = () => {
     [infraId]
   );
 
-  return { launchPathfindingV2, pathProperties, pathfindingError };
+  return { launchPathfinding, pathProperties, pathfindingError };
 };
 
-export default usePathfindingV2;
+export default usePathfinding;
