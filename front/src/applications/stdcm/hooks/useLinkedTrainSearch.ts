@@ -40,8 +40,6 @@ const useLinkedTrainSearch = () => {
   const dispatch = useAppDispatch();
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
-  const [postTrainSchedulesSimulationSummary] =
-    osrdEditoastApi.endpoints.postTrainSchedulesSimulationSummary.useLazyQuery();
   const [getTrainScheduleSets] =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useLazyQuery();
 
@@ -64,26 +62,31 @@ const useLinkedTrainSearch = () => {
 
   const getExtremityDetails = useCallback(
     async (pathItem: PathItem) => {
-      if (
-        pathItem.location.type === 'track_offset' ||
-        (pathItem.location.operational_point.type !== 'id' &&
-          pathItem.location.operational_point.type !== 'uic')
-      )
-        return undefined;
+      if (pathItem.location.type === 'track_offset') return undefined;
 
-      const pathItemQuery =
-        pathItem.location.operational_point.type === 'id'
-          ? ['=', ['obj_id'], pathItem.location.operational_point.operational_point]
-          : ([
-              'and',
-              ['=', ['uic'], pathItem.location.operational_point.uic],
-              ['=', ['secondary_code'], pathItem.location.operational_point.secondary_code],
-            ] as SearchQuery);
+      const op = pathItem.location.operational_point;
+      let opQuery: SearchQuery;
+      switch (op.type) {
+        case 'id':
+          opQuery = ['=', ['obj_id'], op.operational_point];
+          break;
+        case 'uic':
+          opQuery = ['and', ['=', ['uic'], op.uic], ['=', ['secondary_code'], op.secondary_code]];
+          break;
+        case 'domestic':
+          opQuery = [
+            'and',
+            ['=', ['main_code'], op.main_code],
+            ['=', ['country_code'], op.country_code],
+            ['=', ['secondary_code'], op.secondary_code],
+          ];
+          break;
+      }
 
       try {
         const payloadOP: SearchPayload = {
           object: 'operationalpoint',
-          query: pathItemQuery,
+          query: ['and', opQuery, ['=', ['infra_id'], infraId]],
         };
         const opDetails = (await postSearch({
           searchPayload: payloadOP,
@@ -96,20 +99,6 @@ const useLinkedTrainSearch = () => {
       }
     },
     [postSearch]
-  );
-
-  const getTrainsSummaries = useCallback(
-    async (trainsIds: number[]) => {
-      const trainsSummaries = await postTrainSchedulesSimulationSummary({
-        body: {
-          infra_id: infraId,
-          timetable_id: timetableId,
-          ids: trainsIds,
-        },
-      }).unwrap();
-      return trainsSummaries;
-    },
-    [postTrainSchedulesSimulationSummary, infraId]
   );
 
   const launchTrainScheduleSearch = useCallback(async () => {
@@ -153,22 +142,17 @@ const useLinkedTrainSearch = () => {
         return;
       }
 
-      const filteredResultsSummaries = await getTrainsSummaries(results.map((r) => r.id));
-
       const newLinkedPathResults = await Promise.all(
         results.map(async (result) => {
-          if (!filteredResultsSummaries) return undefined;
-          const resultSummary = filteredResultsSummaries[result.id].train_schedule;
-          if (resultSummary.status !== 'success') return undefined;
-          const durationFromStartTime = new Duration({
-            milliseconds: resultSummary.path_item_times_final.at(-1)!,
-          });
+          if (result.schedule.at(-1)?.at !== result.path.at(-1)!.key) return undefined;
+          const durationFromStartTime = result.schedule.at(-1)?.arrival;
+          if (!durationFromStartTime) return undefined;
 
           const originDetails = await getExtremityDetails(result.path.at(0)!);
           const destinationDetails = await getExtremityDetails(result.path.at(-1)!);
           const computedOpSchedules = computeOpSchedules(
             new Date(result.start_time),
-            durationFromStartTime
+            Duration.parse(durationFromStartTime)
           );
 
           if (!originDetails || !destinationDetails) return undefined;
