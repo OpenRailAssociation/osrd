@@ -590,6 +590,32 @@
               }
             }
           }
+
+          .path-step-form-wrapper {
+            background-color: rgba(250, 249, 245, 1);
+
+            .path-step-form-content {
+              width: 60%;
+              margin: auto;
+
+              .path-step-form-codes-wrapper {
+                display: flex;
+                justify-content: space-between;
+
+                .path-step-form-field {
+                  position: relative;
+                  width: 150px;
+                }
+
+                .path-step-form-required-input {
+                  position: absolute;
+                  right: 100%;
+                  top: 8px;
+                  color: var(--info30);
+                }
+              }
+            }
+          }
         }
       }
     }
