@@ -8,6 +8,8 @@ use axum::extract::Query;
 use axum::extract::State;
 use editoast_derive::EditoastError;
 use models::StdcmRequest;
+use models::prelude::Changeset;
+use models::prelude::Create as _;
 use models::stdcm_request::PaginatedList;
 use models::stdcm_request::SelectionSettings;
 use serde::Deserialize;
@@ -70,7 +72,7 @@ pub enum StdcmRequestError {
     #[error("Invalid cursors in query parameters")]
     #[editoast_error(status = 422)]
     MalformedParameters(models::stdcm_request::DecodeError),
-    #[error("by=group and by=user query parameters require an authenticated user")]
+    #[error("Creating a request or listing by=group or by=user requires an authenticated user")]
     #[editoast_error(status = 401)]
     NotUser,
     #[error("Forbidden")]
@@ -154,11 +156,48 @@ pub(in crate::views) async fn list(
     Ok(Json(requests))
 }
 
+#[derive(Deserialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(Serialize))]
+pub struct StdcmRequestForm {
+    rmi_id: String,
+    trace_id: Option<String>,
+}
+
+/// Create an stdcm request
+#[editoast_derive::route(authz::Role::Stdcm)]
+#[utoipa::path(
+    post, path = "",
+    tag = "stdcm",
+    request_body = StdcmRequestForm,
+    responses(
+        (status = 201, body = StdcmRequest, description = "Stdcm request"),
+    ),
+)]
+pub(in crate::views) async fn post(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    Json(stdcm_request_create_form): Json<StdcmRequestForm>,
+) -> Result<Json<StdcmRequest>> {
+    match authn_state.user() {
+        None => return Err(StdcmRequestError::NotUser.into()),
+        Some(user) => {
+            let stdcm_request = Changeset::<StdcmRequest>::default()
+                .rmi_id(stdcm_request_create_form.rmi_id)
+                .trace_id(stdcm_request_create_form.trace_id)
+                .created_by(user.0)
+                .create(&mut db_pool.get().await?)
+                .await?;
+            Ok(Json(stdcm_request))
+        }
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
     use super::StdcmRequest;
     use crate::views::stdcm_request::Links;
     use crate::views::stdcm_request::ListStdcmRequestResponse;
+    use crate::views::stdcm_request::StdcmRequestForm;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
     use authz::Role;
@@ -467,5 +506,68 @@ pub mod tests {
         );
         assert_eq!(response.links.next, None);
         // Next cursor is None as while Bob_req_2 is after Alice_req_3 (created_requests[3]), it doesn't match the user
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_ok() {
+        let app = test_app!().build();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let response: StdcmRequest = app
+            .post("/stdcm_requests")
+            .json(&StdcmRequestForm {
+                rmi_id: "Alice_req_1".to_string(),
+                trace_id: Some("trace1".to_string()),
+            })
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response.rmi_id, "Alice_req_1".to_string());
+        assert_eq!(response.trace_id, Some("trace1".to_string()));
+        let requests_in_db = app
+            .get(&format!("/stdcm_requests"))
+            .skip_authz()
+            .await
+            .assert_status_ok()
+            .json::<ListStdcmRequestResponse>()
+            .requests;
+        assert_eq!(requests_in_db.len(), 1);
+        assert_eq!(response.rmi_id, "Alice_req_1".to_string());
+        assert_eq!(response.trace_id, Some("trace1".to_string()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_no_user() {
+        let app = test_app!().build();
+        app.post("/stdcm_requests")
+            .json(&StdcmRequestForm {
+                rmi_id: "Alice_req_1".to_string(),
+                trace_id: Some("trace1".to_string()),
+            })
+            .skip_authz()
+            .await
+            .assert_status_unauthorized();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_not_stdcm_forbidden() {
+        let app = test_app!().build();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        app.post("/stdcm_requests")
+            .json(&StdcmRequestForm {
+                rmi_id: "Alice_req_1".to_string(),
+                trace_id: Some("trace1".to_string()),
+            })
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 }
