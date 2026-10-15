@@ -842,6 +842,11 @@ diesel::table! {
         timetable_type -> TimetableType,
         train_schedule_set_id -> Nullable<Int8>,
         is_train_schedule_set -> Bool,
+        catalog_entry_id -> Nullable<Int8>,
+        #[max_length = 255]
+        name -> Nullable<Varchar>,
+        description -> Text,
+        published -> Bool,
     }
 }
 
@@ -960,16 +965,9 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
-    use super::sql_types::TimetableType;
 
     train_schedule_set (id) {
         id -> Int8,
-        catalog_entry_id -> Nullable<Int8>,
-        #[max_length = 255]
-        name -> Nullable<Varchar>,
-        description -> Text,
-        published -> Bool,
-        timetable_type -> TimetableType,
         timetable_id -> Int8,
     }
 }
@@ -1057,13 +1055,13 @@ diesel::joinable!(stdcm_search_environment -> timetable (timetable_id));
 diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule_group_id));
 diesel::joinable!(study -> project (project_id));
 diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporary_speed_limit_group_id));
+diesel::joinable!(timetable -> catalog_entry (catalog_entry_id));
 diesel::joinable!(timetable_train_schedule_set -> timetable (timetable_id));
 diesel::joinable!(timetable_train_schedule_set -> train_schedule_set (train_schedule_set_id));
 diesel::joinable!(train_schedule -> train_schedule_set (train_schedule_set_id));
 diesel::joinable!(train_schedule_exception -> timetable (timetable_id));
 diesel::joinable!(train_schedule_exception -> train_schedule (train_schedule_id));
 diesel::joinable!(train_schedule_linking -> timetable (timetable_id));
-diesel::joinable!(train_schedule_set -> catalog_entry (catalog_entry_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(

@@ -73,6 +73,7 @@ use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use models::Infra;
 use models::TrainScheduleSet;
+use models::TrainScheduleSetWithTimetable;
 use models::train_schedule::OccurrenceId;
 use models::train_schedule::train_schedule_schema_from_model;
 
@@ -903,13 +904,13 @@ pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
     tags = ["timetable", "train_schedule_set"],
     params(TimetableIdParam),
     responses(
-        (status = 200, description = "list of train_schedule_sets linked to a timetable", body = inline(Vec<TrainScheduleSet>)),
+        (status = 200, description = "list of train_schedule_sets linked to a timetable", body = inline(Vec<TrainScheduleSetWithTimetable>)),
     ),
 )]
 pub(in crate::views) async fn get_train_schedule_sets_from_timetable(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-) -> Result<Json<Vec<TrainScheduleSet>>> {
+) -> Result<Json<Vec<TrainScheduleSetWithTimetable>>> {
     Timetable::exists_or_fail(&mut db_pool.get().await?, timetable_id, || {
         TimetableError::NotFound { timetable_id }
     })
@@ -921,8 +922,11 @@ pub(in crate::views) async fn get_train_schedule_sets_from_timetable(
     )
     .await?;
 
-    let (train_schedule_sets, _): (Vec<_>, _) =
-        TrainScheduleSet::retrieve_batch(&mut db_pool.get().await?, train_schedule_set_ids).await?;
+    let train_schedule_sets = TrainScheduleSetWithTimetable::retrieve_batch(
+        &mut db_pool.get().await?,
+        train_schedule_set_ids,
+    )
+    .await?;
 
     Ok(Json(train_schedule_sets))
 }
@@ -1425,7 +1429,7 @@ mod tests {
             .await
             .assert_status_no_content();
 
-        let train_schedule_sets: Vec<TrainScheduleSet> = app
+        let train_schedule_sets: Vec<TrainScheduleSetWithTimetable> = app
             .get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
             .await
             .assert_status_ok()
@@ -1543,7 +1547,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::create_with_timetable(
             &mut conn,
-            TrainScheduleSet::changeset().name(None).timetable_type(
+            Timetable::changeset().name(None).timetable_type(
                 models::timetable_type::TimetableType(
                     schemas::timetable_type::TimetableType::Hourly,
                 ),
@@ -1562,7 +1566,7 @@ mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let train_schedule_sets: Vec<TrainScheduleSet> = app
+        let train_schedule_sets: Vec<TrainScheduleSetWithTimetable> = app
             .get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
             .await
             .assert_status_ok()
@@ -1587,7 +1591,7 @@ mod tests {
 
         let train_schedule_set = TrainScheduleSet::create_with_timetable(
             &mut conn,
-            TrainScheduleSet::changeset().name(None).timetable_type(
+            Timetable::changeset().name(None).timetable_type(
                 models::timetable_type::TimetableType(
                     schemas::timetable_type::TimetableType::Calendar,
                 ),
