@@ -28,12 +28,6 @@ const DATA_SOURCES: AttributionLicense[] = [
     url: 'https://geoservices.ign.fr/services-web-experts-ortho',
   },
   {
-    name: 'Open data SNCF',
-    identifier: 'https://data.sncf.com/pages/licence/#A1',
-    version: '',
-    url: 'https://ressources.data.sncf.com/pages/accueil/',
-  },
-  {
     name: 'MLG Traffic',
     identifier: 'CC-BY-NC-SA 3.0, Marc Le Gad',
     version: '',
