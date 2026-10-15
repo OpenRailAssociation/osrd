@@ -1029,6 +1029,14 @@ const injectedRtkApi = api
         }),
         providesTags: ['stdcm'],
       }),
+      postStdcmRequests: build.mutation<PostStdcmRequestsApiResponse, PostStdcmRequestsApiArg>({
+        query: (queryArg) => ({
+          url: `/stdcm_requests`,
+          method: 'POST',
+          body: queryArg.stdcmRequestForm,
+        }),
+        invalidatesTags: ['stdcm'],
+      }),
       getStudies: build.query<GetStudiesApiResponse, GetStudiesApiArg>({
         query: (queryArg) => ({
           url: `/studies`,
@@ -2454,6 +2462,10 @@ export type GetStdcmRequestsApiArg = {
   after?: string;
   before?: string;
   size?: number;
+};
+export type PostStdcmRequestsApiResponse = /** status 201 Stdcm request */ StdcmRequest;
+export type PostStdcmRequestsApiArg = {
+  stdcmRequestForm: StdcmRequestForm;
 };
 export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
   results: StudyWithScenarios[];
@@ -4926,6 +4938,10 @@ export type ListStdcmRequestResponse = {
     prev?: string | null;
   };
   requests: StdcmRequest[];
+};
+export type StdcmRequestForm = {
+  rmi_id: string;
+  trace_id?: string | null;
 };
 export type StudyWithScenarios = Study & {
   scenarios_count: number;

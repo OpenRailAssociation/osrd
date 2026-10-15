@@ -4290,6 +4290,11 @@ class StdcmRequest(BaseModel):
     trace_id: str | None = None
 
 
+class StdcmRequestForm(BaseModel):
+    rmi_id: str
+    trace_id: str | None = None
+
+
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"] = "internal_error"

@@ -3674,6 +3674,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListStdcmRequestResponse'
+    post:
+      tags:
+      - stdcm
+      summary: Create an stdcm request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StdcmRequestForm'
+        required: true
+      responses:
+        '201':
+          description: Stdcm request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StdcmRequest'
   /studies:
     get:
       tags:
@@ -16521,6 +16538,17 @@ components:
         id:
           type: integer
           format: int64
+        rmi_id:
+          type: string
+        trace_id:
+          type:
+          - string
+          - 'null'
+    StdcmRequestForm:
+      type: object
+      required:
+      - rmi_id
+      properties:
         rmi_id:
           type: string
         trace_id:
