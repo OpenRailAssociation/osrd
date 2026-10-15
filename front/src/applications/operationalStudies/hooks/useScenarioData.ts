@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
-import { isEqual, keyBy, sortBy } from 'lodash';
+import { keyBy, sortBy } from 'lodash';
 
 import {
   buildOccurrenceExceptionData,
@@ -80,7 +80,7 @@ function computeShiftedExceptions(
 /**
  * Model departure and exceptions of a train moved to `newDeparture` ('all' / 'compliant' mode).
  * In an hourly timetable, the model is brought back into the pattern (see
- * wrapHourlyPacedTrainStartTime), which can also re-index or wrap its exceptions.
+ * wrapHourlyPacedTrainStartTime), which can also wrap its exceptions.
  */
 function computeMovedTrainSchedule(
   trainSchedule: TrainScheduleResponse,
@@ -99,9 +99,9 @@ function computeMovedTrainSchedule(
   const { startTimeMs, exceptions } = wrapHourlyPacedTrainStartTime(
     newDeparture.getTime(),
     trainSchedule.paced,
-    shiftedExceptions ?? trainSchedule.paced.exceptions
+    shiftedExceptions ?? []
   );
-  return { departure: new Date(startTimeMs), exceptions };
+  return { departure: new Date(startTimeMs), exceptions: shiftedExceptions && exceptions };
 }
 
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
@@ -283,11 +283,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       updateSimulatedTrainScheduleDepartureTime(trainScheduleId, newDeparture, movedExceptions);
       updateProjectedTrainScheduleDepartureTime(trainScheduleId, newDeparture, movedExceptions);
     },
-    [
-      trainSchedules,
-      updateSimulatedTrainScheduleDepartureTime,
-      updateProjectedTrainScheduleDepartureTime,
-    ]
+    [updateSimulatedTrainScheduleDepartureTime, updateProjectedTrainScheduleDepartureTime]
   );
 
   /** Update paced train exceptions in local state without re-simulating. Used after drag-created exceptions. */
@@ -349,7 +345,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
           start_time: isHourlyTimetable
             ? wrapHourlyTime(
                 newDeparture.getTime(),
-                Duration.parse(trainSchedule.paced.time_window)
+                Duration.parse(trainSchedule.paced.time_window).ms
               )
             : newDeparture.getTime(),
         };
@@ -391,25 +387,11 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         trainSchedule: { ...trainSchedule, start_time: departure.getTime() },
       }).unwrap();
 
-      if (movedExceptions && trainSchedule.paced) {
-        const previousExceptions = trainSchedule.paced.exceptions;
+      if (movedExceptions) {
         const exceptionsToUpdate = movedExceptions.filter(
           // filter out null/undefined ids, which can happen if the exception is deleted because it was re-aligned on the model.
-          (exc, i) =>
-            exc.id !== null && exc.id !== undefined && !isEqual(exc, previousExceptions[i])
+          (exc) => exc.start_time && exc.id !== null && exc.id !== undefined
         );
-        const reindexedExceptions = exceptionsToUpdate.filter(
-          (exc) =>
-            exc.occurrence_index !==
-            previousExceptions.find(({ id }) => id === exc.id)?.occurrence_index
-        );
-        if (reindexedExceptions.length > 0) {
-          await updateExceptions(
-            dispatch,
-            reindexedExceptions.map((exc) => ({ ...exc, occurrence_index: undefined })),
-            trainSchedule.id
-          );
-        }
         await updateExceptions(dispatch, exceptionsToUpdate, trainSchedule.id);
       }
 
@@ -423,6 +405,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       upsertTrainScheduleExceptions,
       setTrainScheduleDepartureTime,
       updateTrainSchedule,
+      isHourlyTimetable,
     ]
   );
 

@@ -1,10 +1,8 @@
-import { isNumber } from 'lodash';
-
 import type { PacedTrainException, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 import { lcm } from 'utils/numbers';
 
-import { getOccurrencesNb, isPacedTrain } from './pacedTrain';
+import { isPacedTrain } from './pacedTrain';
 
 /**
  * Default duration for an hourly timetable, used when it contains no paced trains.
@@ -35,14 +33,13 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
   });
 }
 
-/** Wrap `value` into `[0, period)`, also for negative values. */
-const wrap = (value: number, period: number) => ((value % period) + period) % period;
-
 /**
- * Wrap a time offset of an hourly timetable into `[0, period)`, so that a time dragged before the
- * timetable start or after its end comes back in from the other side (-00:05 → 01:55 for 2h).
+ * Wrap `value` into `[0, period)`, also for negative values. Used for time offsets of an hourly
+ * timetable, so that a time dragged before the timetable start or after its end comes back in from
+ * the other side (-00:05 → 01:55 for 2h).
  */
-export const wrapHourlyTime = (ms: number, period: Duration): number => wrap(ms, period.ms);
+export const wrapHourlyTime = (value: number, period: number): number =>
+  ((value % period) + period) % period;
 
 export function wrapHourlyPacedTrainStartTime(
   startTimeMs: number,
@@ -51,18 +48,13 @@ export function wrapHourlyPacedTrainStartTime(
 ): { startTimeMs: number; exceptions: PacedTrainException[] } {
   const interval = Duration.parse(paced.interval);
   const timeWindow = Duration.parse(paced.time_window);
-  const occurrencesCount = getOccurrencesNb({ interval, timeWindow });
-  const shift = Math.floor(startTimeMs / interval.ms);
 
   return {
-    startTimeMs: startTimeMs - shift * interval.ms,
+    startTimeMs: wrapHourlyTime(startTimeMs, interval.ms),
     exceptions: exceptions.map((exception) => ({
       ...exception,
-      ...(isNumber(exception.occurrence_index) && {
-        occurrence_index: wrap(exception.occurrence_index + shift, occurrencesCount),
-      }),
       ...(exception.start_time && {
-        start_time: { value: wrapHourlyTime(exception.start_time.value, timeWindow) },
+        start_time: { value: wrapHourlyTime(exception.start_time.value, timeWindow.ms) },
       }),
     })),
   };
