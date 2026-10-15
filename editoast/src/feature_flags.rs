@@ -23,11 +23,11 @@ impl FromStr for FeatureFlag {
     }
 }
 
-pub fn extract_feature_flags(header: &str, feature_flags: &mut HashSet<FeatureFlag>) {
-    let vec = header.split(',').map(|s| s.trim());
-    for value in vec {
-        if let Ok(flag) = FeatureFlag::from_str(value) {
-            feature_flags.insert(flag);
-        }
-    }
+#[inline]
+pub fn extract_feature_flags(header: &str) -> HashSet<FeatureFlag> {
+    header
+        .split(',')
+        .map(|s| s.trim())
+        .filter_map(|value| FeatureFlag::from_str(value).ok())
+        .collect::<HashSet<_>>()
 }

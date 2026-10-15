@@ -227,13 +227,11 @@ pub(in crate::views) async fn feature_flags_extraction_middleware(
     next: Next,
 ) -> Result<Response> {
     const FLAGS: &str = "x-feature-flags";
-    let mut feature_flags = HashSet::new();
-    if let Some(header) = req.headers().get(FLAGS).and_then(|h| h.to_str().ok()) {
-        extract_feature_flags(header, &mut feature_flags);
-        tracing::info!("feature flags extracted");
-        tracing::Span::current().record("x_feature_flags", tracing::field::debug(header));
-        tracing::Span::current().record("extracted_flags", tracing::field::debug(&feature_flags));
-    }
+    let header = req.headers().get(FLAGS).and_then(|h| h.to_str().ok());
+    let feature_flags = header.map_or(HashSet::new(), extract_feature_flags);
+    tracing::info!("feature flags extracted");
+    tracing::Span::current().record("x_feature_flags", tracing::field::debug(header));
+    tracing::Span::current().record("extracted_flags", tracing::field::debug(&feature_flags));
     req.extensions_mut().insert(feature_flags);
     Ok(next.run(req).await)
 }
