@@ -327,7 +327,7 @@ mod tests {
         // Orphaned train schedule sets
         let orphaned1 = TrainScheduleSet::create_with_timetable(
             conn,
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .name(Some("orphaned1".into()))
                 .description("description1".into())
                 .published(false),
@@ -336,7 +336,7 @@ mod tests {
         .expect("Failed to create orphaned train schedule set");
         let orphaned2 = TrainScheduleSet::create_with_timetable(
             conn,
-            TrainScheduleSet::changeset()
+            Timetable::changeset()
                 .name(Some("orphaned2".into()))
                 .description("description2".into())
                 .published(false),

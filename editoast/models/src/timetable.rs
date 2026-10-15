@@ -24,13 +24,17 @@ use crate::timetable_type::TimetableType;
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[model(table = database::tables::timetable)]
-#[model(gen(ops = crd, list))]
+#[model(gen(ops = crud, list))]
 pub struct Timetable {
     pub id: i64,
     pub timetable_type: TimetableType,
     pub train_schedule_set_id: Option<i64>,
     /// Whether this timetable is the one of a train schedule set
     pub is_train_schedule_set: bool,
+    pub catalog_entry_id: Option<i64>,
+    pub name: Option<String>,
+    pub description: String,
+    pub published: bool,
 }
 
 impl From<Timetable> for Option<i64> {

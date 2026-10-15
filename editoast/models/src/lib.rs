@@ -69,6 +69,7 @@ pub use train_schedule::TrainSchedule;
 pub use train_schedule_exception::TrainScheduleException;
 pub use train_schedule_linking::TrainScheduleLinking;
 pub use train_schedule_set::TrainScheduleSet;
+pub use train_schedule_set::TrainScheduleSetWithTimetable;
 pub use work_schedules::WorkSchedule;
 pub use work_schedules::WorkScheduleGroup;
 
