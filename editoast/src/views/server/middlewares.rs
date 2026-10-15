@@ -240,3 +240,42 @@ pub(in crate::views) async fn feature_flags_extraction_middleware(
     req.extensions_mut().insert(feature_flags);
     Ok(next.run(req).await)
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use axum::Extension;
+    use axum::Router;
+    use axum::http::StatusCode;
+    use axum::middleware;
+    use axum::routing::get;
+
+    use super::feature_flags_extraction_middleware;
+    use crate::feature_flags::FeatureFlag;
+
+    #[tokio::test]
+    async fn extracts_feature_flags() {
+        let router = Router::new()
+            .route(
+                "/",
+                get(
+                    |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                        assert_eq!(
+                            flags,
+                            HashSet::from([FeatureFlag::Linkings, FeatureFlag::HourlyTimetables,]),
+                        );
+                        StatusCode::OK
+                    },
+                ),
+            )
+            .layer(middleware::from_fn(feature_flags_extraction_middleware));
+        let server = axum_test::TestServer::new(router);
+
+        server
+            .get("/")
+            .add_header("x-feature-flags", "linkings,hourlyTimetables")
+            .await
+            .assert_status_ok();
+    }
+}
