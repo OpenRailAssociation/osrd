@@ -92,11 +92,7 @@ const NeutralSectionSigns = ({ colors, layerOrder, highlightedArea }: NeutralSec
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} />
-      <OrderedLayer
-        {...KPLabelsParams}
-        id="chartis/osrd_neutral_signs_kp/geo"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...KPLabelsParams} id="osrd_neutral_signs_kp/geo" layerOrder={layerOrder} />
     </Source>
   );
 };

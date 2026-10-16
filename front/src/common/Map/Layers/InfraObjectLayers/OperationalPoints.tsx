@@ -14,8 +14,8 @@ import { useMapContext } from 'common/Map/useMapContext';
 
 import {
   DEFAULT_HALO_WIDTH,
-  getDynamicTextSize,
   getAllowOverlap,
+  getDynamicTextSize,
   trackNameLayer,
 } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
@@ -288,7 +288,7 @@ const OperationalPointsLayer = ({
       type="vector"
       url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...point} id="osrd_operational_point/geo" layerOrder={layerOrder} />
       <OrderedLayer
         {...{
           ...trackNameLayer(colors, highlightedArea),
@@ -297,20 +297,16 @@ const OperationalPointsLayer = ({
             'text-field': '{local_track_name}',
           },
         }}
-        id="chartis/tracks-geo/track-name"
+        id="tracks-geo/track-name"
         layerOrder={layerOrder}
         source-layer={MAP_TRACK_SOURCE_LAYER}
       />
-      <OrderedLayer
-        {...name}
-        id="chartis/osrd_operational_point_name/geo"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...name} id="osrd_operational_point_name/geo" layerOrder={layerOrder} />
 
       {highlightedOperationalPoints && highlightedOperationalPoints.length > 0 && (
         <OrderedLayer
           {...nameMuted}
-          id="chartis/osrd_operational_point_name_muted/geo"
+          id="osrd_operational_point_name_muted/geo"
           layerOrder={mutedLayerOrder}
         />
       )}

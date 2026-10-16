@@ -39,7 +39,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           highlightedArea,
           highlightedTrackSections
         )}
-        id="chartis/tracks-geo/main"
+        id="tracks-geo/main"
         source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
@@ -51,7 +51,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
             'text-field': '{extensions_sncf_track_name}',
           },
         }}
-        id="chartis/tracks-geo/track-name"
+        id="tracks-geo/track-name"
         source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
@@ -63,7 +63,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
             'text-field': '{extensions_sncf_line_code}',
           },
         }}
-        id="chartis/tracks-geo/line-number"
+        id="tracks-geo/line-number"
         source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />
@@ -75,7 +75,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
             'text-field': '{extensions_sncf_line_name}',
           },
         }}
-        id="chartis/tracks-geo/line-name"
+        id="tracks-geo/line-name"
         source-layer={MAP_TRACK_SOURCE_LAYER}
         layerOrder={layerOrder}
       />

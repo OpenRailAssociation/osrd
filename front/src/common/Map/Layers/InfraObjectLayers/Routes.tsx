@@ -1,11 +1,11 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import { Source } from 'react-map-gl/maplibre';
 import type {
   CircleLayerSpecification,
   LineLayerSpecification,
   SymbolLayerSpecification,
 } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -114,9 +114,9 @@ const Routes = ({ colors, layerOrder, highlightedArea }: RoutesProps) => {
       type="vector"
       url={`${MAP_URL}/layer/routes/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer {...lineProps} id="chartis/osrd_routes_line/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...pointProps} id="chartis/osrd_routes_point/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...textProps} id="chartis/osrd_routes_text/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...lineProps} id="osrd_routes_line/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...pointProps} id="osrd_routes_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...textProps} id="osrd_routes_text/geo" layerOrder={layerOrder} />
     </Source>
   );
 };
