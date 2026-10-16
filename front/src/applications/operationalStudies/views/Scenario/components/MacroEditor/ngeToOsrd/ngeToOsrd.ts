@@ -263,7 +263,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
       for (const direction of directions) {
         // The JSON import has its own rules to adapt services to the target timetable, which are
         // not handled here yet, so it keeps the historical default time window.
-        const paced = createPacedAttributesFromTrainrun(trainrun, dto, DEFAULT_TIME_WINDOW);
+        const paced = createPacedAttributesFromTrainrun(trainrun, dto, () => DEFAULT_TIME_WINDOW);
         const pathAndSchedule = generatePathAndSchedule(
           trainrunSections,
           dedupNodes,
