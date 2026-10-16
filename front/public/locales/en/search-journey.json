@@ -17,6 +17,11 @@
   "results": {
     "noResult": "No result",
     "solution": "Solution {{number}}",
+    "solutionTitles": {
+      "closestDeparture": "Closest to requested departure time",
+      "fastest": "Fastest",
+      "fewestTransfers": "Using fewest transfers"
+    },
     "trainPathPrefix": "Train path no. "
   },
   "search": {

@@ -10,6 +10,12 @@ import {
 import { useAppDispatch } from 'store';
 import { msSinceMidnightToTime } from 'utils/date';
 
+const SOLUTION_TITLE_KEYS = [
+  'results.solutionTitles.closestDeparture',
+  'results.solutionTitles.fastest',
+  'results.solutionTitles.fewestTransfers',
+] as const;
+
 const SearchJourneySolutionNavigator = () => {
   const { t } = useTranslation('search-journey');
   const dispatch = useAppDispatch();
@@ -29,7 +35,9 @@ const SearchJourneySolutionNavigator = () => {
           onClick={() => dispatch(selectSearchJourneySolution(index))}
         >
           <span className="search-journey-solution-navigator__tab-title">
-            {t('results.solution', { number: index + 1 })}
+            {index < SOLUTION_TITLE_KEYS.length
+              ? t(SOLUTION_TITLE_KEYS[index])
+              : t('results.solution', { number: index + 1 })}
           </span>
           <span className="search-journey-solution-navigator__tab-departure">
             {msSinceMidnightToTime(journey[0].from.time_ms)}

@@ -17,6 +17,11 @@
   "results": {
     "noResult": "Aucun résultat",
     "solution": "Solution {{number}}",
+    "solutionTitles": {
+      "closestDeparture": "Horaire le plus proche",
+      "fastest": "Plus rapide",
+      "fewestTransfers": "Moins de transfert"
+    },
     "trainPathPrefix": "Sillon n° "
   },
   "search": {
