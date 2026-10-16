@@ -489,6 +489,22 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    macro_note_history (macro_note_id, validity) {
+        macro_note_id -> Int8,
+        scenario_id -> Int8,
+        x -> Int8,
+        y -> Int8,
+        title -> Text,
+        text -> Text,
+        labels -> Array<Nullable<Text>>,
+        validity -> Int8range,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     project (id) {
         id -> Int8,
         #[max_length = 128]
@@ -1101,6 +1117,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_track_section,
     macro_node,
     macro_note,
+    macro_note_history,
     project,
     rolling_stock,
     rolling_stock_livery,
