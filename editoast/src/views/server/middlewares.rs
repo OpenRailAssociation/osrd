@@ -223,7 +223,6 @@ pub(in crate::views) async fn authentication_validation_middleware(
 
 #[tracing::instrument(skip_all, fields(x_feature_flags, extracted_flags))]
 pub(in crate::views) async fn feature_flags_extraction_middleware(
-    State(AppState { .. }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {

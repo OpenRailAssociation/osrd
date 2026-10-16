@@ -1,23 +1,10 @@
-use std::str::FromStr;
+use strum::EnumString;
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug, EnumString)]
+#[strum(serialize_all = "camelCase")]
 pub enum FeatureFlag {
     Linkings,
     HourlyTimetables,
     MultipleTimetables,
     UnrecognizedWaypoints,
-}
-
-impl FromStr for FeatureFlag {
-    type Err = &'static str;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "linkings" => Ok(FeatureFlag::Linkings),
-            "hourlyTimetables" => Ok(FeatureFlag::HourlyTimetables),
-            "multipleTimetables" => Ok(FeatureFlag::MultipleTimetables),
-            "UnrecognizedWaypoints" => Ok(FeatureFlag::UnrecognizedWaypoints),
-            _ => Err("Unrecognized feature flag"),
-        }
-    }
 }
