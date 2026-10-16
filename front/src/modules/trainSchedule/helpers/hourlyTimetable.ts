@@ -32,3 +32,16 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
     milliseconds: pacedTrainDurationsMs.reduce((acc, ms) => lcm(acc, ms)),
   });
 }
+
+/**
+ * Compute the default duration (`time_window`) of a service created in an hourly timetable.
+ *
+ * The duration is the least common multiple (LCM) of the hourly timetable duration and the
+ * service interval, so that the service both covers the whole timetable pattern and contains a
+ * whole number of occurrences. For example, a service every 45min in a 2h timetable gives a 6h
+ * service.
+ */
+export const computeDefaultHourlyPacedTrainTimeWindow = (
+  hourlyTimetableDuration: Duration,
+  interval: Duration
+): Duration => new Duration({ milliseconds: lcm(hourlyTimetableDuration.ms, interval.ms) });
