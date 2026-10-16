@@ -1,15 +1,14 @@
+import { WHITE_ALPHA_100 } from '../../../../common/helpers/colors';
 import type { DrawFunctionParams, EtcsBrakingCurveType, LayerData } from '../../../types';
 import {
-  BASE_SPEED_COLOR,
-  BASE_SPEED_FILL_ALPHA,
-  ECO_SPEED_COLOR,
   SPEEDS_LINEWIDTH,
   MARGINS,
-  WHITE,
   ETCS_COLOR_DICTIONARY,
   ETCS_LINEWIDTH,
-  ETCS_ALPHA_DICTIONARY,
-} from '../../const';
+  BASE_SPEED_FILL_COLOR,
+  BASE_SPEED_STROKE_COLOR,
+  ECO_SPEED_STROKE_COLOR,
+} from '../../consts';
 import {
   clearCanvas,
   getActiveEtcsBrakingCurveTypes,
@@ -76,14 +75,14 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Fill speed curve.
   ctx.beginPath();
-  ctx.fillStyle = BASE_SPEED_COLOR.alpha(BASE_SPEED_FILL_ALPHA).hex();
+  ctx.fillStyle = BASE_SPEED_FILL_COLOR;
   curvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);
   });
   ctx.fill();
   // Stroke speed curve.
   ctx.beginPath();
-  ctx.strokeStyle = BASE_SPEED_COLOR.hex();
+  ctx.strokeStyle = BASE_SPEED_STROKE_COLOR;
   curvePoints.slice(0, curvePoints.length - 2).forEach(({ x, y }) => {
     ctx.lineTo(x, y);
   });
@@ -91,7 +90,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Fill eco speed curve.
   ctx.beginPath();
-  ctx.fillStyle = WHITE.hex();
+  ctx.fillStyle = WHITE_ALPHA_100;
   ctx.globalCompositeOperation = 'destination-out';
   ecoCurvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);
@@ -99,7 +98,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.fill();
   // Stroke eco speed curve.
   ctx.beginPath();
-  ctx.strokeStyle = ECO_SPEED_COLOR.hex();
+  ctx.strokeStyle = ECO_SPEED_STROKE_COLOR;
   ctx.globalCompositeOperation = 'source-over';
   ecoCurvePoints.slice(0, ecoCurvePoints.length - 2).forEach(({ x, y }) => {
     ctx.lineTo(x, y);
@@ -119,9 +118,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
       );
       ctx.beginPath();
       ctx.lineWidth = ETCS_LINEWIDTH;
-      ctx.strokeStyle = ETCS_COLOR_DICTIONARY[etcsBrakingCurveType]
-        .alpha(ETCS_ALPHA_DICTIONARY[etcsBrakingCurveType])
-        .hex();
+      ctx.strokeStyle = ETCS_COLOR_DICTIONARY[etcsBrakingCurveType];
       etcsCurvePoints.slice(0, etcsCurvePoints.length - 2).forEach(({ x, y }) => {
         ctx.lineTo(x, y);
       });

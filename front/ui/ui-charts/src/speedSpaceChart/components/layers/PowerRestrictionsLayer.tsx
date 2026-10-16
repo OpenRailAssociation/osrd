@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { Store } from '../../types';
-import { LINEAR_LAYERS_HEIGHTS } from '../const';
+import { LINEAR_LAYERS_HEIGHTS } from '../consts';
 import { drawPowerRestrictions } from '../helpers/drawElements/powerRestrictions';
 import { useCanvas } from '../hooks';
 

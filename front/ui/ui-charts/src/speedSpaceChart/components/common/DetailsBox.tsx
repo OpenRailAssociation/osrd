@@ -3,7 +3,7 @@ import React from 'react';
 import cx from 'classnames';
 
 import type { EtcsBrakingCurveType, EtcsBrakingType, EtcsSpeedValue, Store } from '../../types';
-import { ETCS_COLOR_DICTIONARY, MARGINS } from '../const';
+import { ETCS_COLOR_DICTIONARY, MARGINS } from '../consts';
 import type { SpeedSpaceChartProps } from '../SpeedSpaceChart';
 import { getActiveEtcsBrakingCurveTypes, getActiveEtcsBrakingTypes } from '../utils';
 
@@ -156,7 +156,7 @@ const DetailsBox = ({
                           )}
                           <div
                             style={{
-                              color: ETCS_COLOR_DICTIONARY[brakingCurveType].hex(),
+                              color: ETCS_COLOR_DICTIONARY[brakingCurveType],
                             }}
                           >
                             {brakingCurveType}
@@ -166,7 +166,7 @@ const DetailsBox = ({
                               key={endOfCurve}
                               className="number-text"
                               style={{
-                                color: ETCS_COLOR_DICTIONARY[brakingCurveType].hex(),
+                                color: ETCS_COLOR_DICTIONARY[brakingCurveType],
                               }}
                             >
                               {speedValues

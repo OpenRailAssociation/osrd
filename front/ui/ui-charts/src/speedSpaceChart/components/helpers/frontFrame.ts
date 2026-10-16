@@ -1,7 +1,7 @@
 import * as d3selection from 'd3-selection';
 
 import type { DrawFunctionParams } from '../../types';
-import { FRONT_INTERACTIVITY_LAYER_ID } from '../const';
+import { FRONT_INTERACTIVITY_LAYER_ID } from '../consts';
 import { clearCanvas } from '../utils';
 import { zoom } from './layersManager';
 
