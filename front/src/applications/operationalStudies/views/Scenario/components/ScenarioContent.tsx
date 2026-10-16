@@ -209,6 +209,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [activeBoards.has('macro'), i18n.language, refreshNge]);
 
+  // NGE operations don't reload the macro editor state, so keep its hourly timetable duration in
+  // sync with the train schedules (it drives the default duration of the services created in NGE)
+  useEffect(() => {
+    if (macroEditorState.current && hourlyTimetableDuration) {
+      macroEditorState.current.hourlyTimetableDuration = hourlyTimetableDuration;
+    }
+  }, [hourlyTimetableDuration]);
+
   const handleNGEOperation = (operation: Operation, netzgrafikDto: NetzgrafikDto) => {
     // Wait for the previous handler to complete before starting the next one
     lastNgeOperationPromise.current = lastNgeOperationPromise.current.then(async () => {

@@ -4,6 +4,7 @@ import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import {
+  computeDefaultHourlyPacedTrainTimeWindow,
   computeHourlyTimetableDuration,
   DEFAULT_HOURLY_TIMETABLE_DURATION,
 } from '../hourlyTimetable';
@@ -82,5 +83,34 @@ describe('computeHourlyTimetableDuration', () => {
     expect(
       computeHourlyTimetableDuration([buildPacedTrain('PT5H'), buildPacedTrain('PT7H')])
     ).toEqual(new Duration({ hours: 35 }));
+  });
+});
+
+describe('computeDefaultHourlyPacedTrainTimeWindow', () => {
+  it('should return the timetable duration when it is a multiple of the interval', () => {
+    expect(
+      computeDefaultHourlyPacedTrainTimeWindow(
+        new Duration({ hours: 2 }),
+        new Duration({ minutes: 30 })
+      )
+    ).toEqual(new Duration({ hours: 2 }));
+  });
+
+  it('should return the interval when it is a multiple of the timetable duration', () => {
+    expect(
+      computeDefaultHourlyPacedTrainTimeWindow(
+        new Duration({ hours: 2 }),
+        new Duration({ hours: 4 })
+      )
+    ).toEqual(new Duration({ hours: 4 }));
+  });
+
+  it('should compute the LCM of the timetable duration and the interval (2h and 45min -> 6h)', () => {
+    expect(
+      computeDefaultHourlyPacedTrainTimeWindow(
+        new Duration({ hours: 2 }),
+        new Duration({ minutes: 45 })
+      )
+    ).toEqual(new Duration({ hours: 6 }));
   });
 });
