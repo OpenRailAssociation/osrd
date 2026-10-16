@@ -743,20 +743,7 @@ fun getOppositeBlockLocations(
                 rawInfra.getTrackChunkLength(dirChunkLocation.dirChunk.value),
             ),
         )
-    val oppositeBlocks =
-        blockInfra
-            .getBlocksFromTrackChunk(
-                oppositeDirChunkLocation.dirChunk.value,
-                oppositeDirChunkLocation.dirChunk.direction,
-            )
-            .toSet()
-    val oppositeBlockLocations = mutableListOf<BlockLocation>()
-    for (block in oppositeBlocks) {
-        val offset = blockInfra.getBlockOffset(block, oppositeDirChunkLocation, rawInfra)
-        assert(offset <= blockInfra.getBlockLength(block))
-        oppositeBlockLocations.add(BlockLocation(block, offset))
-    }
-    return oppositeBlockLocations
+    return blockInfra.findDirChunkLocationBlocks(rawInfra, oppositeDirChunkLocation).toList()
 }
 
 private class EdgeIdentifierImpl(private val blocks: List<BlockId>) : EdgeIdentifier {

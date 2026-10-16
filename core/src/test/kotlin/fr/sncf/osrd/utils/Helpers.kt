@@ -5,7 +5,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraMetadata
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.RJSTrackLocation
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
@@ -139,7 +139,7 @@ object Helpers {
 
     data class LocationPair(
         val blockLocations: Set<BlockLocation>,
-        val trackLocations: Set<TrackLocation>,
+        val trackLocations: Set<RJSTrackLocation>,
     )
 
     /** Converts a route + offset into a block location. */
