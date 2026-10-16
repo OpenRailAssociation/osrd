@@ -51,6 +51,7 @@ const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
 fun runScheduleMetadataExtractor(
     envelope: Envelope,
     trainPath: TrainPath,
+    waypointOffsets: List<Offset<PhysicsPath>>,
     fullInfra: FullInfra,
     rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     schedule: List<SimulationScheduleItem>,
@@ -156,7 +157,8 @@ fun runScheduleMetadataExtractor(
             zoneOccupationChangeEvents,
             rollingStocks,
         )
-    val reportTrain = makeSimpleReportTrain(envelope, trainPath, rollingStocks, schedule)
+    val reportTrain =
+        makeSimpleReportTrain(envelope, trainPath, waypointOffsets, rollingStocks, schedule)
     return CompleteReportTrain(
         reportTrain.positions,
         reportTrain.times,
@@ -256,6 +258,7 @@ fun getStopTravelledPathOffset(pathStops: List<PathStop>, indexStop: Int): Offse
 fun makeSimpleReportTrain(
     envelope: Envelope,
     trainPath: TrainPath,
+    waypointOffsets: List<Offset<PhysicsPath>>,
     rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
     schedule: List<SimulationScheduleItem>,
 ): ReportTrain {
@@ -277,20 +280,29 @@ fun makeSimpleReportTrain(
             }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
-    val pathItemTimes = schedule.mapIndexed { i: Int, item: SimulationScheduleItem ->
-        var time =
-            TimeDelta.fromSeconds(envelopeStopWrapper.interpolateArrivalAt(item.pathOffset.meters))
-        var i = i
-        while (i > 0 && schedule[i - 1].pathOffset == item.pathOffset) {
-            time += (schedule[i - 1].stopDetails?.duration ?: Duration.ZERO)
-            i--
-        }
-        val departureTimeFromOp =
-            TimeDelta.fromSeconds(
-                envelopeStopWrapper.interpolateDepartureFrom(item.pathOffset.meters)
-            )
-        min(time, departureTimeFromOp)
-    }
+    val pathItemTimes =
+        schedule
+            // Remove the short stop at the end that was added to avoid signal propagation
+            .dropLastWhile { i -> i.stopDetails?.duration == (0.1).seconds }
+            .filter { i ->
+                i.pathOffset in waypointOffsets
+            }
+            .mapIndexed { i: Int, item: SimulationScheduleItem ->
+                var time =
+                    TimeDelta.fromSeconds(
+                        envelopeStopWrapper.interpolateArrivalAt(item.pathOffset.meters)
+                    )
+                var i = i
+                while (i > 0 && schedule[i - 1].pathOffset == item.pathOffset) {
+                    time += (schedule[i - 1].stopDetails?.duration ?: Duration.ZERO)
+                    i--
+                }
+                val departureTimeFromOp =
+                    TimeDelta.fromSeconds(
+                        envelopeStopWrapper.interpolateDepartureFrom(item.pathOffset.meters)
+                    )
+                min(time, departureTimeFromOp)
+            }
 
     // Iterate over the points and simplify the results
     val points = envelopeStopWrapper.iteratePoints()

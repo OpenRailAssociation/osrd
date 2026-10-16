@@ -26,6 +26,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
@@ -222,10 +223,24 @@ class STDCMEndpoint(
                         path.backtrackIndexes,
                     )
 
+                val rawWaypointOffsets =
+                    path.waypointOffsets.mapIndexed { index, offset ->
+                        if (
+                            index == 0 ||
+                                index == path.waypointOffsets.size - 1 ||
+                                path.stopResults[index].duration > 0.0
+                        ) {
+                            offset
+                        } else {
+                            offset - consistSchedules.rollingStocks[index - 1].length.meters
+                        }
+                    }
+
                 val simulationResponse =
                     buildSimResponse(
                         infra,
                         path,
+                        rawWaypointOffsets,
                         request.consistSchedule.values[0].speedLimitTag,
                         temporarySpeedLimitManager,
                         request.comfort,
@@ -328,6 +343,7 @@ class STDCMEndpoint(
         fun buildSimResponse(
             infra: FullInfra,
             path: STDCMCompleteResult,
+            waypointOffsets: List<Offset<PhysicsPath>>,
             speedLimitTag: String?,
             temporarySpeedLimitManager: TemporarySpeedLimitManager?,
             comfort: Comfort,
@@ -345,6 +361,7 @@ class STDCMEndpoint(
                 runScheduleMetadataExtractor(
                     path.envelope,
                     path.trainPath,
+                    waypointOffsets,
                     infra,
                     path.rollingStocks as DistanceRangeMap<PhysicsRollingStock>,
                     scheduleItems,

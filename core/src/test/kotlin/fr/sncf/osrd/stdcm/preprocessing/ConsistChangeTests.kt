@@ -127,7 +127,14 @@ class ConsistChangeTests {
         Assertions.assertTrue(stdcmResult is STDCMCompleteResult)
         val stdcmResultSuccess = stdcmResult as STDCMCompleteResult
         val simulationResponse =
-            STDCMEndpoint.buildSimResponse(infra, stdcmResultSuccess, null, null, Comfort.STANDARD)
+            STDCMEndpoint.buildSimResponse(
+                infra,
+                stdcmResultSuccess,
+                stdcmResult.waypointOffsets,
+                null,
+                null,
+                Comfort.STANDARD,
+            )
         STDCMEndpoint.logDebugData(
             infra.rawInfra,
             stdcmResultSuccess,
