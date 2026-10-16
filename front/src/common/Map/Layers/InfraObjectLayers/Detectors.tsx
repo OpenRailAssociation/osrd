@@ -1,8 +1,8 @@
 import chroma from 'chroma-js';
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -114,20 +114,20 @@ const Detectors = ({ colors, layerOrder, highlightedArea }: DetectorsProps) => {
       type="vector"
       url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...layerName} id="osrd_detectors_name/geo" layerOrder={layerOrder} />
       <OrderedLayer
         {...layerPoint3}
-        id="chartis/osrd_detectors/geo-3"
-        beforeId="chartis/osrd_detectors/geo-2"
+        id="osrd_detectors/geo-3"
+        beforeId="osrd_detectors/geo-2"
         layerOrder={layerOrder}
       />
       <OrderedLayer
         {...layerPoint2}
-        id="chartis/osrd_detectors/geo-2"
-        beforeId="chartis/osrd_detectors/geo-1"
+        id="osrd_detectors/geo-2"
+        beforeId="osrd_detectors/geo-1"
         layerOrder={layerOrder}
       />
-      <OrderedLayer {...layerPoint1} id="chartis/osrd_detectors/geo-1" layerOrder={layerOrder} />
+      <OrderedLayer {...layerPoint1} id="osrd_detectors/geo-1" layerOrder={layerOrder} />
     </Source>
   );
 };

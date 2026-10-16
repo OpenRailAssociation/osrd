@@ -61,7 +61,7 @@ const BufferStops = ({ layerOrder, highlightedArea, colors }: BufferStopsProps) 
     >
       <OrderedLayer
         {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops', highlightedArea, colors })}
-        id="chartis/osrd_bufferstop/geo"
+        id="osrd_bufferstop/geo"
         layerOrder={layerOrder}
       />
     </Source>

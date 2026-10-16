@@ -51,7 +51,7 @@ const NeutralSectionsLayer = ({ colors, layerOrder, highlightedArea }: NeutralSe
       >
         <OrderedLayer
           {...neutralSectionsParams}
-          id="chartis/neutral_sections/geo"
+          id="neutral_sections/geo"
           layerOrder={layerOrder}
         />
       </Source>

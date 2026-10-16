@@ -71,7 +71,7 @@ const LevelCrossingsLayer = ({ layerOrder, highlightedArea, colors }: LevelCross
           highlightedArea,
           colors,
         })}
-        id="chartis/osrd_levelcrossing/geo-group"
+        id="osrd_levelcrossing/geo-group"
         layerOrder={layerOrder}
       />
       <OrderedLayer
@@ -82,7 +82,7 @@ const LevelCrossingsLayer = ({ layerOrder, highlightedArea, colors }: LevelCross
           highlightedArea,
           colors,
         })}
-        id="chartis/osrd_levelcrossing/geo"
+        id="osrd_levelcrossing/geo"
         layerOrder={layerOrder}
       />
     </Source>
