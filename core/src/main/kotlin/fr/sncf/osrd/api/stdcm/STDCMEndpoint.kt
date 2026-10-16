@@ -49,8 +49,11 @@ import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.stdcm.tracing.ProgressCallback
+import fr.sncf.osrd.stdcm.tracing.STDCMMetadataRecorder
 import fr.sncf.osrd.stdcm.tracing.STDCMProgress
 import fr.sncf.osrd.stdcm.tracing.STDCMProgressStatus
+import fr.sncf.osrd.stdcm.tracing.recordSTDCMInputMetadata
+import fr.sncf.osrd.stdcm.tracing.recordSTDCMMetadata
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction
@@ -116,7 +119,10 @@ class STDCMEndpoint(
 
         s3Context?.writeSTDCMFile("input_payload.json") { stdcmRequestAdapter.toJson(request) }
 
-        return run(request, ctx)
+        return STDCMMetadataRecorder.withNewRecorder(s3Context) {
+            recordSTDCMInputMetadata(request)
+            run(request, ctx)
+        }
     }
 
     @WithSpan(value = "Reading request content", kind = SpanKind.SERVER)
@@ -243,6 +249,7 @@ class STDCMEndpoint(
                     s3Context,
                 )
 
+                recordSTDCMMetadata("result", "success")
                 val result = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
                 val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
                 return RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
@@ -282,6 +289,8 @@ class STDCMEndpoint(
             // STDCM found a valid solution, but it found unavoidable conflicts in the
             // post-processing. Return the corresponding blocking work schedules.
             // TODO : check with PO for this behaviour
+            recordSTDCMMetadata("result", "path_not_found")
+            recordSTDCMMetadata("has_partial_path", path is STDCMPartialResult)
             val result =
                 PathNotFound(
                     mostBlockingWorkSchedules.distinct(),
@@ -292,6 +301,8 @@ class STDCMEndpoint(
             val response = STDCMFinalResult(status = STDCMProgressStatus.DONE, result = result)
             RsJson(RsWithBody(STDCMFinalResult.adapter.toJson(response)))
         } catch (ex: Throwable) {
+            recordSTDCMMetadata("result", "error")
+            recordSTDCMMetadata("error", ex.javaClass.simpleName)
             ExceptionHandler.handle(ex)
         }
     }

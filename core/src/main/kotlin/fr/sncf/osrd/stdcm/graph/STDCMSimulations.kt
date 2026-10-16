@@ -24,6 +24,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.tracing.recordSTDCMMetadata
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -126,10 +127,12 @@ class STDCMSimulations {
      * end. Aggregates events into fewer log entries.
      */
     fun logWarnings() {
-        if (nFailedSimulation > 0)
+        if (nFailedSimulation > 0) {
             logger.info(
                 "A total of $nFailedSimulation STDCM Simulations failed during the search (usually because of lack of traction)"
             )
+            recordSTDCMMetadata("failed_simulation_count", nFailedSimulation)
+        }
     }
 }
 
