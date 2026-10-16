@@ -16,6 +16,7 @@ use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use models::prelude::*;
 use models::stdcm_search_environment::StdcmSearchEnvironment;
+use schemas::infra::OperationalPointStop;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -62,6 +63,7 @@ pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     enabled_from: DateTime<Utc>,
     enabled_until: DateTime<Utc>,
     allowed_tracks: Option<HashMap<String, HashSet<String>>>,
+    forced_op_stops: Option<HashSet<OperationalPointStop>>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
     #[serde(default)]
@@ -84,6 +86,8 @@ struct StdcmSearchEnvironmentResponse {
     /// None means no zones restrictions.
     #[schema(required)]
     allowed_tracks: Option<HashMap<String, HashSet<String>>>,
+    /// List of operational points where stop is mandatory
+    forced_op_stops: Option<HashSet<OperationalPointStop>>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
     operational_points_id_filtered: Option<Vec<String>>,
@@ -152,6 +156,7 @@ impl From<StdcmSearchEnvironmentCreateForm>
             .operational_points_id_filtered(form.operational_points_id_filtered.unwrap_or_default())
             .speed_limit_tags(speed_limits.speed_limit_tags)
             .default_speed_limit_tag(speed_limits.default_speed_limit_tag)
+            .forced_op_stops(form.forced_op_stops)
     }
 }
 
@@ -180,6 +185,7 @@ impl From<models::stdcm_search_environment::StdcmSearchEnvironment>
             enabled_from: from.enabled_from,
             enabled_until: from.enabled_until,
             allowed_tracks: from.allowed_tracks,
+            forced_op_stops: from.forced_op_stops,
             operational_points: if !from.operational_points.is_empty() {
                 Some(from.operational_points.to_vec())
             } else {
@@ -344,6 +350,7 @@ pub mod tests {
                 default_speed_limit_tag: Some("MA80".to_string()),
             }),
             allowed_tracks: None,
+            forced_op_stops: None,
         };
 
         // WHEN
@@ -397,6 +404,7 @@ pub mod tests {
                 default_speed_limit_tag: Some("MA100".to_string()),
             }),
             allowed_tracks: None,
+            forced_op_stops: None,
         };
 
         // WHEN
@@ -448,6 +456,7 @@ pub mod tests {
                 default_speed_limit_tag: Some("MA80".to_string()),
             }),
             allowed_tracks: None,
+            forced_op_stops: None,
         };
 
         // WHEN

@@ -13,7 +13,9 @@ use dashmap::DashMap;
 use futures::stream;
 use itertools::Itertools as _;
 use ordered_float::OrderedFloat;
+use schemas::infra::OperationalPointStop;
 use schemas::infra::TrackOffset;
+use schemas::infra::hashing_forced_op_stops;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::SupportedSignalingSystemVariant;
 use schemas::rolling_stock::hashing_supported_signaling_systems_variant;
@@ -173,13 +175,17 @@ pub struct PathfindingConsist {
     pub speed_limit_tag: Option<String>,
 }
 
-#[derive(Debug, Hash, PartialEq, Eq)]
+#[derive(Debug, educe::Educe, PartialEq, Eq)]
+#[educe(Hash)]
 #[cfg_attr(test, derive(Clone))]
 pub struct PathfindingConstraints {
     /// An ordered list of waypoints the resulting path must pass through
     pub path_items: Vec<PathItemConstraint>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: BTreeSet<String>,
+    /// List of operational points where stop is mandatory
+    #[educe(Hash(method(hashing_forced_op_stops)))]
+    pub forced_op_stops: HashSet<OperationalPointStop>,
 }
 
 /// A waypoint the resulting path must pass through
@@ -412,6 +418,7 @@ pub fn pathfinding_request_from_consist_constraints(
         speed_limit_tag: consist.speed_limit_tag.clone(),
         stops_at_end_of_block: Some(false),
         allowed_track_sections: constraints.allowed_track_sections.clone(),
+        forced_op_stops: constraints.forced_op_stops.clone(),
     }
 }
 
@@ -482,6 +489,7 @@ pub(crate) mod test_data {
                 PathItemConstraint::new([TrackOffset::new("tr2", 200)], false),
             ],
             allowed_track_sections: BTreeSet::new(),
+            forced_op_stops: HashSet::new(),
         }
     }
 
