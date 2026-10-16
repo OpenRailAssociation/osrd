@@ -9,6 +9,8 @@ import type {
   PathItemLocation,
   TimetableType,
 } from 'common/api/osrdEditoastApi';
+import { DEFAULT_HOURLY_TIMETABLE_DURATION } from 'modules/trainSchedule/helpers/hourlyTimetable';
+import type { Duration } from 'utils/duration';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;
@@ -38,6 +40,7 @@ export default class MacroEditorState {
    * timetable start for `HOURLY`.
    */
   timetableType: TimetableType;
+  hourlyTimetableDuration: Duration;
 
   /**
    * Nodes storage
@@ -116,6 +119,7 @@ export default class MacroEditorState {
     this.scenarioId = scenarioId;
     this.timetableId = timetableId;
     this.timetableType = timetableType;
+    this.hourlyTimetableDuration = DEFAULT_HOURLY_TIMETABLE_DURATION;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: 0 };
