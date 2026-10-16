@@ -151,6 +151,10 @@ value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) :
         for (it in items) result.add(f(it))
         return StaticPool(result)
     }
+
+    fun filterValues(predicate: (ValueT) -> Boolean): List<StaticIdx<IndexT>> {
+        return items.withIndex().filter { predicate(it.value) }.map { StaticIdx(it.index.toUInt()) }
+    }
 }
 
 @JvmInline

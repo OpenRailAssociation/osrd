@@ -9,6 +9,7 @@ import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
 import fr.sncf.osrd.api.stdcm.getRequirements
+import fr.sncf.osrd.api.stdcm.parseForcedOpStops
 import fr.sncf.osrd.api.stdcm.parseMarginValue
 import fr.sncf.osrd.api.stdcm.parseSteps
 import fr.sncf.osrd.api.stdcm.parseTrackSectionIds
@@ -196,6 +197,8 @@ class BenchSTDCM : CliCommand {
                         request.consistSchedule.copy(values = consistConfigurations)
                     val allowedTrackSections =
                         parseTrackSectionIds(infra, request.allowedTrackSections)
+                    // TODO : not used yet, it will be used for the General Stop Stations feature
+                    val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
                     val consistSchedules =
                         ConsistSchedule(
                             requestConsistSchedule,
