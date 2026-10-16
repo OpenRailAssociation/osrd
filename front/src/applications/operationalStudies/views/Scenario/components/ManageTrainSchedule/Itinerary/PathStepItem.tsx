@@ -1,23 +1,30 @@
 import { useMemo, useState } from 'react';
 
-import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
+import { ComboBox, Input, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
-  FocusLocation,
   ArrowRight,
-  Square,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  FocusLocation,
+  Infrastructure,
   KebabHorizontal,
+  RequiredInput,
+  Square,
   X,
 } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -53,6 +60,9 @@ type PathStepProps = {
   onOpClear: () => void;
   isTrailingPlaceHolder: boolean;
   isOnlyStep: boolean;
+  isSubFormExpanded: boolean;
+  isPreviousSubFormExpanded: boolean;
+  onSubFormToggled: () => void;
   isMapSelectionMode?: boolean;
   isDestination?: boolean;
   onStartMapSelection?: () => void;
@@ -83,6 +93,9 @@ const PathStepItem = ({
   onOpClear,
   isTrailingPlaceHolder,
   isOnlyStep,
+  isSubFormExpanded,
+  isPreviousSubFormExpanded,
+  onSubFormToggled,
   isMapSelectionMode,
   isDestination,
   onStartMapSelection,
@@ -95,6 +108,7 @@ const PathStepItem = ({
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
+  const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
 
@@ -270,6 +284,19 @@ const PathStepItem = ({
     pathStepMetadata.trackName &&
     !pathStepMetadata.isValidLocalTrackName;
 
+  const isOpValid = !isInvalid && !!pathStep.location;
+
+  const opStatusIcon = unrecognizedWaypointsActivated && (
+    <span className={cx('path-step-op-status-icon', { recognized: isOpValid })}>
+      <Infrastructure size="sm" />
+      {isOpValid ? (
+        <Check size="sm" className="path-step-op-status-badge" />
+      ) : (
+        <X size="sm" className="path-step-op-status-badge" />
+      )}
+    </span>
+  );
+
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
@@ -361,7 +388,13 @@ const PathStepItem = ({
               : '',
             // @ts-expect-error: variable CSS custom property to be used to style ::before
             '--pathBackground': isTrailingPlaceHolder ? 'rgba(0, 0, 0, 0.2)' : categoryColors.base,
-            '--counterLink': connectorLong ? '48px' : '28px',
+            '--counterLink': isPreviousSubFormExpanded
+              ? connectorLong
+                ? '214px'
+                : '194px'
+              : connectorLong
+                ? '44px'
+                : '24px',
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -414,6 +447,7 @@ const PathStepItem = ({
               <ComboBox
                 id={`pathStep-name-${pathStep.key}`}
                 data-testid="path-step-combo-box"
+                leadingContent={opStatusIcon}
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
                 suggestions={visibleSuggestions}
@@ -535,6 +569,21 @@ const PathStepItem = ({
           small
           data-testid="stop-pass-segmented-control"
         />
+        {unrecognizedWaypointsActivated && (
+          <button
+            type="button"
+            className="path-step-subform-toggle"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSubFormToggled();
+            }}
+            aria-expanded={isSubFormExpanded}
+            aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+            data-testid="path-step-subform-toggle"
+          >
+            {isSubFormExpanded ? <ChevronUp size="sm" /> : <ChevronDown size="sm" />}
+          </button>
+        )}
         <div className="map-interactions">
           <button
             type="button"
@@ -583,6 +632,72 @@ const PathStepItem = ({
           <div className="invalid-step-message">{getInvalidMessage()}</div>
         )}
       </div>
+      {unrecognizedWaypointsActivated && isSubFormExpanded && (
+        <div className="path-step-form-wrapper">
+          <div className="path-step-form-content">
+            <Input
+              id={`path-step-form-name-${pathStep.key}`}
+              label={t('name')}
+              readOnly={false}
+              small
+              type="text"
+              value={
+                pathStepMetadata?.validity === 'valid' && pathStepMetadata.type === 'opRef'
+                  ? pathStepMetadata.name
+                  : ''
+              }
+            />
+            <div className="path-step-form-codes-wrapper">
+              <div className="path-step-form-field">
+                <RequiredInput className="path-step-form-required-input" size="sm"></RequiredInput>
+                <Input
+                  id={`path-step-form-country-code-${pathStep.key}`}
+                  label={t('countryCode')}
+                  readOnly={false}
+                  small
+                  type="text"
+                  value={
+                    pathStepMetadata?.validity === 'valid' && pathStepMetadata.type === 'opRef'
+                      ? 'CC'
+                      : ''
+                  }
+                />
+              </div>
+              <div className="path-step-form-field">
+                <RequiredInput className="path-step-form-required-input" size="sm"></RequiredInput>
+                <Input
+                  id={`path-step-form-primary-code-${pathStep.key}`}
+                  label={t('primaryCode')}
+                  readOnly={false}
+                  small
+                  type="text"
+                  value={
+                    pathStepMetadata?.validity === 'valid' && pathStepMetadata.type === 'opRef'
+                      ? pathStepMetadata.mainCode
+                      : ''
+                  }
+                />
+              </div>
+              <div className="path-step-form-field">
+                <Input
+                  id={`pathStep-form-secondary-code-${pathStep.key}`}
+                  label={t('secondaryCode')}
+                  readOnly={false}
+                  small
+                  type="text"
+                  value={
+                    pathStepMetadata?.validity === 'valid' &&
+                    pathStepMetadata.type === 'opRef' &&
+                    pathStepMetadata.secondaryCode
+                      ? pathStepMetadata.secondaryCode
+                      : ''
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
