@@ -28,6 +28,7 @@ use schemas::rolling_stock::SubCategoryColor;
 use crate::infra_cache::operation::create::apply_create_operation;
 use models::Infra;
 use models::TrainScheduleSet;
+use models::TrainScheduleSetWithTimetable;
 
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
     Project::fake(name)
@@ -46,7 +47,7 @@ pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) 
 /// Returns a tuple of (timetable_id, train_schedule_set_id)
 pub async fn create_timetable_with_train_schedule_set(
     conn: &mut DbConnection,
-) -> (Timetable, TrainScheduleSet) {
+) -> (Timetable, TrainScheduleSetWithTimetable) {
     let timetable = create_timetable(conn).await;
     let train_schedule_set = create_train_schedule_set(conn).await;
     let _ = link_train_schedule_set_to_timetable(conn, train_schedule_set.id, timetable.id).await;
@@ -56,7 +57,7 @@ pub async fn create_timetable_with_train_schedule_set(
 /// Returns a tuple of (timetable, train_schedule_set) for an hourly timetable
 pub async fn create_hourly_timetable_with_train_schedule_set(
     conn: &mut DbConnection,
-) -> (Timetable, TrainScheduleSet) {
+) -> (Timetable, TrainScheduleSetWithTimetable) {
     // The train schedule set type must match the timetable type (DB constraint).
     let timetable = create_hourly_timetable(conn).await;
     let train_schedule_set = create_hourly_train_schedule_set(conn).await;
@@ -80,8 +81,8 @@ pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
         .expect("Failed to create timetable")
 }
 
-pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
-    TrainScheduleSet::create_with_timetable(conn, TrainScheduleSet::changeset().name(None))
+pub async fn create_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSetWithTimetable {
+    TrainScheduleSet::create_with_timetable(conn, Timetable::changeset().name(None))
         .await
         .expect("Failed to create train schedule set")
 }
@@ -96,12 +97,16 @@ pub async fn create_hourly_timetable(conn: &mut DbConnection) -> Timetable {
         .expect("Failed to create hourly timetable")
 }
 
-pub async fn create_hourly_train_schedule_set(conn: &mut DbConnection) -> TrainScheduleSet {
+pub async fn create_hourly_train_schedule_set(
+    conn: &mut DbConnection,
+) -> TrainScheduleSetWithTimetable {
     TrainScheduleSet::create_with_timetable(
         conn,
-        TrainScheduleSet::changeset().name(None).timetable_type(
-            models::timetable_type::TimetableType(schemas::timetable_type::TimetableType::Hourly),
-        ),
+        Timetable::changeset()
+            .name(None)
+            .timetable_type(models::timetable_type::TimetableType(
+                schemas::timetable_type::TimetableType::Hourly,
+            )),
     )
     .await
     .expect("Failed to create hourly train schedule set")
@@ -223,7 +228,7 @@ pub struct ScenarioFixtureSet {
     pub project_id: i64,
     pub timetable: Timetable,
     pub infra: Infra,
-    pub train_schedule_set: TrainScheduleSet,
+    pub train_schedule_set: TrainScheduleSetWithTimetable,
 }
 
 pub async fn create_scenario_fixtures_set(
