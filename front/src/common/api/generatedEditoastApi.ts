@@ -90,6 +90,14 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
+      postAuthzUsers: build.mutation<PostAuthzUsersApiResponse, PostAuthzUsersApiArg>({
+        query: (queryArg) => ({
+          url: `/authz/users`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1717,6 +1725,25 @@ export type PostAuthzUserInfoApiArg = {
   body: {
     identities?: string[];
     ids?: number[];
+  };
+};
+export type PostAuthzUsersApiResponse = /** status 201 User created */ {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+};
+export type PostAuthzUsersApiArg = {
+  /** User to create, with its identities, groups, and roles */
+  body: {
+    groups: number[];
+    identities: string[];
+    name: string;
+    roles: Role[];
   };
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
