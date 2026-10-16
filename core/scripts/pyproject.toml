@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["ruff~=0.16.2"]
+dev = ["ruff>=0.16.2,<0.18.0"]
