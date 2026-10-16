@@ -80,7 +80,7 @@ describe('topoGeomOffsetConversion', () => {
     topo_offsets: [0, 1000, 1000, 3000],
     geom_offsets: [0, 700, 900, 2500],
   };
-  it('topo to geom', () => {
+  it('should successfully convert topological offset to geometric offset', () => {
     const geomOffset1 = convertGeomTopoTrackOffset(projection, 500, 'topo_to_geom');
     expect(geomOffset1).toEqual(350);
     const geomOffset2 = convertGeomTopoTrackOffset(projection, 0, 'topo_to_geom');
@@ -88,13 +88,13 @@ describe('topoGeomOffsetConversion', () => {
     const geomOffset3 = convertGeomTopoTrackOffset(projection, 3000, 'topo_to_geom');
     expect(geomOffset3).toEqual(2500);
   });
-  it('geom to topo', () => {
+  it('should successfully convert geometric offset to topological offset', () => {
     const topoOffset1 = convertGeomTopoTrackOffset(projection, 1200, 'geom_to_topo');
     expect(topoOffset1).toEqual(1375);
     const topoOffset2 = convertGeomTopoTrackOffset(projection, 800, 'geom_to_topo');
     expect(topoOffset2).toEqual(1000);
   });
-  it('edge case: several identic input offsets', () => {
+  it('should successfully convert a topological offset on a 0-length topological segment', () => {
     const geomOffset = convertGeomTopoTrackOffset(projection, 1000, 'topo_to_geom');
     expect(geomOffset).toEqual(800);
   });
