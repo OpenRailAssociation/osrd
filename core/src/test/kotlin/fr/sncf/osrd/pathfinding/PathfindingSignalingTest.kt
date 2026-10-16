@@ -1,7 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.PathItem
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.RJSTrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.pathfinding.runPathfinding
@@ -52,8 +52,8 @@ class PathfindingSignalingTest {
     @Test
     fun balTrainOnTVMBlockShouldThrow() {
         setSigSystemIds(listOf("b->N", "b->S", "N->d", "S->d"), TVM300.id)
-        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
-        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("a->b", Offset.zero()))
+        val waypointsEnd = listOf(RJSTrackLocation("d->e", Offset(100.meters)))
 
         // Run a pathfinding with a non TVM train, expecting not to find any path
         assertThatThrownBy {
@@ -84,8 +84,8 @@ class PathfindingSignalingTest {
     @Test
     fun shouldFindNorthPathOnBalBlocksForBalTrain() {
         setSigSystemIds(listOf("b->S", "S->d"), TVM300.id)
-        val waypointsStart = listOf(TrackLocation("a->b", Offset(0.meters)))
-        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("a->b", Offset(0.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingResp =
             runPathfinding(
@@ -111,8 +111,8 @@ class PathfindingSignalingTest {
     @Test
     fun shouldFindSouthPathOnBalBlocksForBalTrain() {
         setSigSystemIds(listOf("b->N", "N->d"), TVM430.id)
-        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
-        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("a->b", Offset.zero()))
+        val waypointsEnd = listOf(RJSTrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingResp =
             runPathfinding(
@@ -155,10 +155,10 @@ class PathfindingSignalingTest {
         setSigSystemIds(listOf("b->N", "N->d"), northSigSystem)
         setSigSystemIds(listOf("b->S", "S->d"), southSigSystem)
 
-        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
+        val waypointsStart = listOf(RJSTrackLocation("a->b", Offset.zero()))
         val waypointsInter =
-            listOf(TrackLocation("S->d", Offset.zero()), TrackLocation("N->d", Offset.zero()))
-        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
+            listOf(RJSTrackLocation("S->d", Offset.zero()), RJSTrackLocation("N->d", Offset.zero()))
+        val waypointsEnd = listOf(RJSTrackLocation("d->e", Offset(100.meters)))
 
         val pathfindingSouthResp =
             runPathfinding(

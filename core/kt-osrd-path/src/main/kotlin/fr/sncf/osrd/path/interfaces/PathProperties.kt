@@ -7,8 +7,6 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
-data class TrackLocation(val trackId: TrackSectionId, val offset: Offset<TrackSection>)
-
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface PathProperties {
     fun getSlopes(): DistanceRangeMap<Double>

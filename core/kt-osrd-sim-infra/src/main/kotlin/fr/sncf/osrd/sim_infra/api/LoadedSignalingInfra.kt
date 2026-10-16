@@ -2,9 +2,7 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
-import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
 
 /** A type of signaling system, which is used both for blocks and signals */
 sealed interface SignalingSystem
@@ -32,8 +30,6 @@ sealed interface SignalStateMarker
 typealias SigState = SigData<SignalStateMarker>
 
 typealias SigStateSchema = SigSchema<SignalStateMarker>
-
-data class BlockLocation(val edge: BlockId, val offset: Offset<Block>)
 
 /** The signaling system manager is a repository for drivers and signaling systems */
 interface InfraSigSystemManager {
@@ -85,89 +81,6 @@ interface LoadedSignalInfra {
     fun isBlockDelimiter(signal: LogicalSignalId): Boolean
 }
 
-@Suppress("INAPPLICABLE_JVM_NAME")
-interface BlockInfra {
-    val blocks: StaticIdxSpace<Block>
-
-    fun getBlockZonePaths(block: BlockId): List<ZonePathId>
-
-    fun getBlocksInZone(zone: ZoneId): List<BlockId>
-
-    fun getBlockSignals(block: BlockId): List<LogicalSignalId>
-
-    fun blockStartAtBufferStop(block: BlockId): Boolean
-
-    fun blockStopAtBufferStop(block: BlockId): Boolean
-
-    fun getBlockSignalingSystem(block: BlockId): SignalingSystemId
-
-    fun getBlocksStartingAtDetector(detector: DirDetectorId): List<BlockId>
-
-    fun getBlocksEndingAtDetector(detector: DirDetectorId): List<BlockId>
-
-    fun getBlocksAtSignal(signal: LogicalSignalId): List<BlockId>
-
-    fun getSignalsPositions(block: BlockId): OffsetList<Block>
-
-    fun getBlocksFromTrackChunk(
-        trackChunk: TrackChunkId,
-        direction: Direction,
-    ): MutableStaticIdxArraySet<Block>
-
-    fun getTrackChunksFromBlock(block: BlockId): List<DirTrackChunkId>
-
-    fun getBlockLength(block: BlockId): Length<Block>
-
-    /** Returns a unique and stable string identifier for the given block. */
-    fun getBlockName(block: BlockId): String
-
-    /** Find the block with the given string identifier, or null if not found. */
-    fun getBlockFromName(name: String): BlockId?
-}
-
 fun InfraSigSystemManager.findSignalingSystemOrThrow(sigSystem: String): SignalingSystemId {
     return findSignalingSystem(sigSystem) ?: throw OSRDError.newSignalingError(sigSystem)
-}
-
-fun BlockInfra.getBlockOffset(
-    blockId: BlockId,
-    waypointDirChunkLocation: DirChunkLocation,
-    rawInfra: RawInfra,
-): Offset<Block> {
-    var startBlockToStartChunk: Offset<Block> = Offset(0.meters)
-    val blockTrackChunks = this.getTrackChunksFromBlock(blockId)
-    for (blockTrackChunkDirId in blockTrackChunks) {
-        if (blockTrackChunkDirId == waypointDirChunkLocation.dirChunk) {
-            return startBlockToStartChunk + waypointDirChunkLocation.offset.distance
-        }
-        startBlockToStartChunk += rawInfra.getTrackChunkLength(blockTrackChunkDirId.value).distance
-    }
-    throw AssertionError(
-        String.format(
-            "getBlockOffset: Directed track chunk %s not in block %s",
-            waypointDirChunkLocation.dirChunk,
-            blockId,
-        ),
-    )
-}
-
-fun BlockInfra.getDirChunkLocation(
-    blockLocation: BlockLocation,
-    rawInfra: RawInfra,
-): DirChunkLocation {
-    val chunks = this.getTrackChunksFromBlock(blockLocation.edge)
-    var offsetToStep = blockLocation.offset.distance
-    chunks.forEach { chunk ->
-        val chunkLength = rawInfra.getTrackChunkLength(chunk.value).distance
-        if (offsetToStep > chunkLength) {
-            offsetToStep -= chunkLength
-            return@forEach
-        }
-        return DirChunkLocation(chunk, Offset(offsetToStep))
-    }
-    throw AssertionError(
-        String.format(
-            "getDirChunkLocation: Did not find chunk location for BlockLocation $blockLocation: wrong offset?",
-        ),
-    )
 }
