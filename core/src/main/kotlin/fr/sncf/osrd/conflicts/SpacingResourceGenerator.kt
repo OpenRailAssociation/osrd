@@ -34,6 +34,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.toOffset
 import kotlin.collections.iterator
@@ -636,4 +637,95 @@ fun sortAndMergeRequirements(
         compareBy({ it.beginTime }, { it.endTime }, { it.zone.index }, { it.isComplete })
     )
     return resultRequirements
+}
+
+/**
+ * Extend/create corresponding automatons for all the sub-paths delimited by the sub-path
+ * extremities = [startOffset, backtrackingLocations, endOffset], enriching some spacing automatons
+ * and/or adding new ones to [mutableSpacingAutomatons] given as a parameter.
+ */
+fun extendAutomatonsPath(
+    mutableSpacingAutomatons:
+        MutableList<SpacingResourceGenerator>, // Will be modified by the method.
+    startOffset: Offset<PhysicsPath>,
+    endOffset: Offset<PhysicsPath>,
+    backtrackingLocations: List<Offset<PhysicsPath>>,
+    referenceAutomaton: SpacingResourceGenerator,
+    blockRanges: List<BlockRange>,
+    routeRanges: List<RouteRange>,
+    stops: List<PathStop>,
+    isPathComplete: Boolean,
+) {
+    // Split the path so that we generate spacing resources just as if it was a succession of
+    // trains ending on a backtracking location/the final destination.
+    val subpathExtremities = backtrackingLocations.toMutableList()
+    if (backtrackingLocations.firstOrNull() != startOffset) {
+        subpathExtremities.addFirst(startOffset)
+    }
+    if (backtrackingLocations.lastOrNull() != endOffset || subpathExtremities.size < 2) {
+        subpathExtremities.addLast(endOffset)
+    }
+    for ((subPathBegin, subPathEnd) in subpathExtremities.zipWithNext()) {
+        val subBlockRanges = blockRanges.subRange(subPathBegin, subPathEnd).toMutableList()
+        val subRouteRanges = routeRanges.subRange(subPathBegin, subPathEnd).toMutableList()
+        val subStops = stops.filter { it.pathOffset in subPathBegin..subPathEnd }
+        if (subBlockRanges.size > 1 && subBlockRanges.first().length == 0.meters) {
+            subBlockRanges.removeFirst()
+        }
+        if (subBlockRanges.size > 1 && subBlockRanges.last().length == 0.meters) {
+            subBlockRanges.removeLast()
+        }
+        if (subRouteRanges.size > 1 && subRouteRanges.first().length == 0.meters) {
+            subRouteRanges.removeFirst()
+        }
+        if (subRouteRanges.size > 1 && subRouteRanges.last().length == 0.meters) {
+            subRouteRanges.removeLast()
+        }
+
+        val subSpacingRequirementAutomaton =
+            if (
+                subPathBegin == Offset.zero<PhysicsPath>() || subPathBegin in backtrackingLocations
+            ) {
+                // There should either be an existing automaton starting at this offset OR
+                // we need to create one.
+                val subSpacingAutomaton = mutableSpacingAutomatons.lastOrNull {
+                    it.startOffset == subPathBegin
+                }
+                if (subSpacingAutomaton != null) subSpacingAutomaton
+                else {
+                    val lastAutomatonStartOffset =
+                        mutableSpacingAutomatons.lastOrNull()?.startOffset
+                            ?: Offset(Int.MIN_VALUE.meters)
+                    require(lastAutomatonStartOffset < subPathBegin)
+                    mutableSpacingAutomatons.add(
+                        SpacingResourceGenerator(
+                            referenceAutomaton.rawInfra,
+                            referenceAutomaton.blockInfra,
+                            referenceAutomaton.loadedSignalInfra,
+                            referenceAutomaton.simulator,
+                            subPathBegin,
+                            referenceAutomaton.context,
+                        )
+                    )
+                    mutableSpacingAutomatons.last()
+                }
+            } else {
+                // Nominal case: we take the last automaton starting before the
+                // subPathBegin, and it SHOULD exist.
+                mutableSpacingAutomatons.last {
+                    it.startOffset <= subPathBegin && it.startOffset < subPathEnd
+                }
+            }
+        val endsAtDifferentBacktracking =
+            (subPathEnd in backtrackingLocations) &&
+                subPathEnd != subSpacingRequirementAutomaton.startOffset
+        val endsAtDestination = isPathComplete && (subPathEnd == endOffset)
+        val isSubpathComplete = endsAtDifferentBacktracking || endsAtDestination
+        subSpacingRequirementAutomaton.extendPath(
+            subBlockRanges,
+            subRouteRanges,
+            subStops,
+            isSubpathComplete,
+        )
+    }
 }

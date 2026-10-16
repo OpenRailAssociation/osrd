@@ -101,49 +101,29 @@ fun runScheduleMetadataExtractor(
             rollingStocks,
             envelopeWithStops,
             simulationComplete = true,
+            Offset(envelopeWithStops.endPos.meters),
         )
 
-    // TODO: remove duplicated code: see InfraExplorerWithEnvelope.getSpacingRequirements()
-    // Generate spacing resources just as if a succession of trains (splitting on backtracking)
     val spacingRequirements = mutableListOf<SpacingRequirement>()
-    val subpathExtremities =
-        listOf(Offset<PhysicsPath>(0.meters)) +
-            trainPath.getBacktrackLocations() +
-            listOf(Offset(trainPath.length.meters))
-    for ((subpathBegin, subpathEnd) in subpathExtremities.zipWithNext()) {
-        val subpath =
-            trainPath.subPath(
-                subpathBegin,
-                subpathEnd,
-                resetOffsets = false,
-                includeExactStart = true,
-                includeExactEnd = true,
-            )
-        val blockRanges = subpath.getBlocks().toMutableList()
-        if (blockRanges.size > 1 && blockRanges.first().length == 0.meters) {
-            blockRanges.removeFirst()
-        }
-        if (blockRanges.size > 1 && blockRanges.last().length == 0.meters) {
-            blockRanges.removeLast()
-        }
-        val routeRanges = subpath.getRoutes().toMutableList()
-        if (routeRanges.size > 1 && routeRanges.first().length == 0.meters) {
-            routeRanges.removeFirst()
-        }
-        if (routeRanges.size > 1 && routeRanges.last().length == 0.meters) {
-            routeRanges.removeLast()
-        }
-
-        val spacingGenerator = SpacingResourceGenerator(fullInfra, subpathBegin, context)
-        spacingGenerator.extendPath(
-            blockRanges,
-            routeRanges,
-            pathStops.filter { it.pathOffset in subpathBegin..subpathEnd },
-            true,
-        )
-        // as the provided path is complete, the resource generator should never return
-        // NotEnoughPath
-        spacingRequirements.addAll(spacingGenerator.processUpdate(envelopeAdapter)!!)
+    val backtrackingLocations = trainPath.getBacktrackLocations()
+    val startOffset = Offset<PhysicsPath>(0.meters)
+    val endOffset = Offset<PhysicsPath>(trainPath.length.meters)
+    val blockRanges = trainPath.getBlocks()
+    val routeRanges = trainPath.getRoutes()
+    val spacingAutomatons = mutableListOf<SpacingResourceGenerator>()
+    extendAutomatonsPath(
+        spacingAutomatons,
+        startOffset,
+        endOffset,
+        backtrackingLocations,
+        SpacingResourceGenerator(fullInfra, startOffset, context),
+        blockRanges,
+        routeRanges,
+        pathStops,
+        isPathComplete = true,
+    )
+    for (spacingAutomaton in spacingAutomatons) {
+        spacingRequirements.addAll(spacingAutomaton.processUpdate(envelopeAdapter)!!)
     }
 
     val routingRequirements =
