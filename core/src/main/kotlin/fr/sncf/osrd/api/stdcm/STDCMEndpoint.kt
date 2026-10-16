@@ -12,6 +12,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
+import fr.sncf.osrd.api.pathfinding.findChunkLocationBlocks
 import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
@@ -135,6 +136,7 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
+            val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val consistConfigurations =
@@ -656,6 +658,26 @@ private fun parseSimulationScheduleItems(
 
 fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<TrackSectionId> {
     return trackSectionNames.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }.toSet()
+}
+
+fun parseForcedOpStops(
+    infra: FullInfra,
+    forcedOpStops: Set<OperationalPointStop>,
+): Set<BlockLocation> {
+    val opPartIds = forcedOpStops.flatMap { infra.rawInfra.getOperationalPointPart(it.id) }.toSet()
+    val chunkLocations = opPartIds.map {
+        ChunkLocation(
+            infra.rawInfra.getOperationalPointPartChunk(it),
+            infra.rawInfra.getOperationalPointPartChunkOffset(it),
+        )
+    }
+    val res = mutableSetOf<BlockLocation>()
+    for (chunkLocation in chunkLocations) {
+        for (direction in Direction.entries) {
+            res.addAll(findChunkLocationBlocks(infra, chunkLocation, direction))
+        }
+    }
+    return res
 }
 
 private fun progressCallback(

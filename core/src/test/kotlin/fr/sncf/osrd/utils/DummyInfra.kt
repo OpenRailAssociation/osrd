@@ -491,6 +491,12 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
+    override fun getOperationalPointPart(
+        operationalPointId: String
+    ): Collection<OperationalPointPartId> {
+        TODO("Not yet implemented")
+    }
+
     override val blocks: StaticIdxSpace<Block>
         get() = TODO("Not yet implemented")
 
