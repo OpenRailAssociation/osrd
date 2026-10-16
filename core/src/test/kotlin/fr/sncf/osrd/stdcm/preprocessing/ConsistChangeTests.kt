@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.PathItem
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.RJSTrackLocation
 import fr.sncf.osrd.api.stdcm.ConsistConfiguration
 import fr.sncf.osrd.api.stdcm.RequestConsistSchedule
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
@@ -376,22 +376,22 @@ class ConsistChangeTests {
         val pathItems =
             listOf(
                 STDCMPathItem(
-                    PathItem(listOf(TrackLocation("TB0", Offset(0.0.meters))), false),
+                    PathItem(listOf(RJSTrackLocation("TB0", Offset(0.0.meters))), false),
                     null,
                     null,
                 ),
                 STDCMPathItem(
-                    PathItem(listOf(TrackLocation("TB0", Offset(500.0.meters))), false),
+                    PathItem(listOf(RJSTrackLocation("TB0", Offset(500.0.meters))), false),
                     Duration(100_000),
                     null,
                 ),
                 STDCMPathItem(
-                    PathItem(listOf(TrackLocation("TB0", Offset(1000.0.meters))), false),
+                    PathItem(listOf(RJSTrackLocation("TB0", Offset(1000.0.meters))), false),
                     Duration(100_000),
                     null,
                 ),
                 STDCMPathItem(
-                    PathItem(listOf(TrackLocation("TB0", Offset(1500.meters))), false),
+                    PathItem(listOf(RJSTrackLocation("TB0", Offset(1500.meters))), false),
                     Duration(100_000),
                     null,
                 ),

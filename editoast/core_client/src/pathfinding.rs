@@ -1,9 +1,12 @@
 use std::collections::BTreeSet;
 use std::collections::HashSet;
+use std::hash::Hash;
 
 use ordered_float::OrderedFloat;
 use schemas::infra::Direction;
+use schemas::infra::OperationalPointStop;
 use schemas::infra::TrackOffset;
+use schemas::infra::hashing_forced_op_stops;
 use schemas::primitives::Identifier;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::SupportedSignalingSystemVariant;
@@ -47,6 +50,9 @@ pub struct PathfindingRequest {
     pub stops_at_end_of_block: Option<bool>,
     /// Set of authorized track section ids, empty means no restriction
     pub allowed_track_sections: BTreeSet<String>,
+    /// List of operational points where stop is mandatory
+    #[educe(Hash(method(hashing_forced_op_stops)))]
+    pub forced_op_stops: HashSet<OperationalPointStop>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema, Hash)]

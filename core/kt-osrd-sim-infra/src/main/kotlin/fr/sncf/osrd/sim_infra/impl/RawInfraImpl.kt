@@ -485,6 +485,12 @@ class RawInfraImpl(
         return operationalPointPartPool[operationalPointPart].props
     }
 
+    override fun getOperationalPointPart(
+        operationalPointId: String
+    ): Collection<OperationalPointPartId> {
+        return operationalPointPartPool.filter { it.operationalPointId == operationalPointId }
+    }
+
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
         return trackChunkPool[trackChunk].geo
     }

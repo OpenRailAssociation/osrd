@@ -1,10 +1,12 @@
 package fr.sncf.osrd.sim_infra.api
 
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
+import java.util.HashSet
 
 /** A type of signaling system, which is used both for blocks and signals */
 sealed interface SignalingSystem
@@ -34,6 +36,8 @@ typealias SigState = SigData<SignalStateMarker>
 typealias SigStateSchema = SigSchema<SignalStateMarker>
 
 data class BlockLocation(val edge: BlockId, val offset: Offset<Block>)
+
+data class TrackLocation(val trackId: TrackSectionId, val offset: Offset<TrackSection>)
 
 /** The signaling system manager is a repository for drivers and signaling systems */
 interface InfraSigSystemManager {
@@ -170,4 +174,97 @@ fun BlockInfra.getDirChunkLocation(
             "getDirChunkLocation: Did not find chunk location for BlockLocation $blockLocation: wrong offset?"
         )
     )
+}
+
+fun BlockInfra.findDirTrackLocationBlocks(
+    rawInfra: RawInfra,
+    trackLocation: TrackLocation,
+    direction: Direction,
+): Set<BlockLocation> {
+    val chunkLocation = getChunkLocationFromTrackLocation(trackLocation, rawInfra)
+    return findChunkLocationBlocks(rawInfra, chunkLocation, direction)
+}
+
+fun BlockInfra.findChunkLocationBlocks(
+    rawInfra: RawInfra,
+    chunkLocation: ChunkLocation,
+    direction: Direction,
+): Set<BlockLocation> {
+    val res = HashSet<BlockLocation>()
+    val chunkLength = rawInfra.getTrackChunkLength(chunkLocation.chunk)
+    val directedChunkOffset = chunkLocation.offset.toDirected(chunkLength, direction)
+    val waypointDirChunkLocation =
+        DirChunkLocation(
+            DirTrackChunkId(chunkLocation.chunk, direction),
+            directedChunkOffset,
+        )
+
+    val blocksOnWaypoint = getBlocksFromTrackChunk(chunkLocation.chunk, direction).toSet()
+    for (block in blocksOnWaypoint) {
+        val offset = getBlockOffset(block, waypointDirChunkLocation, rawInfra)
+        assert(offset <= getBlockLength(block))
+        res.add(BlockLocation(block, offset))
+    }
+    return res
+}
+
+fun BlockInfra.findTrackLocationBlocks(
+    rawInfra: RawInfra,
+    waypoints: Collection<TrackLocation>,
+): Set<BlockLocation> {
+    val waypointBlocks = HashSet<BlockLocation>()
+    for (waypoint in waypoints) {
+        for (direction in Direction.entries) {
+            waypointBlocks.addAll(findDirTrackLocationBlocks(rawInfra, waypoint, direction))
+        }
+    }
+    return waypointBlocks
+}
+
+private fun getChunkLocationFromTrackLocation(
+    trackLocation: TrackLocation,
+    rawInfra: RawSignalingInfra,
+): ChunkLocation {
+    val trackSectionChunks = rawInfra.getTrackSectionChunks(trackLocation.trackId)
+    for (chunk in trackSectionChunks) {
+        val startChunk = rawInfra.getTrackChunkOffset(chunk)
+        val endChunk = startChunk + rawInfra.getTrackChunkLength(chunk).distance
+        if (trackLocation.offset in startChunk..endChunk)
+            return ChunkLocation(chunk, Offset(trackLocation.offset - startChunk))
+    }
+    throw OSRDError(ErrorType.InvalidWaypointLocation)
+        .withContext("track", rawInfra.getTrackSectionName(trackLocation.trackId))
+        .withContext("offset", trackLocation.offset)
+}
+
+/**
+ * Given a waypoint block (initial position of a train stop), returns the new stop position of a
+ * train: end of current block, with the constraints of staying in the same block and keeping the
+ * tail of the train on the initial position (waypointBlock). Note that nodes of the infra are not
+ * considered.
+ */
+fun BlockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
+    waypointBlock: BlockLocation,
+    destinationBlock: Set<BlockLocation>,
+    rollingStockLength: Double,
+): BlockLocation {
+    // To ensure that the tail of the rolling stock is not further than the initial operational
+    // point (waypointBlock) position
+    val maxTailOffset = waypointBlock.offset + rollingStockLength.meters
+
+    // Can't go further than the end of the block, which is delimited by a block-delimiting signal
+    val maxHeadOffset = getBlockLength(waypointBlock.edge)
+
+    val newWaypointOffset = Offset.min(maxTailOffset, maxHeadOffset)
+
+    val destinationOffset =
+        destinationBlock
+            .filter { it.edge == waypointBlock.edge && waypointBlock.offset <= it.offset }
+            .minOfOrNull { it.offset }
+
+    // The waypoint offset does not change in the case where the stop is after the destination
+    if (destinationOffset != null && destinationOffset <= newWaypointOffset)
+        return BlockLocation(waypointBlock.edge, waypointBlock.offset)
+
+    return BlockLocation(waypointBlock.edge, newWaypointOffset)
 }
