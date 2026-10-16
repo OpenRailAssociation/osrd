@@ -37,10 +37,7 @@ import {
   computePathStepCoordinates,
 } from './utils';
 
-const OPERATIONAL_POINT_LAYERS = [
-  'chartis/osrd_operational_point/geo',
-  'chartis/osrd_operational_point_name/geo',
-];
+const OPERATIONAL_POINT_LAYERS = ['osrd_operational_point/geo', 'osrd_operational_point_name/geo'];
 
 type ItineraryModalMapProps = {
   pathSteps?: PathStepV2[];
@@ -148,7 +145,7 @@ const ItineraryModalMap = ({
             [screenPoint.x - 5, screenPoint.y - 5],
             [screenPoint.x + 5, screenPoint.y + 5],
           ],
-          { layers: ['chartis/tracks-geo/main'] }
+          { layers: ['tracks-geo/main'] }
         )
         .filter((f) => f.properties?.id);
 
@@ -238,7 +235,7 @@ const ItineraryModalMap = ({
   const onFeatureClick = (e: MapLayerMouseEvent) => {
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
-        'chartis/tracks-geo/main',
+        'tracks-geo/main',
         ...(layersSettings.operational_points || isMapSelectionMode
           ? OPERATIONAL_POINT_LAYERS
           : []),
@@ -275,7 +272,7 @@ const ItineraryModalMap = ({
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
-        'chartis/tracks-geo/main',
+        'tracks-geo/main',
         ...(layersSettings.operational_points || isNewPlacement ? OPERATIONAL_POINT_LAYERS : []),
       ],
     });
@@ -306,12 +303,12 @@ const ItineraryModalMap = ({
 
   const interactiveLayerIds = useMemo(() => {
     const result: Array<string> = [];
-    result.push('chartis/tracks-geo/main');
+    result.push('tracks-geo/main');
     if (layersSettings.operational_points) {
-      result.push('chartis/osrd_operational_point/geo');
+      result.push('osrd_operational_point/geo');
     }
     if (layersSettings.track_sections) {
-      result.push('chartis/osrd_tvd_section/geo');
+      result.push('osrd_tvd_section/geo');
     }
     return result;
   }, [layersSettings]);

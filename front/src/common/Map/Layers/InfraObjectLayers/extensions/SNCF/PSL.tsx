@@ -2,8 +2,8 @@ import type { Geometry } from 'geojson';
 import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { Source } from 'react-map-gl/maplibre';
 import type { LineLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import {
@@ -17,7 +17,7 @@ import type { LayersSettings } from 'reducers/commonMap/types';
 import type { OmitLayer } from 'types';
 
 import OrderedLayer from '../../../OrderedLayer';
-import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from '../../SpeedLimits';
+import { getFilterBySpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
 import SNCF_PSL_Signs from './PSLSigns';
 
 export function getPSLSpeedValueLayerProps({
@@ -198,21 +198,13 @@ const SNCF_PSL = ({ colors, layerOrder, punctualLayerOrder, highlightedArea }: S
         type="vector"
         url={`${MAP_URL}/layer/psl/mvt/geo/?infra=${infraId}`}
       >
-        <OrderedLayer
-          {...speedValueParams}
-          id="chartis/osrd_sncf_psl_value/geo"
-          layerOrder={layerOrder}
-        />
+        <OrderedLayer {...speedValueParams} id="osrd_sncf_psl_value/geo" layerOrder={layerOrder} />
         <OrderedLayer
           {...speedLineBGParams}
-          id="chartis/osrd_sncf_psl_colors_bg/geo"
+          id="osrd_sncf_psl_colors_bg/geo"
           layerOrder={layerOrder}
         />
-        <OrderedLayer
-          {...speedLineParams}
-          id="chartis/osrd_sncf_psl_colors/geo"
-          layerOrder={layerOrder}
-        />
+        <OrderedLayer {...speedLineParams} id="osrd_sncf_psl_colors/geo" layerOrder={layerOrder} />
       </Source>
       <SNCF_PSL_Signs
         colors={colors}

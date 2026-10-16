@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
+import type { CircleLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 import { Source } from 'react-map-gl/maplibre';
-import type { SymbolLayerSpecification, CircleLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -86,8 +86,8 @@ const Switches = ({ colors, layerOrder, highlightedArea }: SwitchesProps) => {
       type="vector"
       url={`${MAP_URL}/layer/switches/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer {...layerPoint} id="chartis/osrd_switches/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...layerName} id="chartis/osrd_switches_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...layerPoint} id="osrd_switches/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...layerName} id="osrd_switches_name/geo" layerOrder={layerOrder} />
     </Source>
   );
 };

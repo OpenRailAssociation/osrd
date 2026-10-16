@@ -1,8 +1,8 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import type { LineLayerSpecification, SymbolLayerSpecification } from 'react-map-gl/maplibre';
 import { Source } from 'react-map-gl/maplibre';
-import type { SymbolLayerSpecification, LineLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -217,21 +217,13 @@ const SpeedLimits = ({
       type="vector"
       url={`${MAP_URL}/layer/speed_sections/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer
-        {...lineProps}
-        id="chartis/osrd_speed_limit_colors/geo"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...lineProps} id="osrd_speed_limit_colors/geo" layerOrder={layerOrder} />
       <OrderedLayer
         {...pointProps}
-        id="chartis/osrd_speed_limit_points/geo"
+        id="osrd_speed_limit_points/geo"
         layerOrder={punctualLayerOrder}
       />
-      <OrderedLayer
-        {...textProps}
-        id="chartis/osrd_speed_limit_value/geo"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...textProps} id="osrd_speed_limit_value/geo" layerOrder={layerOrder} />
     </Source>
   );
 };

@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import { Source } from 'react-map-gl/maplibre';
 import type { LayerProps } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -148,16 +148,10 @@ const Electrifications = ({ colors, layerOrder, highlightedArea }: Electrificati
       type="vector"
       url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer
-        {...electrificationsParams}
-        // beforeId={`chartis/tracks-geo/main`}
-        id="chartis/electrifications/geo"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...electrificationsParams} id="electrifications/geo" layerOrder={layerOrder} />
       <OrderedLayer
         {...electrificationsTextParams}
-        // beforeId={`chartis/tracks-geo/main`}
-        id="chartis/electrifications_names/geo"
+        id="electrifications_names/geo"
         layerOrder={layerOrder}
       />
     </Source>
