@@ -91,7 +91,7 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
       <OrderedLayer {...signsParams} layerOrder={layerOrder} filter={filter} />
       <OrderedLayer
         {...KPLabelsParams}
-        id="chartis/osrd_psl_signs_kp/geo"
+        id="osrd_psl_signs_kp/geo"
         layerOrder={layerOrder}
         filter={filter}
       />
