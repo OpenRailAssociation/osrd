@@ -1,12 +1,11 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.conflicts.RequirementType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
-import fr.sncf.osrd.stdcm.tracing.FailureExplainer
+import fr.sncf.osrd.stdcm.tracing.FailureRegister
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -26,8 +25,7 @@ internal constructor(
     private val graph: STDCMGraph,
     // Margin added to every occupancy, to account for binary search tolerance
     private val internalMargin: Double,
-    private val fullFailureExplainer: FailureExplainer?,
-    private val workSchedulesFailureExplainer: FailureExplainer?,
+    private val failureRegister: FailureRegister?,
 ) {
     /**
      * Returns one value per "opening" (interval between two unavailable times). Always returns the
@@ -56,18 +54,12 @@ internal constructor(
                         if (availability.maximumDelay >= internalMargin) {
                             res.add(time - startTime)
                             prevConflict?.causes?.forEach { cause ->
-                                fullFailureExplainer?.conflictCallback(
+                                failureRegister?.conflictCallback(
                                     prevNode,
                                     cause.duration,
                                     cause.cause,
+                                    cause.cause.type,
                                 )
-                                if (cause.cause.type == RequirementType.WORK_SCHEDULE) {
-                                    workSchedulesFailureExplainer?.conflictCallback(
-                                        prevNode,
-                                        cause.duration,
-                                        cause.cause,
-                                    )
-                                }
                             }
                         }
                         availability.maximumDelay + internalMargin
@@ -79,14 +71,12 @@ internal constructor(
                 }
         }
         prevConflict?.causes?.forEach { cause ->
-            fullFailureExplainer?.conflictCallback(prevNode, cause.duration, cause.cause)
-            if (cause.cause.type == RequirementType.WORK_SCHEDULE) {
-                workSchedulesFailureExplainer?.conflictCallback(
-                    prevNode,
-                    cause.duration,
-                    cause.cause,
-                )
-            }
+            failureRegister?.conflictCallback(
+                prevNode,
+                cause.duration,
+                cause.cause,
+                cause.cause.type,
+            )
         }
         return res
     }
