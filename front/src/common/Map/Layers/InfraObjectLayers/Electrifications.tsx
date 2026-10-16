@@ -148,15 +148,9 @@ const Electrifications = ({ colors, layerOrder, highlightedArea }: Electrificati
       type="vector"
       url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer
-        {...electrificationsParams}
-        // beforeId={`tracks-geo/main`}
-        id="electrifications/geo"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...electrificationsParams} id="electrifications/geo" layerOrder={layerOrder} />
       <OrderedLayer
         {...electrificationsTextParams}
-        // beforeId={`tracks-geo/main`}
         id="electrifications_names/geo"
         layerOrder={layerOrder}
       />
