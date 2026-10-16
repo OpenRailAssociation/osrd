@@ -28,7 +28,12 @@ export function mToMm(length: number) {
 
 /** Convert millimeters to kilometers */
 export function mmToKm(length: number) {
-  return length / 1000000;
+  return length / 1_000_000;
+}
+
+/** Convert kilometers to millimeters */
+export function kmToMm(length: number) {
+  return length * 1_000_000;
 }
 
 /** converts any unit to milli
