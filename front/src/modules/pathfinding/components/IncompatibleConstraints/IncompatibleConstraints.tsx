@@ -160,21 +160,16 @@ const IncompatibleConstraints = ({
       }, {})
     );
 
-    // compute distance ratio between data & geometry
-    const turfLength = geometry
-      ? length(feature(geometry as LineString), { units: 'millimeters' })
-      : 0;
-    const ratio = turfLength / (pathLength || turfLength);
     const nextConstraints = dataPairs
       .map(([key, value]) =>
         value.map((e) => {
           const id = `${key}-${e.range.start}-${e.range.end}`;
           const start = geometryProjection
             ? convertGeomTopoTrackOffset(geometryProjection, e.range.start, 'topo_to_geom')
-            : e.range.start * ratio;
+            : e.range.start;
           const end = geometryProjection
             ? convertGeomTopoTrackOffset(geometryProjection, e.range.end, 'topo_to_geom')
-            : e.range.end * ratio;
+            : e.range.end;
           return {
             id,
             type: key as IncompatibleConstraintType,
@@ -182,7 +177,7 @@ const IncompatibleConstraints = ({
             end,
             value: 'value' in e ? e.value : undefined,
             bbox: bbox(
-              lineSliceAlong(geometry as LineString, e.range.start * ratio, e.range.end * ratio, {
+              lineSliceAlong(geometry as LineString, start, end, {
                 units: 'millimeters',
               })
             ) as [number, number, number, number],
