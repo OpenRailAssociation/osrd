@@ -3,7 +3,7 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.PathItem
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.RJSTrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.pathfinding.runPathfinding
@@ -48,8 +48,8 @@ class PathfindingElectrificationTest : ApiTest() {
         infra.addBlock("N", "d")
         infra.addBlock("S", "d")
         infra.addBlock("d", "e")
-        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
-        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("a->b", Offset.zero()))
+        val waypointsEnd = listOf(RJSTrackLocation("d->e", Offset(100.meters)))
 
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
         for (block in infra.blockPool) block.voltage = "25000V"
@@ -127,8 +127,8 @@ class PathfindingElectrificationTest : ApiTest() {
         val blockBC = infra.addBlock("b", "c")
         infra.addBlock("c", "d")
 
-        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
-        val waypointsEnd = listOf(TrackLocation("c->d", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("a->b", Offset.zero()))
+        val waypointsEnd = listOf(RJSTrackLocation("c->d", Offset(100.meters)))
 
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
         for (block in infra.blockPool) block.voltage = "25000V"
@@ -200,8 +200,8 @@ class PathfindingElectrificationTest : ApiTest() {
 
     @Test
     fun differentPathsDueToElectrificationConstraints() {
-        val waypointsStart = listOf(TrackLocation("TA1", Offset(1550.meters)))
-        val waypointsEnd = listOf(TrackLocation("TH0", Offset(103.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("TA1", Offset(1550.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("TH0", Offset(103.meters)))
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
 
         // Run a pathfinding with an electric train on an all-electric infra
@@ -275,8 +275,8 @@ class PathfindingElectrificationTest : ApiTest() {
 
     @Test
     fun noElectrificationNoPathForElectricTrain() {
-        val waypointsStart = listOf(TrackLocation("TA1", Offset(1550.meters)))
-        val waypointsEnd = listOf(TrackLocation("TH0", Offset(103.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("TA1", Offset(1550.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("TH0", Offset(103.meters)))
         val rjsInfra =
             Helpers.getExampleInfra("small_infra/infra.json")
                 .copy(electrifications = listOf(), neutralSections = listOf())
