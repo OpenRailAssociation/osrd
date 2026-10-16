@@ -32,3 +32,8 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
     milliseconds: pacedTrainDurationsMs.reduce((acc, ms) => lcm(acc, ms)),
   });
 }
+
+export const computeDefaultHourlyPacedTrainTimeWindow = (
+  hourlyTimetableDuration: Duration,
+  interval: Duration
+): Duration => new Duration({ milliseconds: lcm(hourlyTimetableDuration.ms, interval.ms) });
