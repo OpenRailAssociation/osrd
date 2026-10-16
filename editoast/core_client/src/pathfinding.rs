@@ -58,6 +58,8 @@ pub struct PathItem {
     pub can_backtrack: bool,
 }
 
+/// These are topological offsets, i.e. distances used in the simulations
+/// in opposition to geometrical offsets on the geometry, which are slightly different
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[schema(as = CoreOffsetRange)]
 pub struct OffsetRange {
