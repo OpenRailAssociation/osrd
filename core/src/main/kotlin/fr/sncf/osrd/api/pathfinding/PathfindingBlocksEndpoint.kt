@@ -3,7 +3,7 @@ package fr.sncf.osrd.api.pathfinding
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraProvider
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.parseRJSTrackLocation
 import fr.sncf.osrd.api.stdcm.parseTrackSectionIds
 import fr.sncf.osrd.cli.Request
 import fr.sncf.osrd.cli.Response
@@ -26,7 +26,6 @@ import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import fr.sncf.osrd.utils.units.toDirected
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -92,13 +91,17 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
 fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): PathfindingBlockResponse {
     // Parse the waypoints
     val targets = ArrayList<ExplorerStep>()
-    val destinationTrack = request.pathItems.last()
-    val destinationBlock = findWaypointBlocks(infra, destinationTrack.locations)
+    val trackLocations =
+        request.pathItems.map { it.locations.map { parseRJSTrackLocation(infra.rawInfra, it) } }
+    val destinationTrack = trackLocations.last()
+    val destinationBlock =
+        infra.blockInfra.findTrackLocationBlocks(infra.rawInfra, destinationTrack)
     request.pathItems.forEachIndexed { stepIndex, step ->
         val allStarts = HashSet<BlockLocation>()
         for (direction in Direction.entries) {
-            for (waypoint in step.locations) {
-                val waypointBlocks = findTrackLocationBlocks(infra, waypoint, direction)
+            for (waypoint in trackLocations[stepIndex]) {
+                val waypointBlocks =
+                    infra.blockInfra.findDirTrackLocationBlocks(infra.rawInfra, waypoint, direction)
                 if (
                     request.stopsAtEndOfBlock == true &&
                         stepIndex != 0 &&
@@ -106,11 +109,10 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                 ) {
                     allStarts.addAll(
                         waypointBlocks.map {
-                            findStopPositionAtEndOfBlockConsideringRollingStock(
+                            infra.blockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
                                 it,
                                 destinationBlock,
                                 request.rollingStockLength.meters,
-                                infra,
                             )
                         }
                     )
@@ -250,102 +252,4 @@ private fun processPathfindingResponse(
         if (step.isBacktracking) index else null
     }
     return ProcessedPathfindingResponse(trainPath, stepOffsets, backtrackIndexes)
-}
-
-/** Returns the corresponding block locations of a track locations. */
-fun findTrackLocationBlocks(
-    infra: FullInfra,
-    trackLocation: TrackLocation,
-    direction: Direction,
-): Set<BlockLocation> {
-    val chunkLocation = getChunkLocationFromTrackLocation(trackLocation, infra.rawInfra)
-    return findChunkLocationBlocks(infra, chunkLocation, direction)
-}
-
-fun findChunkLocationBlocks(
-    infra: FullInfra,
-    chunkLocation: ChunkLocation,
-    direction: Direction,
-): Set<BlockLocation> {
-    val res = HashSet<BlockLocation>()
-    val chunkLength = infra.rawInfra.getTrackChunkLength(chunkLocation.chunk)
-    val directedChunkOffset = chunkLocation.offset.toDirected(chunkLength, direction)
-    val waypointDirChunkLocation =
-        DirChunkLocation(
-            DirTrackChunkId(chunkLocation.chunk, direction),
-            directedChunkOffset,
-        )
-
-    val blocksOnWaypoint =
-        infra.blockInfra.getBlocksFromTrackChunk(chunkLocation.chunk, direction).toSet()
-    for (block in blocksOnWaypoint) {
-        val offset =
-            infra.blockInfra.getBlockOffset(block, waypointDirChunkLocation, infra.rawInfra)
-        assert(offset <= infra.blockInfra.getBlockLength(block))
-        res.add(BlockLocation(block, offset))
-    }
-    return res
-}
-
-fun findWaypointBlocks(infra: FullInfra, waypoints: Collection<TrackLocation>): Set<BlockLocation> {
-    val waypointBlocks = HashSet<BlockLocation>()
-    for (waypoint in waypoints) {
-        for (direction in Direction.entries) {
-            waypointBlocks.addAll(findTrackLocationBlocks(infra, waypoint, direction))
-        }
-    }
-    return waypointBlocks
-}
-
-private fun getChunkLocationFromTrackLocation(
-    trackLocation: TrackLocation,
-    rawInfra: RawSignalingInfra,
-): ChunkLocation {
-    val trackSectionId =
-        rawInfra.getTrackSectionFromName(trackLocation.track)
-            ?: throw OSRDError.newUnknownTrackSectionError(trackLocation.track)
-
-    val trackSectionChunks = rawInfra.getTrackSectionChunks(trackSectionId)
-    for (chunk in trackSectionChunks) {
-        val startChunk = rawInfra.getTrackChunkOffset(chunk)
-        val endChunk = startChunk + rawInfra.getTrackChunkLength(chunk).distance
-        if (trackLocation.offset in startChunk..endChunk)
-            return ChunkLocation(chunk, Offset(trackLocation.offset - startChunk))
-    }
-    throw OSRDError(ErrorType.InvalidWaypointLocation)
-        .withContext("track", rawInfra.getTrackSectionName(trackSectionId))
-        .withContext("offset", trackLocation.offset)
-}
-
-/**
- * Given a waypoint block (initial position of a train stop), returns the new stop position of a
- * train: end of current block, with the constraints of staying in the same block and keeping the
- * tail of the train on the initial position (waypointBlock). Note that nodes of the infra are not
- * considered.
- */
-fun findStopPositionAtEndOfBlockConsideringRollingStock(
-    waypointBlock: BlockLocation,
-    destinationBlock: Set<BlockLocation>,
-    rollingStockLength: Double,
-    infra: FullInfra,
-): BlockLocation {
-    // To ensure that the tail of the rolling stock is not further than the initial operational
-    // point (waypointBlock) position
-    val maxTailOffset = waypointBlock.offset + rollingStockLength.meters
-
-    // Can't go further than the end of the block, which is delimited by a block-delimiting signal
-    val maxHeadOffset = infra.blockInfra.getBlockLength(waypointBlock.edge)
-
-    val newWaypointOffset = Offset.min(maxTailOffset, maxHeadOffset)
-
-    val destinationOffset =
-        destinationBlock
-            .filter { it.edge == waypointBlock.edge && waypointBlock.offset <= it.offset }
-            .minOfOrNull { it.offset }
-
-    // The waypoint offset does not change in the case where the stop is after the destination
-    if (destinationOffset != null && destinationOffset <= newWaypointOffset)
-        return BlockLocation(waypointBlock.edge, waypointBlock.offset)
-
-    return BlockLocation(waypointBlock.edge, newWaypointOffset)
 }

@@ -3,6 +3,9 @@ package fr.sncf.osrd.api
 import com.squareup.moshi.Json
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.TrackLocation
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
@@ -10,6 +13,8 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.meters
+
+data class RJSTrackLocation(val track: String, val offset: Offset<TrackSection>)
 
 data class DirectionalTrackRange(
     @Json(name = "track_section") val trackSection: String,
@@ -71,11 +76,9 @@ data class RangeValues<valueT>(
 }
 
 data class PathItem(
-    val locations: Collection<TrackLocation>,
+    val locations: Collection<RJSTrackLocation>,
     @Json(name = "can_backtrack") val canBacktrack: Boolean,
 )
-
-class TrackLocation(val track: String, val offset: Offset<TrackSection>)
 
 class ZoneUpdate(
     val zone: String,
@@ -130,4 +133,11 @@ enum class ForcedStopType {
     GENERAL_STOP,
     // Fake overtake where a stop on the overtake track is mandatory
     OVERTAKE,
+}
+
+fun parseRJSTrackLocation(rawInfra: RawInfra, trackLocation: RJSTrackLocation): TrackLocation {
+    val trackSectionId =
+        rawInfra.getTrackSectionFromName(trackLocation.track)
+            ?: throw OSRDError.newUnknownTrackSectionError(trackLocation.track)
+    return TrackLocation(trackSectionId, trackLocation.offset)
 }

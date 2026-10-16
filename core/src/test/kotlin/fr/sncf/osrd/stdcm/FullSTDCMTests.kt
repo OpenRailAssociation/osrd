@@ -410,7 +410,7 @@ private fun convertRouteLocationToTrackLocation(
     infra: RawInfra,
     routeName: String,
     offset: Offset<Route>,
-): TrackLocation {
+): RJSTrackLocation {
     var mutOffset = offset
     val zones = infra.getRoutePath(infra.getRouteFromName(routeName))
     val chunks = zones.flatMap { infra.getZonePathChunks(it) }
@@ -424,7 +424,7 @@ private fun convertRouteLocationToTrackLocation(
                 if (chunk.direction == Direction.DECREASING)
                     chunkOffset.distance + chunkLength.distance - mutOffset.distance
                 else chunkOffset.distance + mutOffset.distance
-            return TrackLocation(trackName, Offset(resultOffset))
+            return RJSTrackLocation(trackName, Offset(resultOffset))
         }
         mutOffset -= chunkLength.distance
     }
@@ -441,8 +441,8 @@ fun convertRouteLocation(infra: FullInfra, routeName: String, offset: Offset<Rou
 /** Make the occupancy multimap of a train going from point A to B starting at departureTime */
 fun makeRequirementsFromPath(
     infra: FullInfra,
-    startLocations: Set<TrackLocation>,
-    endLocations: Set<TrackLocation>,
+    startLocations: Set<RJSTrackLocation>,
+    endLocations: Set<RJSTrackLocation>,
     departureTime: Double,
     rollingStock: RollingStock = REALISTIC_FAST_TRAIN,
 ): List<SpacingRequirement> {

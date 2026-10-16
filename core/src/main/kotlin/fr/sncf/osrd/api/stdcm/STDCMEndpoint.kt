@@ -12,9 +12,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
-import fr.sncf.osrd.api.pathfinding.findChunkLocationBlocks
-import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
-import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
@@ -506,6 +503,9 @@ fun parseSteps(
     // that it's not a stop.
     pathItems.first().stopDuration = null
 
+    val trackLocations = pathItems.map {
+        it.pathItem.locations.map { parseRJSTrackLocation(infra.rawInfra, it) }
+    }
     return pathItems
         .mapIndexed { index, it ->
             val rollingStockLength =
@@ -513,17 +513,21 @@ fun parseSteps(
             ExplorerStep(
                 if (index != 0 && index != pathItems.size - 1) {
                     val destinationBlock =
-                        findWaypointBlocks(infra, pathItems.last().pathItem.locations)
-                    findWaypointBlocks(infra, it.pathItem.locations).map { waypointBlock ->
-                        findStopPositionAtEndOfBlockConsideringRollingStock(
-                            waypointBlock,
-                            destinationBlock,
-                            rollingStockLength,
-                            infra,
+                        infra.blockInfra.findTrackLocationBlocks(
+                            infra.rawInfra,
+                            trackLocations.last(),
                         )
-                    }
+                    infra.blockInfra
+                        .findTrackLocationBlocks(infra.rawInfra, trackLocations[index])
+                        .map { waypointBlock ->
+                            infra.blockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
+                                waypointBlock,
+                                destinationBlock,
+                                rollingStockLength,
+                            )
+                        }
                 } else {
-                    findWaypointBlocks(infra, it.pathItem.locations)
+                    infra.blockInfra.findTrackLocationBlocks(infra.rawInfra, trackLocations[index])
                 },
                 it.stopDuration?.seconds,
                 it.stopDuration != null,
@@ -674,7 +678,9 @@ fun parseForcedOpStops(
     val res = mutableSetOf<BlockLocation>()
     for (chunkLocation in chunkLocations) {
         for (direction in Direction.entries) {
-            res.addAll(findChunkLocationBlocks(infra, chunkLocation, direction))
+            res.addAll(
+                infra.blockInfra.findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction)
+            )
         }
     }
     return res
