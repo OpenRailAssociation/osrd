@@ -4507,6 +4507,14 @@ export type SearchResultItemGroup = {
   id: number;
   name: string;
 };
+export type SearchResultItemMacroNode = {
+  full_name: string | null;
+  id: number;
+  labels: (string | null)[];
+  node_location: OperationalPointReferenceNode;
+  scenario_id: number;
+  short_name: string | null;
+};
 export type SearchResultItem =
   | SearchResultItemTrack
   | SearchResultItemOperationalPoint
@@ -4516,7 +4524,8 @@ export type SearchResultItem =
   | SearchResultItemScenario
   | SearchResultItemTrainSchedule
   | SearchResultItemUser
-  | SearchResultItemGroup;
+  | SearchResultItemGroup
+  | SearchResultItemMacroNode;
 export type SearchObjectType =
   | 'track'
   | 'signal'
@@ -4526,7 +4535,8 @@ export type SearchObjectType =
   | 'trainschedule'
   | 'operationalpoint'
   | 'user'
-  | 'group';
+  | 'group'
+  | 'macronode';
 export type SearchQuery = boolean | number | number | string | object;
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it

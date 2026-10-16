@@ -623,6 +623,18 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    search_macro_node (id) {
+        id -> Int8,
+        short_name -> Nullable<Text>,
+        full_name -> Nullable<Text>,
+        scenario_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     search_operational_point (id) {
         id -> Int8,
         #[max_length = 255]
@@ -1042,6 +1054,7 @@ diesel::joinable!(search_group -> authn_group (id));
 diesel::joinable!(search_journey_environment -> infra (infra_id));
 diesel::joinable!(search_journey_environment_timetable -> search_journey_environment (search_journey_environment_id));
 diesel::joinable!(search_journey_environment_timetable -> timetable (timetable_id));
+diesel::joinable!(search_macro_node -> macro_node (id));
 diesel::joinable!(search_operational_point -> infra_object_operational_point (id));
 diesel::joinable!(search_project -> project (id));
 diesel::joinable!(search_scenario -> scenario (id));
@@ -1108,6 +1121,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     search_group,
     search_journey_environment,
     search_journey_environment_timetable,
+    search_macro_node,
     search_operational_point,
     search_project,
     search_scenario,

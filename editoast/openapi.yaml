@@ -14945,6 +14945,7 @@ components:
       - operationalpoint
       - user
       - group
+      - macronode
     SearchPayload:
       type: object
       description: The payload of a search request
@@ -15028,6 +15029,9 @@ components:
       - oneOf:
         - $ref: '#/components/schemas/SearchResultItemGroup'
         title: SearchResultItemSearchResultItemGroup
+      - oneOf:
+        - $ref: '#/components/schemas/SearchResultItemMacroNode'
+        title: SearchResultItemSearchResultItemMacroNode
       description: A search result item that depends on the query's `object`
     SearchResultItemGroup:
       type: object
@@ -15042,6 +15046,41 @@ components:
           minimum: 0
         name:
           type: string
+    SearchResultItemMacroNode:
+      type: object
+      description: A search result item for a query with `object = "macronode"`
+      required:
+      - id
+      - scenario_id
+      - short_name
+      - full_name
+      - labels
+      - node_location
+      properties:
+        full_name:
+          type:
+          - string
+          - 'null'
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+        labels:
+          type: array
+          items:
+            type:
+            - string
+            - 'null'
+        node_location:
+          $ref: '#/components/schemas/OperationalPointReferenceNode'
+        scenario_id:
+          type: integer
+          format: int64
+          minimum: 0
+        short_name:
+          type:
+          - string
+          - 'null'
     SearchResultItemOperationalPoint:
       type: object
       description: |
