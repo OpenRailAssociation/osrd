@@ -93,12 +93,7 @@ const OperationalPointsLayer = ({
       'circle-color': getColorByHighlighted({
         highlightedArea,
         highlightedOperationalPoints,
-        inColor: [
-          'case',
-          ['in', ['get', 'secondary_code'], ['literal', ['BV', '00']]],
-          colors.op.circleBV,
-          colors.op.circle,
-        ],
+        inColor: ['case', ['get', 'is_passenger_station'], colors.op.circleBV, colors.op.circle],
         outColor: colors.muted.color,
       }),
       'circle-radius': ['step', ['zoom'], 1.5, 16.5, 3],
@@ -134,12 +129,7 @@ const OperationalPointsLayer = ({
           'concat',
           ['get', 'main_code'],
           ' ',
-          [
-            'case',
-            ['in', ['get', 'secondary_code'], ['literal', ['BV', '00']]],
-            '',
-            ['get', 'secondary_code'],
-          ],
+          ['case', ['get', 'is_passenger_station'], '', ['get', 'secondary_code']],
           '\n',
         ],
         {
@@ -171,12 +161,7 @@ const OperationalPointsLayer = ({
     {
       id: 'yard',
       textFormat: [
-        [
-          'case',
-          ['in', ['get', 'secondary_code'], ['literal', ['BV', '00']]],
-          '',
-          ['concat', ' ', ['get', 'secondary_name']],
-        ],
+        ['case', ['get', 'is_passenger_station'], '', ['concat', ' ', ['get', 'secondary_name']]],
         {
           'font-scale': 1,
           'text-font': ['literal', ['IBMPlexSansCondensed-Medium']],
@@ -207,8 +192,6 @@ const OperationalPointsLayer = ({
       'text-field': [
         'step',
         ['zoom'],
-        ['format', ...getText()],
-        7,
         ['format', ...getText(['trigram'])],
         9,
         ['format', ...getText(['pk', 'trigram'])],
@@ -250,8 +233,6 @@ const OperationalPointsLayer = ({
       'text-field': [
         'step',
         ['zoom'],
-        ['format', ...getText(['pk', 'trigram', 'name', 'yard'], colors.muted.color)],
-        7,
         ['format', ...getText(['trigram'], colors.muted.color)],
         9,
         ['format', ...getText(['pk', 'trigram'], colors.muted.color)],
