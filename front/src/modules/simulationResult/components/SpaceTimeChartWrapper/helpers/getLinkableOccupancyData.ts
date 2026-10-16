@@ -15,10 +15,10 @@ export default function getLinkableOccupancyData(
   location: PathItemRelativeLocation,
   train: Pick<
     TrainSpaceTimeData,
-    'originPathItem' | 'destinationPathItem' | 'schedule' | 'initialSpeed'
+    'originPathItem' | 'destinationPathItem' | 'schedule' | 'initialSpeed' | 'paced'
   >,
   exception?: PacedTrainException
-): Pick<LinkableOccupancy, 'blockType' | 'isStop' | 'active'> {
+): Pick<LinkableOccupancy, 'blockType' | 'isStop' | 'active' | 'timeWindow'> {
   const exceptionPathAndSchedule = exception?.path_and_schedule;
   const path = exceptionPathAndSchedule?.path;
   const originPathItemKey = path?.at(0)?.key ?? train.originPathItem.key;
@@ -39,5 +39,10 @@ export default function getLinkableOccupancyData(
     !!schedule?.some(({ at, stop_for }) => at === location.path_item_key && !isNil(stop_for));
   const isStop = stopsAtPathStart || hasScheduledStop;
 
-  return { blockType, isStop, active: !exception?.disabled };
+  return {
+    blockType,
+    isStop,
+    active: !exception?.disabled,
+    timeWindow: train.paced?.timeWindow.ms,
+  };
 }
