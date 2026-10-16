@@ -247,6 +247,8 @@ export type StudyFrTranslations = {
 };
 
 export type ManageTrainScheduleTranslations = FlatTranslations & {
+  itineraryModal: FlatTranslations;
+  pathfindingErrors: FlatTranslations;
   pacedTrains: FlatTranslations;
   trainHeader: FlatTranslations & {
     allowances: FlatTranslations;
