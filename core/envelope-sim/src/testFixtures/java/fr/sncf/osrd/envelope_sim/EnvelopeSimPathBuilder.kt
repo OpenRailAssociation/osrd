@@ -47,7 +47,7 @@ object EnvelopeSimPathBuilder {
     ): PhysicsPath {
         val defaultElectrificationMap =
             distanceRangeMapOf<Electrification>(
-                DistanceRangeMap.RangeMapEntry(0.meters, length.meters, NonElectrified())
+                DistanceRangeMap.RangeMapEntry(0.meters, length.meters, NonElectrified()),
             )
         return EnvelopeSimPath(
             length,

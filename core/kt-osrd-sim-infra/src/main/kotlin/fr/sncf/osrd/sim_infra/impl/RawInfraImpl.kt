@@ -48,7 +48,7 @@ data class SpeedSection(
 }
 
 data class SpeedLimitTagDescriptor(
-    val fallbackList: List<String> // order of the list matters for fallback (when equal speed)
+    val fallbackList: List<String>, // order of the list matters for fallback (when equal speed)
 )
 
 class TrackNodeConfigDescriptor(
@@ -339,7 +339,7 @@ class RawInfraImpl(
                         Direction.INCREASING -> undirectedSignalChunkOffset.distance
                         Direction.DECREASING ->
                             getTrackChunkLength(trackChunk) - undirectedSignalChunkOffset
-                    }
+                    },
                 )
             trackChunkSignals.add(TrackChunkSignal(directedSignalChunkOffset, physicalSignalId))
         }
@@ -395,7 +395,7 @@ class RawInfraImpl(
                         when (endDetector.direction) {
                             Direction.INCREASING -> Offset(0.meters)
                             Direction.DECREASING -> getTrackSectionLength(endDetectorTrackSection)
-                        }
+                        },
                 )
 
                 // find the chunk where the extra signals may be
@@ -458,19 +458,19 @@ class RawInfraImpl(
     }
 
     override fun getTrackChunkOperationalPointParts(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): List<OperationalPointPartId> {
         return trackChunkPool[trackChunk].operationalPointParts
     }
 
     override fun getOperationalPointPartChunk(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): TrackChunkId {
         return operationalPointPartPool[operationalPointPart].chunk
     }
 
     override fun getOperationalPointPartChunkOffset(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): Offset<TrackChunk> {
         return operationalPointPartPool[operationalPointPart].chunkOffset
     }
@@ -480,7 +480,7 @@ class RawInfraImpl(
     }
 
     override fun getOperationalPointPartProps(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): Map<String, String> {
         return operationalPointPartPool[operationalPointPart].props
     }
@@ -502,19 +502,19 @@ class RawInfraImpl(
     }
 
     override fun getTrackChunkLoadingGaugeConstraints(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): DistanceRangeMap<LoadingGaugeConstraint> {
         return trackChunkPool[trackChunk].loadingGaugeConstraints
     }
 
     override fun getTrackChunkElectrificationVoltage(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): DistanceRangeMap<Set<String>> {
         return trackChunkPool[trackChunk].electrificationVoltage
     }
 
     override fun getTrackChunkNeutralSections(
-        trackChunk: DirTrackChunkId
+        trackChunk: DirTrackChunkId,
     ): DistanceRangeMap<NeutralSection> {
         return trackChunkPool[trackChunk.value].neutralSections.get(trackChunk.direction)
     }
@@ -697,7 +697,7 @@ class RawInfraImpl(
     }
 
     override fun getNextTrackNodePort(
-        trackSection: DirTrackSectionId
+        trackSection: DirTrackSectionId,
     ): OptStaticIdx<TrackNodePort> {
         val node = getNextTrackNode(trackSection)
         if (node.isNone) return OptStaticIdx()

@@ -6,7 +6,7 @@ import kotlin.jvm.JvmInline
 
 @JvmInline
 value class OffsetRangeMap<OffsetType, ValueType>(
-    private val distanceRangeMap: DistanceRangeMap<ValueType> = distanceRangeMapOf()
+    private val distanceRangeMap: DistanceRangeMap<ValueType> = distanceRangeMapOf(),
 ) : Iterable<OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>> {
 
     data class RangeMapEntry<OffsetType, ValueType>(
@@ -25,7 +25,7 @@ value class OffsetRangeMap<OffsetType, ValueType>(
                 .map {
                     DistanceRangeMap.RangeMapEntry(it.lower.distance, it.upper.distance, it.value)
                 }
-                .asIterable()
+                .asIterable(),
         )
     }
 
@@ -70,7 +70,7 @@ value class OffsetRangeMap<OffsetType, ValueType>(
     fun clear() = distanceRangeMap.clear()
 
     fun forEach(
-        callback: (lower: Offset<OffsetType>, upper: Offset<OffsetType>, value: ValueType) -> Unit
+        callback: (lower: Offset<OffsetType>, upper: Offset<OffsetType>, value: ValueType) -> Unit,
     ) {
         distanceRangeMap.forEach { lower, upper, value ->
             callback(Offset(lower), Offset(upper), value)
@@ -79,7 +79,7 @@ value class OffsetRangeMap<OffsetType, ValueType>(
 
     fun forEachWhile(
         callback:
-            (lower: Offset<OffsetType>, upper: Offset<OffsetType>, value: ValueType) -> Boolean
+            (lower: Offset<OffsetType>, upper: Offset<OffsetType>, value: ValueType) -> Boolean,
     ) {
         distanceRangeMap.forEachWhile { lower, upper, value ->
             callback(Offset(lower), Offset(upper), value)
@@ -100,16 +100,16 @@ value class OffsetRangeMap<OffsetType, ValueType>(
 }
 
 fun <OffsetType, ValueType> offsetRangeMapOf(
-    vararg entries: OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>
+    vararg entries: OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>,
 ): OffsetRangeMap<OffsetType, ValueType> =
     OffsetRangeMap<OffsetType, ValueType>().also { it.putMany(entries.asIterable()) }
 
 fun <OffsetType, ValueType> offsetRangeMapOf(
-    entries: Sequence<OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>>
+    entries: Sequence<OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>>,
 ): OffsetRangeMap<OffsetType, ValueType> =
     OffsetRangeMap<OffsetType, ValueType>().also { it.putMany(entries.asIterable()) }
 
 fun <OffsetType, ValueType> offsetRangeMapOf(
-    entries: Iterable<OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>>
+    entries: Iterable<OffsetRangeMap.RangeMapEntry<OffsetType, ValueType>>,
 ): OffsetRangeMap<OffsetType, ValueType> =
     OffsetRangeMap<OffsetType, ValueType>().also { it.putMany(entries) }

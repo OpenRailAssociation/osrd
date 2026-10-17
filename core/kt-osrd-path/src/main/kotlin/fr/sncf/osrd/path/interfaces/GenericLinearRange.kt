@@ -161,7 +161,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
                 subObjectList
                     .subList(0, thisIndex)
                     .map { getSubObjectLength(it).distance }
-                    .sumDistances()
+                    .sumDistances(),
             )
         val rangeBegin = thisOffset + objectBegin.distance
         val rangeEnd = thisOffset + objectEnd.distance
@@ -238,7 +238,7 @@ typealias DirTrackRange = LinearDirObjectRange<TrackSection>
  * have been merged together.
  */
 fun <ValueType, OffsetType> mergeLinearRanges(
-    vararg rangeLists: List<GenericLinearRange<ValueType, OffsetType>>
+    vararg rangeLists: List<GenericLinearRange<ValueType, OffsetType>>,
 ): List<GenericLinearRange<ValueType, OffsetType>> {
     val res = mutableListOf<GenericLinearRange<ValueType, OffsetType>>()
     var last: GenericLinearRange<ValueType, OffsetType>? = null
@@ -263,7 +263,7 @@ fun <ValueType, OffsetType> mergeLinearRanges(
  * this takes a list of outer object ranges, and maps it to a list of inner object ranges.
  */
 fun <ValueType, OffsetType, SubObjectType, SubObjectOffset> List<
-    GenericLinearRange<ValueType, OffsetType>
+    GenericLinearRange<ValueType, OffsetType>,
 >
     .mapSubObjects(
     listSubObject: (ValueType) -> List<SubObjectType>,
@@ -278,7 +278,7 @@ fun <ValueType, OffsetType, SubObjectType, SubObjectOffset> List<
 }
 
 fun <ValueType, OffsetType> MutableList<GenericLinearRange<ValueType, OffsetType>>.addLinearObjects(
-    elements: List<GenericLinearRange<ValueType, OffsetType>>
+    elements: List<GenericLinearRange<ValueType, OffsetType>>,
 ) {
     for (element in elements) {
         val prevElement = lastOrNull()

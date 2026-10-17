@@ -39,7 +39,7 @@ interface PathProperties {
     fun getTrackLocationAtOffset(pathOffset: Offset<PhysicsPath>): TrackLocation
 
     fun <T> getRangeMapFromUndirected(
-        getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
+        getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>,
     ): DistanceRangeMap<T>
 
     fun withRoutes(routes: List<RouteId>): PathProperties

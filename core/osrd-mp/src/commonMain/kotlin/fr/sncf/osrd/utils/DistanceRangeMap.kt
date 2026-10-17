@@ -49,7 +49,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns a list of the entries in the map */
     @Deprecated(
         message =
-            "If you want to iterate on entries, DistanceRangeMap is already an Iterable. If you really want a list, use Iterable.toList"
+            "If you want to iterate on entries, DistanceRangeMap is already an Iterable. If you really want a list, use Iterable.toList",
     )
     fun asList(): List<RangeMapEntry<T>> = toList()
 
@@ -224,13 +224,13 @@ fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): D
 }
 
 fun <T> distanceRangeMapOf(
-    entries: Sequence<DistanceRangeMap.RangeMapEntry<T>>
+    entries: Sequence<DistanceRangeMap.RangeMapEntry<T>>,
 ): DistanceRangeMap<T> {
     return DistanceRangeMapImpl(entries.asIterable())
 }
 
 fun <T> distanceRangeMapOf(
-    entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>
+    entries: Iterable<DistanceRangeMap.RangeMapEntry<T>>,
 ): DistanceRangeMap<T> {
     return DistanceRangeMapImpl(entries)
 }

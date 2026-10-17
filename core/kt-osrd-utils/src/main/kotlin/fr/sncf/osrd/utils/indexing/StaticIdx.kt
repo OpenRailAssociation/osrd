@@ -51,7 +51,7 @@ value class EndpointStaticIdx<T>(val data: UInt) : NumIdx {
             when (endpoint) {
                 Endpoint.START -> 0u
                 Endpoint.END -> 1u
-            }
+            },
     )
 
     val value: StaticIdx<T>

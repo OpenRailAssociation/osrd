@@ -85,7 +85,7 @@ private fun makeOperationalPoints(
                 if (opPartProps["kp"] == null) null
                 else
                     OperationalPointPartExtension(
-                        OperationalPointPartSncfExtension(opPartProps["kp"]!!)
+                        OperationalPointPartSncfExtension(opPartProps["kp"]!!),
                     ),
             )
         val weight = if (opPartProps["weight"] == null) null else opPartProps["weight"]!!.toLong()
@@ -126,7 +126,7 @@ private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeVal
 }
 
 private fun makeElectrificationMap(
-    distanceRangeMap: DistanceRangeMap<out Any>
+    distanceRangeMap: DistanceRangeMap<out Any>,
 ): DistanceRangeMap<Electrification> {
     val res = DistanceRangeMapImpl<Electrification>()
     distanceRangeMap.forEach { lower, upper, value ->
@@ -145,7 +145,7 @@ private fun makeElectrificationMap(
             }
             else -> {
                 throw IllegalArgumentException(
-                    "Input should be a distanceRangeMap of String or Boolean"
+                    "Input should be a distanceRangeMap of String or Boolean",
                 )
             }
         }

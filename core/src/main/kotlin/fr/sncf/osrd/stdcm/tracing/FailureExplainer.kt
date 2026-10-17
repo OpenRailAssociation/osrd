@@ -74,7 +74,7 @@ class FailureExplainer(
                 )
             return ConflictReport(
                 originalStartTime.plus(
-                    Duration.ofSeconds(parentNode.timeData.earliestReachableTime.toLong())
+                    Duration.ofSeconds(parentNode.timeData.earliestReachableTime.toLong()),
                 ),
                 wrapDoubleForJson(timeLost),
                 wrapDoubleForJson(remainingTime),
@@ -181,7 +181,7 @@ private class SmallestNValues(
 ) {
     private val queue =
         PriorityQueue<FailureExplainer.PendingConflict>(
-            Comparator.comparingDouble { -getWeight(it) }
+            Comparator.comparingDouble { -getWeight(it) },
         )
 
     fun register(value: FailureExplainer.PendingConflict) {

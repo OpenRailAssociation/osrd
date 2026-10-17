@@ -100,7 +100,7 @@ class EnvelopeSimPathTest {
                     Offset<PhysicsPath>(2.5.meters),
                     Offset(6.5.meters),
                     "Restrict2",
-                )
+                ),
             )
 
         val modeAndProfileMap =
@@ -144,7 +144,7 @@ class EnvelopeSimPathTest {
                     Offset<PhysicsPath>(2.5.meters),
                     Offset(6.5.meters),
                     "Restrict2",
-                )
+                ),
             )
 
         val modeAndProfileMap =

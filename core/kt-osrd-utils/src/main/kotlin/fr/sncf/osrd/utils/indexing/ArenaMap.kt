@@ -98,7 +98,7 @@ class MutableArenaMapImpl<IndexT, ValueT> :
     }
 
     override fun update(
-        updater: (MutableArenaMap<IndexT, ValueT>) -> Unit
+        updater: (MutableArenaMap<IndexT, ValueT>) -> Unit,
     ): ArenaMap<IndexT, ValueT> {
         val newArena = clone()
         updater(newArena)

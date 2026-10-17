@@ -68,8 +68,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(30.0, 30.0),
-                )
-            )
+                ),
+            ),
         )
         extended[0].moveForward()
         extended[1].addEnvelope(
@@ -78,8 +78,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(20.0, 20.0),
-                )
-            )
+                ),
+            ),
         )
         extended[1].moveForward()
         extended[0].addEnvelope(
@@ -88,8 +88,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(30.0, 30.0),
-                )
-            )
+                ),
+            ),
         )
         extended[1].addEnvelope(
             Envelope.make(
@@ -97,8 +97,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(20.0, 20.0),
-                )
-            )
+                ),
+            ),
         )
 
         testEnvelopeTimeEquality(
@@ -107,7 +107,7 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 200.0),
                     doubleArrayOf(30.0, 30.0),
-                )
+                ),
             ),
             extended[0].getFullEnvelope(),
         )
@@ -117,7 +117,7 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 200.0),
                     doubleArrayOf(20.0, 20.0),
-                )
+                ),
             ),
             extended[1].getFullEnvelope(),
         )
@@ -154,8 +154,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(30.0, 30.0),
-                )
-            )
+                ),
+            ),
         )
         explorer.moveForward()
 
@@ -168,8 +168,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(30.0, 30.0),
-                )
-            )
+                ),
+            ),
         )
         cloned.addEnvelope(
             Envelope.make(
@@ -177,8 +177,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0),
                     doubleArrayOf(42.0, 42.0),
-                )
-            )
+                ),
+            ),
         )
 
         testEnvelopeTimeEquality(
@@ -187,7 +187,7 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 200.0),
                     doubleArrayOf(30.0, 30.0),
-                )
+                ),
             ),
             explorer.getFullEnvelope(),
         )
@@ -197,7 +197,7 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 100.0, 100.01, 200.0),
                     doubleArrayOf(30.0, 30.0, 42.00, 42.0),
-                )
+                ),
             ),
             cloned.getFullEnvelope(),
         )
@@ -229,8 +229,8 @@ class InfraExplorerWithEnvelopeTests {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 70.0),
                     doubleArrayOf(30.0, 30.0),
-                )
-            )
+                ),
+            ),
         )
         explorer.moveForward()
         assertEquals(Offset(70.meters), explorer.getSimulatedLength())
@@ -249,13 +249,13 @@ class InfraExplorerWithEnvelopeTests {
                 areTimesEqual(
                     expected.interpolateDepartureFrom(position),
                     actual.interpolateDepartureFrom(position),
-                )
+                ),
             )
             assertTrue(
                 areTimesEqual(
                     expected.interpolateArrivalAt(position),
                     actual.interpolateArrivalAt(position),
-                )
+                ),
             )
             position += 1.0
         }

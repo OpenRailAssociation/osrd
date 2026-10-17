@@ -238,12 +238,12 @@ fun getSignalCriticalPositions(
         signalCriticalPositions.add(
             SignalCriticalPosition(
                 rawInfra.getPhysicalSignalName(
-                    loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
+                    loadedSignalInfra.getPhysicalSignal(pathSignal.signal),
                 )!!,
                 maxOf(signalCriticalTime, TimeDelta.ZERO),
                 signalCriticalOffset,
                 "VL", // TODO: find out the real state
-            )
+            ),
         )
     }
     return signalCriticalPositions
@@ -287,7 +287,7 @@ fun makeSimpleReportTrain(
         }
         val departureTimeFromOp =
             TimeDelta.fromSeconds(
-                envelopeStopWrapper.interpolateDepartureFrom(item.pathOffset.meters)
+                envelopeStopWrapper.interpolateDepartureFrom(item.pathOffset.meters),
             )
         min(time, departureTimeFromOp)
     }
@@ -416,7 +416,7 @@ fun routingRequirements(
             Offset.max(
                 straightSubPathRange.start,
                 firstBlockRange.offsetToTrainPath(
-                    blockInfra.getSignalsPositions(firstBlockRange.value).first()
+                    blockInfra.getSignalsPositions(firstBlockRange.value).first(),
                 ),
             )
         for (stop in sortedClosedSignalStops.reversed()) {
@@ -476,7 +476,7 @@ fun routingRequirements(
                             it.zone == zone &&
                             it.offset > zoneRange.pathBegin &&
                             it.offset <= zoneRange.pathEnd
-                    }
+                    },
                 )
                 continue
             }
@@ -514,7 +514,7 @@ private fun getRouteCriticalPos(
         ) {
             TODO(
                 "Routing requirements for curve-based signals are only available for " +
-                    "ETCS_LEVEL2 and through StandaloneSimulation"
+                    "ETCS_LEVEL2 and through StandaloneSimulation",
             )
         }
         if (trainPath.getBacktrackLocations().isNotEmpty()) {
@@ -536,7 +536,7 @@ private fun getEtcsRouteCriticalPos(
     // The braking curve targets the entry signal of the route's first block
     val signalOffset =
         firstBlockRange.offsetToTrainPath(
-            blockInfra.getSignalsPositions(firstBlockRange.value).first()
+            blockInfra.getSignalsPositions(firstBlockRange.value).first(),
         )
 
     val eoa =
@@ -743,7 +743,7 @@ private fun zoneRangeExitOffset(
 }
 
 private fun sortAndMergeSameZoneOverlappingOrContiguousOccupations(
-    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>
+    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
 ) {
     // Sorting entries before exits to "create" overlaps for contiguous occupations, then easily
     // merge those
@@ -788,7 +788,7 @@ fun zoneOccupationChangeEvents(
             .zipWithNext { current, next ->
                 current < next - rollingStocks.get(next.distance)!!.length.meters
             }
-            .all { it }
+            .all { it },
     )
 
     val zoneOccupationChangeEvents = mutableListOf<ZoneOccupationChangeEvent>()
@@ -808,10 +808,10 @@ fun zoneOccupationChangeEvents(
         // Avoid generating entry + exit at the same time
         if (exitTime <= entryTime) continue
         zoneOccupationChangeEvents.add(
-            ZoneOccupationChangeEvent(entryTime, entryOffset, isEntry = true, zoneRange.value)
+            ZoneOccupationChangeEvent(entryTime, entryOffset, isEntry = true, zoneRange.value),
         )
         zoneOccupationChangeEvents.add(
-            ZoneOccupationChangeEvent(exitTime, exitOffset, isEntry = false, zoneRange.value)
+            ZoneOccupationChangeEvent(exitTime, exitOffset, isEntry = false, zoneRange.value),
         )
     }
 

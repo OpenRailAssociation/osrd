@@ -72,7 +72,7 @@ interface TrackProperties {
     fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
 
     fun getTrackChunkLoadingGaugeConstraints(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): DistanceRangeMap<LoadingGaugeConstraint>
 
     fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<Set<String>>
@@ -93,12 +93,12 @@ interface TrackProperties {
     fun getOperationalPointPartChunk(operationalPointPart: OperationalPointPartId): TrackChunkId
 
     fun getOperationalPointPartChunkOffset(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): Offset<TrackChunk>
 
     fun getOperationalPointPartOpId(operationalPointPart: OperationalPointPartId): String
 
     fun getOperationalPointPartProps(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): Map<String, String>
 }

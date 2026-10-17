@@ -129,7 +129,7 @@ class STDCMEndpoint(
     @WithSpan(value = "Processing STDCM request", kind = SpanKind.SERVER)
     fun run(request: STDCMRequest, ctx: Take.QueueContext?): Response {
         logger.info(
-            "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
+            "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}",
         )
         return try {
             // parse input data
@@ -144,7 +144,7 @@ class STDCMEndpoint(
                             it.supportedSignalingSystems.filter {
                                 // Ignoring ETCS as it is not (yet) supported for STDCM
                                 it != ETCS_LEVEL2.id
-                            }
+                            },
                     )
                 }
             val requestConsistSchedule =
@@ -312,7 +312,7 @@ class STDCMEndpoint(
         ) {
             val stringDebugData by lazy {
                 OutputSimDebugData.adapter.toJson(
-                    generateDebugData(infra, path, simulationResponse, departureTime, requirements)
+                    generateDebugData(infra, path, simulationResponse, departureTime, requirements),
                 )
             }
 
@@ -339,7 +339,7 @@ class STDCMEndpoint(
                     path.trainPath.getLength(),
                     null,
                     StopDetails(0.1.seconds, RJSTrainStop.RJSReceptionSignal.STOP, false),
-                )
+                ),
             )
             val reportTrain =
                 runScheduleMetadataExtractor(
@@ -369,7 +369,7 @@ class STDCMEndpoint(
                             speedLimitTag,
                             temporarySpeedLimitManager,
                         )
-                    }
+                    },
                 )
 
             // All simulations are the same for now
@@ -458,7 +458,7 @@ fun buildTemporarySpeedLimitManager(
                                 Speed.fromMetersPerSecond(speedLimit.speedLimit),
                                 null,
                             ),
-                        )
+                        ),
                     )
                 if (outputSpeedLimits.contains(dirTrackChunkId)) {
                     outputSpeedLimits[dirTrackChunkId]!!.updateMap(
@@ -612,7 +612,7 @@ fun getRequirements(
                         metadata.from - searchWindowBeginEpoch,
                         metadata.to - searchWindowBeginEpoch,
                         metadata.source,
-                    )
+                    ),
                 )
             }
         }
@@ -642,7 +642,7 @@ fun parseMarginValue(margin: MarginValue): AllowanceValue? {
 }
 
 private fun parseSimulationScheduleItems(
-    trainStops: List<TrainStop>
+    trainStops: List<TrainStop>,
 ): List<SimulationScheduleItem> {
     return dedupScheduleItems(
         trainStops.map {
@@ -650,7 +650,7 @@ private fun parseSimulationScheduleItems(
             val stopDetails =
                 if (duration != null) StopDetails(duration, it.receptionSignal, false) else null
             SimulationScheduleItem(Offset(it.position.meters), null, stopDetails)
-        }
+        },
     )
 }
 
@@ -668,7 +668,7 @@ private fun progressCallback(
         AMQP.BasicProperties()
             .builder()
             .headers(
-                mapOf("x-non-terminating-response" to true, "x-status" to "ok".encodeToByteArray())
+                mapOf("x-non-terminating-response" to true, "x-status" to "ok".encodeToByteArray()),
             )
             .correlationId(correlationId)
             .build()

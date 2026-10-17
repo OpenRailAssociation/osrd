@@ -44,7 +44,7 @@ class IncrementalConflictDetector(private val spacingZoneUses: ParsedRequirement
      * no conflict).
      */
     fun analyseConflicts(
-        spacingRequirements: List<SpacingRequirement>
+        spacingRequirements: List<SpacingRequirement>,
     ): IncrementalConflictResponse {
         val minDelayWithoutConflicts = minDelayWithoutConflicts(spacingRequirements)
         if (minDelayWithoutConflicts != 0.0) { // There are initial conflicts

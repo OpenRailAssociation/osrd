@@ -138,7 +138,7 @@ class EnvelopePartSliceTest {
                     doubleArrayOf(314.40000000000003, 351.00000000000006, 386.40000000000003),
                     doubleArrayOf(18.6, 18.0, 17.4),
                     doubleArrayOf(2.0, 2.0),
-                )
+                ),
             )
         // The relevant assertions are made in `EnvelopePart.runSanityChecks`
         envelope.slice(351.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NaN)

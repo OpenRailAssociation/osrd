@@ -47,9 +47,9 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
             RsJson(
                 RsWithBody(
                     signalProjectionResponseAdapter.toJson(
-                        SignalProjectionResponse(signalProjections)
-                    )
-                )
+                        SignalProjectionResponse(signalProjections),
+                    ),
+                ),
             )
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)

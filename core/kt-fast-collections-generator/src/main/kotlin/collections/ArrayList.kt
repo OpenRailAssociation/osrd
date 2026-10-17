@@ -343,7 +343,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 return res
             }
         """
-            .trimIndent()
+            .trimIndent(),
     )
     file.close()
 }

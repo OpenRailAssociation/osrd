@@ -60,8 +60,8 @@ class FullSTDCMTests {
                         infra,
                         "rt.buffer_stop_b->tde.foo_b-switch_foo",
                         Offset(100.meters),
-                    )
-                )
+                    ),
+                ),
             )
             .setEndLocations(
                 setOf(
@@ -69,8 +69,8 @@ class FullSTDCMTests {
                         infra,
                         "rt.tde.foo_b-switch_foo->buffer_stop_c",
                         Offset(10125.meters),
-                    )
-                )
+                    ),
+                ),
             )
             .run()!!
     }
@@ -102,7 +102,7 @@ class FullSTDCMTests {
         val minDelay =
             getMaxOccupancyDuration(requirements) // Eventually we may need to add a % margin
         requirements.addAll(
-            makeRequirementsFromPath(infra, start.trackLocations, end.trackLocations, minDelay * 2)
+            makeRequirementsFromPath(infra, start.trackLocations, end.trackLocations, minDelay * 2),
         )
         STDCMPathfindingBuilder()
             .setInfra(infra)
@@ -124,7 +124,7 @@ class FullSTDCMTests {
             makeRequirementsFromPath(smallInfra, start.trackLocations, end.trackLocations, 0.0)
                 .toMutableList()
         requirements.addAll(
-            makeRequirementsFromPath(smallInfra, start.trackLocations, end.trackLocations, 600.0)
+            makeRequirementsFromPath(smallInfra, start.trackLocations, end.trackLocations, 600.0),
         )
         STDCMPathfindingBuilder()
             .setInfra(smallInfra)
@@ -155,7 +155,7 @@ class FullSTDCMTests {
                 start.trackLocations,
                 end.trackLocations,
                 minDelay * 0.95,
-            )
+            ),
         )
         STDCMPathfindingBuilder()
             .setInfra(smallInfra)
@@ -181,10 +181,10 @@ class FullSTDCMTests {
                                 listOf(TrackRange("TB0", Offset(0.meters), Offset(2000.meters))),
                                 0.seconds,
                                 3600.seconds,
-                            )
+                            ),
                         ),
                     )
-                    .flatMap { it.spacingRequirements }
+                    .flatMap { it.spacingRequirements },
             )
         val start = convertRouteLocation(smallInfra, "rt.buffer_stop.3->DB0", Offset(0.meters))
         val end = convertRouteLocation(smallInfra, "rt.DH2->buffer_stop.7", Offset(0.meters))

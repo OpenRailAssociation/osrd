@@ -43,7 +43,7 @@ fun buildTrainPathFromBlock(
                 Offset.zero(),
                 Offset(endOffset - beginOffset),
                 blockInfra.getBlockLength(blockId),
-            )
+            ),
         )
     return buildTrainPathFromBlockRanges(
         rawInfra,
@@ -78,7 +78,7 @@ fun buildTrainPathFromBlocks(
                 prevBlockFinalOffset,
                 prevBlockFinalOffset + blockLength.distance,
                 blockLength,
-            )
+            ),
         )
         prevBlockFinalOffset += blockLength.distance
     }
@@ -163,7 +163,7 @@ fun buildTrainPathFromTracks(
     fun iterateDirChunks(dirTrack: DirTrackSectionId): List<DirTrackChunkId> {
         val chunks = mutableListOf<DirTrackChunkId>()
         for (chunk in rawInfra.getTrackSectionChunks(dirTrack.value)) chunks.add(
-            DirTrackChunkId(chunk, dirTrack.direction)
+            DirTrackChunkId(chunk, dirTrack.direction),
         )
         if (dirTrack.direction == Direction.DECREASING) chunks.reverse()
         return chunks
@@ -187,7 +187,7 @@ fun buildTrainPathFromTracks(
 
 /** Create a list of ranges from a list of partial ranges, mapping path offsets (starting at 0). */
 fun <ValueType, OffsetType> buildRangeList(
-    ranges: List<PartialGenericLinearRange<ValueType, OffsetType>>
+    ranges: List<PartialGenericLinearRange<ValueType, OffsetType>>,
 ): List<GenericLinearRange<ValueType, OffsetType>> {
     // Merge adjacent ranges of the same object
     val merged = mutableListOf<PartialGenericLinearRange<ValueType, OffsetType>>()
@@ -207,7 +207,7 @@ fun <ValueType, OffsetType> buildRangeList(
                 prevRangeLength,
                 prevRangeLength + range.length,
                 range.objectLength,
-            )
+            ),
         )
         prevRangeLength += range.length
     }

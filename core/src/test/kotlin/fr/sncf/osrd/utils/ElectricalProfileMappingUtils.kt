@@ -26,7 +26,7 @@ fun getRjsElectricalProfileMapping_1(): RJSElectricalProfileSet {
                 "2",
                 listOf(RJSTrackRange("TA1", 0.0, 1_950.0)),
             ),
-        )
+        ),
     )
 }
 
@@ -65,6 +65,6 @@ fun getRjsElectricalProfileMapping_2(): RJSElectricalProfileSet {
                 "2",
                 listOf(RJSTrackRange("TA0", 0.0, 1_900.0), RJSTrackRange("TA1", 200.0, 1_950.0)),
             ),
-        )
+        ),
     )
 }

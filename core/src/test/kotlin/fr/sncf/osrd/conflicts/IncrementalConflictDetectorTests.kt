@@ -36,9 +36,9 @@ class IncrementalConflictDetectorTests {
                             SpacingRequirement(ZoneId(it.zoneId.toUInt()), it.start, it.end, true)
                         },
                         listOf(),
-                    )
-                )
-            )
+                    ),
+                ),
+            ),
         )
     }
 
@@ -49,7 +49,7 @@ class IncrementalConflictDetectorTests {
         return detector.analyseConflicts(
             requirements.map {
                 SpacingRequirement(ZoneId(it.zoneId.toUInt()), it.start, it.end, true)
-            }
+            },
         )
     }
 }

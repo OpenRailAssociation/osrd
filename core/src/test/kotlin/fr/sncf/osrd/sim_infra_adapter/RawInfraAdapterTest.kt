@@ -225,7 +225,8 @@ class RawInfraAdapterTest {
         for (dirDet in expectedBounds) {
             assert(rawInfra.getNextZone(dirDet) == zoneCrossings)
             assert(
-                "${rawInfra.getDetectorName(dirDet.value)}:${dirDet.direction}" in zoneCrossingsName
+                "${rawInfra.getDetectorName(dirDet.value)}:${dirDet.direction}" in
+                    zoneCrossingsName,
             )
         }
     }

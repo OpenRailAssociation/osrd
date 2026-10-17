@@ -181,7 +181,7 @@ class STDCMGraph(
                 visitedNodes.markAsVisited(visitedNodesParameters)
                 res.addAll(
                     STDCMEdgeBuilder.fromNode(this, node, newPath as InfraExplorerWithEnvelope)
-                        .makeAllEdges()
+                        .makeAllEdges(),
                 )
             }
         }

@@ -175,7 +175,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         if (actualStopAddedTime > 0) {
             mutableStopData[lastStopIndexBeforeArrival - 1] =
                 mutableStopData[lastStopIndexBeforeArrival - 1].withAddedStopTime(
-                    actualStopAddedTime
+                    actualStopAddedTime,
                 )
         }
 
@@ -216,7 +216,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                         // TODO: forward and use receptionSignal param from request
                         if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP
                         else OPEN,
-                    )
+                    ),
                 )
             offset += edge.length.distance
         }

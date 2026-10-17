@@ -107,7 +107,7 @@ fun computeMRSP(
                     attrs,
                     doubleArrayOf(start, end),
                     doubleArrayOf(speed, speed),
-                )
+                ),
             )
         }
     }
@@ -159,7 +159,7 @@ fun addSpeedSection(
                 value,
                 doubleArrayOf(lower.meters, upper.meters),
                 doubleArrayOf(speed.metersPerSecond, speed.metersPerSecond),
-            )
+            ),
         )
     }
 }

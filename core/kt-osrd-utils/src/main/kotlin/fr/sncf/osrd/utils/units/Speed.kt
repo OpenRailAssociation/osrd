@@ -34,12 +34,12 @@ value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
 
         fun min(a: Speed, b: Speed) =
             Speed(
-                millimetersPerSecond = a.millimetersPerSecond.coerceAtMost(b.millimetersPerSecond)
+                millimetersPerSecond = a.millimetersPerSecond.coerceAtMost(b.millimetersPerSecond),
             )
 
         fun max(a: Speed, b: Speed) =
             Speed(
-                millimetersPerSecond = a.millimetersPerSecond.coerceAtLeast(b.millimetersPerSecond)
+                millimetersPerSecond = a.millimetersPerSecond.coerceAtLeast(b.millimetersPerSecond),
             )
     }
 

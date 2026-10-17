@@ -163,7 +163,7 @@ class PathfindingTest : ApiTest() {
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
                     pathItems = waypoints,
-                )
+                ),
             )
         val unconstrainedResponse =
             PathfindingBlocksEndpoint(infraManager).act(RqFake(unconstrainedRequestBody))
@@ -184,7 +184,7 @@ class PathfindingTest : ApiTest() {
                     infra = "tiny_infra/infra.json",
                     expectedVersion = 1,
                     pathItems = waypoints,
-                )
+                ),
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         val parsed =
@@ -199,11 +199,11 @@ class PathfindingTest : ApiTest() {
                             RangeValue(
                                 OffsetRange(Offset.zero(), Offset(10250.meters)),
                                 "", // range not electrified
-                            )
+                            ),
                         ),
                     incompatibleGaugeRanges = listOf(),
                     incompatibleSignalingSystemRanges = listOf(),
-                )
+                ),
         )
     }
 
@@ -229,7 +229,7 @@ class PathfindingTest : ApiTest() {
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
                     pathItems = waypoints,
-                )
+                ),
             )
         val unconstrainedResponse =
             PathfindingBlocksEndpoint(infraManager).act(RqFake(unconstrainedRequestBody))
@@ -250,7 +250,7 @@ class PathfindingTest : ApiTest() {
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
                     pathItems = waypoints,
-                )
+                ),
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
 
@@ -280,7 +280,7 @@ class PathfindingTest : ApiTest() {
                         ),
                     incompatibleSignalingSystemRanges =
                         listOf(RangeValue(OffsetRange(Offset.zero(), Offset(4000.meters)), "BAL")),
-                )
+                ),
         )
     }
 
@@ -348,7 +348,7 @@ class PathfindingTest : ApiTest() {
                     TestTrains.REALISTIC_FAST_TRAIN,
                     listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false)),
                     "tiny_infra/infra.json",
-                )
+                ),
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         assert(response.statusCode() == 200)
@@ -365,7 +365,7 @@ class PathfindingTest : ApiTest() {
                     TestTrains.REALISTIC_FAST_TRAIN,
                     listOf(PathItem(waypointsStart, false)),
                     "tiny_infra/infra.json",
-                )
+                ),
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         assertEquals(response.statusCode(), 400)
@@ -386,7 +386,7 @@ class PathfindingTest : ApiTest() {
                 if (it.id == "ne.micro.foo_to_bar")
                     it.copy(
                         loadingGaugeLimits =
-                            listOf(RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1))
+                            listOf(RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1)),
                     )
                 else it
             }
@@ -417,19 +417,21 @@ class PathfindingTest : ApiTest() {
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
-            .satisfies({ exception: Throwable ->
-                val resp =
-                    (exception as NoPathFoundException).response
-                        as IncompatibleConstraintsPathResponse
-                assert(resp.relaxedConstraintsPath.length.distance == 10200.meters)
-                assert(
-                    resp.incompatibleConstraints.incompatibleGaugeRanges.single() ==
-                        RangeValue<String>(
-                            OffsetRange(Offset(1100.meters), Offset(2100.meters)),
-                            null,
-                        )
-                )
-            })
+            .satisfies(
+                { exception: Throwable ->
+                    val resp =
+                        (exception as NoPathFoundException).response
+                            as IncompatibleConstraintsPathResponse
+                    assert(resp.relaxedConstraintsPath.length.distance == 10200.meters)
+                    assert(
+                        resp.incompatibleConstraints.incompatibleGaugeRanges.single() ==
+                            RangeValue<String>(
+                                OffsetRange(Offset(1100.meters), Offset(2100.meters)),
+                                null,
+                            ),
+                    )
+                },
+            )
 
         // Check that we can go until right before the blocked section with a large train
         val closerWaypointsEnd = listOf(TrackLocation("ne.micro.foo_to_bar", Offset(1000.meters)))
@@ -516,7 +518,7 @@ class PathfindingTest : ApiTest() {
                         Offset(100.meters),
                         Offset(110.meters),
                         EdgeDirection.START_TO_STOP,
-                    )
+                    ),
                 ),
         )
     }
@@ -543,7 +545,7 @@ class PathfindingTest : ApiTest() {
                         Offset(100.meters),
                         Offset(110.meters),
                         EdgeDirection.STOP_TO_START,
-                    )
+                    ),
                 ),
         )
     }
@@ -575,7 +577,7 @@ class PathfindingTest : ApiTest() {
             10000.meters,
             expectedBlocks =
                 listOf(
-                    "[il.sig.C1-BAL, il.sig.S7-BAL];[tde.foo_a-switch_foo, tde.track-bar];[il.switch_foo-A_B2]"
+                    "[il.sig.C1-BAL, il.sig.S7-BAL];[tde.foo_a-switch_foo, tde.track-bar];[il.switch_foo-A_B2]",
                 ),
             expectedRoutes = listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"),
             expectedTrackSectionRanges =
@@ -662,10 +664,12 @@ class PathfindingAllowedTrackSectionsTest {
                 runPathfinding(infra, makeRequest(setOf("ne.micro.foo_b", "ne.micro.bar_a")))
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
-            .satisfies({ e ->
-                assertThat((e as NoPathFoundException).response)
-                    .isExactlyInstanceOf(NotFoundInBlocks::class.java)
-            })
+            .satisfies(
+                { e ->
+                    assertThat((e as NoPathFoundException).response)
+                        .isExactlyInstanceOf(NotFoundInBlocks::class.java)
+                },
+            )
     }
 }
 
@@ -678,7 +682,7 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
     ): PathfindingBlockResponse {
         val requestBody =
             pathfindingRequestAdapter.toJson(
-                getPathfindingBlockRequest(rs, pathItems, infra, stopsAtEndOfBlock)
+                getPathfindingBlockRequest(rs, pathItems, infra, stopsAtEndOfBlock),
             )
         val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathfindingResponseAdapter.fromJson(response.body())!!

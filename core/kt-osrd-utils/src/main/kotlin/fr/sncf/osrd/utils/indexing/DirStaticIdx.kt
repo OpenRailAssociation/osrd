@@ -21,7 +21,7 @@ value class DirStaticIdx<T>(val data: UInt) : NumIdx {
             when (direction) {
                 Direction.INCREASING -> 0u
                 Direction.DECREASING -> 1u
-            }
+            },
     )
 
     val value: StaticIdx<T>

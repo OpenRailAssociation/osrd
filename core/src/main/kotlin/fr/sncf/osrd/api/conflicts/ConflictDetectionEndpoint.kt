@@ -27,7 +27,7 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
 
             if (request.trainsRequirements.isEmpty()) {
                 return RsJson(
-                    RsWithBody(conflictResponseAdapter.toJson(ConflictDetectionResponse(listOf())))
+                    RsWithBody(conflictResponseAdapter.toJson(ConflictDetectionResponse(listOf()))),
                 )
             }
 
@@ -75,6 +75,6 @@ private fun makeConflictDetectionResponse(
                     )
                 },
             )
-        }
+        },
     )
 }

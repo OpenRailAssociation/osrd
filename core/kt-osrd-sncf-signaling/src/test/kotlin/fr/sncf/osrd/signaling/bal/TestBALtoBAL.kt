@@ -189,7 +189,7 @@ class TestBALtoBAL {
                     val beginOffset = if (index == 0) Offset<Block>(5.meters) else Offset.zero()
                     val endOffset = blockInfra.getBlockLength(it)
                     PartialBlockRange(it, beginOffset, endOffset, blockInfra.getBlockLength(it))
-                }
+                },
             )
         val trainPath =
             buildTrainPathFromBlockRanges(

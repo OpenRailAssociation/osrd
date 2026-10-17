@@ -38,7 +38,7 @@ class PathPropEndpointTest : ApiTest() {
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                )
+                ),
             )
         val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathPropResponseAdapter.fromJson(response.body())!!
@@ -119,7 +119,7 @@ class PathPropEndpointTest : ApiTest() {
                     Offset(0.meters),
                     Offset(6_500.meters),
                     EdgeDirection.START_TO_STOP,
-                )
+                ),
             )
         val requestBody =
             pathPropRequestAdapter.toJson(
@@ -127,7 +127,7 @@ class PathPropEndpointTest : ApiTest() {
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                )
+                ),
             )
         val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathPropResponseAdapter.fromJson(response.body())!!
@@ -151,7 +151,7 @@ class PathPropEndpointTest : ApiTest() {
                     Offset(0.meters),
                     Offset(6_500.meters),
                     EdgeDirection.STOP_TO_START,
-                )
+                ),
             )
         val requestBody =
             pathPropRequestAdapter.toJson(
@@ -159,7 +159,7 @@ class PathPropEndpointTest : ApiTest() {
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                )
+                ),
             )
         val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathPropResponseAdapter.fromJson(response.body())!!
@@ -183,7 +183,7 @@ class PathPropEndpointTest : ApiTest() {
                     Offset(1_000.meters),
                     Offset(23_000.meters),
                     EdgeDirection.START_TO_STOP,
-                )
+                ),
             )
         val requestBody =
             pathPropRequestAdapter.toJson(
@@ -191,7 +191,7 @@ class PathPropEndpointTest : ApiTest() {
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                )
+                ),
             )
         val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathPropResponseAdapter.fromJson(response.body())!!
@@ -224,7 +224,7 @@ class PathPropEndpointTest : ApiTest() {
                     Offset(1_000.meters),
                     Offset(23_000.meters),
                     EdgeDirection.STOP_TO_START,
-                )
+                ),
             )
         val requestBody =
             pathPropRequestAdapter.toJson(
@@ -232,7 +232,7 @@ class PathPropEndpointTest : ApiTest() {
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
                     expectedVersion = 1,
-                )
+                ),
             )
         val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
         val parsed = pathPropResponseAdapter.fromJson(response.body())!!

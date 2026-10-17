@@ -133,7 +133,7 @@ internal constructor(
                         stopDuration,
                         stopDuration,
                         timeData.maxDepartureDelayingWithoutConflict,
-                    )
+                    ),
                 )
                 explorerWithNewEnvelope!!.updateTimeData(timeData.copy(stopTimeData = stopData))
             }

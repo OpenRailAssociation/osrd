@@ -40,7 +40,7 @@ data class RJSSwitchType(
                 listOf("A1", "B1", "A2", "B2"),
                 mapOf(
                     "STATIC" to
-                        listOf(SwitchPortConnection("A1", "B1"), SwitchPortConnection("A2", "B2"))
+                        listOf(SwitchPortConnection("A1", "B1"), SwitchPortConnection("A2", "B2")),
                 ),
             )
         val SINGLE_SLIP_SWITCH: RJSSwitchType =

@@ -199,7 +199,7 @@ class StandaloneSimulationTest {
                                     allowanceDistribution = distribution,
                                     pathLength = pathLength.distance,
                                     powerRestrictions = powerRestrictions,
-                                )
+                                ),
                             )
                         }
                     }
@@ -387,7 +387,7 @@ class StandaloneSimulationTest {
             makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEndFullEtcs)
         val expectedEndFullEtcs =
             distanceRangeMapOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour)
+                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
             )
         assertEquals(expectedEndFullEtcs, safetySpeedRangesEndFullEtcs)
 
@@ -408,7 +408,7 @@ class StandaloneSimulationTest {
             )
         val expectedEndFullEtcsExceptFinalBuffer =
             distanceRangeMapOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour)
+                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
             )
         assertEquals(
             expectedEndFullEtcsExceptFinalBuffer,
@@ -477,7 +477,7 @@ class StandaloneSimulationTest {
         // Distance range spans across two mrsp sections, one below and one above 30km/h
         val safetySpeeds =
             distanceRangeMapOf(
-                DistanceRangeMap.RangeMapEntry(100.meters, 5_000.meters, 30.kilometersPerHour)
+                DistanceRangeMap.RangeMapEntry(100.meters, 5_000.meters, 30.kilometersPerHour),
             )
         val offsetEndSafetySpeed = 5_000.0
         val mrspWithSafetySpeed =

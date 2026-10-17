@@ -61,7 +61,7 @@ class DummyBlockAvailability(
                         trainInBlock.start,
                         trainInBlock.end,
                         blockRange.value,
-                    )
+                    ),
                 )
             }
         }
@@ -97,7 +97,7 @@ class DummyBlockAvailability(
                     segment.timeStart,
                     segment.timeEnd,
                     resource.blockId,
-                )
+                ),
             )
         }
         return res

@@ -43,10 +43,10 @@ class StopTests {
                         setOf(BlockLocation(secondBlock, Offset(50.meters))),
                         10000.0,
                         true,
-                    )
+                    ),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
                 )
                 .run()!!
         val expectedOffset = 150.0
@@ -56,7 +56,7 @@ class StopTests {
 
         // Check that we stop
         Assertions.assertTrue(
-            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(expectedOffset))
+            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(expectedOffset)),
         )
 
         // Check that the stop is properly returned
@@ -90,12 +90,12 @@ class StopTests {
                 .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(2.meters)))))
                 .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(3.meters)))))
         for (offset in stopsOffsets) builder.addStep(
-            ExplorerStep(setOf(BlockLocation(secondBlock, offset)), 1.0, true)
+            ExplorerStep(setOf(BlockLocation(secondBlock, offset)), 1.0, true),
         )
         val res =
             builder
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
                 )
                 .run()!!
 
@@ -104,7 +104,7 @@ class StopTests {
 
         // Check that we stop
         for (offset in stopsOffsets) Assertions.assertTrue(
-            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(100.0 + offset.meters))
+            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(100.0 + offset.meters)),
         )
     }
 
@@ -122,10 +122,14 @@ class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(0.meters))), 10000.0, true)
+                    ExplorerStep(
+                        setOf(BlockLocation(secondBlock, Offset(0.meters))),
+                        10000.0,
+                        true,
+                    ),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
                 )
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
@@ -151,10 +155,10 @@ class StopTests {
                         setOf(BlockLocation(firstBlock, Offset(100.meters))),
                         10000.0,
                         true,
-                    )
+                    ),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
                 )
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
@@ -191,14 +195,14 @@ class StopTests {
                 .setStartTime(100.0)
                 .addStep(ExplorerStep(setOf(BlockLocation(blocksDirectPath[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(detour[1], Offset(1000.meters))), 0.0, stop)
+                    ExplorerStep(setOf(BlockLocation(detour[1], Offset(1000.meters))), 0.0, stop),
                 )
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(blocksDirectPath[3], Offset(0.meters))),
                         0.0,
                         true,
-                    )
+                    ),
                 )
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
@@ -236,10 +240,10 @@ class StopTests {
                         setOf(BlockLocation(firstBlock, Offset(10.meters))),
                         100000.0,
                         true,
-                    )
+                    ),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
                 )
                 .setUnavailableTimes(unavailableTimes)
                 .run()
@@ -271,7 +275,7 @@ class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[0], Offset(50.meters))), 10000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[0], Offset(50.meters))), 10000.0, true),
                 )
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
@@ -331,11 +335,11 @@ class StopTests {
                             setOf(BlockLocation(blocks[1], Offset(50.meters))),
                             1000.0,
                             true,
-                        )
+                        ),
                     )
                     .addStep(
-                        ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
-                    )
+                        ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true),
+                    ),
             )
 
         val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
@@ -407,11 +411,11 @@ class StopTests {
                             setOf(BlockLocation(blocks[1], Offset(50.meters))),
                             1000.0,
                             true,
-                        )
+                        ),
                     )
                     .addStep(
-                        ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true)
-                    )
+                        ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true),
+                    ),
             )
         val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
         checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
@@ -462,7 +466,11 @@ class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 10_000.0, true)
+                    ExplorerStep(
+                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        10_000.0,
+                        true,
+                    ),
                 )
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
@@ -507,7 +515,7 @@ class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true),
                 )
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
@@ -533,7 +541,7 @@ class StopTests {
             10_000 <=
                 resWithConflictSuccess.envelope.interpolateArrivalAt(200.0) +
                     resWithConflictSuccess.stopResults.first().duration +
-                    3 * timeStep
+                    3 * timeStep,
         )
         occupancyTest(resWithConflictSuccess, occupancy)
     }
@@ -595,10 +603,10 @@ class StopTests {
                         setOf(BlockLocation(blocks[0], Offset(0.meters))),
                         plannedTimingData =
                             PlannedTimingData(7_000.seconds, 7_000.seconds, 3_000.seconds),
-                    )
+                    ),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true),
                 )
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setTimeStep(timeStep)
@@ -663,7 +671,7 @@ class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 5_000.0, true),
                 )
                 .addStep(
                     ExplorerStep(
@@ -672,7 +680,7 @@ class StopTests {
                         true,
                         plannedTimingData =
                             PlannedTimingData(15_000.seconds, 15_000.seconds, 15_000.seconds),
-                    )
+                    ),
                 )
                 .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
                 .setUnavailableTimes(occupancy)
@@ -730,10 +738,10 @@ class StopTests {
                 .setUnavailableTimes(occupancy)
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[2], Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[2], Offset(100.meters))), 0.0, true),
                 )
                 .setTimeStep(timeStep)
                 .setMaxRunTime(5_000.0)
@@ -806,13 +814,13 @@ class StopTests {
                 .setUnavailableTimes(occupancy)
                 .addStep(ExplorerStep(setOf(BlockLocation(blocks[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[1], Offset(50.meters))), 1.0, true),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(blocks[4], Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(blocks[4], Offset(100.meters))), 0.0, true),
                 )
                 .setTimeStep(timeStep)
                 .run()!!
@@ -868,10 +876,10 @@ class StopTests {
                         ),
                         100_000.0,
                         true,
-                    )
+                    ),
                 )
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(lastBlock, Offset(100.meters))), 0.0, true)
+                    ExplorerStep(setOf(BlockLocation(lastBlock, Offset(100.meters))), 0.0, true),
                 )
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
@@ -898,7 +906,7 @@ class StopTests {
 
             // Check that we stop
             for (stop in expectedStops) Assertions.assertTrue(
-                areSpeedsEqual(0.0, res.envelope.interpolateSpeed(stop.position))
+                areSpeedsEqual(0.0, res.envelope.interpolateSpeed(stop.position)),
             )
         }
     }

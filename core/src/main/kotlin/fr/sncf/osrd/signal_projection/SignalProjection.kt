@@ -128,7 +128,7 @@ private fun computeSignalAspectChangeEvents(
             simulator.sigModuleManager.getInputSignalingSystem(lastSignalDriver)
         } else {
             loadedSignalInfra.getSignalingSystem(
-                lastSignal
+                lastSignal,
             ) // If it could not connect to anything, lets pretend it does to itself
         }
     val nextSignalState = leastConstrainingStates[lastSignalInputSystem]!!
@@ -245,7 +245,7 @@ private fun signalUpdates(
                         color("VL"),
                         blinking("VL"),
                         "VL",
-                    )
+                    ),
                 )
             }
         }
@@ -269,7 +269,7 @@ private fun signalUpdates(
                     color(event.newAspect),
                     blinking(event.newAspect),
                     event.newAspect,
-                )
+                ),
             )
         }
     }

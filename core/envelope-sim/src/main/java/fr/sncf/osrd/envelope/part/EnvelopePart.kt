@@ -598,7 +598,7 @@ class EnvelopePart(
 
         /** Create an attribute map from the given attributes */
         fun makeAttrs(
-            attrs: Iterable<SelfTypeHolder>
+            attrs: Iterable<SelfTypeHolder>,
         ): Map<Class<out SelfTypeHolder>, SelfTypeHolder> {
             val res = HashMap<Class<out SelfTypeHolder>, SelfTypeHolder>()
             for (attr in attrs) res[attr.selfType] = attr

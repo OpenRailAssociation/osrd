@@ -44,7 +44,7 @@ class AllowanceTests {
                     val newSpeed = envelope.interpolateSpeed(position)
                     val prevSpeed = previousEnvelope.interpolateSpeed(position)
                     Assertions.assertTrue(
-                        prevSpeed < newSpeed || areSpeedsEqual(prevSpeed, newSpeed)
+                        prevSpeed < newSpeed || areSpeedsEqual(prevSpeed, newSpeed),
                     )
                 }
             }

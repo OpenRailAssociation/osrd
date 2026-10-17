@@ -237,7 +237,7 @@ data class LineString(
                                 newBufferLon.get(newBufferLon.size() - 1),
                             )
                             .distanceAsMeters(
-                                Point(lineString.bufferLat[0], lineString.bufferLon[0])
+                                Point(lineString.bufferLat[0], lineString.bufferLon[0]),
                             )
 
                     if (distance < 1e-5) {
@@ -245,7 +245,7 @@ data class LineString(
                         newBufferLat.removeAt(newBufferLat.size() - 1)
                     } else {
                         newCumulativeLengths.add(
-                            distance + newCumulativeLengths.get(newCumulativeLengths.size() - 1)
+                            distance + newCumulativeLengths.get(newCumulativeLengths.size() - 1),
                         )
                     }
                 }
@@ -257,7 +257,7 @@ data class LineString(
                 if (!newCumulativeLengths.isEmpty)
                     lastCumulativeLength = newCumulativeLengths.get(newCumulativeLengths.size() - 1)
                 for (cumLength in lineString.cumulativeLengths) newCumulativeLengths.add(
-                    cumLength + lastCumulativeLength
+                    cumLength + lastCumulativeLength,
                 )
             }
             return LineString(

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 @Disabled(
-    "to be enabled when running profilers or benchmarks, not part of the tests to run by default"
+    "to be enabled when running profilers or benchmarks, not part of the tests to run by default",
 )
 class PerformanceTests {
     @Test
@@ -33,7 +33,7 @@ class PerformanceTests {
         val infra = DummyInfra()
         val blocks = ArrayList<BlockId>()
         for (i in 0..999) blocks.add(
-            infra.addBlock(i.toString(), (i + 1).toString(), 1000.meters, 30.0)
+            infra.addBlock(i.toString(), (i + 1).toString(), 1000.meters, 30.0),
         )
         val occupancyGraphBuilder = ImmutableMultimap.builder<BlockId, OccupancySegment>()
         for (i in 0..19) {
@@ -78,7 +78,7 @@ class PerformanceTests {
         val infra = DummyInfra()
         val blocks = ArrayList<BlockId>()
         for (i in 0..999) blocks.add(
-            infra.addBlock(i.toString(), (i + 1).toString(), 1000.meters, 30.0)
+            infra.addBlock(i.toString(), (i + 1).toString(), 1000.meters, 30.0),
         )
         val unreachable = infra.addBlock("unreachable", "unreachable2")
         val occupancyGraphBuilder = ImmutableMultimap.builder<BlockId, OccupancySegment>()
@@ -226,16 +226,16 @@ class PerformanceTests {
                     BlockLocation(
                         BlockId(infra.getRouteFromName("25,25->25,26").index),
                         Offset(0.meters),
-                    )
-                )
+                    ),
+                ),
             )
             .setEndLocations(
                 setOf(
                     BlockLocation(
                         BlockId(infra.getRouteFromName("75,75->75,76").index),
                         Offset(0.meters),
-                    )
-                )
+                    ),
+                ),
             )
             .setTimeStep(timeStep)
             .run()!!

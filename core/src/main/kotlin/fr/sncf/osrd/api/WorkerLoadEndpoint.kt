@@ -67,6 +67,6 @@ class WorkerLoadEndpoint(
 
     data class WorkerLoadResponse(
         /** Is everything loaded */
-        var loaded: Boolean
+        var loaded: Boolean,
     )
 }

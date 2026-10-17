@@ -80,8 +80,8 @@ class VisitedNodesTests {
                         params1.timeData.copy(
                             earliestReachableTime = 20.0,
                             maxDepartureDelayingWithoutConflict = 20.0,
-                        )
-                )
+                        ),
+                ),
             )
         }
     }
@@ -112,7 +112,7 @@ class VisitedNodesTests {
                         earliestReachableTime = 120.0,
                         maxDepartureDelayingWithoutConflict = 1.0,
                         totalRunningTime = 15.0,
-                    )
+                    ),
             )
         val params3 =
             params1.copy(
@@ -121,7 +121,7 @@ class VisitedNodesTests {
                         earliestReachableTime = 120.0,
                         maxDepartureDelayingWithoutConflict = 1.0,
                         totalRunningTime = 25.0,
-                    )
+                    ),
             )
         // At t=120, it's covered by the first parameters at cost=20
         visitedNodes.markAsVisited(params1)
@@ -152,7 +152,7 @@ class VisitedNodesTests {
         val params2 =
             params1.copy(
                 timeData =
-                    params1.timeData.copy(earliestReachableTime = 120.0, totalRunningTime = 15.0)
+                    params1.timeData.copy(earliestReachableTime = 120.0, totalRunningTime = 15.0),
             )
         // The duration here is longer than the previous test: it's visited from t=120 to t=125
         // (above the cost function), then unvisited from t=125. Some parts are unvisited => false
@@ -217,7 +217,7 @@ class VisitedNodesTests {
                                     currentDuration = 120.0,
                                     minDuration = 120.0,
                                     maxDepartureDelayBeforeStop = 0.0,
-                                )
+                                ),
                             ),
                         maxFirstDepartureDelaying = 100.0,
                     ),
@@ -233,9 +233,9 @@ class VisitedNodesTests {
                             listOf(
                                 params1.timeData.stopTimeData
                                     .first()
-                                    .copy(currentDuration = if (lowerStopDuration) 0.0 else 120.0)
-                            )
-                    )
+                                    .copy(currentDuration = if (lowerStopDuration) 0.0 else 120.0),
+                            ),
+                    ),
             )
         visitedNodes.markAsVisited(params1)
         assertEquals(!lowerStopDuration, visitedNodes.isVisited(params2))
@@ -262,7 +262,7 @@ class VisitedNodesTests {
                                     currentDuration = 120.0,
                                     minDuration = 120.0,
                                     maxDepartureDelayBeforeStop = 0.0,
-                                )
+                                ),
                             ),
                         maxFirstDepartureDelaying = 100.0,
                     ),
@@ -277,8 +277,8 @@ class VisitedNodesTests {
                     params1.timeData.copy(
                         stopTimeData =
                             listOf(
-                                params1.timeData.stopTimeData.first().copy(currentDuration = 0.0)
-                            )
+                                params1.timeData.stopTimeData.first().copy(currentDuration = 0.0),
+                            ),
                     ),
                 remainingTimeEstimation = if (increaseRemainingTime) 600.0 else 300.0,
             )
@@ -342,7 +342,7 @@ class VisitedNodesTests {
         // Arrival time is shifted later, the window isn't fully covered
         assertFalse {
             visitedNodes.isVisited(
-                testParams.copy(timeData = timeData.copy(earliestReachableTime = 50.0))
+                testParams.copy(timeData = timeData.copy(earliestReachableTime = 50.0)),
             )
         }
 
@@ -351,8 +351,8 @@ class VisitedNodesTests {
         assertTrue {
             visitedNodes.isVisited(
                 testParams.copy(
-                    timeData = timeData.copy(earliestReachableTime = 50.0, totalRunningTime = 50.0)
-                )
+                    timeData = timeData.copy(earliestReachableTime = 50.0, totalRunningTime = 50.0),
+                ),
             )
         }
     }

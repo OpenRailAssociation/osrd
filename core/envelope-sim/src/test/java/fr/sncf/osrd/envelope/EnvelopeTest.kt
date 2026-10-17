@@ -92,28 +92,28 @@ class EnvelopeTest {
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 10.0),
                     doubleArrayOf(100.0, 100.0),
-                )
+                ),
             )
         val envelopeB =
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(5.0, 10.0),
                     doubleArrayOf(100.0, 100.0),
-                )
+                ),
             )
         val envelopeC =
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 15.0),
                     doubleArrayOf(100.0, 100.0),
-                )
+                ),
             )
         val envelopeD =
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(5.0, 15.0),
                     doubleArrayOf(100.0, 100.0),
-                )
+                ),
             )
         assertThrows(AssertionError::class.java) { minEnvelopes(envelopeA, envelopeB) }
         assertThrows(AssertionError::class.java) { minEnvelopes(envelopeA, envelopeC) }
@@ -142,13 +142,13 @@ class EnvelopeTest {
             areSpeedsEqual(
                 envelopeA.interpolateSpeedLeftDir(intersectionPosition, directionAscending),
                 intersectionSpeed,
-            )
+            ),
         )
         assertTrue(
             areSpeedsEqual(
                 envelopeB.interpolateSpeedLeftDir(intersectionPosition, directionAscending),
                 intersectionSpeed,
-            )
+            ),
         )
 
         // Check that the positions and speeds are as expected.

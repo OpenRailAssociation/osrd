@@ -175,7 +175,7 @@ class STDCMPathfinding(
             "departure delay = +${res.departureTime.toInt()}s, " +
                 "total movement duration = ${res.envelope.totalTime.toInt()}s, " +
                 "total stops duration = $stopTime, " +
-                "(arrival time - departure time) / duration limit = ${relativeTimeUsed.toInt()}s"
+                "(arrival time - departure time) / duration limit = ${relativeTimeUsed.toInt()}s",
         )
         return res
     }

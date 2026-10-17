@@ -176,7 +176,7 @@ class TimetableCacheManager(
         cache[cacheKey] = requirements
         val nEntries = requirements.zoneUses.entries.sumOf { it.value.asRanges().size }
         logger.info(
-            "timetable requirements computed in ${time.inWholeSeconds} seconds, $nEntries map entries"
+            "timetable requirements computed in ${time.inWholeSeconds} seconds, $nEntries map entries",
         )
         return requirements
     }

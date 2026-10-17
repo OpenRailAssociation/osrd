@@ -95,7 +95,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 Distance(
                     path
                         .map { rawSignalingInfra.getZonePathLength(it) }
-                        .sumOf { it.distance.millimeters }
+                        .sumOf { it.distance.millimeters },
                 )
             val startAtBufferStop = blockInfra.blockStartAtBufferStop(block)
             val stopAtBufferStop = blockInfra.blockStopAtBufferStop(block)
@@ -119,7 +119,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                         val exitSignal =
                             rawSignalingInfra.getLogicalSignalName(signals[signals.size - 1])
                         blockLogAggregator.registerError(
-                            "error in block from $entrySignal to $exitSignal: $errorType"
+                            "error in block from $entrySignal to $exitSignal: $errorType",
                         )
                     }
 
@@ -241,7 +241,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             val blockSignals = blocks.getBlockSignals(lastBlock)
             val lastSignal = blockSignals[blockSignals.size - 1]
             signalEvalSequence.add(
-                SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus())
+                SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus()),
             )
         }
 

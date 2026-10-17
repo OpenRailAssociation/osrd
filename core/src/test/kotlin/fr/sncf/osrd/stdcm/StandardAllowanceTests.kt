@@ -47,7 +47,7 @@ class StandardAllowanceTests {
                     .setInfra(infra.fullInfra())
                     .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(blocks[2], Offset(1000.meters))))
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withAllowance)
         Assertions.assertNotNull(res.withoutAllowance)
@@ -74,7 +74,7 @@ class StandardAllowanceTests {
                     .setInfra(infra.fullInfra())
                     .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(blocks[2], Offset(1000.meters))))
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withAllowance)
         Assertions.assertNotNull(res.withoutAllowance)
@@ -100,14 +100,14 @@ class StandardAllowanceTests {
                     .setUnavailableTimes(occupancyGraph)
                     .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withoutAllowance!! as STDCMCompleteResult)
         Assertions.assertNotNull(res.withAllowance!! as STDCMCompleteResult)
         val secondBlockEntryTime =
             (res.withAllowance.departureTime +
                 res.withAllowance.envelope.interpolateArrivalAt(
-                    infra.getBlockLength(firstBlock).meters
+                    infra.getBlockLength(firstBlock).meters,
                 ))
         Assertions.assertTrue(secondBlockEntryTime >= 3600 - TIME_STEP)
         occupancyTest(res.withAllowance, occupancyGraph, TIME_STEP)
@@ -134,7 +134,7 @@ class StandardAllowanceTests {
                     .setUnavailableTimes(occupancyGraph)
                     .setStartLocations(setOf(BlockLocation(block, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(block, Offset(10000.meters))))
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withoutAllowance!! as STDCMCompleteResult)
         Assertions.assertNotNull(res.withAllowance!! as STDCMCompleteResult)
@@ -266,9 +266,9 @@ class StandardAllowanceTests {
                     .setInfra(infra.fullInfra())
                     .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                     .setEndLocations(
-                        setOf(BlockLocation(blocks[blocks.size - 1], Offset(0.meters)))
+                        setOf(BlockLocation(blocks[blocks.size - 1], Offset(0.meters))),
                     )
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withAllowance)
         Assertions.assertNotNull(res.withoutAllowance)
@@ -318,7 +318,7 @@ class StandardAllowanceTests {
                     .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(forthBlock, Offset(1.meters))))
                     .setUnavailableTimes(occupancyGraph)
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withoutAllowance as STDCMCompleteResult)
         Assertions.assertNotNull(res.withAllowance as STDCMCompleteResult)
@@ -400,7 +400,7 @@ class StandardAllowanceTests {
                     .setInfra(infra.fullInfra())
                     .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(forthBlock, Offset(100.meters))))
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withoutAllowance)
         Assertions.assertNotNull(res.withAllowance)
@@ -427,7 +427,7 @@ class StandardAllowanceTests {
                     .setInfra(infra.fullInfra())
                     .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(forthBlock, Offset(100.meters))))
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withoutAllowance)
         Assertions.assertNotNull(res.withAllowance)
@@ -481,7 +481,7 @@ class StandardAllowanceTests {
                     .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(forthBlock, Offset(100.meters))))
                     .setUnavailableTimes(occupancyGraph)
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertNotNull(res.withoutAllowance as STDCMCompleteResult)
         Assertions.assertNotNull(res.withAllowance as STDCMCompleteResult)
@@ -536,7 +536,7 @@ class StandardAllowanceTests {
                     .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                     .setEndLocations(setOf(BlockLocation(thirdBlock, Offset(100.meters))))
                     .setUnavailableTimes(occupancyGraph)
-                    .setStandardAllowance(allowance)
+                    .setStandardAllowance(allowance),
             )
         Assertions.assertEquals(0.0, (res.withAllowance!! as STDCMCompleteResult).envelope.endSpeed)
         Assertions.assertEquals(

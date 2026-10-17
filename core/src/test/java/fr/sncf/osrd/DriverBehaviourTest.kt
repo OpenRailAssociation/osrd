@@ -34,7 +34,7 @@ class DriverBehaviourTest {
                         Offset<PhysicsPath>(0.meters),
                         Offset(path.getLength().distance),
                         "BAL",
-                    )
+                    ),
                 ),
             )
         Assertions.assertEquals(20.0, mrsp.interpolateSpeedRightDir(0.0, 1.0))

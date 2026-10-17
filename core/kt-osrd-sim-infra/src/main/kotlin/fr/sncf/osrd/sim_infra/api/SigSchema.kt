@@ -60,7 +60,7 @@ data class SigFlagField(override val name: String, val default: Boolean?) : SigF
                 "false" -> false
                 else ->
                     throw OSRDError.newSigSchemaInvalidFieldError(value, "expected true or false")
-            }
+            },
         )
     }
 
@@ -88,7 +88,7 @@ private fun sigSchemaFields(init: SigSchemaBuilder.() -> Unit): List<SigField> {
 
 class SigSchema<MarkerT>(
     /** A list of fields, sorted by name */
-    fields: List<SigField>
+    fields: List<SigField>,
 ) {
     val sortedFields = fields.sortedBy { it.name }
     val fields

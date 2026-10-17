@@ -200,7 +200,7 @@ private fun buildBlockName(
             if (tracks.isNotEmpty() && tracks[tracks.size - 1] == trackName) continue
             tracks.add(trackName)
             trackIds.add(
-                DirTrackSectionId(rawInfra.getTrackFromChunk(chunk.value), chunk.direction)
+                DirTrackSectionId(rawInfra.getTrackFromChunk(chunk.value), chunk.direction),
             )
         }
     }
@@ -210,7 +210,7 @@ private fun buildBlockName(
     for ((node, config) in trackNodes zip trackNodeConfig) {
         if (rawInfra.getTrackNodeConfigs(node).size == 1U) continue // Track link, can be skipped
         trackNodeConfigNames.add(
-            "${rawInfra.getTrackNodeName(node)}-${rawInfra.getTrackNodeConfigName(node, config)}"
+            "${rawInfra.getTrackNodeName(node)}-${rawInfra.getTrackNodeConfigName(node, config)}",
         )
     }
 

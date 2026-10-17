@@ -48,7 +48,7 @@ data class RangeValues<valueT>(
                     boundaries[i].distance,
                     boundaries[i + 1].distance,
                     values[i],
-                )
+                ),
             )
         }
         return distanceRangeMapOf(rangeMapEntries)
@@ -65,7 +65,7 @@ data class RangeValues<valueT>(
                 this.internalBoundaries.map {
                     require(it + distance > Offset(0.meters))
                     it + distance
-                }
+                },
         )
     }
 }

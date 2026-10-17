@@ -103,7 +103,7 @@ fun TrainPath.splitAtBacktracks(): List<TrainPath> {
                 to = backtrackLocation,
                 includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
                 includeExactEnd = false,
-            )
+            ),
         )
         currentBeginOffset = backtrackLocation
     }
@@ -113,7 +113,7 @@ fun TrainPath.splitAtBacktracks(): List<TrainPath> {
             to = getLength(),
             includeExactStart = currentBeginOffset == Offset.zero<TrainPath>(),
             includeExactEnd = true,
-        )
+        ),
     )
     return res
 }
@@ -123,7 +123,7 @@ fun TrainPath.splitAtBacktracks(): List<TrainPath> {
  * backtracking locations as part of the next straight sub-path.
  */
 fun TrainPath.getNonBacktrackingSubPathBoundariesContainingOffset(
-    offset: Offset<PhysicsPath>
+    offset: Offset<PhysicsPath>,
 ): OffsetRange<PhysicsPath> {
     require(offset <= getLength())
     for (it in getBacktrackLocations().withIndex()) {

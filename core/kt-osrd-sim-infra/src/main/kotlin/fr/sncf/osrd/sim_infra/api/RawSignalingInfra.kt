@@ -78,7 +78,7 @@ fun RawSignalingInfra.getLogicalSignalName(signal: LogicalSignalId): String? {
  * in order)
  */
 fun RawSignalingInfra.chunksToRoutePaths(
-    consecutiveChunksToCover: List<DirTrackChunkId>
+    consecutiveChunksToCover: List<DirTrackChunkId>,
 ): Set<List<RouteId>> {
     val firstRoutes = getRoutesOnTrackChunk(consecutiveChunksToCover.first())
     return firstRoutes

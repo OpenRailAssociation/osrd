@@ -104,7 +104,7 @@ data class TimeData(
                     currentDuration = extraStopTime,
                     minDuration = extraStopTime,
                     maxDepartureDelayBeforeStop = maxDepartureDelayingWithoutConflict,
-                )
+                ),
             )
             newStopData = stopDataCopy
             maxDepartureDelayingWithoutConflict = maxAdditionalStopTime!!

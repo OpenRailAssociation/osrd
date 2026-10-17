@@ -62,7 +62,7 @@ class TimetableDownloader(
         timetableId: TimetableId,
     ): Flow<TrainRequirementsById> = flow {
         logger.info(
-            "Fetching train requirements for infra $infraId and timetable $timetableId: Start."
+            "Fetching train requirements for infra $infraId and timetable $timetableId: Start.",
         )
 
         val lastLogSecond = AtomicLong(Long.MIN_VALUE)
@@ -70,7 +70,7 @@ class TimetableDownloader(
             getTrainPaginatedRequirements(infraId, timetableId, 1, lastLogSecond)
 
         logger.info(
-            "Fetching train requirements for infra $infraId and timetable $timetableId: ${firstPageTrainRequirements.pageCount} total pages to get."
+            "Fetching train requirements for infra $infraId and timetable $timetableId: ${firstPageTrainRequirements.pageCount} total pages to get.",
         )
 
         emitAll(firstPageTrainRequirements.results.asFlow())
@@ -85,10 +85,10 @@ class TimetableDownloader(
                         emitAll(paginatedTrainRequirements.results.asFlow())
                     }
                 }
-                .flowOn(httpDispatcher)
+                .flowOn(httpDispatcher),
         )
         logger.info(
-            "Fetching train requirements for infra $infraId and timetable $timetableId: End."
+            "Fetching train requirements for infra $infraId and timetable $timetableId: End.",
         )
     }
 
@@ -108,7 +108,7 @@ class TimetableDownloader(
             val lastLog = lastLogSecond.getAndUpdate { if (it + muteDuration < now) now else it }
             if (lastLog + muteDuration < now) {
                 logger.info(
-                    "Fetching train requirements for infra $infraId and timetable $timetableId: obtained page $page, HTTP status ${response.code} [muting this log for the next $muteDuration s]."
+                    "Fetching train requirements for infra $infraId and timetable $timetableId: obtained page $page, HTTP status ${response.code} [muting this log for the next $muteDuration s].",
                 )
             }
 
@@ -181,7 +181,7 @@ class TimetableDownloader(
                                 trainRequirementById.trainName?.let {
                                     RequirementId(it, RequirementType.TRAIN)
                                 },
-                            )
+                            ),
                         )
                 }
             }

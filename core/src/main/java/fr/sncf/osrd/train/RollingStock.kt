@@ -73,7 +73,7 @@ constructor(
     init {
         assert(
             !this.isElectric ||
-                (this.electricalPowerStartUpTime != null && this.raisePantographTime != null)
+                (this.electricalPowerStartUpTime != null && this.raisePantographTime != null),
         ) {
             "Electrical power start up time and Raise pantograph time must be defined for an electric train"
         }
@@ -261,7 +261,7 @@ constructor(
                     value.isElectric,
                     scaleCurve(value.defaultCurve, lambda),
                     value.curves.map { it.scale(lambda) }.toTypedArray(),
-                )
+                ),
             )
         }
         return copy(modes = newModes)

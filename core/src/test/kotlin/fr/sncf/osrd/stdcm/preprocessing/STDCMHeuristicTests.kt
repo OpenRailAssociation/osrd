@@ -323,7 +323,7 @@ class STDCMHeuristicTests {
                     EnvelopeTestUtils.generateTimes(
                         doubleArrayOf(0.0, 1.0),
                         doubleArrayOf(1.0, 1.0),
-                    )
+                    ),
                 ),
             )
 

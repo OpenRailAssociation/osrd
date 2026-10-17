@@ -28,7 +28,7 @@ class StepTrackerTests {
                     listOf(
                         BlockLocation(blocks[0], Offset(40.meters)),
                         BlockLocation(blocks[0], Offset(51.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(0.meters)))),
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),

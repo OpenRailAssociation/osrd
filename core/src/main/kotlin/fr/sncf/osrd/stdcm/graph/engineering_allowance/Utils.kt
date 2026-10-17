@@ -75,7 +75,7 @@ internal fun fixedDistanceBackwardsEnvelopeIteration(
                 prevPoint.time + relativeDistance * (nextPoint.time - prevPoint.time),
                 prevPoint.speed + relativeDistance * (nextPoint.speed - prevPoint.speed),
                 position,
-            )
+            ),
         )
         position -= distance
     }

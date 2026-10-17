@@ -34,7 +34,7 @@ class EnvelopeTrainPathTest {
                                 listOf(
                                     RJSSlope(0.0, 1_000.0, 5.0),
                                     RJSSlope(1_000.0, 2_000.0, 15.0),
-                                )
+                                ),
                         )
 
                     "TA1" ->
@@ -43,7 +43,7 @@ class EnvelopeTrainPathTest {
                                 listOf(
                                     RJSSlope(0.0, 1_000.0, 10.0),
                                     RJSSlope(1_000.0, 1_950.0, 25.0),
-                                )
+                                ),
                         )
 
                     else -> it
@@ -89,7 +89,7 @@ class EnvelopeTrainPathTest {
                                         ApplicableDirection.BOTH,
                                         0.0,
                                         800.0,
-                                    )
+                                    ),
                                 ),
                             ),
                             RJSElectrification(
@@ -119,12 +119,12 @@ class EnvelopeTrainPathTest {
                                         ApplicableDirection.BOTH,
                                         1_100.0,
                                         1_950.0,
-                                    )
+                                    ),
                                 ),
                             ),
                             // and there is already a deadSection on TA0 from 1900 to 1950 in the
                             // Direction.INCREASING
-                        )
+                        ),
                 )
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path = pathFromTracks(infra, tracks, direction, 500.meters, 3_600.meters)
@@ -148,7 +148,7 @@ class EnvelopeTrainPathTest {
                                         ApplicableDirection.BOTH,
                                         0.0,
                                         1500.0,
-                                    )
+                                    ),
                                 ),
                             ),
                             RJSElectrification(
@@ -178,12 +178,12 @@ class EnvelopeTrainPathTest {
                                         ApplicableDirection.BOTH,
                                         500.0,
                                         1_950.0,
-                                    )
+                                    ),
                                 ),
                             ),
                             // and there is already a deadSection on TA0 from 1900 to 1950 in the
                             // Direction.INCREASING
-                        )
+                        ),
                 )
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_1()
@@ -247,8 +247,8 @@ class EnvelopeTrainPathTest {
                                         1_950.0,
                                     ),
                                 ),
-                            )
-                        )
+                            ),
+                        ),
                 )
 
         val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
