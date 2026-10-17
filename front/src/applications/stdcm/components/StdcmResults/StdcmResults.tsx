@@ -131,6 +131,7 @@ const StdcmResults = ({
       simulationPathSteps: outputs.results.simulationPathSteps,
       departureTime: new Date(outputs.results.departure_time),
       pathfindingResult: outputs.results.pathfinding_result,
+      trainLength: outputs.results.rollingStock.length,
     }).filter(({ weight, stopType }) => stopType || (weight && weight >= MINIMUM_OP_WEIGHT));
   }, [outputs, hasSimulationResults, opIdsToExclude]);
 
@@ -384,7 +385,6 @@ const StdcmResults = ({
                     consist={selectedSimulation.inputs.consist}
                     isSimulationRetained={isSelectedSimulationRetained}
                     operationalPointsList={operationalPointsList}
-                    backtrackPathItemIndexes={backtrackPathItemIndexes}
                     simulationIndex={selectedSimulation.index}
                   />
                   {isSelectedSimulationRetained && (

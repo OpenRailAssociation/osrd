@@ -150,16 +150,17 @@ function formatMinimalOperationalPointWithTimes(
  * @returns A fully formatted operational point with calculated stop duration and departure time
  */
 function formatOperationalPointWithTimesAndWeight(
-  suggestedOp: SuggestedOP,
+  suggestedOp: Omit<SuggestedOP, 'track' | 'offsetOnTrack'>,
   operationalPoints: StdcmPathProperties['operational_points'],
   train: TrainSimulation,
   simulationPathSteps: StdcmPathStep[]
 ): StdcmResultsOperationalPoint {
   const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(suggestedOp, train);
   // Find the corresponding stopType from pathSteps
-  const correspondingStep = simulationPathSteps.find(
-    (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
-  );
+  const correspondingStep =
+    suggestedOp.pathItemIndex !== undefined
+      ? simulationPathSteps[suggestedOp.pathItemIndex]
+      : undefined;
   let stopType;
   let consistChange;
   if (correspondingStep) {
@@ -179,6 +180,7 @@ function formatOperationalPointWithTimesAndWeight(
 
   return {
     ...partiallyFormattedOp,
+    pathItemIndex: suggestedOp.pathItemIndex,
     name: suggestedOp.name,
     secondaryCode: suggestedOp.secondaryCode,
     trackName: suggestedOp.metadata?.trackName,
@@ -187,6 +189,48 @@ function formatOperationalPointWithTimesAndWeight(
     stopRequested,
     weight: operationalPoints.find((op) => op.id === suggestedOp.opId)?.weight ?? null,
   };
+}
+
+/**
+ * Moves each requested OP to its path item position, which the pathfinding may have
+ * moved slightly because of the train length train lenght.
+ * If no OP is found at the path item position, a new OP is created at that position.
+ */
+function moveRequestedOpsToPathItemPositions(
+  suggestedOps: SuggestedOP[],
+  simulationPathSteps: StdcmPathStep[],
+  pathItemPositions: number[],
+  trainLength: number
+): Omit<SuggestedOP, 'track' | 'offsetOnTrack'>[] {
+  const ops: Omit<SuggestedOP, 'track' | 'offsetOnTrack'>[] = [...suggestedOps];
+
+  let firstCandidateIndex = 0;
+  pathItemPositions.forEach((pathItemPosition, pathItemIndex) => {
+    const simulationOp = simulationPathSteps[pathItemIndex]?.operationalPoint;
+    const opIndex = ops.findIndex(
+      (op, index) =>
+        index >= firstCandidateIndex &&
+        op.opId === simulationOp?.id &&
+        op.positionOnPath <= pathItemPosition &&
+        pathItemPosition - op.positionOnPath <= trainLength * 1000
+    );
+
+    if (opIndex !== -1) {
+      ops[opIndex] = { ...ops[opIndex], positionOnPath: pathItemPosition, pathItemIndex };
+      firstCandidateIndex = opIndex + 1;
+    } else {
+      ops.push({
+        opId: simulationOp?.id,
+        name: simulationOp?.name,
+        secondaryCode: simulationOp?.secondaryCode,
+        positionOnPath: pathItemPosition,
+        pathItemIndex,
+        pathStepKey: simulationPathSteps[pathItemIndex]?.key,
+      });
+    }
+  });
+  // we need to sort the ops, as the "real" backtrack pathItem may have a positionOnPath higher than the next path item in the order of the path
+  return ops.toSorted((a, b) => a.positionOnPath - b.positionOnPath);
 }
 
 /**
@@ -293,16 +337,16 @@ function consolidateBacktrackSteps(
 ): StdcmResultsOperationalPoint[] {
   const backtrackPathItemIndexes = pathfindingResult.backtrack_path_items ?? [];
   if (!backtrackPathItemIndexes.length) return steps;
-  const backtrackPositions = backtrackPathItemIndexes.map(
-    (index) => pathfindingResult.path_item_positions[index]
-  );
-  const isBacktrackStep = (step: StdcmResultsOperationalPoint) =>
-    backtrackPositions.includes(step.positionOnPath);
+  const markedSteps = steps.map((step) => ({
+    ...step,
+    isBackTrack:
+      step.pathItemIndex !== undefined && backtrackPathItemIndexes.includes(step.pathItemIndex),
+  }));
 
-  return steps.filter((step, index) => {
-    const nextStep = steps[index + 1];
+  return markedSteps.filter((step, index) => {
+    const nextStep = markedSteps[index + 1];
     const isSameStepBeforeBacktrack =
-      nextStep && nextStep.opId === step.opId && isBacktrackStep(nextStep);
+      nextStep && nextStep.opId === step.opId && nextStep.isBackTrack;
     return !isSameStepBeforeBacktrack;
   });
 }
@@ -338,6 +382,7 @@ export function getOperationalPointsWithTimes({
   simulationPathSteps,
   departureTime,
   pathfindingResult,
+  trainLength,
 }: {
   operationalPoints: StdcmPathProperties['operational_points'];
   suggestedOperationalPoints: SuggestedOP[];
@@ -346,10 +391,16 @@ export function getOperationalPointsWithTimes({
   simulationPathSteps: StdcmPathStep[];
   departureTime: Date;
   pathfindingResult: StdcmSuccessResponse['pathfinding_result'];
+  trainLength: number;
 }): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
-  const formattedOps = suggestedOperationalPoints
+  const formattedOps = moveRequestedOpsToPathItemPositions(
+    suggestedOperationalPoints,
+    simulationPathSteps,
+    pathfindingResult.path_item_positions,
+    trainLength
+  )
     .filter((suggestedOp) => {
       // Keep if the OP is not in the exclusion list
       if (!suggestedOp.opId || !opIdsToExclude.includes(suggestedOp.opId)) return true;
