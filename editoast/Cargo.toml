@@ -64,6 +64,7 @@ license = "LGPL-3.0"
 approx = "0.5.1"
 authz = { path = "./authz" }
 aws-lc-rs = { version = "1.17.1", default-features = false }
+bilrost = "0.1016.1"
 cache = { path = "./cache" }
 chrono = { version = "0.4.45", default-features = false, features = ["serde"] }
 clap = { version = "4.6", features = ["derive", "env"] }
@@ -201,6 +202,7 @@ axum-streams = { version = "0.30", features = ["json"] }
 axum-tracing-opentelemetry = { version = "0.39.1", default-features = false, features = [
   "tracing_level_info",
 ] }
+base64 = "0.23.1"
 buildid = "1.0.4"
 cache.workspace = true
 chrono.workspace = true

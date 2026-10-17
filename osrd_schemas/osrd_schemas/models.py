@@ -2154,6 +2154,59 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
     )
 
 
+class EditoastStdcmRequestErrorDatabase(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorDatabaseContext")
+    ] = None
+    message: str
+    status: Literal[500] = 500
+    type: Literal["editoast:stdcm_request:Database"] = "editoast:stdcm_request:Database"
+
+
+class EditoastStdcmRequestErrorForbidden(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorForbiddenContext")
+    ] = None
+    message: str
+    status: Literal[403] = 403
+    type: Literal["editoast:stdcm_request:Forbidden"] = (
+        "editoast:stdcm_request:Forbidden"
+    )
+
+
+class EditoastStdcmRequestErrorMalformedParameters(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmRequestErrorMalformedParametersContext"),
+    ] = None
+    message: str
+    status: Literal[422] = 422
+    type: Literal["editoast:stdcm_request:MalformedParameters"] = (
+        "editoast:stdcm_request:MalformedParameters"
+    )
+
+
+class EditoastStdcmRequestErrorNotUser(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorNotUserContext")
+    ] = None
+    message: str
+    status: Literal[401] = 401
+    type: Literal["editoast:stdcm_request:NotUser"] = "editoast:stdcm_request:NotUser"
+
+
+class EditoastStdcmRequestErrorRangePaginationNotSupported(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmRequestErrorRangePaginationNotSupportedContext"),
+    ] = None
+    message: str
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm_request:RangePaginationNotSupported"] = (
+        "editoast:stdcm_request:RangePaginationNotSupported"
+    )
+
+
 class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
@@ -3044,6 +3097,11 @@ class LinkingOccurrenceIdAddedException(BaseModel):
     train_schedule_id: int
     train_schedule_instance_index: int | None = None
     type: Literal["added_exception"] = "added_exception"
+
+
+class Links(BaseModel):
+    next: str | None = None
+    prev: str | None = None
 
 
 class LoadingGaugeType(Enum):
@@ -4199,6 +4257,13 @@ class StartTimeChangeGroup(BaseModel):
     """
 
 
+class StdcmRequest(BaseModel):
+    created_by: int
+    id: int
+    rmi_id: str
+    trace_id: str | None = None
+
+
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"] = "internal_error"
@@ -5089,6 +5154,11 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
+        | EditoastStdcmRequestErrorDatabase
+        | EditoastStdcmRequestErrorForbidden
+        | EditoastStdcmRequestErrorMalformedParameters
+        | EditoastStdcmRequestErrorNotUser
+        | EditoastStdcmRequestErrorRangePaginationNotSupported
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
@@ -5264,6 +5334,11 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
+        | EditoastStdcmRequestErrorDatabase
+        | EditoastStdcmRequestErrorForbidden
+        | EditoastStdcmRequestErrorMalformedParameters
+        | EditoastStdcmRequestErrorNotUser
+        | EditoastStdcmRequestErrorRangePaginationNotSupported
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
@@ -5477,6 +5552,11 @@ class LinkingCreateForm(BaseModel):
         | LinkingOccurrenceIdPacedOccurrence
         | LinkingOccurrenceIdAddedException
     )
+
+
+class ListStdcmRequestResponse(BaseModel):
+    links: Links
+    requests: list[StdcmRequest]
 
 
 class LoadingGaugeLimit(BaseModel):
