@@ -460,7 +460,11 @@ fn service_router() -> server::router::DocumentedRouter {
             //
             // stdcm_requests
             //
-            .route("/stdcm_requests", get!(stdcm_request::list))
+            .nests("/stdcm_requests", |path| {
+                path.route("/", get!(stdcm_request::list))
+                    .route("/", post!(stdcm_request::post))
+                    .route("/{id}", delete!(stdcm_request::delete))
+            })
     })
 }
 
