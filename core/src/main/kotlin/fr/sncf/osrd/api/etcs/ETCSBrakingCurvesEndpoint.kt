@@ -194,14 +194,14 @@ class ETCSBrakingCurvesEndpoint(
                     attrs,
                     doubleArrayOf(lower.meters, upper.meters),
                     doubleArrayOf(speed, speed),
-                )
+                ),
             )
         }
         return Envelope.make(*mrspParts.toTypedArray())
     }
 
     private fun buildETCSConflictCurves(
-        eoaBrakingCurves: EOABrakingCurves
+        eoaBrakingCurves: EOABrakingCurves,
     ): List<ETCSConflictCurves> {
         return eoaBrakingCurves.map {
             assert(it.key.eoaType == EoaType.SPACING || it.key.eoaType == EoaType.ROUTING)

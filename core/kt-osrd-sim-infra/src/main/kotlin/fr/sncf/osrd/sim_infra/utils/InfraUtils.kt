@@ -6,7 +6,7 @@ import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 
 fun TrackNetworkInfra.getNextTrackSections(
-    trackSection: DirTrackSectionId
+    trackSection: DirTrackSectionId,
 ): List<DirTrackSectionId> {
     val nextTrackSections = mutableDirStaticIdxArrayListOf<TrackSection>()
     val node = getNextTrackNode(trackSection)

@@ -31,12 +31,12 @@ class TemporarySpeedLimitTests {
         val startDetectorId = infra.rawInfra.findDetector(beginDetector)!!
         val blocksOnStart =
             infra.blockInfra.getBlocksStartingAtDetector(
-                DirDetectorId(startDetectorId, Direction.INCREASING)
+                DirDetectorId(startDetectorId, Direction.INCREASING),
             )
         val endDetectorId = infra.rawInfra.findDetector(endDetector)!!
         val blocksOnEnd =
             infra.blockInfra.getBlocksStartingAtDetector(
-                DirDetectorId(endDetectorId, Direction.INCREASING)
+                DirDetectorId(endDetectorId, Direction.INCREASING),
             )
         val startBlock = blocksOnStart[0]
         val endBlock = blocksOnEnd[0]
@@ -62,9 +62,9 @@ class TemporarySpeedLimitTests {
                             begin = Offset(Distance.fromMeters(500.0)),
                             end = Offset(Distance.fromMeters(1000.0)),
                             direction = EdgeDirection.START_TO_STOP,
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
@@ -107,9 +107,9 @@ class TemporarySpeedLimitTests {
                             begin = Offset(Distance.fromMeters(500.0)),
                             end = Offset(Distance.fromMeters(1000.0)),
                             direction = EdgeDirection.START_TO_STOP,
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
@@ -144,7 +144,7 @@ class TemporarySpeedLimitTests {
                             begin = Offset(Distance.fromMeters(500.0)),
                             end = Offset(Distance.fromMeters(1000.0)),
                             direction = EdgeDirection.START_TO_STOP,
-                        )
+                        ),
                     ),
                 ),
                 STDCMTemporarySpeedLimit(
@@ -155,7 +155,7 @@ class TemporarySpeedLimitTests {
                             begin = Offset(Distance.fromMeters(800.0)),
                             end = Offset(Distance.fromMeters(1100.0)),
                             direction = EdgeDirection.START_TO_STOP,
-                        )
+                        ),
                     ),
                 ),
             )
@@ -201,9 +201,9 @@ class TemporarySpeedLimitTests {
                             begin = Offset(Distance.fromMeters(800.0)),
                             end = Offset(Distance.fromMeters(1100.0)),
                             direction = EdgeDirection.STOP_TO_START,
-                        )
+                        ),
                     ),
-                )
+                ),
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")

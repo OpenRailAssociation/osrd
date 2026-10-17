@@ -246,11 +246,11 @@ class AllowanceRangesTests {
         // Checks that we don't accelerate to match the original speed for transitions
         Assertions.assertTrue(
             marecoEnvelope.interpolateSpeed(rangesTransitions[1]) <
-                maxEffortEnvelope.interpolateSpeed(rangesTransitions[1])
+                maxEffortEnvelope.interpolateSpeed(rangesTransitions[1]),
         )
         Assertions.assertTrue(
             marecoEnvelope.interpolateSpeed(rangesTransitions[2]) <
-                maxEffortEnvelope.interpolateSpeed(rangesTransitions[2])
+                maxEffortEnvelope.interpolateSpeed(rangesTransitions[2]),
         )
     }
 
@@ -440,7 +440,7 @@ class AllowanceRangesTests {
                     i * rangeLength,
                     (i + 1) * rangeLength,
                     AllowanceValue.Percentage(50.0),
-                )
+                ),
             )
         }
 

@@ -78,7 +78,7 @@ data class TrainPathImpl(
             backtrackLocations
                 .asSequence()
                 .zipWithNext { current, next -> current < next }
-                .all { it }
+                .all { it },
         )
     }
 
@@ -285,7 +285,7 @@ data class TrainPathImpl(
             if (zoneId != null) {
                 val chunkLength = rawInfra.getTrackChunkLength(chunkId).distance
                 distanceRangeMapOf(
-                    DistanceRangeMap.RangeMapEntry(Distance.ZERO, chunkLength, zoneId)
+                    DistanceRangeMap.RangeMapEntry(Distance.ZERO, chunkLength, zoneId),
                 )
             } else {
                 distanceRangeMapOf()
@@ -309,7 +309,7 @@ data class TrainPathImpl(
      * the path
      */
     private fun <T> getRangeMap(
-        getData: (dirChunkId: DirTrackChunkId) -> DistanceRangeMap<T>
+        getData: (dirChunkId: DirTrackChunkId) -> DistanceRangeMap<T>,
     ): DistanceRangeMap<T> {
         // TODO: reduce allocations (subMap allocates -too much- before truncate)
         val entries =
@@ -349,14 +349,14 @@ data class TrainPathImpl(
                     directedTrackBegin,
                     directedTrackEnd,
                     trackLength.forceDirected(),
-                )
+                ),
             )
         }
         return buildRangeList(partialTrackRanges)
     }
 
     override fun <T> getRangeMapFromUndirected(
-        getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
+        getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>,
     ): DistanceRangeMap<T> {
         fun projectDirection(dirChunk: DirTrackChunkId): DistanceRangeMap<T> {
             val data = getData(dirChunk.value)

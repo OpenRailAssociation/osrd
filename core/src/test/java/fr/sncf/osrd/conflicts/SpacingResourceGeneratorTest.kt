@@ -77,12 +77,12 @@ class SpacingResourceGeneratorTest {
         val blocks =
             mutableListOf(
                 infra.blockInfra
-                    .getBlocksStartingAtDetector(DirDetectorId(firstDetector, INCREASING))[0]
+                    .getBlocksStartingAtDetector(DirDetectorId(firstDetector, INCREASING))[0],
             )
         blocks.addAll(
             detectors.map {
                 infra.blockInfra.getBlocksEndingAtDetector(DirDetectorId(it, INCREASING))[0]
-            }
+            },
         )
         val routes =
             listOf("rt.det.a1.nf->det.b1.nf", "rt.det.b1.nf->bf.b1").map {
@@ -93,14 +93,14 @@ class SpacingResourceGeneratorTest {
                 blocks.map {
                     val blockLength = infra.blockInfra.getBlockLength(it)
                     PartialBlockRange(it, Offset.zero(), blockLength, blockLength)
-                }
+                },
             )
         routeRanges =
             buildRangeList(
                 routes.map {
                     val routeLength = infra.rawInfra.getRouteLength(it)
                     PartialRouteRange(it, Offset.zero(), routeLength, routeLength)
-                }
+                },
             )
         zoneRanges =
             blockRanges
@@ -274,13 +274,13 @@ class SpacingResourceGeneratorTest {
         }
         assert(
             incrementalResultAtArrival.single { it.zone == zoneAfterStop } ==
-                oneShotResults.single { it.zone == zoneAfterStop }
+                oneShotResults.single { it.zone == zoneAfterStop },
         ) {
             "We generate the same requirements after the stop, even with incremental calls"
         }
         assert(
             incrementalResultAtArrival.single { it.zone == zoneAfterStop }.beginTime ==
-                stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
+                stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN,
         ) {
             "We emit the requirement 20s before the departure time"
         }
@@ -301,7 +301,7 @@ private fun makeCallbacks(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(0.0, length.meters),
                 doubleArrayOf(30.0, 30.0),
-            )
+            ),
         )
     val withStops = EnvelopeStopWrapper(envelope, stops)
     return IncrementalRequirementEnvelopeAdapter(

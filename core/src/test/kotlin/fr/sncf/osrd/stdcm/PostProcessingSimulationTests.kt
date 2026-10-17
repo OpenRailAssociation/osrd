@@ -40,8 +40,8 @@ class PostProcessingSimulationTests {
                         positions = doubleArrayOf(0.0),
                         speeds = doubleArrayOf(beginSpeed),
                         timeDeltas = doubleArrayOf(),
-                    )
-                )
+                    ),
+                ),
             )
         }
 
@@ -67,7 +67,7 @@ class PostProcessingSimulationTests {
                 listOf(
                     makeTestEnvelope(endPos = 1_000.0, beginSpeed = 0.0, endSpeed = 20.0),
                     makeTestEnvelope(endPos = 1_000.0, beginSpeed = 20.0, endSpeed = 0.0),
-                )
+                ),
             )
 
         val envelope2 = makeTestEnvelope(endPos = 1_000.0, beginSpeed = 0.0, endSpeed = 20.0)

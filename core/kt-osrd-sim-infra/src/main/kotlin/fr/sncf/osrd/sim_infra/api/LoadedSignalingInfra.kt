@@ -147,7 +147,7 @@ fun BlockInfra.getBlockOffset(
             "getBlockOffset: Directed track chunk %s not in block %s",
             waypointDirChunkLocation.dirChunk,
             blockId,
-        )
+        ),
     )
 }
 
@@ -167,7 +167,7 @@ fun BlockInfra.getDirChunkLocation(
     }
     throw AssertionError(
         String.format(
-            "getDirChunkLocation: Did not find chunk location for BlockLocation $blockLocation: wrong offset?"
-        )
+            "getDirChunkLocation: Did not find chunk location for BlockLocation $blockLocation: wrong offset?",
+        ),
     )
 }

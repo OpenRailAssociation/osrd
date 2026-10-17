@@ -17,7 +17,7 @@ fun <T : Any> DistanceRangeMapImpl.Companion.from(map: RangeMap<Distance, T>): D
 }
 
 fun <T : Any> DistanceRangeMapImpl.Companion.toRangeMap(
-    distanceRangeMap: DistanceRangeMap<T>
+    distanceRangeMap: DistanceRangeMap<T>,
 ): RangeMap<Distance, T> {
     val rangeMap = TreeRangeMap.create<Distance, T>()
     distanceRangeMap.forEach { lower, upper, value ->

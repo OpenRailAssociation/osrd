@@ -34,7 +34,7 @@ class EnvelopeMaintainSpeedTest {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 10000.0),
                     doubleArrayOf(44.4, 44.4),
-                )
+                ),
             )
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
         val maxEffortEnvelope = maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)

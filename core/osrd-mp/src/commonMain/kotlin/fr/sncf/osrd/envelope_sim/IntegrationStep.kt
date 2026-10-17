@@ -42,7 +42,7 @@ private constructor(
                 positionDelta = positionDelta.withSign(directionSign)
             }
             require(
-                areSpeedsEqual(endSpeed, (startSpeed + directionSign * acceleration * timeDelta))
+                areSpeedsEqual(endSpeed, (startSpeed + directionSign * acceleration * timeDelta)),
             )
             return IntegrationStep(
                 timeDelta,

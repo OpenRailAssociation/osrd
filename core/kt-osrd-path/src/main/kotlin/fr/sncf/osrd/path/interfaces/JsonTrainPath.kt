@@ -49,7 +49,7 @@ data class JsonTrainPath(
                 blocks.map {
                     val block = blockInfra.getBlockFromName(it.id)!!
                     PartialBlockRange(block, it.begin, it.end, blockInfra.getBlockLength(block))
-                }
+                },
             )
         return buildTrainPathFromBlockRanges(
             rawInfra,
@@ -102,10 +102,12 @@ fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonT
             require(lastAddedRange.direction == trackRange.direction)
             // Check that we only extend the range, and only on one end
             require(
-                lastAddedRange.begin == newLastRange.begin || lastAddedRange.end == newLastRange.end
+                lastAddedRange.begin == newLastRange.begin ||
+                    lastAddedRange.end == newLastRange.end,
             )
             require(
-                newLastRange.begin <= lastAddedRange.begin && newLastRange.end >= lastAddedRange.end
+                newLastRange.begin <= lastAddedRange.begin &&
+                    newLastRange.end >= lastAddedRange.end,
             )
             tracks[tracks.lastIndex] = newLastRange
         }

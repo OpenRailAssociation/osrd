@@ -125,7 +125,12 @@ class PhysicalSignalBuilderImpl(
     ): LogicalSignalId {
         val logicalSignalId =
             globalPool.add(
-                LogicalSignalDescriptor(signalingSystem, nextSignalingSystems, settings, parameters)
+                LogicalSignalDescriptor(
+                    signalingSystem,
+                    nextSignalingSystems,
+                    settings,
+                    parameters,
+                ),
             )
         children.add(logicalSignalId)
         return logicalSignalId
@@ -257,7 +262,7 @@ class RawInfraBuilder {
     }
 
     fun getTrackNodePorts(
-        trackNodeIdx: TrackNodeId
+        trackNodeIdx: TrackNodeId,
     ): StaticPool<TrackNodePort, EndpointTrackSectionId> {
         return trackNodePool[trackNodeIdx].ports
     }
@@ -279,7 +284,7 @@ class RawInfraBuilder {
         val trackSectionIdx = getTrackSectionIdx(name)
         return trackSectionDistanceSortedChunkMap[trackSectionIdx]
             ?: throw OSRDError.newInfraError(
-                "Accessing sorted chunks from unregistered track-section idx $trackSectionIdx (name: $name)"
+                "Accessing sorted chunks from unregistered track-section idx $trackSectionIdx (name: $name)",
             )
     }
 
@@ -328,7 +333,7 @@ class RawInfraBuilder {
         // if not, create it and return the existing ID
         val newDetId =
             detectorPool.add(
-                DetectorBuilder(trackSection, chunkBoundaryIndex, names.toMutableList())
+                DetectorBuilder(trackSection, chunkBoundaryIndex, names.toMutableList()),
             )
         for (name in names) detectorNameToIdxMap[name] = newDetId
         val trackSectionDescriptor = trackSectionPool[trackSection]
@@ -470,7 +475,7 @@ class RawInfraBuilder {
                     0.meters,
                     length.distance,
                     SpeedSection(Double.POSITIVE_INFINITY.metersPerSecond, mapOf(), mapOf()),
-                )
+                ),
             )
         }
 
@@ -492,13 +497,13 @@ class RawInfraBuilder {
                 loadingGaugeConstraints,
                 // Electrification will be filled later on
                 distanceRangeMapOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, length.distance, setOf())
+                    DistanceRangeMap.RangeMapEntry(0.meters, length.distance, setOf()),
                 ),
                 // NeutralSections will be filled later on
                 DirectionalMap(distanceRangeMapOf(), distanceRangeMapOf()),
                 // SpeedSections will be filled later on,
                 DirectionalMap(initSpeedSections(), initSpeedSections()),
-            )
+            ),
         )
     }
 
@@ -544,7 +549,7 @@ class RawInfraBuilder {
                     Offset(trackSectionOffset.distance - chunkDistanceIdx.key),
                     chunkDistanceIdx.value,
                     props,
-                )
+                ),
             )
         val oppList =
             trackChunkPool[chunkDistanceIdx.value].operationalPointParts
@@ -791,7 +796,7 @@ class RouteZonePathBuilder(
                 zonePathNodeConfigs.clone(),
                 zonePathNodeOffsets.clone(),
                 zonePathChunks.clone(),
-            )
+            ),
         )
         zonePathCount++
         zonePathLength = Offset(0.meters)

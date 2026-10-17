@@ -30,13 +30,13 @@ data class DriverBehaviour(
             // compute driver behaviour offsets
             if (
                 signalingSystems.contains(
-                    signalingSystemRanges.get(Offset<PhysicsPath>(begin.meters)) ?: ""
+                    signalingSystemRanges.get(Offset<PhysicsPath>(begin.meters)) ?: "",
                 )
             )
                 begin -= this.brakingAnticipationOffset
             if (
                 signalingSystems.contains(
-                    signalingSystemRanges.get(Offset<PhysicsPath>(end.meters)) ?: ""
+                    signalingSystemRanges.get(Offset<PhysicsPath>(end.meters)) ?: "",
                 )
             )
                 end += this.acceleratingPostponementOffset
@@ -52,7 +52,7 @@ data class DriverBehaviour(
                     ),
                     doubleArrayOf(begin, end),
                     doubleArrayOf(speed, speed),
-                )
+                ),
             )
         }
         return builder.build()

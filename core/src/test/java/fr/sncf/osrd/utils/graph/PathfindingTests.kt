@@ -155,7 +155,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block12, Offset(1000.meters)),
                         BlockLocation(block13, Offset(1250.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(listOf(BlockLocation(block45, Offset(2000.meters)))),
             )
@@ -261,7 +261,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block01, Offset(0.meters)),
                         BlockLocation(block23, Offset(0.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(listOf(BlockLocation(block56, Offset(0.meters)))),
             )
@@ -300,7 +300,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block23, Offset(0.meters)),
                         BlockLocation(block56, Offset(0.meters)),
-                    )
+                    ),
                 ),
             )
         val res = runPathFinding(waypoints, infra)
@@ -505,7 +505,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block23, Offset(500.meters)),
                         BlockLocation(block45, Offset(10.meters)),
-                    )
+                    ),
                 ),
             )
         val res = runPathFinding(waypoints, infra)
@@ -619,7 +619,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block01, Offset(0.meters)),
                         BlockLocation(block23, Offset(0.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(listOf(BlockLocation(block45, Offset(0.meters)))),
             )
@@ -633,7 +633,7 @@ class PathfindingTests {
                             if (edge == block01)
                                 setOf(OffsetRange(Offset(50.meters), Offset(50.meters)))
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertEquals(
@@ -687,7 +687,7 @@ class PathfindingTests {
                             if (edge == block01)
                                 setOf(OffsetRange(Offset(0.meters), Offset(10.meters)))
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertNull(res)
@@ -719,7 +719,7 @@ class PathfindingTests {
                                     OffsetRange(Offset(70.meters), Offset(100.meters)),
                                 )
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertEquals(
@@ -730,7 +730,7 @@ class PathfindingTests {
                     Offset(0.meters),
                     10.meters,
                     Length(100.meters),
-                )
+                ),
             ),
             res!!.getAllBlocks().toList(),
         )
@@ -760,7 +760,7 @@ class PathfindingTests {
                             if (edge == block12)
                                 setOf(OffsetRange(Offset(70.meters), Offset(100.meters)))
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertEquals(
@@ -808,7 +808,7 @@ class PathfindingTests {
                             if (edge == block12)
                                 setOf(OffsetRange(Offset(10.meters), Offset(20.meters)))
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertNull(res)
@@ -828,7 +828,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block01, Offset(10.meters)),
                         BlockLocation(block01, Offset(40.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(listOf(BlockLocation(block01, Offset(50.meters)))),
             )
@@ -842,7 +842,7 @@ class PathfindingTests {
                             if (edge == block01)
                                 setOf(OffsetRange(Offset(10.meters), Offset(20.meters)))
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertEquals(
@@ -853,7 +853,7 @@ class PathfindingTests {
                     Offset(0.meters),
                     10.meters,
                     Length(100.meters),
-                )
+                ),
             ),
             res!!.getAllBlocks().toList(),
         )
@@ -887,7 +887,7 @@ class PathfindingTests {
                                     OffsetRange(Offset(30.meters), Offset(80.meters)),
                                 )
                             else setOf()
-                        }
+                        },
                     ),
             )
         Assertions.assertNull(res)
@@ -911,13 +911,13 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(block01, Offset(5000.meters)),
                         BlockLocation(block23, Offset(0.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(
                     listOf(
                         BlockLocation(block01, Offset(6999.meters)),
                         BlockLocation(block45, Offset(1000.meters)),
-                    )
+                    ),
                 ),
             )
         val res = runPathFinding(waypoints, infra)
@@ -929,7 +929,7 @@ class PathfindingTests {
                     Offset(0.meters),
                     1999.meters,
                     Length(10000.meters),
-                )
+                ),
             ),
             res!!.getAllBlocks().toList(),
         )
@@ -956,7 +956,7 @@ class PathfindingTests {
                         Offset(0.meters),
                         10.meters,
                         Length(100.meters),
-                    )
+                    ),
                 ),
                 res!!.getAllBlocks().toList(),
             )
@@ -965,12 +965,14 @@ class PathfindingTests {
                     runPathFinding(waypoints, infra, timeout = timeout?.toDouble())
                 }
                 .isExactlyInstanceOf(OSRDError::class.java)
-                .satisfies({ exception: Throwable? ->
-                    org.assertj.core.api.Assertions.assertThat(
-                            (exception as OSRDError?)!!.osrdErrorType
-                        )
-                        .isEqualTo(ErrorType.PathfindingTimeoutError)
-                })
+                .satisfies(
+                    { exception: Throwable? ->
+                        org.assertj.core.api.Assertions.assertThat(
+                                (exception as OSRDError?)!!.osrdErrorType,
+                            )
+                            .isEqualTo(ErrorType.PathfindingTimeoutError)
+                    },
+                )
         }
     }
 
@@ -997,7 +999,7 @@ class PathfindingTests {
                     listOf(
                         BlockLocation(slow, Offset(0.meters)),
                         BlockLocation(fast, Offset(0.meters)),
-                    )
+                    ),
                 ),
                 ExplorerStep(listOf(BlockLocation(secondBlock, Offset(0.meters)))),
             )
@@ -1122,7 +1124,7 @@ class PathfindingTests {
                     Offset(0.meters),
                     Offset(
                         getBlockLength(aK0Blocks[0]).distance - 20.meters +
-                            getBlockLength(bF2Blocks[0]).distance
+                            getBlockLength(bF2Blocks[0]).distance,
                     ),
                     getBlockLength(bF2Blocks[1]).distance,
                     getBlockLength(bF2Blocks[1]),
@@ -1133,7 +1135,7 @@ class PathfindingTests {
                     Offset(
                         getBlockLength(aK0Blocks[0]).distance - 20.meters +
                             getBlockLength(bF2Blocks[0]).distance +
-                            getBlockLength(bF2Blocks[1]).distance
+                            getBlockLength(bF2Blocks[1]).distance,
                     ),
                     70.meters,
                     getBlockLength(bF2Blocks[2]),
@@ -1168,7 +1170,7 @@ class PathfindingTests {
                     Offset(0.meters),
                     Offset(
                         getBlockLength(aK0Blocks[0]).distance - 20.meters +
-                            getBlockLength(bF2Blocks[0]).distance
+                            getBlockLength(bF2Blocks[0]).distance,
                     ),
                     getBlockLength(bF2Blocks[1]).distance,
                     getBlockLength(bF2Blocks[1]),
@@ -1179,7 +1181,7 @@ class PathfindingTests {
                     Offset(
                         getBlockLength(aK0Blocks[0]).distance - 20.meters +
                             getBlockLength(bF2Blocks[0]).distance +
-                            getBlockLength(bF2Blocks[1]).distance
+                            getBlockLength(bF2Blocks[1]).distance,
                     ),
                     getBlockLength(bF2Blocks[2]).distance,
                     getBlockLength(bF2Blocks[2]),
@@ -1191,7 +1193,7 @@ class PathfindingTests {
                         getBlockLength(aK0Blocks[0]).distance - 20.meters +
                             getBlockLength(bF2Blocks[0]).distance +
                             getBlockLength(bF2Blocks[1]).distance +
-                            getBlockLength(bF2Blocks[2]).distance
+                            getBlockLength(bF2Blocks[2]).distance,
                     ),
                     getBlockLength(bF2Blocks[3]).distance,
                     getBlockLength(bF2Blocks[3]),
@@ -1204,7 +1206,7 @@ class PathfindingTests {
                             getBlockLength(bF2Blocks[0]).distance +
                             getBlockLength(bF2Blocks[1]).distance +
                             getBlockLength(bF2Blocks[2]).distance +
-                            getBlockLength(bF2Blocks[3]).distance
+                            getBlockLength(bF2Blocks[3]).distance,
                     ),
                     getBlockLength(f2K1Blocks[0]).distance,
                     getBlockLength(f2K1Blocks[0]),
@@ -1218,7 +1220,7 @@ class PathfindingTests {
                             getBlockLength(bF2Blocks[1]).distance +
                             getBlockLength(bF2Blocks[2]).distance +
                             getBlockLength(bF2Blocks[3]).distance +
-                            getBlockLength(f2K1Blocks[0]).distance
+                            getBlockLength(f2K1Blocks[0]).distance,
                     ),
                     getBlockLength(f2K1Blocks[1]).distance,
                     getBlockLength(f2K1Blocks[1]),
@@ -1233,7 +1235,7 @@ class PathfindingTests {
                             getBlockLength(bF2Blocks[2]).distance +
                             getBlockLength(bF2Blocks[3]).distance +
                             getBlockLength(f2K1Blocks[0]).distance +
-                            getBlockLength(f2K1Blocks[1]).distance
+                            getBlockLength(f2K1Blocks[1]).distance,
                     ),
                     500.meters,
                     getBlockLength(f2K1Blocks[2]),
@@ -1276,7 +1278,7 @@ class PathfindingTests {
                     Offset(0.meters),
                     Offset(
                         getBlockLength(bF2Blocks[1]).distance - 10.meters +
-                            getBlockLength(bF2Blocks[2]).distance
+                            getBlockLength(bF2Blocks[2]).distance,
                     ),
                     getBlockLength(bF2Blocks[3]).distance,
                     getBlockLength(bF2Blocks[3]),
@@ -1287,7 +1289,7 @@ class PathfindingTests {
                     Offset(
                         getBlockLength(bF2Blocks[1]).distance - 10.meters +
                             getBlockLength(bF2Blocks[2]).distance +
-                            getBlockLength(bF2Blocks[3]).distance
+                            getBlockLength(bF2Blocks[3]).distance,
                     ),
                     getBlockLength(f2K1Blocks[0]).distance,
                     getBlockLength(f2K1Blocks[0]),
@@ -1299,7 +1301,7 @@ class PathfindingTests {
                         getBlockLength(bF2Blocks[1]).distance - 10.meters +
                             getBlockLength(bF2Blocks[2]).distance +
                             getBlockLength(bF2Blocks[3]).distance +
-                            getBlockLength(f2K1Blocks[0]).distance
+                            getBlockLength(f2K1Blocks[0]).distance,
                     ),
                     getBlockLength(f2K1Blocks[1]).distance,
                     getBlockLength(f2K1Blocks[1]),
@@ -1312,7 +1314,7 @@ class PathfindingTests {
                             getBlockLength(bF2Blocks[2]).distance +
                             getBlockLength(bF2Blocks[3]).distance +
                             getBlockLength(f2K1Blocks[0]).distance +
-                            getBlockLength(f2K1Blocks[1]).distance
+                            getBlockLength(f2K1Blocks[1]).distance,
                     ),
                     getBlockLength(f2K1Blocks[2]).distance,
                     getBlockLength(f2K1Blocks[2]),
@@ -1326,7 +1328,7 @@ class PathfindingTests {
                             getBlockLength(bF2Blocks[3]).distance +
                             getBlockLength(f2K1Blocks[0]).distance +
                             getBlockLength(f2K1Blocks[1]).distance +
-                            getBlockLength(f2K1Blocks[2]).distance
+                            getBlockLength(f2K1Blocks[2]).distance,
                     ),
                     getBlockLength(f2K1Blocks[3]).distance,
                     getBlockLength(f2K1Blocks[3]),
@@ -1341,7 +1343,7 @@ class PathfindingTests {
                             getBlockLength(f2K1Blocks[0]).distance +
                             getBlockLength(f2K1Blocks[1]).distance +
                             getBlockLength(f2K1Blocks[2]).distance +
-                            getBlockLength(f2K1Blocks[3]).distance
+                            getBlockLength(f2K1Blocks[3]).distance,
                     ),
                     400.meters,
                     getBlockLength(f2K1Blocks[4]),

@@ -110,7 +110,7 @@ data class STDCMPathfindingBuilder(
                 stop = true,
                 canBacktrack = false,
                 plannedTimingData = plannedTimingData,
-            )
+            ),
         )
         return this
     }
@@ -132,7 +132,7 @@ data class STDCMPathfindingBuilder(
      * available
      */
     fun setUnavailableTimes(
-        unavailableTimes: Multimap<BlockId, OccupancySegment>
+        unavailableTimes: Multimap<BlockId, OccupancySegment>,
     ): STDCMPathfindingBuilder {
         this.unavailableTimes = unavailableTimes
         return this
@@ -179,7 +179,7 @@ data class STDCMPathfindingBuilder(
 
     /** Sets the temporary speed limit manager to be used. */
     fun setTemporarySpeedLimitManager(
-        temporarySpeedLimitManager: TemporarySpeedLimitManager
+        temporarySpeedLimitManager: TemporarySpeedLimitManager,
     ): STDCMPathfindingBuilder {
         this.temporarySpeedLimitManager = temporarySpeedLimitManager
         return this

@@ -99,7 +99,7 @@ class SimpleRollingStock(
                 speed += 1
             }
             newEffortCurve.add(
-                TractiveEffortPoint(maxSpeed, getEffort(curveShape, maxSpeed, maxSpeed))
+                TractiveEffortPoint(maxSpeed, getEffort(curveShape, maxSpeed, maxSpeed)),
             )
             return newEffortCurve.toTypedArray<TractiveEffortPoint>()
         }
@@ -114,7 +114,7 @@ class SimpleRollingStock(
                     lower = Distance.ZERO,
                     upper = Distance(Long.MAX_VALUE),
                     value = createEffortSpeedCurve(maxSpeed, curveShape),
-                )
+                ),
             )
 
         /**

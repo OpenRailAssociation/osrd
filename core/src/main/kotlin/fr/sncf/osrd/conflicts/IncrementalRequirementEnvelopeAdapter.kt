@@ -30,7 +30,7 @@ class IncrementalRequirementEnvelopeAdapter(
         require(rollingStocks.isContinuous())
         require(
             (envelopeWithStops?.endPos ?: 0.toDouble()) <=
-                rollingStocks.upperBound().meters + POSITION_EPSILON
+                rollingStocks.upperBound().meters + POSITION_EPSILON,
         )
     }
 

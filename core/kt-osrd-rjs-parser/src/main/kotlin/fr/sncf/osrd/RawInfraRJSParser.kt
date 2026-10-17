@@ -53,7 +53,7 @@ private fun parseLineString(rjsLineString: RJSLineString?): LineString? {
 private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val slopes =
         distanceRangeMapOf(
-            DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0)
+            DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0),
         )
 
     for (rjsSlope in rjsTrackSection.slopes) {
@@ -75,7 +75,7 @@ private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
 private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val curves =
         distanceRangeMapOf(
-            DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0)
+            DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0),
         )
 
     for (rjsCurve in rjsTrackSection.curves) {
@@ -115,7 +115,7 @@ private fun getChunkDirectionalDistanceRange(
                     chunkLength - it.lower,
                     if (it.value == 0.0) 0.0 else -it.value,
                 )
-            }
+            },
         ),
     )
 }
@@ -165,7 +165,7 @@ private fun getGradients(
 
 /** Builds the ranges of blocked loading gauge types on the track */
 private fun getBlockedGauge(
-    rjsTrackSection: RJSTrackSection
+    rjsTrackSection: RJSTrackSection,
 ): DistanceRangeMap<LoadingGaugeConstraint> {
     // This method has a bad complexity compared to more advanced solutions,
     // but we don't expect more than a few ranges per track-section.
@@ -190,7 +190,7 @@ private fun getBlockedGauge(
                 val compatibleTypes = compatibleGaugeTypeMap[range.category]
                 if (compatibleTypes == null) {
                     logger.warn(
-                        "Invalid gauge type ${range.category} for track ${rjsTrackSection.id}"
+                        "Invalid gauge type ${range.category} for track ${rjsTrackSection.id}",
                     )
                     allowedTypes.addAll(allLoadingGaugeTypeSet)
                 } else {
@@ -204,7 +204,7 @@ private fun getBlockedGauge(
 }
 
 private fun buildBlockedGaugeTypesLoadingConstraint(
-    allowedTypes: Set<RJSLoadingGaugeType>
+    allowedTypes: Set<RJSLoadingGaugeType>,
 ): LoadingGaugeConstraint {
     val blockedTypes = mutableStaticIdxArraySetOf<LoadingGaugeType>()
     for (gaugeType in RJSLoadingGaugeType.entries) {
@@ -335,7 +335,7 @@ private fun parseRjsTrackSection(
             val detectorOffset = detector.key
             if (detectorOffset > trackSectionLength || detectorOffset < Offset.zero()) {
                 throw OSRDError.newInfraError(
-                    "Detector out of range at offset $detectorOffset on trackSection ${rjsTrack.id}"
+                    "Detector out of range at offset $detectorOffset on trackSection ${rjsTrack.id}",
                 )
             }
             if (detectorOffset.distance == Distance.ZERO) {
@@ -405,7 +405,7 @@ fun parseRjsElectrification(builder: RawInfraBuilder, electrification: RJSElectr
                             chunkLower,
                             chunkUpper,
                             electrification.voltage,
-                        )
+                        ),
                     )
                 chunk.electrificationVoltage.updateMapIntersection(newMap) { a, b -> a + b }
             }
@@ -445,7 +445,7 @@ fun parseNeutralRanges(
                         logger.warn(
                             "Neutral-section conflict on track-range $track.$dir" +
                                 "[$chunkLower, $chunkUpper]: " +
-                                "$value != $incomingNeutralSection"
+                                "$value != $incomingNeutralSection",
                         )
                         return@forEachWhile false
                     }
@@ -543,13 +543,13 @@ fun parseTrackNode(
     for ((rjsPortName, rjsPort) in rjsNode.ports) {
         portMap[rjsPortName] =
             ports.add(
-                builder.getTrackSectionEndpointIdx(rjsPort.track, rjsPort.endpoint.toEndpoint())
+                builder.getTrackSectionEndpointIdx(rjsPort.track, rjsPort.endpoint.toEndpoint()),
             )
     }
     val switchType =
         switchTypeMap[rjsNode.switchType]
             ?: throw OSRDError.newInfraError(
-                "Node ${rjsNode.id} references unknown switch-type ${rjsNode.switchType}"
+                "Node ${rjsNode.id} references unknown switch-type ${rjsNode.switchType}",
             )
     if (rjsNode.ports.size != switchType.ports.size || portMap.keys != switchType.ports.toSet()) {
         throw OSRDError.newWrongSwitchPortsError(
@@ -565,7 +565,7 @@ fun parseTrackNode(
             TrackNodeConfigDescriptor(
                 group.key,
                 group.value.map { Pair(portMap[it.src]!!, portMap[it.dst]!!) },
-            )
+            ),
         )
     }
     builder.node(rjsNode.id, rjsNode.groupChangeDelay.seconds, ports, configs)
@@ -578,14 +578,14 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
     val routeEntryDetector =
         builder.getDetectorByName(rjsRoute.entryPoint.id.id)
             ?: throw OSRDError.newInfraError(
-                "Route $routeName references unknown entry point ${rjsRoute.entryPoint.id.id}"
+                "Route $routeName references unknown entry point ${rjsRoute.entryPoint.id.id}",
             )
     val routeEntryDirection = rjsRoute.entryPointDirection.toDirection()
     val routeEntry: DirDetectorId = DirStaticIdx(routeEntryDetector, routeEntryDirection)
     val routeExit: DetectorId =
         builder.getDetectorByName(rjsRoute.exitPoint.id.id)
             ?: throw OSRDError.newInfraError(
-                "Route $routeName references unknown exit point ${rjsRoute.exitPoint.id.id}"
+                "Route $routeName references unknown exit point ${rjsRoute.exitPoint.id.id}",
             )
 
     // parse release detectors
@@ -594,8 +594,8 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
         releaseDetectors.add(
             builder.getDetectorByName(rjsDetName)
                 ?: throw OSRDError.newInfraError(
-                    "Route $routeName references unknown release detector $rjsDetName"
-                )
+                    "Route $routeName references unknown release detector $rjsDetName",
+                ),
         )
     }
 
@@ -605,12 +605,12 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
         val node =
             builder.getTrackNodeByName(rjsRouteNode.key)
                 ?: throw OSRDError.newInfraError(
-                    "Route $routeName references unknown track node ${rjsRouteNode.key}"
+                    "Route $routeName references unknown track node ${rjsRouteNode.key}",
                 )
         val config =
             builder.getTrackNodeConfigByName(node, rjsRouteNode.value)
                 ?: throw OSRDError.newInfraError(
-                    "Route $routeName references unknown config ${rjsRouteNode.value} for track node ${rjsRouteNode.key}"
+                    "Route $routeName references unknown config ${rjsRouteNode.value} for track node ${rjsRouteNode.key}",
                 )
         routeNodes[node] = config
     }
@@ -625,7 +625,7 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
                 OSRDError.newInfraError("Impossible to build route: could not cross node")
             is MissingNodeConfig ->
                 OSRDError.newInfraError(
-                    "Impossible to build route: reached a node not listed on given route"
+                    "Impossible to build route: reached a node not listed on given route",
                 )
         }
     }
@@ -635,7 +635,7 @@ fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
     val trackSectionId =
         builder.getTrackSectionByName(rjsSignal.track)
             ?: throw OSRDError.newInfraError(
-                "Signal ${rjsSignal.id} references unknown track section ${rjsSignal.track}"
+                "Signal ${rjsSignal.id} references unknown track section ${rjsSignal.track}",
             )
     val direction = rjsSignal.direction.toDirection()
     val undirectedTrackOffset = Offset<TrackSection>(rjsSignal.position.meters)
@@ -686,7 +686,7 @@ fun parseSpeedLimitTags(builder: RawInfraBuilder) {
     val resourceURL =
         {}.javaClass.classLoader.getResource(SPEED_LIMIT_TAGS_RESOURCE_PATH)
             ?: throw IOException(
-                "can't find speedLimitTags resource $SPEED_LIMIT_TAGS_RESOURCE_PATH"
+                "can't find speedLimitTags resource $SPEED_LIMIT_TAGS_RESOURCE_PATH",
             )
     val speedLimitTagDescriptors =
         Yaml.default.decodeFromString(
@@ -776,7 +776,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
             if (partId == null) {
                 // TODO: link warning to specific request (through response or tracing)
                 logger.warn(
-                    "Invalid Part on track $trackSectionName for Operational Point $operationalPointId"
+                    "Invalid Part on track $trackSectionName for Operational Point $operationalPointId",
                 )
             }
         }

@@ -177,7 +177,7 @@ class STDCMHeuristicBuilder(
                 else max(remainingTravelTime, 0.0)
             } ?: Double.POSITIVE_INFINITY
         logger.info(
-            "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.seconds}"
+            "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.seconds}",
         )
 
         return STDCMAStarHeuristic(

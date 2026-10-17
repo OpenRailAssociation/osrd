@@ -276,7 +276,7 @@ class BlockAvailability(
                                 BlockAvailabilityInterface.ConflictCause(
                                     it,
                                     conflictProperties.minDelayWithoutConflicts,
-                                )
+                                ),
                             )
                         } ?: listOf()
                 return BlockAvailabilityInterface.Unavailable(
@@ -379,7 +379,7 @@ fun makeBlockAvailability(
     }
     val requirements =
         listOf(
-            Requirements(RequirementId("0", RequirementType.TRAIN), spacingRequirements, listOf())
+            Requirements(RequirementId("0", RequirementType.TRAIN), spacingRequirements, listOf()),
         )
 
     // Only keep steps with planned timing data
@@ -410,7 +410,7 @@ fun makeBlockAvailability(
                     Range.closedOpen(
                         range.lowerEndpoint() - gridMarginAfterTrain,
                         range.upperEndpoint() + gridMarginBeforeTrain,
-                    )
+                    ),
                 )
             }
         }

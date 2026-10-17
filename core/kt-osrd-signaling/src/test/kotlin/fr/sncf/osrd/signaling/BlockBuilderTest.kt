@@ -103,7 +103,7 @@ class BlockBuilderTest {
                     "BAL",
                     SigSettingsSchema { flag("Nf") },
                     SigParametersSchema { flag("jaune_cli") },
-                )
+                ),
             )
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
@@ -150,7 +150,7 @@ class BlockBuilderTest {
         val res: MutableSet<BlockDescriptor> = mutableSetOf()
         for (blockId in infra.blocks) {
             res.add(
-                BlockDescriptor(infra.getBlockZonePaths(blockId), infra.getBlockSignals(blockId))
+                BlockDescriptor(infra.getBlockZonePaths(blockId), infra.getBlockSignals(blockId)),
             )
         }
         return res

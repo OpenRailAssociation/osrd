@@ -114,7 +114,7 @@ class WorkerCommand : CliCommand {
     override fun run(): Int {
         if (WORKER_ID == null || WORKER_KEY == null) {
             throw IllegalStateException(
-                "Environment variables WORKER_ID or WORKER_KEY are not set properly."
+                "Environment variables WORKER_ID or WORKER_KEY are not set properly.",
             )
         }
 

@@ -145,7 +145,7 @@ class Pathfinding(
         val signalingSystemPenaltyFactor =
             SIGNALING_SYSTEM_COST_WEIGHTING *
                 fullInfra.signalingSimulator.sigModuleManager.getCost(
-                    fullInfra.blockInfra.getBlockSignalingSystem(range.value)
+                    fullInfra.blockInfra.getBlockSignalingSystem(range.value),
                 )
         return edgeDuration * (1 + signalingSystemPenaltyFactor)
     }
@@ -156,7 +156,7 @@ class Pathfinding(
         val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
         val currentRange = infraExplorer.getCurrentBlockRange()
         return remainingCostEstimators[nbSeenSteps - 1].apply(
-            BlockLocation(currentRange.value, currentRange.objectEnd)
+            BlockLocation(currentRange.value, currentRange.objectEnd),
         ) / rollingStockMaxSpeed
     }
 
@@ -199,7 +199,7 @@ class Pathfinding(
             if (step == null) {
                 // Fail :(
                 pathfindingLogger.info(
-                    "pathfinding failed, # reached waypoints = $maxSeenTarget/${targets.size}"
+                    "pathfinding failed, # reached waypoints = $maxSeenTarget/${targets.size}",
                 )
                 return null
             }
@@ -214,7 +214,7 @@ class Pathfinding(
                             it.length.meters
                         },
                         step.establishedLength.meters,
-                    )
+                    ),
                 )
                 return step.infraExplorer
             }
@@ -235,7 +235,7 @@ class Pathfinding(
                     nbSeenTargets
             ) {
                 pathfindingLogger.trace(
-                    "Dropping current search as a more promising search on the same block and targeting the same backtracking is already done"
+                    "Dropping current search as a more promising search on the same block and targeting the same backtracking is already done",
                 )
                 continue
             }

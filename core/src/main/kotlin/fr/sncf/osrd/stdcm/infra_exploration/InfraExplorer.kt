@@ -327,7 +327,7 @@ private class InfraExplorerImpl(
     }
 
     private fun getNextRouteToBlockLocations(
-        lastSeenStep: LocatedStep?
+        lastSeenStep: LocatedStep?,
     ): Map<RouteId, BlockLocation?> {
         if (
             lastSeenStep != null &&
@@ -432,7 +432,7 @@ private class InfraExplorerImpl(
     }
 
     private fun getSeenBacktrackLocations(
-        maximumPathOffset: Offset<PhysicsPath>? = null
+        maximumPathOffset: Offset<PhysicsPath>? = null,
     ): List<Offset<PhysicsPath>> {
         return stepTracker
             .iterateSeenStepsBackwards()
@@ -627,7 +627,7 @@ private class InfraExplorerImpl(
                 lastRouteEndOffset,
                 newRouteEndOffset,
                 routeLength,
-            )
+            ),
         )
 
         return true
@@ -639,7 +639,7 @@ private class InfraExplorerImpl(
     }
 
     private fun getRouteToBlockLocationsAfterBacktracking(
-        headStepBeforeBacktracking: LocatedStep
+        headStepBeforeBacktracking: LocatedStep,
     ): Map<RouteId, BlockLocation> {
         val chunksUnderTrainAfterBacktracking =
             getDirChunksUnderTrainAfterBacktracking(headStepBeforeBacktracking)
@@ -665,7 +665,7 @@ private class InfraExplorerImpl(
             }
             if (headRestartBlockLocation == null) {
                 logger.warn(
-                    "Route ${rawInfra.getRouteName(headRestartRoute)} has no block listed in restart locations"
+                    "Route ${rawInfra.getRouteName(headRestartRoute)} has no block listed in restart locations",
                 )
                 return@forEach
             }
@@ -683,7 +683,7 @@ private class InfraExplorerImpl(
      * possible block-location at that location corresponding to the opposite direction
      */
     private fun getHeadRestartBlockLocationsAfterBacktracking(
-        headStepBeforeBacktracking: LocatedStep
+        headStepBeforeBacktracking: LocatedStep,
     ): List<BlockLocation> {
         val tailOffsetBeforeBacktracking =
             Offset.max(
@@ -698,7 +698,7 @@ private class InfraExplorerImpl(
                     tailBlockRangeBeforeBacktracking.value,
                     Offset(
                         tailOffsetBeforeBacktracking -
-                            tailBlockRangeBeforeBacktracking.objectAbsolutePathStart
+                            tailBlockRangeBeforeBacktracking.objectAbsolutePathStart,
                     ),
                 ),
                 blockInfra,
@@ -708,7 +708,7 @@ private class InfraExplorerImpl(
     }
 
     private fun getDirChunksUnderTrainAfterBacktracking(
-        headStepBeforeBacktracking: LocatedStep
+        headStepBeforeBacktracking: LocatedStep,
     ): List<DirTrackChunkId> {
         val blockRangesUnderTrainBeforeBacktracking =
             getSubRanges(
@@ -718,7 +718,7 @@ private class InfraExplorerImpl(
             )
         val chunkRangesUnderTrainBeforeBacktracking: List<DirChunkRange> =
             blockRangesUnderTrainBeforeBacktracking.mapSubObjects(
-                blockInfra::getTrackChunksFromBlock
+                blockInfra::getTrackChunksFromBlock,
             ) {
                 rawInfra.getTrackChunkLength(it.value).forceDirected()
             }
@@ -740,7 +740,7 @@ fun getOppositeBlockLocations(
         DirChunkLocation(
             dirChunkLocation.dirChunk.opposite,
             dirChunkLocation.offset.toOpposite(
-                rawInfra.getTrackChunkLength(dirChunkLocation.dirChunk.value)
+                rawInfra.getTrackChunkLength(dirChunkLocation.dirChunk.value),
             ),
         )
     val oppositeBlocks =

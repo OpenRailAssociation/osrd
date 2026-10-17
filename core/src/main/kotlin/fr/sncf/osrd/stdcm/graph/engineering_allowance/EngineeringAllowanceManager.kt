@@ -120,7 +120,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph?) {
                     opportunityTotalAddedTime,
                     opportunityTotalLength,
                     maxNextAllowanceValue,
-                )
+                ),
             )
             if (opportunityTotalAddedTime >= maxNextAllowanceValue) break
             currentSpeed =

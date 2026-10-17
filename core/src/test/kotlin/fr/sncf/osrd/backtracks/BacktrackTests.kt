@@ -359,7 +359,7 @@ class BacktrackTests {
     data class ZoneOccupation(val entry: Offset<PhysicsPath>, var exit: Offset<PhysicsPath>?)
 
     fun getZoneOccupations(
-        zoneOccupationChangeEvents: List<ZoneOccupationChangeEvent>
+        zoneOccupationChangeEvents: List<ZoneOccupationChangeEvent>,
     ): Map<ZoneId, List<ZoneOccupation>> {
         val mapZoneOccupations = mutableMapOf<ZoneId, MutableList<ZoneOccupation>>()
         zoneOccupationChangeEvents.forEach { event ->
@@ -393,7 +393,7 @@ class BacktrackTests {
                     0.meters,
                     path.length.meters,
                     rollingStock as PhysicsRollingStock,
-                )
+                ),
             )
         val stops = listOf(TrainStop(9700.0, 60.0, SHORT_SLIP_STOP), TrainStop(18700.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
@@ -452,7 +452,7 @@ class BacktrackTests {
                     0.meters,
                     path.length.meters,
                     rollingStock as PhysicsRollingStock,
-                )
+                ),
             )
         val stops = listOf(TrainStop(8000.0, 60.0, SHORT_SLIP_STOP), TrainStop(15300.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
@@ -493,7 +493,7 @@ class BacktrackTests {
                     0.meters,
                     path.length.meters,
                     rollingStock as PhysicsRollingStock,
-                )
+                ),
             )
         val stops = listOf(TrainStop(8400.0, 60.0, STOP), TrainStop(16400.0, 0.0, OPEN))
         val envelope = computeMrspWithStops(path, stops)
@@ -713,7 +713,7 @@ class BacktrackTests {
                             "DECREASING:det.c1",
                             mapOf(),
                             533.269.seconds, // end of zone occupation
-                        )
+                        ),
                     ),
                 ),
                 RJSRoutingRequirement( // regular last route of a path
@@ -995,7 +995,7 @@ class BacktrackTests {
                             "DECREASING:det.c1",
                             mapOf(),
                             382.677.seconds, // end of zone occupation
-                        )
+                        ),
                     ),
                 ),
                 RJSRoutingRequirement( // regular last route of a path

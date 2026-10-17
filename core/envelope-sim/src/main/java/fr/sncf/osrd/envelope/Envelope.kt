@@ -412,7 +412,7 @@ fun minEnvelopes(envelopeA: Envelope, envelopeB: Envelope): Envelope {
         val slicedEnvelopeA = envelopeA.get(envelopeA.findRight(beginPos)).slice(beginPos, endPos)!!
         val slicedEnvelopeB = envelopeB.get(envelopeB.findRight(beginPos)).slice(beginPos, endPos)!!
         minParts.add(
-            minEnvelopeParts(slicedEnvelopeA, slicedEnvelopeB, slicedEnvelopeA.getAttrs().values)
+            minEnvelopeParts(slicedEnvelopeA, slicedEnvelopeB, slicedEnvelopeA.getAttrs().values),
         )
     }
     return Envelope(minParts.toTypedArray())

@@ -61,7 +61,7 @@ class MRSPTest {
                         ApplicableDirection.BOTH,
                         POSITION1,
                         POSITION2,
-                    )
+                    ),
                 ),
                 null,
             )
@@ -76,7 +76,7 @@ class MRSPTest {
                         ApplicableDirection.BOTH,
                         POSITION2,
                         POSITION3,
-                    )
+                    ),
                 ),
                 null,
             )
@@ -201,7 +201,7 @@ class MRSPTest {
             val pathLen = routeLen(route)
             val envelope =
                 Envelope.make(
-                    EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, pathLen, speed)
+                    EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, pathLen, speed),
                 )
             return TestPath(pathProps, envelope)
         }
@@ -232,7 +232,7 @@ class MRSPTest {
                         0.0,
                         routeLen(ROUTES[0]),
                         50.0,
-                    )
+                    ),
                 ),
             )
     }
@@ -373,7 +373,7 @@ class MRSPTest {
                 false,
                 null,
                 Envelope.make(
-                    EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, 360.0, SPEED30)
+                    EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, 360.0, SPEED30),
                 ),
             ),
 
@@ -384,7 +384,7 @@ class MRSPTest {
                 false,
                 null,
                 Envelope.make(
-                    EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, 360.0, SPEED60)
+                    EnvelopeTestUtils.makeFlatPart(LimitKind.SPEED_LIMIT, 0.0, 360.0, SPEED60),
                 ),
             ),
             pathTo1!!.makeArguments(),

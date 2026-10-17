@@ -387,7 +387,7 @@ protected constructor(
                 // move on.
                 logger.warn(
                     "Couldn't reach target time for allowance section " +
-                        "with distributed tolerance. Using closest result."
+                        "with distributed tolerance. Using closest result.",
                 )
                 logger.warn(
                     "Closest time = {}, target time = {} +- {}",
@@ -465,7 +465,7 @@ protected constructor(
                 areSpeedsEqual(
                     coreEnvelope.interpolateSpeed(rightPartBeginPos),
                     rightPartBeginSpeed,
-                )
+                ),
             )
         }
 
@@ -479,7 +479,7 @@ protected constructor(
                 leftPartEndSpeed,
                 rightPartBeginPos,
                 rightPartBeginSpeed,
-            )
+            ),
         )
         if (rightPart != null) builder.addPart(rightPart)
         val result = builder.build()

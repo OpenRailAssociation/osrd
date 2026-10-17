@@ -124,7 +124,7 @@ fun runStandaloneSimulation(
                 electrificationMap,
                 comfort,
                 context.tractiveEffortCurveMap,
-            )
+            ),
         )
 
     // Max effort envelope : the train goes as fast as possible
@@ -149,8 +149,8 @@ fun runStandaloneSimulation(
     val rollingStocks =
         DistanceRangeMapImpl<PhysicsRollingStock>(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, finalEnvelope.endPos.meters, rollingStock)
-            )
+                DistanceRangeMap.RangeMapEntry(0.meters, finalEnvelope.endPos.meters, rollingStock),
+            ),
         )
     val maxEffortResult =
         makeSimpleReportTrain(maxEffortEnvelope, trainPath, rollingStocks, schedule)
@@ -192,7 +192,7 @@ fun buildSignalingRanges(
 }
 
 fun makeElectricalProfiles(
-    electrificationRanges: Sequence<ElectrificationRange>
+    electrificationRanges: Sequence<ElectrificationRange>,
 ): RangeValues<ElectricalProfileValue> {
     fun profileFromElectrification(electrification: ElectrificationUsage): ElectricalProfileValue {
         return when (electrification) {
@@ -230,7 +230,7 @@ fun makeMRSPResponse(speedLimits: Envelope): RangeValues<SpeedLimitProperty> {
         assert(
             part.getAttr(EnvelopeProfile::class.java) == EnvelopeProfile.CONSTANT_SPEED &&
                 part.pointCount() == 2 &&
-                part.minSpeed == part.maxSpeed
+                part.minSpeed == part.maxSpeed,
         ) {
             "Each MRSP envelope-part can contain only one speed-limit range"
         }
@@ -297,7 +297,7 @@ fun buildFinalEnvelope(
                     margins,
                     prevFixedPointOffset,
                     point.pathOffset,
-                )
+                ),
             )
             prevFixedPointDepartureTime =
                 arrivalTime + extraTime + (point.stopDetails?.duration?.seconds ?: 0.0)
@@ -327,7 +327,7 @@ fun buildFinalEnvelope(
                     prevFixedPointOffset.meters,
                     point.pathOffset.meters,
                     FixedTime(maxEffortExtraTime),
-                )
+                ),
             )
             prevFixedPointDepartureTime =
                 earliestPossibleArrival +
@@ -349,7 +349,7 @@ fun buildFinalEnvelope(
                 margins,
                 prevFixedPointOffset,
                 pathEnd,
-            )
+            ),
         )
     }
     val margin =
@@ -408,7 +408,7 @@ fun distributeAllowance(
                 rangeStart.meters,
                 rangeEnd.meters,
                 FixedTime(baseAllowanceValue + extraTime * ratio),
-            )
+            ),
         )
         rangeStart = rangeEnd
     }

@@ -129,7 +129,7 @@ fun buildFinalEnvelope(
                         fixedPoints,
                         timeStep,
                         comfort,
-                    )
+                    ),
                 )
             val conflictOffset =
                 findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
@@ -168,7 +168,7 @@ fun buildFinalEnvelope(
                     allowanceRanges,
                 )
             postProcessingLogger.info(
-                "Conflict when running final stdcm simulation at offset $conflictOffset, adding a fixed time point: $newPoint"
+                "Conflict when running final stdcm simulation at offset $conflictOffset, adding a fixed time point: $newPoint",
             )
             fixedPoints.add(newPoint)
         } catch (e: OSRDError) {
@@ -177,7 +177,7 @@ fun buildFinalEnvelope(
                 // which may cause "too much time" errors.
                 // We can ignore this exception and move on to the linear allowance as fallback
                 postProcessingLogger.warn(
-                    "Can't slow down enough to match the given standard allowance"
+                    "Can't slow down enough to match the given standard allowance",
                 )
                 return@repeat
             } else if (e.osrdErrorType == ErrorType.AllowanceConvergenceDiscontinuity) {
@@ -222,7 +222,7 @@ private fun initFixedPoints(
                 updatedTimeData,
                 allowanceRanges,
                 stop.duration,
-            )
+            ),
         )
         prevStopTime += stop.duration
     }
@@ -264,7 +264,7 @@ private fun getEngineeringAllowanceRanges(edges: List<STDCMEdge>): List<Engineer
                     engineeringAllowanceBegin,
                     engineeringAllowanceEnd,
                     duration,
-                )
+                ),
             )
         }
         edgeStartOffset += edge.length.distance
@@ -477,7 +477,7 @@ private fun makeAllowanceRanges(
         val neededDelay = max(0.0, point.time - pointArrivalTime - prevAddedTime)
 
         res.add(
-            AllowanceRange(transition, point.offset.meters, AllowanceValue.FixedTime(neededDelay))
+            AllowanceRange(transition, point.offset.meters, AllowanceValue.FixedTime(neededDelay)),
         )
         prevAddedTime += neededDelay
 
@@ -521,7 +521,7 @@ private fun handlePostProcessingConflict(
                     edges,
                     graph.searchMetadata,
                     allowanceRanges,
-                )
+                ),
             )
         }
         val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME")
@@ -534,15 +534,15 @@ private fun handlePostProcessingConflict(
     }
 
     postProcessingLogger.error(
-        "Conflicts detected in post-processing, mismatch with the exploration data"
+        "Conflicts detected in post-processing, mismatch with the exploration data",
     )
     postProcessingLogger.error(
-        "NOTE: look through the logs for allowance issues, they may cause mismatches."
+        "NOTE: look through the logs for allowance issues, they may cause mismatches.",
     )
     val conflictTime = fixedPoints.first { it.offset == conflictOffset }.time
     postProcessingLogger.info(
         "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
-            "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
+            "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}",
     )
 
     var remainingDistance = conflictOffset.distance
@@ -557,16 +557,16 @@ private fun handlePostProcessingConflict(
             postProcessingLogger.info("        original time data: ${edge.timeData}")
             postProcessingLogger.info("        updated time data: $updatedTimeData")
             postProcessingLogger.info(
-                "        original explorer stops: ${edge.infraExplorerWithNewEnvelope.generateReachedTrainStops()}"
+                "        original explorer stops: ${edge.infraExplorerWithNewEnvelope.generateReachedTrainStops()}",
             )
             postProcessingLogger.info(
-                "        updated explorer stops: ${updatedExplorer.generateReachedTrainStops()}"
+                "        updated explorer stops: ${updatedExplorer.generateReachedTrainStops()}",
             )
             postProcessingLogger.info(
-                "        updated start time: ${edge.timeData.getUpdatedEarliestReachableTime(updatedTimeData)}"
+                "        updated start time: ${edge.timeData.getUpdatedEarliestReachableTime(updatedTimeData)}",
             )
             postProcessingLogger.info(
-                "        updated time at conflict location: $updatedTimeAtConflict"
+                "        updated time at conflict location: $updatedTimeAtConflict",
             )
             break
         }
@@ -575,7 +575,7 @@ private fun handlePostProcessingConflict(
 
     if (attempt < 5) {
         postProcessingLogger.info(
-            "attempt $attempt: retrying after adding traction to rolling stock..."
+            "attempt $attempt: retrying after adding traction to rolling stock...",
         )
         postProcessingLogger.info("(reset of fixed time points)")
         val scaleFactor = 1.2
@@ -598,7 +598,7 @@ private fun handlePostProcessingConflict(
     } else {
         throw RuntimeException(
             "Failed to compute a simulation that wouldn't cause conflicts: " +
-                "mismatch between exploration and postprocessing (please open a bug report)"
+                "mismatch between exploration and postprocessing (please open a bug report)",
         )
     }
 }

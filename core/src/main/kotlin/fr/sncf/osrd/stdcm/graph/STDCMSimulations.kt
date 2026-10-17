@@ -113,7 +113,7 @@ class STDCMSimulations {
                 // We only log the first one (to get an actual error message but not spam any
                 // further)
                 logger.info(
-                    "First failure of an STDCM Simulation during the search (ignoring this possible path): ${e.message}"
+                    "First failure of an STDCM Simulation during the search (ignoring this possible path): ${e.message}",
                 )
             }
             nFailedSimulation++
@@ -128,7 +128,7 @@ class STDCMSimulations {
     fun logWarnings() {
         if (nFailedSimulation > 0)
             logger.info(
-                "A total of $nFailedSimulation STDCM Simulations failed during the search (usually because of lack of traction)"
+                "A total of $nFailedSimulation STDCM Simulations failed during the search (usually because of lack of traction)",
             )
     }
 }
@@ -138,12 +138,12 @@ private fun makeSinglePointEnvelope(speed: Double): Envelope {
     return Envelope.make(
         EnvelopePart(
             mapOf<Class<out SelfTypeHolder>, SelfTypeHolder>(
-                Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED)
+                Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED),
             ),
             doubleArrayOf(0.0),
             doubleArrayOf(speed),
             doubleArrayOf(),
-        )
+        ),
     )
 }
 

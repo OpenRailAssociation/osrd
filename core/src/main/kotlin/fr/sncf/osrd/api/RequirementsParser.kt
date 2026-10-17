@@ -28,7 +28,7 @@ fun parseTrainsRequirements(
                 RequirementId(id, RequirementType.TRAIN),
                 spacingRequirements,
                 routingRequirements,
-            )
+            ),
         )
     }
     return res
@@ -48,7 +48,7 @@ fun parseSpacingRequirements(
                     spacingRequirement.endTime,
                 ),
                 infra,
-            )
+            ),
         )
     }
     return res
@@ -76,7 +76,7 @@ fun parseRoutingRequirements(
                     },
                 ),
                 infra,
-            )
+            ),
         )
     }
     return res
@@ -100,7 +100,7 @@ fun convertWorkScheduleMap(
                 RequirementId(entry.key, RequirementType.WORK_SCHEDULE),
                 workScheduleRequirements.map { SpacingRequirement.fromRJS(it, rawInfra) },
                 listOf(),
-            )
+            ),
         )
     }
     return res
@@ -124,7 +124,7 @@ fun convertWorkScheduleCollection(
                 RequirementId(workSchedule.objId, RequirementType.WORK_SCHEDULE),
                 workSchedulesRequirements,
                 listOf(),
-            )
+            ),
         )
     }
     return res
@@ -161,7 +161,7 @@ private fun convertWorkSchedule(
                     rawInfra.getZoneName(zone),
                     workSchedule.startTime,
                     workSchedule.endTime,
-                )
+                ),
             )
         }
     }

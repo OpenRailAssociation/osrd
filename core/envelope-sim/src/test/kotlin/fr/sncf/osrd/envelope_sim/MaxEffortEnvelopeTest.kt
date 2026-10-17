@@ -174,21 +174,21 @@ class MaxEffortEnvelopeTest {
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(0.0, 50.0),
                 doubleArrayOf(30.0, 30.0),
-            )
+            ),
         )
         mrspBuilder.addPart(
             generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(50.0, 51.0),
                 doubleArrayOf(29.0, 29.0),
-            )
+            ),
         )
         mrspBuilder.addPart(
             generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(51.0, 100.0),
                 doubleArrayOf(1.0, 1.0),
-            )
+            ),
         )
         val mrsp = mrspBuilder.build()
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(testContext, stops, mrsp)
@@ -253,7 +253,7 @@ class MaxEffortEnvelopeTest {
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf((i * 10).toDouble(), ((i + 1) * 10).toDouble()),
                     doubleArrayOf(30.0, 30.0),
-                )
+                ),
             )
         }
         mrspBuilder.addPart(
@@ -261,7 +261,7 @@ class MaxEffortEnvelopeTest {
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(2000.0, 3000.0),
                 doubleArrayOf(1000.0, 1000.0),
-            )
+            ),
         )
         val mrsp = mrspBuilder.build()
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(testContext, stops, mrsp)

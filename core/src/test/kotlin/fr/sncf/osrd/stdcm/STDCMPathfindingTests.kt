@@ -324,7 +324,7 @@ class STDCMPathfindingTests {
         val infra = DummyInfra()
         val blocks = ArrayList<BlockId>()
         for (i in 0..9) blocks.add(
-            infra.addBlock((i + 1).toString(), (i + 2).toString(), 1000.meters)
+            infra.addBlock((i + 1).toString(), (i + 2).toString(), 1000.meters),
         )
         val res =
             STDCMPathfindingBuilder()
@@ -350,7 +350,7 @@ class STDCMPathfindingTests {
             .setStartLocations(setOf(BlockLocation(block, Offset(0.meters))))
             .setEndLocations(setOf(BlockLocation(block, Offset(100.meters))))
             .setUnavailableTimes(
-                ImmutableMultimap.of(block, OccupancySegment(0.0, 1000.0, 0.meters, 100.meters))
+                ImmutableMultimap.of(block, OccupancySegment(0.0, 1000.0, 0.meters, 100.meters)),
             )
             .setMaxDepartureDelay(1000 + 2 * timeStep)
             .setMaxRunTime(100.0)
@@ -376,7 +376,7 @@ class STDCMPathfindingTests {
                 ImmutableMultimap.of(
                     block,
                     OccupancySegment(0.0, Double.POSITIVE_INFINITY, 99000.meters, 100000.meters),
-                )
+                ),
             )
             .run()!!
     }
@@ -399,7 +399,7 @@ class STDCMPathfindingTests {
                 ImmutableMultimap.of(
                     block,
                     OccupancySegment(300.0, Double.POSITIVE_INFINITY, 0.meters, 100000.meters),
-                )
+                ),
             )
             .run()!!
     }
@@ -501,16 +501,16 @@ class STDCMPathfindingTests {
                         BlockLocation(
                             BlockId(infra.getRouteFromName("a->b").index),
                             Offset(0.meters),
-                        )
-                    )
+                        ),
+                    ),
                 )
                 .setEndLocations(
                     setOf(
                         BlockLocation(
                             BlockId(infra.getRouteFromName("x->y").index),
                             Offset(0.meters),
-                        )
-                    )
+                        ),
+                    ),
                 )
                 .run()
         assertTrue(res is STDCMPartialResult)
@@ -551,7 +551,7 @@ class STDCMPathfindingTests {
                 setOf(
                     BlockLocation(firstBlock, Offset(0.meters)),
                     BlockLocation(firstBlock, Offset(10.meters)),
-                )
+                ),
             )
             .setEndLocations(setOf(BlockLocation(secondBlock, Offset(50.meters))))
             .run()!!

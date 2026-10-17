@@ -158,8 +158,8 @@ data class InfraExplorerWithEnvelopeImpl(
                             lookaheadEndOffset,
                             rollingStock,
                         )
-                    }
-                )
+                    },
+                ),
         )
     }
 
@@ -262,7 +262,7 @@ data class InfraExplorerWithEnvelopeImpl(
                                 referenceAutomaton.simulator,
                                 subPathBegin,
                                 referenceAutomaton.context,
-                            )
+                            ),
                         )
                         spacingAutomatons.last()
                     }
@@ -303,8 +303,8 @@ data class InfraExplorerWithEnvelopeImpl(
                         subSimulationComplete,
                         currentPathOffset = Offset.min(subPathEnd, simulatedEndOffset),
                         infiniteLastStop = endsAtBacktracking || endAtStop(),
-                    )
-                ) ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+                    ),
+                ) ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError(),
             )
         }
         return sortAndMergeRequirements(spacingRequirements)

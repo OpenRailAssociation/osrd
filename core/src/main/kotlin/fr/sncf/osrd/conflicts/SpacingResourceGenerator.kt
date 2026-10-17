@@ -183,7 +183,7 @@ data class SpacingResourceGenerator(
             )
                 TODO(
                     "Spacing requirements for curve-based signals are only available " +
-                        "for ETCS_LEVEL2 and trough StandaloneSimulation"
+                        "for ETCS_LEVEL2 and trough StandaloneSimulation",
                 )
             pendingSignals.add(PendingSignalData(signal, pathOffset, sightOffset, isCurveBased))
         }
@@ -329,7 +329,7 @@ data class SpacingResourceGenerator(
 
     /** Generates all ongoing requirements. Discards zones that have been cleared. */
     private fun yieldCurrentRequirements(
-        callbacks: IncrementalRequirementCallbacks
+        callbacks: IncrementalRequirementCallbacks,
     ): List<SpacingRequirement> {
         val res = mutableListOf<SpacingRequirement>()
         val zonePathsToRemove = mutableListOf<ZonePathId>()
@@ -605,7 +605,7 @@ fun <T> ArrayDeque<T>.removeWhile(f: (T) -> Boolean) {
  * intervals.
  */
 fun sortAndMergeRequirements(
-    spacingRequirements: List<SpacingRequirement>
+    spacingRequirements: List<SpacingRequirement>,
 ): List<SpacingRequirement> {
     val sortedRequirements: List<SpacingRequirement> =
         spacingRequirements.sortedWith(compareBy({ it.zone.index }, { it.beginTime }))
@@ -633,7 +633,7 @@ fun sortAndMergeRequirements(
         }
     }
     resultRequirements.sortWith(
-        compareBy({ it.beginTime }, { it.endTime }, { it.zone.index }, { it.isComplete })
+        compareBy({ it.beginTime }, { it.endTime }, { it.zone.index }, { it.isComplete }),
     )
     return resultRequirements
 }

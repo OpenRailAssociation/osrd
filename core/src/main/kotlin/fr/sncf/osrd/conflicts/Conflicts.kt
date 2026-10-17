@@ -162,7 +162,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
                         listOf(conflictReq),
                         trains,
                         workSchedules,
-                    )
+                    ),
                 )
             }
         }
@@ -179,7 +179,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
                 val conflictReq = ConflictRequirement(entry.key, beginTime, endTime)
                 res.add(
-                    Conflict(beginTime, endTime, ConflictType.ROUTING, listOf(conflictReq), trains)
+                    Conflict(beginTime, endTime, ConflictType.ROUTING, listOf(conflictReq), trains),
                 )
             }
         }
@@ -292,7 +292,7 @@ fun mergeMap(
                             conflictReqs,
                             key.trainIds.toMutableList(),
                             key.workScheduleIds.toMutableList(),
-                        )
+                        ),
                     )
                     conflictReqs = mutableListOf()
                 }

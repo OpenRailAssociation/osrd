@@ -217,7 +217,7 @@ class JSONTimetableReader(val jsonTimetablePath: String) : TimetableProvider {
                             spacingReq.beginTime,
                             spacingReq.endTime,
                             train.trainName?.let { RequirementId(it, RequirementType.TRAIN) },
-                        )
+                        ),
                     )
             }
         }

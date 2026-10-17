@@ -73,7 +73,7 @@ class DummyInfra : RawInfra, BlockInfra {
                 gradient,
                 signalingSystemId,
                 signalingSystemName,
-            )
+            ),
         )
         entryMap.put(entryId, id)
         exitMap.put(exitId, id)
@@ -170,7 +170,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     private fun getSignalingSystemIdfromName(signalingSystemName: String): SignalingSystemId {
         return this.signalingSimulator.sigModuleManager.findSignalingSystemOrThrow(
-            signalingSystemName
+            signalingSystemName,
         )
     }
 
@@ -331,7 +331,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getNextTrackNodePort(
-        trackSection: DirTrackSectionId
+        trackSection: DirTrackSectionId,
     ): OptStaticIdx<TrackNodePort> {
         TODO("Not yet implemented")
     }
@@ -419,13 +419,13 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkLoadingGaugeConstraints(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): DistanceRangeMap<LoadingGaugeConstraint> {
         return DistanceRangeMapImpl()
     }
 
     override fun getTrackChunkElectrificationVoltage(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): DistanceRangeMap<Set<String>> {
         return makeRangeMap(
             blockPool[trackChunk.index].length,
@@ -434,7 +434,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackChunkNeutralSections(
-        trackChunk: DirTrackChunkId
+        trackChunk: DirTrackChunkId,
     ): DistanceRangeMap<NeutralSection> {
         val desc = blockPool[trackChunk.value.index]
         val neutralSection =
@@ -459,24 +459,24 @@ class DummyInfra : RawInfra, BlockInfra {
         val entry = detectorGeoPoint.getOrDefault(entryDetName, Point(0.0, 0.0))
         val middle = detectorGeoPoint.getOrDefault(exitDetName, Point(0.000001, 0.000001))
         return LineString.concatenate(
-            listOf(LineString.make(entry, middle), LineString.make(middle, entry))
+            listOf(LineString.make(entry, middle), LineString.make(middle, entry)),
         )
     }
 
     override fun getTrackChunkOperationalPointParts(
-        trackChunk: TrackChunkId
+        trackChunk: TrackChunkId,
     ): List<OperationalPointPartId> {
         return mutableStaticIdxArrayListOf()
     }
 
     override fun getOperationalPointPartChunk(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): TrackChunkId {
         TODO("Not yet implemented")
     }
 
     override fun getOperationalPointPartChunkOffset(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): Offset<TrackChunk> {
         TODO("Not yet implemented")
     }
@@ -486,7 +486,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getOperationalPointPartProps(
-        operationalPointPart: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId,
     ): Map<String, String> {
         TODO("Not yet implemented")
     }

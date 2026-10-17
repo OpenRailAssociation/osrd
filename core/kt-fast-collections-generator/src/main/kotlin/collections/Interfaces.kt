@@ -79,7 +79,7 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
                 fun remove(value: ${type}): Boolean
             }
         """
-            .trimIndent()
+            .trimIndent(),
     )
     file.close()
 }

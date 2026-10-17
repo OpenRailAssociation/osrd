@@ -23,7 +23,7 @@ data class RJSNeutralSection(
 ) : Identified
 
 data class RJSNeutralSectionExtensions(
-    @Json(name = "neutral_sncf") val neutralSncf: RJSNeutralSectionNeutralSncfExtension?
+    @Json(name = "neutral_sncf") val neutralSncf: RJSNeutralSectionNeutralSncfExtension?,
 )
 
 data class RJSNeutralSectionNeutralSncfExtension(

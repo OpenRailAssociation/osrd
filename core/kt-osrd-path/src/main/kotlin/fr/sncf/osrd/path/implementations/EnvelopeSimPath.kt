@@ -64,7 +64,7 @@ class EnvelopeSimPath(
         }
         this.defaultElectrificationMap = defaultElectrificationMap
         for (entry in electrificationMapByPowerClass.entries) assert(
-            entry.value.fullyCovers(length.meters)
+            entry.value.fullyCovers(length.meters),
         ) {
             "electrification map for power class " + entry.key + " does not cover path"
         }

@@ -86,7 +86,7 @@ fun initConstraintsFromRSProps(
                 infra.blockInfra,
                 infra.rawInfra,
                 rollingStockSupportedElectrification,
-            )
+            ),
         )
     }
     res.add(LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStockLoadingGauge))

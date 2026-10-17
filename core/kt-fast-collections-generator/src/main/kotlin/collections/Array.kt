@@ -252,7 +252,7 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
                 return ${simpleName}Array(data)
             }
         """
-            .trimIndent()
+            .trimIndent(),
     )
     file.close()
 }

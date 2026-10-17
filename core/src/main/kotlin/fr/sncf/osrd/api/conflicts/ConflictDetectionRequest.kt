@@ -51,7 +51,7 @@ class TrainRequirementsById(
 class WorkSchedulesRequest(
     /** Map of work schedule id -> work schedule data. */
     @Json(name = "work_schedule_requirements")
-    val workScheduleRequirements: Map<String, WorkSchedule>
+    val workScheduleRequirements: Map<String, WorkSchedule>,
 )
 
 val conflictRequestAdapter: JsonAdapter<ConflictDetectionRequest> =

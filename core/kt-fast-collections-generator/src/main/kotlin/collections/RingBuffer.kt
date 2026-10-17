@@ -227,7 +227,7 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                 return res
             }
         """
-            .trimIndent()
+            .trimIndent(),
     )
     file.close()
 }

@@ -108,7 +108,7 @@ fun generatePreviousSimulationSegments(
                             currentEdgeSnapshot.infraExplorer.getCurrentRollingStock(),
                         )
                     },
-                )
+                ),
             )
         }
         alreadyAddedDelay += currentEdge.getTotalAddedDelayOnEdge()

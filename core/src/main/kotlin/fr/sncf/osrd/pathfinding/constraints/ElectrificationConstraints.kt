@@ -53,7 +53,7 @@ data class ElectrificationConstraints(
                             OffsetRange(
                                 Offset(blockingRange.lowerEndpoint()),
                                 Offset(blockingRange.upperEndpoint()),
-                            )
+                            ),
                         )
                     }
                 }
@@ -69,7 +69,7 @@ data class ElectrificationConstraints(
                     .map { (lower, upper): DistanceRangeMap.RangeMapEntry<T> ->
                         Range.closed(lower, upper)
                     }
-                    .collect(Collectors.toSet())
+                    .collect(Collectors.toSet()),
             )
         }
     }

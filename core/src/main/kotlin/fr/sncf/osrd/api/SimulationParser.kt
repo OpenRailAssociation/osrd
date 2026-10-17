@@ -25,7 +25,7 @@ val simulationScheduleItemParserLogger = KotlinLogging.logger {}
  * - isBacktracking is true if at least one of the items is backtracking
  */
 fun dedupScheduleItems(
-    rawSimulationScheduleItems: List<SimulationScheduleItem>
+    rawSimulationScheduleItems: List<SimulationScheduleItem>,
 ): List<SimulationScheduleItem> {
     val simulationScheduleItems = mutableListOf<SimulationScheduleItem>()
     var i = 0
@@ -79,7 +79,7 @@ fun dedupScheduleItems(
 }
 
 fun parsePowerRestrictions(
-    powerRestrictions: List<SimulationPowerRestrictionItem>
+    powerRestrictions: List<SimulationPowerRestrictionItem>,
 ): OffsetRangeMap<PhysicsPath, String> {
     val res = offsetRangeMapOf<PhysicsPath, String>()
     for (entry in powerRestrictions) {

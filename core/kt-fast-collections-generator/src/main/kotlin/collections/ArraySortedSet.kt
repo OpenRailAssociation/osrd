@@ -399,7 +399,7 @@ private fun CollectionItemType.generateArraySortedSet(
                 return res.readOnlyClone()
             }
         """
-            .trimIndent()
+            .trimIndent(),
     )
     file.close()
 }

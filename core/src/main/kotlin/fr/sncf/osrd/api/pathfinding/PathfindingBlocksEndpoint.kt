@@ -112,7 +112,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                                 request.rollingStockLength.meters,
                                 infra,
                             )
-                        }
+                        },
                     )
                 } else {
                     allStarts.addAll(waypointBlocks)

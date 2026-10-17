@@ -11,7 +11,7 @@ import com.google.common.collect.TreeRangeMap
  * opens new ranges, or old ranges but at a lower cost.
  */
 data class VisitedRangeMap(
-    private val map: RangeMap<Double, VisitedRange> = TreeRangeMap.create()
+    private val map: RangeMap<Double, VisitedRange> = TreeRangeMap.create(),
 ) : RangeMap<Double, VisitedRange> by map {
     /**
      * Marks the given time ranges as visited in the map. Adds 3 ranges: visited with added

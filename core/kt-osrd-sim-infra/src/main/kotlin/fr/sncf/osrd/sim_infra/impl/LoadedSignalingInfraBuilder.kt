@@ -31,7 +31,7 @@ interface LoadedLogicalSignalBuilder {
 }
 
 private class LoadedPhysicalSignalBuilderImpl(
-    private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl
+    private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl,
 ) : LoadedPhysicalSignalBuilder {
     private val children: MutableStaticIdxArrayList<LogicalSignal> = MutableStaticIdxArrayList()
 
@@ -56,7 +56,7 @@ private class LoadedLogicalSignalBuilderImpl(
     private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl,
 ) : LoadedLogicalSignalBuilder {
     constructor(
-        infraBuilderImpl: LoadedSignalingInfraBuilderImpl
+        infraBuilderImpl: LoadedSignalingInfraBuilderImpl,
     ) : this(null, null, null, mutableStaticIdxArrayListOf(), infraBuilderImpl)
 
     override fun driver(driver: SignalDriverId) {
@@ -96,7 +96,7 @@ internal constructor(
     val driverMap: IdxMap<LogicalSignalId, List<SignalDriverId>>,
 ) : LoadedSignalingInfraBuilder {
     constructor(
-        sigSystemManager: InfraSigSystemManager
+        sigSystemManager: InfraSigSystemManager,
     ) : this(sigSystemManager, 0u, StaticPool(), IdxMap(), IdxMap(), IdxMap(), IdxMap())
 
     override fun physicalSignal(init: LoadedPhysicalSignalBuilder.() -> Unit): PhysicalSignalId {

@@ -42,15 +42,15 @@ class ConsistChangeTests {
         val requirements = emptyList<SpacingRequirement>()
         val slowTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 60
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 60,
             )
         val mediumTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 10
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 10,
             )
         val fastTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 2
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 2,
             )
         val stdcmResult =
             STDCMPathfindingBuilder()
@@ -102,15 +102,15 @@ class ConsistChangeTests {
         val requirements = emptyList<SpacingRequirement>()
         val slowTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 60
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 60,
             )
         val mediumTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 10
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 10,
             )
         val fastTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 2
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 2,
             )
         val stdcmResult =
             STDCMPathfindingBuilder()
@@ -164,10 +164,10 @@ class ConsistChangeTests {
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
                 .setRollingStocks(
-                    listOf(TestTrains.REALISTIC_FAST_TRAIN, TestTrains.FAST_ELECTRIC_TRAIN)
+                    listOf(TestTrains.REALISTIC_FAST_TRAIN, TestTrains.FAST_ELECTRIC_TRAIN),
                 )
                 .setBoundaries(listOf(1))
-                .run() is STDCMPartialResult
+                .run() is STDCMPartialResult,
         )
         Assertions.assertTrue(
             STDCMPathfindingBuilder()
@@ -178,10 +178,10 @@ class ConsistChangeTests {
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
                 .setRollingStocks(
-                    listOf(TestTrains.FAST_ELECTRIC_TRAIN, TestTrains.REALISTIC_FAST_TRAIN)
+                    listOf(TestTrains.FAST_ELECTRIC_TRAIN, TestTrains.REALISTIC_FAST_TRAIN),
                 )
                 .setBoundaries(listOf(1))
-                .run() is STDCMCompleteResult
+                .run() is STDCMCompleteResult,
         )
     }
 
@@ -202,7 +202,7 @@ class ConsistChangeTests {
                     .setBlockAvailability(makeBlockAvailability(requirements))
                     .setStandardAllowance(AllowanceValue.Percentage(0.0))
                     .setRollingStocks(
-                        listOf(TestTrains.REALISTIC_FAST_TRAIN, TestTrains.FAST_ELECTRIC_TRAIN)
+                        listOf(TestTrains.REALISTIC_FAST_TRAIN, TestTrains.FAST_ELECTRIC_TRAIN),
                     )
                     .setBoundaries(listOf(0))
                     .run()
@@ -230,7 +230,7 @@ class ConsistChangeTests {
                     .setBlockAvailability(makeBlockAvailability(requirements))
                     .setStandardAllowance(AllowanceValue.Percentage(0.0))
                     .setRollingStocks(
-                        listOf(TestTrains.REALISTIC_FAST_TRAIN, TestTrains.FAST_ELECTRIC_TRAIN)
+                        listOf(TestTrains.REALISTIC_FAST_TRAIN, TestTrains.FAST_ELECTRIC_TRAIN),
                     )
                     .setBoundaries(listOf(2))
                     .run()
@@ -252,11 +252,11 @@ class ConsistChangeTests {
         val requirements = emptyList<SpacingRequirement>()
         val slowTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 60
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 60,
             )
         val fastTrain =
             TestTrains.REALISTIC_FAST_TRAIN.copy(
-                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 10
+                maxSpeed = TestTrains.REALISTIC_FAST_TRAIN.maxSpeed / 10,
             )
         val stdcmResult =
             STDCMPathfindingBuilder()

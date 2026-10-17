@@ -203,7 +203,7 @@ class EnvelopeOverlayTest {
                 positions,
                 speeds,
                 isBackward,
-            )
+            ),
         )
         val envelope = builder.build()
         Assertions.assertEquals(4, envelope.size())
@@ -278,7 +278,7 @@ class EnvelopeOverlayTest {
                 positions,
                 speeds,
                 reverse,
-            )
+            ),
         )
         val envelope = builder.build()
         Assertions.assertEquals(4, envelope.size())
@@ -292,7 +292,7 @@ class EnvelopeOverlayTest {
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 3.0, 4.0),
                     doubleArrayOf(2.0, 1.0, 0.0),
-                )
+                ),
             )
 
         val builder = OverlayEnvelopeBuilder.forward(inputEnvelope)
@@ -323,7 +323,7 @@ class EnvelopeOverlayTest {
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 2.0, 4.0),
                     doubleArrayOf(1.0, 1.0, 3.0),
-                )
+                ),
             )
 
         val builder = OverlayEnvelopeBuilder.forward(inputEnvelope)
@@ -397,7 +397,7 @@ class EnvelopeOverlayTest {
                 EnvelopeTestUtils.generateTimes(doubleArrayOf(0.0, 1.0), doubleArrayOf(1.0, 1.0)),
                 EnvelopePart(
                     mapOf<Class<out SelfTypeHolder>, SelfTypeHolder>(
-                        Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED)
+                        Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED),
                     ),
                     doubleArrayOf(1.0),
                     doubleArrayOf(1.0),

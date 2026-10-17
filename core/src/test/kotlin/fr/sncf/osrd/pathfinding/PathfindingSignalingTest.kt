@@ -66,16 +66,19 @@ class PathfindingSignalingTest {
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
-            .satisfies({ exception: Throwable ->
-                val resp =
-                    (exception as NoPathFoundException).response
-                        as IncompatibleConstraintsPathResponse
-                assert(resp.relaxedConstraintsPath.length.distance == 400.meters)
-                assert(
-                    resp.incompatibleConstraints.incompatibleSignalingSystemRanges.single().value ==
-                        TVM300.id
-                )
-            })
+            .satisfies(
+                { exception: Throwable ->
+                    val resp =
+                        (exception as NoPathFoundException).response
+                            as IncompatibleConstraintsPathResponse
+                    assert(resp.relaxedConstraintsPath.length.distance == 400.meters)
+                    assert(
+                        resp.incompatibleConstraints.incompatibleSignalingSystemRanges
+                            .single()
+                            .value == TVM300.id,
+                    )
+                },
+            )
     }
 
     @Test

@@ -100,16 +100,19 @@ class PathfindingElectrificationTest : ApiTest() {
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
-            .satisfies({ exception: Throwable ->
-                val resp =
-                    (exception as NoPathFoundException).response
-                        as IncompatibleConstraintsPathResponse
-                assert(resp.relaxedConstraintsPath.length.distance == 400.meters)
-                assert(
-                    resp.incompatibleConstraints.incompatibleElectrificationRanges.single().value ==
-                        "bad_elec"
-                )
-            })
+            .satisfies(
+                { exception: Throwable ->
+                    val resp =
+                        (exception as NoPathFoundException).response
+                            as IncompatibleConstraintsPathResponse
+                    assert(resp.relaxedConstraintsPath.length.distance == 400.meters)
+                    assert(
+                        resp.incompatibleConstraints.incompatibleElectrificationRanges
+                            .single()
+                            .value == "bad_elec",
+                    )
+                },
+            )
     }
 
     @ParameterizedTest
@@ -165,17 +168,19 @@ class PathfindingElectrificationTest : ApiTest() {
                     )
                 }
                 .isExactlyInstanceOf(NoPathFoundException::class.java)
-                .satisfies({ exception: Throwable ->
-                    val resp =
-                        (exception as NoPathFoundException).response
-                            as IncompatibleConstraintsPathResponse
-                    assert(resp.relaxedConstraintsPath.length.distance == 300.meters)
-                    assert(
-                        resp.incompatibleConstraints.incompatibleElectrificationRanges
-                            .single()
-                            .value == "bad_elec"
-                    )
-                })
+                .satisfies(
+                    { exception: Throwable ->
+                        val resp =
+                            (exception as NoPathFoundException).response
+                                as IncompatibleConstraintsPathResponse
+                        assert(resp.relaxedConstraintsPath.length.distance == 300.meters)
+                        assert(
+                            resp.incompatibleConstraints.incompatibleElectrificationRanges
+                                .single()
+                                .value == "bad_elec",
+                        )
+                    },
+                )
         }
     }
 
@@ -286,16 +291,18 @@ class PathfindingElectrificationTest : ApiTest() {
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
-            .satisfies({ exception: Throwable ->
-                val resp =
-                    (exception as NoPathFoundException).response
-                        as IncompatibleConstraintsPathResponse
-                assert(resp.relaxedConstraintsPath.length.distance == 39_553.meters)
-                val incompElec =
-                    resp.incompatibleConstraints.incompatibleElectrificationRanges.single()
-                assert(incompElec.range.start == Offset<PhysicsPath>(0.meters))
-                assert(incompElec.range.end == Offset<PhysicsPath>(39_553.meters))
-                assert(incompElec.value == "")
-            })
+            .satisfies(
+                { exception: Throwable ->
+                    val resp =
+                        (exception as NoPathFoundException).response
+                            as IncompatibleConstraintsPathResponse
+                    assert(resp.relaxedConstraintsPath.length.distance == 39_553.meters)
+                    val incompElec =
+                        resp.incompatibleConstraints.incompatibleElectrificationRanges.single()
+                    assert(incompElec.range.start == Offset<PhysicsPath>(0.meters))
+                    assert(incompElec.range.end == Offset<PhysicsPath>(39_553.meters))
+                    assert(incompElec.value == "")
+                },
+            )
     }
 }

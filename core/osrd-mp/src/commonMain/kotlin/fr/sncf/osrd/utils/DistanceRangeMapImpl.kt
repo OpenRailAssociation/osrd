@@ -10,7 +10,7 @@ data class DistanceRangeMapImpl<T>(
 ) : DistanceRangeMap<T> {
 
     constructor(
-        entries: Iterable<DistanceRangeMap.RangeMapEntry<T>> = emptyList()
+        entries: Iterable<DistanceRangeMap.RangeMapEntry<T>> = emptyList(),
     ) : this(MutableDistanceArrayList(), ArrayList()) {
         putMany(entries)
     }
@@ -110,7 +110,7 @@ data class DistanceRangeMapImpl<T>(
         // E.g. boundEntries = [(0, 0), (5, 0), (5, 1), (10, 1)]
         boundEntries.sortWith(
             Comparator<Pair<Distance, Int>> { a, b -> a.first.compareTo(b.first) }
-                .thenBy { it.second }
+                .thenBy { it.second },
         )
         // Group entries with the same bound.
         // E.g. entriesByBound = [(0, [0]), (5, [0, 1]), (10, [1])]
@@ -243,7 +243,7 @@ data class DistanceRangeMapImpl<T>(
             // Track segments that are part of the updated map but not intersecting with `this`
             if (subMap.isEmpty()) {
                 resultEntries.add(
-                    DistanceRangeMap.RangeMapEntry(updateLower, updateUpper, default(updateValue))
+                    DistanceRangeMap.RangeMapEntry(updateLower, updateUpper, default(updateValue)),
                 )
             } else {
                 // Handle intersections
@@ -257,14 +257,14 @@ data class DistanceRangeMapImpl<T>(
                                 lastEnd,
                                 subMapLower,
                                 default(updateValue),
-                            )
+                            ),
                         )
                     }
 
                     // Add the overlapping segment with combined value
                     val combinedValue = updateFunction(subMapValue, updateValue)
                     resultEntries.add(
-                        DistanceRangeMap.RangeMapEntry(subMapLower, subMapUpper, combinedValue)
+                        DistanceRangeMap.RangeMapEntry(subMapLower, subMapUpper, combinedValue),
                     )
 
                     lastEnd = subMapUpper
@@ -274,7 +274,7 @@ data class DistanceRangeMapImpl<T>(
                 if (lastEnd < updateUpper) {
                     val combinedValue = default(updateValue)
                     resultEntries.add(
-                        DistanceRangeMap.RangeMapEntry(lastEnd, updateUpper, combinedValue)
+                        DistanceRangeMap.RangeMapEntry(lastEnd, updateUpper, combinedValue),
                     )
                 }
             }
@@ -290,7 +290,7 @@ data class DistanceRangeMapImpl<T>(
             if (subMap.isEmpty()) {
                 val combinedValue = default(thisValue)
                 resultEntries.add(
-                    DistanceRangeMap.RangeMapEntry(thisLower, thisUpper, combinedValue)
+                    DistanceRangeMap.RangeMapEntry(thisLower, thisUpper, combinedValue),
                 )
             } else {
                 // Handle intersections
@@ -301,7 +301,7 @@ data class DistanceRangeMapImpl<T>(
                     if (lastEnd < subMapLower) {
                         val combinedValue = default(thisValue)
                         resultEntries.add(
-                            DistanceRangeMap.RangeMapEntry(lastEnd, subMapLower, combinedValue)
+                            DistanceRangeMap.RangeMapEntry(lastEnd, subMapLower, combinedValue),
                         )
                     }
                     lastEnd = subMapUpper
@@ -311,7 +311,7 @@ data class DistanceRangeMapImpl<T>(
                 if (lastEnd < thisUpper) {
                     val combinedValue = default(thisValue)
                     resultEntries.add(
-                        DistanceRangeMap.RangeMapEntry(lastEnd, thisUpper, combinedValue)
+                        DistanceRangeMap.RangeMapEntry(lastEnd, thisUpper, combinedValue),
                     )
                 }
             }

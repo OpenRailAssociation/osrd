@@ -235,7 +235,7 @@ private fun getInitPartialBlocks(
     if (entrySignals == null) {
         if (!isBufferStop)
             missingSignalLogAggregator.registerError(
-                "no signal at non buffer stop ${rawSignalingInfra.getDetectorName(entryDet.value)}:${entryDet.direction}"
+                "no signal at non buffer stop ${rawSignalingInfra.getDetectorName(entryDet.value)}:${entryDet.direction}",
             )
         initialBlocks.add(
             PartialBlock(
@@ -245,7 +245,7 @@ private fun getInitPartialBlocks(
                 MutableStaticIdxArrayList(),
                 null,
                 Length(0.meters),
-            )
+            ),
         )
     } else {
         if (isBufferStop)
@@ -256,7 +256,7 @@ private fun getInitPartialBlocks(
             val drivers = loadedSignalInfra.getDrivers(entry.signal)
             if (drivers.size == 0) {
                 initialBlocks.add(
-                    PartialBlock(false).addSignal(entry.signal, Offset(-entry.distance))
+                    PartialBlock(false).addSignal(entry.signal, Offset(-entry.distance)),
                 )
                 continue
             }
@@ -265,7 +265,7 @@ private fun getInitPartialBlocks(
                 val inputSigSystem = sigModuleManager.getInputSignalingSystem(driver)
                 initialBlocks.add(
                     PartialBlock(false, inputSigSystem)
-                        .addSignal(entry.signal, Offset(-entry.distance))
+                        .addSignal(entry.signal, Offset(-entry.distance)),
                 )
             }
         }
@@ -369,7 +369,7 @@ private fun warnOnRouteEndingOnNonRouteDelimitingSignal(
             sigModuleManager.isRouteDelimiter(signalingSystem, sigSettings)
         if (!routeEndsWithRouteEndingSignal) {
             logAggregator.registerError(
-                "Route ${rawSignalingInfra.getRouteName(route)} ends with non-route delimiting signal on signaling system ${signalingSystem}"
+                "Route ${rawSignalingInfra.getRouteName(route)} ends with non-route delimiting signal on signaling system ${signalingSystem}",
             )
         }
     }

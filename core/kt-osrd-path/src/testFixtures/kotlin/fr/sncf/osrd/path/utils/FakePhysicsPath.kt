@@ -52,7 +52,7 @@ class FakePhysicsPath(
                 minGradeResult = 0.0,
                 electrificationResult =
                     distanceRangeMapOf(
-                        DistanceRangeMap.RangeMapEntry(0.0.meters, length.meters, NonElectrified())
+                        DistanceRangeMap.RangeMapEntry(0.0.meters, length.meters, NonElectrified()),
                     ),
             )
         }

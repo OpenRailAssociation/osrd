@@ -56,7 +56,7 @@ class PathPropertiesTests {
                                 listOf(
                                     RJSSlope(0.0, 1_000.0, 10.0),
                                     RJSSlope(1_000.0, 2_000.0, 15.0),
-                                )
+                                ),
                         )
 
                     "TA1" -> // 1.950km long
@@ -187,7 +187,7 @@ class PathPropertiesTests {
                             1_000.0,
                             "V1",
                             RJSOperationalPointPartExtensions(
-                                RJSOperationalPointPartSncfExtension("kp1")
+                                RJSOperationalPointPartSncfExtension("kp1"),
                             ),
                         ),
                         RJSOperationalPointPart(
@@ -195,7 +195,7 @@ class PathPropertiesTests {
                             1_500.0,
                             "V1",
                             RJSOperationalPointPartExtensions(
-                                RJSOperationalPointPartSncfExtension("kp2")
+                                RJSOperationalPointPartSncfExtension("kp2"),
                             ),
                         ),
                     ),
@@ -217,7 +217,7 @@ class PathPropertiesTests {
                             0.0,
                             "V1",
                             RJSOperationalPointPartExtensions(
-                                RJSOperationalPointPartSncfExtension("kp3")
+                                RJSOperationalPointPartSncfExtension("kp3"),
                             ),
                         ),
                         RJSOperationalPointPart("TA1", 1_950.0, "V1", null),
@@ -303,7 +303,7 @@ class PathPropertiesTests {
                             listOf(
                                 RJSCurve(0.0, 1_000.0, 5_000.0),
                                 RJSCurve(1_000.0, 2_000.0, 10_000.0),
-                            )
+                            ),
                     )
                 else it
             }
@@ -379,12 +379,12 @@ class PathPropertiesTests {
                 when (it.id) {
                     "TA0" ->
                         it.copy(
-                            geo = RJSLineString.make(listOf(0.0, 1.0, 1.0), listOf(0.0, 0.0, 1.0))
+                            geo = RJSLineString.make(listOf(0.0, 1.0, 1.0), listOf(0.0, 0.0, 1.0)),
                         )
 
                     "TA1" ->
                         it.copy(
-                            geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
+                            geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95)),
                         )
 
                     else -> it
@@ -471,10 +471,10 @@ class PathPropertiesTests {
                                         ApplicableDirection.BOTH,
                                         1_000.0,
                                         1_950.0,
-                                    )
+                                    ),
                                 ),
                             ),
-                        )
+                        ),
                 )
         val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
@@ -531,7 +531,7 @@ class PathPropertiesTests {
                     "TA0" ->
                         it.copy(
                             loadingGaugeLimits =
-                                listOf(RJSLoadingGaugeLimit(0.0, 2_000.0, RJSLoadingGaugeType.GA))
+                                listOf(RJSLoadingGaugeLimit(0.0, 2_000.0, RJSLoadingGaugeType.GA)),
                         )
 
                     "TA1" ->
@@ -540,7 +540,7 @@ class PathPropertiesTests {
                                 listOf(
                                     RJSLoadingGaugeLimit(0.0, 1_000.0, RJSLoadingGaugeType.GA),
                                     RJSLoadingGaugeLimit(1_000.0, 1_950.0, RJSLoadingGaugeType.GC),
-                                )
+                                ),
                         )
 
                     else -> it
@@ -561,12 +561,12 @@ class PathPropertiesTests {
         assert(
             loadingGauge
                 .get(0.meters)!!
-                .isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt()))
+                .isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt())),
         )
         assert(
             !loadingGauge
                 .get(1_000.meters)!!
-                .isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt()))
+                .isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt())),
         )
     }
 
@@ -579,7 +579,7 @@ class PathPropertiesTests {
                 30.0,
                 mapOf(Pair("trainTag", 42.42)),
                 listOf(
-                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0)
+                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0),
                 ),
                 null,
             )
@@ -607,7 +607,7 @@ class PathPropertiesTests {
                         1_820.meters,
                         SpeedLimitProperty(MAX_SPEED.metersPerSecond, UnknownTag()),
                     ),
-                )
+                ),
             )
     }
 
@@ -625,7 +625,7 @@ class PathPropertiesTests {
                         ApplicableDirection.BOTH,
                         4900.0,
                         5000.0,
-                    )
+                    ),
                 ),
                 null,
             )
@@ -679,7 +679,7 @@ class PathPropertiesTests {
                         1600.meters,
                         SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
                     ),
-                )
+                ),
             )
 
         val speedLimitsME100 = path.getSpeedLimitProperties("ME100", null)
@@ -706,7 +706,7 @@ class PathPropertiesTests {
                         1600.meters,
                         SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
                     ),
-                )
+                ),
             )
 
         val speedLimitsE32C = path.getSpeedLimitProperties("E32C", null)
@@ -733,7 +733,7 @@ class PathPropertiesTests {
                         1600.meters,
                         SpeedLimitProperty(3.0.metersPerSecond, UnknownTag()),
                     ),
-                )
+                ),
             )
 
         val speedLimitsHLP = path.getSpeedLimitProperties("HLP", null)
@@ -760,7 +760,7 @@ class PathPropertiesTests {
                         1600.meters,
                         SpeedLimitProperty(3.0.metersPerSecond, GivenTrainTag("HLP")),
                     ),
-                )
+                ),
             )
 
         val speedLimitsNull = path.getSpeedLimitProperties(null, null)
@@ -787,7 +787,7 @@ class PathPropertiesTests {
                         1600.meters,
                         SpeedLimitProperty(3.0.metersPerSecond, null),
                     ),
-                )
+                ),
             )
 
         val expectedSpeedLimitsMA90 =
@@ -863,7 +863,7 @@ class PathPropertiesTests {
         // compatible) and FR3.3/GB/G2 that is not a track gauge
         for (trackGauge in
             RJSLoadingGaugeType.entries.minus(
-                listOf(RJSLoadingGaugeType.GLOTT, RJSLoadingGaugeType.FR3_3_GB_G2)
+                listOf(RJSLoadingGaugeType.GLOTT, RJSLoadingGaugeType.FR3_3_GB_G2),
             )) {
             assert(trackGauge.compatibleGaugeTypes.contains(RJSLoadingGaugeType.G1))
         }

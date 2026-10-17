@@ -64,7 +64,7 @@ class InfraExplorerTests {
                 TestTrains.REALISTIC_FAST_TRAIN.length.meters,
                 BlockLocation(blocks[0], Offset(0.meters)),
                 stepsFromLocations(
-                    BlockLocation(blocks.last(), infra.getBlockLength(blocks.last()))
+                    BlockLocation(blocks.last(), infra.getBlockLength(blocks.last())),
                 ),
             )
         assertEquals(1, firstExplorers.size)
@@ -299,7 +299,7 @@ class InfraExplorerTests {
             }
         val blocks =
             infra.blockInfra.getBlocksStartingAtDetector(
-                DirDetectorId(detector, Direction.INCREASING)
+                DirDetectorId(detector, Direction.INCREASING),
             )
         assertEquals(1, blocks.size)
         val block = blocks[0]
@@ -338,7 +338,7 @@ class InfraExplorerTests {
             infra.rawInfra.detectors.first { det -> infra.rawInfra.getDetectorName(det) == "bf.a1" }
         val blocks =
             infra.blockInfra.getBlocksStartingAtDetector(
-                DirDetectorId(detector, Direction.INCREASING)
+                DirDetectorId(detector, Direction.INCREASING),
             )
         assertEquals(1, blocks.size)
         val block = blocks[0]

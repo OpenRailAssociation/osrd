@@ -76,7 +76,7 @@ fun buildETCSBlockDetectors(infra: FullInfra, trainPath: TrainPath): List<Offset
 
 private fun isETCSBlock(block: BlockId, infra: FullInfra): Boolean {
     return infra.signalingSimulator.sigModuleManager.getName(
-        infra.blockInfra.getBlockSignalingSystem(block)
+        infra.blockInfra.getBlockSignalingSystem(block),
     ) == ETCS_LEVEL2.id
 }
 

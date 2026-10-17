@@ -32,7 +32,7 @@ protected constructor(
     protected val usedHead: Int,
 ) : BaseArena<IndexT> {
     constructor(
-        initSize: Int
+        initSize: Int,
     ) : this(
         slotGenerations = UIntArray(initSize),
         useMap = BooleanArray(initSize),
@@ -119,7 +119,7 @@ protected constructor(
     protected var usedTail: Int,
 ) : MutableBaseArena<IndexT> {
     constructor(
-        initSize: Int
+        initSize: Int,
     ) : this(
         slotGenerations = UIntArray(initSize),
         useMap = BooleanArray(initSize),
