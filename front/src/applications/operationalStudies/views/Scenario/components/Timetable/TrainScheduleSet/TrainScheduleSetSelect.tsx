@@ -61,6 +61,7 @@ const TrainScheduleSetSelect = ({
   // TODO: This should probably we done in the events, and we should probably move it closer (not in Timetable)
   useEffect(() => {
     setTrainScheduleSetIdSelected(undefined);
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [catalogSelected, setTrainScheduleSetIdSelected]);
 
   return (

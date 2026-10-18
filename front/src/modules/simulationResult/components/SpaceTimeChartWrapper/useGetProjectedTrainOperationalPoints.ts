@@ -77,6 +77,7 @@ const useGetProjectedTrainOperationalPoints = ({
     };
 
     getOperationalPoints();
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [path, pathfinding, infraId, projectedOperationalPoints, timetableId, t, projectionType]);
 
   return { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints };

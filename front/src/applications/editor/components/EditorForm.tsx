@@ -71,6 +71,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
    */
   useEffect(() => {
     setFormData(omitBy(data.properties, isNil));
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [data, schema]);
 
   /**

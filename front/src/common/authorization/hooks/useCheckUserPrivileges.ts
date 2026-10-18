@@ -35,6 +35,7 @@ export default function useCheckUserPrivileges({
     else {
       onResourceChange(resourceType, resourceId);
     }
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [checkUserPrivileges, resourceType, resourceId]);
 
   return hasPrivileges;

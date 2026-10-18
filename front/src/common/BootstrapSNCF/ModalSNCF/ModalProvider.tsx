@@ -134,6 +134,7 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
    */
   useEffect(() => {
     closeModal();
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [closeModal, location.pathname]);
 
   return (

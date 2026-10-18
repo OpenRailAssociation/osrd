@@ -181,6 +181,7 @@ const RouteEditionLayers = () => {
     return () => {
       setEntityGeo({ type: 'Feature', properties: {}, geometry: NULL_GEOMETRY });
     };
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [state.initialEntity, state.entity, mapStyle, getRouteGeometry]);
 
   return (

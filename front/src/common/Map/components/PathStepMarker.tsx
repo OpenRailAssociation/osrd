@@ -68,6 +68,7 @@ const PathStepMarker = ({
 
   useEffect(() => {
     setPendingPosition(null);
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [coordinates, resetKey]);
 
   const effectiveCoordinates = pendingPosition ?? coordinates;

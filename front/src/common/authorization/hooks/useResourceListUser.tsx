@@ -44,6 +44,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
     setError(null);
     setLoading(false);
     fetchPage();
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [resourceType, id, fetchPage]);
 
   const refetch = useCallback(async () => {

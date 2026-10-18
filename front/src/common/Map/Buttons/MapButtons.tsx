@@ -186,11 +186,13 @@ export default function MapButtons({
   // Close the pop up of the map
   useEffect(() => {
     if (closeFeatureInfoClickPopup) closeFeatureInfoClickPopup();
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [openedPopover, isOpen, closeFeatureInfoClickPopup]);
 
   // Close the Popover when opening modal
   useEffect(() => {
     setOpenedPopover(undefined);
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [isOpen]);
 
   useEffect(() => {
