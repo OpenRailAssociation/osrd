@@ -108,6 +108,7 @@ const ItineraryModalMap = ({
 
   useEffect(() => {
     if (!isMapSelectionMode) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setCursorMarker(null);
       mapRef.current?.getMap().getCanvas().style.removeProperty('cursor');
       setPendingOpClick(null);

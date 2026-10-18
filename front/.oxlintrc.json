@@ -199,7 +199,6 @@
       }
     ],
     "react/refs": "off",
-    "react/set-state-in-effect": "off",
 
     "react/error-boundaries": "error",
     "react/globals": "error",

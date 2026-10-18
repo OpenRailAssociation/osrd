@@ -8,6 +8,7 @@ export const useProjectImage = (imageId?: number | null) => {
 
   useEffect(() => {
     if (!imageId) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setImageUrl(defaultProjectImage);
       return;
     }

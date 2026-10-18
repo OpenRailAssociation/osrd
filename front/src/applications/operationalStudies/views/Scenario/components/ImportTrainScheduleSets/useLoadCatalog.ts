@@ -85,6 +85,7 @@ export default function useLoadCatalog() {
    * => load the catalog
    */
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     loadCatalog();
   }, [loadCatalog]);
 

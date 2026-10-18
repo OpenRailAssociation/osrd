@@ -157,6 +157,7 @@ const RoundTripsModal = ({
 
     const roundTripGroups = groupRoundTrips(trainSchedulesWithOpsById, trainScheduleRoundtrips);
 
+    /* eslint-disable-next-line react/set-state-in-effect */
     setPairingItems(formatPairingItems(roundTripGroups, t));
   }, [trainScheduleRoundtrips, trainSchedulesWithOpsById, t]);
 

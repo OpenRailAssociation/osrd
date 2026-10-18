@@ -104,6 +104,7 @@ const TrackSectionEndpointSelector = ({
         }
       );
     } else {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setTrackSection(null);
     }
   }, [formData?.track, infraID, dispatch]);

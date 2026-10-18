@@ -18,6 +18,7 @@ const SpeedInput = ({ msSpeed, onChange, ...attrs }: SpeedInputProps) => {
 
   useEffect(() => {
     const newKmhSpeed = msToKmhString(msSpeed);
+    /* eslint-disable-next-line react/set-state-in-effect */
     if (+newKmhSpeed !== +kmhSpeed) setKmhSpeed(newKmhSpeed);
   }, [msSpeed, kmhSpeed]);
 

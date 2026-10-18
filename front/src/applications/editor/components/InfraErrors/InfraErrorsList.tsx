@@ -82,6 +82,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
         ? INFRA_ERRORS
         : [...INFRA_ERRORS_BY_LEVEL[filterLevel]];
     const sortedTypes = sortBy(types, (type) => t(`Editor.infra-errors.error-type.${type}.name`));
+    /* eslint-disable-next-line react/set-state-in-effect */
     setErrorTypeList(sortedTypes);
   }, [filterLevel, t]);
 
@@ -90,6 +91,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
    * => fetch data of the first page
    */
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     fetch(infraID, 1, filterLevel, filterType ?? undefined);
   }, [infraID, fetch, filterType, filterLevel]);
 

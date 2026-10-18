@@ -112,6 +112,7 @@ export const useOperationalPointSearch = ({
     if (!activeStepKey) return;
 
     if (!debouncedTrimmedInput || debouncedTrimmedInput.length < minChars) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       resetOpSuggestions();
       return;
     }

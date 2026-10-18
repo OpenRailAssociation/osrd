@@ -41,6 +41,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
    */
   useEffect(() => {
     // reset state
+    /* eslint-disable-next-line react/set-state-in-effect */
     setError(null);
     setLoading(false);
     fetchPage();

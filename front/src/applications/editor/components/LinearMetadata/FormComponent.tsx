@@ -131,6 +131,7 @@ const IntervalEditorComponent = (
    */
   useEffect(() => {
     closeModal();
+    /* eslint-disable-next-line react/set-state-in-effect */
     setData(fixedData);
     setSelected((old) => (old !== null && fixedData[old] ? old : null));
     setHovered((old) => (old !== null && fixedData[old.index] ? old : null));
@@ -142,6 +143,7 @@ const IntervalEditorComponent = (
    * => recompute viewbox so selected element is always visible ()
    */
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setSelectedData(selected !== null && data[selected] ? data[selected] : null);
   }, [selected, data]);
 

@@ -73,6 +73,7 @@ const useConflictsFilter = (
   useEffect(() => {
     if (isConflictsLoading) return;
     const sortedByStartTime = [...conflicts].sort((a, b) => a.start_time - b.start_time);
+    /* eslint-disable-next-line react/set-state-in-effect */
     setEnrichedConflicts(addTrainNamesToConflicts(sortedByStartTime, trainScheduleById));
   }, [conflicts, isConflictsLoading, trainScheduleById]);
 

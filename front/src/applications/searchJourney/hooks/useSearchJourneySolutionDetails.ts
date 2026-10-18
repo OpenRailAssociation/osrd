@@ -56,6 +56,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
 
   useEffect(() => {
     if (!infraId || !solution || solution.length === 0) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setGeometry(undefined);
       setMarkers([]);
       setTrainNames({});

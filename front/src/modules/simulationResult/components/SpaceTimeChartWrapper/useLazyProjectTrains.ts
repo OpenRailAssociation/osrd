@@ -94,6 +94,7 @@ const useLazyProjectTrains = ({
       );
     }
 
+    /* eslint-disable-next-line react/set-state-in-effect */
     setProjectedTrainsById(new Map());
     loader.projectTrainSchedules([...trainSchedulesByIdRef.current.keys()]);
 

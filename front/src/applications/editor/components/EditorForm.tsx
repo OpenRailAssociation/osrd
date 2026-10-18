@@ -70,6 +70,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
    * When data or schema change
    */
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setFormData(omitBy(data.properties, isNil));
     /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [data, schema]);
