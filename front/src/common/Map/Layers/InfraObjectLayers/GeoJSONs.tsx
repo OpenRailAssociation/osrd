@@ -496,6 +496,7 @@ const GeoJSONs = ({
     return () => {
       clearTimeout(timeout);
     };
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [fingerprint]);
 
   const layerContext: LayerContext = useMemo(

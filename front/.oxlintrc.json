@@ -198,7 +198,6 @@
         ]
       }
     ],
-    "react/exhaustive-effect-dependencies": "off",
     "react/refs": "off",
     "react/set-state-in-effect": "off",
 

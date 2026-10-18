@@ -104,6 +104,7 @@ const MarginCellEditable = ({
     setUnit(initialValue?.unit ?? MarginUnit.percent);
     setRaw(initialValue?.value?.toString() ?? null);
     setIsEditing(false);
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [initialValue?.value, initialValue?.unit, isInherited]); // TODO : Remove this when depreciating input table
 
   const commit = () => {

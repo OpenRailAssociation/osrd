@@ -77,6 +77,7 @@ const useFilterTowedRollingStock = ({ isDebugMode }: { isDebugMode: boolean }) =
     setTimeout(() => {
       setFilteredTowedRollingStockList(newFilteredTowedRollingStocks);
     }, 0);
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [isSuccess, filters, allTowedRollingStocks]);
 
   return {

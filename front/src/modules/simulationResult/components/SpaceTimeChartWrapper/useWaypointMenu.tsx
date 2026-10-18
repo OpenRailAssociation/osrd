@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { EyeClosed, Fold, Unfold } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -29,9 +29,9 @@ const useWaypointMenu = (
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setActiveWaypointId(undefined);
-  };
+  }, []);
 
   useModalFocusTrap(menuRef, closeMenu, { focusOnFirstElement: true });
 
@@ -52,7 +52,7 @@ const useWaypointMenu = (
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [activeWaypointId]);
+  }, [activeWaypointId, closeMenu]);
 
   const menuItems: OSRDMenuItem[] = [
     {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, Input } from '@osrd-project/ui-core';
 import { Filter } from '@osrd-project/ui-icons';
@@ -115,9 +115,9 @@ const RoundTripsModal = ({
     return groupedPairingItems;
   }, [pairingItemsById, trainSchedulesWithOpsById, debouncedFilter]);
 
-  const openModal = () => {
+  const openModal = useCallback(() => {
     modalRef.current?.showModal();
-  };
+  }, []);
 
   const closeModal = () => {
     modalRef.current?.close();
@@ -164,7 +164,7 @@ const RoundTripsModal = ({
     if (roundTripsModalIsOpen) {
       openModal();
     }
-  }, [roundTripsModalIsOpen]);
+  }, [roundTripsModalIsOpen, openModal]);
 
   return (
     <dialog ref={modalRef} className="round-trips-modal" data-testid="round-trips-modal">

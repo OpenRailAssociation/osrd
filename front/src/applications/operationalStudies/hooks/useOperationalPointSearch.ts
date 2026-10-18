@@ -200,6 +200,7 @@ export const useOperationalPointSearch = ({
     pageSize,
     minChars,
     resetOpSuggestions,
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
     searchTrigger,
   ]);
 

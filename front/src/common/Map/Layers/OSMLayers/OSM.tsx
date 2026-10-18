@@ -62,6 +62,7 @@ const OSM = ({ layerOrder, mapIsLoaded }: OSMProps) => {
   // when switching map style (see #5777)
   const [reload, setReload] = useState(true);
 
+  /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   useEffect(() => setReload(true), [mapStyle, mapIsLoaded]);
   useEffect(() => {
     if (reload) setReload(false);
