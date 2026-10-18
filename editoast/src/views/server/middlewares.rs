@@ -247,34 +247,79 @@ mod tests {
 
     use axum::Extension;
     use axum::Router;
+    use axum::handler::Handler;
     use axum::http::StatusCode;
     use axum::middleware;
     use axum::routing::get;
 
     use super::feature_flags_extraction_middleware;
     use crate::feature_flags::FeatureFlag;
+    use crate::views::test_app::TestApp;
+    use crate::views::test_app::test_app;
 
-    #[tokio::test]
-    async fn extracts_feature_flags() {
+    fn single_endpoint_app<H, T>(handler: H) -> TestApp
+    where
+        H: Handler<T, ()>,
+        T: 'static,
+    {
         let router = Router::new()
-            .route(
-                "/",
-                get(
-                    |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
-                        assert_eq!(
-                            flags,
-                            HashSet::from([FeatureFlag::Linkings, FeatureFlag::HourlyTimetables,]),
-                        );
-                        StatusCode::OK
-                    },
-                ),
-            )
+            .route("/test", get(handler))
             .layer(middleware::from_fn(feature_flags_extraction_middleware));
-        let server = axum_test::TestServer::new(router);
 
-        server
-            .get("/")
+        test_app!().router(router).build()
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn valid_feature_flags() {
+        let app = single_endpoint_app(
+            |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                assert_eq!(
+                    flags,
+                    HashSet::from([FeatureFlag::Linkings, FeatureFlag::HourlyTimetables,]),
+                );
+                StatusCode::OK
+            },
+        );
+
+        app.get("/test")
             .add_header("x-feature-flags", "linkings,hourlyTimetables")
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn unknown_feature_flags_are_ignored() {
+        let app = single_endpoint_app(
+            |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                assert_eq!(
+                    flags,
+                    HashSet::from([FeatureFlag::Linkings, FeatureFlag::HourlyTimetables,]),
+                );
+            },
+        );
+
+        app.get("/test")
+            .add_header("x-feature-flags", "linkings,antimeme,hourlyTimetables")
+            .await
+            .assert_status_ok();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn no_feature_flags_still_succeeds() {
+        // The middleware should create the feature flag extension and the endpoint handlers should
+        // be able to retrieve it even when no valid feature flag was present in the request
+        let app = single_endpoint_app(
+            |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                assert!(flags.is_empty());
+            },
+        );
+
+        // No feature flags header:
+        app.get("/test").await.assert_status_ok();
+
+        // All the feature flags in the header are invalid:
+        app.get("/test")
+            .add_header("x-feature-flags", "none,of,these,exist")
             .await
             .assert_status_ok();
     }
