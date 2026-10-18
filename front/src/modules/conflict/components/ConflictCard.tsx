@@ -72,6 +72,7 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
   const trainRefs = useRef<(HTMLDivElement | null)[]>([]);
   const trainWidthsRef = useRef<number[]>([]);
 
+  /* eslint-disable-next-line react/refs */
   trainRefs.current.length = totalTrains;
 
   const showOthers = visibleTrainCount < totalTrains;

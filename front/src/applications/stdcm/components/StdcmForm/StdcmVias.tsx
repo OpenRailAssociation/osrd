@@ -207,6 +207,7 @@ const StdcmVias = ({
 
   return (
     <div className="stdcm-vias-list">
+      {/* eslint-disable-next-line react/refs */}
       {intermediatePoints.map((pathStep, index) => {
         if (!pathStep.isVia) return null;
         const pathStepIndex = index + 1;

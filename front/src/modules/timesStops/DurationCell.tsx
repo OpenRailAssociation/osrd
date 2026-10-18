@@ -598,6 +598,7 @@ const DurationCell = ({
         )}
         <DurationPropagationMenu
           isOpen={shouldShowPropagationMenu}
+          /* oxlint-disable-next-line react/refs */
           anchorRef={{ current: containerRef.current?.closest('td') ?? null }}
           oldValue={controlledValue}
           newValue={editedDuration}

@@ -187,6 +187,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
     markers,
     trainNames,
     operationalPointNames,
+    /* eslint-disable-next-line react/refs */
     loading: loading || solution !== dataSolutionRef.current,
     error,
   };

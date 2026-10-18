@@ -342,7 +342,9 @@ const MapUnplugged = ({
           )}
 
           {/* Tool specific layers */}
+          {/* eslint-disable-next-line react/refs */}
           {!isNil(infraID) && activeTool.layersComponent && mapRef.current && (
+            /* eslint-disable-next-line react/refs */
             <activeTool.layersComponent map={mapRef.current.getMap()} />
           )}
           {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
