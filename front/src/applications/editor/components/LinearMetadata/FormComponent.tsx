@@ -438,6 +438,12 @@ const IntervalEditorComponent = (
   );
 };
 
+// Remove the 'valueField' required field because it is required by the backend. However,
+// the segment with missing values is filtered in 'customOnChange' before being sent to the backend,
+// and then re-added by 'fixLinearMetadataItems'.
+const requiredFilter = (requireds: string[]) =>
+  requireds.filter((r) => ['end', 'begin'].includes(r));
+
 export const FormComponent = (props: FieldProps<unknown, RJSFSchema, FormContext>) => {
   const { name, schema, registry } = props;
   const Fields = getDefaultRegistry().fields;
@@ -452,12 +458,6 @@ export const FormComponent = (props: FieldProps<unknown, RJSFSchema, FormContext
     }
     return 0;
   }, [registry.formContext]);
-
-  // Remove the 'valueField' required field because it is required by the backend. However,
-  // the segment with missing values is filtered in 'customOnChange' before being sent to the backend,
-  // and then re-added by 'fixLinearMetadataItems'.
-  const requiredFilter = (requireds: string[]) =>
-    requireds.filter((r) => ['end', 'begin'].includes(r));
 
   // Compute the JSON schema of the linear metadata item
   const jsonSchema = useMemo(

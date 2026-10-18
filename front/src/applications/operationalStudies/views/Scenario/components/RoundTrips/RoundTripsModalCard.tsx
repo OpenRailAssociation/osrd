@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { ArrowRight, ArrowSwitch, KebabHorizontal, Services, Square } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -59,7 +59,7 @@ const RoundTripsModalCard = ({
     status,
   } = pairingItem;
 
-  const closeMenu = () => popoverRef.current?.hidePopover();
+  const closeMenu = useCallback(() => popoverRef.current?.hidePopover(), []);
 
   const getStatusIcon = (itemStatus: 'todo' | 'oneWays' | 'roundTrips') => {
     if (itemStatus === 'todo') {
@@ -112,7 +112,7 @@ const RoundTripsModalCard = ({
         },
       },
     }),
-    [pairingItem, restoreItems, moveItemToOneWays, openPairingMode, id, t]
+    [pairingItem, restoreItems, moveItemToOneWays, openPairingMode, id, t, closeMenu]
   );
 
   const filteredMenuItems = useMemo(() => {

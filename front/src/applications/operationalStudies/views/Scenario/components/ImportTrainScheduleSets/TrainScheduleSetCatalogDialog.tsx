@@ -71,6 +71,9 @@ const TrainScheduleSetCatalogDialog = ({
           };
         })
       );
+      /* eslint-disable-next-line no-useless-catch -- React Compiler-based linter problems don't understand try/finally without a catch */
+    } catch (e: unknown) {
+      throw e;
     } finally {
       setIsSubmitting(false);
     }
