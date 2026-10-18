@@ -5,20 +5,20 @@ import { debounce } from 'lodash';
 const DEBOUNCE = 100;
 const SCROLL_THRESHOLD = 24; // half the width of a scroll button
 
+// Calculate the width of an item including its margin-right and margin-left
+const calculateItemWidthHorizontalMargins = (item: Element) => {
+  const style = window.getComputedStyle(item);
+  const marginRight = parseFloat(style.marginRight);
+  const marginLeft = parseFloat(style.marginLeft);
+  const itemWidth = item.getBoundingClientRect().width;
+  return itemWidth + marginRight + marginLeft;
+};
+
 const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: number) => {
   const scrollableRef = useRef<HTMLDivElement>(null);
   const [showLeftBtn, setShowLeftBtn] = useState(false);
   const [showRightBtn, setShowRightBtn] = useState(false);
   const selector = `.${itemSelectorClassname}`;
-
-  // Calculate the width of an item including its margin-right and margin-left
-  const calculateItemWidthHorizontalMargins = (item: Element) => {
-    const style = window.getComputedStyle(item);
-    const marginRight = parseFloat(style.marginRight);
-    const marginLeft = parseFloat(style.marginLeft);
-    const itemWidth = item.getBoundingClientRect().width;
-    return itemWidth + marginRight + marginLeft;
-  };
 
   // Calculate the scroll distance required to show the specified number of items
   const calculateScrollDistance = () => {

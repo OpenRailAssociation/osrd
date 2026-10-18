@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import {
   Clock,
@@ -118,9 +118,9 @@ const OccurrenceItem = ({
     dayjs(nextStartTimeAsDate).isAfter(startTimeAsDate, 'day');
   const isStartTimeException = !!exceptionChangeGroups?.start_time;
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
-  };
+  }, []);
 
   // TODO exceptions : add action to menu buttons
   const menuItems: Record<string, OSRDMenuItem> = useMemo(
@@ -188,6 +188,7 @@ const OccurrenceItem = ({
       deleteAddedException,
       updateOccurrenceStatus,
       t,
+      closeMenu,
     ]
   );
 
