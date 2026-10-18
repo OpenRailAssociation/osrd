@@ -115,6 +115,7 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
   }, [onOperation, ngeRootElement]);
 
   return !ngeError ? (
+    /* eslint-disable-next-line react/iframe-missing-sandbox */
     <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />
   ) : (
     <div title="NGE" className="nge-error-container">

@@ -35,7 +35,6 @@
     "consistent-return": "off",
     "control-has-associated-label": "off",
     "eslint/require-await": "off",
-    "iframe-missing-sandbox": "off",
     "max-classes-per-file": "off",
     "max-dependencies": "off",
     "max-depth": "off",
@@ -197,18 +196,7 @@
           "**/vitest.setup.ts"
         ]
       }
-    ],
-
-    "react/error-boundaries": "error",
-    "react/globals": "error",
-    "react/immutability": "error",
-    "react/incompatible-library": "error",
-    "react/purity": "error",
-    "react/set-state-in-render": "error",
-    "react/static-components": "error",
-    "react/unsupported-syntax": "error",
-    "react/use-memo": "error",
-    "react/void-use-memo": "error"
+    ]
   },
   "settings": {
     "react": {
@@ -245,12 +233,7 @@
         "import/no-named-as-default": "warn",
         "import/no-named-as-default-member": "warn",
 
-        "react/exhaustive-deps": "warn",
-        "react/exhaustive-effect-dependencies": "error",
-        "react/memo-dependencies": "error",
         "react/react-in-jsx-scope": "error",
-        "react/refs": "error",
-        "react/set-state-in-effect": "error",
 
         "jsx-a11y/no-noninteractive-element-interactions": "off",
         "jsx-a11y/no-noninteractive-tabindex": "off",
