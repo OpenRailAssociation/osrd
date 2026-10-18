@@ -75,6 +75,7 @@ const useHorizontalScroll = (itemSelectorClassname: string, itemToShowCount: num
   };
 
   const debouncedUpdateButtonsVisibility = useMemo(
+    /* eslint-disable-next-line react/refs */
     () => debounce(updateButtonsVisibility, DEBOUNCE),
     [updateButtonsVisibility]
   );

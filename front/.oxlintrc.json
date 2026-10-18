@@ -198,7 +198,6 @@
         ]
       }
     ],
-    "react/refs": "off",
 
     "react/error-boundaries": "error",
     "react/globals": "error",

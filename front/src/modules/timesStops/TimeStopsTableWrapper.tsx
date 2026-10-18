@@ -146,6 +146,7 @@ const TimeStopsTableWrapper = ({
     trainSchedulesWithDetails
   );
 
+  /* eslint-disable react/refs */
   // True if we are still waiting for fresh simulation data after a user edit.
   // Both conditions must be false before we clear the loading state:
   //   - Condition 1 (batch summary): simulatedPathItemTimes must get a new reference.
@@ -154,6 +155,7 @@ const TimeStopsTableWrapper = ({
     (preEditPathItemTimesRef.current !== undefined &&
       simulatedPathItemTimes === preEditPathItemTimesRef.current) ||
     (isTrainSimulationPendingRef.current && isSimulationDataLoading);
+  /* eslint-enable react/refs */
 
   // Reset refs once both simulation pipelines are done
   useEffect(() => {

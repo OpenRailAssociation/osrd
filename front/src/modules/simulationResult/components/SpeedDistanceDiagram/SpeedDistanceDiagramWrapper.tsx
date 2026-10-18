@@ -47,7 +47,7 @@ const SpeedDistanceDiagramWrapper = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
   const root = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
 
   const data =
     trainScheduleSimulation && rollingStock

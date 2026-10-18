@@ -235,6 +235,7 @@ const useTimesStopsTableData = (
     operationalPointsOnPath: typeof operationalPointsOnPath;
   } | null>(null);
 
+  /* oxlint-disable react/refs */
   // Invalidate the snapshot on train switch to avoid briefly showing the previous train's data.
   const prevTrainIdRef = useRef(selectedTrain.id);
   if (prevTrainIdRef.current !== selectedTrain.id) {
@@ -456,6 +457,7 @@ const useTimesStopsTableData = (
         opOnPathIndex: rowIndex,
       }));
     }
+    /* oxlint-enable react/refs */
 
     return formattedRows;
   }, [
