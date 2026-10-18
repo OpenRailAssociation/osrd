@@ -40,6 +40,7 @@ export default function useSearchJourneyEnv() {
   }, [getSearchJourneysSearchEnvironment, dispatch]);
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     loadSearchJourneyEnv();
   }, [loadSearchJourneyEnv]);
 

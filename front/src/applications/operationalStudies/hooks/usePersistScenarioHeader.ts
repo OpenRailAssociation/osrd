@@ -11,6 +11,7 @@ export function usePersistScenarioHeader(scenarioId: number | undefined, default
   const [activeBoards, setActiveBoards] = useState<Set<Board>>(() => new Set(defaultBoards));
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     if (!storageKey) setActiveBoards(new Set(defaultBoards));
   }, [storageKey, defaultBoards]);
 
@@ -19,6 +20,7 @@ export function usePersistScenarioHeader(scenarioId: number | undefined, default
     const saved = localStorage.getItem(storageKey);
     if (!saved) return;
 
+    /* eslint-disable-next-line react/set-state-in-effect */
     setActiveBoards(new Set(JSON.parse(saved) as Board[]));
   }, [storageKey]);
 

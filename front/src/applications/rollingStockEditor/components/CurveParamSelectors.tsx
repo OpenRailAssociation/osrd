@@ -262,6 +262,7 @@ const CurveParamSelectors = ({
   );
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     if (powerRestrictionCodes) setPowerRestrictionList(powerRestrictionCodes);
   }, [powerRestrictionCodes]);
 

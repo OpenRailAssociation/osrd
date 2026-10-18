@@ -191,12 +191,13 @@ export default function MapButtons({
 
   // Close the Popover when opening modal
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setOpenedPopover(undefined);
     /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [isOpen]);
 
   useEffect(() => {
-    /* eslint-disable-next-line react/no-deriving-state-in-effects */
+    /* eslint-disable-next-line react/no-deriving-state-in-effects react/set-state-in-effect */
     setViewport(viewportProps);
   }, [viewportProps]);
 

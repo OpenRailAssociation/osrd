@@ -11,7 +11,7 @@ export const FormLineStringLength = ({ id, value, required, onChange }: WidgetPr
   const [length, setLength] = useState<number>(toNumber(value));
 
   useEffect(() => {
-    /* eslint-disable-next-line react/no-deriving-state-in-effects */
+    /* eslint-disable-next-line react/no-deriving-state-in-effects react/set-state-in-effect */
     setLength(value);
   }, [value]);
 

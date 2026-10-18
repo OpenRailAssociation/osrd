@@ -15,6 +15,7 @@ const ClearButton = ({ isVisible, containerRef, title, onClear }: ClearButtonPro
 
   useLayoutEffect(() => {
     if (!isVisible) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setBtnPos(null);
       return undefined;
     }

@@ -70,11 +70,12 @@ function SelectImproved<T extends string | SelectOptionObject>({
   );
 
   useEffect(() => {
-    /* eslint-disable-next-line react/no-deriving-state-in-effects */
+    /* eslint-disable-next-line react/no-deriving-state-in-effects react/set-state-in-effect */
     setSelectedItem(value);
   }, [value]);
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     filterOptions(filterText);
   }, [filterOptions, filterText]);
 

@@ -76,6 +76,7 @@ const useStaticPathfinding = (
   // => update the pathStepsLocations (if needed by doing a deep comparison).
   // => update the consistChanges (if needed by doing a deep comparison).
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setPathStepsLocations((prev) => {
       const newSteps = pathStepsToLocations(pathSteps);
       if (isEqual(prev, newSteps)) return prev;

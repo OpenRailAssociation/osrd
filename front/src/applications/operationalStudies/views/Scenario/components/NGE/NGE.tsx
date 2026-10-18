@@ -83,6 +83,7 @@ const NGE = ({ activeFilterSettingId, dto, onOperation, onLoad }: NGEProps) => {
       try {
         // eslint-disable-next-line react/immutability
         ngeRootElement.netzgrafikDto = dto;
+        /* eslint-disable-next-line react/set-state-in-effect */
         setNgeError(undefined);
       } catch (error) {
         dispatch(setFailure(castErrorToFailure(error)));

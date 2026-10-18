@@ -54,6 +54,7 @@ const RollingStockCardButtons = ({
   }, [curvesComfortList, t]);
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setComfort(curvesComfortList.at(0) ?? 'STANDARD');
   }, [curvesComfortList]);
 

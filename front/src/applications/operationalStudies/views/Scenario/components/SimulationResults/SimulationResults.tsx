@@ -116,6 +116,7 @@ const SimulationResults = ({
   );
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setTrainScheduleProjections(projectionData?.projectedTrains || []);
   }, [projectionData?.projectedTrains]);
 

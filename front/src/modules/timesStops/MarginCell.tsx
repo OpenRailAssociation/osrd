@@ -101,6 +101,7 @@ const MarginCellEditable = ({
   const isEmpty: boolean = raw === null;
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setUnit(initialValue?.unit ?? MarginUnit.percent);
     setRaw(initialValue?.value?.toString() ?? null);
     setIsEditing(false);

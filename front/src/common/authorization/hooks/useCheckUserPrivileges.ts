@@ -31,6 +31,7 @@ export default function useCheckUserPrivileges({
   });
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     if (!resourceId) setHasPrivileges(false);
     else {
       onResourceChange(resourceType, resourceId);

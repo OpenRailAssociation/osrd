@@ -16,6 +16,7 @@ export const Spinner = ({ displayDelay, spinnerClassName, ...props }: SpinnerPro
 
   useEffect(() => {
     if (displayDelay) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setDisplay(false);
       timeoutRef.current = window.setTimeout(() => setDisplay(true), displayDelay);
     } else setDisplay(true);
@@ -41,6 +42,7 @@ export const ThreeDots = ({ displayDelay, ...props }: SpinnerProps) => {
 
   useEffect(() => {
     if (displayDelay) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setDisplay(false);
       timeoutRef.current = window.setTimeout(() => setDisplay(true), displayDelay);
     } else setDisplay(true);

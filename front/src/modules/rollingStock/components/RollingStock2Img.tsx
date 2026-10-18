@@ -18,6 +18,7 @@ const RollingStock2Img = ({ rollingStock }: RollingStock2ImgProps) => {
   useEffect(() => {
     const { liveries } = rollingStock;
     if (!Array.isArray(liveries)) {
+      /* eslint-disable-next-line react/set-state-in-effect */
       setImageUrl('');
       return;
     }

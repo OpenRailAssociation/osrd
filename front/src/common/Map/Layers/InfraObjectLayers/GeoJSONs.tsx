@@ -491,6 +491,7 @@ const GeoJSONs = ({
   // fingerprint is updated;
   const [skipSources, setSkipSources] = useState(true);
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setSkipSources(true);
     const timeout = setTimeout(() => setSkipSources(false), 0);
     return () => {

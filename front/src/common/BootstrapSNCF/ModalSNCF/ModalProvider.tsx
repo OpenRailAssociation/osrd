@@ -125,6 +125,7 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
    * => update the modal context with their new definition
    */
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setModalContext((prev) => ({ ...prev, closeModal, openModal }));
   }, [closeModal, openModal]);
 
@@ -133,6 +134,7 @@ export const ModalProvider = ({ children }: PropsWithChildren) => {
    * => close modal on route change (not for search params change)
    */
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     closeModal();
     /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [closeModal, location.pathname]);

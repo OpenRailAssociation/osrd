@@ -36,7 +36,7 @@ const Collapsable = (props: CollapsableProps) => {
   }, []);
 
   useEffect(() => {
-    /* eslint-disable-next-line react/no-deriving-state-in-effects */
+    /* eslint-disable-next-line react/no-deriving-state-in-effects react/set-state-in-effect */
     setIsCollapsed(collapsed);
   }, [collapsed]);
 

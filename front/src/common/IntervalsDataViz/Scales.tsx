@@ -160,6 +160,7 @@ export const SimpleScale = ({
   const [sup, setSup] = useState<number>(0);
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     setInf(roundNumber(begin, true));
     setSup(roundNumber(end, false));
   }, [begin, end]);

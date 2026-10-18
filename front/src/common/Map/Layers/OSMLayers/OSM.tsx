@@ -62,9 +62,10 @@ const OSM = ({ layerOrder, mapIsLoaded }: OSMProps) => {
   // when switching map style (see #5777)
   const [reload, setReload] = useState(true);
 
-  /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
+  /* oxlint-disable-next-line react/exhaustive-effect-dependencies react/set-state-in-effect */
   useEffect(() => setReload(true), [mapStyle, mapIsLoaded]);
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     if (reload) setReload(false);
   }, [reload]);
 

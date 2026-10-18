@@ -64,6 +64,7 @@ export default function useSwitchTypes(infraID: number | undefined) {
   );
 
   useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
     fetch(infraID);
   }, [infraID, fetch]);
 
