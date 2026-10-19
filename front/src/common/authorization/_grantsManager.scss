@@ -31,6 +31,20 @@
     background-color: #fff;
   }
 
+  .subject-item {
+    &-icon {
+      margin-right: 8px;
+    }
+
+    &-name {
+      color: var(--black100);
+    }
+
+    &.self {
+      font-weight: 500;
+    }
+  }
+
   .subject {
     &-search {
       display: flex;
@@ -56,7 +70,7 @@
         flex-grow: 1;
         margin-right: 12px;
 
-        * > #add-user-combobox {
+        * > #add-subject-combobox {
           height: 32px;
         }
       }
@@ -92,14 +106,6 @@
 
       &:not(:last-child) {
         border-bottom: 1px solid var(--grey20);
-      }
-    }
-
-    &-name {
-      color: var(--black100);
-
-      &.bold {
-        font-weight: 500;
       }
     }
 

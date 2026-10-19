@@ -457,7 +457,7 @@
     "rolling-stocks-editor": "Éditeur de matériel roulant"
   },
   "authorization": {
-    "addGrantToUser": "Ajouter des droits à un utilisateur",
+    "addGrantToSubject": "Ajouter des droits à un utilisateur ou à un groupe",
     "grants": {
       "edit": "écriture",
       "full": "accès total",
@@ -467,7 +467,7 @@
     },
     "permission": "Permission",
     "permissionDenied": "Vous n'avez pas la permission de réaliser cette action",
-    "searchUser": "Rechercher un utilisateur par son nom",
+    "searchSubject": "Rechercher un utilisateur ou un groupe par son nom",
     "yourGrant": "Votre accès : {{grant}}"
   },
   "common": {

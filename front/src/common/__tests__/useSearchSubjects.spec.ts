@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SUBJECT_TYPES } from 'common/authorization/consts';
 
-import useSearchUsers, { DEBOUNCE_DURATION, type User } from '../useSearchUsers';
+import useSearchSubjects, { DEBOUNCE_DURATION, type Subject } from '../useSearchSubjects';
 
 const searchTermA = 'lphons';
 const searchTermB = 'Bea';
@@ -16,9 +16,9 @@ const searchedUsersB = [
   { id: 2, name: 'Bea', type: SUBJECT_TYPES.USER },
   { id: 3, name: 'Beatrice', type: SUBJECT_TYPES.USER },
 ];
-const searchedUsersC: User[] = [];
+const searchedUsersC: Subject[] = [];
 
-const apiResultsBySearchTerm: Record<string, User[]> = {
+const apiResultsBySearchTerm: Record<string, Subject[]> = {
   [searchTermA]: searchedUsersA,
   [searchTermB]: searchedUsersB,
   [searchTermC]: searchedUsersC,
@@ -37,7 +37,8 @@ describe('useSearchUsers', () => {
       if (arg === skipToken) return { data: undefined };
       // Queries form is ['search', ['name'], searchTerm]
       const searchTerm = (arg.searchPayload.query as [string, string[], string])[2];
-      return { data: apiResultsBySearchTerm[searchTerm] };
+      const isSearchUser = arg.searchPayload.object === 'user';
+      return { data: isSearchUser ? apiResultsBySearchTerm[searchTerm] : [] };
     }) as typeof osrdEditoastApi.endpoints.postSearch.useQuery);
   });
 
@@ -48,8 +49,8 @@ describe('useSearchUsers', () => {
   });
 
   it('should send a search request when a search term is sent and eventually return its result', () => {
-    const { result } = renderHook(() => useSearchUsers());
-    expect(result.current.searchedUsers).toEqual([]);
+    const { result } = renderHook(() => useSearchSubjects());
+    expect(result.current.searchedSubjects).toEqual([]);
 
     act(() => result.current.setSearchTerm(searchTermA));
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
@@ -61,59 +62,59 @@ describe('useSearchUsers', () => {
       },
       pageSize: 101,
     });
-    expect(result.current.searchedUsers).toEqual(searchedUsersA);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersA);
   });
 
   it('should debounce requests on search term changes', () => {
-    const { result } = renderHook(() => useSearchUsers());
-    expect(result.current.searchedUsers).toEqual([]);
+    const { result } = renderHook(() => useSearchSubjects());
+    expect(result.current.searchedSubjects).toEqual([]);
 
     act(() => result.current.setSearchTerm(searchTermB));
-    expect(result.current.searchedUsers).toEqual([]);
+    expect(result.current.searchedSubjects).toEqual([]);
 
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
-    expect(result.current.searchedUsers).toEqual([]);
+    expect(result.current.searchedSubjects).toEqual([]);
 
     act(() => vi.advanceTimersByTime(1));
-    expect(result.current.searchedUsers).toEqual(searchedUsersB);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersB);
 
     act(() => result.current.setSearchTerm(searchTermC));
-    expect(result.current.searchedUsers).toEqual(searchedUsersB);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersB);
 
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
-    expect(result.current.searchedUsers).toEqual(searchedUsersB);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersB);
 
     act(() => vi.advanceTimersByTime(1));
-    expect(result.current.searchedUsers).toEqual(searchedUsersC);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersC);
   });
 
   it('should skip the request and return an empty list after the debounce timer when the term is removed', () => {
-    const { result } = renderHook(() => useSearchUsers());
+    const { result } = renderHook(() => useSearchSubjects());
     expect(useQuerySpy).toHaveBeenLastCalledWith(skipToken);
-    expect(result.current.searchedUsers).toEqual([]);
+    expect(result.current.searchedSubjects).toEqual([]);
 
     act(() => result.current.setSearchTerm(searchTermA));
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
-    expect(result.current.searchedUsers).toEqual(searchedUsersA);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersA);
 
     act(() => result.current.setSearchTerm(''));
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
     expect(useQuerySpy).not.toHaveBeenLastCalledWith(skipToken);
-    expect(result.current.searchedUsers).toEqual(searchedUsersA);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersA);
 
     act(() => vi.advanceTimersByTime(1));
     expect(useQuerySpy).toHaveBeenLastCalledWith(skipToken);
-    expect(result.current.searchedUsers).toEqual([]);
+    expect(result.current.searchedSubjects).toEqual([]);
   });
 
   it('should eventually return an empty list when resetSuggestions is called', () => {
-    const { result } = renderHook(() => useSearchUsers());
+    const { result } = renderHook(() => useSearchSubjects());
     act(() => result.current.setSearchTerm(searchTermA));
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
-    expect(result.current.searchedUsers).toEqual(searchedUsersA);
+    expect(result.current.searchedSubjects).toEqual(searchedUsersA);
 
-    act(() => result.current.resetSuggestions());
+    act(() => result.current.resetSearch());
     act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
-    expect(result.current.searchedUsers).toEqual([]);
+    expect(result.current.searchedSubjects).toEqual([]);
   });
 });

@@ -53,7 +53,7 @@ const GrantsManagerSubjects = ({
           className="display-search"
           onClick={() => setDisplayUserSearchSection(!displayUserSearchSection)}
         >
-          {!displayUserSearchSection ? t('authorization.addGrantToUser') : t('common.cancel')}
+          {!displayUserSearchSection ? t('authorization.addGrantToSubject') : t('common.cancel')}
         </button>
         {displayUserSearchSection && (
           <GrantManagerAddSubjectForm
