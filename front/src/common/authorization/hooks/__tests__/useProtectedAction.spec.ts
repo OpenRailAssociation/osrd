@@ -2,7 +2,6 @@ import { renderHookWithStore } from 'store/__tests__';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import type { ResourceType } from 'common/authorization/types';
-import { useAppSelector } from 'store';
 
 import useAuthz from '../useAuthz';
 import useProtectedAction, { type UseProtectedActionParams } from '../useProtectedAction';
@@ -39,17 +38,6 @@ const createTestParams = (
   },
 });
 
-const renderHookWithNotifications = ({
-  resourceType,
-  resourceId,
-  privileges,
-}: UseProtectedActionParams) =>
-  renderHookWithStore(() => {
-    const protectedAction = useProtectedAction({ resourceType, resourceId, privileges });
-    const notifications = useAppSelector((state) => state.main.notifications);
-    return { protectedAction, notifications };
-  });
-
 describe('useProtectedAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -67,51 +55,59 @@ describe('useProtectedAction', () => {
       mockCheckUserPrivileges.mockResolvedValue(true);
       const action = vi.fn();
 
-      const { result } = renderHookWithNotifications(testParams.withRequiredPrivileges);
-      await result.current.protectedAction(action);
+      const { result: protectedAction, store } = renderHookWithStore(() =>
+        useProtectedAction(testParams.withRequiredPrivileges)
+      );
+      await protectedAction.current(action);
 
       expect(mockCheckUserPrivileges).toHaveBeenCalledWith(resourceType, 1, [
         'can_read',
         'can_write',
       ]);
       expect(action).toHaveBeenCalledOnce();
-      expect(result.current.notifications).toHaveLength(0);
+      expect(store.getState().main.notifications).toHaveLength(0);
     });
 
     it('should dispatch an unauthorized notification when user lacks required privileges', async () => {
       mockCheckUserPrivileges.mockResolvedValue(false);
       const action = vi.fn();
 
-      const { result } = renderHookWithNotifications(testParams.withoutRequiredPrivileges);
-      await result.current.protectedAction(action);
+      const { result: protectedAction, store } = renderHookWithStore(() =>
+        useProtectedAction(testParams.withoutRequiredPrivileges)
+      );
+      await protectedAction.current(action);
 
       expect(mockCheckUserPrivileges).toHaveBeenCalledWith(resourceType, 1, ['can_read']);
       expect(action).not.toHaveBeenCalled();
-      expect(result.current.notifications).toHaveLength(1);
+      expect(store.getState().main.notifications).toHaveLength(1);
     });
 
     it('should execute action when no privilege is required', async () => {
       mockCheckUserPrivileges.mockResolvedValue(true);
       const action = vi.fn();
 
-      const { result } = renderHookWithNotifications(testParams.noPrivilegesRequired);
-      await result.current.protectedAction(action);
+      const { result: protectedAction, store } = renderHookWithStore(() =>
+        useProtectedAction(testParams.noPrivilegesRequired)
+      );
+      await protectedAction.current(action);
 
       expect(mockCheckUserPrivileges).toHaveBeenCalledWith(resourceType, 1, []);
       expect(action).toHaveBeenCalledOnce();
-      expect(result.current.notifications).toHaveLength(0);
+      expect(store.getState().main.notifications).toHaveLength(0);
     });
 
     it('should not execute action when resourceId is undefined', async () => {
       mockCheckUserPrivileges.mockResolvedValue(true);
       const action = vi.fn();
 
-      const { result } = renderHookWithNotifications(testParams.undefinedResourceId);
-      await result.current.protectedAction(action);
+      const { result: protectedAction, store } = renderHookWithStore(() =>
+        useProtectedAction(testParams.undefinedResourceId)
+      );
+      await protectedAction.current(action);
 
       expect(mockCheckUserPrivileges).not.toHaveBeenCalled();
       expect(action).not.toHaveBeenCalled();
-      expect(result.current.notifications).toHaveLength(0);
+      expect(store.getState().main.notifications).toHaveLength(0);
     });
   });
 });
