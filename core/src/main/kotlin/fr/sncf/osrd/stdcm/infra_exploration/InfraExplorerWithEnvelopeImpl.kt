@@ -164,7 +164,7 @@ data class InfraExplorerWithEnvelopeImpl(
         )
     }
 
-    override fun getSpacingRequirements(): List<SpacingRequirement> {
+    override fun getPartialSpacingRequirements(): List<SpacingRequirement> {
         val cached = spacingRequirementsCache
         if (cached != null) return cached
         if (getFullEnvelope().endPos == 0.0) {

@@ -58,7 +58,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun interpolateDepartureFromClamp(pathOffset: Offset<PhysicsPath>): Double
 
     /** Returns the spacing requirements since the last update */
-    fun getSpacingRequirements(): List<SpacingRequirement>
+    fun getPartialSpacingRequirements(): List<SpacingRequirement>
 
     /** Returns all the spacing requirements over the whole path */
     fun getFullSpacingRequirements(): List<SpacingRequirement>

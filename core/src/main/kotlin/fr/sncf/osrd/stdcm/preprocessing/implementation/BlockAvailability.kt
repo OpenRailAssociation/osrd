@@ -220,7 +220,7 @@ class BlockAvailability(
         val needFullRequirements = startOffset < currentBlockRange.pathBegin
         val spacingRequirements =
             if (needFullRequirements) infraExplorer.getFullSpacingRequirements()
-            else infraExplorer.getSpacingRequirements()
+            else infraExplorer.getPartialSpacingRequirements()
 
         // Ensures that we account for the 20s margin where a train must see a green signal before
         // its departure: when the current segment starts at a stop, we want to consider conflicts
