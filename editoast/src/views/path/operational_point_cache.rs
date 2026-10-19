@@ -110,7 +110,7 @@ impl OperationalPointCache {
         conn: DbConnection,
         infra_id: i64,
         operational_points: &[OperationalPointReference],
-    ) -> Result<OperationalPointCache> {
+    ) -> Result<OperationalPointCache, models::Error> {
         if operational_points.is_empty() {
             return Ok(OperationalPointCache::default());
         }
@@ -449,7 +449,7 @@ async fn retrieve_op_from_uic(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_uic: &[u32],
-) -> Result<Vec<OperationalPointModel>> {
+) -> Result<Vec<OperationalPointModel>, models::Error> {
     OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic)
         .await
         .map_err(Into::into)
@@ -460,7 +460,7 @@ async fn retrieve_op_from_domestics(
     conn: &mut DbConnection,
     infra_id: i64,
     domestics: &[models::infra_objects::Domestic],
-) -> Result<Vec<OperationalPointModel>> {
+) -> Result<Vec<OperationalPointModel>, models::Error> {
     OperationalPointModel::retrieve_from_domestics(conn, infra_id, domestics)
         .await
         .map_err(Into::into)
@@ -471,7 +471,7 @@ async fn retrieve_op_from_ids(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_id: &[String],
-) -> Result<Vec<OperationalPointModel>> {
+) -> Result<Vec<OperationalPointModel>, models::Error> {
     OperationalPointModel::retrieve_from_ids(conn, infra_id, ops_id)
         .await
         .map_err(Into::into)

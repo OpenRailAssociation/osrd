@@ -43,7 +43,7 @@ use models::timetable::TimetableSummary;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioIdParam {
-    scenario_id: i64,
+    pub(in crate::views) scenario_id: i64,
 }
 
 /// This structure is used by the post endpoint to create a scenario

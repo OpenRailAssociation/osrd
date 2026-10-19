@@ -157,6 +157,9 @@
       "ScenarioNotFound": "Scenario '{{scenario_id}}' not found",
       "WrongScenario": "Note '{note_id}' does not belong to scenario '{scenario_id}'"
     },
+    "match_macro_nodes": {
+      "scenario_not_found": "Scenario '{{scenario_id}}' not found"
+    },
     "model": {
       "ModelError": "Internal error (database query)"
     },

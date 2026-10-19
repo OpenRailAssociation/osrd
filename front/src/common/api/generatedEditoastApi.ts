@@ -944,6 +944,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      postScenariosByScenarioIdMatchMacroNodes: build.query<
+        PostScenariosByScenarioIdMatchMacroNodesApiResponse,
+        PostScenariosByScenarioIdMatchMacroNodesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/scenarios/${queryArg.scenarioId}/match_macro_nodes`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['scenarios'],
+      }),
       postSearch: build.query<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
           url: `/search`,
@@ -2460,6 +2471,16 @@ export type PatchScenariosByScenarioIdApiResponse =
 export type PatchScenariosByScenarioIdApiArg = {
   scenarioId: number;
   scenarioPatchForm: ScenarioPatchForm;
+};
+export type PostScenariosByScenarioIdMatchMacroNodesApiResponse =
+  /** status 200 The macro node matching each operational point reference */ {
+    related_operational_points: (null | MacroNodeResponse)[];
+  };
+export type PostScenariosByScenarioIdMatchMacroNodesApiArg = {
+  scenarioId: number;
+  body: {
+    operational_point_references: OperationalPointReference[];
+  };
 };
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
