@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export const usePopoverPosition = (
-  inputRef: React.RefObject<HTMLInputElement | null>,
+  inputRef: React.RefObject<HTMLElement | null>,
   popoverRef: React.RefObject<HTMLElement | null>,
-  verticalOffset: number = -3 // Default offset below the input
+  verticalOffset: number = -3, // Default offset below the input
+  align: 'center' | 'start' = 'center',
+  verticalAnchor: 'bottom' | 'top' = 'bottom'
 ) => {
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number }>({
     top: 0,
@@ -15,8 +17,15 @@ export const usePopoverPosition = (
       const inputRect = inputRef.current.getBoundingClientRect();
       const popoverWidth = popoverRef.current?.getBoundingClientRect()?.width ?? 0;
 
-      // Adjust the top position: place it below the input while considering an offset
-      const top = inputRect.bottom + window.scrollY + verticalOffset;
+      const anchorY = verticalAnchor === 'top' ? inputRect.top : inputRect.bottom;
+      const top = anchorY + window.scrollY + verticalOffset;
+
+      if (align === 'start') {
+        const popoverViewportLeft = inputRect.left + window.scrollX;
+        const left = Math.max(0, Math.min(popoverViewportLeft, window.innerWidth - popoverWidth));
+        setPopoverPosition({ top, left });
+        return;
+      }
 
       // Center the popover horizontally relative to the input
       const popoverViewportLeft = inputRect.left + window.scrollX + inputRect.width / 2;
@@ -29,7 +38,7 @@ export const usePopoverPosition = (
 
       setPopoverPosition({ top, left });
     }
-  }, [inputRef, popoverRef, verticalOffset]);
+  }, [inputRef, popoverRef, verticalOffset, align, verticalAnchor]);
 
   useEffect(() => {
     const handleResizeScroll = () => calculatePosition();
