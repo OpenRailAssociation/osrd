@@ -495,11 +495,7 @@ const createFirstDepartureTimeLock = (
   scheduleItem: ScheduleItem | undefined,
   startTime: StartTime
 ) => {
-  if (!scheduleItem) {
-    return { ...DEFAULT_TIME_LOCK };
-  }
-
-  const stopFor = scheduleItem.stop_for ? Duration.parse(scheduleItem.stop_for) : Duration.zero;
+  const stopFor = scheduleItem?.stop_for ? Duration.parse(scheduleItem.stop_for) : Duration.zero;
 
   return createTimeLock(stopFor, startTime);
 };
