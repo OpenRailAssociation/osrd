@@ -227,8 +227,12 @@ pub(in crate::views) async fn create(
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct MatchMacroNodesForm {
-    scenario_id: i64,
     operational_point_references: Vec<OperationalPointReference>,
+}
+
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct MatchMacroNodesScenarioIdParam {
+    scenario_id: i64,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -239,23 +243,20 @@ pub(in crate::views) struct MatchMacroNodesResponse {
 
 /// Take a list of operational point references and return for each of them the macro node
 /// of the scenario referencing the same operational point, if any
-///
-/// References are resolved on the scenario infra: a reference matches a node referencing the
-/// same operational point by id, domestic code or UIC. Nodes located by a track offset never
-/// match. When several nodes match, the oldest one is returned.
 #[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
+    params(MatchMacroNodesScenarioIdParam),
     request_body = MatchMacroNodesForm,
     responses(
-        (status = 200, body = MatchMacroNodesResponse, description = "The macro node matching each node location"),
+        (status = 200, body = MatchMacroNodesResponse, description = "The macro node matching each operational point reference"),
     )
 )]
 pub(in crate::views) async fn match_macro_nodes(
     State(db_pool): State<Arc<DbConnectionPool>>,
+    Path(MatchMacroNodesScenarioIdParam { scenario_id }): Path<MatchMacroNodesScenarioIdParam>,
     Json(MatchMacroNodesForm {
-        scenario_id,
         operational_point_references,
     }): Json<MatchMacroNodesForm>,
 ) -> Result<Json<MatchMacroNodesResponse>> {
@@ -278,9 +279,6 @@ pub(in crate::views) async fn match_macro_nodes(
         })
         .collect_vec();
 
-    // Resolve the operational points of both the requested references and the scenario nodes,
-    // so that a node referencing an operational point by domestic code matches a reference
-    // to the same operational point by id or UIC.
     let all_references = operational_point_references
         .iter()
         .chain(nodes.iter().map(|(reference, _)| reference))
@@ -293,7 +291,7 @@ pub(in crate::views) async fn match_macro_nodes(
     )
     .await?;
 
-    // Nodes are sorted by id: when several nodes match, the oldest one is kept
+    // Nodes are sorted by id
     let mut nodes_by_key = HashMap::new();
     for (reference, node) in nodes {
         nodes_by_key
@@ -715,9 +713,8 @@ pub mod test {
             south_west_station_id,
         ];
         let response: MatchMacroNodesResponse = app
-            .post("/macro_nodes/match")
+            .post(format!("/scenarios/{}/match_macro_nodes", scenario.id).as_str())
             .json(&MatchMacroNodesForm {
-                scenario_id: scenario.id,
                 operational_point_references,
             })
             .await

@@ -5523,7 +5523,6 @@ class MatchMacroNodesForm(BaseModel):
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     ]
-    scenario_id: int
 
 
 class ModeEffortCurves(BaseModel):

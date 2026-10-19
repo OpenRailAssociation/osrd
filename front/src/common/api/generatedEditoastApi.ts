@@ -635,14 +635,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
-      postMacroNodesMatch: build.query<PostMacroNodesMatchApiResponse, PostMacroNodesMatchApiArg>({
-        query: (queryArg) => ({
-          url: `/macro_nodes/match`,
-          method: 'POST',
-          body: queryArg.matchMacroNodesForm,
-        }),
-        providesTags: ['scenarios'],
-      }),
       getMacroNodesByNodeId: build.query<
         GetMacroNodesByNodeIdApiResponse,
         GetMacroNodesByNodeIdApiArg
@@ -922,6 +914,17 @@ const injectedRtkApi = api
           body: queryArg.scenarioPatchForm,
         }),
         invalidatesTags: ['scenarios'],
+      }),
+      postScenariosByScenarioIdMatchMacroNodes: build.query<
+        PostScenariosByScenarioIdMatchMacroNodesApiResponse,
+        PostScenariosByScenarioIdMatchMacroNodesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/scenarios/${queryArg.scenarioId}/match_macro_nodes`,
+          method: 'POST',
+          body: queryArg.matchMacroNodesForm,
+        }),
+        providesTags: ['scenarios'],
       }),
       postSearch: build.query<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
@@ -2196,11 +2199,6 @@ export type PostMacroNodesApiResponse =
 export type PostMacroNodesApiArg = {
   macroNodeBatchForm: MacroNodeBatchForm;
 };
-export type PostMacroNodesMatchApiResponse =
-  /** status 200 The macro node matching each node location */ MatchMacroNodesResponse;
-export type PostMacroNodesMatchApiArg = {
-  matchMacroNodesForm: MatchMacroNodesForm;
-};
 export type GetMacroNodesByNodeIdApiResponse =
   /** status 200 The requested Macro node */ MacroNodeResponse;
 export type GetMacroNodesByNodeIdApiArg = {
@@ -2369,6 +2367,12 @@ export type PatchScenariosByScenarioIdApiResponse =
 export type PatchScenariosByScenarioIdApiArg = {
   scenarioId: number;
   scenarioPatchForm: ScenarioPatchForm;
+};
+export type PostScenariosByScenarioIdMatchMacroNodesApiResponse =
+  /** status 200 The macro node matching each operational point reference */ MatchMacroNodesResponse;
+export type PostScenariosByScenarioIdMatchMacroNodesApiArg = {
+  scenarioId: number;
+  matchMacroNodesForm: MatchMacroNodesForm;
 };
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
@@ -4093,13 +4097,6 @@ export type MacroNodeBatchForm = {
   macro_nodes: MacroNodeForm[];
   scenario_id: number;
 };
-export type MatchMacroNodesResponse = {
-  related_operational_points: (null | MacroNodeResponse)[];
-};
-export type MatchMacroNodesForm = {
-  operational_point_references: OperationalPointReference[];
-  scenario_id: number;
-};
 export type MacroNoteResponse = {
   id: number;
   labels: Tags;
@@ -4397,6 +4394,12 @@ export type ScenarioPatchForm = {
   infra_id?: number | null;
   name?: string | null;
   tags?: null | Tags;
+};
+export type MatchMacroNodesResponse = {
+  related_operational_points: (null | MacroNodeResponse)[];
+};
+export type MatchMacroNodesForm = {
+  operational_point_references: OperationalPointReference[];
 };
 export type SearchResultItemTrack = {
   infra_id: number;
