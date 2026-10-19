@@ -1859,22 +1859,6 @@ class EditoastScenarioErrorStudyNotFound(BaseModel):
     type: Literal["editoast:scenario:StudyNotFound"] = "editoast:scenario:StudyNotFound"
 
 
-class EditoastScenarioErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: StrictInt
-
-
-class EditoastScenarioErrorTimetableNotFound(BaseModel):
-    context: Annotated[
-        EditoastScenarioErrorTimetableNotFoundContext | None,
-        Field(title="EditoastScenarioErrorTimetableNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:scenario:TimetableNotFound"] = (
-        "editoast:scenario:TimetableNotFound"
-    )
-
-
 class EditoastSearchApiErrorObjectTypeContext(BaseModel):
     object_type: StrictStr
 
@@ -5189,7 +5173,6 @@ class EditoastError(
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound
         | EditoastScenarioErrorStudyNotFound
-        | EditoastScenarioErrorTimetableNotFound
         | EditoastSearchApiErrorObjectType
         | EditoastSearchApiErrorSearchEngineError
         | EditoastSimilarTrainsErrorDatabase
@@ -5365,7 +5348,6 @@ class EditoastError(
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound
         | EditoastScenarioErrorStudyNotFound
-        | EditoastScenarioErrorTimetableNotFound
         | EditoastSearchApiErrorObjectType
         | EditoastSearchApiErrorSearchEngineError
         | EditoastSimilarTrainsErrorDatabase
@@ -5986,7 +5968,6 @@ class Scenario(BaseModel):
     name: StrictStr
     study_id: StrictInt
     tags: list[StrictStr]
-    timetable_id: StrictInt
 
 
 class ScenarioCreateForm(BaseModel):
@@ -6013,12 +5994,6 @@ class ScenarioPatchForm(BaseModel):
     infra_id: StrictInt | None = None
     name: StrictStr | None = None
     tags: list[StrictStr] | None = None
-
-
-class ScenarioWithDetails(Scenario):
-    infra_name: StrictStr
-    timetable_type: TimetableType
-    train_schedules_count: StrictInt
 
 
 class SearchPayload(BaseModel):
@@ -6372,6 +6347,12 @@ class TimetableResult(BaseModel):
     is_train_schedule_set: StrictBool
     timetable_id: StrictInt
     timetable_type: TimetableType
+
+
+class TimetableSummary(BaseModel):
+    id: StrictInt
+    name: StrictStr | None = None
+    type: TimetableType
 
 
 class TrackSectionExtensions(BaseModel):
@@ -7151,7 +7132,13 @@ class ScenarioResponse(Scenario):
     infra_name: StrictStr
     project: Project
     study: Study
-    timetable_type: TimetableType
+    timetable_summaries: list[TimetableSummary]
+    train_schedules_count: StrictInt
+
+
+class ScenarioWithDetails(Scenario):
+    infra_name: StrictStr
+    timetable_summaries: list[TimetableSummary]
     train_schedules_count: StrictInt
 
 
