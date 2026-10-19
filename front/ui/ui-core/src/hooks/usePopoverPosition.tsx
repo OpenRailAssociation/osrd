@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export const usePopoverPosition = (
-  inputRef: React.RefObject<HTMLInputElement | null>,
+  inputRef: React.RefObject<HTMLElement | null>,
   popoverRef: React.RefObject<HTMLElement | null>,
-  verticalOffset: number = -3 // Default offset below the input
+  verticalOffset: number = -3, // Default offset below the input
+  align: 'center' | 'start' = 'center',
+  verticalAnchor: 'bottom' | 'top' = 'bottom'
 ) => {
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number }>({
     top: 0,
@@ -15,21 +17,24 @@ export const usePopoverPosition = (
       const inputRect = inputRef.current.getBoundingClientRect();
       const popoverWidth = popoverRef.current?.getBoundingClientRect()?.width ?? 0;
 
-      // Adjust the top position: place it below the input while considering an offset
-      const top = inputRect.bottom + window.scrollY + verticalOffset;
+      const anchorY = verticalAnchor === 'top' ? inputRect.top : inputRect.bottom;
+      const top = anchorY + window.scrollY + verticalOffset;
 
-      // Center the popover horizontally relative to the input
-      const popoverViewportLeft = inputRect.left + window.scrollX + inputRect.width / 2;
+      const isCentered = align === 'center';
+      const popoverViewportLeft =
+        inputRect.left + window.scrollX + (isCentered ? inputRect.width / 2 : 0);
+      // When centered, the popover is shifted by half its width
+      const offsetX = isCentered ? popoverWidth / 2 : 0;
 
       // Keep popover inside the viewport bounds horizontally
       const left = Math.max(
-        popoverWidth / 2,
-        Math.min(popoverViewportLeft, window.innerWidth - popoverWidth / 2)
+        offsetX,
+        Math.min(popoverViewportLeft, window.innerWidth - popoverWidth + offsetX)
       );
 
       setPopoverPosition({ top, left });
     }
-  }, [inputRef, popoverRef, verticalOffset]);
+  }, [inputRef, popoverRef, verticalOffset, align, verticalAnchor]);
 
   useEffect(() => {
     const handleResizeScroll = () => calculatePosition();
