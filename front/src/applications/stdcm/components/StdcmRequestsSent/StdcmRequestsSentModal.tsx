@@ -67,7 +67,7 @@ const requestsHistory: mockedRequestsHistory[] = [
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
 
-  const { data } = osrdEditoastApi.endpoints.getStdcmRequests.useQuery({
+  const { data, isLoading } = osrdEditoastApi.endpoints.getStdcmRequests.useQuery({
     by: 'user',
   });
 
@@ -168,8 +168,16 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <tbody>{requestsSentRows()}</tbody>
         </table>
       </div>
-      {requestsHistory.length === 0 && (
+      {!isLoading && requestsHistory.length === 0 && (
         <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
+      )}
+      {isLoading && (
+        <div className="stdcm-requests-sent-loading">
+          <div className="stdcm-requests-sent-loader" />
+          <div className="stdcm-requests-sent-loading-message">
+            {t('requestsSentModal.loading')}
+          </div>
+        </div>
       )}
     </Dialog>
   );
