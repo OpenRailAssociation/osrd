@@ -142,11 +142,19 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
               <th>{t('requestsSentModal.applicationDate')}</th>
             </tr>
           </thead>
-          <tbody>{requestsSentRows()}</tbody>
+          <tbody>{isFetching ? null : requestsSentRows()}</tbody>
         </table>
       </div>
-      {requestsSentData.length === 0 && (
+      {!isFetching && requestsSentData.length === 0 && (
         <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
+      )}
+      {isFetching && (
+        <div className="stdcm-requests-sent-loading">
+          <div className="stdcm-requests-sent-loader" />
+          <div className="stdcm-requests-sent-loading-message">
+            {t('requestsSentModal.loading')}
+          </div>
+        </div>
       )}
     </Dialog>
   );
