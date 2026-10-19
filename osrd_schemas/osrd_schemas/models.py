@@ -6645,6 +6645,18 @@ class MacroNoteListResponse(PaginationStats):
     results: list[MacroNoteResponse]
 
 
+class MatchMacroNodesForm(BaseModel):
+    node_locations: list[
+        OperationalPointReferenceNodeTrackOffset
+        | OperationalPointReferenceNodeOperationalPointReference
+    ]
+    scenario_id: int
+
+
+class MatchMacroNodesResponse(BaseModel):
+    related_operational_points: list[MacroNodeResponse | None]
+
+
 class NeutralSectionExtensions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",

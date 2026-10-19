@@ -366,6 +366,7 @@ fn service_router() -> server::router::DocumentedRouter {
             .nests("/macro_nodes", |path| {
                 path.route("/", get!(operational_studies::macro_view::macro_nodes::list))
                     .route("/", post!(operational_studies::macro_view::macro_nodes::create))
+                    .route("/match", post!(operational_studies::macro_view::macro_nodes::match_macro_nodes))
                     .nests("/{node_id}", |path| {
                         path.route("/", get!(operational_studies::macro_view::macro_nodes::get))
                             .route("/", put!(operational_studies::macro_view::macro_nodes::update))

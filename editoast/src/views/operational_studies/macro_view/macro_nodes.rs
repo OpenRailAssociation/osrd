@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use authz::Role;
@@ -219,6 +220,58 @@ pub(in crate::views) async fn create(
             macro_nodes: created.into_iter().map_into().collect(),
         }),
     ))
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
+pub(in crate::views) struct MatchMacroNodesForm {
+    scenario_id: i64,
+    node_locations: Vec<OperationalPointReferenceNode>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+pub(in crate::views) struct MatchMacroNodesResponse {
+    related_operational_points: Vec<Option<MacroNodeResponse>>,
+}
+
+/// Take a list of node locations and return for each of them the macro node
+/// of the scenario located there, if any
+#[editoast_derive::route(Role::OperationalStudies)]
+#[utoipa::path(
+    post, path = "",
+    tag = "scenarios",
+    request_body = MatchMacroNodesForm,
+    responses(
+        (status = 200, body = MatchMacroNodesResponse, description = "The macro node matching each node location"),
+    )
+)]
+pub(in crate::views) async fn match_macro_nodes(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Json(MatchMacroNodesForm {
+        scenario_id,
+        node_locations,
+    }): Json<MatchMacroNodesForm>,
+) -> Result<Json<MatchMacroNodesResponse>> {
+    let mut conn = db_pool.get().await?;
+    let settings = SelectionSettings::new().filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
+    let nodes_by_location: HashMap<_, _> = MacroNode::list(&mut conn, settings)
+        .await?
+        .into_iter()
+        .map(|node| (node.node_location.clone(), node))
+        .collect();
+
+    Ok(Json(MatchMacroNodesResponse {
+        related_operational_points: node_locations
+            .iter()
+            .map(|location| {
+                nodes_by_location
+                    .get(location)
+                    .cloned()
+                    .map(MacroNodeResponse::from)
+            })
+            .collect(),
+    }))
 }
 
 /// Retrieve a macro node by id
@@ -515,6 +568,54 @@ pub mod test {
     struct MacroNodeFixtureSet {
         scenario: Scenario,
         nodes: Vec<MacroNode>,
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn match_macro_nodes() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 2).await;
+        let other_fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
+
+        let node_locations = vec![
+            fixtures.nodes[1].node_location.clone(),
+            // Only exists in another scenario
+            other_fixtures.nodes[0].node_location.clone(),
+            OperationalPointReferenceNode::OperationalPointReference {
+                operational_point: OperationalPointReference::Id {
+                    operational_point: "unknown".into(),
+                },
+            },
+            fixtures.nodes[0].node_location.clone(),
+        ];
+        let response: MatchMacroNodesResponse = app
+            .post("/macro_nodes/match")
+            .json(&MatchMacroNodesForm {
+                scenario_id: fixtures.scenario.id,
+                node_locations,
+            })
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+
+        let matched_ids = response
+            .related_operational_points
+            .iter()
+            .map(|node| node.as_ref().map(|node| node.id))
+            .collect_vec();
+        assert_eq!(
+            matched_ids,
+            [
+                Some(fixtures.nodes[1].id),
+                None,
+                None,
+                Some(fixtures.nodes[0].id)
+            ]
+        );
+        assert_eq!(
+            &fixtures.nodes[1],
+            response.related_operational_points[0].as_ref().unwrap()
+        );
     }
 
     async fn create_macro_node_fixtures_set(

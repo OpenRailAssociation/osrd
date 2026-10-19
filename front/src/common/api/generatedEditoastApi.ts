@@ -635,6 +635,14 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      postMacroNodesMatch: build.query<PostMacroNodesMatchApiResponse, PostMacroNodesMatchApiArg>({
+        query: (queryArg) => ({
+          url: `/macro_nodes/match`,
+          method: 'POST',
+          body: queryArg.matchMacroNodesForm,
+        }),
+        providesTags: ['scenarios'],
+      }),
       getMacroNodesByNodeId: build.query<
         GetMacroNodesByNodeIdApiResponse,
         GetMacroNodesByNodeIdApiArg
@@ -2187,6 +2195,11 @@ export type PostMacroNodesApiResponse =
   /** status 201 Macro nodes created */ MacroNodeBatchResponse;
 export type PostMacroNodesApiArg = {
   macroNodeBatchForm: MacroNodeBatchForm;
+};
+export type PostMacroNodesMatchApiResponse =
+  /** status 200 The macro node matching each node location */ MatchMacroNodesResponse;
+export type PostMacroNodesMatchApiArg = {
+  matchMacroNodesForm: MatchMacroNodesForm;
 };
 export type GetMacroNodesByNodeIdApiResponse =
   /** status 200 The requested Macro node */ MacroNodeResponse;
@@ -4078,6 +4091,13 @@ export type MacroNodeForm = {
 };
 export type MacroNodeBatchForm = {
   macro_nodes: MacroNodeForm[];
+  scenario_id: number;
+};
+export type MatchMacroNodesResponse = {
+  related_operational_points: (null | MacroNodeResponse)[];
+};
+export type MatchMacroNodesForm = {
+  node_locations: OperationalPointReferenceNode[];
   scenario_id: number;
 };
 export type MacroNoteResponse = {

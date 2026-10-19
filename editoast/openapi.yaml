@@ -2644,6 +2644,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNodeBatchResponse'
+  /macro_nodes/match:
+    post:
+      tags:
+      - scenarios
+      summary: |-
+        Take a list of node locations and return for each of them the macro node
+        of the scenario located there, if any
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchMacroNodesForm'
+        required: true
+      responses:
+        '200':
+          description: The macro node matching each node location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchMacroNodesResponse'
   /macro_nodes/{node_id}:
     get:
       tags:
@@ -12702,6 +12722,30 @@ components:
           - 5%
           - 2min/100km
       additionalProperties: false
+    MatchMacroNodesForm:
+      type: object
+      required:
+      - scenario_id
+      - node_locations
+      properties:
+        node_locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationalPointReferenceNode'
+        scenario_id:
+          type: integer
+          format: int64
+    MatchMacroNodesResponse:
+      type: object
+      required:
+      - related_operational_points
+      properties:
+        related_operational_points:
+          type: array
+          items:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/MacroNodeResponse'
     ModeEffortCurves:
       type: object
       required:
