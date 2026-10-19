@@ -27,6 +27,7 @@ use models::macro_node::OperationalPointReferenceNode;
 use models::prelude::*;
 use models::scenario::Scenario;
 use models::tags::Tags;
+use schemas::train_schedule::OperationalPointReference;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "macro_node")]
@@ -227,7 +228,7 @@ pub(in crate::views) async fn create(
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct MatchMacroNodesForm {
     scenario_id: i64,
-    node_locations: Vec<OperationalPointReferenceNode>,
+    operational_point_references: Vec<OperationalPointReference>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -236,12 +237,12 @@ pub(in crate::views) struct MatchMacroNodesResponse {
     related_operational_points: Vec<Option<MacroNodeResponse>>,
 }
 
-/// Take a list of node locations and return for each of them the macro node of the scenario
-/// located there, if any
+/// Take a list of operational point references and return for each of them the macro node
+/// of the scenario referencing the same operational point, if any
 ///
-/// Operational point references are resolved on the scenario infra: a location matches a node
-/// referencing the same operational point by id, domestic code or UIC. When several nodes
-/// match, the oldest one is returned.
+/// References are resolved on the scenario infra: a reference matches a node referencing the
+/// same operational point by id, domestic code or UIC. Nodes located by a track offset never
+/// match. When several nodes match, the oldest one is returned.
 #[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
@@ -255,7 +256,7 @@ pub(in crate::views) async fn match_macro_nodes(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(MatchMacroNodesForm {
         scenario_id,
-        node_locations,
+        operational_point_references,
     }): Json<MatchMacroNodesForm>,
 ) -> Result<Json<MatchMacroNodesResponse>> {
     let mut conn = db_pool.get().await?;
@@ -266,42 +267,46 @@ pub(in crate::views) async fn match_macro_nodes(
     let settings = SelectionSettings::new()
         .filter(move || MacroNode::SCENARIO_ID.eq(scenario_id))
         .order_by(|| MacroNode::ID.asc());
-    let nodes = MacroNode::list(&mut conn, settings).await?;
-
-    // Resolve the operational points of both the requested locations and the scenario nodes,
-    // so that a node referencing an operational point by domestic code matches a location
-    // referencing the same operational point by id or UIC.
-    let operational_point_references = node_locations
-        .iter()
-        .chain(nodes.iter().map(|node| &node.node_location))
-        .filter_map(|location| match location {
+    let nodes = MacroNode::list(&mut conn, settings)
+        .await?
+        .into_iter()
+        .filter_map(|node| match &node.node_location {
             OperationalPointReferenceNode::OperationalPointReference { operational_point } => {
-                Some(operational_point.clone())
+                Some((operational_point.clone(), node))
             }
             OperationalPointReferenceNode::TrackOffset(_) => None,
         })
         .collect_vec();
+
+    // Resolve the operational points of both the requested references and the scenario nodes,
+    // so that a node referencing an operational point by domestic code matches a reference
+    // to the same operational point by id or UIC.
+    let all_references = operational_point_references
+        .iter()
+        .chain(nodes.iter().map(|(reference, _)| reference))
+        .cloned()
+        .collect_vec();
     let op_cache = OperationalPointCache::load_from_operational_points(
         conn,
         scenario.infra_id,
-        &operational_point_references,
+        &all_references,
     )
     .await?;
 
     // Nodes are sorted by id: when several nodes match, the oldest one is kept
     let mut nodes_by_key = HashMap::new();
-    for node in nodes {
+    for (reference, node) in nodes {
         nodes_by_key
-            .entry(NodeLocationKey::new(&op_cache, &node.node_location))
+            .entry(OperationalPointKey::new(&op_cache, reference))
             .or_insert(node);
     }
 
     Ok(Json(MatchMacroNodesResponse {
-        related_operational_points: node_locations
-            .iter()
-            .map(|location| {
+        related_operational_points: operational_point_references
+            .into_iter()
+            .map(|reference| {
                 nodes_by_key
-                    .get(&NodeLocationKey::new(&op_cache, location))
+                    .get(&OperationalPointKey::new(&op_cache, reference))
                     .cloned()
                     .map(MacroNodeResponse::from)
             })
@@ -309,25 +314,20 @@ pub(in crate::views) async fn match_macro_nodes(
     }))
 }
 
-/// Identifies what a node location represents: the operational point it references when it
-/// exists in the infra, the location itself otherwise
+/// Identifies the operational point a reference points to when it exists in the infra,
+/// the reference itself otherwise
 #[derive(PartialEq, Eq, Hash)]
-enum NodeLocationKey {
-    OperationalPoint(String),
-    Location(OperationalPointReferenceNode),
+enum OperationalPointKey {
+    Id(String),
+    Reference(OperationalPointReference),
 }
 
-impl NodeLocationKey {
-    fn new(op_cache: &OperationalPointCache, location: &OperationalPointReferenceNode) -> Self {
-        match location {
-            OperationalPointReferenceNode::OperationalPointReference { operational_point } => {
-                op_cache
-                    .get_op_ref_id(operational_point)
-                    .map(Self::OperationalPoint)
-                    .unwrap_or_else(|| Self::Location(location.clone()))
-            }
-            OperationalPointReferenceNode::TrackOffset(_) => Self::Location(location.clone()),
-        }
+impl OperationalPointKey {
+    fn new(op_cache: &OperationalPointCache, reference: OperationalPointReference) -> Self {
+        op_cache
+            .get_op_ref_id(&reference)
+            .map(Self::Id)
+            .unwrap_or(Self::Reference(reference))
     }
 }
 
@@ -636,122 +636,89 @@ pub mod test {
     async fn match_macro_nodes() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
-        let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 2).await;
-        let other_fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
-
-        let node_locations = vec![
-            fixtures.nodes[1].node_location.clone(),
-            // Only exists in another scenario
-            other_fixtures.nodes[0].node_location.clone(),
-            OperationalPointReferenceNode::OperationalPointReference {
-                operational_point: OperationalPointReference::Id {
-                    operational_point: "unknown".into(),
-                },
-            },
-            fixtures.nodes[0].node_location.clone(),
-        ];
-        let response: MatchMacroNodesResponse = app
-            .post("/macro_nodes/match")
-            .json(&MatchMacroNodesForm {
-                scenario_id: fixtures.scenario.id,
-                node_locations,
-            })
-            .await
-            .assert_status(StatusCode::OK)
-            .json();
-
-        let matched_ids = response
-            .related_operational_points
-            .iter()
-            .map(|node| node.as_ref().map(|node| node.id))
-            .collect_vec();
-        assert_eq!(
-            matched_ids,
-            [
-                Some(fixtures.nodes[1].id),
-                None,
-                None,
-                Some(fixtures.nodes[0].id)
-            ]
-        );
-        assert_eq!(
-            &fixtures.nodes[1],
-            response.related_operational_points[0].as_ref().unwrap()
-        );
-    }
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn match_macro_nodes_by_operational_point() {
-        let app = test_app!().skip_authz().build();
-        let db_pool = app.db_pool();
         let conn = &mut db_pool.get_ok();
         let infra = create_small_infra(conn).await;
         let (timetable, _) = create_timetable_with_train_schedule_set(conn).await;
         let project = create_project(conn, "project").await;
         let study = create_study(conn, "study", project.id).await;
         let scenario = create_scenario(conn, "scenario", study.id, timetable.id, infra.id).await;
+        let (other_timetable, _) = create_timetable_with_train_schedule_set(conn).await;
+        let other_scenario = create_scenario(
+            conn,
+            "other_scenario",
+            study.id,
+            other_timetable.id,
+            infra.id,
+        )
+        .await;
 
-        let op_location = |operational_point| {
-            OperationalPointReferenceNode::OperationalPointReference { operational_point }
-        };
-        let west_station_domestic = op_location(OperationalPointReference::Domestic {
+        let west_station_domestic = OperationalPointReference::Domestic {
             country_code: "FR".into(),
             main_code: "WS".into(),
             secondary_code: Some("BV".into()),
-        });
-        let west_station_uic = op_location(OperationalPointReference::Uic {
+        };
+        let west_station_uic = OperationalPointReference::Uic {
             uic: 8722,
             secondary_code: Some("BV".into()),
-        });
-        let mid_east_station_id = op_location(OperationalPointReference::Id {
+        };
+        let mid_east_station_id = OperationalPointReference::Id {
             operational_point: "Mid_East_station".into(),
-        });
-        let unknown_op_id = op_location(OperationalPointReference::Id {
+        };
+        let unknown_op_id = OperationalPointReference::Id {
             operational_point: "unknown".into(),
-        });
-        let track_offset = OperationalPointReferenceNode::TrackOffset(TrackOffset::new("TA0", 0));
+        };
+        let south_west_station_id = OperationalPointReference::Id {
+            operational_point: "South_West_station".into(),
+        };
+        let op_location = |operational_point: &OperationalPointReference| {
+            OperationalPointReferenceNode::OperationalPointReference {
+                operational_point: operational_point.clone(),
+            }
+        };
 
         let mut nodes = Vec::new();
-        for location in [
-            &west_station_domestic,
-            &west_station_uic,
-            &mid_east_station_id,
-            &unknown_op_id,
-            &track_offset,
+        for (scenario_id, location) in [
+            (scenario.id, op_location(&west_station_domestic)),
+            (scenario.id, op_location(&west_station_uic)),
+            (scenario.id, op_location(&mid_east_station_id)),
+            (scenario.id, op_location(&unknown_op_id)),
+            // West_station part, never matched since it is a track offset
+            (
+                scenario.id,
+                OperationalPointReferenceNode::TrackOffset(TrackOffset::new("TA1", 500_000)),
+            ),
+            (other_scenario.id, op_location(&south_west_station_id)),
         ] {
             let node = MacroNode::changeset()
-                .scenario_id(scenario.id)
+                .scenario_id(scenario_id)
                 .position_x(0)
                 .position_y(0)
                 .labels(Tags::default())
-                .node_location(location.clone())
+                .node_location(location)
                 .create(conn)
                 .await
                 .expect("Failed to create macro node");
-            nodes.push(node.id);
+            nodes.push(node);
         }
 
-        let node_locations = vec![
-            op_location(OperationalPointReference::Id {
+        let operational_point_references = vec![
+            OperationalPointReference::Id {
                 operational_point: "West_station".into(),
-            }),
+            },
             west_station_uic,
-            op_location(OperationalPointReference::Domestic {
+            OperationalPointReference::Domestic {
                 country_code: "FR".into(),
                 main_code: "MES".into(),
                 secondary_code: Some("BV".into()),
-            }),
+            },
             unknown_op_id,
-            op_location(OperationalPointReference::Id {
-                operational_point: "South_West_station".into(),
-            }),
-            track_offset,
-            OperationalPointReferenceNode::TrackOffset(TrackOffset::new("TA0", 1)),
+            south_west_station_id,
         ];
         let response: MatchMacroNodesResponse = app
             .post("/macro_nodes/match")
             .json(&MatchMacroNodesForm {
                 scenario_id: scenario.id,
-                node_locations,
+                operational_point_references,
             })
             .await
             .assert_status(StatusCode::OK)
@@ -766,15 +733,18 @@ pub mod test {
             matched_ids,
             [
                 // Both West_station nodes match, the oldest is kept
-                Some(nodes[0]),
-                Some(nodes[0]),
-                Some(nodes[2]),
-                // Not in the infra: only the exact same location matches
-                Some(nodes[3]),
-                None,
-                Some(nodes[4]),
+                Some(nodes[0].id),
+                Some(nodes[0].id),
+                Some(nodes[2].id),
+                // Not in the infra: only the exact same reference matches
+                Some(nodes[3].id),
+                // Only in another scenario
                 None,
             ]
+        );
+        assert_eq!(
+            &nodes[0],
+            response.related_operational_points[0].as_ref().unwrap()
         );
     }
 

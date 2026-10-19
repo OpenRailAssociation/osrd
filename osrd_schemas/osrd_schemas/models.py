@@ -5517,6 +5517,15 @@ class Margins(BaseModel):
     """
 
 
+class MatchMacroNodesForm(BaseModel):
+    operational_point_references: list[
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    ]
+    scenario_id: int
+
+
 class ModeEffortCurves(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -6643,14 +6652,6 @@ class MacroNoteBatchResponse(BaseModel):
 
 class MacroNoteListResponse(PaginationStats):
     results: list[MacroNoteResponse]
-
-
-class MatchMacroNodesForm(BaseModel):
-    node_locations: list[
-        OperationalPointReferenceNodeTrackOffset
-        | OperationalPointReferenceNodeOperationalPointReference
-    ]
-    scenario_id: int
 
 
 class MatchMacroNodesResponse(BaseModel):

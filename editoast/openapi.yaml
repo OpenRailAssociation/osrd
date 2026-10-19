@@ -2649,12 +2649,12 @@ paths:
       tags:
       - scenarios
       summary: |-
-        Take a list of node locations and return for each of them the macro node of the scenario
-        located there, if any
+        Take a list of operational point references and return for each of them the macro node
+        of the scenario referencing the same operational point, if any
       description: |-
-        Operational point references are resolved on the scenario infra: a location matches a node
-        referencing the same operational point by id, domestic code or UIC. When several nodes
-        match, the oldest one is returned.
+        References are resolved on the scenario infra: a reference matches a node referencing the
+        same operational point by id, domestic code or UIC. Nodes located by a track offset never
+        match. When several nodes match, the oldest one is returned.
       requestBody:
         content:
           application/json:
@@ -12730,12 +12730,12 @@ components:
       type: object
       required:
       - scenario_id
-      - node_locations
+      - operational_point_references
       properties:
-        node_locations:
+        operational_point_references:
           type: array
           items:
-            $ref: '#/components/schemas/OperationalPointReferenceNode'
+            $ref: '#/components/schemas/OperationalPointReference'
         scenario_id:
           type: integer
           format: int64

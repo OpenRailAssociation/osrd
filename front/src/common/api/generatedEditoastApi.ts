@@ -4097,7 +4097,7 @@ export type MatchMacroNodesResponse = {
   related_operational_points: (null | MacroNodeResponse)[];
 };
 export type MatchMacroNodesForm = {
-  node_locations: OperationalPointReferenceNode[];
+  operational_point_references: OperationalPointReference[];
   scenario_id: number;
 };
 export type MacroNoteResponse = {

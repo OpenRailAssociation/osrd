@@ -25,7 +25,7 @@ pub struct MacroNode {
 }
 
 /// The location represented by a macro node
-#[derive(Clone, Debug, Serialize, Deserialize, ToSchema, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Serialize, Deserialize, ToSchema, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum OperationalPointReferenceNode {
     #[schema(title = "OperationalPointReferenceNodeTrackOffset")]
