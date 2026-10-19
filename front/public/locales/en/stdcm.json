@@ -134,6 +134,7 @@
     },
     "destination": "Destination",
     "folder": "VDS",
+    "loading": "retriveing data from GESICO, you can start a request in the meantime",
     "myRequests": "My requests",
     "noRequests": "No request could be fetched.",
     "origin": "Origin",

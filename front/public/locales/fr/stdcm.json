@@ -134,6 +134,7 @@
     },
     "destination": "Destination",
     "folder": "VDS",
+    "loading": "récupération des informations auprès de GESICO, vous pouvez démarrer une requête en parallèle",
     "myRequests": "Mes demandes",
     "noRequests": "Aucune demande n’a pu être récupérée.",
     "origin": "Origine",
