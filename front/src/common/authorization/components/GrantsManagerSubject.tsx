@@ -11,6 +11,7 @@ import { getErrorMessage } from 'utils/error';
 
 import type { Grant, Privilege, ResourceType, Subject } from '../types';
 import generateGrantSelectProps from '../utils/generateGrantSelectProps';
+import { GrantSubjectItem } from './GrantSubjectItem';
 
 type GrantsManagerSubjectProps = {
   subject: Subject;
@@ -71,8 +72,8 @@ const GrantsManagerSubject = ({
 
   return (
     <div className="subject-card">
-      <span className={cx('subject-name', { bold: subject.id === userId })}>
-        {subject.name}
+      <span className="subject">
+        <GrantSubjectItem subject={subject} className={cx({ self: subject.id === userId })} />
         {status.type === 'error' && <p className="text-danger">{status.message}</p>}
       </span>
       <span className="subject-grant">

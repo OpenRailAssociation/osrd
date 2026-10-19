@@ -5,43 +5,51 @@ import { useTranslation } from 'react-i18next';
 
 import { ThreeDots } from 'common/Loaders';
 import type { AsyncStatus } from 'common/types';
-import type { User } from 'common/useSearchUsers';
-import useSearchUsers from 'common/useSearchUsers';
+import type { Subject } from 'common/useSearchSubjects';
+import useSearchSubjects from 'common/useSearchSubjects';
 
 import type { Grant } from '../types';
+import { GrantSubjectItem } from './GrantSubjectItem';
 
-type AddUserForm = {
-  user: User;
+type AddSubjectForm = {
+  subject: Subject;
   grant: Grant;
 };
 
 type GrantManagerAddSubjectFormProps = {
   grants: Array<{ label: string; value?: Grant }>;
-  onSubmit(user: User, grant: Grant): Promise<void>;
+  onSubmit(subject: Subject, grant: Grant): Promise<void>;
 };
 const GrantManagerAddSubjectForm = ({
   grants: grantOptions,
   onSubmit,
 }: GrantManagerAddSubjectFormProps) => {
   const { t } = useTranslation();
-  const [addUserForm, setAddUserForm] = useState<Partial<AddUserForm>>({ grant: 'READER' });
-  const { searchedUsers, setSearchTerm, resetSuggestions } = useSearchUsers();
-  const [addUserStatus, setAddUserStatus] = useState<AsyncStatus>({ type: 'idle' });
+  const [addSubjectForm, setAddSubjectForm] = useState<Partial<AddSubjectForm>>({
+    grant: 'READER',
+  });
+  const { searchedSubjects, setSearchTerm, resetSearch } = useSearchSubjects();
+  const [addUserStatus, setAddUserStatus] = useState<AsyncStatus>({
+    type: 'idle',
+  });
 
-  const isAddUserFormValid = useMemo(() => addUserForm.user && addUserForm.grant, [addUserForm]);
+  const isAddUserFormValid = useMemo(
+    () => addSubjectForm.subject && addSubjectForm.grant,
+    [addSubjectForm]
+  );
   const searchSubmit = useCallback(async () => {
     if (isAddUserFormValid) {
       try {
-        await onSubmit(addUserForm.user!, addUserForm.grant!);
-        resetSuggestions();
-        setAddUserForm({});
+        await onSubmit(addSubjectForm.subject!, addSubjectForm.grant!);
+        resetSearch();
+        setAddSubjectForm({});
         setAddUserStatus({ type: 'success' });
       } catch (e) {
         console.error(e);
         setAddUserStatus({ type: 'error' });
       }
     }
-  }, [addUserForm, isAddUserFormValid, onSubmit, resetSuggestions]);
+  }, [addSubjectForm, isAddUserFormValid, onSubmit, resetSearch]);
 
   return (
     <form
@@ -53,30 +61,34 @@ const GrantManagerAddSubjectForm = ({
       <div className="subject-search-section">
         <span className="subject-search-combobox">
           <ComboBox
-            id="add-user-combobox"
-            value={addUserForm.user}
-            suggestions={searchedUsers}
+            id="add-subject-combobox"
+            value={addSubjectForm.subject}
+            suggestions={searchedSubjects}
+            renderListElementComponent={({ suggestion }) => (
+              <GrantSubjectItem subject={suggestion} />
+            )}
             getSuggestionLabel={(option) => option.name}
             onChange={setSearchTerm}
             onSelectSuggestion={(suggestion) => {
-              setAddUserForm((prev) => ({ ...prev, user: suggestion }));
+              setAddSubjectForm((prev) => ({ ...prev, subject: suggestion }));
+              resetSearch();
             }}
-            resetSuggestions={() => {}}
-            placeholder={t('authorization.searchUser')}
+            resetSuggestions={resetSearch}
+            placeholder={t('authorization.searchSubject')}
             autoComplete="off"
             narrow
           />
         </span>
         <span className="subject-grant">
           <Select
-            id="add-user-grant-selector"
+            id="add-subject-grant-selector"
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value || ''}
             onChange={(option) => {
-              setAddUserForm((prev) => ({ ...prev, grant: option?.value }));
+              setAddSubjectForm((prev) => ({ ...prev, grant: option?.value }));
             }}
             options={grantOptions}
-            value={grantOptions.find((option) => option.value === addUserForm.grant)}
+            value={grantOptions.find((option) => option.value === addSubjectForm.grant)}
             narrow
           />
         </span>
