@@ -1,6 +1,6 @@
 import { type ReactNode, createElement } from 'react';
 
-import { getTestStore, renderHookWithStore } from 'store/__tests__';
+import { renderHookWithStore } from 'store/__tests__';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -57,11 +57,10 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should correctly toggle the selection of one occurrence', () => {
-    const { result, rerender } = renderHookWithStore(
+    const { result, rerender, store } = renderHookWithStore(
       () => useOccurrenceActions(buildOccurrenceActionsArgs()),
       { wrapper: timetableContextWrapper }
     );
-    const store = getTestStore();
 
     expect(store.getState().simulation.selectedTrain).toStrictEqual(undefined);
 
@@ -80,11 +79,10 @@ describe('useOccurrenceActions', () => {
   });
 
   it('should select occurrence for projection', () => {
-    const { result } = renderHookWithStore(
+    const { result, store } = renderHookWithStore(
       () => useOccurrenceActions(buildOccurrenceActionsArgs()),
       { wrapper: timetableContextWrapper }
     );
-    const store = getTestStore();
 
     expect(store.getState().simulation.trainIdUsedForProjection).toBe(undefined);
 
@@ -345,7 +343,7 @@ describe('useOccurrenceActions', () => {
       },
     });
 
-    const { result, rerender } = renderHookWithStore(
+    const { result, rerender, store } = renderHookWithStore(
       () =>
         useOccurrenceActions({
           pacedTrain: { ...pacedTrainSchedule },
@@ -355,7 +353,6 @@ describe('useOccurrenceActions', () => {
         }),
       { wrapper: timetableContextWrapper }
     );
-    const store = getTestStore();
 
     result.current.toggleOccurrenceSelection(occurrence1.id);
 
@@ -532,7 +529,7 @@ describe('useOccurrenceActions', () => {
       data: [],
     });
 
-    const { result, rerender } = renderHookWithStore(
+    const { result, rerender, store } = renderHookWithStore(
       () =>
         useOccurrenceActions(
           buildOccurrenceActionsArgs({ ...pacedTrainWithAddedException }, [
@@ -541,7 +538,6 @@ describe('useOccurrenceActions', () => {
         ),
       { wrapper: timetableContextWrapper }
     );
-    const store = getTestStore();
 
     result.current.toggleOccurrenceSelection(addedExceptionOccurrence.id);
 
