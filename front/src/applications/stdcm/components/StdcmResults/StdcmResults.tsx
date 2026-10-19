@@ -155,6 +155,7 @@ const StdcmResults = ({
   const [areSegmentsLoading, setAreSegmentsLoading] = useState(true);
 
   const [postSimilarTrains] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
+  const [postStdcmRequests] = osrdEditoastApi.endpoints.postStdcmRequests.useMutation();
 
   const handleSubmitSuccess = useCallback(
     (isSuccessful: boolean, railwayResponse: SendLastMinuteRequestResponse) => {
@@ -162,9 +163,13 @@ const StdcmResults = ({
         setIsRailwayRequestSuccessful(isSuccessful);
         setRailwayDemandId(railwayResponse.request_identifier);
         setRailwayRequestUrl(railwayResponse.created_request_url);
+
+        postStdcmRequests({
+          stdcmRequestForm: { rmi_id: railwayResponse.request_identifier },
+        });
       }
     },
-    []
+    [postStdcmRequests]
   );
 
   useEffect(() => {
