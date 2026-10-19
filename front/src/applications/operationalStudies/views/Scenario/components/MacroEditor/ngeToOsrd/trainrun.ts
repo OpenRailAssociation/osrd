@@ -13,6 +13,7 @@ import {
   type PathItemLocation,
   type TimetableType,
   type TrainScheduleResponse,
+  type ScheduleItem,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -250,10 +251,20 @@ const calculateStartTime = (
 const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  trainrunDirection: TRAINRUN_DIRECTIONS
+  trainrunDirection: TRAINRUN_DIRECTIONS,
+  firstStopFor?: string | null,
+  lastStopFor?: string | null
 ): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
-  return trainrunSections.flatMap((section, index) => {
+  const firstNodeID = isForward
+    ? trainrunSections[0].sourceNodeId
+    : trainrunSections[0].targetNodeId;
+  const firstScheduleItem: ScheduleItem = {
+    at: `${firstNodeID}-0`,
+    arrival: null,
+    stop_for: firstStopFor,
+  };
+  const scheduleItems: ScheduleItem[] = trainrunSections.flatMap((section, index) => {
     const nextSection = trainrunSections[index + 1];
     const toNodeId = isForward ? section.targetNodeId : section.sourceNodeId;
     const toPortId = isForward ? section.targetPortId : section.sourcePortId;
@@ -300,7 +311,13 @@ const generateSchedule = (
     arrival = arrival || departure!;
 
     let stop_for: Duration | null = null;
-    if (isStopTransit) stop_for = departure ? departure.sub(arrival) : Duration.zero;
+    if (isStopTransit) {
+      if (index === trainrunSections.length - 1 && lastStopFor) {
+        stop_for = Duration.parse(lastStopFor);
+      } else {
+        stop_for = departure ? departure.sub(arrival) : Duration.zero;
+      }
+    }
 
     return {
       at: `${toNodeId}-${index + 1}`,
@@ -310,6 +327,8 @@ const generateSchedule = (
       reception_signal: 'OPEN',
     };
   });
+
+  return [firstScheduleItem, ...scheduleItems];
 };
 
 /**
@@ -351,7 +370,9 @@ export const generatePathAndSchedule = (
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   paced: TrainSchedule['paced'],
-  state?: MacroEditorState
+  state?: MacroEditorState,
+  firstStopFor?: string | null,
+  lastStopFor?: string | null
 ): Pick<TrainSchedule, 'start_time' | 'path' | 'schedule'> => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
@@ -360,7 +381,8 @@ export const generatePathAndSchedule = (
 
   const startTime = calculateStartTime(sections, baseStartTime, trainrunDirection, paced);
   const path = generatePath(sections, nodes, trainrunDirection, state);
-  const schedule = generateSchedule(sections, nodes, trainrunDirection);
+  const schedule = generateSchedule(sections, nodes, trainrunDirection, firstStopFor, lastStopFor);
+  console.log(schedule);
   return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
@@ -565,6 +587,12 @@ export const handleUpdateTrainSchedule = async ({
     state.timetableId,
     dispatch
   );
+  const firstStopFor = oldForwardTrainSchedule?.schedule
+    ? oldForwardTrainSchedule?.schedule[0]?.stop_for
+    : undefined;
+  const lastStopFor = oldForwardTrainSchedule?.schedule
+    ? oldForwardTrainSchedule?.schedule.at(-1)?.stop_for
+    : undefined;
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
   const baseStartTime = parseStartTime(oldForwardTrainSchedule.start_time, state.timetableType);
@@ -579,7 +607,9 @@ export const handleUpdateTrainSchedule = async ({
     baseStartTime,
     TRAINRUN_DIRECTIONS.FORWARD,
     paced,
-    state
+    state,
+    firstStopFor,
+    lastStopFor
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
 
@@ -618,6 +648,8 @@ export const handleUpdateTrainSchedule = async ({
     dispatch,
     addUpsertedTrainSchedules
   );
+
+  console.log(newForwardTrainSchedule);
 
   if (trainrun.direction === 'one_way') {
     if (trainScheduleIds[1]) {
