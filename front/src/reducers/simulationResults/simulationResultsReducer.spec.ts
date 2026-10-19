@@ -1,7 +1,7 @@
+import { createStoreWithoutMiddleware } from 'store/utils';
 import { describe, it, expect } from 'vitest';
 
 import type { OccurrenceId, TrainScheduleId } from 'reducers/osrdconf/types';
-import { createStoreWithoutMiddleware } from 'store';
 
 import {
   simulationResultsInitialState,

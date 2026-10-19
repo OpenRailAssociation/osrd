@@ -1,3 +1,4 @@
+import { createStoreWithoutMiddleware } from 'store/utils';
 import { describe, it, expect } from 'vitest';
 
 import {
@@ -28,7 +29,6 @@ import {
   updateLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
-import { createStoreWithoutMiddleware } from 'store';
 import { Duration } from 'utils/duration';
 
 import commonConfBuilder from '../osrdConfCommon/__tests__/commonConfBuilder';

@@ -1,19 +1,12 @@
 import type { Config } from '@redux-devtools/extension';
-import { configureStore, type Middleware } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import { type TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { persistStore, getStoredState } from 'redux-persist';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
-import persistedReducer, {
-  rootReducer,
-  rootInitialState,
-  type RootState,
-  persistConfig,
-} from 'reducers';
+import persistedReducer, { type RootState, persistConfig } from 'reducers';
 
 import { listenerMiddleware } from './listeners/listenerMiddleware';
+import { middlewares } from './middlewares';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
@@ -22,12 +15,6 @@ const reduxDevToolsOptions: Config = {
     },
   },
 };
-
-const middlewares: Middleware[] = [
-  osrdEditoastApi.middleware,
-  osrdGatewayApi.middleware,
-  osrdRailwayManagerApi.middleware,
-];
 
 const createStore = () =>
   configureStore({
@@ -79,13 +66,4 @@ getStoredState(persistConfig)
     console.error('Error retrieving persisted state:', err);
   });
 
-const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
-  configureStore({
-    reducer: rootReducer,
-    preloadedState: {
-      ...rootInitialState,
-      ...initialStateExtra,
-    },
-  });
-
-export { store, persistor, createStore, createStoreWithoutMiddleware };
+export { store, persistor, createStore };
