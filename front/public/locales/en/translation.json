@@ -457,7 +457,7 @@
     "rolling-stocks-editor": "Rolling stock editor"
   },
   "authorization": {
-    "addGrantToUser": "Add grant to user",
+    "addGrantToSubject": "Add grant to a user or a group",
     "grants": {
       "edit": "write",
       "full": "full access",
@@ -467,7 +467,7 @@
     },
     "permission": "Permission",
     "permissionDenied": "You don't have permission to perform this action",
-    "searchUser": "Search user by its name",
+    "searchSubject": "Search a user or a group by its name",
     "yourGrant": "Your access : {{grant}}"
   },
   "common": {
