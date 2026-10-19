@@ -1,23 +1,14 @@
 import { renderHook, type RenderHookOptions, type RenderHookResult } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { beforeEach } from 'vitest';
+import { createTransientStore } from 'store/utils';
 
 import type { RootState } from 'reducers';
-import { createStore, createStoreWithoutMiddleware, type Store } from 'store';
 
 // Create a fresh store before each test, so that tests don't inherit any state
 // from previous tests (e.g. rtk-query's cache isn't polluted with a previous
 // test's mock data). We still want to keep using the same store within a test,
 // for instance to test re-renders after a store change or to retain
 // rtk-query's cache.
-let store: Store;
-beforeEach(() => {
-  store = createStore();
-});
-
-export function getTestStore(): Store {
-  return store;
-}
 
 /**
  * Renders a hook for test purposes with the Redux store in the context.
@@ -33,16 +24,19 @@ export function renderHookWithStore<Result, Props>(
   render: (initialProps: Props) => Result,
   options?: RenderHookOptions<Props>,
   rootState?: Partial<RootState>
-): RenderHookResult<Result, Props> {
-  const activeStore = rootState ? createStoreWithoutMiddleware(rootState) : store;
+): RenderHookResult<Result, Props> & { store: ReturnType<typeof createTransientStore> } {
+  const activeStore = createTransientStore(rootState);
 
-  return renderHook(render, {
-    ...options,
-    wrapper: ({ children }) => {
-      const inner = <Provider store={activeStore}>{children}</Provider>;
-      // If the user has provided their own wrapper, wrap the wrapper! 🕺
-      const Wrapper = options?.wrapper;
-      return Wrapper ? <Wrapper>{inner}</Wrapper> : inner;
-    },
-  });
+  return {
+    ...renderHook(render, {
+      ...options,
+      wrapper: ({ children }) => {
+        const inner = <Provider store={activeStore}>{children}</Provider>;
+        // If the user has provided their own wrapper, wrap the wrapper! 🕺
+        const Wrapper = options?.wrapper;
+        return Wrapper ? <Wrapper>{inner}</Wrapper> : inner;
+      },
+    }),
+    store: activeStore,
+  };
 }

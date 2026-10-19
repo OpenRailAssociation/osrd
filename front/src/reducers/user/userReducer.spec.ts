@@ -1,3 +1,4 @@
+import { createStoreWithoutMiddleware } from 'store/utils';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -12,7 +13,6 @@ import {
   updateFeatureFlags,
   type FeatureFlag,
 } from 'reducers/user';
-import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (initialStateExtra?: UserState) =>
   createStoreWithoutMiddleware({

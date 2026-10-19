@@ -1,3 +1,4 @@
+import { createStoreWithoutMiddleware } from 'store/utils';
 import { describe, beforeEach, it, expect } from 'vitest';
 
 import {
@@ -5,7 +6,6 @@ import {
   referenceMapSlice,
   referenceMapSliceActions,
 } from 'reducers/referenceMap';
-import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = () =>
   createStoreWithoutMiddleware({

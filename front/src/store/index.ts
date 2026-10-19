@@ -6,12 +6,7 @@ import { persistStore, getStoredState } from 'redux-persist';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
-import persistedReducer, {
-  rootReducer,
-  rootInitialState,
-  type RootState,
-  persistConfig,
-} from 'reducers';
+import persistedReducer, { type RootState, persistConfig } from 'reducers';
 
 import { listenerMiddleware } from './listeners/listenerMiddleware';
 
@@ -79,13 +74,4 @@ getStoredState(persistConfig)
     console.error('Error retrieving persisted state:', err);
   });
 
-const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
-  configureStore({
-    reducer: rootReducer,
-    preloadedState: {
-      ...rootInitialState,
-      ...initialStateExtra,
-    },
-  });
-
-export { store, persistor, createStore, createStoreWithoutMiddleware };
+export { store, persistor, createStore };
