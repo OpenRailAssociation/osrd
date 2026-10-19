@@ -105,7 +105,7 @@
         opacity: 1;
         height: 100%;
         color: var(--grey50);
-        min-width: 0;
+        min-width: 64px;
 
         .scenario-name-label {
           overflow: hidden;
@@ -133,6 +133,29 @@
           .chevron-btn {
             color: var(--grey70);
           }
+        }
+      }
+
+      .timetable-name-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--grey50);
+        white-space: nowrap;
+        min-width: 0;
+
+        .timetable-name-label {
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        &:hover {
+          cursor: pointer;
+          color: var(--black100);
+        }
+
+        &:active {
+          color: var(--grey70);
         }
       }
     }

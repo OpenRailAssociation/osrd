@@ -1,6 +1,16 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
+import { OptionGroup, type OptionGroupSection } from '@osrd-project/ui-core';
+import {
+  X,
+  ChevronDown,
+  ChevronUp,
+  Hubot,
+  Person,
+  PatternHourly,
+  SignOut,
+  TimetableCalendar,
+} from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -58,13 +68,31 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
     username: false,
+    timetableName: false,
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
   const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
+  const [isTimetableMenuOpen, setIsTimetableMenuOpen] = useState(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLSpanElement>(null);
+  const timetableNameRef = useRef<HTMLSpanElement>(null);
+  const timetableTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const timetableTypeIcon =
+    timetableType === 'HOURLY' ? <PatternHourly size="lg" /> : <TimetableCalendar size="lg" />;
+  const timetableTypeLabel =
+    timetableType === 'HOURLY'
+      ? t('main.scenarioTimetableTypeHourly')
+      : t('main.scenarioTimetableTypeCalendar');
+  const timetableSections: OptionGroupSection<number>[] = [
+    {
+      title: timetableTypeLabel,
+      icon: timetableTypeIcon,
+      items: [{ value: timetableId, label: timetableTypeLabel }],
+    },
+  ];
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -95,6 +123,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       setIsTruncated({
         scenarioName: scenarioNameRef.current ? checkTruncation(scenarioNameRef.current) : false,
         username: usernameRef.current ? checkTruncation(usernameRef.current) : false,
+        timetableName: timetableNameRef.current ? checkTruncation(timetableNameRef.current) : false,
       });
     });
 
@@ -149,6 +178,36 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
             </button>
           </div>
+
+          {multipleTimetablesEnabled && (
+            <>
+              <button
+                ref={timetableTriggerRef}
+                className="timetable-name-container"
+                type="button"
+                onClick={() => setIsTimetableMenuOpen((prev) => !prev)}
+              >
+                {!isTimetableMenuOpen && timetableTypeIcon}
+                <span
+                  ref={timetableNameRef}
+                  className="timetable-name-label"
+                  title={isTruncated.timetableName ? timetableTypeLabel : undefined}
+                >
+                  {timetableTypeLabel}
+                </span>
+                <ChevronDown size="sm" />
+              </button>
+              <OptionGroup
+                triggerRef={timetableTriggerRef}
+                isOpen={isTimetableMenuOpen}
+                onClose={() => setIsTimetableMenuOpen(false)}
+                sections={timetableSections}
+                selectedValue={timetableId}
+                onSelect={() => setIsTimetableMenuOpen(false)}
+                getItemKey={(id) => String(id)}
+              />
+            </>
+          )}
 
           <div className="spacer" />
         </div>
