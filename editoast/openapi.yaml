@@ -2649,8 +2649,12 @@ paths:
       tags:
       - scenarios
       summary: |-
-        Take a list of node locations and return for each of them the macro node
-        of the scenario located there, if any
+        Take a list of node locations and return for each of them the macro node of the scenario
+        located there, if any
+      description: |-
+        Operational point references are resolved on the scenario infra: a location matches a node
+        referencing the same operational point by id, domestic code or UIC. When several nodes
+        match, the oldest one is returned.
       requestBody:
         content:
           application/json:
