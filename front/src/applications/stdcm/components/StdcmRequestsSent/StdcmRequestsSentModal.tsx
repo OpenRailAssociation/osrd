@@ -27,7 +27,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData } = useStdcmRequestsSent();
+  const { requestsSentData, isLoading } = useStdcmRequestsSent();
 
   const requestsSentRows = () =>
     requestsSentData().map((request, index) => {
@@ -106,8 +106,16 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <tbody>{requestsSentRows()}</tbody>
         </table>
       </div>
-      {requestsSentData().length === 0 && (
+      {!isLoading && requestsSentData().length === 0 && (
         <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
+      )}
+      {isLoading && (
+        <div className="stdcm-requests-sent-loading">
+          <div className="stdcm-requests-sent-loader" />
+          <div className="stdcm-requests-sent-loading-message">
+            {t('requestsSentModal.loading')}
+          </div>
+        </div>
       )}
     </Dialog>
   );
