@@ -197,8 +197,7 @@ class BenchSTDCM : CliCommand {
                         request.consistSchedule.copy(values = consistConfigurations)
                     val allowedTrackSections =
                         parseTrackSectionIds(infra, request.allowedTrackSections)
-                    // TODO : not used yet, it will be used for the General Stop Stations feature
-                    val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
+                    val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops)
                     val consistSchedules =
                         ConsistSchedule(
                             requestConsistSchedule,
@@ -235,6 +234,7 @@ class BenchSTDCM : CliCommand {
                             parseMarginValue(request.margin),
                             Pathfinding.TIMEOUT,
                             temporarySpeedLimitManager,
+                            forcedOpStops,
                             STDCMGraph.SearchMetadata(
                                 request.startTime,
                                 requirements.metadata,
