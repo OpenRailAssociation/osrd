@@ -1,5 +1,6 @@
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::Headers;
 use core_client::pathfinding::TrainPath;
 use core_client::signal_projection::SignalUpdate;
 use core_client::signal_projection::SignalUpdatesRequest;
@@ -118,7 +119,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
             .collect(),
     };
 
-    let response = request.fetch(&core).await?;
+    let response = request.fetch(&core, Headers::default()).await?;
 
     Ok(response.signal_updates)
 }

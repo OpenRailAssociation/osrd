@@ -4,6 +4,7 @@ use axum::extract::Json;
 use axum::extract::State;
 use core_client::AsCoreRequest as _;
 use core_client::Error as CoreClientError;
+use core_client::Headers;
 use core_client::mq_client::MqClientError;
 use core_client::worker_load::WorkerLoadRequest;
 use core_client::worker_load::WorkerLoadResponse;
@@ -113,7 +114,9 @@ pub(in crate::views) async fn worker_load(
         timetable: timetable_id,
     };
 
-    let status = infra_request.fetch(core_client.as_ref()).await;
+    let status = infra_request
+        .fetch(core_client.as_ref(), Headers::default())
+        .await;
 
     let status = match status {
         Ok(WorkerLoadResponse { loaded: true }) => WorkerStatus::Ready,

@@ -18,6 +18,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::Headers;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingInputError::UnauthorizedRollingStock;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -1089,7 +1090,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     let etcs_braking_curves_response = etcs_braking_curves_request
-        .fetch(core_client.as_ref())
+        .fetch(core_client.as_ref(), Headers::default())
         .await?;
 
     Ok(Json(etcs_braking_curves_response))

@@ -28,6 +28,8 @@ use tracing::trace;
 
 pub use mq_client::RabbitMQClient;
 
+pub type Headers = HashMap<String, String>;
+
 /// An enum to wrap RabbitMQ's routing keys
 ///
 /// - [WorkerKey::Timetable]: worker key based on the infra and timetable ids
@@ -90,6 +92,7 @@ impl CoreClient {
         body: Option<&B>,
         worker_key: WorkerKey,
         override_timeout: Option<Duration>,
+        core_headers: Headers,
     ) -> Result<R::Response, Error>
     where
         B: Serialize,
@@ -99,7 +102,7 @@ impl CoreClient {
         match self {
             CoreClient::MessageQueue(_) => {
                 let stream = self
-                    .fetch_streaming::<B, R>(path, body, worker_key, override_timeout)
+                    .fetch_streaming::<B, R>(path, body, worker_key, override_timeout, core_headers)
                     .await?;
 
                 pin!(stream)
@@ -128,6 +131,7 @@ impl CoreClient {
         body: Option<&B>,
         worker_key: WorkerKey,
         override_timeout: Option<Duration>,
+        core_headers: Headers,
     ) -> Result<impl Stream<Item = Result<<R as CoreResponse>::Response, Error>>, Error>
     where
         B: Serialize,
@@ -150,6 +154,7 @@ impl CoreClient {
                         body,
                         true,
                         override_timeout,
+                        core_headers,
                     )
                     .await
                     .map_err(Error::MqClient)?;
@@ -211,7 +216,7 @@ impl CoreClient {
 /// #   core_mock.stub("/some/path").response(http::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
 /// #   let core_client = core_mock.into();
 /// // Builds the payload, executes the request at POST /some/path and deserializes its response
-/// let response = TestReq::default().fetch(&core_client).await.unwrap();
+/// let response = TestReq::default().fetch(&core_client, core_client::Headers::default()).await.unwrap();
 /// assert_eq!(response.message, "YOU WON!");
 /// # });
 /// ```
@@ -237,12 +242,13 @@ where
     /// TODO: provide a mechanism in this trait to allow the implementer to
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
-    async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
+    async fn fetch(&self, core: &CoreClient, core_headers: Headers) -> Result<R::Response, Error> {
         core.fetch::<Self, R>(
             Self::URL_PATH,
             Some(self),
             self.worker_key(),
             Self::OVERRIDE_TIMEOUT,
+            core_headers,
         )
         .await
     }
@@ -277,6 +283,7 @@ pub trait AsCoreStreaming: Serialize + Sized + Sync {
     async fn fetch(
         &self,
         core: &CoreClient,
+        core_headers: Headers,
     ) -> Result<impl Stream<Item = Result<<Self::Response as CoreResponse>::Response, Error>>, Error>
     where
         <Self::Response as CoreResponse>::Response: Send,
@@ -286,6 +293,7 @@ pub trait AsCoreStreaming: Serialize + Sized + Sync {
             Some(self),
             self.worker_key(),
             Self::OVERRIDE_TIMEOUT,
+            core_headers,
         )
         .await
     }
@@ -327,7 +335,7 @@ where
     where
         <Self::Response as CoreResponse>::Response: Send,
     {
-        let mut stream = pin!(self.fetch(core).await?);
+        let mut stream = pin!(self.fetch(core, Headers::default()).await?);
         while let Some(item) = stream.next().await {
             let event = match item? {
                 Progress::Event(e) => Ok(e),
