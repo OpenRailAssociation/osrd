@@ -40,12 +40,19 @@ class _Study:
 
 
 @dataclass(frozen=True)
+class _TimetableSummary:
+    id: int
+    type: str
+    name: str | None
+
+
+@dataclass(frozen=True)
 class _ScenarioResponse:
     id: int
     study_id: int
     name: str
     description: str
-    timetable_id: int
+    timetable_summaries: list[_TimetableSummary]
     infra_id: int
     electrical_profile_set_id: int | None
     train_schedules_count: int
@@ -53,7 +60,6 @@ class _ScenarioResponse:
     last_modification: str
     tags: list[str]
     infra_name: str
-    timetable_type: str
     project: _Project
     study: _Study
 
