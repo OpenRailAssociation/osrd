@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
+import { NoEntry } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
 import './ListElementComponent.scss';
 
 export type OpSecondaryCode = {
-  code: string;
-  opId?: string;
+  code: string | null;
   isCandidate?: boolean;
   isBestSuggestion?: boolean;
 };
@@ -25,7 +25,7 @@ export type ListElementComponentProps = {
   index: number;
   isActive: boolean;
   isSelected: boolean;
-  onSelect?: (op: OperationalPointSuggestion, secondaryCode?: string) => void;
+  onSelect?: (op: OperationalPointSuggestion, secondaryCode?: string | null) => void;
 };
 
 export const ListElementComponent = ({
@@ -64,9 +64,9 @@ export const ListElementComponent = ({
       </span>
 
       <div className="op-suggestion-secondary-code-list">
-        {suggestion.secondaryCodeList.map((secondaryCode) => (
+        {suggestion.secondaryCodeList.map((secondaryCode, index) => (
           <button
-            key={secondaryCode.code}
+            key={secondaryCode.code ?? `no_secondary_code_${index}`}
             type="button"
             className={cx('op-suggestion-secondary-code', {
               'op-suggestion-secondary-code--best': secondaryCode.isBestSuggestion,
@@ -79,7 +79,7 @@ export const ListElementComponent = ({
               onSelect?.(suggestion, secondaryCode.code);
             }}
           >
-            {secondaryCode.code}
+            {secondaryCode.code ?? <NoEntry />}
           </button>
         ))}
       </div>

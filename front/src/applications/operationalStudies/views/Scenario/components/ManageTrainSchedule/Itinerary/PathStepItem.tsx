@@ -25,7 +25,7 @@ import {
   ListElementComponent,
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
-import { computePathStepCoordinates, isOpRefMetadata } from './utils';
+import { computePathStepCoordinates, formatOpLabel, isOpRefMetadata } from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
 
@@ -44,7 +44,10 @@ type PathStepProps = {
   onOpBlur: () => void;
   inputValue: string | undefined;
   opSuggestions: Array<OperationalPointSuggestion | string>;
-  onSelectOpSuggestion: (suggestion: OperationalPointSuggestion, secondaryCode?: string) => void;
+  onSelectOpSuggestion: (
+    suggestion: OperationalPointSuggestion,
+    secondaryCode?: string | null
+  ) => void;
   resetOpSuggestions: () => void;
   onChevronClick: (queryValue: string) => void;
   isInvalid: boolean;
@@ -136,21 +139,9 @@ const PathStepItem = ({
     return message + secondaryCodeInfo;
   };
 
-  const selectedSecondaryCodeOption = useMemo(() => {
-    if (!isOpRefMetadata(pathStepMetadata)) return { label: '', id: '' };
-
-    return {
-      label: pathStepMetadata?.secondaryCode ?? '',
-      id: pathStepMetadata?.secondaryCode ?? '',
-    };
-  }, [pathStepMetadata]);
-
   const trackNameSuggestions = useMemo(() => {
-    const selectedSecondaryCode = selectedSecondaryCodeOption.id;
-
     let allTrackNames: string[];
     if (isOpRefMetadata(pathStepMetadata)) {
-      if (!selectedSecondaryCode) return [];
       // Combine tracks from:
       // 1. pathStepMetadata.parts — contains both 'valid' (from infra) and 'custom' (from timetable)
       // 2. customTracks — tracks added by the user in the current form session
@@ -188,7 +179,7 @@ const PathStepItem = ({
       })
       .map((name, trackIndex) => ({ label: name, id: `${name}-${trackIndex}` }));
     return [{ label: '', id: '' }, ...sortedSuggestions];
-  }, [pathStepMetadata, selectedSecondaryCodeOption.id, customTracks]);
+  }, [pathStepMetadata, customTracks]);
 
   const filteredTrackSuggestions = useMemo(() => {
     const input = trackNameQuery.toLowerCase();
@@ -280,7 +271,7 @@ const PathStepItem = ({
     if (inputValue !== undefined) return inputValue;
 
     if (isOpRefMetadata(pathStepMetadata)) {
-      return `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`;
+      return formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode);
     }
 
     return undefined;
@@ -421,8 +412,7 @@ const PathStepItem = ({
                   if (!op) return '';
                   if (typeof op === 'string') return op;
 
-                  const secondaryCode = op.secondaryCodeList[0]?.code;
-                  return `${op.name} ${secondaryCode}`;
+                  return formatOpLabel(op.name, op.secondaryCodeList[0]?.code);
                 }}
                 onSelectSuggestion={(op) => {
                   if (!op) {
