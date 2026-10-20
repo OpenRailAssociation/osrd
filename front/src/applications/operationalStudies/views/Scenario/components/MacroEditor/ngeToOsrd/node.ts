@@ -115,7 +115,10 @@ export const handleNodeOperation = async ({
             node_location: nodeLocation,
           });
 
-          if (indexNode.node_location !== nodeLocation) {
+          if (
+            MacroEditorState.getPathKeyByNodeLocation(indexNode.node_location) !==
+            MacroEditorState.getPathKeyByNodeLocation(nodeLocation)
+          ) {
             await updateTrainrunsByNode({
               state,
               netzgrafikDto,
