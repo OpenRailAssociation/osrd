@@ -230,7 +230,7 @@ class BlockAvailability(
             seenSteps
                 .iterateIndexedBackwards()
                 .take(seenSteps.size - 1) // Skip departure step
-                .filter { it.value.originalStep.stop }
+                .filter { it.value.originalStep.isStop }
                 .map { it.value.travelledPathOffset }
                 .contains(startOffset)
         var minRelevantTime = startTime

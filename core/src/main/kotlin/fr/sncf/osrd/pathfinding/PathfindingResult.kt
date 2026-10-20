@@ -7,6 +7,8 @@ import fr.sncf.osrd.utils.units.Offset
 /** Generic result of a pathfinding computation. */
 interface PathfindingResult {
     val trainPath: TrainPath
-    val waypointOffsets: List<Offset<PhysicsPath>>
+    // Offsets of the input path items.
+    val pathItemOffsets: List<Offset<PhysicsPath>>
+    // Indexes of the input path items where the train backtracks.
     val backtrackIndexes: List<Int>
 }

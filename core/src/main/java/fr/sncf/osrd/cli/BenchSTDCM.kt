@@ -24,6 +24,7 @@ import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.tracing.FailureExplainer
 import fr.sncf.osrd.utils.CSVLogger
+import fr.sncf.osrd.utils.units.meters
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -183,6 +184,7 @@ class BenchSTDCM : CliCommand {
                 try {
                     val temporarySpeedLimitManager =
                         buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
+
                     val consistConfigurations =
                         request.consistSchedule.values.map { it ->
                             it.copy(
@@ -197,8 +199,6 @@ class BenchSTDCM : CliCommand {
                         request.consistSchedule.copy(values = consistConfigurations)
                     val allowedTrackSections =
                         parseTrackSectionIds(infra, request.allowedTrackSections)
-                    // TODO : not used yet, it will be used for the General Stop Stations feature
-                    val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
                     val consistSchedules =
                         ConsistSchedule(
                             requestConsistSchedule,
@@ -206,13 +206,24 @@ class BenchSTDCM : CliCommand {
                             allowedTrackSections,
                             request.pathItems.size,
                         )
+
+                    val maxRollingStockLength =
+                        consistSchedules.rollingStocks.maxOf { it.length }.meters
                     val steps =
                         parseSteps(
                             infra,
                             request.pathItems,
                             request.startTime,
-                            consistSchedules.rollingStocks.map { it.length },
+                            maxRollingStockLength,
                         )
+                    val forcedOpStops =
+                        parseForcedOpStops(
+                            infra,
+                            request.forcedOpStops,
+                            steps.first(),
+                            maxRollingStockLength,
+                        )
+
                     val requirements = getRequirements(request, infra, cacheManager)
                     path =
                         findPath(
@@ -221,6 +232,7 @@ class BenchSTDCM : CliCommand {
                             request.comfort,
                             0.0,
                             steps,
+                            forcedOpStops,
                             makeBlockAvailability(
                                 requirements.requirements,
                                 gridMarginBeforeTrain = request.timeGapBefore.seconds,

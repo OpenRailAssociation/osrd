@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.interfaces.TrainPath
@@ -46,7 +47,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val edges = path.edges
         val lastExplorer = edges.last().infraExplorer
         val routes = lastExplorer.getExploredRoutes()
-        val seenSteps = lastExplorer.getStepTracker().getSeenSteps().toList()
         val trainPath = lastExplorer.buildFullPath(infra.rawInfra, infra.blockInfra)
 
         val updatedTimeData = computeTimeData(edges)
@@ -69,11 +69,13 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 stops,
                 updatedTimeData,
             )
+
+        val seenInputSteps = lastExplorer.getStepTracker().getSeenInputSteps()
         val res =
             STDCMCompleteResult(
                 trainPath,
-                seenSteps.map { it.travelledPathOffset },
-                seenSteps.mapIndexedNotNull { index, step ->
+                seenInputSteps.map { it.travelledPathOffset },
+                seenInputSteps.mapIndexedNotNull { index, step ->
                     if (step.isBacktracking) index else null
                 },
                 withAllowance.envelope,
@@ -102,8 +104,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         lastNode: STDCMNode,
     ): STDCMPartialResult {
         val lastExplorer = lastNode.infraExplorer
-        val reachedSteps =
-            lastExplorer.getStepTracker().iterateReachedStepsBackwards().toList().asReversed()
         assert(lastExplorer.getAllBlocks().size > 0)
         // Get rid of current block unless it's the only one
         val nbBlocksToInclude = max(lastExplorer.getPredecessorBlocks().size, 1)
@@ -112,6 +112,14 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val earliestReachableTime = lastNode.timeData.earliestReachableTime
         val geoPoint =
             lastNode.toGeoPoint(infra.rawInfra, infra.blockInfra, useLocationOnEdge = true)
+
+        val reachedSteps =
+            lastExplorer
+                .getStepTracker()
+                .iterateReachedStepsBackwards()
+                .toList()
+                .asReversed()
+                .filter { it.originalStep.isInput }
         return STDCMPartialResult(
             trainPath,
             reachedSteps.map { it.travelledPathOffset },
@@ -216,6 +224,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                         // TODO: forward and use receptionSignal param from request
                         if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP
                         else OPEN,
+                        prevNode.stepTypes,
                     ),
                 )
             offset += edge.length.distance
@@ -227,7 +236,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     private fun makeOpStops(trainPath: TrainPath): List<TrainStop> {
         val res = ArrayList<TrainStop>()
         for ((_, offset) in trainPath.getOperationalPointParts()) {
-            res.add(TrainStop(offset.meters, 0.0, OPEN))
+            res.add(TrainStop(offset.meters, 0.0, OPEN, listOf(StepType.INPUT_STOP)))
         }
         return res
     }
@@ -268,7 +277,7 @@ private fun makeConsistChanges(
     finalPathSteps: StepTracker,
 ): List<ConsistChange> {
     // Inconsistent inputs
-    assert(rollingStocksPerStep.size == finalPathSteps.getSeenSteps().size)
+    assert(rollingStocksPerStep.size == finalPathSteps.nSeenInputSteps)
     assert(finalPathSteps.getSeenSteps()[0].travelledPathOffset.distance == 0.meters)
     val consistsPerStep =
         rollingStocksPerStep.slice(0..rollingStocksPerStep.size - 2).mapIndexed {
@@ -281,7 +290,7 @@ private fun makeConsistChanges(
                     .toList()
                     .reversed()
                     .filter { it.travelledPathOffset.distance != 0.meters }
-                    .filter { it.isPlanned }
+                    .filter { it.originalStep.isInput }
                     .elementAt(index)
                     .travelledPathOffset,
             )

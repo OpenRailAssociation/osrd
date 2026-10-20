@@ -77,24 +77,14 @@ private fun makeRemainingDistanceHeuristics(
 
 class Pathfinding(
     val fullInfra: FullInfra,
-    val inputTargets: List<ExplorerStep>,
+    val targets: List<ExplorerStep>,
     val constraints: List<PathfindingConstraint>?,
     val speedLimitTag: String?,
     val rollingStockMaxSpeed: Double,
     val rollingStockLength: Distance,
 ) {
-    private val targets = inputTargets.mapIndexed { index, it ->
-        ExplorerStep(
-            it.locations,
-            it.duration,
-            it.stop,
-            if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false,
-            it.plannedTimingData,
-        )
-    }
-
     init {
-        checkParameters(inputTargets)
+        checkPathfindingSteps(targets)
     }
 
     val mrspBuilder: CachedBlockMRSPBuilder =
@@ -153,9 +143,9 @@ class Pathfinding(
     private fun remainingCostEstimation(infraExplorer: InfraExplorer): Double {
         if (infraExplorer.getStepTracker().hasSeenDestination()) return 0.0
 
-        val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
+        val inputStepIndex = infraExplorer.getStepTracker().getCurrentSeenInputStepIndex()
         val currentRange = infraExplorer.getCurrentBlockRange()
-        return remainingCostEstimators[nbSeenSteps - 1].apply(
+        return remainingCostEstimators[inputStepIndex].apply(
             BlockLocation(currentRange.value, currentRange.objectEnd),
         ) / rollingStockMaxSpeed
     }
@@ -219,7 +209,7 @@ class Pathfinding(
                 return step.infraExplorer
             }
 
-            val nbSeenTargets = step.infraExplorer.getStepTracker().getSeenSteps().size
+            val nbSeenTargets = step.infraExplorer.getStepTracker().nSeenInputSteps
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()
@@ -263,18 +253,11 @@ class Pathfinding(
                     rollingStockLength,
                     location,
                     targets,
-                    constraints?.let { MutableList(targets.size) { _ -> it } },
+                    constraints = constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
         }
         return res
-    }
-
-    /** Checks that required parameters are set, sets the optional ones to their default values */
-    private fun checkParameters(targets: List<ExplorerStep>) {
-        if (targets.size < 2)
-            throw OSRDError(ErrorType.InvalidSTDCMInputs)
-                .withContext("cause", "Not enough steps have been set to find a path")
     }
 
     /** Registers one step, add the edge to the queue if not already seen */
@@ -312,5 +295,29 @@ class Pathfinding(
 
     companion object {
         const val TIMEOUT = 180.0
+
+        /**
+         * Checks that required parameters are set, sets the optional ones to their default values
+         */
+        fun checkPathfindingSteps(targets: List<ExplorerStep>) {
+            if (targets.size < 2)
+                throw OSRDError(ErrorType.InvalidSTDCMInputs)
+                    .withContext("cause", "Not enough steps have been set to find a path")
+            assert(
+                targets.withIndex().all { (index, target) ->
+                    target.isInput &&
+                        // Targets should be ordered by inputStepIndex.
+                        target.inputStepIndex == index &&
+                        // Duration and stop are closely linked.
+                        ((target.duration != null) == target.isStop) &&
+                        // Several conditions to check if we can backtrack on this target.
+                        (!target.canBacktrack ||
+                            (target.inputStepIndex > 0 &&
+                                target.inputStepIndex < targets.size - 1 &&
+                                target.duration != null &&
+                                target.isStop))
+                },
+            )
+        }
     }
 }

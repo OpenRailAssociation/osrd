@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.api.ConsistSchedule
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -52,7 +53,7 @@ data class STDCMAStarHeuristic(
     val maxSpeedEnvBuilder: CachedBlockMaxSpeedEnvBuilder,
     val bestTravelTime: Double,
     val allowanceValue: AllowanceValue?,
-    val stopDurations: List<Double>,
+    val inputStopDurations: List<Double>,
 ) {
     /**
      * Defines a function that can be used as a heuristic for an A* pathfinding. It takes an edge,
@@ -136,9 +137,13 @@ data class STDCMAStarHeuristic(
 
     /** Estimates the minimum remaining stop time. */
     fun minRemainingStopTime(explorer: InfraExplorerWithEnvelope): Double {
-        val nSimulatedStops = explorer.generateReachedTrainStops().size
-        return stopDurations
-            .subList(min(nSimulatedStops, stopDurations.size), stopDurations.size)
+        val nSimulatedStops =
+            explorer
+                .generateReachedTrainStops()
+                .filter { it.stepTypes.any { stepType -> stepType == StepType.INPUT_STOP } }
+                .size
+        return inputStopDurations
+            .subList(min(nSimulatedStops, inputStopDurations.size), inputStopDurations.size)
             .sum()
     }
 
@@ -148,7 +153,7 @@ data class STDCMAStarHeuristic(
         for (block in blocks) {
             stepTrackerCopy.moveForward(block, Offset.zero(), blockInfra.getBlockLength(block))
         }
-        return stepTrackerCopy.getCurrentReachedPlannedStepIndex()
+        return stepTrackerCopy.getCurrentReachedInputStepIndex()
     }
 }
 
@@ -235,7 +240,7 @@ class STDCMHeuristicBuilder(
             maxSpeedEnvBuilder,
             bestTravelTime,
             allowance,
-            steps.filter { it.stop }.map { it.duration ?: 0.0 },
+            steps.filter { it.isStop }.map { it.duration ?: 0.0 },
         )
     }
 
