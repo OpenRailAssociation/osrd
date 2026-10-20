@@ -21,9 +21,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::HeaderMap;
-use axum::http::header;
-use axum::response::IntoResponse as _;
-use axum::response::Response;
+use axum::http::HeaderValue;
 use axum_streams::StreamBodyAs;
 use chrono::DateTime;
 use chrono::Duration;
@@ -43,6 +41,7 @@ use core_client::stdcm::UndirectedTrackRange;
 use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+use futures::Stream;
 use futures::StreamExt as _;
 use futures::stream;
 use geos::geojson::Geometry;
@@ -192,6 +191,35 @@ fn is_fallback_request(headers: &HeaderMap) -> bool {
         .is_some_and(|value| value == "true")
 }
 
+pub(in crate::views) struct StdcmProgressionStream {
+    headers: HeaderMap,
+    body: StreamBodyAs<'static>,
+}
+
+impl StdcmProgressionStream {
+    fn new(stream: impl Stream<Item = StdcmProgression> + Send + 'static) -> Self {
+        let mut headers = HeaderMap::default();
+        headers.insert(
+            axum::http::header::CONTENT_ENCODING,
+            HeaderValue::from_static("identity"),
+        );
+        Self {
+            headers,
+            body: StreamBodyAs::json_nl(stream),
+        }
+    }
+}
+
+impl axum::response::IntoResponse for StdcmProgressionStream {
+    fn into_response(self) -> axum::response::Response {
+        // Set `Content-Encoding` header to `identity` to not compress the payloads
+        // This made the lmr live search progress display very laggy because the compression
+        // layer compresses 8KB at a time which we do not wish to wait for (8KB of core intermediate
+        // payloads is about 50 of them which is a lot to wait for)
+        (self.headers, self.body).into_response()
+    }
+}
+
 /// This function computes a STDCM and returns the result.
 ///
 /// It first checks user authorization, then retrieves timetable, infrastructure,
@@ -238,7 +266,7 @@ pub(in crate::views) async fn stdcm(
     Query(query): Query<StdcmQueryParams>,
     headers: HeaderMap,
     Json(request): Json<Request>,
-) -> Result<Response> {
+) -> Result<StdcmProgressionStream> {
     let consist_schedule_values = &request.consist_schedule.values;
     if authn_state.user().is_some() {
         let authorizer = authn_state.authorizer(&openfga);
@@ -357,7 +385,7 @@ pub(in crate::views) async fn stdcm(
             StdcmProgression::Completed(Box::new(StdcmResponse::PreprocessingSimulationError {
                 error: failure.simulation,
             }));
-        return Ok(StreamBodyAs::json_nl(stream::once(async { payload })).into_response());
+        return Ok(StdcmProgressionStream::new(stream::once(async { payload })));
     }
 
     let total_simulation_run_time = runs
@@ -533,17 +561,9 @@ pub(in crate::views) async fn stdcm(
     };
     tokio::spawn(stdcm_task.in_current_span());
 
-    // Set `Content-Encoding` header to `identity` to not compress the payloads
-    // This made the lmr live search progress display very laggy because the compression
-    // layer compresses 8KB at a time which we do not wish to wait for (8KB of core intermediate
-    // payloads is about 50 of them which is a lot to wait for)
-    Ok((
-        [(header::CONTENT_ENCODING, "identity")],
-        StreamBodyAs::json_nl(tokio_stream::wrappers::UnboundedReceiverStream::new(
-            response_rx,
-        )),
-    )
-        .into_response())
+    Ok(StdcmProgressionStream::new(
+        tokio_stream::wrappers::UnboundedReceiverStream::new(response_rx),
+    ))
 }
 
 async fn fetch_operational_point(
