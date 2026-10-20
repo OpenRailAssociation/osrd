@@ -19,6 +19,7 @@ import {
 } from '../helpers/searchPayload';
 import { selectSecondaryCode, shouldKeepMainCodeLock } from '../helpers/suggestionMatchers';
 import { buildOpSuggestion } from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
+import { formatOpLabel } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/utils';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 
 type Params = {
@@ -96,7 +97,11 @@ export const useOperationalPointSearch = ({
   }, []);
 
   const chooseSecondaryCodeForSuggestion = useCallback(
-    (stepKey: string, suggestion: OperationalPointSuggestion, forcedSecondaryCode?: string) => {
+    (
+      stepKey: string,
+      suggestion: OperationalPointSuggestion,
+      forcedSecondaryCode?: string | null
+    ) => {
       const rawInput = draftByStepKey[stepKey] ?? '';
       return selectSecondaryCode(suggestion, rawInput, forcedSecondaryCode);
     },
@@ -104,7 +109,8 @@ export const useOperationalPointSearch = ({
   );
 
   const formatChosenValue = useCallback(
-    (s: OperationalPointSuggestion, secondaryCode: string) => `${s.name} ${secondaryCode}`,
+    (s: OperationalPointSuggestion, secondaryCode: string | null) =>
+      formatOpLabel(s.name, secondaryCode),
     []
   );
 

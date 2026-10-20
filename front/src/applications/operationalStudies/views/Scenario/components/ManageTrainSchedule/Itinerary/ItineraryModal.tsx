@@ -81,7 +81,7 @@ import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
-import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
+import { computePathStepCoordinates, formatOpLabel, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
   onTrainCreated: () => void;
@@ -365,7 +365,7 @@ const ItineraryModal = ({
         if (isEmptyStep(step, getInputForStep(step.key))) return [];
         const metadata = pathStepsMetadataByKey.get(step.key);
         if (isOpRefMetadata(metadata) && metadata.trackName && !metadata.isValidLocalTrackName) {
-          return [`${metadata.name} ${metadata.secondaryCode}`];
+          return [formatOpLabel(metadata.name, metadata.secondaryCode)];
         }
         return [];
       }),
@@ -385,19 +385,24 @@ const ItineraryModal = ({
   const applyOperationalPointToStep = (
     stepKey: string,
     suggestion: OperationalPointSuggestion,
-    forcedCh?: string
+    forcedCh?: string | null
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
-    if (!chosenSecondaryCode) return;
     pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
-    const opRef: OperationalPointReference = {
-      type: 'domestic',
-      main_code: suggestion.mainCode,
-      secondary_code: chosenSecondaryCode,
-      country_code: suggestion.countryCode,
-    };
+    const opIdWithoutSecondaryCode =
+      chosenSecondaryCode === null
+        ? suggestion.secondaryCodeList.find((sc) => sc.code === null)?.opId
+        : undefined;
+    const opRef: OperationalPointReference = opIdWithoutSecondaryCode
+      ? { type: 'id', operational_point: opIdWithoutSecondaryCode }
+      : {
+          type: 'domestic',
+          main_code: suggestion.mainCode,
+          secondary_code: chosenSecondaryCode,
+          country_code: suggestion.countryCode,
+        };
     const newLocation: PathItemLocation = {
       type: 'operational_point_part_reference',
       operational_point: opRef,
@@ -1004,7 +1009,7 @@ const ItineraryModal = ({
                         (pathStepMetadata &&
                         pathStepMetadata.validity === 'valid' &&
                         pathStepMetadata.type === 'opRef'
-                          ? `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`
+                          ? formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode)
                           : '');
                     }}
                     onOpInputChange={(value) => {
