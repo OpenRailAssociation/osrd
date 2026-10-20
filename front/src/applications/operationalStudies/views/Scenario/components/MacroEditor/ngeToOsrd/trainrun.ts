@@ -25,7 +25,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
-import { Duration, startTimeToMs, type StartTime } from 'utils/duration';
+import { Duration, startTimeToMs, subtractDurationFromDate, type StartTime } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
@@ -212,19 +212,23 @@ const calculateStartTime = (
   trainrunSections: TrainrunSectionDto[],
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
-  paced: TrainSchedule['paced']
+  paced: TrainSchedule['paced'],
+  firstStopFor?: string | null
 ): StartTime => {
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock =
     trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD
       ? trainrunSections[0].targetDeparture
       : trainrunSections[0].sourceDeparture;
+  // NGE displays the departure from the origin, whereas OSRD start time is the arrival at the
+  // origin: the first stop duration must be removed.
+  const firstStopForDuration = firstStopFor ? Duration.parse(firstStopFor) : Duration.zero;
 
   if (baseStartTime instanceof Duration) {
     const startTime = new Duration({
       hours: Math.floor(baseStartTime.total('hour')),
       minutes: startTimeLock.time!,
-    });
+    }).sub(firstStopForDuration);
     if (!paced) return startTime;
     /*In an hourly timetable the start time is an offset from the timetable start, and the
      * database enforces `0 <= start_time < interval <= time_window` on every paced train of an
@@ -240,7 +244,7 @@ const calculateStartTime = (
 
   const startDate = new Date(baseStartTime);
   startDate.setMinutes(startTimeLock.time!, 0, 0);
-  return startDate;
+  return subtractDurationFromDate(startDate, firstStopForDuration);
 };
 
 /**
@@ -379,10 +383,15 @@ export const generatePathAndSchedule = (
     sections = [...trainrunSections].reverse();
   }
 
-  const startTime = calculateStartTime(sections, baseStartTime, trainrunDirection, paced);
+  const startTime = calculateStartTime(
+    sections,
+    baseStartTime,
+    trainrunDirection,
+    paced,
+    firstStopFor
+  );
   const path = generatePath(sections, nodes, trainrunDirection, state);
   const schedule = generateSchedule(sections, nodes, trainrunDirection, firstStopFor, lastStopFor);
-  console.log(schedule);
   return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
@@ -648,8 +657,6 @@ export const handleUpdateTrainSchedule = async ({
     dispatch,
     addUpsertedTrainSchedules
   );
-
-  console.log(newForwardTrainSchedule);
 
   if (trainrun.direction === 'one_way') {
     if (trainScheduleIds[1]) {
