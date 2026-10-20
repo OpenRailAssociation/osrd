@@ -329,11 +329,11 @@ export default class MacroEditorState {
       case 'operational_point_reference': {
         return {
           type: 'operational_point_part_reference',
-          operational_point: nodeLocation.operational_point,
+          operational_point: { ...nodeLocation.operational_point },
         };
       }
       case 'track_offset': {
-        return nodeLocation;
+        return { ...nodeLocation };
       }
       default:
         throw new Error(`Invalid node location "${nodeLocation}"`);
