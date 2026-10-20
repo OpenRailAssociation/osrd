@@ -69,6 +69,7 @@ fun runScheduleMetadataExtractor(
                     it.pathOffset.meters,
                     it.stopDetails!!.duration.seconds,
                     it.stopDetails.receptionSignal,
+                    listOf(StepType.INPUT_STOP),
                 )
             }
 
@@ -259,6 +260,7 @@ fun makeSimpleReportTrain(
                     it.pathOffset.meters,
                     it.stopDetails!!.duration.seconds,
                     it.stopDetails.receptionSignal,
+                    listOf(StepType.INPUT_STOP),
                 )
             }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)

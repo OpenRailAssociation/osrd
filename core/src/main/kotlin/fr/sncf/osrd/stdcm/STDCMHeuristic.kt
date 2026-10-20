@@ -148,7 +148,7 @@ data class STDCMAStarHeuristic(
         for (block in blocks) {
             stepTrackerCopy.moveForward(block, Offset.zero(), blockInfra.getBlockLength(block))
         }
-        return stepTrackerCopy.getCurrentReachedPlannedStepIndex()
+        return stepTrackerCopy.getCurrentReachedInputStepIndex()
     }
 }
 

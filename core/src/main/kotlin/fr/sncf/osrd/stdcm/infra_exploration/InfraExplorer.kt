@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
@@ -18,6 +19,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.stdcm.graph.logger
+import fr.sncf.osrd.stdcm.infra_exploration.StepTracker.Companion.initStepTracker
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -29,7 +31,6 @@ import fr.sncf.osrd.utils.units.forceDirected
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.toOpposite
 import java.util.*
-import kotlin.math.max
 import kotlin.to
 
 /**
@@ -193,10 +194,40 @@ interface EdgeIdentifier {
 data class ExplorerStep(
     val locations: Collection<BlockLocation>,
     val duration: Double? = null,
-    val stop: Boolean = false,
     val canBacktrack: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,
-)
+    val stepTypes: Set<StepType> =
+        if (duration != null) {
+            setOf(StepType.INPUT_STOP)
+        } else setOf(StepType.INPUT_STEP),
+    val inputStepIndex: Int? = null,
+) {
+    val stop: Boolean = !stepTypes.contains(StepType.INPUT_STEP)
+
+    init {
+        if (stepTypes.contains(StepType.INPUT_STEP)) assert(stepTypes.size == 1)
+        if (isInput()) assert(inputStepIndex != null)
+    }
+
+    fun isInput(): Boolean {
+        return stepTypes.contains(StepType.INPUT_STEP) || stepTypes.contains(StepType.INPUT_STOP)
+    }
+
+    fun mergeExplorerStep(step: ExplorerStep): ExplorerStep {
+        if (inputStepIndex != null && step.inputStepIndex != null)
+            assert(inputStepIndex == step.inputStepIndex)
+        val priorityStep =
+            listOf(this, step).minBy { it.stepTypes.minBy { stepType -> stepType.priority } }
+        return ExplorerStep(
+            priorityStep.locations,
+            listOfNotNull(duration, priorityStep.duration).maxOrNull(),
+            priorityStep.canBacktrack,
+            priorityStep.plannedTimingData,
+            stepTypes + step.stepTypes,
+            priorityStep.inputStepIndex,
+        )
+    }
+}
 
 /**
  * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify
@@ -209,6 +240,7 @@ fun initInfraExplorers(
     rollingStockLength: Distance,
     location: BlockLocation,
     targets: List<ExplorerStep> = listOf(),
+    forcedOpStops: Collection<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint>? = null,
 ): Collection<InfraExplorer> {
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
@@ -217,7 +249,7 @@ fun initInfraExplorers(
     val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, listOf())
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
-
+    val stepTracker = initStepTracker(targets, forcedOpStops)
     routes.forEach { route ->
         val infraExplorer =
             InfraExplorerImpl(
@@ -229,7 +261,7 @@ fun initInfraExplorers(
                 appendOnlyMapOf(),
                 null,
                 blockToPathProperties,
-                stepTracker = StepTracker(targets),
+                stepTracker = stepTracker.clone(),
                 constraints = constraints,
             )
         val infraExtended = infraExplorer.extend(route, location)
@@ -573,10 +605,15 @@ private class InfraExplorerImpl(
             val untilOffset =
                 if (isBacktrackingBlockReached) untilBacktrackingLocation!!.offset else blockLength
 
+            val rangePathBegin = getLookaheadEndOffset()
             stepTracker.exploreBlockRange(
-                block,
-                blockStartOffset,
-                untilOffset,
+                BlockRange(
+                    value = block,
+                    objectBegin = blockStartOffset,
+                    pathBegin = rangePathBegin,
+                    length = untilOffset - blockStartOffset,
+                    objectLength = blockLength,
+                ),
                 isBacktrackingBlockReached,
             )
 
@@ -584,8 +621,7 @@ private class InfraExplorerImpl(
             isPathComplete = stepTracker.hasSeenDestination() && lastSeenStepLocation?.edge == block
             val blockEndOffset = if (isPathComplete) lastSeenStepLocation!!.offset else untilOffset
 
-            val stepIndex =
-                max(0, stepTracker.iterateSeenStepsBackwards().count { it.isPlanned } - 1)
+            val stepIndex = stepTracker.getCurrentSeenInputStepIndex()
 
             // If a block cannot be explored, give up
             val isRouteBlocked =
@@ -594,9 +630,7 @@ private class InfraExplorerImpl(
                 } ?: false
             if (isRouteBlocked) return false
 
-            val rangePathBegin = getLookaheadEndOffset()
             val rangePathEnd = rangePathBegin + (blockEndOffset - blockStartOffset)
-
             if (rangePathBegin > rangePathEnd) continue
 
             val blockRange =

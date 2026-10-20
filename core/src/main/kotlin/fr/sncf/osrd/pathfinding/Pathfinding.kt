@@ -87,9 +87,9 @@ class Pathfinding(
         ExplorerStep(
             it.locations,
             it.duration,
-            it.stop,
             if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false,
             it.plannedTimingData,
+            inputStepIndex = index,
         )
     }
 
@@ -153,9 +153,9 @@ class Pathfinding(
     private fun remainingCostEstimation(infraExplorer: InfraExplorer): Double {
         if (infraExplorer.getStepTracker().hasSeenDestination()) return 0.0
 
-        val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
+        val stepIndex = infraExplorer.getStepTracker().getCurrentSeenInputStepIndex()
         val currentRange = infraExplorer.getCurrentBlockRange()
-        return remainingCostEstimators[nbSeenSteps - 1].apply(
+        return remainingCostEstimators[stepIndex].apply(
             BlockLocation(currentRange.value, currentRange.objectEnd),
         ) / rollingStockMaxSpeed
     }
@@ -219,7 +219,7 @@ class Pathfinding(
                 return step.infraExplorer
             }
 
-            val nbSeenTargets = step.infraExplorer.getStepTracker().getSeenSteps().size
+            val nbSeenTargets = step.infraExplorer.getStepTracker().nSeenInputSteps
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()
@@ -263,7 +263,7 @@ class Pathfinding(
                     rollingStockLength,
                     location,
                     targets,
-                    constraints?.let { MutableList(targets.size) { _ -> it } },
+                    constraints = constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
         }

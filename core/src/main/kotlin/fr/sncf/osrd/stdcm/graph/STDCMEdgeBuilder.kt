@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
@@ -104,9 +105,9 @@ internal constructor(
                     BlockSimulationParameters(
                         infraExplorer.getCurrentBlock(),
                         prevNode.speed,
-                        infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex(),
+                        infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                         startOffset,
-                        getNextStopOnCurrentBlock(infraExplorer),
+                        getNextStopOffsetOnCurrentBlock(infraExplorer),
                     ),
                 )
         return envelope
@@ -121,7 +122,7 @@ internal constructor(
             val envelope = getEnvelope() ?: return null
             val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
             val scaledEnvelope =
-                if (envelope.endPos == 0.0) envelope
+                if (envelope.endPos == 0.0 || speedRatio == 1.0) envelope
                 else LinearAllowance.scaleEnvelope(envelope, speedRatio)
             val stopDuration = getEndOfEdgeStopDuration()
             explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(scaledEnvelope)
@@ -160,11 +161,7 @@ internal constructor(
      * new edge goes up to the first encountered stop on the block that hasn't been simulated yet.
      */
     private fun getEndOfEdgeStopDuration(): Double? {
-        return prevNode.infraExplorer
-            .getStepTracker()
-            .iterateStepsInLookaheadBackwards()
-            .filter { it.location.edge == infraExplorer.getCurrentBlock() }
-            .lastOrNull { it.originalStep.stop }
+        return getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
             ?.originalStep
             ?.duration
     }
@@ -201,7 +198,9 @@ internal constructor(
                     ),
                 )
         }
-        val endStopDuration = getEndOfEdgeStopDuration()
+        val nextStop =
+            getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
+        val endStopDuration = nextStop?.originalStep?.duration
         val endAtStop = endStopDuration != null
         if (endAtStop) {
             // We don't use the result, just making sure that there's enough lookahead to compute it
@@ -231,6 +230,7 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
+                nextStop?.originalStep?.stepTypes ?: setOf(StepType.INPUT_STEP),
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

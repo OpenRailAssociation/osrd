@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -47,6 +48,7 @@ data class STDCMPathfindingBuilder(
     var standardAllowance: AllowanceValue? = null,
     var blockAvailability: BlockAvailabilityInterface? = null,
     var temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+    var forcedOpStops: MutableList<ExplorerStep> = ArrayList(),
 ) {
     // endregion OPTIONAL
     // region SETTERS
@@ -87,9 +89,10 @@ data class STDCMPathfindingBuilder(
             ExplorerStep(
                 startLocations,
                 duration = null,
-                stop = false,
                 canBacktrack = false,
                 plannedTimingData = plannedTimingData,
+                stepTypes = setOf(StepType.INPUT_STEP),
+                inputStepIndex = 0,
             ),
         )
         return this
@@ -102,14 +105,16 @@ data class STDCMPathfindingBuilder(
     fun setEndLocations(
         endLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
+        index: Int = steps.size,
     ): STDCMPathfindingBuilder {
         steps.add(
             ExplorerStep(
                 endLocations,
                 duration = 0.0,
-                stop = true,
                 canBacktrack = false,
                 plannedTimingData = plannedTimingData,
+                stepTypes = setOf(StepType.INPUT_STOP),
+                inputStepIndex = index,
             ),
         )
         return this
@@ -118,6 +123,11 @@ data class STDCMPathfindingBuilder(
     /** Add a step to the path */
     fun addStep(step: ExplorerStep): STDCMPathfindingBuilder {
         steps.add(step)
+        return this
+    }
+
+    fun addForcedOpStop(forcedOpStop: ExplorerStep): STDCMPathfindingBuilder {
+        forcedOpStops.add(forcedOpStop)
         return this
     }
 
@@ -203,6 +213,7 @@ data class STDCMPathfindingBuilder(
             comfort,
             startTime,
             steps,
+            forcedOpStops,
             blockAvailabilityAdapter,
             timeStep,
             maxDepartureDelay,
