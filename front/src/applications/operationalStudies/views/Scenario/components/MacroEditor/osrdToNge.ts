@@ -35,6 +35,7 @@ import {
   type TrainScheduleResponse,
   type TimetableType,
   type PathItemLocation,
+  type PathItem,
   type OperationalPointReferenceNode,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
@@ -273,6 +274,18 @@ const castNodeToNge = (
   isCollapsed: node.is_collapsed,
 });
 
+export const isStopNode = (
+  pathItem: PathItem,
+  pathIndex: number,
+  pathLength: number,
+  schedule: ScheduleItem[] | null | undefined
+): boolean => {
+  const isStop = Boolean(
+    schedule?.some((entry) => entry.at === pathItem.key && entry.stop_for !== null)
+  );
+  return pathIndex === 0 || pathIndex === pathLength - 1 || isStop;
+};
+
 export const getTrainrunCategories = (
   t: TFunction<'operational-studies'>,
   subCategories: SubCategory[]
@@ -353,6 +366,25 @@ export const loadAndIndexNge = async (
         short_name: MacroEditorState.encodeDomesticReference({ ...op, type: 'domestic' }),
         geocoord: op.geo ? { lng: op.geo.coordinates[0], lat: op.geo.coordinates[1] } : undefined,
       });
+    }
+  }
+
+  // Only show stops nodes (origins, intermediate stop nodes, destinations)
+  // and nodes that the user has explicitly expanded
+  const stopNodeKeys = new Set<string>();
+  for (const ts of trainSchedules) {
+    ts.path.forEach((pathItem, i) => {
+      const { location } = pathItem;
+      if (isStopNode(pathItem, i, ts.path.length, ts.schedule)) {
+        stopNodeKeys.add(
+          MacroEditorState.getPathKeyByNodeLocation(convertPathItemLocationToNodeLocation(location))
+        );
+      }
+    });
+  }
+  for (const n of state.nodes) {
+    if (n && !stopNodeKeys.has(MacroEditorState.getPathKeyByNodeLocation(n.node_location))) {
+      state.updateNodeDataByNodeLocation(n.node_location, { is_collapsed: true });
     }
   }
 
