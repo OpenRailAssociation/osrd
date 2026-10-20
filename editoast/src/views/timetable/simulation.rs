@@ -1,5 +1,6 @@
 use chrono::Duration;
 use core_client::AsCoreRequest as _;
+use core_client::Headers;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -579,7 +580,9 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             continue;
         }
         let sim_request = &sim_request_map[train_hash];
-        futures.push(Box::pin(sim_request.fetch(core.as_ref())));
+        futures.push(Box::pin(
+            sim_request.fetch(core.as_ref(), Headers::default()),
+        ));
         futures_hash.push(train_hash);
     }
 

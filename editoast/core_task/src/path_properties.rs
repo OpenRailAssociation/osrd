@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::Headers;
 
 use crate::Task;
 
@@ -23,6 +24,6 @@ impl<'a> Task for core_client::path_properties::PathPropertiesRequest<'a> {
     }
 
     async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(&ctx).await
+        self.fetch(&ctx, Headers::default()).await
     }
 }

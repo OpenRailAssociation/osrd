@@ -1,4 +1,5 @@
 use authz::v2;
+use core_client::Headers;
 use models::TrainScheduleLinking;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -547,7 +548,9 @@ pub(in crate::views) async fn conflicts(
         build_conflict_core_request(infra, request_items);
 
     // 3. Call core
-    let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
+    let conflict_detection_response = conflict_detection_request
+        .fetch(&core_client, Headers::default())
+        .await?;
     let conflicts = conflict_detection_response.conflicts;
     let conflicts_response: Result<Vec<Conflict>> = conflicts
         .into_iter()

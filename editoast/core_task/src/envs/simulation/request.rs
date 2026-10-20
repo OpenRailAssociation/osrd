@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::Headers;
 
 use crate::CoreEnv;
 use crate::Task;
@@ -145,7 +146,7 @@ impl Task for core_client::simulation::Request {
     }
 
     async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(ctx.as_ref()).await
+        self.fetch(ctx.as_ref(), Headers::default()).await
     }
 }
 

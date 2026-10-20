@@ -14,6 +14,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::Headers;
 use core_client::pathfinding::PathfindingCoreResult;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
@@ -400,7 +401,7 @@ async fn pathfinding_blocks_batch(
     );
     let mut futures = vec![];
     for request in &pathfinding_requests {
-        futures.push(Box::pin(request.fetch(core.as_ref())));
+        futures.push(Box::pin(request.fetch(core.as_ref(), Headers::default())));
     }
     let computed_paths: Vec<_> = futures::future::join_all(futures)
         .await

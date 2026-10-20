@@ -9,6 +9,7 @@ use std::task::Poll;
 
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
+use core_client::Headers;
 use dashmap::DashMap;
 use futures::stream;
 use itertools::Itertools as _;
@@ -451,7 +452,7 @@ impl Task for core_client::pathfinding::PathfindingRequest {
     }
 
     async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(ctx.as_ref()).await
+        self.fetch(ctx.as_ref(), Headers::default()).await
     }
 }
 

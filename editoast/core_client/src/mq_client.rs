@@ -31,6 +31,8 @@ use tracing::debug_span;
 use url::Url;
 use uuid::Uuid;
 
+use crate::Headers;
+
 const NON_TERMINATING_RESPONSE_HEADER: &str = "x-non-terminating-response";
 
 #[derive(Debug, Clone)]
@@ -374,6 +376,7 @@ impl RabbitMQClient {
         published_payload: &T,
         mandatory: bool,
         correlation_id: Option<String>,
+        core_headers: Headers,
     ) -> Result<(), MqClientError>
     where
         T: Serialize,
@@ -399,6 +402,13 @@ impl RabbitMQClient {
         let mut headers = FieldTable::default();
         headers.insert("x-rpc-path".into(), path.into());
         attach_tracing_info(&mut headers);
+        for (key, value) in core_headers {
+            if headers.contains_key(&key) {
+                panic!("duplicate key in core request's headers: {}", key)
+            }
+            let value: ByteArray = value.bytes().collect_vec().into();
+            headers.insert(key.into(), value.into());
+        }
 
         let mut properties = BasicProperties::default().with_headers(headers);
         if let Some(id) = correlation_id {
@@ -432,6 +442,7 @@ impl RabbitMQClient {
         published_payload: Option<&T>,
         mandatory: bool,
         override_timeout: Option<Duration>,
+        core_headers: Headers,
     ) -> Result<impl tokio_stream::Stream<Item = Result<MQResponse, MqClientError>>, MqClientError>
     where
         T: Serialize,
@@ -460,6 +471,13 @@ impl RabbitMQClient {
         let mut headers = FieldTable::default();
         headers.insert("x-rpc-path".into(), path.into());
         attach_tracing_info(&mut headers);
+        for (key, value) in core_headers {
+            if headers.contains_key(&key) {
+                panic!("duplicate key in core request's headers: {}", key)
+            }
+            let value: ByteArray = value.bytes().collect_vec().into();
+            headers.insert(key.into(), value.into());
+        }
 
         let properties = BasicProperties::default()
             .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"))

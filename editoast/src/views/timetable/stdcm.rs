@@ -34,6 +34,7 @@ use chrono::Utc;
 use common::geometry::GeoJsonPoint;
 use core_client::AsCoreStreaming as _;
 use core_client::CoreClient;
+use core_client::Headers;
 use core_client::Progress;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -461,7 +462,9 @@ pub(in crate::views) async fn stdcm(
 
     let (response_tx, response_rx) = mpsc::unbounded_channel();
     let stdcm_task = async move {
-        let stdcm_stream = stdcm_request.fetch(core_client.as_ref()).await;
+        let stdcm_stream = stdcm_request
+            .fetch(core_client.as_ref(), Headers::default())
+            .await;
 
         match stdcm_stream {
             Err(error) => response_tx
