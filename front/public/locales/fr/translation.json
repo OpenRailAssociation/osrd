@@ -839,11 +839,11 @@
   },
   "timeStopTable": {
     "calculatedArrivalTime": "arrivée calculée",
-    "calculatedBaseArrival": "marche tendue calculée",
+    "calculatedBaseArrival": "marche de base calculée",
     "calculatedDepartureTime": "départ calculé",
     "calculatedDistance": "distance à l'origine calculée",
     "clearRequestedArrivalTime": "Effacer l'arrivée demandée",
-    "clearRequestedBaseArrival": "Effacer la marche tendue demandée",
+    "clearRequestedBaseArrival": "Effacer la marche de base demandée",
     "clearRequestedDepartureTime": "Effacer le départ demandé",
     "clearStopDuration": "Effacer le temps d'arrêt",
     "columnHeader": {
@@ -889,7 +889,7 @@
     "receptionOnClosedSignal": "signal fermé",
     "receptionOnClosedSignalFull": "réception sur signal fermé",
     "requestedArrival": "arrivée demandée",
-    "requestedBaseArrival": "marche tendue demandée",
+    "requestedBaseArrival": "marche de base demandée",
     "requestedDeparture": "départ demandé",
     "requestedDistance": "distance à l'origine demandée",
     "requestedTheoreticalMargin": "marge théorique demandée",
