@@ -13,6 +13,7 @@ import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData
@@ -33,6 +34,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
     private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
+    override val forcedOpStops: Set<BlockLocation>,
     private var stopTimeData: List<StopTimeData> = listOf(),
     // Can't be a soft reference: spacingRequirementAutomaton is stateful and only generates new
     // requirements (result would be nothing on second identical call).
@@ -49,6 +51,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 envelopes.shallowCopy(),
                 spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
                 consistSchedule,
+                forcedOpStops,
                 stopTimeData,
                 spacingRequirementsCache,
             )
@@ -265,6 +268,7 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopes.shallowCopy(),
             spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             consistSchedule,
+            forcedOpStops,
             stopTimeData,
             spacingRequirementsCache,
         )
