@@ -5913,6 +5913,9 @@ components:
           type:
           - string
           - 'null'
+    CivilDate:
+      type: string
+      format: date
     Comfort:
       type: string
       enum:
@@ -16636,10 +16639,9 @@ components:
       - project_id
       properties:
         actual_end_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         budget:
           type:
           - integer
@@ -16657,10 +16659,9 @@ components:
           - string
           - 'null'
         expected_end_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         id:
           type: integer
           format: int64
@@ -16677,10 +16678,9 @@ components:
           - string
           - 'null'
         start_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         state:
           type: string
         study_type:
@@ -16698,10 +16698,9 @@ components:
       - project_id
       properties:
         actual_end_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         budget:
           type:
           - integer
@@ -16716,10 +16715,9 @@ components:
           - string
           - 'null'
         expected_end_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         name:
           type: string
         project_id:
@@ -16730,10 +16728,9 @@ components:
           - string
           - 'null'
         start_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         state:
           type: string
         study_type:
@@ -16747,10 +16744,9 @@ components:
       description: This structure is used by the patch endpoint to patch a study
       properties:
         actual_end_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         budget:
           type:
           - integer
@@ -16765,10 +16761,9 @@ components:
           - string
           - 'null'
         expected_end_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         name:
           type:
           - string
@@ -16778,10 +16773,9 @@ components:
           - string
           - 'null'
         start_date:
-          type:
-          - string
-          - 'null'
-          format: date
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/CivilDate'
         state:
           type:
           - string
