@@ -178,12 +178,12 @@ private fun getChunkLocationFromTrackLocation(
  */
 fun BlockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
     waypointBlock: BlockLocation,
-    destinationBlock: Set<BlockLocation>,
-    rollingStockLength: Double,
+    destinationBlocks: Set<BlockLocation>,
+    offsetToAdd: Distance,
 ): BlockLocation {
     // To ensure that the tail of the rolling stock is not further than the initial operational
     // point (waypointBlock) position
-    val maxTailOffset = waypointBlock.offset + rollingStockLength.meters
+    val maxTailOffset = waypointBlock.offset + offsetToAdd
 
     // Can't go further than the end of the block, which is delimited by a block-delimiting signal
     val maxHeadOffset = getBlockLength(waypointBlock.edge)
@@ -191,7 +191,7 @@ fun BlockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
     val newWaypointOffset = Offset.min(maxTailOffset, maxHeadOffset)
 
     val destinationOffset =
-        destinationBlock
+        destinationBlocks
             .filter { it.edge == waypointBlock.edge && waypointBlock.offset <= it.offset }
             .minOfOrNull { it.offset }
 

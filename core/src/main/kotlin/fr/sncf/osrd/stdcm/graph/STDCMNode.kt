@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.generatePreviousSimulationSegments
@@ -24,6 +25,7 @@ data class STDCMNode(
     val locationOnEdge: Offset<Block>?,
     // When the node is a stop, how long the train remains here
     val stopDuration: Double?,
+    val stepTypes: Set<StepType>,
     // Planned arrival time at node, with its tolerance. Is null at least when the node is not a
     // stop
     val plannedTimingData: PlannedTimingData?,
@@ -113,11 +115,11 @@ data class STDCMNode(
 
         // Prioritize the highest number of reached targets, to avoid paths that have missed a step
         else if (
-            other.infraExplorer.getStepTracker().nStepsExcludingLookahead !=
-                infraExplorer.getStepTracker().nStepsExcludingLookahead
+            other.infraExplorer.getStepTracker().getCurrentReachedInputStepIndex() !=
+                infraExplorer.getStepTracker().getCurrentReachedInputStepIndex()
         )
-            other.infraExplorer.getStepTracker().nStepsExcludingLookahead -
-                infraExplorer.getStepTracker().nStepsExcludingLookahead
+            other.infraExplorer.getStepTracker().getCurrentReachedInputStepIndex() -
+                infraExplorer.getStepTracker().getCurrentReachedInputStepIndex()
 
         // Prioritize the path furthest from the start. Avoids exploring several paths in parallel.
         else -timeData.timeSinceDeparture.compareTo(other.timeData.timeSinceDeparture)
@@ -130,7 +132,7 @@ data class STDCMNode(
             timeData.earliestReachableTime,
             speed,
             infraExplorer.getCurrentBlock(),
-            infraExplorer.getStepTracker().nStepsExcludingLookahead,
+            infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
         )
     }
 

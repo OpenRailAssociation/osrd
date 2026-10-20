@@ -155,7 +155,7 @@ class STDCMGraph(
             visitedNodesParameters.fingerprint =
                 VisitedNodes.Fingerprint(
                     explorer.getLastEdgeIdentifier(),
-                    node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
+                    node.infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                     node.locationOnEdge,
                     explorer.nextBacktrackLocation(),
                 )
@@ -170,7 +170,7 @@ class STDCMGraph(
                 visitedNodesParameters.fingerprint =
                     VisitedNodes.Fingerprint(
                         newPath.getLastEdgeIdentifier(),
-                        node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
+                        node.infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                         Offset.zero(),
                         newPath.nextBacktrackLocation(),
                     )
@@ -197,7 +197,7 @@ class STDCMGraph(
         val fingerprint =
             VisitedNodes.Fingerprint(
                 explorer.getLastEdgeIdentifier(),
-                explorer.getStepTracker().nStepsExcludingLookahead,
+                explorer.getStepTracker().getCurrentReachedInputStepIndex(),
                 locationOnEdge,
                 explorer.nextBacktrackLocation(),
             )

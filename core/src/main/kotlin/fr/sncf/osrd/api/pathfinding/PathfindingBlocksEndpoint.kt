@@ -116,7 +116,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                             infra.blockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
                                 it,
                                 destinationBlock,
-                                request.rollingStockLength.meters,
+                                request.rollingStockLength.distance,
                             )
                         },
                     )
@@ -125,7 +125,16 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                 }
             }
         }
-        targets.add(ExplorerStep(allStarts, canBacktrack = step.canBacktrack))
+        val canBacktrack =
+            step.canBacktrack && stepIndex != 0 && stepIndex != request.pathItems.size - 1
+        targets.add(
+            ExplorerStep(
+                allStarts,
+                duration = if (canBacktrack) 0.0 else null,
+                canBacktrack = canBacktrack,
+                inputStepIndex = stepIndex,
+            ),
+        )
     }
     if (targets.size < 2) throw NoPathFoundException(NotEnoughPathItems())
     val allowedTrackSectionIds = parseTrackSectionIds(infra, request.allowedTrackSections)
@@ -227,7 +236,7 @@ private fun buildNoPathFoundException(
 
 data class ProcessedPathfindingResponse(
     override val trainPath: TrainPath,
-    override val waypointOffsets: List<Offset<PhysicsPath>>,
+    override val pathItemOffsets: List<Offset<PhysicsPath>>,
     override val backtrackIndexes: List<Int>,
 ) : PathfindingResult
 

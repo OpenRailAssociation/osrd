@@ -627,8 +627,8 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds),
+                    inputStepIndex = 0,
                 ),
             )
         val explorerWithSteps = makeExplorer(5, 1, steps)
@@ -655,15 +655,15 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], outOfBoundsStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
+                    inputStepIndex = 0,
                 ),
                 ExplorerStep(
                     listOf(BlockLocation(blocks[1], Offset(0.meters))),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
+                    inputStepIndex = 1,
                 ),
             )
 
@@ -694,12 +694,12 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(
                         30.seconds,
                         (stepMaximumTolerance / 2).seconds,
                         (stepMaximumTolerance / 2).seconds,
                     ),
+                    inputStepIndex = 0,
                 ),
             )
         val lastAvailableTime = (stepMaximumTolerance / 2) + 30.0
@@ -744,8 +744,8 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
+                    inputStepIndex = 0,
                 ),
             )
         val explorer = makeExplorer(5, 1, steps)
@@ -781,8 +781,8 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
+                    inputStepIndex = 0,
                 ),
             )
         val explorer = makeExplorer(5, 1, steps)
@@ -820,8 +820,8 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(minDelay.seconds, 0.seconds, 10.seconds),
+                    inputStepIndex = 0,
                 ),
             )
         val explorer = makeExplorer(5, 1, steps)
@@ -855,20 +855,20 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(
                         (timeAtZoneEnd + internalMarginForSteps).seconds,
                         0.seconds,
                         0.seconds,
                     ),
+                    inputStepIndex = 0,
                 ),
                 // If we add delay = timeAtZoneEnd + internal margin, this step is not respected
                 ExplorerStep(
                     listOf(BlockLocation(blocks[0], secondPlannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds),
+                    inputStepIndex = 1,
                 ),
             )
         val explorerWithSteps = makeExplorer(5, 1, steps)
@@ -906,12 +906,12 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], Offset(100.meters))),
                     null,
                     false,
-                    false,
                     PlannedTimingData(
                         timeAtZoneEnd.seconds,
                         0.seconds,
                         stepAvailableDuration.seconds,
                     ),
+                    inputStepIndex = 0,
                 ),
             )
         val stepMinDelay = timeAtZoneEnd.seconds.seconds - timeAtStep

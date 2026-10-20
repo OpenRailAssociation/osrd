@@ -44,6 +44,7 @@ import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_DURATION
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.tracing.FailureCombiner
@@ -73,7 +74,6 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.TreeMap
-import kotlin.math.max
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -141,10 +141,9 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
-            // TODO : not used yet, it will be used for the General Stop Stations feature
-            val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
+
             val consistConfigurations =
                 request.consistSchedule.values.map { it ->
                     it.copy(
@@ -164,13 +163,23 @@ class STDCMEndpoint(
                     allowedTrackSections,
                     request.pathItems.size,
                 )
+
+            val maxRollingStockLength = consistSchedules.rollingStocks.maxOf { it.length }.meters
             val steps =
                 parseSteps(
                     infra,
                     request.pathItems,
                     request.startTime,
-                    consistSchedules.rollingStocks.map { it.length },
+                    maxRollingStockLength,
                 )
+            val forcedOpStops =
+                parseForcedOpStops(
+                    infra,
+                    request.forcedOpStops,
+                    steps.first(),
+                    maxRollingStockLength,
+                )
+
             val requirements = getRequirements(request, infra, timetableCacheManager)
 
             val fullFailureExplainer =
@@ -200,6 +209,7 @@ class STDCMEndpoint(
                     request.comfort,
                     0.0,
                     steps,
+                    forcedOpStops,
                     makeBlockAvailability(
                         requirements.requirements,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
@@ -227,7 +237,7 @@ class STDCMEndpoint(
                     runPathfindingBlockPostProcessing(
                         infra,
                         path.trainPath,
-                        path.waypointOffsets,
+                        path.pathItemOffsets,
                         path.backtrackIndexes,
                     )
 
@@ -273,7 +283,7 @@ class STDCMEndpoint(
                     runPathfindingBlockPostProcessing(
                         infra,
                         path.trainPath,
-                        path.waypointOffsets,
+                        path.pathItemOffsets,
                         path.backtrackIndexes,
                     )
                 val id =
@@ -495,13 +505,23 @@ fun buildTemporarySpeedLimitManager(
     return TemporarySpeedLimitManager(outputSpeedLimits)
 }
 
+/**
+ * Returns the block locations corresponding to the input stdcm path items.
+ *
+ * Except for the start and end of the path, the block locations are moved further along the block.
+ * In most cases, they will really be moved until the end of the block, but it's capped by the
+ * rolling stock's length to avoid going too far on "weird" data. [offsetToAdd] is said length, and
+ * corresponds to the maximum possible rolling stock length, considering consist changes.
+ *
+ * This shift makes it so the train doesn't stop in between blocks if possible, and doesn't generate
+ * occupations for 2 blocks during said stop.
+ */
 fun parseSteps(
     infra: FullInfra,
     pathItems: List<STDCMPathItem>,
     startTime: ZonedDateTime,
-    rollingStockLengths: List<Double>,
+    offsetToAdd: Distance,
 ): List<ExplorerStep> {
-    require(rollingStockLengths.size == pathItems.size)
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
     }
@@ -524,11 +544,9 @@ fun parseSteps(
     }
     return pathItems
         .mapIndexed { index, it ->
-            val rollingStockLength =
-                max(rollingStockLengths[index], rollingStockLengths.getOrElse(index - 1) { 0.0 })
             ExplorerStep(
                 if (index != 0 && index != pathItems.size - 1) {
-                    val destinationBlock =
+                    val destinationBlocks =
                         infra.blockInfra.findTrackLocationBlocks(
                             infra.rawInfra,
                             trackLocations.last(),
@@ -538,15 +556,14 @@ fun parseSteps(
                         .map { waypointBlock ->
                             infra.blockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
                                 waypointBlock,
-                                destinationBlock,
-                                rollingStockLength,
+                                destinationBlocks,
+                                offsetToAdd,
                             )
                         }
                 } else {
                     infra.blockInfra.findTrackLocationBlocks(infra.rawInfra, trackLocations[index])
                 },
                 it.stopDuration?.seconds,
-                it.stopDuration != null,
                 it.pathItem.canBacktrack,
                 if (it.stepTimingData != null)
                     PlannedTimingData(
@@ -555,6 +572,9 @@ fun parseSteps(
                         it.stepTimingData.arrivalTimeToleranceAfter,
                     )
                 else null,
+                if (it.stopDuration != null) setOf(StepType.INPUT_STOP)
+                else setOf(StepType.INPUT_WAYPOINT),
+                inputStepIndex = index,
             )
         }
         .toList()
@@ -680,24 +700,70 @@ fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<
     return trackSectionNames.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }.toSet()
 }
 
-/** Returns the block locations of a given set of operational point stops. */
+/**
+ * Returns the block locations of a given set of operational point stops.
+ *
+ * Except for the forced op stops located at the start of the path, the block locations are moved
+ * further along the block. In most cases, they will really be moved until the end of the block, but
+ * it's capped by the rolling stock's length to avoid going too far on "weird" data. [offsetToAdd]
+ * is said length, and corresponds to the maximum possible rolling stock length, considering consist
+ * changes.
+ *
+ * This shift makes it so the train doesn't stop in between blocks if possible, and doesn't generate
+ * occupations for 2 blocks during said stop.
+ */
 fun parseForcedOpStops(
     infra: FullInfra,
     forcedOpStops: Set<OperationalPointStop>,
-): Set<BlockLocation> {
-    val opPartIds = forcedOpStops.flatMap { infra.rawInfra.getOperationalPointParts(it.id) }.toSet()
-    val chunkLocations = opPartIds.map {
-        ChunkLocation(
-            infra.rawInfra.getOperationalPointPartChunk(it),
-            infra.rawInfra.getOperationalPointPartChunkOffset(it),
-        )
-    }
-    val res = mutableSetOf<BlockLocation>()
-    for (chunkLocation in chunkLocations) {
-        for (direction in Direction.entries) {
-            res.addAll(
-                infra.blockInfra.findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction),
-            )
+    originInputStep: ExplorerStep,
+    offsetToAdd: Distance,
+): Collection<ExplorerStep> {
+    val res = mutableSetOf<ExplorerStep>()
+    val originInputBlocks = originInputStep.locations.map { it.edge }
+
+    for (forcedOpStop in forcedOpStops) {
+        val opPartIds = infra.rawInfra.getOperationalPointParts(forcedOpStop.id)
+        if (opPartIds.isEmpty())
+            logger.warn("Unknown Operational Point Stop ID {}", forcedOpStop.id)
+        for (opPartId in opPartIds) {
+            val chunkLocation =
+                ChunkLocation(
+                    infra.rawInfra.getOperationalPointPartChunk(opPartId),
+                    infra.rawInfra.getOperationalPointPartChunkOffset(opPartId),
+                )
+            for (direction in Direction.entries) {
+                val explorerStep =
+                    infra.blockInfra
+                        .findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction)
+                        .map {
+                            // Do not move forced op stops at the origin of the path, else we'll
+                            // stop at the beginning.
+                            if (originInputBlocks.contains(it.edge)) {
+                                it
+                            } else {
+                                infra.blockInfra
+                                    .findStopPositionAtEndOfBlockConsideringRollingStock(
+                                        it,
+                                        setOf(),
+                                        offsetToAdd,
+                                    )
+                            }
+                        }
+                        .map {
+                            ExplorerStep(
+                                locations = setOf(it),
+                                duration = FORCED_OP_STOP_DURATION.seconds,
+                                stepTypes =
+                                    when (forcedOpStop.stop_type) {
+                                        ForcedStopType.GENERAL_STOP ->
+                                            setOf(StepType.INFRA_FORCED_STOP)
+                                        ForcedStopType.OVERTAKE ->
+                                            setOf(StepType.INFRA_OVERTAKE_STOP)
+                                    },
+                            )
+                        }
+                res.addAll(explorerStep)
+            }
         }
     }
     return res

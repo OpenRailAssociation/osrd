@@ -1,18 +1,23 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.api.StepType;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import java.util.Collection;
 import java.util.Objects;
 
 public class TrainStop {
     public double position;
     public double duration;
     public RJSReceptionSignal receptionSignal;
+    public Collection<StepType> stepTypes;
 
-    public TrainStop(double position, double duration, RJSReceptionSignal receptionSignal) {
+    public TrainStop(
+            double position, double duration, RJSReceptionSignal receptionSignal, Collection<StepType> stepTypes) {
         this.position = position;
         this.duration = duration;
         this.receptionSignal = receptionSignal;
+        this.stepTypes = stepTypes;
     }
 
     @Override

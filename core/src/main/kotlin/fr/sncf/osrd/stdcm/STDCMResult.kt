@@ -22,7 +22,7 @@ typealias STDCMResult = PathfindingResult
  */
 data class STDCMCompleteResult(
     override val trainPath: TrainPath,
-    override val waypointOffsets: List<Offset<PhysicsPath>>,
+    override val pathItemOffsets: List<Offset<PhysicsPath>>,
     override val backtrackIndexes: List<Int>,
     val envelope: Envelope,
     val rollingStocks: DistanceRangeMap<RollingStock>,
@@ -38,7 +38,7 @@ data class STDCMCompleteResult(
  */
 data class STDCMPartialResult(
     override val trainPath: TrainPath,
-    override val waypointOffsets: List<Offset<PhysicsPath>>,
+    override val pathItemOffsets: List<Offset<PhysicsPath>>,
     override val backtrackIndexes: List<Int>,
     val earliestReachableTime: Double,
     val geoPoint: Point,
