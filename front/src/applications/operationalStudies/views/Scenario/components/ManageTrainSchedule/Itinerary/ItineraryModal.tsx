@@ -81,7 +81,7 @@ import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
-import { computePathStepCoordinates, getOpKey, isOpRefMetadata } from './utils';
+import { computePathStepCoordinates, formatOpLabel, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
   onTrainCreated: () => void;
@@ -365,7 +365,7 @@ const ItineraryModal = ({
         if (isEmptyStep(step, getInputForStep(step.key))) return [];
         const metadata = pathStepsMetadataByKey.get(step.key);
         if (isOpRefMetadata(metadata) && metadata.trackName && !metadata.isValidLocalTrackName) {
-          return [`${metadata.name} ${metadata.secondaryCode}`];
+          return [formatOpLabel(metadata.name, metadata.secondaryCode)];
         }
         return [];
       }),
@@ -385,10 +385,9 @@ const ItineraryModal = ({
   const applyOperationalPointToStep = (
     stepKey: string,
     suggestion: OperationalPointSuggestion,
-    forcedCh?: string
+    forcedCh?: string | null
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
-    if (!chosenSecondaryCode) return;
     pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
@@ -1004,7 +1003,7 @@ const ItineraryModal = ({
                         (pathStepMetadata &&
                         pathStepMetadata.validity === 'valid' &&
                         pathStepMetadata.type === 'opRef'
-                          ? `${pathStepMetadata.name} ${pathStepMetadata.secondaryCode}`
+                          ? formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode)
                           : '');
                     }}
                     onOpInputChange={(value) => {

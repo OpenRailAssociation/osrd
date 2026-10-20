@@ -3,11 +3,17 @@ import { normalizeName, splitTokens, toUpper } from 'utils/strings';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 
 export const secondaryCodeStarts = (s: OperationalPointSuggestion, tokenUpper: string) =>
-  s.secondaryCodeList.some((secondaryCode) => toUpper(secondaryCode.code).startsWith(tokenUpper));
+  s.secondaryCodeList.some(
+    (secondaryCode) =>
+      secondaryCode.code !== null && toUpper(secondaryCode.code).startsWith(tokenUpper)
+  );
 export const secondaryCodeIncludes = (s: OperationalPointSuggestion, tokenUpper: string) =>
-  s.secondaryCodeList.some((secondaryCode) => toUpper(secondaryCode.code).includes(tokenUpper));
+  s.secondaryCodeList.some(
+    (secondaryCode) =>
+      secondaryCode.code !== null && toUpper(secondaryCode.code).includes(tokenUpper)
+  );
 
-export const inferUniqueSecondaryCodeFromInput = (
+const inferUniqueSecondaryCodeFromInput = (
   suggestion: OperationalPointSuggestion,
   rawInput: string
 ) => {
@@ -15,7 +21,14 @@ export const inferUniqueSecondaryCodeFromInput = (
   if (tokens.length < 2) return undefined;
 
   const last = toUpper(tokens[tokens.length - 1]);
-  const allCodes = Array.from(new Set(suggestion.secondaryCodeList.map((c) => toUpper(c.code))));
+  const allCodes = Array.from(
+    new Set(
+      suggestion.secondaryCodeList
+        .map((c) => c.code)
+        .filter((code) => code !== null)
+        .map(toUpper)
+    )
+  );
 
   if (!last) return undefined;
 
@@ -28,13 +41,8 @@ export const inferUniqueSecondaryCodeFromInput = (
   return undefined;
 };
 
-export const hasSecondaryCodePrefix = (
-  s: OperationalPointSuggestion,
-  secondaryCodeTokenUpper: string
-) =>
-  s.secondaryCodeList.some((secondaryCode) =>
-    toUpper(secondaryCode.code).startsWith(secondaryCodeTokenUpper)
-  );
+const hasSecondaryCodePrefix = (s: OperationalPointSuggestion, secondaryCodeTokenUpper: string) =>
+  secondaryCodeStarts(s, secondaryCodeTokenUpper);
 
 export const tokenMatchesIncludesNoCh = (s: OperationalPointSuggestion, token: string) => {
   const tokenNormalized = normalizeName(token);
@@ -90,8 +98,9 @@ export const shouldKeepMainCodeLock = (s: OperationalPointSuggestion, tokens: st
 export const selectSecondaryCode = (
   suggestion: OperationalPointSuggestion,
   rawInput: string,
-  forcedSecondaryCode?: string
+  forcedSecondaryCode?: string | null
 ) => {
+  if (forcedSecondaryCode !== undefined) return forcedSecondaryCode;
   const unique = inferUniqueSecondaryCodeFromInput(suggestion, rawInput);
-  return forcedSecondaryCode ?? unique ?? suggestion.secondaryCodeList[0]?.code;
+  return unique ?? suggestion.secondaryCodeList[0].code;
 };

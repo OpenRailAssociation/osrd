@@ -197,7 +197,8 @@ export const markSuggestions = (suggestions: OperationalPointSuggestion[], rawIn
   const marked = suggestions.map((s) => ({
     ...s,
     secondaryCodeList: s.secondaryCodeList.map((secondaryCode) => {
-      const isCandidate = toUpper(secondaryCode.code).startsWith(lastTokenUpper);
+      const isCandidate =
+        secondaryCode.code !== null && toUpper(secondaryCode.code).startsWith(lastTokenUpper);
       if (isCandidate) hasAnyCandidate = true;
       return { ...secondaryCode, isCandidate, isBestSuggestion: false };
     }),
