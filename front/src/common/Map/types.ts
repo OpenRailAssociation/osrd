@@ -6,12 +6,6 @@ export type MarkerInformation = {
   key: string;
   name?: string;
   coordinates?: Position;
-  metadata?: {
-    lineCode: number;
-    lineName: string;
-    trackName: string;
-    trackNumber: number;
-  };
   pointType: MARKER_TYPE;
   location: PathItemLocation;
   isBackTrack?: boolean;

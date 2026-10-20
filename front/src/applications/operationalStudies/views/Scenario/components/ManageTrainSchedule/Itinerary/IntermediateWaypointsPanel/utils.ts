@@ -3,11 +3,9 @@ import type {
   CoreOperationalPointOnPath,
   OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { LocatedPathStep, PathStep } from 'reducers/osrdconf/types';
 
 import type { WaypointGroup } from './types';
-
-type LocatedStep = PathStep & { location: NonNullable<PathStep['location']> };
 
 // Canonical key for an OP reference, so two references to the same OP compare equal.
 const opRefKey = (ref: OperationalPointReference) => {
@@ -24,7 +22,7 @@ const opRefKey = (ref: OperationalPointReference) => {
 // Whether two steps target the same OP. A pinned track only disambiguates which
 // crossing is meant, so it is ignored here. Map-click (track_offset) waypoints
 // are never collapsed: each click is its own point.
-const isSameWaypoint = (a: LocatedStep, b: LocatedStep) => {
+const isSameWaypoint = (a: LocatedPathStep, b: LocatedPathStep) => {
   if (a.location.type === 'track_offset' || b.location.type === 'track_offset') return false;
   return opRefKey(a.location.operational_point) === opRefKey(b.location.operational_point);
 };
@@ -48,14 +46,14 @@ export function groupOperationalPoints(
   pathSteps: PathStep[],
   positionByStepKey?: Map<string, number>
 ): WaypointGroup[] {
-  const validSteps = pathSteps.filter((step): step is LocatedStep => step.location !== null);
+  const validSteps = pathSteps.filter((step): step is LocatedPathStep => step.location !== null);
 
   if (validSteps.length === 0) return [];
 
   // Collapse consecutive steps that target the same OP into one entry. Keep the
   // run's last step so new waypoints anchor after the whole run, not between its
   // duplicates.
-  const collapsedSteps: { step: LocatedStep; duplicatesCount: number }[] = [];
+  const collapsedSteps: { step: LocatedPathStep; duplicatesCount: number }[] = [];
   validSteps.forEach((step) => {
     const previous = collapsedSteps.at(-1);
     if (previous && isSameWaypoint(previous.step, step)) {
@@ -73,7 +71,7 @@ export function groupOperationalPoints(
     duplicatesCount,
   }));
 
-  const isStepBeforeOp = (step: LocatedStep, op: CoreOperationalPointOnPath) => {
+  const isStepBeforeOp = (step: LocatedPathStep, op: CoreOperationalPointOnPath) => {
     const position = positionByStepKey?.get(step.key);
     return position !== undefined && position < op.position;
   };

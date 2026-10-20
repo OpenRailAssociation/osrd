@@ -52,7 +52,12 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { EditingTrainType, PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
+import type {
+  EditingTrainType,
+  LocatedPathStep,
+  PathStepMetadata,
+  PathStep,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
@@ -101,7 +106,7 @@ export type ItineraryModalTrainState = {
   rollingStockId?: number;
   rollingStockName: string;
   rollingStockComfort: Comfort;
-  pathSteps: PathStep[];
+  pathSteps: LocatedPathStep[];
   constraintDistribution: Distribution;
   usingElectricalProfiles: boolean;
   usingSpeedLimits: boolean;
@@ -131,7 +136,6 @@ export function blankNewTrainState(
     rollingStockName: '',
     rollingStockComfort: 'STANDARD',
     category: null,
-    // Corresponds to origin and destination not defined
     pathSteps: [],
     constraintDistribution: 'STANDARD',
     usingElectricalProfiles: true,
@@ -757,14 +761,17 @@ const ItineraryModal = ({
       ? createDefaultTrainName(t, stepsWithLocationOrInput, pathStepsMetadataByKey)
       : modalFormState.name;
 
-    const stepsWithStopAtDestination = stepsWithLocationOrInput.map((step, i) =>
-      i === stepsWithLocationOrInput.length - 1 && !step.stopFor
+    const locatedSteps = stepsWithLocationOrInput.filter(
+      (step): step is LocatedPathStep => step.location !== null
+    );
+
+    if (locatedSteps.length < 2) return;
+
+    const finalPathSteps = locatedSteps.map((step, i) =>
+      i === locatedSteps.length - 1 && !step.stopFor
         ? { ...step, stopFor: new Duration({ minutes: 0 }) }
         : step
     );
-    const finalPathSteps = stepsWithStopAtDestination.filter((step) => step.location !== null);
-
-    if (finalPathSteps.length < 2) return;
 
     const newTrainState = {
       ...trainState,

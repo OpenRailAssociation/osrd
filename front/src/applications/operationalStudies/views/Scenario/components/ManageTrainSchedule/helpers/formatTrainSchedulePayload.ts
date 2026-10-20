@@ -1,9 +1,7 @@
-import { compact } from 'lodash';
-
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import type { OccurrenceId, PathStep } from 'reducers/osrdconf/types';
+import type { LocatedPathStep, OccurrenceId } from 'reducers/osrdconf/types';
 import { startTimeToMs } from 'utils/duration';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
@@ -20,9 +18,9 @@ import formatSchedule from './formatSchedule';
  * waypoint to have an arrival time.
  */
 function normalizeFirstWaypointTimes(
-  pathSteps: PathStep[],
+  pathSteps: LocatedPathStep[],
   startTime: number
-): { pathSteps: PathStep[]; startTime: number } {
+): { pathSteps: LocatedPathStep[]; startTime: number } {
   const firstArrival = pathSteps[0]?.arrival;
   if (!firstArrival) return { pathSteps, startTime };
 
@@ -37,7 +35,7 @@ function normalizeFirstWaypointTimes(
 
 export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState): TrainSchedule {
   const { pathSteps, startTime } = normalizeFirstWaypointTimes(
-    compact(trainState.pathSteps),
+    trainState.pathSteps,
     startTimeToMs(trainState.startTime)
   );
 
@@ -53,9 +51,7 @@ export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState)
       use_speed_limits_for_simulation: trainState.usingSpeedLimits,
       stops_at_end_of_block: false,
     },
-    path: pathSteps
-      .map((step) => (step.location !== null ? { key: step.key, location: step.location } : null))
-      .filter((pathItem) => pathItem !== null),
+    path: pathSteps.map(({ key, location }) => ({ key, location })),
     paced:
       trainState.editingTrainType !== 'uniqueTrain'
         ? {

@@ -76,6 +76,8 @@ export type PathStep = {
   receptionSignal: ReceptionSignal | null;
 };
 
+export type LocatedPathStep = PathStep & { location: PathItemLocation };
+
 export type PathStepMetadata =
   | { validity: 'invalid' | 'loading'; localTrackName?: string; customTrackNames?: string[] }
   | {

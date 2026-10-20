@@ -1,5 +1,5 @@
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { LocatedPathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
 const findCorrespondingMargin = (
@@ -21,7 +21,7 @@ const findCorrespondingMargin = (
 const computeBasePathStep = (
   trainSchedule: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
-): PathStep => {
+): LocatedPathStep => {
   const { key, location } = trainSchedule.path[pathItemIndex];
   const correspondingSchedule = trainSchedule.schedule?.find((schedule) => schedule.at === key);
 
