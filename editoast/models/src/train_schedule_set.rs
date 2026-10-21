@@ -151,10 +151,10 @@ impl TrainScheduleSet {
             .map_err(Into::into)
     }
 
-    /// Deletes train schedule sets that are not published or linked to a timetable
+    /// Deletes train schedule sets that are not published or included in a timetable
     pub async fn delete_orphaned(conn: &mut DbConnection) -> Result<usize, crate::Error> {
         use database::tables::timetable::dsl as timetable_dsl;
-        use database::tables::timetable_train_schedule_set::dsl as tt_dsl;
+        use database::tables::timetable_inheritance::dsl as inheritance_dsl;
         use database::tables::train_schedule_set::dsl as tss_dsl;
 
         let max_to_delete_per_batch = 10;
@@ -172,9 +172,9 @@ impl TrainScheduleSet {
                                         .select(timetable_dsl::id),
                                 )
                                 .and(
-                                    tss_dsl::id.ne_all(
-                                        tt_dsl::timetable_train_schedule_set
-                                            .select(tt_dsl::train_schedule_set_id),
+                                    tss_dsl::timetable_id.ne_all(
+                                        inheritance_dsl::timetable_inheritance
+                                            .select(inheritance_dsl::inner_timetable_id),
                                     ),
                                 ),
                         )
@@ -257,6 +257,45 @@ mod tests {
                 .await
                 .expect("Failed to check timetable existence");
         assert!(!timetable_exists);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn garbage_collection_keeps_the_train_schedule_sets_included_in_a_timetable() {
+        let pool = DbConnectionPool::for_tests();
+        let timetable = Timetable::changeset()
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
+        let linked_set =
+            TrainScheduleSet::create_with_timetable(&mut pool.get_ok(), Timetable::changeset())
+                .await
+                .expect("Failed to create train schedule set");
+        let orphan_set =
+            TrainScheduleSet::create_with_timetable(&mut pool.get_ok(), Timetable::changeset())
+                .await
+                .expect("Failed to create train schedule set");
+        Timetable::set_links_train_schedule_set(
+            timetable.id,
+            std::collections::HashSet::from([linked_set.id]),
+            &mut pool.get_ok(),
+        )
+        .await
+        .expect("Failed to link train schedule set");
+
+        TrainScheduleSet::delete_orphaned(&mut pool.get_ok())
+            .await
+            .expect("Failed to delete orphaned train schedule sets");
+
+        assert!(
+            TrainScheduleSet::exists(&mut pool.get_ok(), linked_set.id)
+                .await
+                .expect("Failed to check train schedule set existence")
+        );
+        assert!(
+            !TrainScheduleSet::exists(&mut pool.get_ok(), orphan_set.id)
+                .await
+                .expect("Failed to check train schedule set existence")
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
