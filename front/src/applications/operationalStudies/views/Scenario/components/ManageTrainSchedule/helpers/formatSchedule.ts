@@ -11,6 +11,8 @@ const formatSchedule = (pathSteps: PathStep[]): TrainSchedule['schedule'] => {
         arrival: step.arrival?.toISOString() ?? undefined,
         reception_signal: step.receptionSignal,
         stop_for: step.stopFor?.toISOString() ?? undefined,
+        reference_base_arrival: step.referenceBaseArrival?.toISOString() ?? undefined,
+        reference_position: step.referencePosition ?? undefined,
       };
     }
     return undefined;

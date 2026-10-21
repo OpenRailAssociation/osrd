@@ -15,6 +15,8 @@ const makeStep = (key: string, uic: number, ch = 'BV'): PathStepV2 => ({
   stopFor: null,
   theoreticalMargin: null,
   receptionSignal: null,
+  referenceBaseArrival: null,
+  referencePosition: null,
 });
 
 // A step matching no OP, as produced by a map-click waypoint
@@ -25,6 +27,8 @@ const makeTrackOffsetStep = (key: string): PathStepV2 => ({
   stopFor: null,
   theoreticalMargin: null,
   receptionSignal: null,
+  referenceBaseArrival: null,
+  referencePosition: null,
 });
 
 const makeOp = (
