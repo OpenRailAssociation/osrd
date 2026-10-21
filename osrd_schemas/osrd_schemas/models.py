@@ -2171,6 +2171,18 @@ class EditoastStdcmRequestErrorNotUser(BaseModel):
     type: Literal["editoast:stdcm_request:NotUser"] = "editoast:stdcm_request:NotUser"
 
 
+class EditoastStdcmRequestErrorRangePaginationNotSupported(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastStdcmRequestErrorRangePaginationNotSupportedContext"),
+    ] = None
+    message: str
+    status: Literal[400] = 400
+    type: Literal["editoast:stdcm_request:RangePaginationNotSupported"] = (
+        "editoast:stdcm_request:RangePaginationNotSupported"
+    )
+
+
 class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
@@ -3070,6 +3082,7 @@ class LinkingOccurrenceIdAddedException(BaseModel):
 
 class Links(BaseModel):
     next: str | None = None
+    prev: str | None = None
 
 
 class LoadingGaugeType(Enum):
@@ -5197,6 +5210,7 @@ class EditoastError(
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
         | EditoastStdcmRequestErrorNotUser
+        | EditoastStdcmRequestErrorRangePaginationNotSupported
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
@@ -5376,6 +5390,7 @@ class EditoastError(
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
         | EditoastStdcmRequestErrorNotUser
+        | EditoastStdcmRequestErrorRangePaginationNotSupported
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
