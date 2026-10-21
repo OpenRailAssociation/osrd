@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
@@ -10,7 +11,6 @@ import { useCheckProtectedAction } from 'common/authorization/hooks/useProtected
 import type { Privilege } from 'common/authorization/types';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { setSuccess, setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure, getErrorStatus } from 'utils/error';
 
 import type { PageMode } from '../RollingStockEditorView';

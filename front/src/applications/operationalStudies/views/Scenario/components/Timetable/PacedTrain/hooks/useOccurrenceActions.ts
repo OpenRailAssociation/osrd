@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
@@ -24,7 +25,6 @@ import type {
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { updateSelectedTrain, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrain } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import { msToStartTime, startTimeToMs } from 'utils/duration';
 import { extractExceptionIdFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 

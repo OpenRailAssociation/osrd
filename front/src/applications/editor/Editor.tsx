@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
 import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
@@ -37,7 +38,6 @@ import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
 import { setFailure } from 'reducers/main';
 import { getIsLoading } from 'reducers/main/mainSelector';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import type { EditoastType } from './consts';

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdEditNote, MdList } from 'react-icons/md';
+import { useAppDispatch } from 'store/hooks';
 
 import icon from 'assets/pictures/components/tracks.svg';
 import iconEdition from 'assets/pictures/components/tracks_edit.svg';
@@ -10,7 +11,6 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { Loader } from 'common/Loaders';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';

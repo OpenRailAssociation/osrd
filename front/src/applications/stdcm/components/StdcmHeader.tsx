@@ -5,12 +5,12 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import { setFailure } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';

@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 import { v4 as uuidV4 } from 'uuid';
 
 import {
@@ -28,7 +29,6 @@ import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
 import { updateSelectedTrain } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 

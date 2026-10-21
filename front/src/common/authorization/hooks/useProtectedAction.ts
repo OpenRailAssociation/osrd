@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { type Privilege, type ResourceType } from 'common/authorization/types';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 
 import useAuthz from './useAuthz';
 

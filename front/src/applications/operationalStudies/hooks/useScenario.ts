@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
 type SimulationParams = {

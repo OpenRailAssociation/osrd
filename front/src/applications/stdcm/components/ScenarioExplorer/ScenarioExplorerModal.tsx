@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
+import { useAppDispatch } from 'store/hooks';
 
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
@@ -15,7 +16,6 @@ import {
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import { ProjectMiniCard, StudyMiniCard, ScenarioMiniCard } from './MiniCards';

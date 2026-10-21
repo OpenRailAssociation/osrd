@@ -15,6 +15,7 @@ import {
 } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -28,7 +29,6 @@ import MenuTriggerButton from 'common/MenuTriggerButton';
 import UploadFileModal from 'common/uploadFileModal';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import useImportTrainSchedules from '../ImportTrainSchedule';

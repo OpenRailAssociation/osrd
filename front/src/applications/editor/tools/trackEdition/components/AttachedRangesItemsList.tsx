@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { BsBoxArrowInRight } from 'react-icons/bs';
+import { useAppDispatch } from 'store/hooks';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -19,7 +20,6 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 

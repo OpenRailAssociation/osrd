@@ -1,11 +1,11 @@
 import Countdown from 'react-countdown';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
 import { setFailure, setSuccess } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type InfraSelectorEditionActionsBarDeleteProps = {

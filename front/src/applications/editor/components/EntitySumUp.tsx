@@ -4,6 +4,7 @@ import cx from 'classnames';
 import type { TFunction } from 'i18next';
 import { flatMap, forEach, isNumber, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import type { EditoastType } from 'applications/editor/consts';
 import { getEntities, getEntity } from 'applications/editor/data/api';
@@ -21,7 +22,7 @@ import type { InfraError } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/InfraObjectLayers';
 import { useInfraID } from 'common/osrdContext';
-import { type AppDispatch, useAppDispatch } from 'store';
+import type { AppDispatch } from 'store';
 
 import { InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 

@@ -13,6 +13,7 @@ import {
 import cx from 'classnames';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
@@ -31,7 +32,6 @@ import MapSearch from 'common/Map/Search/MapSearch';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import type { LayersSettings, Viewport } from 'reducers/commonMap/types';
 import { type EditorState } from 'reducers/editor';
-import { useAppDispatch } from 'store';
 
 import { MapContextProvider, useMapContext } from '../useMapContext';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';

@@ -5,6 +5,7 @@ import { isEmpty, isNil, keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
 import Select from 'react-select';
+import { useAppDispatch } from 'store/hooks';
 
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
@@ -16,7 +17,6 @@ import {
 import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 
 import type { TrackSectionEntity } from '../../trackEdition/types';
 

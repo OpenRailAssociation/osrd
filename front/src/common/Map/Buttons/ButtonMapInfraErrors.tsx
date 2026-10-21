@@ -1,9 +1,9 @@
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { BsExclamationOctagon } from 'react-icons/bs';
+import { useAppDispatch } from 'store/hooks';
 
 import { type EditorState, editorSliceActions } from 'reducers/editor';
-import { useAppDispatch } from 'store';
 
 type ButtonMapInfraErrorsProps = {
   editorState: EditorState;

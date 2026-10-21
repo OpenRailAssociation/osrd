@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { clearSearchJourneyResults, setSearchJourneyResults } from 'reducers/searchJourney';
@@ -11,7 +12,6 @@ import {
   getSearchJourneyStartTime,
   getSearchJourneyTimetableIds,
 } from 'reducers/searchJourney/selectors';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 export const SEARCH_JOURNEY_REQUEST_STATUS = Object.freeze({

@@ -3,6 +3,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import type {
   PathItem,
@@ -18,7 +19,6 @@ import {
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';

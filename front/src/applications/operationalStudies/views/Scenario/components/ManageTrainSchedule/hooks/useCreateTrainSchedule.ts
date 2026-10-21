@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -9,7 +10,6 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateSelectedTrain } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale, timeToLocaleString } from 'utils/date';
 import { startTimeToMs } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';

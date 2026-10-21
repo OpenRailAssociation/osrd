@@ -30,6 +30,7 @@ import cx from 'classnames';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
@@ -60,7 +61,6 @@ import {
   getSelectedTrain,
 } from 'reducers/simulationResults/selectors';
 import type { SelectionSource } from 'reducers/simulationResults/types';
-import { useAppDispatch } from 'store';
 import { Duration, subtractDurationFromDate } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import {

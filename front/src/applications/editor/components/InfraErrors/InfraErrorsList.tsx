@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FaDiamondTurnRight } from 'react-icons/fa6';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { EDITOAST_TYPES, type EditoastType } from 'applications/editor/consts';
 import { osrdEditoastApi, type InfraError } from 'common/api/osrdEditoastApi';
@@ -12,7 +13,6 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { LoaderFill, Spinner } from 'common/Loaders';
 import { getEditorIssues } from 'reducers/editor/selectors';
 import { updateFiltersIssue } from 'reducers/editor/thunkActions';
-import { useAppDispatch } from 'store';
 
 import { INFRA_ERRORS, INFRA_ERRORS_BY_LEVEL } from './consts';
 import { InfraErrorBox } from './InfraError';

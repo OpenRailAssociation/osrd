@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -33,7 +34,7 @@ import {
   updateTrainIdUsedForProjection,
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
-import { useAppDispatch, type AppDispatch } from 'store';
+import type { AppDispatch } from 'store';
 import { useDateTimeLocale, timeToLocaleString } from 'utils/date';
 import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId, isOccurrenceId } from 'utils/trainId';

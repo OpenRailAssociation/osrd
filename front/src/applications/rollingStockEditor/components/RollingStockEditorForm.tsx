@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
@@ -13,7 +14,6 @@ import Tabs from 'common/Tabs';
 import type { TabProps } from 'common/Tabs';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { isEqual } from 'lodash';
+import { useAppDispatch } from 'store/hooks';
 
 import { ALLOWED_TOWED_ROLLING_STOCKS } from 'assets/rollingStock/freightRollingStocks';
 import { osrdEditoastApi, type TowedRollingStock } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 export type TowedRollingStockFilters = {

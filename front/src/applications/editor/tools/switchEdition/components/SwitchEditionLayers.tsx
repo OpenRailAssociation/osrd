@@ -5,6 +5,7 @@ import nearestPoint from '@turf/nearest-point';
 import { first, last } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { useAppDispatch } from 'store/hooks';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -25,7 +26,6 @@ import {
 } from 'common/Map/Layers/InfraObjectLayers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 const SwitchEditionLayers = () => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -11,7 +12,6 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { deleteTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 

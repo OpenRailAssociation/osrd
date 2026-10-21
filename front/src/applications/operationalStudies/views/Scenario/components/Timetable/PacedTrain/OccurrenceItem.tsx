@@ -18,6 +18,7 @@ import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
@@ -27,7 +28,6 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { InvalidReason, Occurrence } from 'modules/trainSchedule/types';
 import { updateHoveredTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToStartTime } from 'utils/duration';

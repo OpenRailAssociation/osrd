@@ -6,6 +6,7 @@ import { FaPlus, FaTasks } from 'react-icons/fa';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   STUDY_STATES,
@@ -27,7 +28,6 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { setFailure, setSuccess } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';

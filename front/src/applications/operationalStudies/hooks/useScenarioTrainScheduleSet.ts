@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
@@ -11,7 +12,6 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { createTrainSchedules } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { useAppDispatch } from 'store';
 
 import type { TrainScheduleSetImportType } from '../views/Scenario/components/ImportTrainScheduleSets/types';
 import { sortTrainScheduleSets } from '../views/Scenario/components/Timetable/utils';

@@ -1,10 +1,10 @@
 import { useCallback, useState, useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import ToastSNCF from 'common/BootstrapSNCF/ToastSNCF';
 import { type MainState, deleteNotification } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import type { Notification } from 'types';
 
 const TIMEOUT_MS = 5000;

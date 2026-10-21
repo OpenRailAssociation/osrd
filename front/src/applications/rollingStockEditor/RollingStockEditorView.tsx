@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Upload } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -19,7 +20,6 @@ import UploadFileModal from 'common/uploadFileModal';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { setFailure, setSuccess } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
 

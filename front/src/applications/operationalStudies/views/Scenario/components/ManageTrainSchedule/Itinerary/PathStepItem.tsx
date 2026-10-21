@@ -13,12 +13,12 @@ import {
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 import {

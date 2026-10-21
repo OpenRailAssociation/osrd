@@ -4,6 +4,7 @@ import { Alert } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { getEntity } from 'applications/editor/data/api';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
@@ -11,7 +12,6 @@ import type { EditorContextType } from 'applications/editor/types';
 import type { InfraError } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getEditorState } from 'reducers/editor/selectors';
-import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
 import InfraErrorsModal from './InfraErrorsModal';

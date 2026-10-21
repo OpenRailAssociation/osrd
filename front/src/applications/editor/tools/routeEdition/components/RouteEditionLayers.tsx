@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { Layer, Popup, Source, type LineLayerSpecification } from 'react-map-gl/maplibre';
+import { useAppDispatch } from 'store/hooks';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -30,7 +31,6 @@ import {
 } from 'common/Map/Layers/InfraObjectLayers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 import { NULL_GEOMETRY, type NullGeometry } from 'types';
 
 const RouteEditionLayers = () => {

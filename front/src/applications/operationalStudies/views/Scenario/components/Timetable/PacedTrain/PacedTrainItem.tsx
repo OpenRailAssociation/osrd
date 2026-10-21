@@ -7,6 +7,7 @@ import { isEqual, omit } from 'lodash';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
@@ -35,7 +36,6 @@ import {
   updateTrainIdUsedForProjection,
 } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {

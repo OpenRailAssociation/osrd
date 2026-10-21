@@ -4,6 +4,7 @@ import { Lock, Search } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 import GrantsManager from 'common/authorization/components/GrantsManager';
@@ -12,7 +13,6 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
 import useFitViewportToInfra from 'modules/infra/useFitViewportToInfra';
-import { useAppDispatch } from 'store';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 type InfraSelectorModalBodyStandardProps = {

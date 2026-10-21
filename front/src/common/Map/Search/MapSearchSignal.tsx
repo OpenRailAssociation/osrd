@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
@@ -19,7 +20,6 @@ import {
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/hooks/useDebounce';
 

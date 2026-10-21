@@ -15,6 +15,7 @@ import { noop, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -27,7 +28,6 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
 import useModalOutsideClick from 'utils/hooks/useModalOutsideClick';

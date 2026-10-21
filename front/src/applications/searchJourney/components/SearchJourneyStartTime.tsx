@@ -1,10 +1,10 @@
 import { TimePicker } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { updateSearchJourneyStartTime } from 'reducers/searchJourney';
 import { getSearchJourneyStartTime } from 'reducers/searchJourney/selectors';
-import { useAppDispatch } from 'store';
 
 type SearchJourneyStartTimeProps = {
   disabled?: boolean;

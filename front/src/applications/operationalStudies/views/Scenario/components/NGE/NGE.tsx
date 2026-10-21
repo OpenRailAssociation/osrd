@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { NetzgrafikDto, Operation } from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure, getErrorMessage } from 'utils/error';
 
 import { EMPTY_DTO } from './consts';

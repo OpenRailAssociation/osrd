@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import TrainOpProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainOpProjectionLazyLoader';
 import type { ProjectionResult } from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
@@ -16,7 +17,6 @@ import type {
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 
 type UseLazyProjectTrainsOptions = {
   infraId: number;

@@ -3,10 +3,10 @@ import { useEffect, useMemo } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 /**

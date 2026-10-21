@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import { useAppDispatch } from 'store';
 
 /**
  * Returns a function centering the map viewport of the current context on the given infra.

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
 import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
@@ -8,7 +9,6 @@ import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
 import Tabs from 'common/Tabs';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
-import { useAppDispatch } from 'store';
 
 import MapModalHeader from '../MapModalHeader';
 

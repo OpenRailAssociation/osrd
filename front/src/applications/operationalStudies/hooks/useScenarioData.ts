@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   buildOccurrenceExceptionData,
@@ -32,7 +33,6 @@ import {
   updateExceptions,
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,

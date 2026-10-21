@@ -4,11 +4,11 @@ import { Checkbox, RadioGroup } from '@osrd-project/ui-core';
 import { X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { toggleSimulationEnabled, updateProjectionType } from 'reducers/simulationResults';
 import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import type { ProjectionType } from 'reducers/simulationResults/types';
-import { useAppDispatch } from 'store';
 
 type Settings = {
   showConflicts: boolean;

@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 
 type SubCategoryContextValue = SubCategory[];
 

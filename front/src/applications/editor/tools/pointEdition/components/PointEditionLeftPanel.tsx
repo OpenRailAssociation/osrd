@@ -4,6 +4,7 @@ import along from '@turf/along';
 import length from '@turf/length';
 import { uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
@@ -23,7 +24,6 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
-import { useAppDispatch } from 'store';
 
 import type { TrackSectionEntity } from '../../trackEdition/types';
 import CustomFlagSignalCheckbox from './CustomFlagSignalCheckbox';

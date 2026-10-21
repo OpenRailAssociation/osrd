@@ -4,13 +4,13 @@ import { Container, Location } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import filterMissingFields from 'applications/stdcm/utils/filterMissingFields';
 import getInvalidFields from 'applications/stdcm/utils/getInvalidFields';
 import { updateStdcmPathStep, deleteStdcmVia, addStdcmVia } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmViaPathStep } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 import { StdcmStopTypes } from '../../types';
