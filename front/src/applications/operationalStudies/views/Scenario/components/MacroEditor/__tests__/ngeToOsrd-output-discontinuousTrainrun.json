@@ -117,7 +117,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT2H", "time_window": "PT2H", "exceptions": [] }
+      "paced": { "interval": "PT2H", "time_window": "PT24H", "exceptions": [] }
     },
     {
       "category": {
@@ -168,7 +168,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT2H", "time_window": "PT2H", "exceptions": [] }
+      "paced": { "interval": "PT2H", "time_window": "PT24H", "exceptions": [] }
     },
     {
       "category": {
@@ -178,7 +178,7 @@
       "labels": [],
       "paced": {
         "interval": "PT2H",
-        "time_window": "PT2H",
+        "time_window": "PT24H",
         "exceptions": []
       },
       "path": [
@@ -219,7 +219,7 @@
       "labels": [],
       "paced": {
         "interval": "PT2H",
-        "time_window": "PT2H",
+        "time_window": "PT24H",
         "exceptions": []
       },
       "path": [

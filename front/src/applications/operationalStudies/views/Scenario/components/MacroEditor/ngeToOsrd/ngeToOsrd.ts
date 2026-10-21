@@ -11,13 +11,10 @@ import type {
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { AppDispatch } from 'store';
 
-import {
-  DEFAULT_TIME_WINDOW,
-  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-  TRAINRUN_DIRECTIONS,
-} from '../consts';
+import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId, localStorageFilterSettingKey } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
@@ -266,9 +263,9 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
         : [TRAINRUN_DIRECTIONS.FORWARD, TRAINRUN_DIRECTIONS.BACKWARD];
     for (const [index, trainrunSections] of groupedTrainrunSections.entries()) {
       for (const direction of directions) {
-        // The JSON import has its own rules to adapt services to the target timetable, which are
-        // not handled here yet, so it keeps the historical default time window.
-        const paced = createPacedAttributesFromTrainrun(trainrun, dto, () => DEFAULT_TIME_WINDOW);
+        const paced = createPacedAttributesFromTrainrun(trainrun, dto, () =>
+          getDefaultPacedTrainTimeWindow('CALENDAR')
+        );
         const pathAndSchedule = generatePathAndSchedule(
           trainrunSections,
           dedupNodes,
