@@ -199,8 +199,8 @@
 
 // TODO: the documentation of this file needs to be updated (no more search.yml)
 
+use std::collections::HashSet;
 use std::ops::DerefMut as _;
-use std::sync::Arc;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -225,6 +225,7 @@ use editoast_derive::EditoastError;
 use editoast_derive::Search;
 use editoast_derive::SearchConfigStore;
 use geos::geojson::Geometry;
+use itertools::Itertools as _;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PowerRestrictionItem;
@@ -240,10 +241,10 @@ use strum::Display;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
+use crate::AppState;
 use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
-use database::DbConnectionPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "search")]
@@ -360,7 +361,9 @@ struct SearchDBResult {
     )
 )]
 pub(in crate::views) async fn search(
-    State(db_pool): State<Arc<DbConnectionPool>>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
@@ -415,8 +418,44 @@ pub(in crate::views) async fn search(
     let objects = query
         .load::<SearchDBResult>(&mut db_pool.get().await?.write().await.deref_mut())
         .await?;
-    let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
+    let results = objects.into_iter().map(|r| r.result.0).collect();
+    let results = filter_authorized_results(results, &object, &authn_state, &openfga).await?;
     Ok(Json(serde_json::to_value(results).unwrap()))
+}
+
+/// Removes the projects the user has no access to
+async fn filter_authorized_results(
+    results: Vec<JsonValue>,
+    object: &SearchObjectType,
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+) -> Result<Vec<JsonValue>> {
+    let crate::authentication::State::Authenticated { user, .. } = authn_state else {
+        return Ok(results);
+    };
+    if !matches!(object, SearchObjectType::Project) {
+        return Ok(results);
+    }
+    let project_id = |result: &JsonValue| result.get("id").and_then(JsonValue::as_i64);
+    let projects = results
+        .iter()
+        .filter_map(project_id)
+        .unique()
+        .map(authz::Project)
+        .collect();
+
+    let authorized_projects: HashSet<i64> = authz::v2::project_access_filter(*user, projects)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(openfga))
+        .await?
+        .into_iter()
+        .map(|project| project.0)
+        .collect();
+
+    // A result without its project id is not shown
+    Ok(results
+        .into_iter()
+        .filter(|result| project_id(result).is_some_and(|id| authorized_projects.contains(&id)))
+        .collect())
 }
 
 // because while the name and type information of the fields are read by the macro,
@@ -860,6 +899,7 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
+    use crate::fixtures::create_project;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_train_schedule_set;
@@ -1150,5 +1190,45 @@ pub mod tests {
 
         assert_eq!(response.len(), 1);
         assert_eq!(response[0].name, group_name);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_project_hides_projects_without_access() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let mut projects = Vec::new();
+        for name in ["searched project granted", "searched project hidden"] {
+            projects.push(create_project(&mut pool.get_ok(), name).await.id);
+        }
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .with_project_grant(projects[0], authz::ProjectGrant::Owner)
+            .create()
+            .await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        for (user, expected_projects) in [(user, &projects[..1]), (admin, &projects[..])] {
+            let response: Vec<JsonValue> = app
+                .post("/search")
+                .by_user(user.as_ref())
+                .json(&json!({
+                    "object": "project",
+                    "query": ["search", ["name"], "searched project"],
+                }))
+                .await
+                .assert_status_ok()
+                .json();
+            let project_ids = response
+                .iter()
+                .map(|project| project["id"].as_i64().unwrap())
+                .sorted()
+                .collect_vec();
+            assert_eq!(project_ids, expected_projects);
+        }
     }
 }
