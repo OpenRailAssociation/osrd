@@ -214,7 +214,6 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     pub speed_limit_tags: Option<Vec<String>>,
     #[arg(long)]
     pub default_speed_limit_tag: Option<String>,
-    #[arg(long)]
     /// If omitted, set to the earliest train start time in the timetable
     #[arg(long)]
     pub search_window_begin: Option<DateTime<Utc>>,
