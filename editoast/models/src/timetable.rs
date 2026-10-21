@@ -18,7 +18,7 @@ use unit_system::units::millisecond;
 
 use database::DbConnection;
 
-use crate::timetable_train_schedule_set::TimetableTrainScheduleSet;
+use crate::TimetableInheritance;
 use crate::timetable_type::TimetableType;
 
 #[derive(Debug, Default, Clone, Model)]
@@ -48,15 +48,24 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set;
+        use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
+        use database::tables::train_schedule_set;
 
         train_schedule::dsl::train_schedule
             .filter(
-                train_schedule::dsl::train_schedule_set_id.eq_any(
-                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
-                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
-                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
+                train_schedule::train_schedule_set_id.eq_any(
+                    train_schedule_set::table
+                        .filter(
+                            train_schedule_set::timetable_id.eq_any(
+                                timetable_inheritance::table
+                                    .filter(
+                                        timetable_inheritance::outer_timetable_id.eq(timetable_id),
+                                    )
+                                    .select(timetable_inheritance::inner_timetable_id),
+                            ),
+                        )
+                        .select(train_schedule_set::id),
                 ),
             )
             .count()
@@ -69,11 +78,18 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Vec<i64>, database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set::dsl;
+        use database::tables::timetable_inheritance;
+        use database::tables::train_schedule_set;
 
-        dsl::timetable_train_schedule_set
-            .filter(dsl::timetable_id.eq(timetable_id))
-            .select(dsl::train_schedule_set_id)
+        train_schedule_set::table
+            .filter(
+                train_schedule_set::timetable_id.eq_any(
+                    timetable_inheritance::table
+                        .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
+                        .select(timetable_inheritance::inner_timetable_id),
+                ),
+            )
+            .select(train_schedule_set::id)
             .load(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
@@ -83,16 +99,25 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Vec<Offset>, database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set;
+        use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
+        use database::tables::train_schedule_set;
 
         let start_times_milliseconds = train_schedule::dsl::train_schedule
             .select(train_schedule::dsl::start_time)
             .filter(
-                train_schedule::dsl::train_schedule_set_id.eq_any(
-                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
-                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
-                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
+                train_schedule::train_schedule_set_id.eq_any(
+                    train_schedule_set::table
+                        .filter(
+                            train_schedule_set::timetable_id.eq_any(
+                                timetable_inheritance::table
+                                    .filter(
+                                        timetable_inheritance::outer_timetable_id.eq(timetable_id),
+                                    )
+                                    .select(timetable_inheritance::inner_timetable_id),
+                            ),
+                        )
+                        .select(train_schedule_set::id),
                 ),
             )
             .load(conn.write().await.deref_mut())
@@ -110,39 +135,50 @@ impl Timetable {
         conn: &mut DbConnection,
     ) -> Result<(), crate::Error> {
         use crate::prelude::*;
-        use database::tables::timetable_train_schedule_set::dsl;
+        use database::tables::timetable_inheritance::dsl;
+        use database::tables::train_schedule_set;
 
         // Transaction to ensure consistency of modifications
         conn.transaction(async move |mut conn| {
-            // 1. Retrieve the current links
-            let existing_linked_ids: HashSet<i64> = dsl::timetable_train_schedule_set
-                .select(dsl::train_schedule_set_id)
-                .filter(dsl::timetable_id.eq(timetable_id))
+            // 1. Retrieve the timetables of the train schedule sets
+            let new_inner_timetable_ids: HashSet<i64> = train_schedule_set::table
+                .filter(train_schedule_set::id.eq_any(train_schedule_set_ids))
+                .select(train_schedule_set::timetable_id)
                 .load(conn.write().await.deref_mut())
                 .await?
                 .into_iter()
                 .collect();
 
-            // 2. Delete only the links that are NOT in the new list
-            let links_to_delete = existing_linked_ids.difference(&train_schedule_set_ids);
+            // 2. Retrieve the current inclusions
+            let existing_inner_timetable_ids: HashSet<i64> = dsl::timetable_inheritance
+                .filter(dsl::outer_timetable_id.eq(timetable_id))
+                .select(dsl::inner_timetable_id)
+                .load(conn.write().await.deref_mut())
+                .await?
+                .into_iter()
+                .collect();
+
+            // 3. Delete only the inclusions that are NOT in the new list
+            let inclusions_to_delete =
+                existing_inner_timetable_ids.difference(&new_inner_timetable_ids);
             diesel::delete(
-                dsl::timetable_train_schedule_set
-                    .filter(dsl::timetable_id.eq(timetable_id))
-                    .filter(dsl::train_schedule_set_id.eq_any(links_to_delete)),
+                dsl::timetable_inheritance
+                    .filter(dsl::outer_timetable_id.eq(timetable_id))
+                    .filter(dsl::inner_timetable_id.eq_any(inclusions_to_delete)),
             )
             .execute(conn.write().await.deref_mut())
             .await?;
 
-            // 3. Create missing links
-            let links_to_create = train_schedule_set_ids.difference(&existing_linked_ids);
-            let changesets = links_to_create
-                .map(|train_schedule_set_id| {
-                    TimetableTrainScheduleSet::changeset()
-                        .timetable_id(timetable_id)
-                        .train_schedule_set_id(*train_schedule_set_id)
+            // 4. Create missing inclusions
+            let changesets = new_inner_timetable_ids
+                .difference(&existing_inner_timetable_ids)
+                .map(|inner_timetable_id| {
+                    TimetableInheritance::changeset()
+                        .outer_timetable_id(timetable_id)
+                        .inner_timetable_id(*inner_timetable_id)
                 })
                 .collect_vec();
-            let _: Vec<_> = TimetableTrainScheduleSet::create_batch(&mut conn, changesets).await?;
+            let _: Vec<_> = TimetableInheritance::create_batch(&mut conn, changesets).await?;
             Ok(())
         })
         .await
@@ -197,8 +233,9 @@ impl TimetableWithTrains {
             "SELECT timetable.*,
         array_remove(array_agg(train_schedule.id), NULL) as paced_train_ids
         FROM timetable
-        JOIN timetable_train_schedule_set ON timetable.id = timetable_train_schedule_set.timetable_id
-        LEFT JOIN train_schedule ON timetable_train_schedule_set.train_schedule_set_id = train_schedule.train_schedule_set_id
+        JOIN timetable_inheritance ON timetable.id = timetable_inheritance.outer_timetable_id
+        JOIN train_schedule_set ON timetable_inheritance.inner_timetable_id = train_schedule_set.timetable_id
+        LEFT JOIN train_schedule ON train_schedule_set.id = train_schedule.train_schedule_set_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
         )
