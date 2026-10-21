@@ -72,7 +72,7 @@ export type CurveStyle = {
 export type PickingElement = { type: string };
 export type HoveredItem = { layer: PickingLayerType; element: PickingElement };
 
-export type DrawingFunction<T> = (canvasContext: CanvasRenderingContext2D, stcContext: T) => void;
+export type DrawingFunction<T> = (canvasContext: CanvasRenderingContext2D, context: T) => void;
 
 export type PickingDrawingFunction<T> = (
   imageData: ImageData,
@@ -238,3 +238,8 @@ export type Handler<P extends object> = (payload: P) => void;
 
 // DATA TRANSLATION TYPES:
 export type PointToData = (point: Point) => DataPoint;
+
+export type EmbeddedPositionContextType = {
+  top: number;
+  height: number;
+};

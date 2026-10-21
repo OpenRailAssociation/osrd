@@ -121,3 +121,7 @@ export const getLabelLevels = (
   const index = breakpoints.findIndex((breakpoint) => pixelsPerMinute < breakpoint);
   return index >= 0 ? ticksPriorities[index] : [];
 };
+
+export function getSpacePixel(position: number, _fromEnd?: boolean) {
+  return position;
+}

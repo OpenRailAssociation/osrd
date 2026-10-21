@@ -3,20 +3,17 @@ import { useCallback, useContext } from 'react';
 import chroma from 'chroma-js';
 
 import { MouseContext } from '../../../common';
+import { TimeChartCanvasContext } from '../../../common/context';
 import { PRIMARY_80, PRIMARY_50, PRIMARY_40, CYAN_300 } from '../../../common/helpers/colors';
 import { useDraw } from '../../../common/hooks/useCanvas';
-import type { DrawingFunction } from '../../../common/types';
-import {
-  SpaceTimeChartCanvasContext,
-  type SpaceTimeChartContextType,
-} from '../../../spaceTimeChart';
+import type { DrawingFunction, TimeChartContextType } from '../../../common/types';
 import type { OccupancyZone } from '../../lib/types';
 import { drawThroughTrain } from '../helpers/drawElements/drawOccupancyZones';
 
 const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: OccupancyZone[] }) => {
   const mouseContext = useContext(MouseContext);
 
-  const draw = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
+  const draw = useCallback<DrawingFunction<TimeChartContextType>>(
     (ctx, { getTimePixel, height: viewportHeight }) => {
       for (const zone of occupancyZones) {
         const xStart = getTimePixel(zone.startTime);
@@ -68,7 +65,7 @@ const DraggingOccupancyZonesLayer = ({ occupancyZones }: { occupancyZones: Occup
     [occupancyZones, mouseContext.position.y]
   );
 
-  useDraw(SpaceTimeChartCanvasContext, 'overlay', draw);
+  useDraw(TimeChartCanvasContext, 'overlay', draw);
 
   return null;
 };
