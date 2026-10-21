@@ -76,5 +76,20 @@ test.describe(
         });
       }
     );
+
+    /** *************** Test 4 **************** */
+    test(
+      'MARECO recovery margin is not available on an invalid train',
+      { tag: '@smoke' },
+      async ({ scenarioTimetableSection, headerPage }) => {
+        await scenarioTimetableSection.projectTrain(1);
+        await scenarioTimetableSection.setTrainListVisible();
+
+        await test.step('Only the linear recovery margin is offered', async () => {
+          await headerPage.expandHeader();
+          await headerPage.verifyRecoveryMarginOptions(['STANDARD']);
+        });
+      }
+    );
   }
 );

@@ -234,6 +234,15 @@ class HeaderPageObject extends CommonPage {
     await this.recoveryMarginSelect.selectOption({ value: distribution });
   }
 
+  async verifyRecoveryMarginOptions(distributions: ('STANDARD' | 'MARECO')[]) {
+    // ui-core Select always renders a hidden "__PLACEHOLDER__" option first
+    const options = this.recoveryMarginSelect.locator('option:not([hidden])');
+    await expect(options).toHaveCount(distributions.length);
+    for (const [index, distribution] of distributions.entries()) {
+      await expect(options.nth(index)).toHaveAttribute('value', distribution);
+    }
+  }
+
   async selectComfort(comfort: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING') {
     await this.comfortSelect.selectOption({ value: comfort });
   }
