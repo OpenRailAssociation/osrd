@@ -1,7 +1,7 @@
 import { FONT_SANS_REGULAR, FONT_MONO_REGULAR, FONT_MONO_BOLD } from '../../../../common/consts';
 import { BLACK_ALPHA_55, BLACK_ALPHA_70, WHITE_ALPHA_100 } from '../../../../common/helpers/colors';
 import { getCrispLineCoordinate } from '../../../../common/helpers/time';
-import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
+import type { TimeChartContextType } from '../../../../common/types';
 import {
   OCCUPANCY_ZONE_Y_START,
   OCCUPANCY_ZONE_HEIGHT,
@@ -31,10 +31,8 @@ const ARROW_BOTTOM_Y = 6.5;
  * Y coordinate of the top of the occupancy bars of a track. It is snapped to the device pixels, so
  * that whatever is drawn along the bars stays as crisp as they are.
  */
-export const getOccupancyZonesY = (
-  { getSpacePixel }: Pick<SpaceTimeChartContextType, 'getSpacePixel'>,
-  position: number
-): number => getCrispLineCoordinate(getSpacePixel(position), BACKGROUND_HEIGHT);
+export const getOccupancyZonesY = (top: number): number =>
+  getCrispLineCoordinate(top, BACKGROUND_HEIGHT);
 
 export const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
   // Through trains are materialized by converging arrows like the following ones
@@ -61,21 +59,21 @@ export const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: nu
 
 export const drawRemainingTrainsBox = (
   ctx: CanvasRenderingContext2D,
-  { getTimePixel, getSpacePixel }: SpaceTimeChartContextType,
+  { getTimePixel }: TimeChartContextType,
   {
     time,
-    position,
+    top,
     yOffset,
     remainingTrainsNb,
   }: {
     time: number;
-    position: number;
+    top: number;
     yOffset: number;
     remainingTrainsNb: number;
   }
 ) => {
   const x = getTimePixel(time);
-  const y = getSpacePixel(position) + yOffset;
+  const y = top + yOffset;
   const textY = y + OCCUPANCY_ZONE_Y_START - REMAINING_TEXT_OFFSET;
 
   ctx.fillStyle = BLACK_ALPHA_70;
@@ -92,15 +90,17 @@ export const drawRemainingTrainsBox = (
 
 export const drawOccupationZone = (
   ctx: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType,
+  tcContext: TimeChartContextType,
   {
     zone,
     yOffset,
-    position,
+    top,
+    height,
   }: {
     zone: OccupancyZone;
     yOffset: number;
-    position: number;
+    top: number;
+    height: number;
   }
 ) => {
   const { color: curveColor, outline, border, thickness } = zone.curveStyle;
@@ -113,10 +113,10 @@ export const drawOccupationZone = (
   ctx.lineCap = 'round';
   ctx.font = FONT_MONO_REGULAR;
 
-  const { getTimePixel, getSpacePixel } = stcContext;
-  const yStart = getOccupancyZonesY(stcContext, position);
+  const { getTimePixel } = tcContext;
+  const yStart = getOccupancyZonesY(top);
   const y = yStart + yOffset;
-  const yEnd = getSpacePixel(position, true);
+  const yEnd = top + height;
   const arrivalTimePixel = getTimePixel(zone.startTime);
   const departureTimePixel = getTimePixel(zone.endTime);
 
@@ -167,7 +167,7 @@ export const drawOccupationZone = (
     }
   }
 
-  // Draw dashed lines linking trains tracks occupancy to their paths on the SpaceTimeChart (when relevant):
+  // Draw dashed lines linking trains tracks occupancy to their paths on the TimeChart (when relevant):
   ctx.strokeStyle = curveColor;
   ctx.lineWidth = curveWidth;
   ctx.setLineDash([1, 4]);
@@ -197,21 +197,21 @@ export const drawOccupationZone = (
 
 export const drawZoneTrailingText = (
   ctx: CanvasRenderingContext2D,
-  { getTimePixel, getSpacePixel }: SpaceTimeChartContextType,
+  { getTimePixel }: TimeChartContextType,
   {
     zone,
-    position,
+    top,
     yOffset,
     trailingText,
   }: {
     zone: OccupancyZone;
-    position: number;
+    top: number;
     yOffset: number;
     trailingText: string;
   }
 ) => {
   const xEnd = getTimePixel(zone.endTime) + LABEL_OFFSET_X;
-  const yCenter = getSpacePixel(position) + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
+  const yCenter = top + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
 
   ctx.save();
   ctx.font = FONT_MONO_BOLD;

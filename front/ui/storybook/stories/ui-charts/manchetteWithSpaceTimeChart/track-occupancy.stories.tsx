@@ -91,7 +91,6 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
         size: tracks.length * TRACK_HEIGHT_CONTAINER + BASE_WAYPOINT_HEIGHT,
         spaceTimeChartNode: (
           <TrackOccupancyCanvas
-            position={operationalPoint.position}
             tracks={tracks}
             occupancyZones={occupancyZones}
             onClose={() => setSelectedWaypoint(undefined)}

@@ -1,10 +1,22 @@
-import React, { Fragment, type ReactNode, useCallback, useMemo, useState } from 'react';
+import React, {
+  type PropsWithChildren,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
 import { sortBy, clamp } from 'lodash';
 
+import { EmbeddedPositionContext } from '../../common/context';
 import { getCrispLineCoordinate } from '../../common/helpers/time';
 import { timeScaleToZoomValue, zoomValueToTimeScale } from '../../common/helpers/utils';
-import { type SpaceScale, type SpaceTimeChartProps } from '../../spaceTimeChart';
+import {
+  SpaceTimeChartContext,
+  type SpaceScale,
+  type SpaceTimeChartProps,
+} from '../../spaceTimeChart';
 import {
   getSpaceToPixel,
   sideOffset,
@@ -30,6 +42,24 @@ import {
   zoomValueToSpaceScale,
 } from '../utils/helpers';
 import useSyncManchette, { type SyncManchetteState } from './useSyncManchette';
+
+function EmbeddedChildren({
+  position,
+  height,
+  children,
+}: PropsWithChildren & { position: number; height: number }) {
+  const { getSpacePixel } = useContext(SpaceTimeChartContext);
+  const top = getSpacePixel(position);
+  const positionContext = useMemo(
+    () => ({
+      top,
+      height,
+    }),
+    [top, height]
+  );
+
+  return <EmbeddedPositionContext value={positionContext}>{children}</EmbeddedPositionContext>;
+}
 
 export type SplitPoint = {
   /** helper identify nodes for this split point in the React tree */
@@ -469,7 +499,9 @@ const useManchetteWithSpaceTimeChart = ({
           importanceLevel: 1,
         })),
         additionalChildren: splitPoints.map((sp, i) => (
-          <Fragment key={i}>{sp.spaceTimeChartNode}</Fragment>
+          <EmbeddedChildren key={i} position={sp.position} height={sp.size}>
+            {sp.spaceTimeChartNode}
+          </EmbeddedChildren>
         )),
         hideTimeCaptions: !displayTimeCaptions,
         timeScale: zoomValueToTimeScale(xZoom),

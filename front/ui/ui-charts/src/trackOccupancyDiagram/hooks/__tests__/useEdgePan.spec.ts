@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-import type { SpaceTimeChartContextType } from '../../../spaceTimeChart';
+import type { TimeChartContextType } from '../../../common/types';
 import useEdgePan, { PAN_INTERVAL_MS } from '../useEdgePan';
 
 describe('useEdgePan', () => {
@@ -18,10 +18,10 @@ describe('useEdgePan', () => {
   };
 
   // TODO: feed a complete chart context to the hook
-  const context: SpaceTimeChartContextType = {
+  const context: TimeChartContextType = {
     width: 700,
     height: 500,
-  } as SpaceTimeChartContextType;
+  } as TimeChartContextType;
 
   // Create parameters for onMouseMove
   const moveMouseTo = (mouseY: number) => ({

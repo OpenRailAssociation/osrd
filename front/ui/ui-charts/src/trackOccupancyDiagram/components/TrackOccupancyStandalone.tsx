@@ -4,6 +4,7 @@ import { KebabHorizontal } from '@osrd-project/ui-icons';
 
 import { HOUR } from '../../common/consts';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
+import type { ChartEventHandlers, TimeChartContextType } from '../../common/types';
 import { Manchette, useManchetteWithSpaceTimeChart, BASE_WAYPOINT_HEIGHT } from '../../manchette';
 import { DEFAULT_THEME, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import useEdgePan from '../hooks/useEdgePan';
@@ -37,7 +38,7 @@ const TrackOccupancyStandalone = ({
   onDeleteBrokenLinking?: (brokenLinkingId: string) => void;
   selectedPathId?: string;
   onSelectedPathIdChange?: (selectedPathId?: string) => void;
-  onHoveredChildUpdate?: SpaceTimeChartProps['onHoveredChildUpdate'];
+  onHoveredChildUpdate?: ChartEventHandlers<TimeChartContextType>['onHoveredChildUpdate'];
   onDragOver?: (trackId: string | undefined) => void;
   height?: number;
 }) => {
@@ -81,7 +82,6 @@ const TrackOccupancyStandalone = ({
         ),
         spaceTimeChartNode: (
           <TrackOccupancyCanvas
-            position={0}
             tracks={tracks}
             topPadding={BASE_WAYPOINT_HEIGHT * 1.5}
             occupancyZones={occupancyZones}

@@ -1,5 +1,5 @@
 import { WHITE_ALPHA_100 } from '../../../../common/helpers/colors';
-import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
+import type { TimeChartContextType } from '../../../../common/types';
 import { OCCUPANCY_SEPARATOR_WIDTH, OCCUPANCY_ZONE_HEIGHT } from '../../../lib/consts';
 import type { Linking, LinkingColors } from '../../../lib/types';
 import { getOccupancyZonesY } from './drawOccupancyZones';
@@ -19,7 +19,7 @@ const TOUCHING_LINKING_WIDTH = 32;
  * the time they meet, and so lies over the ends of both occupancies.
  */
 export const getLinkingXRange = (
-  { getTimePixel }: Pick<SpaceTimeChartContextType, 'getTimePixel'>,
+  { getTimePixel }: Pick<TimeChartContextType, 'getTimePixel'>,
   { startTime, endTime }: Linking
 ) => {
   const x1 = getTimePixel(startTime);
@@ -89,11 +89,11 @@ const drawStripes = (
 
 export const drawLinking = (
   ctx: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType,
-  { linking, position, yOffset }: { linking: Linking; position: number; yOffset: number }
+  tcContext: TimeChartContextType,
+  { linking, top, yOffset }: { linking: Linking; top: number; yOffset: number }
 ) => {
-  const { x1, x2 } = getLinkingXRange(stcContext, linking);
-  const yCenter = getOccupancyZonesY(stcContext, position) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
+  const { x1, x2 } = getLinkingXRange(tcContext, linking);
+  const yCenter = getOccupancyZonesY(top) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
   const capsulePath = buildCapsulePath(x1, x2, yCenter, OUTLINE_OVERHANG);
   const bridgePath = buildCapsulePath(x1, x2, yCenter);
 
