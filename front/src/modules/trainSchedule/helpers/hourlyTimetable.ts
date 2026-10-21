@@ -1,8 +1,15 @@
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type {
+  TimetableType,
+  TrainSchedule,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 import { lcm } from 'utils/numbers';
 
 import { isPacedTrain } from './pacedTrain';
+
+// Timetable into which services are created or imported.
+export type TimetableTarget = { timetableType: TimetableType; hourlyTimetableDuration: Duration };
 
 /**
  * Default duration for an hourly timetable, used when it contains no paced trains.
@@ -37,6 +44,18 @@ export const computeDefaultHourlyPacedTrainTimeWindow = (
   hourlyTimetableDuration: Duration,
   interval: Duration
 ): Duration => new Duration({ milliseconds: lcm(hourlyTimetableDuration.ms, interval.ms) });
+
+/**
+ * Paced attributes given to a unique train imported into an hourly timetable: its interval and
+ * duration are both equal to the hourly timetable duration.
+ */
+export const getHourlyUniqueTrainPacedAttributes = (
+  hourlyTimetableDuration: Duration
+): NonNullable<TrainSchedule['paced']> => ({
+  interval: hourlyTimetableDuration.toISOString(),
+  time_window: hourlyTimetableDuration.toISOString(),
+  exceptions: [],
+});
 
 /**
  * In an hourly timetable, the start time of a paced train must stay in `[0, interval)`, and the
