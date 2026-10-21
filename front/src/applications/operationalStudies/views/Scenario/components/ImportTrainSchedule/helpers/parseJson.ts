@@ -7,7 +7,6 @@ import type {
   RoundTripsFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
 import { type TimetableType, type TrainSchedule } from 'common/api/osrdEditoastApi';
 
 const TIMETABLE_TYPES: TimetableType[] = ['CALENDAR', 'HOURLY'];
@@ -117,7 +116,7 @@ export const validateTimetableJsonPayload = (importedItems: unknown): TimetableJ
   };
 };
 
-const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
+export const isNgeDto = (payload: unknown): payload is NetzgrafikDto =>
   Boolean(
     payload &&
     typeof payload === 'object' &&
@@ -127,13 +126,14 @@ const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
   );
 
 /**
- * Parse a file as json to a TimetableJsonPayload, assuming either an NGE dto format or directly a TimetableJsonPayload format
+ * Parse a file as json, assuming either an NGE dto format or directly a TimetableJsonPayload format
  *
  * If the file can not be parsed as json:
  *   - If it has a json extension, throw (bad json)
  *   - Otherwise return null (not a json file, needs to be parsed as something else)
  *
  * If the file can be parsed as json:
+ *   - If the content is an NGE dto, return it as is: its conversion depends on the target timetable
  *   - If the content can be parsed to a TimetableJsonPayload containing trains, return the parsed payload!
  *   - Otherwise throw
  */
@@ -141,7 +141,7 @@ export const processJsonFile = (
   fileContent: string,
   fileExtension: string,
   t: TFunction<'operational-studies', 'importTrains'>
-): TimetableJsonPayload | null => {
+): TimetableJsonPayload | NetzgrafikDto | null => {
   const isJsonFile = fileExtension === 'application/json';
 
   // try to parse the file content
@@ -157,8 +157,8 @@ export const processJsonFile = (
   }
 
   // try to parse the content as nge
-  if (validateNgeDto(rawContent)) {
-    return convertNgeDtoToOsrd(rawContent);
+  if (isNgeDto(rawContent)) {
+    return rawContent;
   }
 
   // try to parse the content directly as a TimetableJsonPayload
