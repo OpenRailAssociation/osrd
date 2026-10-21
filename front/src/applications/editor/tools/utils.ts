@@ -2,7 +2,7 @@ import turfBbox from '@turf/bbox';
 import { featureCollection, type Units } from '@turf/helpers';
 import length from '@turf/length';
 import type { NearestPoint } from '@turf/nearest-point';
-import type { Feature, LineString, Point, BBox } from 'geojson';
+import type { Feature, LineString, Point } from 'geojson';
 import { uniq } from 'lodash';
 import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -245,23 +245,6 @@ export function openEntityEditionPanel(
 }
 
 /**
- * Given an array of editor entities, return the bbox which fits all of their geo elements.
- */
-function getLargestBbox(entities: EditorEntity[]): BBox {
-  const bboxList = entities.map((entity) => turfBbox(entity.geometry));
-
-  let [minLeft, minBottom, minRight, minTop] = bboxList[0];
-
-  bboxList.forEach(([left, bottom, right, top]) => {
-    if (left < minLeft) minLeft = left;
-    if (bottom < minBottom) minBottom = bottom;
-    if (right > minRight) minRight = right;
-    if (top > minTop) minTop = top;
-  });
-  return [minLeft, minBottom, minRight, minTop];
-}
-
-/**
  * Given an array of editor entities, return the bbox that contains its geo element if possible depending the entities type.
  */
 export async function getEntitiesBbox(
@@ -272,8 +255,8 @@ export async function getEntitiesBbox(
   const hasRouteEntity = entities.some((entity) => entity.objType === 'Route');
 
   if (!hasRouteEntity) {
-    let bbox = turfBbox(entities[0].geometry);
-    if (entities.length > 1) bbox = getLargestBbox(entities);
+    const bbox = turfBbox(featureCollection(entities));
+    if (!bbox.every(Number.isFinite)) return null;
     return [
       [bbox[0], bbox[1]],
       [bbox[2], bbox[3]],
