@@ -3,7 +3,8 @@ import React, { useContext, useMemo, useEffect } from 'react';
 import { X } from '@osrd-project/ui-icons';
 
 import { MouseContext } from '../../common';
-import { SpaceTimeChartContext } from '../../spaceTimeChart';
+import { EmbeddedPositionContext } from '../../common/context';
+import { BASE_WAYPOINT_HEIGHT } from '../../manchette';
 import { CANVAS_PADDING, TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { BrokenLinking, Linking, OccupancyZone, Track } from '../lib/types';
 import BrokenLinkingLayer from './layers/BrokenLinkingLayer';
@@ -15,33 +16,28 @@ import TracksLayer from './layers/TracksLayer';
 /** Distance in pixels to snap to a track while dragging an occupancy zone */
 const DROP_SNAP_DISTANCE = 16;
 
-const CloseButton = ({ position, onClose }: { position: number; onClose: () => void }) => {
-  const { getSpacePixel } = useContext(SpaceTimeChartContext);
-
-  return (
-    <button
-      data-testid="close-track-occupancy-panel"
-      className="close-track-occupancy-panel"
-      // This button is nested inside the chart, which has its own click listener. We use
-      // 'stopPropagation' because that listener would otherwise fire first and deselect the
-      // train before onClose runs.
-      onClickCapture={(e) => {
-        e.stopPropagation();
-        onClose();
-      }}
-      style={{
-        top: getSpacePixel(position),
-      }}
-    >
-      <span>
-        <X />
-      </span>
-    </button>
-  );
-};
+const CloseButton = ({ top, onClose }: { top: number; onClose: () => void }) => (
+  <button
+    data-testid="close-track-occupancy-panel"
+    className="close-track-occupancy-panel"
+    // This button is nested inside the chart, which has its own click listener. We use
+    // 'stopPropagation' because that listener would otherwise fire first and deselect the
+    // train before onClose runs.
+    onClickCapture={(e) => {
+      e.stopPropagation();
+      onClose();
+    }}
+    style={{ top }}
+  >
+    <span>
+      <X />
+    </span>
+  </button>
+);
 
 const TrackOccupancyCanvas = ({
-  position,
+  top: explicitTop,
+  height: explicitHeight,
   tracks,
   occupancyZones,
   draggingOccupancyZones,
@@ -53,7 +49,8 @@ const TrackOccupancyCanvas = ({
   topPadding = 0,
   hideBorders = false,
 }: {
-  position: number;
+  top?: number;
+  height?: number;
   tracks: Track[];
   occupancyZones: OccupancyZone[];
   draggingOccupancyZones?: OccupancyZone[];
@@ -65,7 +62,12 @@ const TrackOccupancyCanvas = ({
   topPadding?: number;
   hideBorders?: boolean;
 }) => {
-  const { getSpacePixel } = useContext(SpaceTimeChartContext);
+  const { top: implicitTop, height: implicitHeight } = useContext(EmbeddedPositionContext) ?? {};
+  const top = explicitTop ?? implicitTop ?? 0;
+  const height =
+    explicitHeight ??
+    implicitHeight ??
+    tracks.length * TRACK_HEIGHT_CONTAINER + BASE_WAYPOINT_HEIGHT;
   const mouseContext = useContext(MouseContext);
 
   const highlightedTrackId = useMemo(() => {
@@ -77,11 +79,7 @@ const TrackOccupancyCanvas = ({
     }
     // Vertical position relative to the middle of the first track
     const y =
-      mouseContext.position.y -
-      getSpacePixel(position) -
-      topPadding -
-      CANVAS_PADDING -
-      TRACK_HEIGHT_CONTAINER / 2;
+      mouseContext.position.y - top - topPadding - CANVAS_PADDING - TRACK_HEIGHT_CONTAINER / 2;
     // Each track is vertically centered in a container with a fixed height, we
     // can divide by that height to find the closest track index
     const index = Math.round(y / TRACK_HEIGHT_CONTAINER);
@@ -95,14 +93,7 @@ const TrackOccupancyCanvas = ({
     }
     const track = tracks[index];
     return track.disabled ? undefined : track.id;
-  }, [
-    mouseContext.position.y,
-    draggingOccupancyZones,
-    position,
-    tracks,
-    topPadding,
-    getSpacePixel,
-  ]);
+  }, [mouseContext.position.y, draggingOccupancyZones, tracks, top, topPadding]);
 
   useEffect(() => {
     if (onDragOver) onDragOver(highlightedTrackId);
@@ -111,7 +102,8 @@ const TrackOccupancyCanvas = ({
   return (
     <>
       <TracksLayer
-        position={position}
+        top={top}
+        height={height}
         tracks={tracks}
         topPadding={topPadding}
         drawBorders={!hideBorders}
@@ -120,17 +112,13 @@ const TrackOccupancyCanvas = ({
       />
       <OccupancyZonesLayer
         tracks={tracks}
-        position={position}
+        top={top}
+        height={height}
         topPadding={topPadding}
         occupancyZones={occupancyZones}
       />
       {linkings && (
-        <LinkingLayer
-          tracks={tracks}
-          linkings={linkings}
-          position={position}
-          topPadding={topPadding}
-        />
+        <LinkingLayer tracks={tracks} linkings={linkings} top={top} topPadding={topPadding} />
       )}
       {draggingOccupancyZones && (
         <DraggingOccupancyZonesLayer occupancyZones={draggingOccupancyZones} />
@@ -139,12 +127,12 @@ const TrackOccupancyCanvas = ({
         <BrokenLinkingLayer
           tracks={tracks}
           brokenLinkings={brokenLinkings}
-          position={position}
+          top={top}
           topPadding={topPadding}
           deleteIconUrl={deleteIconUrl}
         />
       )}
-      {onClose && <CloseButton position={position} onClose={onClose} />}
+      {onClose && <CloseButton top={top} onClose={onClose} />}
     </>
   );
 };

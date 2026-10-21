@@ -1,6 +1,6 @@
 import { HOUR, MINUTE } from '../../../../common/consts';
 import { AMBIENT_B_15, AMBIENT_B_5, GREY_50 } from '../../../../common/helpers/colors';
-import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
+import type { TimeChartContextType } from '../../../../common/types';
 import { TRACK_HEIGHT_CONTAINER, CANVAS_PADDING, TICKS_PRIORITIES } from '../../../lib/consts';
 import { type Track } from '../../../lib/types';
 import { getLabelLevels, getLabelMarks } from '../../utils';
@@ -8,16 +8,18 @@ import { drawTrack } from './drawTrack';
 
 export const drawTracks = (
   ctx: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType,
+  tcContext: TimeChartContextType,
   {
-    position,
+    top,
+    height,
     tracks,
     drawBorders,
     topPadding = 0,
     highlightedTrackId,
     showTicks = true,
   }: {
-    position: number;
+    top: number;
+    height: number;
     tracks: Track[];
     drawBorders: boolean;
     topPadding: number;
@@ -27,15 +29,14 @@ export const drawTracks = (
 ) => {
   const {
     width,
-    getSpacePixel,
     getTime,
     getTimePixel,
     timeScale,
     theme: { breakpoints, timeRanges },
-  } = stcContext;
-  const yStart = getSpacePixel(position);
-  const yEnd = getSpacePixel(position, true);
-  const flatStepHeight = yEnd - yStart;
+  } = tcContext;
+  const yStart = top;
+  const yEnd = top + height;
+  const flatStepHeight = height;
   const timeStart = getTime(0);
   const timeEnd = getTime(width);
   const pixelsPerMinute = (1 / timeScale) * MINUTE;

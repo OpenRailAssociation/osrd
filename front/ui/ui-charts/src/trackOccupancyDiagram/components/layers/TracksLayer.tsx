@@ -1,33 +1,33 @@
 import { useCallback } from 'react';
 
+import { TimeChartCanvasContext } from '../../../common/context';
 import { useDraw } from '../../../common/hooks/useCanvas';
-import type { DrawingFunction } from '../../../common/types';
-import {
-  SpaceTimeChartCanvasContext,
-  type SpaceTimeChartContextType,
-} from '../../../spaceTimeChart';
+import type { DrawingFunction, TimeChartContextType } from '../../../common/types';
 import type { Track } from '../../lib/types';
 import { drawTracks } from '../helpers/drawElements/drawTracks';
 
 const TracksLayer = ({
   tracks,
-  position,
+  top,
+  height,
   topPadding,
   drawBorders,
   highlightedTrackId,
   showTicks,
 }: {
   tracks: Track[];
-  position: number;
+  top: number;
+  height: number;
   topPadding: number;
   drawBorders: boolean;
   highlightedTrackId?: string;
   showTicks?: boolean;
 }) => {
-  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
-    (ctx, stcContext) => {
-      drawTracks(ctx, stcContext, {
-        position,
+  const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
+    (ctx, tcContext) => {
+      drawTracks(ctx, tcContext, {
+        top,
+        height,
         topPadding,
         tracks,
         drawBorders,
@@ -35,10 +35,10 @@ const TracksLayer = ({
         showTicks,
       });
     },
-    [drawBorders, position, topPadding, tracks, highlightedTrackId, showTicks]
+    [drawBorders, top, height, topPadding, tracks, highlightedTrackId, showTicks]
   );
 
-  useDraw(SpaceTimeChartCanvasContext, 'background', drawingFunction);
+  useDraw(TimeChartCanvasContext, 'background', drawingFunction);
 
   return null;
 };

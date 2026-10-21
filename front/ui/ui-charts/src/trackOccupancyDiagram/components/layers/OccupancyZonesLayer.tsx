@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { sortBy } from 'lodash';
 
+import { TimeChartCanvasContext } from '../../../common/context';
 import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
@@ -9,11 +10,8 @@ import type {
   DrawingFunction,
   PickingDrawingFunction,
   PickingElement,
+  TimeChartContextType,
 } from '../../../common/types';
-import {
-  SpaceTimeChartCanvasContext,
-  type SpaceTimeChartContextType,
-} from '../../../spaceTimeChart';
 import {
   CANVAS_PADDING,
   OCCUPANCY_ZONE_HEIGHT,
@@ -53,12 +51,14 @@ export function isOccupancyPickingElement(
 const OccupancyZonesLayer = ({
   tracks,
   occupancyZones,
-  position,
+  top,
+  height,
   topPadding,
 }: {
   tracks: Track[];
   occupancyZones: OccupancyZone[];
-  position: number;
+  top: number;
+  height: number;
   topPadding: number;
 }) => {
   const instructionsToDraw = useMemo(() => {
@@ -165,20 +165,21 @@ const OccupancyZonesLayer = ({
     );
   }, [occupancyZones, topPadding, tracks]);
 
-  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
-    (ctx, stcContext) => {
+  const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
+    (ctx, tcContext) => {
       instructionsToDraw.forEach((instruction) => {
         switch (instruction.type) {
           case 'occupancyZone': {
-            drawOccupationZone(ctx, stcContext, {
+            drawOccupationZone(ctx, tcContext, {
               zone: instruction.zone,
-              position,
+              top,
+              height,
               yOffset: instruction.offsetY,
             });
             if (instruction.trailingText) {
-              drawZoneTrailingText(ctx, stcContext, {
+              drawZoneTrailingText(ctx, tcContext, {
                 zone: instruction.zone,
-                position,
+                top,
                 yOffset: instruction.offsetY,
                 trailingText: instruction.trailingText,
               });
@@ -186,8 +187,8 @@ const OccupancyZonesLayer = ({
             break;
           }
           case 'remainingTrains':
-            drawRemainingTrainsBox(ctx, stcContext, {
-              position,
+            drawRemainingTrainsBox(ctx, tcContext, {
+              top,
               time: instruction.time,
               yOffset: instruction.offsetY,
               remainingTrainsNb: instruction.amount,
@@ -196,20 +197,20 @@ const OccupancyZonesLayer = ({
         }
       });
     },
-    [position, instructionsToDraw]
+    [top, height, instructionsToDraw]
   );
 
-  const pickingFunction = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
-    (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
-      const flatStepOffsetY = getSpacePixel(position);
-      const flatStepEndY = getSpacePixel(position, true);
+  const pickingFunction = useCallback<PickingDrawingFunction<TimeChartContextType>>(
+    (imageData, { registerPickingElement, getTimePixel }, scalingRatio) => {
+      const flatStepOffsetY = top;
+      const flatStepEndY = top + height;
 
       instructionsToDraw.forEach((instruction) => {
         if (instruction.type === 'occupancyZone') {
           const x = getTimePixel(instruction.zone.startTime);
           const y = instruction.offsetY + flatStepOffsetY;
-          const width = getTimePixel(instruction.zone.endTime) - x;
-          const height = OCCUPANCY_ZONE_HEIGHT;
+          const zoneWidth = getTimePixel(instruction.zone.endTime) - x;
+          const zoneHeight = OCCUPANCY_ZONE_HEIGHT;
           const margin = 6;
 
           const pickingElement: OccupancyZonePickingElement = {
@@ -222,8 +223,8 @@ const OccupancyZonesLayer = ({
           drawAliasedRect(
             imageData,
             { x: x - margin, y: y - margin },
-            width + 2 * margin,
-            height + 2 * margin,
+            zoneWidth + 2 * margin,
+            zoneHeight + 2 * margin,
             color,
             scalingRatio
           );
@@ -245,7 +246,7 @@ const OccupancyZonesLayer = ({
             const yStop = instruction.zone.endDirection === 'up' ? y : flatStepEndY;
             drawAliasedRect(
               imageData,
-              { x: x + width - margin, y: yStart - margin },
+              { x: x + zoneWidth - margin, y: yStart - margin },
               2 * margin,
               yStop - yStart + 2 * margin,
               color,
@@ -255,11 +256,11 @@ const OccupancyZonesLayer = ({
         }
       });
     },
-    [position, instructionsToDraw]
+    [top, height, instructionsToDraw]
   );
 
-  usePicking(SpaceTimeChartCanvasContext, 'paths', pickingFunction);
-  useDraw(SpaceTimeChartCanvasContext, 'paths', drawingFunction);
+  usePicking(TimeChartCanvasContext, 'paths', pickingFunction);
+  useDraw(TimeChartCanvasContext, 'paths', drawingFunction);
 
   return null;
 };

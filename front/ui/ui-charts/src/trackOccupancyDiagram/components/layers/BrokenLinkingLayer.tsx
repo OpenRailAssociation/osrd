@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FONT_MONO_BOLD } from '../../../common/consts';
+import { TimeChartCanvasContext } from '../../../common/context';
 import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
@@ -8,11 +9,8 @@ import type {
   DrawingFunction,
   PickingDrawingFunction,
   PickingElement,
+  TimeChartContextType,
 } from '../../../common/types';
-import {
-  SpaceTimeChartCanvasContext,
-  type SpaceTimeChartContextType,
-} from '../../../spaceTimeChart';
 import {
   CANVAS_PADDING,
   OCCUPANCY_ZONE_HEIGHT,
@@ -38,13 +36,13 @@ export function isBrokenLinkingPickingElement(
 const BrokenLinkingLayer = ({
   tracks,
   brokenLinkings,
-  position,
+  top,
   topPadding,
   deleteIconUrl,
 }: {
   tracks: Track[];
   brokenLinkings: BrokenLinking[];
-  position: number;
+  top: number;
   topPadding: number;
   deleteIconUrl?: string;
 }) => {
@@ -89,12 +87,11 @@ const BrokenLinkingLayer = ({
 
   const hoveredLinkingId = brokenLinkings.find(({ hover }) => hover)?.id;
 
-  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
-    (ctx, stcContext) => {
+  const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
+    (ctx, tcContext) => {
       badges.forEach(({ brokenLinking, yOffset }) => {
-        const x = stcContext.getTimePixel(brokenLinking.time);
-        const yCenter =
-          getOccupancyZonesY(stcContext, position) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
+        const x = tcContext.getTimePixel(brokenLinking.time);
+        const yCenter = getOccupancyZonesY(top) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
         const highlighted = brokenLinking.id === hoveredLinkingId;
         // only the hovered badge shows the delete icon
         const showDelete = !!brokenLinking.hover;
@@ -108,15 +105,14 @@ const BrokenLinkingLayer = ({
         });
       });
     },
-    [badges, position, hoveredLinkingId, imageElement]
+    [badges, top, hoveredLinkingId, imageElement]
   );
 
-  const pickingFunction = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
-    (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
+  const pickingFunction = useCallback<PickingDrawingFunction<TimeChartContextType>>(
+    (imageData, { registerPickingElement, getTimePixel }, scalingRatio) => {
       badges.forEach(({ brokenLinking, yOffset, nameWidth }) => {
         const x = getTimePixel(brokenLinking.time);
-        const yCenter =
-          getOccupancyZonesY({ getSpacePixel }, position) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
+        const yCenter = getOccupancyZonesY(top) + yOffset + OCCUPANCY_ZONE_HEIGHT / 2;
         const { boxLeft, boxTop, boxWidth, boxHeight } = getBrokenLinkingBadgeGeometry({
           x,
           yCenter,
@@ -144,11 +140,11 @@ const BrokenLinkingLayer = ({
         );
       });
     },
-    [badges, position]
+    [badges, top]
   );
 
-  usePicking(SpaceTimeChartCanvasContext, 'paths', pickingFunction);
-  useDraw(SpaceTimeChartCanvasContext, 'paths', drawingFunction);
+  usePicking(TimeChartCanvasContext, 'paths', pickingFunction);
+  useDraw(TimeChartCanvasContext, 'paths', drawingFunction);
 
   return null;
 };
