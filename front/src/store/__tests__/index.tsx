@@ -4,12 +4,6 @@ import { createTransientStore } from 'store/utils';
 
 import type { RootState } from 'reducers';
 
-// Create a fresh store before each test, so that tests don't inherit any state
-// from previous tests (e.g. rtk-query's cache isn't polluted with a previous
-// test's mock data). We still want to keep using the same store within a test,
-// for instance to test re-renders after a store change or to retain
-// rtk-query's cache.
-
 /**
  * Renders a hook for test purposes with the Redux store in the context.
  *
@@ -17,8 +11,9 @@ import type { RootState } from 'reducers';
  * store in the context. Among other things, this is required for using
  * rtk-query API mocks from mockOsrdEditoastEndpoints.
  *
- * A fresh store is create before each test for proper isolation. As a result,
- * this function is incompatible with vitest's .concurrent().
+ * A fresh store is created each time the function is called. This way tests
+ * have a clean state to interact with.
+ * For that reason, this function is incompatible with vitest's .concurrent().
  */
 export function renderHookWithStore<Result, Props>(
   render: (initialProps: Props) => Result,
