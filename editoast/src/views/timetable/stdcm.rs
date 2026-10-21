@@ -6,6 +6,7 @@ use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
+use crate::views::authz::retrieve_user_groups;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::timetable::PhysicsConsistParameters;
@@ -212,6 +213,7 @@ fn is_fallback_request(headers: &HeaderMap) -> bool {
         infra_id = query.infra,
         path_found = tracing::field::Empty,
         is_fallback = is_fallback_request(&headers),
+        user.groups = tracing::field::Empty,
     )
 )]
 #[editoast_derive::route(authz::Role::Stdcm)]
@@ -262,6 +264,16 @@ pub(in crate::views) async fn stdcm(
     }
 
     let mut conn = db_pool.get().await?;
+
+    let user_groups: Vec<String> = match authn_state.user() {
+        Some(authz_user) => retrieve_user_groups(authz_user, &authn_state, &openfga, &mut conn)
+            .await?
+            .into_iter()
+            .map(|group| group.name)
+            .collect(),
+        None => vec![],
+    };
+    tracing::Span::current().record("user.groups", tracing::field::debug(&user_groups));
 
     let timetable_id = id;
     let infra_id = query.infra;
@@ -379,6 +391,7 @@ pub(in crate::views) async fn stdcm(
             request_time,
             app_version: config.app_version.clone(),
             user_name: user.map(|user| user.name),
+            user_groups,
             roles: authn_state.roles().to_vec(),
             infra_id,
             timetable_id,

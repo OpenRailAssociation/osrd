@@ -26,6 +26,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
+use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use futures::TryStreamExt as _;
@@ -152,17 +153,24 @@ pub(in crate::views) async fn user_groups(
     let user = authn_state
         .user()
         .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(&openfga);
-    let user_groups = authz::v2::user_groups(user)
-        .authorize(&authorizer)
-        .await?
-        .access()
-        .await?
-        .map_err(|_| AuthorizationError::Forbidden)?;
+    let groups =
+        retrieve_user_groups(user, &authn_state, &openfga, &mut db_pool.get().await?).await?;
+    Ok(Json(groups))
+}
 
-    let groups_id = user_groups.into_iter().map(|authz::Group(id)| id);
-    let (result, missing_ids) =
-        models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
+/// Returns the groups the user belongs to
+pub(in crate::views) async fn retrieve_user_groups(
+    user: authz::User,
+    authn_state: &crate::authentication::State,
+    openfga: &fga::Client,
+    conn: &mut DbConnection,
+) -> Result<Vec<Group>> {
+    let group_ids = v2::user_groups(user)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(openfga))
+        .await?
+        .into_iter()
+        .map(|authz::Group(id)| id);
+    let (groups, missing_ids) = Group::retrieve_batch(conn, group_ids).await?;
 
     if !missing_ids.is_empty() {
         tracing::warn!(
@@ -172,7 +180,7 @@ pub(in crate::views) async fn user_groups(
         );
     }
 
-    Ok(Json(result))
+    Ok(groups)
 }
 
 #[derive(Deserialize, Clone, ToSchema)]

@@ -17,6 +17,7 @@ pub(super) struct StdcmMetadata {
     pub(super) request_time: DateTime<Utc>,
     pub(super) app_version: Option<String>,
     pub(super) user_name: Option<String>,
+    pub(super) user_groups: Vec<String>,
     pub(super) roles: Vec<authz::Role>,
     pub(super) infra_id: i64,
     pub(super) timetable_id: i64,
