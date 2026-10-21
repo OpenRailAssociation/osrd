@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 
 import { Info } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
-import { feature, featureCollection } from '@turf/helpers';
-import length from '@turf/length';
+import { featureCollection } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 import type { LineString } from 'geojson';
 import { isArray } from 'lodash';
@@ -11,10 +10,12 @@ import { useTranslation } from 'react-i18next';
 import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
 import type {
+  CorePropertyGeometryProjection,
   GeoJsonLineString,
   CoreIncompatibleConstraints as IncompatibleConstraintsType,
 } from 'common/api/osrdEditoastApi';
 import Collapsable from 'common/Collapsable';
+import { convertGeomTopoTrackOffset } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import IncompatibleConstraintsFilters from './IncompatibleConstrainstFilters';
@@ -30,14 +31,14 @@ import { getSegmentsConstraints, getSizeOfEnabledFilters } from './utils';
 
 type IncompatibleConstraintsProps = {
   geometry?: GeoJsonLineString;
-  pathLength?: number;
   incompatibleConstraints?: IncompatibleConstraintsType;
+  geometryProjection?: CorePropertyGeometryProjection;
 };
 
 const IncompatibleConstraints = ({
   geometry,
-  pathLength,
   incompatibleConstraints,
+  geometryProjection,
 }: IncompatibleConstraintsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const map = useMap();
@@ -140,7 +141,10 @@ const IncompatibleConstraints = ({
   // When pathProperties changes
   //  => reset state
   useEffect(() => {
-    const data = geometry && incompatibleConstraints ? incompatibleConstraints : undefined;
+    const data =
+      geometry && incompatibleConstraints && geometryProjection
+        ? incompatibleConstraints
+        : undefined;
 
     const dataPairs = Object.entries(data || {});
 
@@ -153,23 +157,24 @@ const IncompatibleConstraints = ({
       }, {})
     );
 
-    // compute distance ratio between data & geometry
-    const turfLength = geometry
-      ? length(feature(geometry as LineString), { units: 'millimeters' })
-      : 0;
-    const ratio = turfLength / (pathLength || turfLength);
     const nextConstraints = dataPairs
       .map(([key, value]) =>
         value.map((e) => {
           const id = `${key}-${e.range.start}-${e.range.end}`;
+          const start = geometryProjection
+            ? convertGeomTopoTrackOffset(geometryProjection, e.range.start, 'topo_to_geom')
+            : e.range.start;
+          const end = geometryProjection
+            ? convertGeomTopoTrackOffset(geometryProjection, e.range.end, 'topo_to_geom')
+            : e.range.end;
           return {
             id,
             type: key as IncompatibleConstraintType,
-            start: e.range.start * ratio,
-            end: e.range.end * ratio,
+            start,
+            end,
             value: 'value' in e ? e.value : undefined,
             bbox: bbox(
-              lineSliceAlong(geometry as LineString, e.range.start * ratio, e.range.end * ratio, {
+              lineSliceAlong(geometry as LineString, start, end, {
                 units: 'millimeters',
               })
             ) as [number, number, number, number],

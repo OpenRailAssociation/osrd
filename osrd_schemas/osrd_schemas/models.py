@@ -189,6 +189,11 @@ class CoreObjectRange(BaseModel):
 
 
 class CoreOffsetRange(BaseModel):
+    """
+    These are topological offsets, i.e. distances used in the simulations,
+    in opposition to geometrical offsets used on the map in the front.
+    """
+
     end: Annotated[int, Field(ge=0)]
     start: Annotated[int, Field(ge=0)]
 
