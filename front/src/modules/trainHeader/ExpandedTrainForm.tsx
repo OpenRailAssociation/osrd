@@ -63,6 +63,7 @@ export type ExpandedTrainFormProps = {
     extraOccurrencesChanges?: ExtraOccurrencesChanges
   ) => Promise<void>;
   onItineraryOpened: () => void;
+  isValid: boolean;
 };
 
 export type TrainFieldsState = {
@@ -259,6 +260,7 @@ const ExpandedTrainForm = ({
   onCollapse,
   onPersistTrain,
   onItineraryOpened,
+  isValid,
 }: ExpandedTrainFormProps) => {
   const { t, i18n } = useTranslation(['operational-studies', 'translation']);
   const infraID = useInfraID();
@@ -345,19 +347,24 @@ const ExpandedTrainForm = ({
     [fields, persistTrainIfNeeded]
   );
 
-  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] = useMemo(
-    () => [
-      {
-        id: 'STANDARD',
-        label: t('manageTrainSchedule.allowances.distribution-linear'),
-      },
-      {
-        id: 'MARECO',
-        label: t('manageTrainSchedule.allowances.distribution-mareco'),
-      },
-    ],
-    [t]
-  );
+  const constraintDistributionsOptions: { id: ConstraintDistribution; label: string }[] =
+    useMemo(() => {
+      const constraints: { id: ConstraintDistribution; label: string }[] = [
+        {
+          id: 'STANDARD',
+          label: t('manageTrainSchedule.allowances.distribution-linear'),
+        },
+      ];
+
+      if (isValid) {
+        constraints.push({
+          id: 'MARECO',
+          label: t('manageTrainSchedule.allowances.distribution-mareco'),
+        });
+      }
+
+      return constraints;
+    }, [isValid, t]);
   const selectedConstraintDistributionOption = useMemo(
     () =>
       constraintDistributionsOptions.find(

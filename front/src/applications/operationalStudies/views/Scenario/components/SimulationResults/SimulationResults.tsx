@@ -348,6 +348,7 @@ const SimulationResults = ({
               train={simulationResults.train}
               path={simulationResults.path}
               trainSchedulesWithDetails={trainSchedulesWithDetails}
+              isValid={simulationResults?.isValid}
             />
           }
           customFooter={

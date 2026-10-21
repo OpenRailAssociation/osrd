@@ -25,6 +25,7 @@ export type TrainHeaderProps = {
   // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
   path?: Omit<PathfindingResult, 'status'>;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
+  isValid: boolean;
 };
 
 export type ExtraOccurrencesChanges = {
@@ -37,7 +38,7 @@ export type ExtraOccurrencesChanges = {
  * or an expanded form that allow the user to edit every data about the train outside of the train
  * stops themselves or its itinerary.
  */
-const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProps) => {
+const TrainHeader = ({ train, path, trainSchedulesWithDetails, isValid }: TrainHeaderProps) => {
   const [expanded, setExpanded] = useState(false);
   const { t } = useTranslation(['operational-studies']);
 
@@ -107,6 +108,7 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
         }}
         onPersistTrain={onPersistTrain}
         onItineraryOpened={onItineraryOpened}
+        isValid={isValid}
       />
     );
   }
