@@ -124,7 +124,7 @@
     "openapi-types": "^12.1.3",
     "oxfmt": "^0.71.0",
     "oxc-transform-react": "^0.153.0",
-    "oxlint": "^1.86.0",
+    "oxlint": "^1.88.0",
     "oxlint-tsgolint": "^7.0.2003",
     "pdfjs-dist": "^6.4.299",
     "sass": "^1.105.1",
