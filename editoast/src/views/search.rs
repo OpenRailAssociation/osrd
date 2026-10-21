@@ -857,9 +857,15 @@ pub(super) struct SearchResultItemScenario {
     infra_id: u64,
     #[search(sql = "infra.name")]
     infra_name: String,
-    #[search(
-        sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains INNER JOIN timetable_train_schedule_set AS ttss ON trains.train_schedule_set_id = ttss.train_schedule_set_id WHERE ttss.timetable_id = scenario.timetable_id)"
-    )]
+    #[search(sql = r#"(
+        SELECT COUNT(trains.id)
+        FROM train_schedule AS trains
+        INNER JOIN train_schedule_set AS tss
+            ON trains.train_schedule_set_id = tss.id
+        INNER JOIN timetable_inheritance AS inheritance
+            ON tss.timetable_id = inheritance.inner_timetable_id
+        WHERE inheritance.outer_timetable_id = scenario.timetable_id
+        )"#)]
     train_schedules_count: u64,
     #[search(sql = "scenario.description")]
     description: String,
