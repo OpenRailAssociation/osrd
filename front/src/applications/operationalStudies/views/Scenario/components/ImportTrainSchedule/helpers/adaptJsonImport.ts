@@ -142,7 +142,7 @@ function hourlyToCalendar(
   }));
 }
 
-/** Payloads without timetable type (older exports, NGE, XML…) are considered as calendar ones. */
+/** Payloads without timetable type (older exports, XML…) are considered as calendar ones. */
 export const getPayloadTimetableType = (payload: TimetableJsonPayload): TimetableType =>
   payload.timetable_type ?? 'CALENDAR';
 

@@ -4,15 +4,21 @@ import type {
   NodeDto,
   LabelDto,
   FilterSettingDto,
+  TrainrunDto,
 } from '@osrd-project/netzgrafik-frontend';
 
 import type {
   TrainScheduleFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import type { MacroNodeForm, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
+import type {
+  MacroNodeForm,
+  TimetableType,
+  TrainSchedule,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
+import type { Duration } from 'utils/duration';
 
 import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import MacroEditorState from '../MacroEditorState';
@@ -27,6 +33,7 @@ import {
   generatePathAndSchedule,
   createPacedAttributesFromTrainrun,
   defaultBaseStartTime,
+  getDefaultTrainrunTimeWindow,
 } from './trainrun';
 
 const handleLabelOperation = async ({
@@ -225,12 +232,34 @@ export const relabelDuplicateShortNames = (nodes: NodeDto[]): NodeDto[] => {
   });
 };
 
-export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload => {
+/**
+ * Convert an NGE dto to a payload for the given timetable type, the same way as when editing in
+ * NGE within a timetable of this type:
+ * - calendar timetables get absolute start times, on the current day
+ * - services get the default duration of NGE services in this timetable
+ * - hourly timetables get start times relative to the timetable start, brought back under the
+ *   train interval. Unique trains, which do not exist in hourly timetables, become paced trains
+ *   whose interval and duration are equal to the hourly timetable duration.
+ */
+export const convertNgeDtoToOsrd = (
+  dto: NetzgrafikDto,
+  target: { timetableType: TimetableType; hourlyTimetableDuration: Duration }
+): TimetableJsonPayload => {
+  const { timetableType, hourlyTimetableDuration } = target;
   const macroNotes = dto.freeFloatingTexts.map((note) => castNgeNoteToOsrd(note, dto));
 
-  // TODO Hourly timetables: the import flow doesn't know the target timetable type yet, so
-  // it always produces absolute start times.
-  const baseStartTime = defaultBaseStartTime('CALENDAR');
+  const baseStartTime = defaultBaseStartTime(timetableType);
+  const getPacedAttributes = (trainrun: TrainrunDto): TrainSchedule['paced'] => {
+    const paced = createPacedAttributesFromTrainrun(trainrun, dto, (interval) =>
+      getDefaultTrainrunTimeWindow(target, interval)
+    );
+    if (paced || timetableType !== 'HOURLY') return paced;
+    return {
+      interval: hourlyTimetableDuration.toISOString(),
+      time_window: hourlyTimetableDuration.toISOString(),
+      exceptions: [],
+    };
+  };
 
   const dedupNodes = relabelDuplicateShortNames(dto.nodes);
   const macroNodes: MacroNodeForm[] = [];
@@ -263,9 +292,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
         : [TRAINRUN_DIRECTIONS.FORWARD, TRAINRUN_DIRECTIONS.BACKWARD];
     for (const [index, trainrunSections] of groupedTrainrunSections.entries()) {
       for (const direction of directions) {
-        const paced = createPacedAttributesFromTrainrun(trainrun, dto, () =>
-          getDefaultPacedTrainTimeWindow('CALENDAR')
-        );
+        const paced = getPacedAttributes(trainrun);
         const pathAndSchedule = generatePathAndSchedule(
           trainrunSections,
           dedupNodes,
@@ -296,6 +323,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto): TimetableJsonPayload =>
   }
 
   return {
+    timetable_type: timetableType,
     macro_nodes: macroNodes,
     macro_notes: macroNotes,
     train_schedules: trainSchedules,
