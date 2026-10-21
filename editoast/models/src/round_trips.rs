@@ -33,18 +33,27 @@ impl TrainScheduleRoundTrips {
         page: u64,
         page_size: u64,
     ) -> Result<(Vec<Self>, u64), database::DatabaseError> {
-        use database::tables::timetable_train_schedule_set;
+        use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
         use database::tables::train_schedule_round_trips;
+        use database::tables::train_schedule_set;
 
         let query = train_schedule_round_trips::table
             .inner_join(train_schedule::table)
             .select(train_schedule_round_trips::all_columns)
             .filter(
-                train_schedule::dsl::train_schedule_set_id.eq_any(
-                    timetable_train_schedule_set::dsl::timetable_train_schedule_set
-                        .select(timetable_train_schedule_set::dsl::train_schedule_set_id)
-                        .filter(timetable_train_schedule_set::dsl::timetable_id.eq(timetable_id)),
+                train_schedule::train_schedule_set_id.eq_any(
+                    train_schedule_set::table
+                        .filter(
+                            train_schedule_set::timetable_id.eq_any(
+                                timetable_inheritance::table
+                                    .filter(
+                                        timetable_inheritance::outer_timetable_id.eq(timetable_id),
+                                    )
+                                    .select(timetable_inheritance::inner_timetable_id),
+                            ),
+                        )
+                        .select(train_schedule_set::id),
                 ),
             )
             .order_by(train_schedule_round_trips::id.asc());
