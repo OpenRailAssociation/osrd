@@ -186,6 +186,29 @@ pub fn project_list(user: User) -> Protected<ResourcesList<Project>> {
     })
 }
 
+/// Keeps, among the given projects, the ones a user has access to
+pub fn project_access_filter(user: User, projects: Vec<Project>) -> Protected<Vec<Project>> {
+    subject_roles(Subject::user(user)).then(move |openfga, roles| {
+        async move {
+            if roles.contains(&Role::Admin) || projects.is_empty() {
+                return Ok(projects);
+            }
+
+            let mut checks = openfga.prepare_checks();
+            for project in &projects {
+                checks.push(&Project::has_access().check(&user, project));
+            }
+            let has_access = checks.execute().await?;
+            Ok(projects
+                .into_iter()
+                .zip(has_access)
+                .filter_map(|(project, has_access)| has_access.then_some(project))
+                .collect())
+        }
+        .boxed()
+    })
+}
+
 /// Return an operation that checks the list of subjects which have the owner grant on a project.
 pub fn project_granted_subjects(project: Project, grant: ProjectGrant) -> Protected<Vec<Subject>> {
     fn get_granted_users(project: Project, grant: ProjectGrant) -> Protected<Vec<User>> {
