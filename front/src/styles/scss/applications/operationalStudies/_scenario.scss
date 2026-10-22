@@ -875,6 +875,9 @@
         }
 
         .scenario-timetable-trainschedule-loader {
+          height: 80px;
+          background-color: var(--ambientB10);
+
           .spinner-border {
             position: absolute;
           }
