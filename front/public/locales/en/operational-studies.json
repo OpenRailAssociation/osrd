@@ -423,7 +423,10 @@
       "alertMissingRequestedPoint": "At least two path steps are required to define an itinerary",
       "cancel": "Cancel",
       "cancelMapSelection": "Cancel",
+      "collapseSubForm": "Collapse details",
+      "countryCode": "Country Code",
       "destination": "Destination",
+      "expandSubForm": "Expand details",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "intermediateWaypointsPanel": {
@@ -441,6 +444,7 @@
       "mainCode": "Main code",
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
+      "name": "Name",
       "noComputation": "There will be no computation for this train",
       "opId": "Operational point identifier",
       "opName": "Operational point name",
@@ -448,6 +452,7 @@
       "origin": "Origin",
       "pass": "Pass",
       "requestedPoint": "Point on map",
+      "secondaryCode": "Secondary Code",
       "stop": "Stop",
       "submit": {
         "addService": "Add service",

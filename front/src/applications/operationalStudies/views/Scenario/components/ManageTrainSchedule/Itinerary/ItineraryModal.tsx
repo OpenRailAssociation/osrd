@@ -313,6 +313,7 @@ const ItineraryModal = ({
   const [bannerWiggle, setBannerWiggle] = useState(0);
 
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
+  const [expandedStepKeys, setExpandedStepKeys] = useState<string[]>([]);
   const [mapSelectionStepKey, setMapSelectionStepKey] = useState<string | null>(null);
   const [customTracksByOpKey, setCustomTracksByOpKey] = useState<
     Map<string, { trackId: string; trackName: string }[]>
@@ -1092,6 +1093,17 @@ const ItineraryModal = ({
                     isTrailingPlaceHolder={isTrailingPlaceholder}
                     isOnlyStep={isOnlyStep}
                     isInvalid={isInvalid}
+                    isSubFormExpanded={expandedStepKeys.includes(pathStep.key)}
+                    isPreviousSubFormExpanded={
+                      i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
+                    }
+                    onSubFormToggled={() => {
+                      setExpandedStepKeys(
+                        expandedStepKeys.includes(pathStep.key)
+                          ? expandedStepKeys.filter((key) => key !== pathStep.key)
+                          : [...expandedStepKeys, pathStep.key]
+                      );
+                    }}
                     isMapSelectionMode={isMapSelecting}
                     isDestination={i === pathSteps.length - 2}
                     onStartMapSelection={() => handleStartMapSelection(pathStep.key)}
