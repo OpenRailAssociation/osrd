@@ -1,4 +1,4 @@
-# Converter from OSM to raijson
+# Converter from OSM to railjson
 
 ## Usage
 
