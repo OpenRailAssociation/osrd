@@ -27,7 +27,7 @@ const InteractionButtons = ({
       onClick={reset}
       data-testid={testIdPrefix ? `${testIdPrefix}-reset` : undefined}
     >
-      <Iterations />
+      <Iterations className="icon" />
     </button>
     <button
       type="button"
@@ -35,7 +35,7 @@ const InteractionButtons = ({
       data-testid={testIdPrefix ? `${testIdPrefix}-settings` : undefined}
       onClick={openSettingsPanel}
     >
-      <Sliders />
+      <Sliders className="icon" />
     </button>
   </div>
 );

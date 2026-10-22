@@ -7,6 +7,7 @@ import { ETCS_COLOR_DICTIONARY, MARGINS } from '../consts';
 import type { SpeedSpaceChartProps } from '../SpeedSpaceChart';
 import { getActiveEtcsBrakingCurveTypes, getActiveEtcsBrakingTypes } from '../utils';
 
+const { MARGIN_BOTTOM } = MARGINS;
 const DETAILBOX_MARGIN = 6;
 const DETAILBOX_OFFSET = 12;
 const DETAILBOX_LIMIT = 10;
@@ -46,7 +47,6 @@ const DetailsBox = ({
   previousGradientText,
   modeText,
 }: DetailsBoxProps) => {
-  const { MARGIN_BOTTOM, MARGIN_RIGHT } = MARGINS;
   const { energySource, tractionStatus, declivities, electricalProfiles, powerRestrictions } =
     store.detailsBoxDisplay;
 
@@ -57,7 +57,7 @@ const DetailsBox = ({
   const detailsBoxHeight = document.getElementById('details-box')?.offsetHeight || 0;
 
   // find out if the box is going out off the right side of the canvas
-  if (curveX + detailsBoxWidth > width - MARGIN_RIGHT - DETAILBOX_LIMIT)
+  if (curveX + detailsBoxWidth > width - DETAILBOX_LIMIT)
     rightOffset = detailsBoxWidth + DETAILBOX_OFFSET;
   // find out if the box is going out off the bottom side of the canvas
   if (curveY + detailsBoxHeight > height - MARGIN_BOTTOM - DETAILBOX_LIMIT)
