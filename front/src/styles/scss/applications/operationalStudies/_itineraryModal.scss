@@ -371,7 +371,7 @@
             display: grid;
             grid-template-columns:
               24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-              auto;
+              auto auto;
             align-items: center;
             column-gap: 8px;
             padding-block: 8px;
@@ -549,6 +549,17 @@
               box-shadow: 0 0 0 1.5px var(--grey50);
             }
 
+            .path-step-form-toggle {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--grey50);
+
+              &:hover {
+                color: var(--grey80);
+              }
+            }
+
             .map-interactions {
               margin-left: 5px;
               color: var(--primary60);
@@ -592,6 +603,32 @@
                 &.empty {
                   color: var(--primary20);
                 }
+              }
+            }
+          }
+        }
+
+        .path-step-form-wrapper {
+          background-color: rgba(250, 249, 245, 1);
+
+          .path-step-form-content {
+            width: 60%;
+            margin: auto;
+
+            .path-step-form-codes-wrapper {
+              display: flex;
+              justify-content: space-between;
+
+              .path-step-form-field {
+                position: relative;
+                width: 150px;
+              }
+
+              .path-step-form-required-input {
+                position: absolute;
+                right: 100%;
+                top: 8px;
+                color: var(--info30);
               }
             }
           }
