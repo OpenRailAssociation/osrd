@@ -180,20 +180,15 @@ pub fn infra_set_grant(subject: Subject, infra: Infra, new_grant: InfraGrant) ->
     // Set grant rules:
     // 1. Issuer must have the correct sharing privilege [HasInfraPrivilege]
     // 2. Issuer is admin (may not have any direct grant on the resource)
-    //     1. *can* demote the last owner [Authorizer admin bypass]
+    //     1. can demote the last owner [Authorizer admin bypass]
     //     2. can demote or promote anyone to any grant level otherwise [Authorizer admin bypass]
     //     3. can demote or promote any group [Authorizer admin bypass]
     // 3. Issuer is owner
     //     1. cannot demote the last owner (including self) [IsNotLastInfraOwner]
-    //     2. cannot demote another owner [CanAlterSubjectInfraGrant]
-    //     3. can demote or promote anyone to any grant level otherwise [CanAlterSubjectInfraGrant]
-    //     4. **cannot** demote or promote any group [CanAlterSubjectInfraGrant]
+    //     2. can demote or promote any user/group to any grant level otherwise [CanAlterSubjectInfraGrant]
     // 4. Issuer is anything else
-    //     1. can demote self [HasInfraPrivilege]
-    //     2. cannot promote self [HasInfraPrivilege]
-    //     3. can promote anyone up to their own grant level [CanAlterSubjectInfraGrant + HasInfraPrivilege]
-    //     4. can demote anyone with a strictly lower grant level than their own [CanAlterSubjectInfraGrant]
-    //     5. **cannot** demote or promote any group [CanAlterSubjectInfraGrant]
+    //     1. can promote any user/group up to their own grant level [CanAlterSubjectInfraGrant]
+    //     2. cannot demote anyone [CanAlterSubjectInfraGrant]
     let prot = prot
         .reset_checks() // get rid of revoking-specific checks
         .with_check(Check::HasInfraPrivilege(
@@ -257,15 +252,9 @@ pub fn infra_revoke_grant(subject: Subject, infra: Infra) -> Protected<bool> {
     // Revoking rules:
     // 1. Only owners (and admins) can fully revoke grants
     // 2. The last owner of a resource cannot be revoked (admins can)
-    // 3. An owner cannot revoke another owner
     prot.with_check(Check::HasInfraPrivilege(
         Actor::Issuer,
         InfraPrivilege::CanRevoke,
-        infra,
-    ))
-    .with_check(Check::SubjectEffectiveInfraGrantIsNot(
-        InfraGrant::Owner,
-        subject,
         infra,
     ))
     .with_check(Check::IsNotLastInfraOwner(subject, infra))
@@ -987,7 +976,6 @@ mod tests {
         &[
             Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRevoke, Infra(1)),
             Check::IsNotLastInfraOwner(Subject::user(1), Infra(1)),
-            Check::SubjectEffectiveInfraGrantIsNot(InfraGrant::Owner, Subject::user(1), Infra(1))
         ]
     )]
     #[case::infra_privileges(

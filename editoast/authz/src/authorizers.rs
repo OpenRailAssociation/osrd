@@ -12,6 +12,7 @@ use crate::Role;
 use crate::RollingStockGrant;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::v2;
 use crate::v2::Access;
 use crate::v2::Actor;
@@ -129,10 +130,10 @@ impl<'c> UserAuthorizer<'c> {
                 (!privileges.contains(privilege)).then_some(check)
             }
 
-            Check::CanAlterSubjectInfraGrant(subject @ Subject::User(_), infra, new_grant) => {
+            Check::CanAlterSubjectInfraGrant(subject, infra, new_grant) => {
                 let issuer = self.issuer();
                 let Ok((issuer_grant, current_grant)) = v2::infra_effective_grant(issuer, *infra)
-                    .zip(v2::infra_effective_grant(*subject, *infra))
+                    .zip(v2::infra_direct_grant(*subject, *infra))
                     .access_authorized::<Infallible>(self.openfga)
                     .access()
                     .await?;
@@ -142,22 +143,17 @@ impl<'c> UserAuthorizer<'c> {
                 };
 
                 current_grant.and_then(|current_grant| {
-                    let no_op = current_grant == *new_grant;
-                    let altering_self = issuer == *subject;
-                    let altering_underling = current_grant < issuer_grant;
-                    let promoting_above_me = issuer_grant < *new_grant;
-                    (!promoting_above_me && (no_op || altering_self || altering_underling))
+                    let is_owner = issuer_grant == InfraGrant::Owner;
+                    let self_altering = issuer == *subject && current_grant != *new_grant;
+                    let promoting = current_grant <= *new_grant;
+                    let promoting_below_me = *new_grant <= issuer_grant;
+                    (is_owner || (promoting && promoting_below_me && !self_altering))
                         .not()
                         .then_some(check)
                 })
             }
-            Check::CanAlterSubjectInfraGrant(Subject::Group(_), _, _) => {
-                // The only users allowed to alter groups grants are admins who bypass this entire
-                // verification function.
-                Some(check)
-            }
 
-            Check::CanGiveSubjectProjectGrant(Subject::User(_), project) => {
+            Check::CanGiveSubjectProjectGrant(_, project) => {
                 // There is only one level of grant. The issuer must own a grant on the project to
                 // share it to other users.
                 let Ok(grant) = v2::project_effective_grant(self.issuer(), *project)
@@ -170,12 +166,6 @@ impl<'c> UserAuthorizer<'c> {
                     None => Some(check),
                 }
             }
-            Check::CanGiveSubjectProjectGrant(Subject::Group(_), _) => {
-                // The only users to allowed to alter group grants are admins who bypass this entire
-                // verification function: trying to give a grant to a group in the UserAuthorizer should
-                // always be rejected
-                Some(check)
-            }
 
             Check::SubjectEffectiveInfraGrantIsNot(grant, subject, infra) => {
                 let Ok(subject_grant) = v2::infra_effective_grant(*subject, *infra)
@@ -184,15 +174,11 @@ impl<'c> UserAuthorizer<'c> {
                     .await?;
                 (subject_grant == Some(*grant)).then_some(check)
             }
-            Check::CanAlterSubjectRollingStockGrant(
-                subject @ Subject::User(_),
-                rolling_stock,
-                new_grant,
-            ) => {
+            Check::CanAlterSubjectRollingStockGrant(subject, rolling_stock, new_grant) => {
                 let issuer = self.issuer();
                 let Ok((issuer_grant, current_grant)) =
                     v2::rolling_stock_effective_grant(issuer, *rolling_stock)
-                        .zip(v2::rolling_stock_effective_grant(*subject, *rolling_stock))
+                        .zip(v2::rolling_stock_direct_grant(*subject, *rolling_stock))
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
                         .await?;
@@ -202,19 +188,14 @@ impl<'c> UserAuthorizer<'c> {
                 };
 
                 current_grant.and_then(|current_grant| {
-                    let no_op = current_grant == *new_grant;
-                    let altering_self = issuer == *subject;
-                    let altering_underling = current_grant < issuer_grant;
-                    let promoting_above_me = issuer_grant < *new_grant;
-                    (!promoting_above_me && (no_op || altering_self || altering_underling))
+                    let is_owner = issuer_grant == RollingStockGrant::Owner;
+                    let self_altering = issuer == *subject && current_grant != *new_grant;
+                    let promoting = current_grant <= *new_grant;
+                    let promoting_below_me = *new_grant <= issuer_grant;
+                    (is_owner || (promoting && promoting_below_me && !self_altering))
                         .not()
                         .then_some(check)
                 })
-            }
-            Check::CanAlterSubjectRollingStockGrant(Subject::Group(_), _, _) => {
-                // The only users allowed to alter groups grants are admins who bypass this entire
-                // verification function.
-                Some(check)
             }
             Check::SubjectEffectiveRollingStockGrantIsNot(grant, subject, rolling_stock) => {
                 let Ok(subject_grant) = v2::rolling_stock_effective_grant(*subject, *rolling_stock)
@@ -224,15 +205,27 @@ impl<'c> UserAuthorizer<'c> {
                 (subject_grant == Some(*grant)).then_some(check)
             }
             Check::IsNotLastInfraOwner(subject, infra) => {
-                let Ok(owners) = v2::infra_granted_subjects(*infra, InfraGrant::Owner)
-                    .access_authorized::<Infallible>(self.openfga)
-                    .access()
-                    .await?;
+                let Ok(owners) =
+                    v2::infra_granted_subjects(*infra, InfraGrant::Owner, GrantType::Direct)
+                        .access_authorized::<Infallible>(self.openfga)
+                        .access()
+                        .await?;
                 (owners.len() == 1 && owners.contains(subject)).then_some(check)
             }
             Check::IsNotLastRollingStockOwner(subject, rolling_stock) => {
+                let Ok(owners) = v2::rolling_stock_granted_subjects(
+                    *rolling_stock,
+                    RollingStockGrant::Owner,
+                    GrantType::Direct,
+                )
+                .access_authorized::<Infallible>(self.openfga)
+                .access()
+                .await?;
+                (owners.len() == 1 && owners.contains(subject)).then_some(check)
+            }
+            Check::IsNotLastProjectOwner(subject, project) => {
                 let Ok(owners) =
-                    v2::rolling_stock_granted_subjects(*rolling_stock, RollingStockGrant::Owner)
+                    v2::project_granted_subjects(*project, ProjectGrant::Owner, GrantType::Direct)
                         .access_authorized::<Infallible>(self.openfga)
                         .access()
                         .await?;
@@ -483,20 +476,19 @@ mod tests {
         #[case::target_user_10(ISSUER_OWNER, USER_READER, InfraGrant::Owner, true)]
         #[case::target_user_11(ISSUER_OWNER, USER_WRITER, InfraGrant::Owner, true)]
         #[case::target_user_12(ISSUER_OWNER, USER_OWNER, InfraGrant::Owner, true)]
-        // non-admins cannot grant groups
-        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, InfraGrant::Reader, false)]
-        #[case::target_group_2(ISSUER_READER, GROUP_READER, InfraGrant::Reader, false)]
+        // a user grants groups (same tests)
+        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, InfraGrant::Reader, true)]
+        #[case::target_group_2(ISSUER_READER, GROUP_READER, InfraGrant::Reader, true)]
         #[case::target_group_3(ISSUER_READER, GROUP_WRITER, InfraGrant::Reader, false)]
         #[case::target_group_4(ISSUER_READER, GROUP_OWNER, InfraGrant::Reader, false)]
-        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, InfraGrant::Writer, false)]
-        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, InfraGrant::Writer, false)]
-        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, InfraGrant::Writer, false)]
+        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, InfraGrant::Writer, true)]
+        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, InfraGrant::Writer, true)]
+        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, InfraGrant::Writer, true)]
         #[case::target_group_8(ISSUER_WRITER, GROUP_OWNER, InfraGrant::Writer, false)]
-        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, InfraGrant::Owner, false)]
-        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, InfraGrant::Owner, false)]
-        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, InfraGrant::Owner, false)]
-        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, InfraGrant::Owner, false)]
-        // targeting self is allowed within privilege limits
+        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, InfraGrant::Owner, true)]
+        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, InfraGrant::Owner, true)]
+        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, InfraGrant::Owner, true)]
+        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, InfraGrant::Owner, true)]
         #[case::target_self_1(
             ISSUER_READER,
             Subject::User(ISSUER_READER),
@@ -509,6 +501,14 @@ mod tests {
             InfraGrant::Writer,
             true
         )]
+        #[case::target_self_3(
+            ISSUER_WRITER,
+            Subject::User(ISSUER_WRITER),
+            InfraGrant::Reader,
+            false
+        )]
+        #[case::target_self_4(ISSUER_OWNER, Subject::User(ISSUER_OWNER), InfraGrant::Reader, true)]
+        #[case::target_self_5(ISSUER_OWNER, Subject::User(ISSUER_OWNER), InfraGrant::Owner, true)]
         #[case::target_self_3(ISSUER_OWNER, Subject::User(ISSUER_OWNER), InfraGrant::Owner, true)]
         // a user with no grant do not have the privilege to share grants
         #[case::unreachable(ISSUER_NOTHING, USER_NOTHING, InfraGrant::Reader, false)]
@@ -595,20 +595,20 @@ mod tests {
         #[case::target_user_10(ISSUER_OWNER, USER_READER, RollingStockGrant::Owner, true)]
         #[case::target_user_11(ISSUER_OWNER, USER_WRITER, RollingStockGrant::Owner, true)]
         #[case::target_user_12(ISSUER_OWNER, USER_OWNER, RollingStockGrant::Owner, true)]
-        // non-admins cannot grant groups
-        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, RollingStockGrant::Reader, false)]
-        #[case::target_group_2(ISSUER_READER, GROUP_READER, RollingStockGrant::Reader, false)]
+        // a user grants groups (same test as for users)
+        #[case::target_group_1(ISSUER_READER, GROUP_NOTHING, RollingStockGrant::Reader, true)]
+        #[case::target_group_2(ISSUER_READER, GROUP_READER, RollingStockGrant::Reader, true)]
         #[case::target_group_3(ISSUER_READER, GROUP_WRITER, RollingStockGrant::Reader, false)]
         #[case::target_group_4(ISSUER_READER, GROUP_OWNER, RollingStockGrant::Reader, false)]
-        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, RollingStockGrant::Writer, false)]
-        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, RollingStockGrant::Writer, false)]
-        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, RollingStockGrant::Writer, false)]
+        #[case::target_group_5(ISSUER_WRITER, GROUP_NOTHING, RollingStockGrant::Writer, true)]
+        #[case::target_group_6(ISSUER_WRITER, GROUP_READER, RollingStockGrant::Writer, true)]
+        #[case::target_group_7(ISSUER_WRITER, GROUP_WRITER, RollingStockGrant::Writer, true)]
         #[case::target_group_8(ISSUER_WRITER, GROUP_OWNER, RollingStockGrant::Writer, false)]
-        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, RollingStockGrant::Owner, false)]
-        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, RollingStockGrant::Owner, false)]
-        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, RollingStockGrant::Owner, false)]
-        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, RollingStockGrant::Owner, false)]
-        // targeting self is allowed within privilege limits
+        #[case::target_group_9(ISSUER_OWNER, GROUP_NOTHING, RollingStockGrant::Owner, true)]
+        #[case::target_group_10(ISSUER_OWNER, GROUP_READER, RollingStockGrant::Owner, true)]
+        #[case::target_group_11(ISSUER_OWNER, GROUP_WRITER, RollingStockGrant::Owner, true)]
+        #[case::target_group_12(ISSUER_OWNER, GROUP_OWNER, RollingStockGrant::Owner, true)]
+        // targeting self is not allowed except for no-op ( a none-admin user cannot remove grant) and admin
         #[case::target_self_1(
             ISSUER_READER,
             Subject::User(ISSUER_READER),
@@ -622,6 +622,18 @@ mod tests {
             true
         )]
         #[case::target_self_3(
+            ISSUER_WRITER,
+            Subject::User(ISSUER_WRITER),
+            RollingStockGrant::Reader,
+            false
+        )]
+        #[case::target_self_4(
+            ISSUER_OWNER,
+            Subject::User(ISSUER_OWNER),
+            RollingStockGrant::Reader,
+            true
+        )]
+        #[case::target_self_5(
             ISSUER_OWNER,
             Subject::User(ISSUER_OWNER),
             RollingStockGrant::Owner,

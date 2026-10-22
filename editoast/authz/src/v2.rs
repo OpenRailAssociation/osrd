@@ -76,16 +76,11 @@ pub enum Check {
     /// The issuer must be allowed to change the subject's infra grant
     ///
     /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.
-    /// No-op grant changes are allowed.
     /// IMPORTANT: it is *NOT* a replacement for [`Self::HasInfraPrivilege`] with sharing privileges (forbids illegal promotions)
-    /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
     CanAlterSubjectInfraGrant(Subject, Infra, InfraGrant),
     /// The issuer must be allowed to change the subject's infra grant
     ///
     /// No-op grant changes are allowed.
-    /// As [ProjectGrant] has only one grant level so anoyone with this grant has sharing privileges.
-    /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
-    CanGiveSubjectProjectGrant(Subject, Project),
     /// The subject must not have the specified effective infra grant
     SubjectEffectiveInfraGrantIsNot(InfraGrant, Subject, Infra),
     /// The subject must not be the last direct owner of the infra
@@ -93,14 +88,16 @@ pub enum Check {
     /// The issuer must be allowed to change the subject's rolling stock grant
     ///
     /// Ensures that the issuer cannot demote a more or equally privileged user, except themself.
-    /// No-op grant changes are allowed.
     /// IMPORTANT: it is *NOT* a replacement for [`Self::HasRollingStockPrivilege`] with sharing privileges (forbids illegal promotions)
-    /// NOTE: groups grants are managed by admins exclusively so this check always rejects group subjects as admin checks are bypassed
     CanAlterSubjectRollingStockGrant(Subject, RollingStock, RollingStockGrant),
     /// The subject must not have the specified effective rolling stock grant
     SubjectEffectiveRollingStockGrantIsNot(RollingStockGrant, Subject, RollingStock),
     /// The subject must not be the last direct owner of the rolling stock
     IsNotLastRollingStockOwner(Subject, RollingStock),
+    /// As [ProjectGrant] has only one grant level so anoyone with this grant has sharing privileges.
+    CanGiveSubjectProjectGrant(Subject, Project),
+    /// The subject must not be the last direct owner of the project
+    IsNotLastProjectOwner(Subject, Project),
 }
 
 /// The result of authorizing a [Protected] operation via [Authorizer::authorize]
