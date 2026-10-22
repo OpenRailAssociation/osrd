@@ -6,7 +6,7 @@ import type {
   ExpressionSpecification,
   FilterSpecification,
 } from 'maplibre-gl';
-import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -19,6 +19,8 @@ import {
   trackNameLayer,
 } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
+import type { LayerProps } from '../types';
+import { adaptFilter } from './adaptFilter';
 
 function getColorByHighlighted(data: {
   highlightedArea?: Geometry;
@@ -64,12 +66,15 @@ function getFilterHighlighted(
   return result;
 }
 
+const NO_HIDDEN_IDS: string[] = [];
+
 type OperationalPointsProps = {
   colors: Theme;
   layerOrder: number;
   mutedLayerOrder: number;
   operationnalPointId?: string;
   highlightedArea?: Geometry;
+  hiddenIds?: string[];
 };
 
 const OperationalPointsLayer = ({
@@ -78,6 +83,7 @@ const OperationalPointsLayer = ({
   mutedLayerOrder,
   operationnalPointId,
   highlightedArea,
+  hiddenIds = NO_HIDDEN_IDS,
 }: OperationalPointsProps) => {
   const { infraId, highlightedOperationalPoints } = useMapContext();
 
@@ -269,7 +275,11 @@ const OperationalPointsLayer = ({
       type="vector"
       url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer {...point} id="osrd_operational_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...adaptFilter(point, hiddenIds, [])}
+        id="osrd_operational_point/geo"
+        layerOrder={layerOrder}
+      />
       <OrderedLayer
         {...{
           ...trackNameLayer(colors, highlightedArea),
@@ -282,11 +292,15 @@ const OperationalPointsLayer = ({
         layerOrder={layerOrder}
         source-layer={MAP_TRACK_SOURCE_LAYER}
       />
-      <OrderedLayer {...name} id="osrd_operational_point_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...adaptFilter(name, hiddenIds, [])}
+        id="osrd_operational_point_name/geo"
+        layerOrder={layerOrder}
+      />
 
       {highlightedOperationalPoints && highlightedOperationalPoints.length > 0 && (
         <OrderedLayer
-          {...nameMuted}
+          {...adaptFilter(nameMuted, hiddenIds, [])}
           id="osrd_operational_point_name_muted/geo"
           layerOrder={mutedLayerOrder}
         />
