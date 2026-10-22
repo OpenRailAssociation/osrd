@@ -371,8 +371,10 @@ mod tests {
             .await;
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
-        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_1 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
+        let train_schedule_2 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
         let linking_1 = TrainScheduleLinking::changeset()
             .timetable_id(timetable.id)
             .source_train_schedule_id(train_schedule_1.id)
@@ -459,8 +461,10 @@ mod tests {
             .await;
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
-        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_1 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
+        let train_schedule_2 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
 
         let source = LinkingOccurrenceId::PacedOccurrence {
             train_schedule_id: train_schedule_1.id,
@@ -502,8 +506,10 @@ mod tests {
             .await;
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
-        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_1 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
+        let train_schedule_2 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
 
         TrainScheduleLinking::changeset()
             .timetable_id(timetable.id)
@@ -583,8 +589,10 @@ mod tests {
             .await;
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
-        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_1 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
+        let train_schedule_2 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
         let linking_1 = TrainScheduleLinking::changeset()
             .timetable_id(timetable.id)
             .source_train_schedule_id(train_schedule_1.id)
@@ -630,8 +638,10 @@ mod tests {
             .await;
 
         let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
-        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
+        let train_schedule_1 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
+        let train_schedule_2 =
+            create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
 
         let linking = TrainScheduleLinking::changeset()
             .timetable_id(timetable.id)

@@ -66,7 +66,6 @@ impl Scenario {
         use database::tables::scenario_timetable;
         use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
-        use database::tables::train_schedule_set;
         use diesel::dsl::count;
         use diesel::expression_methods::AggregateExpressionMethods as _;
 
@@ -77,13 +76,8 @@ impl Scenario {
                         .eq(scenario_timetable::timetable_id)),
             )
             .inner_join(
-                train_schedule_set::table
-                    .on(train_schedule_set::timetable_id
-                        .eq(timetable_inheritance::inner_timetable_id)),
-            )
-            .inner_join(
                 train_schedule::table
-                    .on(train_schedule::train_schedule_set_id.eq(train_schedule_set::id)),
+                    .on(train_schedule::timetable_id.eq(timetable_inheritance::inner_timetable_id)),
             )
             .filter(scenario_timetable::scenario_id.eq(self.id))
             .select(count(train_schedule::id).aggregate_distinct())

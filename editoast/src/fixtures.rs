@@ -80,7 +80,7 @@ pub async fn create_timetable_with_simple_paced_train(
     conn: &mut DbConnection,
 ) -> (Timetable, models::TrainSchedule) {
     let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-    let train_schedule = create_simple_paced_train(conn, train_schedule_set.id).await;
+    let train_schedule = create_simple_paced_train(conn, train_schedule_set.timetable_id).await;
 
     (timetable, train_schedule)
 }
@@ -159,18 +159,15 @@ pub fn simple_paced_train_base() -> TrainSchedule {
     }
 }
 
-pub fn simple_paced_train_changeset(
-    train_schedule_set_id: i64,
-) -> Changeset<models::TrainSchedule> {
-    Changeset::<models::TrainSchedule>::from(simple_paced_train_base())
-        .train_schedule_set_id(train_schedule_set_id)
+pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::TrainSchedule> {
+    Changeset::<models::TrainSchedule>::from(simple_paced_train_base()).timetable_id(timetable_id)
 }
 
 pub async fn create_simple_paced_train(
     conn: &mut DbConnection,
-    train_schedule_set_id: i64,
+    timetable_id: i64,
 ) -> models::TrainSchedule {
-    simple_paced_train_changeset(train_schedule_set_id)
+    simple_paced_train_changeset(timetable_id)
         .create(conn)
         .await
         .expect("Failed to create paced train")

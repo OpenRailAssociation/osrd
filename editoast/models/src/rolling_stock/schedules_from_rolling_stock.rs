@@ -18,7 +18,6 @@ use database::tables::scenario_timetable;
 use database::tables::study;
 use database::tables::timetable_inheritance;
 use database::tables::train_schedule;
-use database::tables::train_schedule_set;
 
 use super::RollingStock;
 
@@ -61,11 +60,9 @@ impl RollingStock {
             .inner_join(
                 rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
             )
-            .inner_join(train_schedule_set::table)
             .inner_join(
                 timetable_inheritance::table
-                    .on(train_schedule_set::timetable_id
-                        .eq(timetable_inheritance::inner_timetable_id)),
+                    .on(train_schedule::timetable_id.eq(timetable_inheritance::inner_timetable_id)),
             )
             .inner_join(
                 scenario_timetable::table

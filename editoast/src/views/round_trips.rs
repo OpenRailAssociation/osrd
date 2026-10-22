@@ -221,12 +221,12 @@ mod tests {
 
     async fn create_dummy_schedules(
         conn: &mut DbConnection,
-        train_schedule_set_id: i64,
+        timetable_id: i64,
         count: usize,
     ) -> Vec<models::TrainSchedule> {
         let mut train_schedules = Vec::with_capacity(count);
         for _ in 0..count {
-            train_schedules.push(create_simple_paced_train(conn, train_schedule_set_id).await);
+            train_schedules.push(create_simple_paced_train(conn, timetable_id).await);
         }
         train_schedules
     }
@@ -255,7 +255,7 @@ mod tests {
         let (_, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let train_schedules =
-            create_dummy_schedules(&mut db_pool.get_ok(), train_schedule_set.id, 4).await;
+            create_dummy_schedules(&mut db_pool.get_ok(), train_schedule_set.timetable_id, 4).await;
         let train_ids = train_schedules
             .iter()
             .map(|train_schedule| train_schedule.id)
@@ -303,7 +303,7 @@ mod tests {
         let (_, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let train_schedules =
-            create_dummy_schedules(&mut db_pool.get_ok(), train_schedule_set.id, 5).await;
+            create_dummy_schedules(&mut db_pool.get_ok(), train_schedule_set.timetable_id, 5).await;
         let train_ids = train_schedules
             .iter()
             .map(|train_schedule| train_schedule.id)
@@ -348,7 +348,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let train_schedules =
-            create_dummy_schedules(&mut db_pool.get_ok(), train_schedule_set.id, 6).await;
+            create_dummy_schedules(&mut db_pool.get_ok(), train_schedule_set.timetable_id, 6).await;
         let train_ids = train_schedules
             .iter()
             .map(|train_schedule| train_schedule.id)
@@ -373,7 +373,8 @@ mod tests {
         let (_, other_train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let other_train_schedule =
-            create_simple_paced_train(&mut db_pool.get_ok(), other_train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), other_train_schedule_set.timetable_id)
+                .await;
         TrainScheduleRoundTrips::create_batch::<_, Vec<_>>(
             &mut db_pool.get_ok(),
             [TrainScheduleRoundTrips::changeset().left_id(other_train_schedule.id)],
