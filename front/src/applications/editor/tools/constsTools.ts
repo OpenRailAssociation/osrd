@@ -1,4 +1,5 @@
 import TOOL_NAMES from './constsToolNames';
+import OpEditionTool from './opEdition/tool';
 import {
   BufferStopEditionTool,
   DetectorEditionTool,
@@ -23,6 +24,7 @@ const TOOLS = Object.freeze({
   [TOOL_NAMES.DETECTOR_EDITION]: DetectorEditionTool,
   [TOOL_NAMES.BUFFER_STOP_EDITION]: BufferStopEditionTool,
   [TOOL_NAMES.ROUTE_EDITION]: RouteEditionTool,
+  [TOOL_NAMES.OP_EDITION]: OpEditionTool,
 });
 
 export default TOOLS;

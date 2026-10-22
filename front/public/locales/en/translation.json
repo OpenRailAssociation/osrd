@@ -208,6 +208,37 @@
         },
         "label": "Electrification tool"
       },
+      "op-edition": {
+        "actions": {
+          "confirm-delete-op": "Are you sure you want to delete the operational point?",
+          "delete-op": "Delete the operational point",
+          "new-op": "Create a new operational point",
+          "reset-op": "Reset the operational point",
+          "save-op": "Save the operational point"
+        },
+        "center-part": "Center the map on the part",
+        "create-op": "Create a new operational point",
+        "edit-op": "Edit an operational point",
+        "fields": {
+          "country_code": "Country code",
+          "is_passenger_station": "Passenger station",
+          "main_code": "Main code (trigram)",
+          "name": "Name",
+          "plc": "Primary location code (PLC)",
+          "secondary_code": "Secondary code (CH)",
+          "secondary_name": "Secondary name (CH label)",
+          "uic": "UIC code"
+        },
+        "label": "Operational point tool",
+        "no-parts": "Click on a track section to add a part",
+        "part-fields": {
+          "kp": "KP",
+          "local_track_name": "Local track name",
+          "position": "Offset"
+        },
+        "parts": "Parts",
+        "track-error": "Could not load the track section \"{{id}}\""
+      },
       "point-edition": {
         "default-routes-error": "An error occurred while loading linked routes.",
         "help": {

@@ -18,6 +18,8 @@ import type { Layer } from 'applications/editor/consts';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type { OpEditionState } from 'applications/editor/tools/opEdition/types';
 import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
@@ -119,6 +121,13 @@ const MapUnplugged = ({
     () => (activeTool.getEventsLayers ? activeTool.getEventsLayers(extendedContext) : null),
     [activeTool, extendedContext]
   );
+
+  // The OP layer is shared by all tools, so the edited OP is hidden here.
+  // The tool ID check ensures the tool state is OpEditionState:
+  const hiddenOperationalPoints =
+    activeTool.id === TOOL_NAMES.OP_EDITION
+      ? [(toolState as unknown as OpEditionState).entity.properties.id]
+      : undefined;
 
   const cursor = useMemo(
     () =>
@@ -311,6 +320,8 @@ const MapUnplugged = ({
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
               mutedLayerOrder={LAYER_GROUPS_ORDER[LAYERS.MUTED_OPERATIONAL_POINTS.GROUP]}
+              hidden={hiddenOperationalPoints}
+              fingerprint={context.renderingFingerprint}
             />
           )}
 

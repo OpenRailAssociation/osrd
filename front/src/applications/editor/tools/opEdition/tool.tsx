@@ -1,0 +1,120 @@
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
+import { isEqual } from 'lodash';
+import { AiFillSave } from 'react-icons/ai';
+import { BiReset } from 'react-icons/bi';
+import { RiPinDistanceLine } from 'react-icons/ri';
+
+import type { Tool } from 'applications/editor/types';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { save } from 'reducers/editor/thunkActions';
+
+import OpEditionLayers from './components/OpEditionLayers';
+import OpEditionLeftPanel from './components/OpEditionLeftPanel';
+import type { OpEditionState, OpEntity } from './types';
+import { canSaveOp, getOpEditionState, isNewOp } from './utils';
+
+const OpEditionTool: Tool<OpEditionState> = {
+  id: 'op-edition',
+  icon: RiPinDistanceLine,
+  labelTranslationKey: 'Editor.tools.op-edition.label',
+  requiredLayers: new Set(['operational_points', 'track_sections']),
+  getInitialState: () => getOpEditionState(),
+  actions: [
+    [
+      {
+        id: 'save-op',
+        icon: AiFillSave,
+        labelTranslationKey: 'Editor.tools.op-edition.actions.save-op',
+        isDisabled({ isLoading, isInfraLocked, state: { entity } }) {
+          return isLoading || isInfraLocked || !canSaveOp(entity);
+        },
+        onClick({
+          state: { entity, initialEntity },
+          setState,
+          dispatch,
+          infraID,
+          forceRender,
+          protectedAction,
+        }) {
+          protectedAction?.(async () => {
+            const result = await dispatch(
+              save(
+                infraID,
+                isNewOp(entity)
+                  ? { create: [entity] }
+                  : { update: [{ source: initialEntity, target: entity }] }
+              )
+            );
+            setState(getOpEditionState({ ...entity, properties: result[0].railjson } as OpEntity));
+            // Forces fetching the updated OP tiles, to get an up-to-date
+            // render on other tools later on:
+            forceRender();
+          });
+        },
+      },
+      {
+        id: 'reset-op',
+        icon: BiReset,
+        labelTranslationKey: 'Editor.tools.op-edition.actions.reset-op',
+        isDisabled({ state: { entity, initialEntity } }) {
+          return isEqual(entity, initialEntity);
+        },
+        onClick({ state: { initialEntity }, setState }) {
+          setState(getOpEditionState(initialEntity));
+        },
+      },
+    ],
+    [
+      {
+        id: 'new-op',
+        icon: PlusCircle,
+        labelTranslationKey: 'Editor.tools.op-edition.actions.new-op',
+        onClick({ setState }) {
+          setState(getOpEditionState());
+        },
+      },
+    ],
+    [
+      {
+        id: 'delete-op',
+        icon: Trash,
+        labelTranslationKey: 'Editor.tools.op-edition.actions.delete-op',
+        isDisabled({ state: { initialEntity } }) {
+          return isNewOp(initialEntity);
+        },
+        onClick({
+          infraID,
+          openModal,
+          closeModal,
+          forceRender,
+          state,
+          setState,
+          dispatch,
+          t,
+          protectedAction,
+        }) {
+          protectedAction?.(() => {
+            openModal(
+              <ConfirmModal
+                title={t('Editor.tools.op-edition.actions.delete-op')}
+                onConfirm={async () => {
+                  await dispatch(save(infraID, { delete: [state.initialEntity] }));
+                  setState(getOpEditionState());
+                  closeModal();
+                  forceRender();
+                }}
+              >
+                <p>{t('Editor.tools.op-edition.actions.confirm-delete-op')}</p>
+              </ConfirmModal>
+            );
+          });
+        },
+      },
+    ],
+  ],
+
+  layersComponent: OpEditionLayers,
+  leftPanelComponent: OpEditionLeftPanel,
+};
+
+export default OpEditionTool;
