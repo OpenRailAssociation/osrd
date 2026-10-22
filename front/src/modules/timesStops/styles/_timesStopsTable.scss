@@ -404,6 +404,14 @@
         }
       }
 
+      .power-restriction-disabled {
+        background: var(--grey10);
+
+        select {
+          cursor: not-allowed;
+        }
+      }
+
       &.power-restriction-incompatible {
         background: var(--warning5);
 
