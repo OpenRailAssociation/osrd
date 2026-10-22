@@ -231,7 +231,8 @@
           "uic": "Code UIC"
         },
         "help": {
-          "init": "Cliquez sur une section de voie pour ajouter un point au point remarquable"
+          "drag-part": "Relâchez pour poser le point",
+          "init": "Cliquez sur une section de voie pour ajouter un point au point remarquable, ou faites glisser un point existant pour le déplacer"
         },
         "label": "Outil \"PR\"",
         "no-parts": "Cliquez sur une section de voie pour ajouter un point",
@@ -241,7 +242,7 @@
           "position": "Position"
         },
         "parts": "Points sur voie",
-        "select-part": "Cliquez pour sélectionner ce point",
+        "select-part": "Cliquez pour sélectionner ce point, ou faites-le glisser pour le déplacer",
         "track-error": "Impossible de charger la section de voie \"{{id}}\""
       },
       "point-edition": {

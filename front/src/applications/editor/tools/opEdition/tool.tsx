@@ -5,7 +5,10 @@ import { BiReset } from 'react-icons/bi';
 import { RiPinDistanceLine } from 'react-icons/ri';
 
 import { TRACKS_LAYER_ID } from 'applications/editor/tools/consts';
-import { approximatePointDistanceForEditoast } from 'applications/editor/tools/utils';
+import {
+  approximatePointDistanceForEditoast,
+  getTrackPositionFromEvent,
+} from 'applications/editor/tools/utils';
 import type { Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
@@ -16,7 +19,14 @@ import OpEditionLeftPanel from './components/OpEditionLeftPanel';
 import OpEditionMessages from './components/OpEditionMessages';
 import { PARTS_LAYER_ID } from './consts';
 import type { OpEditionState, OpEntity } from './types';
-import { addPart, canSaveOp, getFeaturePartIndex, getOpEditionState, isNewOp } from './utils';
+import {
+  addPart,
+  canSaveOp,
+  getFeaturePartIndex,
+  getOpEditionState,
+  isNewOp,
+  updatePart,
+} from './utils';
 
 const OpEditionTool: Tool<OpEditionState> = {
   id: 'op-edition',
@@ -118,7 +128,8 @@ const OpEditionTool: Tool<OpEditionState> = {
     ],
   ],
 
-  getCursor({ state: { hovered, hoveredPartIndex } }) {
+  getCursor({ state: { interactionState, hovered, hoveredPartIndex } }) {
+    if (interactionState.type === 'movePart') return 'grabbing';
     if (hovered || hoveredPartIndex !== null) return 'pointer';
     return 'default';
   },
@@ -136,9 +147,37 @@ const OpEditionTool: Tool<OpEditionState> = {
       setState({ hovered: null, hoveredPartIndex: null });
     }
   },
-  onMove(e, { setState, state: { hoveredPartIndex } }) {
-    // onHover is not called when nothing is hovered
+  onMouseDown(e, { setState }) {
+    const partIndex = getFeaturePartIndex(e.features?.[0]);
+    if (partIndex === null) return;
+    // Prevents the map from panning
+    e.preventDefault();
+    setState({
+      hoveredPartIndex: null,
+      selectedPartIndex: partIndex,
+      interactionState: { type: 'movePart', partIndex },
+    });
+  },
+  onMouseUp(_e, { setState, state: { interactionState } }) {
+    if (interactionState.type === 'movePart') setState({ interactionState: { type: 'idle' } });
+  },
+  onMove(
+    e,
+    { setState, state: { entity, interactionState, trackSectionsCache, hoveredPartIndex } }
+  ) {
+    // Clean hoveredPartIndex, to remove the hovered item overlay while dragging:
     if (!e.features?.length && hoveredPartIndex !== null) setState({ hoveredPartIndex: null });
+    if (interactionState.type !== 'movePart') return;
+
+    // This detects when the mouse is released outside the map (so onMouseUp was not triggered):
+    if (e.originalEvent.buttons === 0) {
+      setState({ interactionState: { type: 'idle' } });
+      return;
+    }
+
+    const newPosition = getTrackPositionFromEvent(e, trackSectionsCache);
+    if (newPosition)
+      setState({ entity: updatePart(entity, interactionState.partIndex, newPosition) });
   },
   onClickMap(e, { setState, state: { entity, trackSectionsCache } }) {
     const feature = e.features?.[0];
