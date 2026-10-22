@@ -14,6 +14,7 @@ use crate::RollingStock;
 use crate::RollingStockGrant;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::model::RollingStockPrivilege;
 use crate::v2::ResourcesList;
 use crate::v2::add_members;
@@ -229,7 +230,7 @@ impl TestClientExt for fga::Client {
     async fn infra_granted_subjects(&self, infra: Infra, grant: InfraGrant) -> Vec<Subject> {
         let authorize = special_authorizers::Authorize(self);
         authorize
-            .access_value(infra_granted_subjects(infra, grant))
+            .access_value(infra_granted_subjects(infra, grant, GrantType::Effective))
             .await
             .unwrap()
     }
@@ -310,7 +311,11 @@ impl TestClientExt for fga::Client {
     ) -> Vec<Subject> {
         let authorize = special_authorizers::Authorize(self);
         authorize
-            .access_value(rolling_stock_granted_subjects(rolling_stock, grant))
+            .access_value(rolling_stock_granted_subjects(
+                rolling_stock,
+                grant,
+                GrantType::Effective,
+            ))
             .await
             .unwrap()
     }
@@ -382,7 +387,11 @@ impl TestClientExt for fga::Client {
         grant: ProjectGrant,
     ) -> Vec<Subject> {
         special_authorizers::Authorize(self)
-            .access_value(project_granted_subjects(project, grant))
+            .access_value(project_granted_subjects(
+                project,
+                grant,
+                GrantType::Effective,
+            ))
             .await
             .unwrap()
     }

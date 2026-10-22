@@ -96,6 +96,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}`,
+          params: {
+            direct_grant: queryArg.directGrant,
+          },
         }),
         providesTags: ['authz'],
       }),
@@ -1720,7 +1723,7 @@ export type PostAuthzUserInfoApiArg = {
   };
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
-  /** status 200 Get list of user that have a grant on the resource */ {
+  /** status 200 List of users and groups that have a grant on the resource. */ {
     grant: StandardGrant;
     id: number;
     name: string;
@@ -1729,6 +1732,7 @@ export type GetAuthzByResourceTypeAndResourceIdApiResponse =
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceType: ResourceType;
   resourceId: number;
+  directGrant?: boolean;
 };
 export type GetCatalogEntriesApiResponse =
   /** status 200 List of catalog entries */ PaginationStats & {

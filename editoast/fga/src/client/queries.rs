@@ -1,12 +1,18 @@
 use std::collections::HashMap;
 use std::str::FromStr as _;
 
+use futures::TryStreamExt as _;
 use tracing::Instrument as _;
 use uuid::Uuid;
+
+use crate::client::Continuation;
+use crate::client::UntypedTuple;
+use crate::client::UserOrUserset;
 
 use crate::model::AsUser;
 use crate::model::Check;
 use crate::model::Object as _;
+use crate::model::QueryDirectUsers;
 use crate::model::QueryObjects;
 use crate::model::QueryUsers;
 use crate::model::QueryUsersets;
@@ -204,6 +210,54 @@ impl Client {
                 users,
                 public_access,
             }
+        })
+    }
+
+    /// Lists the users directly related to a given object
+    ///
+    /// In case of an heterogeneous relation, only the users of the type represented
+    /// by `R::User` will be returned. The type-bound public access for `R::User` (if any)
+    /// will also be returned.
+    ///
+    /// If you want to query the usersets related to the object instead, use `Client::query_usersets`.
+    pub async fn list_direct_users<R: Relation>(
+        &self,
+        QueryDirectUsers(object): QueryDirectUsers<'_, R>,
+    ) -> Result<UserList<R::User>, Error> {
+        // Make the call to OpenFGA in a stream way.
+        let mut stream = Continuation::stream(move |continuation| {
+            async move {
+                let (tuples, continuation_str) = self
+                    .post_stores_read(
+                        &self.store.id,
+                        Some(RawTuple {
+                            user: String::new(),
+                            relation: R::NAME.to_string(),
+                            object: object.fga_object(),
+                        }),
+                        Some(100),
+                        self.authorization_model_id.as_deref(),
+                        None,
+                        continuation.as_option().map(|s| s.to_string()),
+                    )
+                    .await?;
+                let typed_tuples = tuples.into_iter().map(UntypedTuple::from).collect();
+                Ok((typed_tuples, Continuation::from(continuation_str)))
+            }
+            .in_current_span()
+        });
+
+        // Consume the stream and cast each tuple to a raw user.
+        let mut users = Vec::new();
+        while let Some(untyped) = stream.try_next().await? {
+            if let Some(UserOrUserset::User(user)) = untyped.as_user::<R>() {
+                users.push(user);
+            }
+        }
+
+        Ok(UserList {
+            users,
+            public_access: None,
         })
     }
 

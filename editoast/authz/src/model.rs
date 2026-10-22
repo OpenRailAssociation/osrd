@@ -101,6 +101,14 @@ pub struct Group(pub i64);
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
+pub enum GrantType {
+    Direct,
+    Effective,
+}
+
+#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum InfraPrivilege {
     CanRestrictedRead,
     CanRead,

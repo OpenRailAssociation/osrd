@@ -3,6 +3,7 @@ pub mod identity;
 mod model;
 pub mod v2;
 
+pub use model::GrantType;
 pub use model::Group;
 pub use model::Infra;
 pub use model::InfraGrant;

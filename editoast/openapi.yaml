@@ -282,6 +282,7 @@ paths:
     get:
       tags:
       - authz
+      description: Get list of users and groups that have a grant on the resource. Per default it returns the effective list. To retrieve the direct list, you must use ?directGrant=true
       parameters:
       - name: resource_type
         in: path
@@ -294,9 +295,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: direct_grant
+        in: query
+        required: false
+        schema:
+          type: boolean
       responses:
         '200':
-          description: Get list of user that have a grant on the resource
+          description: List of users and groups that have a grant on the resource.
           content:
             application/json:
               schema:

@@ -8,6 +8,7 @@ use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
 use crate::views::authz::resources::StandardPrivilege;
 use ::authz;
+use ::authz::GrantType;
 use ::authz::InfraGrant;
 use ::authz::InfraPrivilege;
 use ::authz::Role;
@@ -22,6 +23,7 @@ use authz::v2::Authorizer as _;
 use authz::v2::Check;
 use axum::Extension;
 use axum::extract::Path;
+use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -636,14 +638,21 @@ pub(in crate::views) struct SubjectGrant {
     grant: StandardGrant,
 }
 
+#[derive(Debug, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct ResourceGrantedUserQueryParam {
+    direct_grant: Option<bool>,
+}
+
 #[editoast_derive::route]
 #[utoipa::path(
     get,
     path = "",
     tag = "authz",
-    params(ResourceTypeParam, ResourceIdParam),
+    description= "Get list of users and groups that have a grant on the resource. Per default it returns the effective list. To retrieve the direct list, you must use ?directGrant=true",
+    params(ResourceTypeParam, ResourceIdParam, ResourceGrantedUserQueryParam),
     responses(
-        (status = 200, description = "Get list of user that have a grant on the resource", body = inline(Vec<SubjectGrant>)),
+        (status = 200, description = "List of users and groups that have a grant on the resource.", body = inline(Vec<SubjectGrant>)),
     ),
 )]
 pub(in crate::views) async fn resource_granted_users(
@@ -653,7 +662,12 @@ pub(in crate::views) async fn resource_granted_users(
     }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
+    Query(query_params): Query<ResourceGrantedUserQueryParam>,
 ) -> Result<Json<Vec<SubjectGrant>>> {
+    let grant_type = match query_params.direct_grant {
+        Some(true) => GrantType::Direct,
+        Some(false) | None => GrantType::Effective,
+    };
     let mut conn = db_pool.get().await?;
     let openfga = &openfga;
     let authorizer = authn_state.authorizer(openfga);
@@ -669,7 +683,7 @@ pub(in crate::views) async fn resource_granted_users(
                 .authorize(
                     InfraGrant::iter()
                         .map(|grant| {
-                            authz::v2::infra_granted_subjects(infra, grant)
+                            authz::v2::infra_granted_subjects(infra, grant, grant_type)
                                 .map(async move |p| (p, StandardGrant::from(grant)))
                         })
                         .collect(),
@@ -689,8 +703,12 @@ pub(in crate::views) async fn resource_granted_users(
                 .authorize(
                     RollingStockGrant::iter()
                         .map(|grant| {
-                            authz::v2::rolling_stock_granted_subjects(rolling_stock, grant)
-                                .map(async move |p| (p, StandardGrant::from(grant)))
+                            authz::v2::rolling_stock_granted_subjects(
+                                rolling_stock,
+                                grant,
+                                grant_type,
+                            )
+                            .map(async move |p| (p, StandardGrant::from(grant)))
                         })
                         .collect(),
                 )
@@ -709,7 +727,7 @@ pub(in crate::views) async fn resource_granted_users(
                 .authorize(
                     ProjectGrant::iter()
                         .map(|grant| {
-                            authz::v2::project_granted_subjects(project, grant)
+                            authz::v2::project_granted_subjects(project, grant, grant_type)
                                 .map(async move |p| (p, StandardGrant::from(grant)))
                         })
                         .collect(),

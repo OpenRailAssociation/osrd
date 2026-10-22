@@ -27,6 +27,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
       const response = await fetchUserList({
         resourceType,
         resourceId: id,
+        directGrant: true,
       }).unwrap();
       setSubjects(response);
     } catch (err) {
