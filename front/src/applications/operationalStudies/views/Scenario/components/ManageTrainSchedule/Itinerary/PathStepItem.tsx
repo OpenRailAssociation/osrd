@@ -4,20 +4,25 @@ import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
-  FocusLocation,
   ArrowRight,
-  Square,
+  Check,
+  FocusLocation,
+  Infrastructure,
   KebabHorizontal,
+  Square,
+  TrackOffset,
   X,
 } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -95,6 +100,7 @@ const PathStepItem = ({
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
+  const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
 
@@ -270,6 +276,33 @@ const PathStepItem = ({
     pathStepMetadata.trackName &&
     !pathStepMetadata.isValidLocalTrackName;
 
+  const isOpValid = !isInvalid && !!pathStep.location;
+
+  const opStatusIcon = unrecognizedWaypointsActivated && (
+    <span
+      className={cx('path-step-op-status-icon', {
+        'in-infra': isOpValid && pathStep.location?.type !== 'track_offset',
+        'track-offset': isOpValid && pathStep.location?.type === 'track_offset',
+        'not-in-infra': isInvalid,
+        placeholder: !pathStep.location, // isOpValid and isInvalid are both false in this case
+      })}
+    >
+      {pathStep.location?.type === 'track_offset' ? (
+        <TrackOffset size="lg" />
+      ) : (
+        <>
+          <Infrastructure size={pathStep.location ? 'sm' : 'lg'} />
+          {pathStep.location &&
+            (isOpValid ? (
+              <Check size="sm" className="path-step-op-status-badge" />
+            ) : (
+              <X size="sm" className="path-step-op-status-badge" />
+            ))}
+        </>
+      )}
+    </span>
+  );
+
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
@@ -414,6 +447,7 @@ const PathStepItem = ({
               <ComboBox
                 id={`pathStep-name-${pathStep.key}`}
                 data-testid="path-step-combo-box"
+                leadingContent={opStatusIcon}
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
                 suggestions={visibleSuggestions}
