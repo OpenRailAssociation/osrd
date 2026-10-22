@@ -38,7 +38,7 @@ pub struct TrainSchedule {
     #[model(remote = "Vec<Option<String>>")]
     pub labels: Tags,
     pub rolling_stock_name: String,
-    pub train_schedule_set_id: i64,
+    pub timetable_id: i64,
     #[model(uom_unit = "unit_system::units::millisecond::i64")]
     /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     /// For hourly timetables: elapsed ms since the timetable start.
@@ -524,7 +524,7 @@ mod tests {
     use schemas::train_schedule::Margins;
     use schemas::train_schedule::TrainScheduleOptions;
 
-    fn simple_paced_train_changeset(train_schedule_set_id: i64) -> Changeset<TrainSchedule> {
+    fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<TrainSchedule> {
         Changeset::<TrainSchedule>::from(schemas::paced_train::TrainSchedule {
             train_occurrence: schemas::train_schedule::TrainOccurrence::fake(),
             paced: Some(schemas::paced_train::Paced {
@@ -539,7 +539,7 @@ mod tests {
                 exceptions: vec![],
             }),
         })
-        .train_schedule_set_id(train_schedule_set_id)
+        .timetable_id(timetable_id)
     }
 
     fn simple_sub_category(
@@ -570,9 +570,9 @@ mod tests {
     pub fn create_paced_train() -> TrainSchedule {
         TrainSchedule {
             id: 1,
-            train_schedule_set_id: 1,
             train_name: "train_name".to_string(),
             rolling_stock_name: "R2D2".to_string(),
+            timetable_id: 1,
             comfort: Comfort::Standard,
             initial_speed: 25.0,
             main_category: Some(TrainMainCategory(

@@ -93,7 +93,7 @@ use crate::views::timetable::track_occupancy;
 use crate::views::timetable::track_occupancy::PathItemRelativeLocation;
 use authz::authorizers::SystemAuthorizer;
 use models::Infra;
-use models::TrainScheduleSet;
+use models::TrainScheduleSetWithTimetable;
 use models::rolling_stock::RollingStock;
 use models::train_schedule::OccurrenceId;
 use models::train_schedule::TrainScheduleChangeset;
@@ -149,12 +149,12 @@ pub(in crate::views) struct TrainScheduleResponse {
     pub train_schedule: TrainSchedule,
 }
 
-impl From<models::TrainSchedule> for TrainScheduleResponse {
-    fn from(value: models::TrainSchedule) -> Self {
+impl TrainScheduleResponse {
+    pub fn new(train_schedule: models::TrainSchedule, train_schedule_set_id: i64) -> Self {
         Self {
-            id: value.id,
-            train_schedule_set_id: value.train_schedule_set_id,
-            train_schedule: train_schedule_schema_from_model(value, vec![]),
+            id: train_schedule.id,
+            train_schedule_set_id,
+            train_schedule: train_schedule_schema_from_model(train_schedule, vec![]),
         }
     }
 }
@@ -188,9 +188,16 @@ pub(in crate::views) async fn get_by_id(
         })
         .await?;
 
-    let train_schedule: TrainScheduleResponse = train_schedule.into();
+    let train_schedule_set_id =
+        models::Timetable::retrieve(conn.clone(), train_schedule.timetable_id)
+            .await?
+            .and_then(|timetable| timetable.train_schedule_set_id)
+            .ok_or(TrainScheduleError::NotFound { train_schedule_id })?;
 
-    Ok(Json(train_schedule))
+    Ok(Json(TrainScheduleResponse::new(
+        train_schedule,
+        train_schedule_set_id,
+    )))
 }
 
 /// Update a paced train
@@ -2193,12 +2200,12 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
         train_schedule_set_id,
     }): Json<MoveTrainSchedulesForm>,
 ) -> Result<impl IntoResponse> {
-    TrainScheduleSet::exists_or_fail(&mut db_pool.get().await?, train_schedule_set_id, || {
-        TrainScheduleError::TrainScheduleSetNotFound {
-            train_schedule_set_id,
-        }
-    })
-    .await?;
+    let train_schedule_set =
+        TrainScheduleSetWithTimetable::retrieve(&mut db_pool.get().await?, train_schedule_set_id)
+            .await?
+            .ok_or(TrainScheduleError::TrainScheduleSetNotFound {
+                train_schedule_set_id,
+            })?;
 
     let train_schedules: Vec<_> = models::TrainSchedule::retrieve_batch_or_fail(
         &mut db_pool.get().await?,
@@ -2213,7 +2220,7 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
     let train_schedule_ids = train_schedules
         .into_iter()
         .filter_map(|train_schedule| {
-            if train_schedule.train_schedule_set_id != train_schedule_set_id {
+            if train_schedule.timetable_id != train_schedule_set.timetable_id {
                 Some(train_schedule.id)
             } else {
                 None
@@ -2245,9 +2252,9 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
 
     TrainScheduleRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
 
-    // Update the train_schedule_set_id of the paced trains
+    // Move the train schedules to the timetable of the train schedule set
     let _: (Vec<_>, _) = models::TrainSchedule::changeset()
-        .train_schedule_set_id(train_schedule_set_id)
+        .timetable_id(train_schedule_set.timetable_id)
         .update_batch(&mut db_pool.get().await?, train_schedule_ids)
         .await?;
 
@@ -2308,6 +2315,7 @@ mod tests {
     use crate::error::InternalError;
 
     use crate::fixtures::create_fast_rolling_stock;
+    use crate::fixtures::create_hourly_train_schedule_set;
     use crate::fixtures::create_rolling_stock_with_energy_sources;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
@@ -2444,7 +2452,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
-        let simple_train_schedule = simple_paced_train_changeset(train_schedule_set.id);
+        let simple_train_schedule = simple_paced_train_changeset(train_schedule_set.timetable_id);
         let train_schedule = simple_train_schedule
             .create(&mut pool.get_ok())
             .await
@@ -2515,9 +2523,9 @@ mod tests {
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
         let source_train_schedule =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
         let target_train_schedule =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         TrainScheduleLinkingChangeset::default()
             .timetable_id(timetable.id)
@@ -2559,7 +2567,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.as_mut().unwrap().time_window =
@@ -2596,7 +2604,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let train_schedule =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let _ = app
             .delete("/train_schedules/")
@@ -2630,7 +2638,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let response = app
             .get(&format!("/train_schedules/{}", paced_train.id))
@@ -2638,6 +2646,7 @@ mod tests {
             .assert_status_ok()
             .json::<TrainScheduleResponse>();
 
+        assert_eq!(response.train_schedule_set_id, train_schedule_set.id);
         assert_eq!(
             response.train_schedule,
             train_schedule_schema_from_model(paced_train, vec![])
@@ -2675,7 +2684,7 @@ mod tests {
         };
         let train_schedule: TrainScheduleChangeset = train_schedule_base.into();
         let train_schedule = train_schedule
-            .train_schedule_set_id(train_schedule_set.id)
+            .timetable_id(train_schedule_set.timetable_id)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create paced train");
@@ -3289,7 +3298,7 @@ mod tests {
         };
         let train_schedule: TrainScheduleChangeset = train_schedule.into();
         let train_schedule = train_schedule
-            .train_schedule_set_id(train_schedule_set.id)
+            .timetable_id(train_schedule_set.timetable_id)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create train schedule");
@@ -3492,7 +3501,7 @@ mod tests {
         };
         let train_schedule: TrainScheduleChangeset = train_schedule.into();
         let train_schedule = train_schedule
-            .train_schedule_set_id(train_schedule_set.id)
+            .timetable_id(train_schedule_set.timetable_id)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create train schedule");
@@ -3677,7 +3686,7 @@ mod tests {
         let pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
         let user_no_grant = app.user("user", "User").create().await;
 
         let response: InternalError = app
@@ -3727,7 +3736,7 @@ mod tests {
         let small_infra = create_small_infra(&mut pool.get_ok()).await;
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
         let response: InternalError = app
             .get(
                 format!(
@@ -3768,7 +3777,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -3831,7 +3840,7 @@ mod tests {
         let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let mut paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         paced_train.rolling_stock_name = rolling_stock.name;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
@@ -3919,7 +3928,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -3952,7 +3961,7 @@ mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let mut paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
         paced_train.rolling_stock_name = rolling_stock.name;
@@ -4001,7 +4010,7 @@ mod tests {
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
 
         let train_schedule =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &train_schedule.rolling_stock_name)
                 .await;
@@ -4079,7 +4088,7 @@ mod tests {
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
 
         let train_schedule =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let change_train_name_exception = create_train_schedule_exception(
             &mut db_pool.get_ok(),
@@ -4130,11 +4139,11 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train_valid =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train_valid.rolling_stock_name)
                 .await;
-        let paced_train_fail = simple_paced_train_changeset(train_schedule_set.id)
+        let paced_train_fail = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .rolling_stock_name("fail".to_string())
             .start_time(millisecond::i64::new(0))
             .create(&mut db_pool.get_ok())
@@ -4194,7 +4203,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
 
         // a user that can read the infra, but not the rolling stock of the train
@@ -4256,7 +4265,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
 
         // a user that can read the infra, but not the rolling stock of the train
@@ -4304,7 +4313,7 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
         let paced_train =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         create_fast_rolling_stock(&mut db_pool.get_ok(), &paced_train.rolling_stock_name).await;
 
         // the very same user as above, without any grant on the rolling stock of the train
@@ -4353,13 +4362,13 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), "readable_rolling_stock").await;
         let unreadable_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "unreadable_rolling_stock").await;
-        let readable_train = simple_paced_train_changeset(train_schedule_set.id)
+        let readable_train = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .train_name("readable".into())
             .rolling_stock_name(readable_rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
             .expect("failed to create train schedule");
-        let unreadable_train = simple_paced_train_changeset(train_schedule_set.id)
+        let unreadable_train = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .train_name("unreadable".into())
             .rolling_stock_name(unreadable_rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
@@ -4454,13 +4463,13 @@ mod tests {
             create_fast_rolling_stock(&mut db_pool.get_ok(), "readable_rolling_stock").await;
         let unreadable_rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), "unreadable_rolling_stock").await;
-        let readable_train = simple_paced_train_changeset(train_schedule_set.id)
+        let readable_train = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .train_name("readable".into())
             .rolling_stock_name(readable_rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
             .expect("failed to create train schedule");
-        let unreadable_train = simple_paced_train_changeset(train_schedule_set.id)
+        let unreadable_train = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .train_name("unreadable".into())
             .rolling_stock_name(unreadable_rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
@@ -4686,7 +4695,7 @@ mod tests {
         let user = user_builder.create().await;
         let train_schedule = models::TrainSchedule::default()
             .into_changeset()
-            .train_schedule_set_id(train_schedule_set.id)
+            .timetable_id(train_schedule_set.timetable_id)
             .rolling_stock_name(rolling_stock.name)
             .path(path)
             .schedule(schedule)
@@ -4882,7 +4891,7 @@ mod tests {
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
         let train_schedule =
-            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.id).await;
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let train_schedule_set_to_move = create_train_schedule_set(&mut db_pool.get_ok()).await;
 
@@ -4899,9 +4908,58 @@ mod tests {
             .await
             .expect("Failed to retrieve train schedule");
         assert_eq!(
-            train_schedule.unwrap().train_schedule_set_id,
+            train_schedule.unwrap().timetable_id,
+            train_schedule_set_to_move.timetable_id
+        );
+
+        let response = app
+            .get(&format!(
+                "/train_schedules/{}",
+                move_form.train_schedule_ids[0]
+            ))
+            .await
+            .assert_status_ok()
+            .json::<TrainScheduleResponse>();
+        assert_eq!(
+            response.train_schedule_set_id,
             train_schedule_set_to_move.id
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn move_unique_train_schedule_to_hourly_train_schedule_set() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let unique_train_schedule = TrainSchedule {
+            train_occurrence: TrainOccurrence::fake(),
+            paced: None,
+        };
+        let train_schedule = TrainScheduleChangeset::from(unique_train_schedule)
+            .timetable_id(train_schedule_set.timetable_id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create train schedule");
+        let hourly_train_schedule_set =
+            create_hourly_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        let response: InternalError = app
+            .patch("/train_schedules/move")
+            .json(&MoveTrainSchedulesForm {
+                train_schedule_ids: vec![train_schedule.id],
+                train_schedule_set_id: hourly_train_schedule_set.id,
+            })
+            .await
+            .assert_status_internal_server_error()
+            .json();
+
+        // Only paced train schedules can be in an hourly train schedule set
+        assert_eq!(&response.error_type, "editoast:ModelError");
+        let train_schedule = models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule.id)
+            .await
+            .expect("Failed to retrieve train schedule")
+            .expect("The train schedule should still exist");
+        assert_eq!(train_schedule.timetable_id, train_schedule_set.timetable_id);
     }
 
     #[rstest]
