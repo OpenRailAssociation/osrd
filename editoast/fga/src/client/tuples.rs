@@ -22,7 +22,7 @@ impl Client {
         tuple: Tuple<'_, R, U>,
     ) -> Result<bool, Error> {
         let (tuples, _continuation) = self
-            .get_stores_read(
+            .post_stores_read(
                 &self.store.id,
                 Some(RawTuple::from(&tuple)),
                 Some(1),
@@ -38,7 +38,7 @@ impl Client {
         Continuation::stream(move |continuation| {
             async move {
                 let (tuples, continuation_str) = self
-                    .get_stores_read(
+                    .post_stores_read(
                         &self.store.id,
                         None,
                         Some(100),
