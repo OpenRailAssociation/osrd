@@ -216,6 +216,7 @@
           "reset-op": "Reset the operational point",
           "save-op": "Save the operational point"
         },
+        "add-part": "Add a part on this track section",
         "center-part": "Center the map on the part",
         "create-op": "Create a new operational point",
         "edit-op": "Edit an operational point",
@@ -229,6 +230,9 @@
           "secondary_name": "Secondary name (CH label)",
           "uic": "UIC code"
         },
+        "help": {
+          "init": "Click on a track section to add a part to the operational point"
+        },
         "label": "Operational point tool",
         "no-parts": "Click on a track section to add a part",
         "part-fields": {
@@ -237,6 +241,7 @@
           "position": "Offset"
         },
         "parts": "Parts",
+        "select-part": "Click to select this part",
         "track-error": "Could not load the track section \"{{id}}\""
       },
       "point-edition": {
