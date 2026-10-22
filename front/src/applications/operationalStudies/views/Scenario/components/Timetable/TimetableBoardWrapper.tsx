@@ -27,6 +27,7 @@ import { copyTrainSchedulesToClipboard } from './utils';
 
 type TimetableBoardWrapperProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
+  isTrainSchedulesLoading: boolean;
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
   selectedTrainScheduleIds: number[];
@@ -35,6 +36,7 @@ type TimetableBoardWrapperProps = {
 
 const TimetableBoardWrapper = ({
   trainSchedulesWithDetails,
+  isTrainSchedulesLoading,
   refreshNge,
   projectingOnSimulatedPathException,
   selectedTrainScheduleIds,
@@ -341,6 +343,7 @@ const TimetableBoardWrapper = ({
         setIsSelectMode={setIsSelectMode}
         handleDeleteTrainSchedules={handleDeleteTrainSchedules}
         trainSchedulesWithDetails={trainSchedulesWithDetails}
+        isTrainSchedulesLoading={isTrainSchedulesLoading}
         refreshNge={refreshNge}
         projectingOnSimulatedPathException={projectingOnSimulatedPathException}
       />

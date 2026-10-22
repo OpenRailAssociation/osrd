@@ -77,6 +77,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const dispatch = useAppDispatch();
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
+  const [isTrainSchedulesLoading, setIsTrainSchedulesLoading] = useState(true);
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
   const [selectedTrainScheduleIds, setSelectedTrainScheduleIds] = useState<number[]>([]);
 
@@ -95,9 +96,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     );
 
     const fetchTrainSchedules = async () => {
-      const trainSchedulesResponse = (await trainSchedulesResult.unwrap()) ?? [];
+      setIsTrainSchedulesLoading(true);
+      try {
+        const trainSchedulesResponse = (await trainSchedulesResult.unwrap()) ?? [];
 
-      setTrainSchedules(sortBy(trainSchedulesResponse, 'start_time'));
+        setTrainSchedules(sortBy(trainSchedulesResponse, 'start_time'));
+      } finally {
+        setIsTrainSchedulesLoading(false);
+      }
     };
 
     fetchTrainSchedules();
@@ -461,6 +467,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const results = useMemo(
     () => ({
       trainSchedulesWithDetails,
+      isTrainSchedulesLoading,
       trainSchedulesById,
       projectionData: projectionPath
         ? {
@@ -487,6 +494,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       projectionPath,
       projectedTrains,
       allTrainsProjected,
+      isTrainSchedulesLoading,
       trainSchedules?.length,
       conflicts,
       isConflictsLoading,
