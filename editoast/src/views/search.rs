@@ -208,6 +208,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use chrono::DateTime;
 
+use authz::InfraPrivilege;
 use authz::Role;
 use chrono::Utc;
 use common::geometry::GeoJsonPoint;
@@ -426,7 +427,10 @@ pub(in crate::views) async fn search(
     Ok(Json(serde_json::to_value(results).unwrap()))
 }
 
-/// Removes the projects the user has no access to
+/// Removes the results the user is not allowed to see
+///
+/// The filtering happens after the query: the number of results of a page is bounded,
+/// unlike the number of projects or infras a user can access.
 async fn filter_authorized_results(
     results: Vec<JsonValue>,
     object: &SearchObjectType,
@@ -436,29 +440,65 @@ async fn filter_authorized_results(
     let crate::authentication::State::Authenticated { user, .. } = authn_state else {
         return Ok(results);
     };
-    if !matches!(object, SearchObjectType::Project) {
-        return Ok(results);
+    let authorizer = authn_state.authorizer(openfga);
+    match object {
+        SearchObjectType::Project => {
+            let projects = resource_ids(&results, "id").map(authz::Project).collect();
+            let authorized_projects = authz::v2::project_access_filter(*user, projects)
+                .run::<AuthorizationError, _>(&authorizer)
+                .await?
+                .into_iter()
+                .map(|project| project.0)
+                .collect();
+            Ok(retain_authorized(results, "id", &authorized_projects))
+        }
+        SearchObjectType::Track | SearchObjectType::Signal | SearchObjectType::OperationalPoint => {
+            let infras = resource_ids(&results, "infra_id")
+                .map(authz::Infra)
+                .collect();
+            let authorized_infras =
+                authz::v2::infra_privilege_filter(*user, infras, InfraPrivilege::CanRestrictedRead)
+                    .run::<AuthorizationError, _>(&authorizer)
+                    .await?
+                    .into_iter()
+                    .map(|infra| infra.0)
+                    .collect();
+            Ok(retain_authorized(results, "infra_id", &authorized_infras))
+        }
+        SearchObjectType::Study
+        | SearchObjectType::Scenario
+        | SearchObjectType::MacroNode
+        | SearchObjectType::TrainSchedule
+        | SearchObjectType::User
+        | SearchObjectType::Group => Ok(results),
     }
-    let project_id = |result: &JsonValue| result.get("id").and_then(JsonValue::as_i64);
-    let projects = results
+}
+
+/// The distinct values of the integer `field` of the results
+fn resource_ids<'a>(results: &'a [JsonValue], field: &'a str) -> impl Iterator<Item = i64> + 'a {
+    results
         .iter()
-        .filter_map(project_id)
+        .filter_map(move |result| result.get(field)?.as_i64())
         .unique()
-        .map(authz::Project)
-        .collect();
+}
 
-    let authorized_projects: HashSet<i64> = authz::v2::project_access_filter(*user, projects)
-        .run::<AuthorizationError, _>(&authn_state.authorizer(openfga))
-        .await?
+/// Keeps the results whose integer `field` is authorized
+///
+/// A result without this field is not shown.
+fn retain_authorized(
+    results: Vec<JsonValue>,
+    field: &str,
+    authorized_ids: &HashSet<i64>,
+) -> Vec<JsonValue> {
+    results
         .into_iter()
-        .map(|project| project.0)
-        .collect();
-
-    // A result without its project id is not shown
-    Ok(results
-        .into_iter()
-        .filter(|result| project_id(result).is_some_and(|id| authorized_projects.contains(&id)))
-        .collect())
+        .filter(|result| {
+            result
+                .get(field)
+                .and_then(JsonValue::as_i64)
+                .is_some_and(|id| authorized_ids.contains(&id))
+        })
+        .collect()
 }
 
 // because while the name and type information of the fields are read by the macro,
@@ -1344,5 +1384,53 @@ pub mod tests {
             .json();
 
         assert_eq!(response.len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn search_infra_objects_hides_infras_without_access() {
+        let app = test_app!().build();
+        let pool = app.db_pool();
+        let mut infras = Vec::new();
+        for _ in 0..2 {
+            let mut infra = create_small_infra(&mut pool.get_ok()).await;
+            let cache = InfraCache::load(&mut pool.get_ok(), &infra).await.unwrap();
+            assert!(infra.refresh(pool.clone(), false, &cache).await.unwrap());
+            infras.push(infra.id);
+        }
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .with_infra_grant(infras[0], authz::InfraGrant::Reader)
+            .create()
+            .await;
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        for object in ["track", "signal", "operationalpoint"] {
+            for (user, expected_infras) in [
+                (&user, HashSet::from([infras[0]])),
+                (&admin, HashSet::from([infras[0], infras[1]])),
+            ] {
+                let response: Vec<JsonValue> = app
+                    .post("/search")
+                    .by_user(user.as_ref())
+                    .json(&json!({
+                        "object": object,
+                        "query": ["or", ["=", ["infra_id"], infras[0]],
+                                        ["=", ["infra_id"], infras[1]]],
+                    }))
+                    .await
+                    .assert_status_ok()
+                    .json();
+                let infra_ids: HashSet<i64> = response
+                    .iter()
+                    .map(|result| result["infra_id"].as_i64().unwrap())
+                    .collect();
+                assert_eq!(infra_ids, expected_infras, "{object} search");
+            }
+        }
     }
 }
