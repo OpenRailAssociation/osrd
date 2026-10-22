@@ -34,6 +34,7 @@ export function getOpEditionState(entity?: OpEntity): OpEditionState {
     entity: op,
     initialEntity: op,
     trackSectionsCache: {},
+    interactionState: { type: 'idle' },
     hoveredPartIndex: null,
     selectedPartIndex: null,
   };

@@ -39,11 +39,13 @@ const OpEditionLayers = () => {
       hovered,
       hoveredPartIndex,
       selectedPartIndex,
+      interactionState,
       mousePosition,
     },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<OpEditionState>;
 
+  const isMoving = interactionState.type === 'movePart';
   const hoveredTrackId = hovered?.type === 'TrackSection' ? hovered.id : null;
   const hoveredTrackState = hoveredTrackId ? trackSectionsCache[hoveredTrackId] : undefined;
   const partTrackIds = useMemo(
@@ -81,10 +83,11 @@ const OpEditionLayers = () => {
     () => getPartFeatures(entity, trackSectionsCache),
     [entity, trackSectionsCache]
   );
+  const highlightedPartIndex = isMoving ? interactionState.partIndex : hoveredPartIndex;
   const isHighlightedPart: ExpressionSpecification = [
     '==',
     ['get', 'partIndex'],
-    hoveredPartIndex ?? -1,
+    highlightedPartIndex ?? -1,
   ];
   const hoveredPartFeature = partFeatures.find(
     (feature) => feature.properties.partIndex === hoveredPartIndex
@@ -129,7 +132,7 @@ const OpEditionLayers = () => {
         />
       </Source>
 
-      {hoveredPartFeature && hoveredPartTrack?.type === 'success' && (
+      {!isMoving && hoveredPartFeature && hoveredPartTrack?.type === 'success' && (
         <Popup
           className="popup"
           anchor="bottom"
@@ -148,7 +151,7 @@ const OpEditionLayers = () => {
           <EntitySumUp entity={hoveredPartTrack.track} />
         </Popup>
       )}
-      {hoveredTrackId && mousePosition && (
+      {!isMoving && hoveredTrackId && mousePosition && (
         <Popup
           className="popup"
           anchor="bottom"

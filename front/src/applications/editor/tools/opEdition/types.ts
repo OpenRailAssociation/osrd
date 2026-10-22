@@ -24,10 +24,13 @@ export type OpPartFeature = Feature<
   }
 >;
 
+export type OpInteractionState = { type: 'idle' } | { type: 'movePart'; partIndex: number };
+
 export type OpEditionState = CommonToolState & {
   initialEntity: OpEntity;
   entity: OpEntity;
   trackSectionsCache: Record<string, TrackState>;
+  interactionState: OpInteractionState;
   hoveredPartIndex: number | null;
   selectedPartIndex: number | null;
 };

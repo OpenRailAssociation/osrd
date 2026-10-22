@@ -231,7 +231,8 @@
           "uic": "UIC code"
         },
         "help": {
-          "init": "Click on a track section to add a part to the operational point"
+          "drag-part": "Release to drop the part",
+          "init": "Click on a track section to add a part to the operational point, or drag an existing part to move it"
         },
         "label": "Operational point tool",
         "no-parts": "Click on a track section to add a part",
@@ -241,7 +242,7 @@
           "position": "Offset"
         },
         "parts": "Parts",
-        "select-part": "Click to select this part",
+        "select-part": "Click to select this part, or drag it to move it",
         "track-error": "Could not load the track section \"{{id}}\""
       },
       "point-edition": {
