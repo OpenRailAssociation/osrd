@@ -455,6 +455,56 @@ pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesL
     })
 }
 
+/// Keeps, among the given infras, the ones on which a user has the given privilege
+pub fn infra_privilege_filter(
+    user: User,
+    infras: Vec<Infra>,
+    privilege: InfraPrivilege,
+) -> Protected<Vec<Infra>> {
+    subject_roles(Subject::user(user)).then(move |openfga, roles| {
+        async move {
+            if roles.contains(&Role::Admin) || infras.is_empty() {
+                return Ok(infras);
+            }
+
+            let mut checks = openfga.prepare_checks();
+            for infra in &infras {
+                match privilege {
+                    InfraPrivilege::CanRestrictedRead => {
+                        checks.push(&Infra::can_restricted_read().check(&user, infra))
+                    }
+                    InfraPrivilege::CanRead => checks.push(&Infra::can_read().check(&user, infra)),
+                    InfraPrivilege::CanShareRead => {
+                        checks.push(&Infra::can_share_read().check(&user, infra))
+                    }
+                    InfraPrivilege::CanWrite => {
+                        checks.push(&Infra::can_write().check(&user, infra))
+                    }
+                    InfraPrivilege::CanShareWrite => {
+                        checks.push(&Infra::can_share_write().check(&user, infra))
+                    }
+                    InfraPrivilege::CanDelete => {
+                        checks.push(&Infra::can_delete().check(&user, infra))
+                    }
+                    InfraPrivilege::CanShareOwnership => {
+                        checks.push(&Infra::can_share_ownership().check(&user, infra))
+                    }
+                    InfraPrivilege::CanRevoke => {
+                        checks.push(&Infra::can_revoke().check(&user, infra))
+                    }
+                }
+            }
+            let has_privilege = checks.execute().await?;
+            Ok(infras
+                .into_iter()
+                .zip(has_privilege)
+                .filter_map(|(infra, has_privilege)| has_privilege.then_some(infra))
+                .collect())
+        }
+        .boxed()
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
