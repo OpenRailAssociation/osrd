@@ -12,6 +12,7 @@ use crate::InfraPrivilege;
 use crate::Role;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::v2::Actor;
 use crate::v2::Check;
 use crate::v2::Protected;
@@ -325,27 +326,57 @@ pub fn infra_privilege_check(infra: Infra, privilege: InfraPrivilege) -> Protect
 }
 
 /// Return an operation that checks the list of subjects which have the given grant on an infra.
-pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<Subject>> {
-    fn get_granted_users(infra: Infra, grant: InfraGrant) -> Protected<Vec<User>> {
+pub fn infra_granted_subjects(
+    infra: Infra,
+    grant: InfraGrant,
+    grant_type: GrantType,
+) -> Protected<Vec<Subject>> {
+    fn get_granted_users(
+        infra: Infra,
+        grant: InfraGrant,
+        grant_type: GrantType,
+    ) -> Protected<Vec<User>> {
         Protected::new(move |openfga| {
             async move {
-                match grant {
-                    InfraGrant::RestrictedReader => {
+                match (grant, grant_type) {
+                    (InfraGrant::RestrictedReader, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                Infra::restricted_reader().query_direct_users(&infra),
+                            )
+                            .await
+                    }
+                    (InfraGrant::RestrictedReader, GrantType::Effective) => {
                         openfga
                             .list_users(Infra::restricted_reader().query_users(&infra))
                             .await
                     }
-                    InfraGrant::Reader => {
+                    (InfraGrant::Reader, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(Infra::reader().query_direct_users(&infra))
+                            .await
+                    }
+                    (InfraGrant::Reader, GrantType::Effective) => {
                         openfga
                             .list_users(Infra::reader().query_users(&infra))
                             .await
                     }
-                    InfraGrant::Writer => {
+                    (InfraGrant::Writer, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(Infra::writer().query_direct_users(&infra))
+                            .await
+                    }
+                    (InfraGrant::Writer, GrantType::Effective) => {
                         openfga
                             .list_users(Infra::writer().query_users(&infra))
                             .await
                     }
-                    InfraGrant::Owner => {
+                    (InfraGrant::Owner, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(Infra::owner().query_direct_users(&infra))
+                            .await
+                    }
+                    (InfraGrant::Owner, GrantType::Effective) => {
                         openfga.list_users(Infra::owner().query_users(&infra)).await
                     }
                 }
@@ -385,7 +416,7 @@ pub fn infra_granted_subjects(infra: Infra, grant: InfraGrant) -> Protected<Vec<
             .boxed()
         })
     }
-    get_granted_users(infra, grant)
+    get_granted_users(infra, grant, grant_type)
         .zip(get_granted_groups(infra, grant))
         .map(async move |(users, groups)| {
             users
@@ -964,7 +995,7 @@ mod tests {
         &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRestrictedRead, Infra(1))]
     )]
     #[case::infra_privileges(
-        infra_granted_subjects(Infra(1), InfraGrant::Owner).checks,
+        infra_granted_subjects(Infra(1), InfraGrant::Owner, GrantType::Effective).checks,
         &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
     )]
     #[case::infra_list(infra_list(User(1), InfraPrivilege::CanRead).checks, &[])]

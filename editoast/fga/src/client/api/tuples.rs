@@ -83,6 +83,27 @@ impl UntypedTuple {
 
         Some((user, object))
     }
+
+    pub fn as_user<R: Relation>(&self) -> Option<UserOrUserset<R>> {
+        if self.relation != R::NAME {
+            return None;
+        }
+
+        let user = if let Some((object_part, _relation)) = self.user.split_once('#') {
+            let (type_name, id) = object_part.split_once(':')?;
+            UserOrUserset::Userset(UntypedUserset {
+                type_name: type_name.to_string(),
+                id: id.to_string(),
+            })
+        } else {
+            let id_str = self
+                .user
+                .strip_prefix(&format!("{}:", R::User::NAMESPACE))?;
+            UserOrUserset::User(id_str.parse().ok()?)
+        };
+
+        Some(user)
+    }
 }
 
 impl From<RawTuple> for UntypedTuple {
@@ -117,7 +138,7 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> From<&Tuple<'a, R, U>> for RawT
 
 impl Client {
     #[tracing::instrument(skip(self), err)]
-    pub(in crate::client) async fn get_stores_read(
+    pub(in crate::client) async fn post_stores_read(
         &self,
         store_id: &str,
         tuple_key: Option<RawTuple>,

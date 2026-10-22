@@ -9,6 +9,7 @@ use crate::ProjectPrivilege;
 use crate::Role;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::model::Project;
 use crate::model::ProjectGrant;
 use crate::v2::Actor;
@@ -210,16 +211,31 @@ pub fn project_access_filter(user: User, projects: Vec<Project>) -> Protected<Ve
 }
 
 /// Return an operation that checks the list of subjects which have the owner grant on a project.
-pub fn project_granted_subjects(project: Project, grant: ProjectGrant) -> Protected<Vec<Subject>> {
-    fn get_granted_users(project: Project, grant: ProjectGrant) -> Protected<Vec<User>> {
+pub fn project_granted_subjects(
+    project: Project,
+    grant: ProjectGrant,
+    grant_type: GrantType,
+) -> Protected<Vec<Subject>> {
+    fn get_granted_users(
+        project: Project,
+        grant: ProjectGrant,
+        grant_type: GrantType,
+    ) -> Protected<Vec<User>> {
         Protected::new(move |openfga| {
             async move {
-                match grant {
-                    ProjectGrant::Owner => openfga
-                        .list_users(Project::owner().query_users(&project))
-                        .await
-                        .map(|UserList { users, .. }| users),
+                match (grant, grant_type) {
+                    (ProjectGrant::Owner, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(Project::owner().query_direct_users(&project))
+                            .await
+                    }
+                    (ProjectGrant::Owner, GrantType::Effective) => {
+                        openfga
+                            .list_users(Project::owner().query_users(&project))
+                            .await
+                    }
                 }
+                .map(|UserList { users, .. }| users)
             }
             .boxed()
         })
@@ -240,7 +256,7 @@ pub fn project_granted_subjects(project: Project, grant: ProjectGrant) -> Protec
             .boxed()
         })
     }
-    get_granted_users(project, grant)
+    get_granted_users(project, grant, grant_type)
         .zip(get_granted_groups(project, grant))
         .map(async move |(users, groups)| {
             users
@@ -263,6 +279,7 @@ mod tests {
 
     use crate::User;
     use crate::authz_client;
+    use crate::model::GrantType;
     use crate::model::Project;
     use crate::v2::Check;
     use crate::v2::TestClientExt as _;
@@ -781,7 +798,7 @@ mod tests {
         &[]
     )]
     #[case::project_granted_subjects(
-        project_granted_subjects(Project(1), ProjectGrant::Owner).checks,
+        project_granted_subjects(Project(1), ProjectGrant::Owner, GrantType::Effective).checks,
         &[
             Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
         ]

@@ -13,6 +13,7 @@ use crate::RollingStockGrant;
 use crate::RollingStockPrivilege;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::v2::Actor;
 use crate::v2::ResourcesList;
 use crate::v2::grant_from_exclusive_bools;
@@ -237,32 +238,63 @@ pub fn rolling_stock_set_grant(
 pub fn rolling_stock_granted_subjects(
     rolling_stock: RollingStock,
     grant: RollingStockGrant,
+    grant_type: GrantType,
 ) -> Protected<Vec<Subject>> {
     fn get_granted_users(
         rolling_stock: RollingStock,
         grant: RollingStockGrant,
+        grant_type: GrantType,
     ) -> Protected<Vec<User>> {
         Protected::new(move |openfga| {
             async move {
-                match grant {
-                    RollingStockGrant::RestrictedReader => {
+                match (grant, grant_type) {
+                    (RollingStockGrant::RestrictedReader, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::restricted_reader()
+                                    .query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::RestrictedReader, GrantType::Effective) => {
                         openfga
                             .list_users(
                                 RollingStock::restricted_reader().query_users(&rolling_stock),
                             )
                             .await
                     }
-                    RollingStockGrant::Reader => {
+                    (RollingStockGrant::Reader, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::reader().query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::Reader, GrantType::Effective) => {
                         openfga
                             .list_users(RollingStock::reader().query_users(&rolling_stock))
                             .await
                     }
-                    RollingStockGrant::Writer => {
+                    (RollingStockGrant::Writer, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::writer().query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::Writer, GrantType::Effective) => {
                         openfga
                             .list_users(RollingStock::writer().query_users(&rolling_stock))
                             .await
                     }
-                    RollingStockGrant::Owner => {
+                    (RollingStockGrant::Owner, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::owner().query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::Owner, GrantType::Effective) => {
                         openfga
                             .list_users(RollingStock::owner().query_users(&rolling_stock))
                             .await
@@ -317,7 +349,7 @@ pub fn rolling_stock_granted_subjects(
             .boxed()
         })
     }
-    get_granted_users(rolling_stock, grant)
+    get_granted_users(rolling_stock, grant, grant_type)
         .zip(get_granted_groups(rolling_stock, grant))
         .map(async move |(users, groups)| {
             users
@@ -527,6 +559,7 @@ mod tests {
     use rstest::rstest;
 
     use crate::User;
+    use crate::model::GrantType;
     use crate::v2::TestClientExt as _;
     use crate::v2::special_authorizers::Authorize;
 
@@ -982,7 +1015,7 @@ mod tests {
     )]
     #[rstest]
     #[case::rolling_stock_granted_subjects(
-        rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer).checks,
+        rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer, GrantType::Effective).checks,
         &[
            Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
         ]
