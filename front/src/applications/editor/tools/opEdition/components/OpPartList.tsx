@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 
 import cx from 'classnames';
 import { clamp } from 'lodash';
@@ -55,12 +55,21 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
   const isSelected = selectedPartIndex === index;
   const trackLength =
     trackState?.type === 'success' ? trackState.track.properties.length : undefined;
+  const itemRef = useRef<HTMLLIElement>(null);
+
+  // Scroll to the form when a new part is selected from the map:
+  useEffect(() => {
+    const item = itemRef.current;
+    if (!isSelected || !item || item.contains(document.activeElement)) return;
+    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    item.querySelector('input')?.focus({ preventScroll: true });
+  }, [isSelected]);
 
   const update = (patch: Partial<OperationalPointPart>) =>
     setState({ entity: updatePart(entity, index, patch) });
 
   return (
-    <li>
+    <li ref={itemRef}>
       <div
         className={cx('op-part d-flex flex-row', isSelected && 'selected')}
         onFocus={() => setState({ selectedPartIndex: index })}
@@ -90,6 +99,7 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
             onClick={() =>
               setState({
                 entity: removePart(entity, index),
+                hoveredPartIndex: null,
                 selectedPartIndex: null,
               })
             }
@@ -116,6 +126,8 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
               whiteBG
               sm
               noMargin
+              // Focuses new parts, that are added as selected
+              focus={isSelected}
               onChange={(e) => update({ local_track_name: e.target.value })}
             />
           </div>

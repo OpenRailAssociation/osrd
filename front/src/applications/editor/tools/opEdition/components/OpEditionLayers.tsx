@@ -2,14 +2,18 @@ import { useContext, useEffect, useMemo } from 'react';
 
 import { featureCollection } from '@turf/helpers';
 import { uniq } from 'lodash';
-import { Layer, Source } from 'react-map-gl/maplibre';
+import type { ExpressionSpecification } from 'maplibre-gl';
+import { useTranslation } from 'react-i18next';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import { getEntities } from 'applications/editor/data/api';
 import type { TrackState } from 'applications/editor/tools/rangeEdition/types';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
+import { LoaderFill } from 'common/Loaders';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
@@ -21,6 +25,7 @@ import { getPartFeatures } from '../utils';
 
 const OpEditionLayers = () => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const infraID = useInfraID();
   const {
     editorState: {
@@ -28,18 +33,29 @@ const OpEditionLayers = () => {
       mapSettings: { layersSettings, mapStyle },
     },
     renderingFingerprint,
-    state: { entity, trackSectionsCache, selectedPartIndex },
+    state: {
+      entity,
+      trackSectionsCache,
+      hovered,
+      hoveredPartIndex,
+      selectedPartIndex,
+      mousePosition,
+    },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<OpEditionState>;
 
+  const hoveredTrackId = hovered?.type === 'TrackSection' ? hovered.id : null;
+  const hoveredTrackState = hoveredTrackId ? trackSectionsCache[hoveredTrackId] : undefined;
   const partTrackIds = useMemo(
     () => uniq(entity.properties.parts.map((part) => part.track)),
     [entity.properties.parts]
   );
 
-  // Load the parts tracks, with their geometries
+  // Load the parts tracks and the hovered track, with their geometries
   useEffect(() => {
-    const missingTrackIds = partTrackIds.filter((id) => !trackSectionsCache[id]);
+    const missingTrackIds = uniq(
+      hoveredTrackId ? [...partTrackIds, hoveredTrackId] : partTrackIds
+    ).filter((id) => !trackSectionsCache[id]);
     if (!infraID || !missingTrackIds.length) return;
 
     const setTrackStates = (getTrackState: (id: string) => TrackState) =>
@@ -59,12 +75,26 @@ const OpEditionLayers = () => {
         )
       )
       .catch(() => setTrackStates(() => ({ type: 'error' })));
-  }, [infraID, partTrackIds, trackSectionsCache, setState, dispatch]);
+  }, [infraID, partTrackIds, hoveredTrackId, trackSectionsCache, setState, dispatch]);
 
   const partFeatures = useMemo(
     () => getPartFeatures(entity, trackSectionsCache),
     [entity, trackSectionsCache]
   );
+  const isHighlightedPart: ExpressionSpecification = [
+    '==',
+    ['get', 'partIndex'],
+    hoveredPartIndex ?? -1,
+  ];
+  const hoveredPartFeature = partFeatures.find(
+    (feature) => feature.properties.partIndex === hoveredPartIndex
+  );
+  const hoveredPartTrack =
+    hoveredPartFeature && trackSectionsCache[hoveredPartFeature.properties.track];
+  const hoveredPartLocalTrackName =
+    hoveredPartIndex !== null
+      ? entity.properties.parts[hoveredPartIndex]?.local_track_name
+      : undefined;
 
   return (
     <>
@@ -82,7 +112,7 @@ const OpEditionLayers = () => {
           type="circle"
           id={PARTS_LAYER_ID}
           paint={{
-            'circle-radius': 6,
+            'circle-radius': ['case', isHighlightedPart, 8, 6],
             'circle-color': '#fff',
             'circle-stroke-color': colors[mapStyle].op.circleBV,
             'circle-stroke-width': 3,
@@ -93,11 +123,53 @@ const OpEditionLayers = () => {
           id="op-edition/selected-part"
           filter={['==', ['get', 'partIndex'], selectedPartIndex ?? -1]}
           paint={{
-            'circle-radius': 3,
+            'circle-radius': ['case', isHighlightedPart, 4, 3],
             'circle-color': colors[mapStyle].op.circleBV,
           }}
         />
       </Source>
+
+      {hoveredPartFeature && hoveredPartTrack?.type === 'success' && (
+        <Popup
+          className="popup"
+          anchor="bottom"
+          longitude={hoveredPartFeature.geometry.coordinates[0]}
+          latitude={hoveredPartFeature.geometry.coordinates[1]}
+          closeButton={false}
+        >
+          <div>{t('Editor.tools.op-edition.select-part')}</div>
+          <EntitySumUp entity={entity} />
+          {hoveredPartLocalTrackName && (
+            <div>
+              {t('Editor.tools.op-edition.part-fields.local_track_name')}:{' '}
+              <span className="font-weight-medium">{hoveredPartLocalTrackName}</span>
+            </div>
+          )}
+          <EntitySumUp entity={hoveredPartTrack.track} />
+        </Popup>
+      )}
+      {hoveredTrackId && mousePosition && (
+        <Popup
+          className="popup"
+          anchor="bottom"
+          longitude={mousePosition[0]}
+          latitude={mousePosition[1]}
+          closeButton={false}
+        >
+          <div>{t('Editor.tools.op-edition.add-part')}</div>
+          {hoveredTrackState?.type === 'success' ? (
+            <EntitySumUp entity={hoveredTrackState.track} />
+          ) : hoveredTrackState?.type === 'error' ? (
+            <div className="text-danger">
+              {t('Editor.tools.op-edition.track-error', { id: hoveredTrackId })}
+            </div>
+          ) : (
+            <div className="position-relative" style={{ height: 50 }}>
+              <LoaderFill className="bg-transparent" />
+            </div>
+          )}
+        </Popup>
+      )}
     </>
   );
 };

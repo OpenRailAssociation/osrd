@@ -12,6 +12,7 @@ import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
 import type { EditoastType } from 'applications/editor/consts';
 import { getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { TRACKS_LAYER_ID } from 'applications/editor/tools/consts';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 import type { OpEntity } from 'applications/editor/tools/opEdition/types';
 import type {
@@ -98,7 +99,7 @@ export function getHoveredTrackRanges(hoverEvent: MapLayerMouseEvent) {
       [point.x + TOLERANCE / 2, point.y + TOLERANCE / 2],
     ],
     {
-      layers: ['editor/geo/track-main'],
+      layers: [TRACKS_LAYER_ID],
     }
   ) as Feature<LineString>[];
 }

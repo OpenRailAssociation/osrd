@@ -216,6 +216,7 @@
           "reset-op": "Réinitialiser le point remarquable",
           "save-op": "Sauvegarder le point remarquable"
         },
+        "add-part": "Ajouter un point sur cette section de voie",
         "center-part": "Centrer la carte sur le point",
         "create-op": "Créer un nouveau point remarquable",
         "edit-op": "Modifier un point remarquable",
@@ -229,6 +230,9 @@
           "secondary_name": "Libellé CH",
           "uic": "Code UIC"
         },
+        "help": {
+          "init": "Cliquez sur une section de voie pour ajouter un point au point remarquable"
+        },
         "label": "Outil \"PR\"",
         "no-parts": "Cliquez sur une section de voie pour ajouter un point",
         "part-fields": {
@@ -237,6 +241,7 @@
           "position": "Position"
         },
         "parts": "Points sur voie",
+        "select-part": "Cliquez pour sélectionner ce point",
         "track-error": "Impossible de charger la section de voie \"{{id}}\""
       },
       "point-edition": {
