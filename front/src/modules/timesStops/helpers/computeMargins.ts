@@ -2,6 +2,7 @@ import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/trainSchedule/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
+import { mmToKm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { marginsUndefined, MarginUnit } from '../consts';
@@ -34,23 +35,46 @@ function computeMarginsWithoutPathItemTimes(
   schedule?: ScheduleItem
 ) {
   const refBaseArrival = isOrigin ? 0 : parseIsoToMs(schedule?.reference_base_arrival);
+  const stopFor = parseIsoToMs(schedule?.stop_for);
   const arrival = isOrigin ? 0 : parseIsoToMs(schedule?.arrival);
   const nextRefBaseArrival = parseIsoToMs(nextSchedule?.reference_base_arrival);
   const nextArrival = parseIsoToMs(nextSchedule?.arrival);
 
-  if (refBaseArrival === undefined || nextRefBaseArrival === undefined) {
-    return { provisionalLostTime: undefined, finalLostTime: undefined };
+  const undefinedMarginTimes = { provisionalLostTime: undefined, finalLostTime: undefined };
+
+  const refBaseArrivalDifference =
+    refBaseArrival !== undefined && nextRefBaseArrival !== undefined
+      ? nextRefBaseArrival - refBaseArrival
+      : undefined;
+  const finalLostTime =
+    arrival !== undefined && nextArrival !== undefined && refBaseArrivalDifference
+      ? ms2sec(nextArrival - (arrival + (stopFor ?? 0)) - refBaseArrivalDifference)
+      : undefined;
+
+  if (theoreticalMargin.unit === MarginUnit.minPer100km) {
+    const referencePosition = isOrigin ? 0 : schedule?.reference_position;
+    const nextReferencePosition = nextSchedule?.reference_position;
+
+    if (!referencePosition || !nextReferencePosition) return undefinedMarginTimes;
+
+    const distance = mmToKm(referencePosition);
+    const nextDistance = mmToKm(nextReferencePosition);
+    const distanceDifference = nextDistance - distance;
+
+    return {
+      provisionalLostTime: (distanceDifference / 100) * theoreticalMargin.value * 60,
+      finalLostTime,
+    };
+  } else if (theoreticalMargin.unit === MarginUnit.percent) {
+    if (refBaseArrivalDifference === undefined) return undefinedMarginTimes;
+
+    return {
+      provisionalLostTime: ms2sec(refBaseArrivalDifference) * (theoreticalMargin.value / 100),
+      finalLostTime,
+    };
   }
 
-  const refBaseDuration = nextRefBaseArrival - refBaseArrival;
-  return {
-    // TODO: handle min/100km margin
-    provisionalLostTime: Math.round(ms2sec(refBaseDuration) * (theoreticalMargin.value / 100)),
-    finalLostTime:
-      arrival !== undefined && nextArrival !== undefined
-        ? Math.round(ms2sec(nextArrival - arrival - refBaseDuration))
-        : undefined,
-  };
+  return undefinedMarginTimes;
 }
 
 /** Extracts the theoretical margin for each path step in the train schedule,
