@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { BLACK_ALPHA_100, BLACK_ALPHA_50, WHITE_ALPHA_100 } from '../../common/helpers/colors';
+import { BLACK_ALPHA_100, BLACK_ALPHA_5, WHITE_ALPHA_100 } from '../../common/helpers/colors';
 import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
@@ -29,7 +29,7 @@ export const ZoomRect = (rect: CanvasRect) => {
   const drawZoomRect = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, context) => {
       ctx.save();
-      ctx.fillStyle = BLACK_ALPHA_50;
+      ctx.fillStyle = BLACK_ALPHA_5;
       const { width, height } = fillRect(ctx, rect, context);
       if (width && height) {
         ctx.lineWidth = LINE_WIDTH;
