@@ -4,14 +4,19 @@ import { AiFillSave } from 'react-icons/ai';
 import { BiReset } from 'react-icons/bi';
 import { RiPinDistanceLine } from 'react-icons/ri';
 
+import { TRACKS_LAYER_ID } from 'applications/editor/tools/consts';
+import { approximatePointDistanceForEditoast } from 'applications/editor/tools/utils';
 import type { Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
+import { getNearestPoint } from 'utils/mapHelper';
 
 import OpEditionLayers from './components/OpEditionLayers';
 import OpEditionLeftPanel from './components/OpEditionLeftPanel';
+import OpEditionMessages from './components/OpEditionMessages';
+import { PARTS_LAYER_ID } from './consts';
 import type { OpEditionState, OpEntity } from './types';
-import { canSaveOp, getOpEditionState, isNewOp } from './utils';
+import { addPart, canSaveOp, getFeaturePartIndex, getOpEditionState, isNewOp } from './utils';
 
 const OpEditionTool: Tool<OpEditionState> = {
   id: 'op-edition',
@@ -113,9 +118,52 @@ const OpEditionTool: Tool<OpEditionState> = {
     ],
   ],
 
+  getCursor({ state: { hovered, hoveredPartIndex } }) {
+    if (hovered || hoveredPartIndex !== null) return 'pointer';
+    return 'default';
+  },
+  onHover(e, { setState }) {
+    const feature = e.features?.[0];
+    const partIndex = getFeaturePartIndex(feature);
+    if (partIndex !== null) {
+      setState({ hovered: null, hoveredPartIndex: partIndex });
+    } else if (feature?.sourceLayer === 'track_sections') {
+      setState({
+        hovered: { type: 'TrackSection', id: feature.properties.id, renderedEntity: feature },
+        hoveredPartIndex: null,
+      });
+    } else {
+      setState({ hovered: null, hoveredPartIndex: null });
+    }
+  },
+  onMove(e, { setState, state: { hoveredPartIndex } }) {
+    // onHover is not called when nothing is hovered
+    if (!e.features?.length && hoveredPartIndex !== null) setState({ hoveredPartIndex: null });
+  },
+  onClickMap(e, { setState, state: { entity, trackSectionsCache } }) {
+    const feature = e.features?.[0];
+    const partIndex = getFeaturePartIndex(feature);
+    if (partIndex !== null) {
+      setState({ selectedPartIndex: partIndex });
+    } else if (feature?.sourceLayer === 'track_sections') {
+      const trackState = trackSectionsCache[feature.properties.id];
+      if (trackState?.type !== 'success') return;
+      const { track } = trackState;
+      const nearestPoint = getNearestPoint([track], e.lngLat.toArray());
+      const position = approximatePointDistanceForEditoast(track, nearestPoint.geometry);
+      setState({
+        entity: addPart(entity, track.properties.id, position),
+        selectedPartIndex: entity.properties.parts.length,
+      });
+    }
+  },
+
+  getInteractiveLayers: () => [TRACKS_LAYER_ID, PARTS_LAYER_ID],
+  getEventsLayers: () => [TRACKS_LAYER_ID, PARTS_LAYER_ID],
   getHiddenOperationalPoints: ({ state }) => [state.entity.properties.id],
   layersComponent: OpEditionLayers,
   leftPanelComponent: OpEditionLeftPanel,
+  messagesComponent: OpEditionMessages,
 };
 
 export default OpEditionTool;

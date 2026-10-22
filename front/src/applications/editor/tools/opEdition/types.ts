@@ -28,5 +28,6 @@ export type OpEditionState = CommonToolState & {
   initialEntity: OpEntity;
   entity: OpEntity;
   trackSectionsCache: Record<string, TrackState>;
+  hoveredPartIndex: number | null;
   selectedPartIndex: number | null;
 };

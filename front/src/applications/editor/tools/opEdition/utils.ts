@@ -1,4 +1,5 @@
 import { point } from '@turf/helpers';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
@@ -7,6 +8,7 @@ import { getPointAt } from 'applications/editor/tools/rangeEdition/utils';
 import type { OperationalPointPart } from 'common/api/osrdEditoastApi';
 import { NULL_GEOMETRY } from 'types';
 
+import { PARTS_LAYER_ID } from './consts';
 import type { OpEditionState, OpEntity, OpPartFeature } from './types';
 
 export function getEmptyOp(): OpEntity {
@@ -32,6 +34,7 @@ export function getOpEditionState(entity?: OpEntity): OpEditionState {
     entity: op,
     initialEntity: op,
     trackSectionsCache: {},
+    hoveredPartIndex: null,
     selectedPartIndex: null,
   };
 }
@@ -49,6 +52,13 @@ export function canSaveOp({ properties }: OpEntity): boolean {
     // Editoast rejects blank local track names
     properties.parts.every((part) => !!part.local_track_name.trim())
   );
+}
+
+// Returns the part index if the feature is a rendered part, null otherwise
+export function getFeaturePartIndex(feature?: MapGeoJSONFeature): number | null {
+  if (feature?.layer.id !== PARTS_LAYER_ID) return null;
+  const { partIndex } = feature.properties;
+  return typeof partIndex === 'number' ? partIndex : null;
 }
 
 export function getPartFeatures(
@@ -69,6 +79,13 @@ export function getPartFeatures(
 
 function updateParts(entity: OpEntity, parts: OperationalPointPart[]): OpEntity {
   return { ...entity, properties: { ...entity.properties, parts } };
+}
+
+export function addPart(entity: OpEntity, track: string, position: number): OpEntity {
+  return updateParts(entity, [
+    ...entity.properties.parts,
+    { track, position, local_track_name: '' },
+  ]);
 }
 
 export function removePart(entity: OpEntity, partIndex: number): OpEntity {
