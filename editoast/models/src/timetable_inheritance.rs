@@ -1,3 +1,4 @@
+use database::DbConnection;
 use diesel::deserialize::FromSql;
 use diesel::deserialize::FromSqlRow;
 use diesel::expression::AsExpression;
@@ -10,6 +11,7 @@ use editoast_derive::Model;
 use schemas::primitives::StrictlyPositiveDuration;
 use serde::Deserialize;
 use serde::Serialize;
+use std::ops::DerefMut as _;
 use unit_system::quantities::Offset;
 use utoipa::ToSchema;
 
@@ -51,6 +53,25 @@ pub struct TimetableInheritance {
     /// The timetable included in another timetable
     pub inner_timetable_id: i64,
     pub ranges: Option<TimetableRanges>,
+}
+
+impl TimetableInheritance {
+    pub async fn list_inner_timetable_ids(
+        conn: &mut DbConnection,
+        outer_timetable_id: i64,
+    ) -> Result<Vec<i64>, database::DatabaseError> {
+        use database::tables::timetable_inheritance::dsl;
+        use diesel::ExpressionMethods as _;
+        use diesel::QueryDsl as _;
+        use diesel_async::RunQueryDsl as _;
+
+        dsl::timetable_inheritance
+            .filter(dsl::outer_timetable_id.eq(outer_timetable_id))
+            .select(dsl::inner_timetable_id)
+            .load(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
 }
 
 #[cfg(test)]

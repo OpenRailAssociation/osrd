@@ -361,11 +361,11 @@ mod tests {
 
     async fn create_trains_from_start_times(
         start_times: Vec<Offset>,
-        train_schedule_set_id: i64,
+        timetable_id: i64,
         conn: &mut DbConnection,
     ) {
         for start_time in start_times {
-            simple_paced_train_changeset(train_schedule_set_id)
+            simple_paced_train_changeset(timetable_id)
                 .start_time(start_time)
                 .create(conn)
                 .await
@@ -419,7 +419,7 @@ mod tests {
             ms_since_epoch("2000-01-19T17:00:00Z"),
         ];
 
-        create_trains_from_start_times(start_times, train_schedule_set.id, conn).await;
+        create_trains_from_start_times(start_times, train_schedule_set.timetable_id, conn).await;
 
         let (begin, end) =
             resolve_search_window(timetable.id, search_window_begin, search_window_end, conn)
@@ -466,7 +466,7 @@ mod tests {
             ms_since_epoch("2000-02-02T00:00:01Z"),
         ];
 
-        create_trains_from_start_times(start_times, train_schedule_set.id, conn).await;
+        create_trains_from_start_times(start_times, train_schedule_set.timetable_id, conn).await;
 
         assert!(
             resolve_search_window(timetable.id, search_window_begin, search_window_end, conn)
@@ -492,7 +492,7 @@ mod tests {
 
         create_trains_from_start_times(
             start_times,
-            scenario_fixture_set.train_schedule_set.id,
+            scenario_fixture_set.train_schedule_set.timetable_id,
             conn,
         )
         .await;
@@ -575,7 +575,7 @@ mod tests {
             ms_since_epoch("2000-02-02T08:00:00Z"),
         ];
 
-        create_trains_from_start_times(start_times, train_schedule_set.id, conn).await;
+        create_trains_from_start_times(start_times, train_schedule_set.timetable_id, conn).await;
         let operational_points = Vec::from([1, 2, 3, 4]);
         let operational_points_id_filtered =
             Vec::from(["uuid-1".to_string(), "uuid-2".to_string()]);
@@ -648,7 +648,7 @@ mod tests {
 
         create_trains_from_start_times(
             start_times,
-            scenario_fixture_set.train_schedule_set.id,
+            scenario_fixture_set.train_schedule_set.timetable_id,
             conn,
         )
         .await;

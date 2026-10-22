@@ -861,10 +861,8 @@ pub(super) struct SearchResultItemScenario {
     #[search(sql = r#"(
         SELECT COUNT(DISTINCT trains.id)
         FROM train_schedule AS trains
-        INNER JOIN train_schedule_set AS tss
-            ON trains.train_schedule_set_id = tss.id
         INNER JOIN timetable_inheritance AS inheritance
-            ON tss.timetable_id = inheritance.inner_timetable_id
+            ON trains.timetable_id = inheritance.inner_timetable_id
         INNER JOIN scenario_timetable AS scenario_tt
             ON scenario_tt.timetable_id = inheritance.outer_timetable_id
         WHERE scenario_tt.scenario_id = scenario.id
@@ -930,7 +928,7 @@ pub(super) struct SearchResultItemMacroNode {
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
     table = "train_schedule",
-    column(name = "train_schedule_set_id", data_type = "integer"),
+    column(name = "timetable_id", data_type = "integer"),
     column(name = "train_name", data_type = "string"),
     column(name = "start_time", data_type = "integer")
 )]
@@ -944,8 +942,8 @@ pub(super) struct SearchResultItemTrainSchedule {
     labels: Vec<Option<String>>,
     #[search(sql = "train_schedule.rolling_stock_name")]
     rolling_stock_name: String,
-    #[search(sql = "train_schedule.train_schedule_set_id")]
-    train_schedule_set_id: i64,
+    #[search(sql = "train_schedule.timetable_id")]
+    timetable_id: i64,
     /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     /// For hourly timetables: elapsed ms since the timetable start.
     #[search(sql = "train_schedule.start_time")]
@@ -1024,7 +1022,8 @@ pub mod tests {
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
 
         // Add a train_schedule in the database
-        let train = create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        let train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         // The body
         let response: Vec<SearchResultItemTrainSchedule> = app
@@ -1032,7 +1031,7 @@ pub mod tests {
             .json(&json!({
                 "object": "trainschedule",
                 "query": ["and", ["=", ["train_name"], train.train_name],
-                                 ["=", ["train_schedule_set_id"], train.train_schedule_set_id]],
+                                 ["=", ["timetable_id"], train_schedule_set.timetable_id]],
             }))
             .await
             .assert_status_ok()
@@ -1051,7 +1050,7 @@ pub mod tests {
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
 
         // Add a train_schedule in the database
-        create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let train_name = "NonExistingTrain";
 
@@ -1061,7 +1060,7 @@ pub mod tests {
             .json(&json!({
                 "object": "trainschedule",
                 "query": ["and", ["=", ["train_name"], train_name],
-                                 ["=", ["train_schedule_set_id"], train_schedule_set.id]],
+                                 ["=", ["timetable_id"], train_schedule_set.timetable_id]],
             }))
             .await
             .assert_status_ok()
@@ -1076,7 +1075,8 @@ pub mod tests {
         let pool = app.db_pool();
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "search_scenario").await;
-        create_simple_paced_train(&mut pool.get_ok(), fixtures.train_schedule_set.id).await;
+        create_simple_paced_train(&mut pool.get_ok(), fixtures.train_schedule_set.timetable_id)
+            .await;
 
         // Link a second timetable (with its own train) to the same scenario
         let (timetable, train_schedule_set) =
@@ -1087,7 +1087,7 @@ pub mod tests {
             .create(&mut pool.get_ok())
             .await
             .expect("Failed to link scenario to timetable");
-        create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let response: Vec<SearchResultItemScenario> = app
             .post("/search")
@@ -1111,7 +1111,8 @@ pub mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
         // Fixture train has start_time = 2023-12-21T08:51:30Z
-        let train = create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
+        let train =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
         let day_start = Timestamp::from_str("2023-12-21T00:00:00Z")
             .unwrap()
@@ -1125,7 +1126,7 @@ pub mod tests {
             .json(&json!({
                 "object": "trainschedule",
                 "query": ["and",
-                    ["=", ["train_schedule_set_id"], train.train_schedule_set_id],
+                    ["=", ["timetable_id"], train_schedule_set.timetable_id],
                     [">=", ["start_time"], day_start],
                     ["<",  ["start_time"], next_day],
                 ],
@@ -1142,7 +1143,7 @@ pub mod tests {
             .json(&json!({
                 "object": "trainschedule",
                 "query": ["and",
-                    ["=", ["train_schedule_set_id"], train.train_schedule_set_id],
+                    ["=", ["timetable_id"], train_schedule_set.timetable_id],
                     [">=", ["start_time"], next_day],
                 ],
             }))

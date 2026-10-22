@@ -303,7 +303,7 @@ pub mod tests {
 
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
 
-        let paced_train_1 = simple_paced_train_changeset(train_schedule_set.id)
+        let paced_train_1 = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .main_category(None)
             .sub_category(Some(created_sub_category.code.clone()));
         let paced_train_1 = paced_train_1
@@ -311,7 +311,7 @@ pub mod tests {
             .await
             .expect("Failed to create paced train");
 
-        let paced_train_2 = simple_paced_train_changeset(train_schedule_set.id)
+        let paced_train_2 = simple_paced_train_changeset(train_schedule_set.timetable_id)
             .main_category(None)
             .sub_category(Some(created_sub_category.code.clone()));
         let paced_train_2 = paced_train_2

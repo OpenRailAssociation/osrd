@@ -141,10 +141,17 @@ impl TrainScheduleSet {
         train_schedule_set_id: i64,
         conn: &mut DbConnection,
     ) -> Result<i64, database::DatabaseError> {
-        use database::tables::train_schedule::dsl;
+        use database::tables::timetable;
+        use database::tables::train_schedule;
 
-        dsl::train_schedule
-            .filter(dsl::train_schedule_set_id.eq(train_schedule_set_id))
+        train_schedule::table
+            .filter(
+                train_schedule::timetable_id.eq_any(
+                    timetable::table
+                        .filter(timetable::train_schedule_set_id.eq(train_schedule_set_id))
+                        .select(timetable::id),
+                ),
+            )
             .count()
             .get_result(conn.write().await.deref_mut())
             .await
