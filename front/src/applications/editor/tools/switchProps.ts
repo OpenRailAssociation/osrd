@@ -1,4 +1,5 @@
 import type TOOL_NAMES from './constsToolNames';
+import type { OpEditionState } from './opEdition/types';
 import type {
   BufferStopEntity,
   DetectorEntity,
@@ -35,4 +36,5 @@ export type switchProps =
       toolType: TOOL_NAMES.BUFFER_STOP_EDITION;
       toolState: Partial<PointEditionState<BufferStopEntity>>;
     }
-  | { toolType: TOOL_NAMES.ROUTE_EDITION; toolState: Partial<RouteEditionState> };
+  | { toolType: TOOL_NAMES.ROUTE_EDITION; toolState: Partial<RouteEditionState> }
+  | { toolType: TOOL_NAMES.OP_EDITION; toolState: Partial<OpEditionState> };

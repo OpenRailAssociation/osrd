@@ -120,6 +120,12 @@ const MapUnplugged = ({
     [activeTool, extendedContext]
   );
 
+  // The OP layer is shared by all tools, so each tool tells which OPs to hide:
+  const hiddenOperationalPoints = useMemo(
+    () => activeTool.getHiddenOperationalPoints?.(extendedContext),
+    [activeTool, extendedContext]
+  );
+
   const cursor = useMemo(
     () =>
       activeTool.getCursor ? activeTool.getCursor(extendedContext, isDraggingState) : 'default',
@@ -308,9 +314,11 @@ const MapUnplugged = ({
 
           {editorState.mapSettings.layersSettings.operational_points && (
             <OperationalPointsLayer
+              key={context.renderingFingerprint}
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
               mutedLayerOrder={LAYER_GROUPS_ORDER[LAYERS.MUTED_OPERATIONAL_POINTS.GROUP]}
+              hiddenIds={hiddenOperationalPoints}
             />
           )}
 

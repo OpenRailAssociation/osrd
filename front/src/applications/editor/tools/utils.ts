@@ -13,6 +13,7 @@ import type { EditoastType } from 'applications/editor/consts';
 import { getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type { OpEntity } from 'applications/editor/tools/opEdition/types';
 import type {
   BufferStopEntity,
   DetectorEntity,
@@ -269,6 +270,15 @@ export function openEntityEditionPanel(
       switchTool({
         toolType: TOOL_NAMES.ROUTE_EDITION,
         toolState: getRouteEditionState(entity as RouteEntity),
+      });
+      break;
+    case 'OperationalPoint':
+      switchTool({
+        toolType: TOOL_NAMES.OP_EDITION,
+        toolState: {
+          initialEntity: entity as OpEntity,
+          entity: entity as OpEntity,
+        },
       });
       break;
     default:

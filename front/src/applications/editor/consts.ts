@@ -2,10 +2,7 @@ import { flatMap } from 'lodash';
 
 import type { ObjectType } from 'common/api/osrdEditoastApi';
 
-export const NON_EDITABLE_OBJECT_TYPES: ObjectType[] = [
-  'OperationalPoint',
-  'NeutralSection',
-] as const;
+export const NON_EDITABLE_OBJECT_TYPES: ObjectType[] = ['NeutralSection'] as const;
 
 // LAYERS
 

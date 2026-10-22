@@ -11,6 +11,7 @@ enum TOOL_NAMES {
   DETECTOR_EDITION = 'detector-edition',
   BUFFER_STOP_EDITION = 'buffer-stop-edition',
   ROUTE_EDITION = 'route-edition',
+  OP_EDITION = 'op-edition',
 }
 
 export default TOOL_NAMES;
