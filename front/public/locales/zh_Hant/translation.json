@@ -1,1 +1,17 @@
-{}
+{
+  "applications": {
+    "rolling-stocks-editor": "車輛編輯器"
+  },
+  "home": {
+    "applications": {
+      "rolling-stocks-editor": "車輛"
+    }
+  },
+  "rollingStock": {
+    "add": "新增",
+    "cancelUpdateRollingStock": "您確定要取消所做的變更嗎?"
+  },
+  "timeStopTable": {
+    "trackName": "軌道"
+  }
+}
