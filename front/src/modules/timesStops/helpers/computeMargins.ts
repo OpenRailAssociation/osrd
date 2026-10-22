@@ -132,11 +132,7 @@ function computeMarginsCore(
 
   for (let index = pathStepIndex + 1; index < path.length; index += 1) {
     const curStepKey = path[index].key;
-    if (
-      theoreticalMargins?.[curStepKey]?.isBoundary ||
-      scheduleByAt[curStepKey]?.arrival ||
-      scheduleByAt[curStepKey]?.reference_base_arrival
-    ) {
+    if (theoreticalMargins?.[curStepKey]?.isBoundary || scheduleByAt[curStepKey]?.arrival) {
       nextIndex = index;
       break;
     }
