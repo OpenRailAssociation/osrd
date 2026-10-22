@@ -121,7 +121,7 @@ function isLegacyOnlyFilter(filter: FilterSpecification | null): boolean {
  *                            input layer props are removed from the output
  *                            result
  */
-function adaptFilter(
+export function adaptFilter(
   layer: LayerProps,
   idsToHide: string[],
   onlyIdsToShow: string[],
