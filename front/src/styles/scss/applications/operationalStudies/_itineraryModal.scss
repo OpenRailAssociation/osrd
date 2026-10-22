@@ -486,6 +486,50 @@
               &.invalid {
                 border-radius: 3px;
               }
+
+              .path-step-op-status-icon {
+                position: relative;
+                display: flex;
+                align-items: center;
+
+                &.in-infra,
+                &.placeholder {
+                  color: var(--black25);
+                }
+
+                &.not-in-infra {
+                  color: var(--black50);
+                }
+
+                &.track-offset {
+                  color: var(--info60);
+                }
+              }
+
+              .path-step-op-status-badge {
+                position: absolute;
+                top: 40%;
+                right: -8px;
+                transform: translateY(-50%) scale(0.6);
+              }
+
+              .leading-content-wrapper {
+                width: 32px;
+                padding: 0 4px;
+
+                &:has(.path-step-op-status-icon.in-infra),
+                &:has(.path-step-op-status-icon.track-offset) {
+                  background-color: var(--success5);
+                }
+
+                &:has(.path-step-op-status-icon.not-in-infra) {
+                  background-color: var(--warning5);
+                }
+
+                &:has(.path-step-op-status-icon.placeholder) {
+                  background-color: var(--black5);
+                }
+              }
             }
 
             .invalid-step-message {
