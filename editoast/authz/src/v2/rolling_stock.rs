@@ -199,20 +199,15 @@ pub fn rolling_stock_set_grant(
     // Set grant rules:
     // 1. Issuer must have the correct sharing privilege [HasRollingStockPrivilege]
     // 2. Issuer is admin (may not have any direct grant on the resource)
-    //     1. *can* demote the last owner [Authorizer admin bypass]
+    //     1. can demote the last owner [Authorizer admin bypass]
     //     2. can demote or promote anyone to any grant level otherwise [Authorizer admin bypass]
     //     3. can demote or promote any group [Authorizer admin bypass]
     // 3. Issuer is owner
     //     1. cannot demote the last owner (including self) [IsNotLastRollingStockOwner]
-    //     2. cannot demote another owner [CanAlterSubjectRollingStockGrant]
-    //     3. can demote or promote anyone to any grant level otherwise [CanAlterSubjectRollingStockGrant]
-    //     4. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
+    //     2. can demote or promote any user/group to any grant level otherwise [CanAlterSubjectInfraGrant]
     // 4. Issuer is anything else
-    //     1. can demote self [HasRollingStockPrivilege]
-    //     2. cannot promote self [HasRollingStockPrivilege]
-    //     3. can promote anyone up to their own grant level [CanAlterSubjectRollingStockGrant + HasRollingStockPrivilege]
-    //     4. can demote anyone with a strictly lower grant level than their own [CanAlterSubjectRollingStockGrant]
-    //     5. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
+    //     1. can promote any user/group up to their own grant level [CanAlterSubjectRollingStockGrant]
+    //     2. cannot demote anyone [CanAlterSubjectRollingStockGrant]
     let prot = prot
         .reset_checks() // get rid of revoking-specific checks
         .with_check(Check::HasRollingStockPrivilege(
@@ -472,15 +467,9 @@ pub fn rolling_stock_revoke_grant(
     // Revoking rules:
     // 1. Only owners (and admins) can fully revoke grants
     // 2. The last owner of a resource cannot be revoked (admins can)
-    // 3. An owner cannot revoke another owner
     prot.with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
         RollingStockPrivilege::CanRevoke,
-        rolling_stock,
-    ))
-    .with_check(Check::SubjectEffectiveRollingStockGrantIsNot(
-        RollingStockGrant::Owner,
-        subject,
         rolling_stock,
     ))
     .with_check(Check::IsNotLastRollingStockOwner(subject, rolling_stock))

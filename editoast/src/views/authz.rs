@@ -2128,7 +2128,7 @@ mod tests {
             .await,
     )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn owner_cannot_revoke_another_resource_owner(
+    async fn owner_can_revoke_another_resource_owner(
         #[case] app: TestApp,
         #[case] resource_id: i64,
         #[case] resource_type: ResourceType,
@@ -2147,20 +2147,15 @@ mod tests {
                 ]
             }))
             .await
-            .assert_status_forbidden();
+            .assert_status_success();
 
         match resource_type {
-            ResourceType::Infra => {
-                app.assert_infra_grant(resource_id, bob.id, Some(InfraGrant::Owner))
-            }
+            ResourceType::Infra => app.assert_infra_grant(resource_id, bob.id, None),
             ResourceType::RollingStock => {
-                app.assert_rolling_stock_grant(resource_id, bob.id, Some(RollingStockGrant::Owner))
+                app.assert_rolling_stock_grant(resource_id, bob.id, None)
                     .await
             }
-            ResourceType::Project => {
-                app.assert_project_grant(resource_id, bob.id, Some(ProjectGrant::Owner))
-                    .await
-            }
+            ResourceType::Project => app.assert_project_grant(resource_id, bob.id, None).await,
         };
     }
 
@@ -2401,12 +2396,7 @@ mod tests {
             .user("tom", "Tom")
             .with_infra_grant(resource_id, InfraGrant::Owner)
             .create()
-            .await,
-        app
-            .user("jerry", "Jerry")
-            .with_infra_grant(resource_id, InfraGrant::Owner)
-            .create()
-            .await,
+            .await
     )]
     #[case::rolling_stock(
         test_app!().build(),
@@ -2417,24 +2407,18 @@ mod tests {
             .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
             .create()
             .await,
-        app
-            .user("jerry", "Jerry")
-            .with_rolling_stock_grant(resource_id, RollingStockGrant::Owner)
-            .create()
-            .await,
     )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn owner_cannot_demote_another_owner(
+    async fn owner_cannot_demote_last_owner(
         #[case] app: TestApp,
         #[case] resource_id: i64,
         #[case] resource_type: ResourceType,
         #[case] tom: authz::identity::User,
-        #[case] jerry: authz::identity::User,
     ) {
         app.post("/authz/grants")
             .json(&json!({
                 "grant": [{
-                    "subject_id": jerry.id,
+                    "subject_id": tom.id,
                     "resource_type": resource_type,
                     "resource_id": resource_id,
                     "grant": StandardGrant::Writer
@@ -2445,15 +2429,11 @@ mod tests {
             .assert_status_forbidden();
         match resource_type {
             ResourceType::Infra => {
-                app.assert_infra_grant(resource_id, jerry.id, Some(InfraGrant::Owner))
+                app.assert_infra_grant(resource_id, tom.id, Some(InfraGrant::Owner))
             }
             ResourceType::RollingStock => {
-                app.assert_rolling_stock_grant(
-                    resource_id,
-                    jerry.id,
-                    Some(RollingStockGrant::Owner),
-                )
-                .await
+                app.assert_rolling_stock_grant(resource_id, tom.id, Some(RollingStockGrant::Owner))
+                    .await
             }
             // Owners cannot demote anyone anyway, tested separately
             ResourceType::Project => (),
@@ -2577,7 +2557,7 @@ mod tests {
             .await
     )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn writer_can_demote_self_resource_grant(
+    async fn writer_cannot_demote_self_resource_grant(
         #[case] app: TestApp,
         #[case] resource_id: i64,
         #[case] resource_type: ResourceType,
@@ -2594,16 +2574,16 @@ mod tests {
             }))
             .by_user(writer.as_ref())
             .await
-            .assert_status(StatusCode::CREATED);
+            .assert_status_forbidden();
         match resource_type {
             ResourceType::Infra => {
-                app.assert_infra_grant(resource_id, writer.id, Some(InfraGrant::Reader));
+                app.assert_infra_grant(resource_id, writer.id, Some(InfraGrant::Writer));
             }
             ResourceType::RollingStock => {
                 app.assert_rolling_stock_grant(
                     resource_id,
                     writer.id,
-                    Some(RollingStockGrant::Reader),
+                    Some(RollingStockGrant::Writer),
                 )
                 .await;
             }
@@ -3188,7 +3168,7 @@ mod tests {
             .await,
     )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn non_admin_forbidden_to_give_groups_any_grant(
+    async fn user_allowed_to_give_groups_grant(
         #[case] app: TestApp,
         #[case] resource_id: i64,
         #[case] resource_type: ResourceType,
@@ -3210,22 +3190,28 @@ mod tests {
                 ]
             }))
             .await
-            .assert_status_forbidden();
+            .assert_status_success();
 
         match resource_type {
             ResourceType::Infra => {
-                app.assert_infra_grant(resource_id, bob.id, None);
-                app.assert_infra_grant(resource_id, group.id, None);
+                app.assert_infra_grant(resource_id, bob.id, Some(InfraGrant::Owner));
+                app.assert_infra_grant(resource_id, group.id, Some(InfraGrant::Owner));
             }
             ResourceType::RollingStock => {
-                app.assert_rolling_stock_grant(resource_id, bob.id, None)
+                app.assert_rolling_stock_grant(resource_id, bob.id, Some(RollingStockGrant::Owner))
                     .await;
-                app.assert_rolling_stock_grant(resource_id, group.id, None)
-                    .await;
+                app.assert_rolling_stock_grant(
+                    resource_id,
+                    group.id,
+                    Some(RollingStockGrant::Owner),
+                )
+                .await;
             }
             ResourceType::Project => {
-                app.assert_project_grant(resource_id, bob.id, None).await;
-                app.assert_project_grant(resource_id, group.id, None).await;
+                app.assert_project_grant(resource_id, bob.id, Some(ProjectGrant::Owner))
+                    .await;
+                app.assert_project_grant(resource_id, group.id, Some(ProjectGrant::Owner))
+                    .await;
             }
         }
     }
@@ -3568,7 +3554,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn project_owner_cannot_remove_grant() {
+    async fn project_owner_can_remove_grant_except_last_owner() {
         let app = test_app!().build();
         let project_id = create_project(&mut app.db_pool().get_ok(), "project")
             .await
@@ -3592,7 +3578,7 @@ mod tests {
                 ]
             }))
             .await
-            .assert_status_forbidden();
+            .assert_status_success();
 
         let other_owner = app
             .user("other_owner", "OtherOwner")
@@ -3612,7 +3598,8 @@ mod tests {
                 ]
             }))
             .await
-            .assert_status_forbidden();
+            .assert_status_success();
+        // cannot revoke last owner
         app.post("/authz/grants")
             .by_user(owner.as_ref())
             .json(&json!({

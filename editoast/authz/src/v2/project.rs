@@ -112,28 +112,36 @@ pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
 /// No transaction is setup as OpenFGA does not support them.
 pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<bool> {
     // Revoking rules:
-    // Only admins can fully revoke grants
-    project_direct_grant(subject, project)
-        .then(move |openfga, grant| {
-            async move {
-                let Some(grant) = grant else {
-                    return Ok(false);
-                };
+    let prot = project_direct_grant(subject, project).then(move |openfga, grant| {
+        async move {
+            let Some(grant) = grant else {
+                return Ok(false);
+            };
 
-                let mut delete = openfga.prepare_deletes();
-                match (subject, grant) {
-                    (Subject::User(user), ProjectGrant::Owner) => {
-                        delete.push(&Project::owner().tuple(&user, &project))
-                    }
-                    (Subject::Group(group), ProjectGrant::Owner) => delete
-                        .push(&Project::owner().tuple(Group::member().userset(&group), &project)),
-                };
-                delete.execute().await?;
-                Ok(true)
-            }
-            .boxed()
-        })
-        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+            let mut delete = openfga.prepare_deletes();
+            match (subject, grant) {
+                (Subject::User(user), ProjectGrant::Owner) => {
+                    delete.push(&Project::owner().tuple(&user, &project))
+                }
+                (Subject::Group(group), ProjectGrant::Owner) => {
+                    delete.push(&Project::owner().tuple(Group::member().userset(&group), &project))
+                }
+            };
+            delete.execute().await?;
+            Ok(true)
+        }
+        .boxed()
+    });
+
+    // Revoking rules:
+    // 1. Only owners (and admins) can fully revoke grants. On project there is only one level, so if you have access you are an owner
+    // 2. The last owner of a resource cannot be revoked (admins can)
+    prot.with_check(Check::HasProjectPrivilege(
+        Actor::Issuer,
+        ProjectPrivilege::HasAccess,
+        project,
+    ))
+    .with_check(Check::IsNotLastProjectOwner(subject, project))
 }
 
 pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<ProjectPrivilege>> {
@@ -785,7 +793,10 @@ mod tests {
     )]
     #[case::project_revoke_grant(
         project_revoke_grant(Subject::user(1), Project(1)).checks,
-        &[Check::HasRole(Actor::Issuer, Role::Admin)]
+        &[
+            Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1)),
+            Check::IsNotLastProjectOwner(Subject::user(1), Project(1))
+        ]
     )]
     #[case::project_privileges(
         project_privileges(User(1), Project(1)).checks,
