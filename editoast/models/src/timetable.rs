@@ -56,22 +56,13 @@ impl Timetable {
     ) -> Result<i64, database::DatabaseError> {
         use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
-        use database::tables::train_schedule_set;
 
         train_schedule::dsl::train_schedule
             .filter(
-                train_schedule::train_schedule_set_id.eq_any(
-                    train_schedule_set::table
-                        .filter(
-                            train_schedule_set::timetable_id.eq_any(
-                                timetable_inheritance::table
-                                    .filter(
-                                        timetable_inheritance::outer_timetable_id.eq(timetable_id),
-                                    )
-                                    .select(timetable_inheritance::inner_timetable_id),
-                            ),
-                        )
-                        .select(train_schedule_set::id),
+                train_schedule::timetable_id.eq_any(
+                    timetable_inheritance::table
+                        .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
+                        .select(timetable_inheritance::inner_timetable_id),
                 ),
             )
             .count()
@@ -84,18 +75,19 @@ impl Timetable {
         timetable_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Vec<i64>, database::DatabaseError> {
+        use database::tables::timetable;
         use database::tables::timetable_inheritance;
-        use database::tables::train_schedule_set;
 
-        train_schedule_set::table
+        timetable::table
             .filter(
-                train_schedule_set::timetable_id.eq_any(
+                timetable::id.eq_any(
                     timetable_inheritance::table
                         .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
                         .select(timetable_inheritance::inner_timetable_id),
                 ),
             )
-            .select(train_schedule_set::id)
+            .filter(timetable::train_schedule_set_id.is_not_null())
+            .select(timetable::train_schedule_set_id.assume_not_null())
             .load(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
@@ -107,23 +99,14 @@ impl Timetable {
     ) -> Result<Vec<Offset>, database::DatabaseError> {
         use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
-        use database::tables::train_schedule_set;
 
         let start_times_milliseconds = train_schedule::dsl::train_schedule
             .select(train_schedule::dsl::start_time)
             .filter(
-                train_schedule::train_schedule_set_id.eq_any(
-                    train_schedule_set::table
-                        .filter(
-                            train_schedule_set::timetable_id.eq_any(
-                                timetable_inheritance::table
-                                    .filter(
-                                        timetable_inheritance::outer_timetable_id.eq(timetable_id),
-                                    )
-                                    .select(timetable_inheritance::inner_timetable_id),
-                            ),
-                        )
-                        .select(train_schedule_set::id),
+                train_schedule::timetable_id.eq_any(
+                    timetable_inheritance::table
+                        .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
+                        .select(timetable_inheritance::inner_timetable_id),
                 ),
             )
             .load(conn.write().await.deref_mut())
@@ -143,14 +126,13 @@ impl Timetable {
         use crate::prelude::*;
         use database::tables::timetable;
         use database::tables::timetable_inheritance::dsl;
-        use database::tables::train_schedule_set;
 
         // Transaction to ensure consistency of modifications
         conn.transaction(async move |mut conn| {
             // 1. Retrieve the timetables of the train schedule sets
-            let new_inner_timetable_ids: HashSet<i64> = train_schedule_set::table
-                .filter(train_schedule_set::id.eq_any(train_schedule_set_ids))
-                .select(train_schedule_set::timetable_id)
+            let new_inner_timetable_ids: HashSet<i64> = timetable::table
+                .filter(timetable::train_schedule_set_id.eq_any(train_schedule_set_ids))
+                .select(timetable::id)
                 .load(conn.write().await.deref_mut())
                 .await?
                 .into_iter()
@@ -250,8 +232,7 @@ impl TimetableWithTrains {
         array_remove(array_agg(train_schedule.id), NULL) as paced_train_ids
         FROM timetable
         LEFT JOIN timetable_inheritance ON timetable.id = timetable_inheritance.outer_timetable_id
-        LEFT JOIN train_schedule_set ON timetable_inheritance.inner_timetable_id = train_schedule_set.timetable_id
-        LEFT JOIN train_schedule ON train_schedule_set.id = train_schedule.train_schedule_set_id
+        LEFT JOIN train_schedule ON timetable_inheritance.inner_timetable_id = train_schedule.timetable_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
         )
