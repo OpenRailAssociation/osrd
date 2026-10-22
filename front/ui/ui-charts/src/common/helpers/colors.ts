@@ -9,6 +9,7 @@ export const BLACK_ALPHA_40 = 'rgb(0 0 0 / 0.4)';
 export const BLACK_ALPHA_25 = 'rgb(0 0 0 / 0.25)';
 export const BLACK_ALPHA_20 = 'rgb(0 0 0 / 0.20)';
 export const BLACK_ALPHA_10 = 'rgb(0 0 0 / 0.1)';
+export const BLACK_ALPHA_5 = 'rgb(0 0 0 / 0.05)';
 
 export const WHITE_ALPHA_100 = 'rgb(255, 255, 255)';
 export const WHITE_ALPHA_50 = 'rgb(255 255 255 / 0.50)';
