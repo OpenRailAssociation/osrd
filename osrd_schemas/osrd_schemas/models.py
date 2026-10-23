@@ -581,6 +581,18 @@ class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
     )
 
 
+class EditoastAuthorizationErrorForbiddenRevokeLastOwner(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastAuthorizationErrorForbiddenRevokeLastOwnerContext"),
+    ] = None
+    message: str
+    status: Literal[403] = 403
+    type: Literal["editoast:authorization:ForbiddenRevokeLastOwner"] = (
+        "editoast:authorization:ForbiddenRevokeLastOwner"
+    )
+
+
 class EditoastAuthorizationErrorImpersonatedUserNotFoundContext(BaseModel):
     identity: str
 
@@ -5034,6 +5046,7 @@ class EditoastError(
         | EditoastAuthorizationErrorDbError
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
+        | EditoastAuthorizationErrorForbiddenRevokeLastOwner
         | EditoastAuthorizationErrorImpersonatedUserNotFound
         | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
@@ -5209,6 +5222,7 @@ class EditoastError(
         | EditoastAuthorizationErrorDbError
         | EditoastAuthorizationErrorForbidden
         | EditoastAuthorizationErrorForbiddenImpersonation
+        | EditoastAuthorizationErrorForbiddenRevokeLastOwner
         | EditoastAuthorizationErrorImpersonatedUserNotFound
         | EditoastAuthorizationErrorOpenFga
         | EditoastAuthorizationErrorUnauthenticated
