@@ -200,6 +200,7 @@ export type StdcmTranslations = {
   departureTime: string;
   simulation: {
     results: {
+      backtrack: string;
       simulationName: {
         withoutOutputs: string;
       };

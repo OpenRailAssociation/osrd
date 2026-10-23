@@ -27,6 +27,11 @@ class SimulationResultPage {
   private readonly feedbackDescription: Locator;
   private readonly feedbackButton: Locator;
   private readonly simulationItem: Locator;
+  private readonly backtrackRows: Locator;
+  private readonly backtrackRowOperationalPointName: Locator;
+  private readonly backtrackRowLabel: Locator;
+  private readonly backtrackRowIcon: Locator;
+  private readonly viaResultMarkerBacktrackIcon: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -48,6 +53,14 @@ class SimulationResultPage {
     this.feedbackTitle = page.getByTestId('feedback-title');
     this.feedbackDescription = page.getByTestId('feedback-card-text');
     this.feedbackButton = page.getByTestId('feedback-button');
+    this.backtrackRows = this.simulationTableRows.filter({
+      has: page.getByTestId('backtrack-label'),
+    });
+    this.backtrackRowOperationalPointName =
+      this.backtrackRows.getByTestId('operational-point-name');
+    this.backtrackRowLabel = this.backtrackRows.getByTestId('backtrack-label');
+    this.backtrackRowIcon = this.backtrackRows.getByTestId('backtrack-icon');
+    this.viaResultMarkerBacktrackIcon = this.viaResultMarker.getByTestId('backtrack-icon');
   }
 
   private getSimulationLengthAndDurationLocator(simulationIndex: number): Locator {
@@ -130,6 +143,25 @@ class SimulationResultPage {
     await expect(consistChangeRow).toContainText(
       `${consistChangeLabel}${tonnageLabel} ${tonnageTransition}, ${lengthLabel} ${lengthTransition}`
     );
+  }
+
+  async verifySingleSimulationResult(): Promise<void> {
+    await expect(this.simulationItem).toHaveCount(1);
+    await expect(this.simulationResultTable).toBeVisible();
+  }
+
+  async verifyBacktrackInTable(
+    operationalPointName: string,
+    backtrackLabel: string
+  ): Promise<void> {
+    await expect(this.backtrackRows).toHaveCount(1);
+    await expect(this.backtrackRowOperationalPointName).toContainText(operationalPointName);
+    await expect(this.backtrackRowLabel).toHaveText(backtrackLabel);
+    await expect(this.backtrackRowIcon).toBeVisible();
+  }
+
+  async verifyBacktrackOnMap(): Promise<void> {
+    await expect(this.viaResultMarkerBacktrackIcon).toBeVisible();
   }
 
   async displayAllOperationalPoints() {
