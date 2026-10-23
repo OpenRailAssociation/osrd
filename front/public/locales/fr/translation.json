@@ -872,6 +872,7 @@
     "noPathLoaded": "Aucun chemin chargé",
     "operational_point": "point remarquable",
     "powerRestriction": "restriction de puissance",
+    "powerRestrictionDisabled": "Impossible d'ajouter une restriction de puissance sur le dernier point de passage.",
     "powerRestrictionIncompatibility_one": "{{count}} code de restriction de puissance n'est pas compatible avec l'électrification ou le matériel roulant.",
     "powerRestrictionIncompatibility_other": "{{count}} codes de restriction de puissance ne sont pas compatibles avec l'électrification ou le matériel roulant.",
     "propagationMenu": {

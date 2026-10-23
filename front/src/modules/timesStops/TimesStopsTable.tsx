@@ -359,62 +359,69 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnPowerRestrictionCell = (
-    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string | null>
-  ) => {
-    const {
-      availablePowerRestrictions: rawCodes,
-      powerRestrictionBlocks: blocks,
-      onPowerRestrictionChange: onRestrictionChange,
-    } = info.table.options.meta!;
-    const value = info.getValue();
-    const row = info.row.original;
+  const returnPowerRestrictionCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string | null>) => {
+      const {
+        availablePowerRestrictions: rawCodes,
+        powerRestrictionBlocks: blocks,
+        onPowerRestrictionChange: onRestrictionChange,
+      } = info.table.options.meta!;
+      const value = info.getValue();
+      const row = info.row.original;
 
-    // On the first row of an incompatible block, display the propagated restriction
-    // in a lighter style so the user can see which code is causing the warning and
-    // edit it directly at the boundary.
-    const blockInfo = blocks.get(row.id);
-    const showPropagated =
-      value === null && blockInfo?.isBlockStart && blockInfo.propagatedValue !== null;
-    const displayedValue = showPropagated ? blockInfo.propagatedValue : value;
+      const { allRows } = info.table.options.meta!;
+      const isLastRow = info.row.index === allRows.length - 1;
 
-    const valueNotInCodes = // Happens if the power restriction is incompatible with the rs, for example after a rs change by user
-      displayedValue &&
-      displayedValue !== NO_POWER_RESTRICTION &&
-      !rawCodes.includes(displayedValue);
-    const codes = valueNotInCodes ? [...rawCodes, displayedValue] : rawCodes;
+      // On the first row of an incompatible block, display the propagated restriction
+      // in a lighter style so the user can see which code is causing the warning and
+      // edit it directly at the boundary.
+      const blockInfo = blocks.get(row.id);
+      const showPropagated =
+        value === null && blockInfo?.isBlockStart && blockInfo.propagatedValue !== null;
+      const displayedValue = showPropagated ? blockInfo.propagatedValue : value;
 
-    return (
-      <div
-        className={cx('power-restriction-select-wrapper', {
-          'power-restriction-propagated': showPropagated,
-        })}
-      >
-        <select
-          data-testid="power-restriction-select"
-          value={displayedValue ?? ''}
-          onChange={(e) => {
-            const v = e.target.value;
-            onRestrictionChange(row, v === '' ? null : v);
-          }}
+      const valueNotInCodes = // Happens if the power restriction is incompatible with the rs, for example after a rs change by user
+        displayedValue &&
+        displayedValue !== NO_POWER_RESTRICTION &&
+        !rawCodes.includes(displayedValue);
+      const codes = valueNotInCodes ? [...rawCodes, displayedValue] : rawCodes;
+
+      return (
+        <div
+          className={cx('power-restriction-select-wrapper', {
+            'power-restriction-propagated': showPropagated,
+            'power-restriction-disabled': isLastRow,
+          })}
         >
-          <option value="" data-testid="power-restriction-option-empty"></option>
-          <option
-            value={NO_POWER_RESTRICTION}
-            data-testid={`power-restriction-option-${NO_POWER_RESTRICTION}`}
+          <select
+            data-testid="power-restriction-select"
+            value={displayedValue ?? ''}
+            onChange={(e) => {
+              const v = e.target.value;
+              onRestrictionChange(row, v === '' ? null : v);
+            }}
+            disabled={isLastRow}
+            title={isLastRow ? t('powerRestrictionDisabled') : ''}
           >
-            Ø
-          </option>
-          {codes.map((c) => (
-            <option key={c} value={c} data-testid={`power-restriction-option-${c}`}>
-              {c}
+            <option value="" data-testid="power-restriction-option-empty"></option>
+            <option
+              value={NO_POWER_RESTRICTION}
+              data-testid={`power-restriction-option-${NO_POWER_RESTRICTION}`}
+            >
+              Ø
             </option>
-          ))}
-        </select>
-        <TriangleDown className="power-restriction-arrow" />
-      </div>
-    );
-  };
+            {codes.map((c) => (
+              <option key={c} value={c} data-testid={`power-restriction-option-${c}`}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <TriangleDown className="power-restriction-arrow" />
+        </div>
+      );
+    },
+    [t]
+  );
 
   const returnDepartureTimeCell = useCallback(
     (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, StartTime | null>) => {
@@ -851,6 +858,7 @@ const TimesStopsTable = ({
     [
       returnDepartureTimeCell,
       returnCalculatedDepartureTimeCell,
+      returnPowerRestrictionCell,
       returnStopDurationCell,
       returnCalculatedArrivalTimeCell,
       returnRequestedTimeHeader,
