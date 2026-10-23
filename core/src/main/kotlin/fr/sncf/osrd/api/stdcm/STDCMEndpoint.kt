@@ -181,8 +181,6 @@ class STDCMEndpoint(
                     request.startTime,
                     infra.rawInfra,
                     infra.blockInfra,
-                    maxLargestConflicts = 2,
-                    maxClosestConflicts = 1,
                     conflictTypesToRegister = setOf(RequirementType.WORK_SCHEDULE),
                 )
 
