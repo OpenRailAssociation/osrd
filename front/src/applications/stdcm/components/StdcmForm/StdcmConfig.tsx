@@ -180,13 +180,6 @@ const StdcmConfig = ({
     [updateMapSettingsAction, dispatch]
   );
 
-  const {
-    pathfinding,
-    pathfindingStatusMessage,
-    showPathfindingStatusMessage,
-    setShowPathfindingStatusMessage,
-  } = useStaticPathfinding(pathfindingWorkerStatus, infra);
-
   const formRef = useRef<HTMLDivElement>(null);
   const pathfindingBannerRef = useRef<HTMLDivElement>(null);
 
@@ -204,6 +197,13 @@ const StdcmConfig = ({
     () => [initialConsistErrors, ...viaConsistErrors],
     [initialConsistErrors, viaConsistErrors]
   );
+
+  const {
+    pathfinding,
+    pathfindingStatusMessage,
+    showPathfindingStatusMessage,
+    setShowPathfindingStatusMessage,
+  } = useStaticPathfinding(pathfindingWorkerStatus, infra, consistErrors);
 
   const formErrors = useMemo(() => {
     if (!submittedFormErrors) return undefined;

@@ -21,6 +21,7 @@ import {
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useDebouncedEffect } from 'utils/hooks/useDebounce';
 
+import type { ConsistErrors } from '../types';
 import {
   getConsistChanges,
   getPathSegmentsIndexes,
@@ -52,6 +53,7 @@ function pathStepsToLocations(pathSteps: StdcmPathStep[]): Array<
 const useStaticPathfinding = (
   workerStatus: WorkerStatus,
   infra: Infra | undefined,
+  consistErrors: ConsistErrors[],
   debounceMs = 400
 ) => {
   const pathSteps = useSelector(getStdcmPathSteps);
@@ -91,6 +93,10 @@ const useStaticPathfinding = (
     });
   }, [pathSteps]);
 
+  const someLengthInvalid = consistErrors.some(
+    (errors) => errors.totalLength.display && errors.totalLength.message
+  );
+
   useDebouncedEffect(debounceMs, () => {
     let dependenciesUpToDate = true;
 
@@ -103,6 +109,7 @@ const useStaticPathfinding = (
         workerStatus !== 'READY' ||
         !rollingStock ||
         !totalLength ||
+        someLengthInvalid ||
         pathStepsLocations.length < 2
       ) {
         return;
@@ -176,6 +183,7 @@ const useStaticPathfinding = (
     infra,
     workerStatus,
     consistChanges,
+    someLengthInvalid,
   ]);
 
   const pathfindingStatusMessage = useMemo(() => {
