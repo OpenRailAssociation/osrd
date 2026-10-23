@@ -2162,6 +2162,15 @@ class EditoastStdcmRequestErrorMalformedParameters(BaseModel):
     )
 
 
+class EditoastStdcmRequestErrorNotFound(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorNotFoundContext")
+    ] = None
+    message: str
+    status: Literal[404] = 404
+    type: Literal["editoast:stdcm_request:NotFound"] = "editoast:stdcm_request:NotFound"
+
+
 class EditoastStdcmRequestErrorNotUser(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorNotUserContext")
@@ -4239,6 +4248,11 @@ class StdcmRequest(BaseModel):
     trace_id: str | None = None
 
 
+class StdcmRequestForm(BaseModel):
+    rmi_id: str
+    trace_id: str | None = None
+
+
 class StdcmResponseInternalError(BaseModel):
     error: InternalError
     status: Literal["internal_error"] = "internal_error"
@@ -5197,6 +5211,7 @@ class EditoastError(
         | EditoastStdcmRequestErrorDatabase
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
+        | EditoastStdcmRequestErrorNotFound
         | EditoastStdcmRequestErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
@@ -5376,6 +5391,7 @@ class EditoastError(
         | EditoastStdcmRequestErrorDatabase
         | EditoastStdcmRequestErrorForbidden
         | EditoastStdcmRequestErrorMalformedParameters
+        | EditoastStdcmRequestErrorNotFound
         | EditoastStdcmRequestErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
