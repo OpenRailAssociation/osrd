@@ -14,6 +14,7 @@ use database::DbConnection;
 use database::tables::project;
 use database::tables::rolling_stock;
 use database::tables::scenario;
+use database::tables::scenario_timetable;
 use database::tables::study;
 use database::tables::timetable_train_schedule_set;
 use database::tables::train_schedule;
@@ -64,9 +65,14 @@ impl RollingStock {
                     .eq(timetable_train_schedule_set::train_schedule_set_id)),
             )
             .inner_join(
-                scenario::table
-                    .on(timetable_train_schedule_set::timetable_id.eq(scenario::timetable_id))
-                    .inner_join(study::table.inner_join(project::table)),
+                scenario_timetable::table
+                    .on(timetable_train_schedule_set::timetable_id
+                        .eq(scenario_timetable::timetable_id))
+                    .inner_join(
+                        scenario::table
+                            .on(scenario_timetable::scenario_id.eq(scenario::id))
+                            .inner_join(study::table.inner_join(project::table)),
+                    ),
             )
             .select((
                 project::id,
@@ -78,6 +84,7 @@ impl RollingStock {
             ))
             .filter(rolling_stock::id.eq(self.id))
             .filter(train_schedule::id.is_not_null())
+            .distinct()
             .load::<SchedulesFromRollingStock>(conn.write().await.deref_mut())
             .await?;
         let schedules = schedules.into_iter().map_into().collect();

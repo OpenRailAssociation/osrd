@@ -50,7 +50,7 @@ vi.mock('common/api/osrdEditoastApi', () => ({
 const mockScenario = {
   id: 42,
   infra_id: 10,
-  timetable_id: 100,
+  timetable_ids: [100],
   timetable_type: 'CALENDAR',
   name: 'Test Scenario',
 };
@@ -133,7 +133,7 @@ describe('useScenario', () => {
       },
     });
     expect(mocks.linkTrainScheduleSets).toHaveBeenCalledWith({
-      id: mockScenario.timetable_id,
+      id: mockScenario.timetable_ids[0],
       body: { train_schedule_set_ids: [999] },
     });
   });

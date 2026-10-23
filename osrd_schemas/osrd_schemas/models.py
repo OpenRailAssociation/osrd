@@ -1771,6 +1771,20 @@ class EditoastScenarioErrorInfraNotFound(BaseModel):
     type: Literal["editoast:scenario:InfraNotFound"] = "editoast:scenario:InfraNotFound"
 
 
+class EditoastScenarioErrorNoTimetableContext(BaseModel):
+    scenario_id: int
+
+
+class EditoastScenarioErrorNoTimetable(BaseModel):
+    context: Annotated[
+        EditoastScenarioErrorNoTimetableContext | None,
+        Field(title="EditoastScenarioErrorNoTimetableContext"),
+    ] = None
+    message: str
+    status: Literal[500] = 500
+    type: Literal["editoast:scenario:NoTimetable"] = "editoast:scenario:NoTimetable"
+
+
 class EditoastScenarioErrorNotFoundContext(BaseModel):
     scenario_id: int
 
@@ -5117,6 +5131,7 @@ class EditoastError(
         | EditoastRoundTripsErrorTimetableNotFound
         | EditoastScenarioErrorDatabase
         | EditoastScenarioErrorInfraNotFound
+        | EditoastScenarioErrorNoTimetable
         | EditoastScenarioErrorNotFound
         | EditoastScenarioErrorStudyNotFound
         | EditoastScenarioErrorTimetableNotFound
@@ -5292,6 +5307,7 @@ class EditoastError(
         | EditoastRoundTripsErrorTimetableNotFound
         | EditoastScenarioErrorDatabase
         | EditoastScenarioErrorInfraNotFound
+        | EditoastScenarioErrorNoTimetable
         | EditoastScenarioErrorNotFound
         | EditoastScenarioErrorStudyNotFound
         | EditoastScenarioErrorTimetableNotFound
@@ -5902,7 +5918,6 @@ class Scenario(BaseModel):
     name: str
     study_id: int
     tags: list[str]
-    timetable_id: int
 
 
 class ScenarioCreateForm(BaseModel):
@@ -5933,6 +5948,7 @@ class ScenarioPatchForm(BaseModel):
 
 class ScenarioWithDetails(Scenario):
     infra_name: str
+    timetable_ids: list[int]
     timetable_type: TimetableType
     train_schedules_count: int
 
@@ -7064,6 +7080,7 @@ class ScenarioResponse(Scenario):
     infra_name: str
     project: Project
     study: Study
+    timetable_ids: list[int]
     timetable_type: TimetableType
     train_schedules_count: int
 

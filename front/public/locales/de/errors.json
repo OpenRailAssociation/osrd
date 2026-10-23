@@ -212,6 +212,7 @@
     "scenario": {
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
+      "NoTimetable": "Das Scenario hat keinen Fahrplan",
       "NotFound": "Szenario nicht gefunden",
       "StudyNotFound": "Studie '{{study_id}}' nicht gefunden",
       "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"

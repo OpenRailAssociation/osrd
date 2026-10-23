@@ -110,7 +110,7 @@ const StudyView = () => {
 
     // For each scenarios, clean the local storage if a manchette is saved
     const deletedScenario = scenarios!.results.find((scenario) => scenario.id === scenarioId);
-    cleanScenarioLocalStorage(deletedScenario!.timetable_id);
+    cleanScenarioLocalStorage(deletedScenario!.timetable_ids[0]);
   });
   const handleDeleteScenario = () => {
     if (selectedScenarioIds.length > 0 && studyId && projectId) {

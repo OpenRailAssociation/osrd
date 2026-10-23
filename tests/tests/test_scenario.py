@@ -45,7 +45,7 @@ class _ScenarioResponse:
     study_id: int
     name: str
     description: str
-    timetable_id: int
+    timetable_ids: list[int]
     infra_id: int
     electrical_profile_set_id: int | None
     train_schedules_count: int

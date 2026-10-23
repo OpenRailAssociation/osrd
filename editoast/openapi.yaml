@@ -7960,6 +7960,7 @@ components:
       - $ref: '#/components/schemas/EditoastRoundTripsErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorDatabase'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastScenarioErrorNoTimetable'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorStudyNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
@@ -9509,6 +9510,31 @@ components:
           type: string
           enum:
           - editoast:scenario:InfraNotFound
+    EditoastScenarioErrorNoTimetable:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastScenarioErrorNoTimetableContext
+          required:
+          - scenario_id
+          properties:
+            scenario_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:scenario:NoTimetable
     EditoastScenarioErrorNotFound:
       type: object
       required:
@@ -14787,7 +14813,6 @@ components:
       - creation_date
       - last_modification
       - tags
-      - timetable_id
       - study_id
       properties:
         creation_date:
@@ -14814,9 +14839,6 @@ components:
           format: int64
         tags:
           $ref: '#/components/schemas/Tags'
-        timetable_id:
-          type: integer
-          format: int64
     ScenarioCreateForm:
       type: object
       description: This structure is used by the post endpoint to create a scenario
@@ -14907,6 +14929,7 @@ components:
         - project
         - study
         - timetable_type
+        - timetable_ids
         properties:
           infra_name:
             type: string
@@ -14914,6 +14937,11 @@ components:
             $ref: '#/components/schemas/Project'
           study:
             $ref: '#/components/schemas/Study'
+          timetable_ids:
+            type: array
+            items:
+              type: integer
+              format: int64
           timetable_type:
             $ref: '#/components/schemas/TimetableType'
           train_schedules_count:
@@ -14927,9 +14955,15 @@ components:
         - infra_name
         - train_schedules_count
         - timetable_type
+        - timetable_ids
         properties:
           infra_name:
             type: string
+          timetable_ids:
+            type: array
+            items:
+              type: integer
+              format: int64
           timetable_type:
             $ref: '#/components/schemas/TimetableType'
           train_schedules_count:

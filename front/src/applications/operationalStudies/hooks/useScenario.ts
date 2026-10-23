@@ -39,7 +39,7 @@ const useScenario = () => {
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery(
       scenario
         ? {
-            id: scenario.timetable_id,
+            id: scenario.timetable_ids[0],
           }
         : skipToken
     );
@@ -96,9 +96,9 @@ const useScenario = () => {
       return;
     }
 
-    checkAndCreateSandbox(scenario.timetable_id, scenario.timetable_type);
+    checkAndCreateSandbox(scenario.timetable_ids[0], scenario.timetable_type);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [trainScheduleSets, scenario?.timetable_id, scenario?.timetable_type]);
+  }, [trainScheduleSets, scenario?.timetable_ids[0], scenario?.timetable_type]);
 
   return { scenario, sandboxId };
 };

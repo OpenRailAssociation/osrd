@@ -90,7 +90,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   useEffect(() => {
     const trainSchedulesResult = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
-        timetableId: scenario.timetable_id,
+        timetableId: scenario.timetable_ids[0],
       })
     );
 
@@ -105,7 +105,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     return () => {
       trainSchedulesResult.unsubscribe();
     };
-  }, [scenario.timetable_id, dispatch]);
+  }, [scenario.timetable_ids, dispatch]);
 
   const {
     projectedTrainsById,
@@ -116,7 +116,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     updateProjectedTrainExceptions,
   } = useLazyProjectTrains({
     infraId,
-    timetableId: scenario.timetable_id,
+    timetableId: scenario.timetable_ids[0],
     electricalProfileSetId: scenario.electrical_profile_set_id,
     path:
       projectionPath?.pathfindingStatus === 'succeeded'
@@ -155,7 +155,9 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     isUninitialized,
     isFetching,
   } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    isReadyToFetchConflicts ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
+    isReadyToFetchConflicts
+      ? { id: scenario.timetable_ids[0], infraId: scenario.infra_id }
+      : skipToken
   );
   const conflicts = useMemo(() => conflictsData ?? [], [conflictsData]);
 
