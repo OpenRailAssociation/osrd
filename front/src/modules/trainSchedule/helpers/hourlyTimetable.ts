@@ -1,4 +1,4 @@
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 import { lcm } from 'utils/numbers';
 
@@ -31,4 +31,31 @@ export function computeHourlyTimetableDuration(trainSchedules: TrainScheduleResp
   return new Duration({
     milliseconds: pacedTrainDurationsMs.reduce((acc, ms) => lcm(acc, ms)),
   });
+}
+
+/**
+ * Wrap `value` into `[0, period)`, also for negative values. Used for time offsets of an hourly
+ * timetable, so that a time dragged before the timetable start or after its end comes back in from
+ * the other side (-00:05 → 01:55 for 2h).
+ */
+export const wrapHourlyTime = (value: number, period: number): number =>
+  ((value % period) + period) % period;
+
+export function wrapHourlyPacedTrainStartTime(
+  startTimeMs: number,
+  paced: Pick<NonNullable<TrainScheduleResponse['paced']>, 'interval' | 'time_window'>,
+  exceptions: PacedTrainException[]
+): { startTimeMs: number; exceptions: PacedTrainException[] } {
+  const interval = Duration.parse(paced.interval);
+  const timeWindow = Duration.parse(paced.time_window);
+
+  return {
+    startTimeMs: wrapHourlyTime(startTimeMs, interval.ms),
+    exceptions: exceptions.map((exception) => ({
+      ...exception,
+      ...(exception.start_time && {
+        start_time: { value: wrapHourlyTime(exception.start_time.value, timeWindow.ms) },
+      }),
+    })),
+  };
 }
