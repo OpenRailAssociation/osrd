@@ -1,10 +1,12 @@
 import type {
   NetzgrafikDto,
-  Operation,
   TrainrunSectionDto,
   NodeDto,
   TimeLockDto,
   TrainrunDto,
+  TrainrunCreateOperation,
+  TrainrunDeleteOperation,
+  TrainrunUpdateOperation,
 } from '@osrd-project/netzgrafik-frontend';
 import { compact, uniq } from 'lodash';
 
@@ -13,6 +15,7 @@ import {
   type PathItemLocation,
   type TimetableType,
   type TrainScheduleResponse,
+  type PathItem,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
@@ -250,7 +253,8 @@ const calculateStartTime = (
 const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  trainrunDirection: TRAINRUN_DIRECTIONS
+  trainrunDirection: TRAINRUN_DIRECTIONS,
+  path: PathItem[]
 ): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   return trainrunSections.flatMap((section, index) => {
@@ -287,7 +291,7 @@ const generateSchedule = (
         // This need to be done here so it doesn't make an exception pop because the
         // destination is not configured the same way in macro.
         return {
-          at: `${toNodeId}-${index + 1}`,
+          at: path[index + 1].key,
           stop_for: Duration.zero.toISOString(),
           // Default information
           reception_signal: 'OPEN',
@@ -303,7 +307,7 @@ const generateSchedule = (
     if (isStopTransit) stop_for = departure ? departure.sub(arrival) : Duration.zero;
 
     return {
-      at: `${toNodeId}-${index + 1}`,
+      at: path[index + 1].key,
       arrival: arrival.toISOString(),
       stop_for: stop_for?.toISOString() ?? null,
       // Default information
@@ -351,7 +355,8 @@ export const generatePathAndSchedule = (
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   paced: TrainSchedule['paced'],
-  state?: MacroEditorState
+  state?: MacroEditorState,
+  pathOverride?: PathItem[]
 ): Pick<TrainSchedule, 'start_time' | 'path' | 'schedule'> => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
@@ -359,8 +364,8 @@ export const generatePathAndSchedule = (
   }
 
   const startTime = calculateStartTime(sections, baseStartTime, trainrunDirection, paced);
-  const path = generatePath(sections, nodes, trainrunDirection, state);
-  const schedule = generateSchedule(sections, nodes, trainrunDirection);
+  const path = pathOverride ?? generatePath(sections, nodes, trainrunDirection, state);
+  const schedule = generateSchedule(sections, nodes, trainrunDirection, path);
   return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
@@ -418,12 +423,25 @@ export const createPacedAttributesFromTrainrun = (
 const handleCreateTrainSchedule = async (
   netzgrafikDto: NetzgrafikDto,
   trainrun: TrainrunDto,
+  duplicatedTrainrunId: number | undefined,
   trainScheduleSetId: number,
   infraId: number,
   state: MacroEditorState,
   dispatch: AppDispatch,
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void
 ) => {
+  const duplicatedTimetableItemIds = duplicatedTrainrunId
+    ? state.trainScheduleIdByNgeId.get(duplicatedTrainrunId)
+    : undefined;
+  const duplicatedForwardTimetableItem = duplicatedTimetableItemIds?.[0]
+    ? await fetchTrainSchedule(duplicatedTimetableItemIds[0], state.timetableId, dispatch)
+    : { id: undefined, train_name: undefined };
+  const duplicatedReturnTimetableItem = duplicatedTimetableItemIds?.[1]
+    ? await fetchTrainSchedule(duplicatedTimetableItemIds[1], state.timetableId, dispatch)
+    : { id: undefined, train_name: undefined };
+  const { id: _id, train_name: _name, ...duplicatedForwardBase } = duplicatedForwardTimetableItem;
+  const { id: __id, train_name: __name, ...duplicatedReturnBase } = duplicatedReturnTimetableItem;
+
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
 
@@ -469,6 +487,7 @@ const handleCreateTrainSchedule = async (
     train_name: trainrun.name,
     labels,
     category,
+    ...duplicatedForwardBase,
     ...pathAndSchedule,
   };
 
@@ -476,6 +495,7 @@ const handleCreateTrainSchedule = async (
     trainrun.direction === 'round_trip'
       ? {
           ...forwardTrip,
+          ...duplicatedReturnBase,
           ...returnPathAndSchedule,
         }
       : undefined;
@@ -542,6 +562,8 @@ const handleDeleteTrainSchedule = async (
 export const handleUpdateTrainSchedule = async ({
   netzgrafikDto,
   trainrun,
+  tags,
+  oneWayDirection,
   trainScheduleSetId,
   infraId,
   state,
@@ -551,6 +573,8 @@ export const handleUpdateTrainSchedule = async ({
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
+  tags: TrainrunUpdateOperation['tags'];
+  oneWayDirection?: 'forward' | 'backward';
   infraId: number;
   trainScheduleSetId: number;
   state: MacroEditorState;
@@ -558,10 +582,16 @@ export const handleUpdateTrainSchedule = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
-  const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrun.id);
-  if (!trainScheduleIds) return;
+  const trainScheduleIds = state.trainScheduleIdByNgeId.get(trainrun.id)!;
+  let oldForwardId = trainScheduleIds[0];
+  if (oneWayDirection === 'backward') {
+    // Case 1: Switching from round trip to the return trip (now forward)
+    if (trainScheduleIds[1]) oldForwardId = trainScheduleIds[1];
+    // Case 2: Inverting the direction of a one way train (we sadly don't store the old return)
+    else tags.push('nodes', 'times');
+  }
   const oldForwardTrainSchedule = await fetchTrainSchedule(
-    trainScheduleIds[0],
+    oldForwardId,
     state.timetableId,
     dispatch
   );
@@ -573,15 +603,16 @@ export const handleUpdateTrainSchedule = async ({
     netzgrafikDto,
     getDefaultPacedTrainTimeWindow(state.timetableType)
   );
-  const forwardPathAndSchedule = generatePathAndSchedule(
+  const { path: forwardPath, ...forwardSchedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     baseStartTime,
     TRAINRUN_DIRECTIONS.FORWARD,
     paced,
-    state
+    state,
+    tags.includes('nodes') ? undefined : oldForwardTrainSchedule.path
   );
-  await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
+  await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
 
   const { id: _id, ...trainScheduleBase } = oldForwardTrainSchedule;
 
@@ -592,14 +623,18 @@ export const handleUpdateTrainSchedule = async ({
 
   const newForwardTrainBase: Omit<TrainScheduleResponse, 'id'> = {
     ...trainScheduleBase,
-    train_name: trainrun.name,
-    labels,
-    // Reset margins and power restrictions because they contain references to path items
-    margins: { boundaries: [], values: ['0%'] },
-    power_restrictions: undefined,
-    paced,
-    category,
-    ...forwardPathAndSchedule,
+    ...(tags.includes('name') && { train_name: trainrun.name }),
+    ...(tags.includes('labelIds') && { labels }),
+    // Reset margins and power restrictions if the path changed because they contain references to path items
+    ...(tags.includes('nodes') && {
+      path: forwardPath,
+      margins: { boundaries: [], values: ['0%'] },
+      power_restrictions: undefined,
+      ...forwardSchedule,
+    }),
+    ...(tags.includes('times') && { ...forwardSchedule }),
+    ...(tags.includes('frequencyId') && { paced }),
+    ...(tags.includes('categoryId') && { category }),
   };
 
   if (paced && oldForwardTrainSchedule.paced) {
@@ -621,26 +656,15 @@ export const handleUpdateTrainSchedule = async ({
 
   if (trainrun.direction === 'one_way') {
     if (trainScheduleIds[1]) {
-      // NGE always selects the forward trip by default when going from round trip to one way trip,
-      // thus the trip that needs to be deleted is always the return trip
       await storeRoundTrip(dispatch, newForwardTrainSchedule.id);
-      await deleteTrainScheduleById(trainScheduleIds[1], dispatch, addDeletedTrainScheduleIds);
+      const oldReturnId =
+        oneWayDirection !== 'backward' ? trainScheduleIds[1] : trainScheduleIds[0];
+      await deleteTrainScheduleById(oldReturnId, dispatch, addDeletedTrainScheduleIds);
     }
 
     state.trainScheduleIdByNgeId.set(trainrun.id, [newForwardTrainSchedule.id, null]);
     return;
   }
-
-  const returnPathAndSchedule = generatePathAndSchedule(
-    trainrunSections,
-    netzgrafikDto.nodes,
-    baseStartTime,
-    TRAINRUN_DIRECTIONS.BACKWARD,
-    paced,
-    state
-  );
-
-  await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
 
   let newReturnTrainSchedule: TrainScheduleResponse;
   const returnPaced: TrainSchedule['paced'] = paced ? { ...paced, exceptions: [] } : null;
@@ -653,16 +677,35 @@ export const handleUpdateTrainSchedule = async ({
       dispatch
     );
     const { id: _return_id, ...oldReturnTrainBase } = oldReturnTrainSchedule;
+
+    const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
+      trainrunSections,
+      netzgrafikDto.nodes,
+      baseStartTime,
+      TRAINRUN_DIRECTIONS.BACKWARD,
+      paced,
+      state,
+      tags.includes('nodes') ? undefined : oldReturnTrainSchedule.path
+    );
+    await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
+
     const newReturnTrainBase: Omit<TrainScheduleResponse, 'id'> = {
       ...oldReturnTrainBase,
-      train_name: trainrun.name,
-      labels,
-      // Reset margins and power restrictions because they contain references to path items
-      margins: { boundaries: [], values: ['0%'] },
-      power_restrictions: undefined,
-      paced: returnPaced,
-      category,
-      ...returnPathAndSchedule,
+      ...(tags.includes('name') && { train_name: trainrun.name }),
+      ...(tags.includes('labelIds') && { labels }),
+      // Reset margins and power restrictions if the path changed because they contain references to path items
+      ...(tags.includes('nodes') && {
+        path: returnPath,
+        margins: { boundaries: [], values: ['0%'] },
+        power_restrictions: undefined,
+        ...returnSchedule,
+      }),
+      ...(tags.includes('times') && {
+        schedule: returnSchedule.schedule,
+        start_time: returnSchedule.start_time,
+      }),
+      ...(tags.includes('frequencyId') && { paced: returnPaced }),
+      ...(tags.includes('categoryId') && { category }),
     };
 
     if (returnPaced && oldReturnTrainSchedule.paced) {
@@ -684,6 +727,16 @@ export const handleUpdateTrainSchedule = async ({
   } else {
     // otherwise create return
 
+    const { path: returnPath, ...returnSchedule } = generatePathAndSchedule(
+      trainrunSections,
+      netzgrafikDto.nodes,
+      baseStartTime,
+      TRAINRUN_DIRECTIONS.BACKWARD,
+      paced,
+      state
+    );
+    await populateSecondaryCodesInPath(returnPath, infraId, dispatch);
+
     // Remove train_schedule_set_id before creating train schedule as we don't want to pass it in the payload
     const {
       train_schedule_set_id: _trainScheduleSetId,
@@ -692,7 +745,8 @@ export const handleUpdateTrainSchedule = async ({
 
     const returnTrainSchedule: TrainSchedule = {
       ...trainScheduleWithoutTrainScheduleSetId,
-      ...returnPathAndSchedule,
+      ...returnSchedule,
+      path: returnPath,
       paced: returnPaced,
     };
 
@@ -713,9 +767,8 @@ export const handleUpdateTrainSchedule = async ({
 };
 
 export const handleTrainrunOperation = async ({
-  type,
   netzgrafikDto,
-  trainrunId,
+  operation,
   trainScheduleSetId,
   infraId,
   state,
@@ -723,9 +776,8 @@ export const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules,
   addDeletedTrainScheduleIds,
 }: {
-  type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
-  trainrunId: number;
+  operation: TrainrunUpdateOperation | TrainrunCreateOperation | TrainrunDeleteOperation;
   trainScheduleSetId: number;
   infraId: number;
   state: MacroEditorState;
@@ -733,12 +785,13 @@ export const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResponse[]) => void;
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
-  const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
-  switch (type) {
+  const trainrun = operation.trainrun;
+  switch (operation.type) {
     case 'create': {
       await handleCreateTrainSchedule(
         netzgrafikDto,
-        trainrun!,
+        trainrun,
+        operation.duplicatedTrainrunId,
         trainScheduleSetId,
         infraId,
         state,
@@ -750,7 +803,9 @@ export const handleTrainrunOperation = async ({
     case 'update': {
       await handleUpdateTrainSchedule({
         netzgrafikDto,
-        trainrun: trainrun!,
+        trainrun,
+        tags: operation.tags,
+        oneWayDirection: operation.oneWayDirection,
         trainScheduleSetId,
         infraId,
         dispatch,
@@ -761,7 +816,7 @@ export const handleTrainrunOperation = async ({
       break;
     }
     case 'delete': {
-      await handleDeleteTrainSchedule(trainrunId, state, dispatch, addDeletedTrainScheduleIds);
+      await handleDeleteTrainSchedule(trainrun.id, state, dispatch, addDeletedTrainScheduleIds);
       break;
     }
     default:
@@ -805,6 +860,7 @@ export const updateTrainrunsByNode = async ({
     await handleUpdateTrainSchedule({
       netzgrafikDto,
       trainrun,
+      tags: ['nodes'],
       trainScheduleSetId,
       infraId,
       dispatch,
