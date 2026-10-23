@@ -518,6 +518,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
+name = "bilrost"
+version = "0.1016.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7889f8fca3d341b7c2a3fdb13e4579c4a039b7dc5e81231a93d21c61ce3150e3"
+dependencies = [
+ "autocfg",
+ "bilrost-derive",
+ "bytes",
+ "thin-vec",
+]
+
+[[package]]
+name = "bilrost-derive"
+version = "0.1016.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c9d8b804c1beeeeebcf8cd81099f4d80a88ab8545ac9536876cc7e38e6993ef"
+dependencies = [
+ "eyre",
+ "itertools 0.15.0",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.6",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1504,6 +1529,7 @@ dependencies = [
  "axum-streams",
  "axum-test",
  "axum-tracing-opentelemetry",
+ "base64 0.23.1",
  "buildid",
  "cache",
  "chrono",
@@ -1755,6 +1781,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "eyre"
+version = "0.6.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c08309dbcc659c5549a24ddb9b27027640641b282ef5768267c7e675558986a3"
+dependencies = [
+ "autocfg",
+ "indenter",
+ "once_cell",
 ]
 
 [[package]]
@@ -2722,6 +2759,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "indenter"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "964de6e86d545b246d84badc0fef527924ace5134f30641c203ef52ba83f58d5"
+
+[[package]]
 name = "indexmap"
 version = "2.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3178,6 +3221,7 @@ dependencies = [
 name = "models"
 version = "0.1.0"
 dependencies = [
+ "bilrost",
  "chrono",
  "common",
  "database",
@@ -5166,6 +5210,12 @@ dependencies = [
  "rustix 1.1.4",
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "thin-vec"
+version = "0.2.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6a4b9ba8738cb4a4f399d37e266becfd475e75eb73425b87a05a2f2039ba63e"
 
 [[package]]
 name = "thiserror"
