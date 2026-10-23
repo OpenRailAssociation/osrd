@@ -1,3 +1,11 @@
+use diesel::deserialize::FromSql;
+use diesel::deserialize::FromSqlRow;
+use diesel::expression::AsExpression;
+use diesel::pg::Pg;
+use diesel::pg::PgValue;
+use diesel::serialize::Output;
+use diesel::serialize::ToSql;
+use diesel::sql_types::Jsonb;
 use editoast_derive::Model;
 use schemas::primitives::StrictlyPositiveDuration;
 use serde::Deserialize;
@@ -13,18 +21,21 @@ pub struct TimetableRange {
     pub time_window: StrictlyPositiveDuration,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub struct TimetableRanges(pub Option<Vec<TimetableRange>>);
+#[derive(Debug, Clone, PartialEq, FromSqlRow, AsExpression)]
+#[diesel(sql_type = Jsonb)]
+pub struct TimetableRanges(pub Vec<TimetableRange>);
 
-impl From<TimetableRanges> for Option<diesel_json::Json<Vec<TimetableRange>>> {
-    fn from(ranges: TimetableRanges) -> Self {
-        ranges.0.map(diesel_json::Json)
+impl FromSql<Jsonb, Pg> for TimetableRanges {
+    fn from_sql(value: PgValue) -> diesel::deserialize::Result<Self> {
+        let value = <serde_json::Value as FromSql<Jsonb, Pg>>::from_sql(value)?;
+        Ok(Self(serde_json::from_value(value)?))
     }
 }
 
-impl From<Option<diesel_json::Json<Vec<TimetableRange>>>> for TimetableRanges {
-    fn from(ranges: Option<diesel_json::Json<Vec<TimetableRange>>>) -> Self {
-        Self(ranges.map(|ranges| ranges.0))
+impl ToSql<Jsonb, Pg> for TimetableRanges {
+    fn to_sql<'b>(&'b self, out: &mut Output<'b, '_, Pg>) -> diesel::serialize::Result {
+        let value = serde_json::to_value(&self.0)?;
+        <serde_json::Value as ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
 
@@ -37,6 +48,5 @@ pub struct TimetableInheritance {
     pub id: i64,
     pub outer_timetable_id: i64,
     pub inner_timetable_id: i64,
-    #[model(remote = "Option<diesel_json::Json<Vec<TimetableRange>>>")]
-    pub ranges: TimetableRanges,
+    pub ranges: Option<TimetableRanges>,
 }
