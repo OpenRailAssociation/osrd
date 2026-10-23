@@ -1,0 +1,52 @@
+.scenario-no-timetable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  height: 100%;
+  padding: 24px;
+  background-color: var(--ambientB15);
+
+  &-button {
+    display: flex;
+    align-items: center;
+    width: 320px;
+    height: 80px;
+    padding: 28px;
+    background-color: var(--ambientB10);
+    border-radius: 12px;
+    color: var(--primary60);
+    font-family: 'IBM Plex Sans';
+    font-weight: 400;
+
+    &:hover {
+      color: var(--primary80);
+      background-color: var(--ambientB5);
+      box-shadow:
+        0 3px 5px -2px rgba(0, 0, 0, 0.22),
+        0 4px 7px -3px rgba(255, 171, 88, 0.17),
+        0 1px 0 0 inset var(--white100);
+    }
+
+    &--hourly {
+      gap: 16px;
+    }
+
+    &--calendar {
+      gap: 44px;
+      padding-left: 56px;
+    }
+
+    .hourly-pattern-icon-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hourly-pattern-ghost-icon {
+      color: var(--primary40);
+      opacity: 0.2;
+    }
+  }
+}
