@@ -326,14 +326,17 @@ impl OperationalPointModel {
         }
         let mut query = dsl::infra_object_operational_point.into_boxed();
         for (country_code, main_code, secondary_code) in domestics {
-            query =
-                query.or_filter(dsl::infra_id.eq(infra_id).and(
+            query = query.or_filter(
+                dsl::infra_id.eq(infra_id).and(
                     sql::<Text>("data->>'main_code'").eq(main_code).and(
                         sql::<Text>("data->>'country_code'").eq(country_code).and(
-                            sql::<Nullable<Text>>("data->>'secondary_code'").eq(secondary_code),
+                            // `IS NOT DISTINCT FROM` so that a missing secondary code matches one
+                            sql::<Nullable<Text>>("data->>'secondary_code'")
+                                .is_not_distinct_from(secondary_code),
                         ),
                     ),
-                ))
+                ),
+            )
         }
         Ok(query
             .load(&mut conn.write().await)
@@ -483,6 +486,51 @@ mod tests_retrieve {
         .expect("Failed to retrieve operational points");
 
         assert_eq!(res.len(), 2);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn from_domestics_without_secondary_code() {
+        let db_pool = DbConnectionPool::for_tests();
+        let railjson = schemas::fixtures::small_infra();
+        let small_infra = Infra::changeset()
+            .name("small_infra".to_owned())
+            .last_railjson_version()
+            .persist(railjson, &mut db_pool.get_ok())
+            .await
+            .unwrap();
+        let op_without_secondary_code = schemas::infra::OperationalPoint {
+            id: "No_secondary_code".into(),
+            parts: vec![],
+            weight: None,
+            name: "No secondary code".into(),
+            uic: None,
+            plc: None,
+            country_code: "FR".into(),
+            main_code: "NOSC".into(),
+            secondary_code: None,
+            is_passenger_station: true,
+            secondary_name: None,
+        };
+        OperationalPointModel::new_from_schema(op_without_secondary_code)
+            .infra_id(small_infra.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        // West_station has the `BV` secondary code, it must not match a missing one
+        let domestics = vec![
+            ("FR".to_string(), "NOSC".to_string(), None),
+            ("FR".to_string(), "WS".to_string(), None),
+        ];
+        let res = OperationalPointModel::retrieve_from_domestics(
+            &mut db_pool.get_ok(),
+            small_infra.id,
+            &domestics,
+        )
+        .await
+        .expect("Failed to retrieve operational points");
+
+        let ids = res.iter().map(|op| op.obj_id.as_str()).collect::<Vec<_>>();
+        assert_eq!(ids, ["No_secondary_code"]);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
