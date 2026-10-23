@@ -1,59 +1,21 @@
-import { act } from '@testing-library/react';
+import { act, cleanup } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import TrainOpProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainOpProjectionLazyLoader';
-import type { ProjectionResult } from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
-import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
-import type { OperationalPointReference, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
-import { simulationResultsInitialState } from 'reducers/simulationResults';
+import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
+import type {
+  OperationalPointReference,
+  PacedTrainException,
+  ProjectPathTrainScheduleResult,
+  TrainScheduleResponse,
+} from 'common/api/osrdEditoastApi';
 
 import useLazyProjectTrains from '../useLazyProjectTrains';
+import { simulationResultsInitialState } from 'reducers/simulationResults';
 
-let onProgress: ((results: Map<number, ProjectionResult>) => void) | undefined;
+const { postTrainSchedulesProjectPathOp } = mockOsrdEditoastEndpoints;
 
-const { mockProjectTrainSchedules } = vi.hoisted(() => ({
-  mockProjectTrainSchedules: vi.fn(),
-}));
-
-vi.mock('applications/operationalStudies/helpers/upsertNewProjectedTrains', () => ({
-  default: vi.fn((prev, results: Map<number, unknown>) => {
-    const next = new Map(prev);
-    results.forEach((value: unknown, key: number) => next.set(key, value));
-    return next;
-  }),
-}));
-
-vi.mock('applications/operationalStudies/helpers/TrainOpProjectionLazyLoader', () => ({
-  default: vi.fn(
-    class {
-      projectTrainSchedules = mockProjectTrainSchedules;
-      cancel = vi.fn();
-      pending = [];
-      constructor(
-        _operationalPointReferences: OperationalPointReference[],
-        _operationalPointDistances: number[],
-        options: { onProgress: (results: Map<number, ProjectionResult>) => void }
-      ) {
-        onProgress = options.onProgress;
-      }
-    }
-  ),
-}));
-
-vi.mock('applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader', () => ({
-  default: vi.fn(
-    class {
-      projectTrainSchedules = mockProjectTrainSchedules;
-      cancel = vi.fn();
-    }
-  ),
-}));
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
+// TODO: unskip these tests once RTK is updated
 describe('useLazyProjectTrains', () => {
   const operationalPointReferences: OperationalPointReference[] = [
     { secondary_code: 'BV', main_code: 'OP1', country_code: 'FR', type: 'domestic' },
@@ -69,6 +31,7 @@ describe('useLazyProjectTrains', () => {
     train_name: 'Train 1',
     train_schedule_set_id: 1,
   };
+
   const mockTrain2: TrainScheduleResponse = {
     id: 2,
     rolling_stock_name: 'Fast train 2',
@@ -79,7 +42,7 @@ describe('useLazyProjectTrains', () => {
     train_schedule_set_id: 1,
   };
 
-  const base = {
+  const baseOptions = {
     infraId: 1,
     timetableId: 1,
     electricalProfileSetId: 1,
@@ -87,83 +50,128 @@ describe('useLazyProjectTrains', () => {
     operationalPointReferences,
   };
 
+  const mockTrainException: PacedTrainException = {
+    id: 1,
+    key: 'mockTrainException',
+    start_time: {
+      value: mockTrain.start_time + 1,
+    },
+  };
+
+  const mockProjectPathTrainScheduleResult: ProjectPathTrainScheduleResult = {
+    exceptions: {},
+    train_schedule: [
+      {
+        positions: [],
+        times: [],
+      },
+    ],
+  };
+
   describe('projectTrainSchedules', () => {
-    it('should project train schedules by their IDs', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
-      result.current.projectTrainSchedules([mockTrain]);
-      expect(mockProjectTrainSchedules).toHaveBeenCalledWith([mockTrain.id]);
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      cleanup();
+    });
+
+    it('should project train schedules by their IDs', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: { [mockTrain.id]: mockProjectPathTrainScheduleResult },
+      });
+
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
+
+      act(() => {
+        result.current.projectTrainSchedules([mockTrain]);
+      });
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
+
+      expect(postTrainSchedulesProjectPathOp).toHaveBeenCalledWith({
+        body: {
+          infra_id: 1,
+          operational_points_distances: [100, 200],
+          operational_points_refs: operationalPointReferences,
+          timetable_id: 1,
+          train_ids: [mockTrain.id],
+          use_simulation: true,
+        },
+      });
     });
   });
-
   describe('removeProjectedTrainSchedules', () => {
-    it('should remove projected train schedules by their IDs', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
-      act(() => {
-        onProgress?.(
-          new Map([
-            [
-              mockTrain.id,
-              { departureTime: new Date(mockTrain.start_time), space_time_curves: [] },
-            ],
-          ])
-        );
+    it('should remove projected train schedules by their IDs', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: { [mockTrain.id]: mockProjectPathTrainScheduleResult },
       });
+
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
+
+      act(() => {
+        result.current.projectTrainSchedules([mockTrain]);
+      });
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
+
       act(() => {
         result.current.removeProjectedTrainSchedules([mockTrain.id]);
       });
+
       expect(result.current.projectedTrainsById.size).toBe(0);
     });
 
-    it('should only remove the specified train and keep the others', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
-
-      act(() => {
-        onProgress?.(
-          new Map([
-            [
-              mockTrain.id,
-              { departureTime: new Date(mockTrain.start_time), space_time_curves: [] },
-            ],
-            [
-              mockTrain2.id,
-              { departureTime: new Date(mockTrain2.start_time), space_time_curves: [] },
-            ],
-          ])
-        );
+    it('should only remove the specified train and keep the others', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: {
+          [mockTrain.id]: mockProjectPathTrainScheduleResult,
+          [mockTrain2.id]: mockProjectPathTrainScheduleResult,
+        },
       });
+
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
+      act(() => {
+        result.current.projectTrainSchedules([mockTrain, mockTrain2]);
+      });
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
+
       act(() => {
         result.current.removeProjectedTrainSchedules([mockTrain.id]);
       });
+
       expect(result.current.projectedTrainsById.has(mockTrain.id)).toBe(false);
       expect(result.current.projectedTrainsById.has(mockTrain2.id)).toBe(true);
     });
   });
 
   describe('updateProjectedTrainScheduleDepartureTime', () => {
-    it('should update the departure time in the projected trains map', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
+    it('should update the departure time in the projected trains map', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: { [mockTrain.id]: mockProjectPathTrainScheduleResult },
+      });
+
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
 
       act(() => {
-        onProgress?.(
-          new Map([
-            [
-              mockTrain.id,
-              { departureTime: new Date(mockTrain.start_time), space_time_curves: [] },
-            ],
-          ])
-        );
+        result.current.projectTrainSchedules([mockTrain]);
       });
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
+
       const newDeparture = new Date('2024-01-01T12:00:00Z');
+
       act(() => {
         result.current.updateProjectedTrainScheduleDepartureTime(mockTrain.id, newDeparture);
       });
+
       expect(result.current.projectedTrainsById.get(mockTrain.id)?.departureTime).toEqual(
         newDeparture
       );
     });
 
     it('should do nothing if train id is not found in the map', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
 
       act(() => {
         result.current.updateProjectedTrainScheduleDepartureTime(
@@ -174,24 +182,19 @@ describe('useLazyProjectTrains', () => {
       expect(result.current.projectedTrainsById.size).toBe(0);
     });
 
-    it('should update the start time in the train schedules ref', () => {
+    it('should update the start time in the train schedules ref', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: { [mockTrain.id]: mockProjectPathTrainScheduleResult },
+      });
       const { result, rerender } = renderHookWithStore(
-        ({ infraId }) => useLazyProjectTrains({ ...base, infraId }),
+        ({ infraId }) => useLazyProjectTrains({ ...baseOptions, infraId }),
         { initialProps: { infraId: 1 } }
       );
       act(() => {
         result.current.projectTrainSchedules([mockTrain]);
       });
-      act(() => {
-        onProgress?.(
-          new Map([
-            [
-              mockTrain.id,
-              { departureTime: new Date(mockTrain.start_time), space_time_curves: [] },
-            ],
-          ])
-        );
-      });
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
 
       const newDeparture = new Date('2024-01-01T12:00:00Z');
       act(() => {
@@ -202,104 +205,119 @@ describe('useLazyProjectTrains', () => {
         rerender({ infraId: 2 });
       });
 
-      expect(mockProjectTrainSchedules).toHaveBeenLastCalledWith([mockTrain.id]);
-    });
-  });
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
 
-  describe('loader selection', () => {
-    it('should use TrainTrackProjectionLazyLoader when projectionType is trackProjection', () => {
-      const path = { track_section_ranges: [], blocks: [], routes: [] };
-      renderHookWithStore(
-        () => useLazyProjectTrains({ ...base, path }),
-        {},
-        {
-          simulation: {
-            ...simulationResultsInitialState,
-            projectionType: 'trackProjection',
-            isSimulationEnabled: true,
-          },
-        }
+      expect(result.current.projectedTrainsById.get(mockTrain.id)?.departureTime).toEqual(
+        newDeparture
       );
-
-      expect(vi.mocked(TrainTrackProjectionLazyLoader).mock.instances.length).toBe(1);
-      expect(vi.mocked(TrainOpProjectionLazyLoader).mock.instances.length).toBe(0);
-    });
-
-    it('should not create a loader when there are less than 2 operationalPointReferences', () => {
-      renderHookWithStore(
-        () =>
-          useLazyProjectTrains({
-            ...base,
-            operationalPointReferences: [
-              { secondary_code: 'BV', main_code: 'OP1', country_code: 'FR', type: 'domestic' },
-            ],
-          }),
-        {}
-      );
-      expect(vi.mocked(TrainOpProjectionLazyLoader).mock.instances.length).toBe(0);
-      expect(vi.mocked(TrainTrackProjectionLazyLoader).mock.instances.length).toBe(0);
     });
   });
 
   describe('allTrainsProjected', () => {
-    it('should return true if all trains are projected', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
+    it('should update according to projections', async () => {
+      let resolveProjection!: () => void;
+      postTrainSchedulesProjectPathOp.mockReturnValue(
+        new Promise((resolve) => {
+          resolveProjection = () =>
+            resolve({ data: { [mockTrain.id]: mockProjectPathTrainScheduleResult } });
+        }) as never
+      );
 
-      act(() => {
-        onProgress?.(new Map());
-      });
-
-      expect(result.current.allTrainsProjected).toBe(true);
-    });
-
-    it('should return false if not all trains are projected', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
-      const loaderInstance = vi.mocked(TrainOpProjectionLazyLoader).mock.results[0].value;
-      loaderInstance.pending = [1];
-      expect(result.current.allTrainsProjected).toBe(false);
-    });
-
-    it('should return false if we project train schedules', () => {
-      const { result } = renderHookWithStore(() => useLazyProjectTrains(base));
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
 
       act(() => {
         result.current.projectTrainSchedules([mockTrain]);
       });
 
-      expect(result.current.allTrainsProjected).toBe(false);
+      await vi.waitFor(() => {
+        expect(result.current.allTrainsProjected).toBe(false);
+      });
+
+      await act(async () => {
+        resolveProjection();
+      });
+
+      await vi.waitFor(() => {
+        expect(result.current.allTrainsProjected).toBe(true);
+      });
     });
   });
 
-  describe('cleanup', () => {
-    it('should cancel the loader when the component unmounts', () => {
-      const { unmount } = renderHookWithStore(() => useLazyProjectTrains(base));
-      const mockCancel = vi.mocked(TrainOpProjectionLazyLoader).mock.results[0].value.cancel;
-      unmount();
-      expect(mockCancel).toHaveBeenCalled();
+  describe('updateSimulatedTrainExceptions', () => {
+    it('should update exceptions for paced trains', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: {
+          [mockTrain.id]: mockProjectPathTrainScheduleResult,
+        },
+      });
+
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
+
+      act(() => {
+        result.current.projectTrainSchedules([
+          {
+            ...mockTrain,
+            paced: {
+              time_window: 'PT1S',
+              interval: 'PT1S',
+              exceptions: [mockTrainException],
+            },
+          },
+        ]);
+      });
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.size > 0);
+
+      expect(result.current.projectedTrainsById.get(mockTrain.id)?.paced).toBeTruthy();
+
+      act(() => {
+        result.current.updateProjectedTrainExceptions(mockTrain.id, [
+          {
+            ...mockTrainException,
+            start_time: {
+              value: mockTrainException.start_time!.value + 2,
+            },
+          },
+        ]);
+      });
+
+      expect(result.current.projectedTrainsById.get(mockTrain.id)?.paced?.exceptions).toEqual([
+        {
+          ...mockTrainException,
+          start_time: {
+            value: mockTrainException.start_time!.value + 2,
+          },
+        },
+      ]);
     });
 
-    it('should cancel the loader when a dependency changes', () => {
-      const { rerender } = renderHookWithStore(
-        ({ infraId }) => useLazyProjectTrains({ ...base, infraId }),
-        { initialProps: { infraId: 1 } }
-      );
-      const mockCancel = vi.mocked(TrainOpProjectionLazyLoader).mock.results[0].value.cancel;
-      act(() => {
-        rerender({ infraId: 2 });
+    it('should ignore changes if mock Train is not paced', async () => {
+      postTrainSchedulesProjectPathOp.mockResolvedValue({
+        data: {
+          [mockTrain.id]: mockProjectPathTrainScheduleResult,
+        },
       });
-      expect(mockCancel).toHaveBeenCalled();
-    });
 
-    it('should cancel the loader when timetableId changes', () => {
-      const { rerender } = renderHookWithStore(
-        ({ timetableId }) => useLazyProjectTrains({ ...base, timetableId }),
-        { initialProps: { timetableId: 1 } }
-      );
-      const mockCancel = vi.mocked(TrainOpProjectionLazyLoader).mock.results[0].value.cancel;
+      const { result } = renderHookWithStore(() => useLazyProjectTrains(baseOptions));
+
       act(() => {
-        rerender({ timetableId: 2 });
+        result.current.projectTrainSchedules([mockTrain]);
       });
-      expect(mockCancel).toHaveBeenCalled();
+
+      await vi.waitUntil(() => result.current.projectedTrainsById.has(mockTrain.id));
+
+      act(() => {
+        result.current.updateProjectedTrainExceptions(mockTrain.id, [
+          {
+            ...mockTrainException,
+            start_time: {
+              value: mockTrainException.start_time!.value + 2,
+            },
+          },
+        ]);
+      });
+
+      expect(result.current.projectedTrainsById.get(mockTrain.id)?.paced).toBeUndefined();
     });
   });
 });
