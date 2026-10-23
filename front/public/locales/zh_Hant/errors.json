@@ -1,1 +1,41 @@
-{}
+{
+  "401": "未驗證使用者",
+  "403": "拒絕存取",
+  "404": "未找到資源",
+  "500": "伺服器錯誤",
+  "502": "伺服器錯誤",
+  "503": "伺服器錯誤",
+  "504": "伺服器沒有回應。",
+  "default": "發生錯誤。",
+  "editoast": {
+    "DatabaseAccessError": "資料庫存取嚴重錯誤",
+    "app_health": {
+      "Database": "資料庫錯誤",
+      "Timeout": "服務逾時"
+    },
+    "attached": {
+      "TrackNotFound": "未找到軌道 {{track_id}}"
+    },
+    "authorization": {
+      "Forbidden": "拒絕存取"
+    },
+    "authz": {
+      "Authorizer": "內部錯誤",
+      "Database": "內部錯誤(資料庫)",
+      "NoSuchUser": "未知使用者",
+      "UnknownResource": "未知的資源"
+    },
+    "authz_legacy": {
+      "UnknownUser": "未知使用者'{{id}}'"
+    },
+    "document": {
+      "not_found": "找不到文件 '{{document_key}}'"
+    },
+    "project": {
+      "NotFound": "找不到專案 '{{project_id}}'"
+    },
+    "study": {
+      "ProjectNotFound": "找不到專案'{{project_id}}'"
+    }
+  }
+}
