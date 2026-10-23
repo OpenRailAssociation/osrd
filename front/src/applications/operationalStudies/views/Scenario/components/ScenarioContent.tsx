@@ -95,6 +95,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const {
     trainSchedulesWithDetails,
+    isTrainSchedulesLoading,
     trainSchedulesById,
     projectionData,
     conflicts,
@@ -259,6 +260,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
             <div className="scenario-sidemenu">
               <TimetableBoardWrapper
                 trainSchedulesWithDetails={trainSchedulesWithDetails}
+                isTrainSchedulesLoading={isTrainSchedulesLoading}
                 refreshNge={refreshNge}
                 projectingOnSimulatedPathException={
                   projectionData?.projectingOnSimulatedPathException

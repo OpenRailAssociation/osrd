@@ -24,6 +24,7 @@ type TimetableProps = {
   isSelectMode: boolean;
   setIsSelectMode: (isSelectMode: boolean) => void;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
+  isTrainSchedulesLoading: boolean;
   refreshNge: () => Promise<void>;
   selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
@@ -35,6 +36,7 @@ const Timetable = ({
   isSelectMode,
   setIsSelectMode,
   trainSchedulesWithDetails,
+  isTrainSchedulesLoading,
   refreshNge,
   selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
@@ -164,6 +166,7 @@ const Timetable = ({
         <TrainList
           setSelectedTrainScheduleIds={setSelectedTrainScheduleIds}
           trainSchedulesWithDetails={filteredTrainSchedules}
+          isTrainSchedulesLoading={isTrainSchedulesLoading}
           selectedTrainScheduleIds={selectedTrainScheduleIds}
           projectingOnSimulatedPathException={projectingOnSimulatedPathException}
           isSelectMode={isSelectMode}

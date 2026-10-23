@@ -35,6 +35,7 @@ import UniqueTrainItem from './UniqueTrainItem';
 type TrainListProps = {
   setSelectedTrainScheduleIds: React.Dispatch<React.SetStateAction<number[]>>;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
+  isTrainSchedulesLoading: boolean;
   selectedTrainScheduleIds: number[];
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
@@ -55,6 +56,7 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
 const TrainList = ({
   setSelectedTrainScheduleIds,
   trainSchedulesWithDetails,
+  isTrainSchedulesLoading,
   selectedTrainScheduleIds,
   projectingOnSimulatedPathException,
   isSelectMode,
@@ -225,7 +227,12 @@ const TrainList = ({
 
   return (
     <Virtualizer>
-      {timetableMode === 'chronological' && trainsToItems(trainSchedulesWithDetails)}
+      {timetableMode === 'chronological' &&
+        (isTrainSchedulesLoading ? (
+          <Loader className="scenario-timetable-trainschedule-loader" />
+        ) : (
+          trainsToItems(trainSchedulesWithDetails)
+        ))}
       {timetableMode === 'trainScheduleSet' &&
         (trainSchedulesByTrainScheduleSets ? (
           trainSchedulesByTrainScheduleSets
