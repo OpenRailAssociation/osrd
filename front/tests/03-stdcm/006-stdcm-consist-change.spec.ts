@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import { StdcmStopTypes } from 'applications/stdcm/types';
 import type { Infra } from 'common/api/osrdEditoastApi';
 
@@ -25,7 +23,7 @@ import {
 import test from '../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../utils';
 import { getInfra, setTowedRollingStock } from '../utils/api-utils';
-import { findFirstPdf, parsePdfText, verifyConsistChangeContent } from '../utils/pdf-parser';
+import { parsePdfText, readFirstPdf, verifyConsistChangeContent } from '../utils/pdf-parser';
 
 test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change'] }, () => {
   test.describe.configure({ mode: 'serial' });
@@ -180,16 +178,10 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
 
   /** *************** Test 2 **************** */
   test('Verify simulation sheet content with consist changes', async () => {
-    const pdfFilePath = await test.step('Find the downloaded PDF', async () => {
-      const filePath = findFirstPdf(downloadDir!);
-      if (!filePath) {
-        throw new Error(`No PDF files found in directory: ${downloadDir}`);
-      }
-      return filePath;
-    });
+    const pdfBuffer = await test.step('Find the downloaded PDF', async () =>
+      readFirstPdf(downloadDir!));
 
     await test.step('Parse PDF and verify consist change content', async () => {
-      const pdfBuffer = fs.readFileSync(pdfFilePath);
       const pdfText = await parsePdfText(pdfBuffer);
 
       verifyConsistChangeContent(pdfText, CONSIST_CHANGE_PDF_CONTENT);
