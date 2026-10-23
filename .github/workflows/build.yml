@@ -998,6 +998,9 @@ jobs:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
+      - name: Create e2e users
+        run: ./scripts/load-e2e-users.sh
+
       - name: Run Playwright tests
         run: |
           # Determine the Playwright projects to run
