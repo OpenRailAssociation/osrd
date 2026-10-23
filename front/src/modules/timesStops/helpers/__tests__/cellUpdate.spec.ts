@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
+import type { PathItem, ScheduleItem } from 'common/api/osrdEditoastApi';
 import { Duration, type StartTime, startTimeToMs } from 'utils/duration';
 
-import { applyScheduleEdit, type ScheduleState } from '../cellUpdate';
+import { applyScheduleEdit, upsertScheduleItem, type ScheduleState } from '../cellUpdate';
 
 // Fixed reference times for tests
 const _10H00 = new Date('2025-01-01T10:00:00Z');
@@ -160,5 +161,93 @@ describe('applyScheduleEdit', () => {
       expect(ms(result.stop)).toBe(ms(_30MIN));
       expect(t(result.departure)).toBeNull();
     });
+  });
+});
+
+describe('upsertScheduleItem', () => {
+  const makePath = () =>
+    [
+      { key: 'a', location: {} },
+      { key: 'b', location: {} },
+      { key: 'c', location: {} },
+    ] as unknown as PathItem[];
+
+  it('clearing requested arrival preserves requested base arrival', () => {
+    const path = makePath();
+    const schedule: ScheduleItem[] = [
+      { at: 'b', arrival: 'PT10M', reference_base_arrival: 'PT9M' },
+    ];
+    // computeTimesUpdate clearing arrival with no stop sends arrival/stop_for null
+    const result = upsertScheduleItem(schedule, path, { at: 'b', arrival: null, stop_for: null });
+
+    expect(result).toHaveLength(1);
+    expect(result![0].arrival).toBeNull();
+    expect(result![0].reference_base_arrival).toBe('PT9M');
+  });
+
+  it('clearing requested base arrival preserves requested arrival', () => {
+    const path = makePath();
+    const schedule: ScheduleItem[] = [
+      { at: 'b', arrival: 'PT10M', reference_base_arrival: 'PT9M' },
+    ];
+    // computeReferenceBaseArrival clearing base arrival sends a partial item
+    const result = upsertScheduleItem(schedule, path, { at: 'b', reference_base_arrival: null });
+
+    expect(result).toHaveLength(1);
+    expect(result![0].arrival).toBe('PT10M');
+    expect(result![0].reference_base_arrival).toBeNull();
+  });
+
+  it('clearing requested base arrival preserves stop duration', () => {
+    const path = makePath();
+    const schedule: ScheduleItem[] = [
+      { at: 'b', arrival: 'PT10M', stop_for: 'PT5M', reference_base_arrival: 'PT9M' },
+    ];
+    const result = upsertScheduleItem(schedule, path, { at: 'b', reference_base_arrival: null });
+
+    expect(result).toHaveLength(1);
+    expect(result![0].arrival).toBe('PT10M');
+    expect(result![0].stop_for).toBe('PT5M');
+    expect(result![0].reference_base_arrival).toBeNull();
+  });
+
+  it('removes a schedule item only when all relevant fields are genuinely empty', () => {
+    const path = makePath();
+    // Last remaining field cleared -> item removed
+    expect(
+      upsertScheduleItem([{ at: 'b', arrival: 'PT10M' }], path, {
+        at: 'b',
+        arrival: null,
+        stop_for: null,
+      })
+    ).toEqual([]);
+    // Sole reference_base_arrival cleared -> item removed
+    expect(
+      upsertScheduleItem([{ at: 'b', reference_base_arrival: 'PT9M' }], path, {
+        at: 'b',
+        reference_base_arrival: null,
+      })
+    ).toEqual([]);
+    // Nothing to remove and nothing to add -> no patch
+    expect(
+      upsertScheduleItem([], path, { at: 'b', arrival: null, stop_for: null })
+    ).toBeUndefined();
+  });
+
+  it('forces arrival to null on the first path step but preserves other fields', () => {
+    const path = makePath();
+    const schedule: ScheduleItem[] = [
+      { at: 'a', arrival: 'PT0S', stop_for: 'PT5M', reference_base_arrival: 'PT1M' },
+    ];
+    const result = upsertScheduleItem(schedule, path, {
+      at: 'a',
+      arrival: 'PT10M',
+      stop_for: 'PT5M',
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result![0].arrival).toBeNull();
+    expect(result![0].stop_for).toBe('PT5M');
+    expect(result![0].reference_base_arrival).toBe('PT1M');
   });
 });
