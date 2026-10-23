@@ -241,6 +241,14 @@ pub trait Relation: fmt::Debug + Sized {
         QueryUsersets(object, std::marker::PhantomData)
     }
 
+    /// Builds a direct user list query
+    ///
+    /// Can be used in [`Client::list_direct_users`](crate::client::Client::list_direct_users) to
+    /// compute which users are directly related to `object` via `Self`.
+    fn query_direct_users<'a>(&self, object: &'a Self::Object) -> QueryDirectUsers<'a, Self> {
+        QueryDirectUsers(object)
+    }
+
     /// Builds an object list query
     ///
     /// Can be used in [`Client::list_objects`](crate::client::Client::list_objects) to
@@ -385,6 +393,10 @@ pub struct QueryObjects<R: Relation, U: AsUser<User = R::User>>(
 /// <https://openfga.dev/docs/concepts#what-is-a-list-users-request>
 #[derive(Debug)]
 pub struct QueryUsers<'a, R: Relation>(pub(crate) &'a R::Object);
+
+/// TODO
+#[derive(Debug)]
+pub struct QueryDirectUsers<'a, R: Relation>(pub(crate) &'a R::Object);
 
 /// A list user query specialized for usersets built by [`Relation::query_usersets`]
 ///

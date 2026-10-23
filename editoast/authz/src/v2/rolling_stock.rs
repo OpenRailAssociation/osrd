@@ -13,6 +13,7 @@ use crate::RollingStockGrant;
 use crate::RollingStockPrivilege;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::v2::Actor;
 use crate::v2::ResourcesList;
 use crate::v2::grant_from_exclusive_bools;
@@ -198,20 +199,15 @@ pub fn rolling_stock_set_grant(
     // Set grant rules:
     // 1. Issuer must have the correct sharing privilege [HasRollingStockPrivilege]
     // 2. Issuer is admin (may not have any direct grant on the resource)
-    //     1. *can* demote the last owner [Authorizer admin bypass]
+    //     1. can demote the last owner [Authorizer admin bypass]
     //     2. can demote or promote anyone to any grant level otherwise [Authorizer admin bypass]
     //     3. can demote or promote any group [Authorizer admin bypass]
     // 3. Issuer is owner
     //     1. cannot demote the last owner (including self) [IsNotLastRollingStockOwner]
-    //     2. cannot demote another owner [CanAlterSubjectRollingStockGrant]
-    //     3. can demote or promote anyone to any grant level otherwise [CanAlterSubjectRollingStockGrant]
-    //     4. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
+    //     2. can demote or promote any user/group to any grant level otherwise [CanAlterSubjectInfraGrant]
     // 4. Issuer is anything else
-    //     1. can demote self [HasRollingStockPrivilege]
-    //     2. cannot promote self [HasRollingStockPrivilege]
-    //     3. can promote anyone up to their own grant level [CanAlterSubjectRollingStockGrant + HasRollingStockPrivilege]
-    //     4. can demote anyone with a strictly lower grant level than their own [CanAlterSubjectRollingStockGrant]
-    //     5. **cannot** demote or promote any group [CanAlterSubjectRollingStockGrant]
+    //     1. can promote any user/group up to their own grant level [CanAlterSubjectRollingStockGrant]
+    //     2. cannot demote anyone [CanAlterSubjectRollingStockGrant]
     let prot = prot
         .reset_checks() // get rid of revoking-specific checks
         .with_check(Check::HasRollingStockPrivilege(
@@ -237,32 +233,63 @@ pub fn rolling_stock_set_grant(
 pub fn rolling_stock_granted_subjects(
     rolling_stock: RollingStock,
     grant: RollingStockGrant,
+    grant_type: GrantType,
 ) -> Protected<Vec<Subject>> {
     fn get_granted_users(
         rolling_stock: RollingStock,
         grant: RollingStockGrant,
+        grant_type: GrantType,
     ) -> Protected<Vec<User>> {
         Protected::new(move |openfga| {
             async move {
-                match grant {
-                    RollingStockGrant::RestrictedReader => {
+                match (grant, grant_type) {
+                    (RollingStockGrant::RestrictedReader, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::restricted_reader()
+                                    .query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::RestrictedReader, GrantType::Effective) => {
                         openfga
                             .list_users(
                                 RollingStock::restricted_reader().query_users(&rolling_stock),
                             )
                             .await
                     }
-                    RollingStockGrant::Reader => {
+                    (RollingStockGrant::Reader, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::reader().query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::Reader, GrantType::Effective) => {
                         openfga
                             .list_users(RollingStock::reader().query_users(&rolling_stock))
                             .await
                     }
-                    RollingStockGrant::Writer => {
+                    (RollingStockGrant::Writer, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::writer().query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::Writer, GrantType::Effective) => {
                         openfga
                             .list_users(RollingStock::writer().query_users(&rolling_stock))
                             .await
                     }
-                    RollingStockGrant::Owner => {
+                    (RollingStockGrant::Owner, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(
+                                RollingStock::owner().query_direct_users(&rolling_stock),
+                            )
+                            .await
+                    }
+                    (RollingStockGrant::Owner, GrantType::Effective) => {
                         openfga
                             .list_users(RollingStock::owner().query_users(&rolling_stock))
                             .await
@@ -317,7 +344,7 @@ pub fn rolling_stock_granted_subjects(
             .boxed()
         })
     }
-    get_granted_users(rolling_stock, grant)
+    get_granted_users(rolling_stock, grant, grant_type)
         .zip(get_granted_groups(rolling_stock, grant))
         .map(async move |(users, groups)| {
             users
@@ -440,15 +467,9 @@ pub fn rolling_stock_revoke_grant(
     // Revoking rules:
     // 1. Only owners (and admins) can fully revoke grants
     // 2. The last owner of a resource cannot be revoked (admins can)
-    // 3. An owner cannot revoke another owner
     prot.with_check(Check::HasRollingStockPrivilege(
         Actor::Issuer,
         RollingStockPrivilege::CanRevoke,
-        rolling_stock,
-    ))
-    .with_check(Check::SubjectEffectiveRollingStockGrantIsNot(
-        RollingStockGrant::Owner,
-        subject,
         rolling_stock,
     ))
     .with_check(Check::IsNotLastRollingStockOwner(subject, rolling_stock))
@@ -527,6 +548,7 @@ mod tests {
     use rstest::rstest;
 
     use crate::User;
+    use crate::model::GrantType;
     use crate::v2::TestClientExt as _;
     use crate::v2::special_authorizers::Authorize;
 
@@ -982,7 +1004,7 @@ mod tests {
     )]
     #[rstest]
     #[case::rolling_stock_granted_subjects(
-        rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer).checks,
+        rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer, GrantType::Effective).checks,
         &[
            Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
         ]

@@ -53,7 +53,7 @@ const GrantsManagerSubjects = ({
           className="display-search"
           onClick={() => setDisplayUserSearchSection(!displayUserSearchSection)}
         >
-          {!displayUserSearchSection ? t('authorization.addGrantToUser') : t('common.cancel')}
+          {!displayUserSearchSection ? t('authorization.addGrantToSubject') : t('common.cancel')}
         </button>
         {displayUserSearchSection && (
           <GrantManagerAddSubjectForm
@@ -79,7 +79,10 @@ const GrantsManagerSubjects = ({
             resourceType={resourceType}
             onChange={async (value?: Grant) => {
               await updateGrant(resourceType, resourceId, subject.id, value);
-              await refetch();
+              // We only refetch if we remove the access to a user so the displayed list is accurate, and if the user is changing its grants
+              if (!value || subject.id === userId) {
+                await refetch();
+              }
               onChangeSuccess?.(subject.id, value);
             }}
           />

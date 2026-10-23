@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Select } from '@osrd-project/ui-core';
-import { Check, Alert } from '@osrd-project/ui-icons';
+import { Check } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +11,7 @@ import { getErrorMessage } from 'utils/error';
 
 import type { Grant, Privilege, ResourceType, Subject } from '../types';
 import generateGrantSelectProps from '../utils/generateGrantSelectProps';
+import { SubjectItem } from './SubjectItem';
 
 type GrantsManagerSubjectProps = {
   subject: Subject;
@@ -71,13 +72,12 @@ const GrantsManagerSubject = ({
 
   return (
     <div className="subject-card">
-      <span className={cx('subject-name', { bold: subject.id === userId })}>
-        {subject.name}
-        {status.type === 'error' && <p className="text-danger">{status.message}</p>}
+      <span className="subject">
+        <SubjectItem subject={subject} className={cx({ bold: subject.id === userId })} />
       </span>
       <span className="subject-grant">
         {status.type === 'loading' && <ThreeDots />}
-        {status.type === 'error' && <Alert className="text-danger" />}
+        {status.type === 'error' && <span className="text-danger">{status.message}</span>}
         {status.type === 'success' && <Check className="text-success" />}
         <Select
           id={`${subject.id}-${subject.name}`}
@@ -85,7 +85,6 @@ const GrantsManagerSubject = ({
           getOptionLabel={(option) => option.label}
           getOptionValue={(option) => option.value || ''}
           onChange={(option) => updateUserGrant(option?.value)}
-          disabled={subject.id === userId && selectProps.value?.value === 'OWNER'}
           narrow
           {...selectProps}
         />

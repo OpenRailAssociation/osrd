@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { sortBy } from 'lodash';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import type { ResourceType, SubjectWithGrant } from '../types';
@@ -27,8 +29,9 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
       const response = await fetchUserList({
         resourceType,
         resourceId: id,
+        directGrant: true,
       }).unwrap();
-      setSubjects(response);
+      setSubjects(sortBy(response, ['type', 'name']));
     } catch (err) {
       setError(err as Error);
     } finally {

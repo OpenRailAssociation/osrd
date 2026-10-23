@@ -9,6 +9,7 @@ use crate::ProjectPrivilege;
 use crate::Role;
 use crate::Subject;
 use crate::User;
+use crate::model::GrantType;
 use crate::model::Project;
 use crate::model::ProjectGrant;
 use crate::v2::Actor;
@@ -111,28 +112,36 @@ pub fn project_set_grant(subject: Subject, project: Project) -> Protected<()> {
 /// No transaction is setup as OpenFGA does not support them.
 pub fn project_revoke_grant(subject: Subject, project: Project) -> Protected<bool> {
     // Revoking rules:
-    // Only admins can fully revoke grants
-    project_direct_grant(subject, project)
-        .then(move |openfga, grant| {
-            async move {
-                let Some(grant) = grant else {
-                    return Ok(false);
-                };
+    let prot = project_direct_grant(subject, project).then(move |openfga, grant| {
+        async move {
+            let Some(grant) = grant else {
+                return Ok(false);
+            };
 
-                let mut delete = openfga.prepare_deletes();
-                match (subject, grant) {
-                    (Subject::User(user), ProjectGrant::Owner) => {
-                        delete.push(&Project::owner().tuple(&user, &project))
-                    }
-                    (Subject::Group(group), ProjectGrant::Owner) => delete
-                        .push(&Project::owner().tuple(Group::member().userset(&group), &project)),
-                };
-                delete.execute().await?;
-                Ok(true)
-            }
-            .boxed()
-        })
-        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
+            let mut delete = openfga.prepare_deletes();
+            match (subject, grant) {
+                (Subject::User(user), ProjectGrant::Owner) => {
+                    delete.push(&Project::owner().tuple(&user, &project))
+                }
+                (Subject::Group(group), ProjectGrant::Owner) => {
+                    delete.push(&Project::owner().tuple(Group::member().userset(&group), &project))
+                }
+            };
+            delete.execute().await?;
+            Ok(true)
+        }
+        .boxed()
+    });
+
+    // Revoking rules:
+    // 1. Only owners (and admins) can fully revoke grants. On project there is only one level, so if you have access you are an owner
+    // 2. The last owner of a resource cannot be revoked (admins can)
+    prot.with_check(Check::HasProjectPrivilege(
+        Actor::Issuer,
+        ProjectPrivilege::HasAccess,
+        project,
+    ))
+    .with_check(Check::IsNotLastProjectOwner(subject, project))
 }
 
 pub fn project_privileges(user: User, project: Project) -> Protected<HashSet<ProjectPrivilege>> {
@@ -210,16 +219,31 @@ pub fn project_access_filter(user: User, projects: Vec<Project>) -> Protected<Ve
 }
 
 /// Return an operation that checks the list of subjects which have the owner grant on a project.
-pub fn project_granted_subjects(project: Project, grant: ProjectGrant) -> Protected<Vec<Subject>> {
-    fn get_granted_users(project: Project, grant: ProjectGrant) -> Protected<Vec<User>> {
+pub fn project_granted_subjects(
+    project: Project,
+    grant: ProjectGrant,
+    grant_type: GrantType,
+) -> Protected<Vec<Subject>> {
+    fn get_granted_users(
+        project: Project,
+        grant: ProjectGrant,
+        grant_type: GrantType,
+    ) -> Protected<Vec<User>> {
         Protected::new(move |openfga| {
             async move {
-                match grant {
-                    ProjectGrant::Owner => openfga
-                        .list_users(Project::owner().query_users(&project))
-                        .await
-                        .map(|UserList { users, .. }| users),
+                match (grant, grant_type) {
+                    (ProjectGrant::Owner, GrantType::Direct) => {
+                        openfga
+                            .list_direct_users(Project::owner().query_direct_users(&project))
+                            .await
+                    }
+                    (ProjectGrant::Owner, GrantType::Effective) => {
+                        openfga
+                            .list_users(Project::owner().query_users(&project))
+                            .await
+                    }
                 }
+                .map(|UserList { users, .. }| users)
             }
             .boxed()
         })
@@ -240,7 +264,7 @@ pub fn project_granted_subjects(project: Project, grant: ProjectGrant) -> Protec
             .boxed()
         })
     }
-    get_granted_users(project, grant)
+    get_granted_users(project, grant, grant_type)
         .zip(get_granted_groups(project, grant))
         .map(async move |(users, groups)| {
             users
@@ -263,6 +287,7 @@ mod tests {
 
     use crate::User;
     use crate::authz_client;
+    use crate::model::GrantType;
     use crate::model::Project;
     use crate::v2::Check;
     use crate::v2::TestClientExt as _;
@@ -768,7 +793,10 @@ mod tests {
     )]
     #[case::project_revoke_grant(
         project_revoke_grant(Subject::user(1), Project(1)).checks,
-        &[Check::HasRole(Actor::Issuer, Role::Admin)]
+        &[
+            Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1)),
+            Check::IsNotLastProjectOwner(Subject::user(1), Project(1))
+        ]
     )]
     #[case::project_privileges(
         project_privileges(User(1), Project(1)).checks,
@@ -781,7 +809,7 @@ mod tests {
         &[]
     )]
     #[case::project_granted_subjects(
-        project_granted_subjects(Project(1), ProjectGrant::Owner).checks,
+        project_granted_subjects(Project(1), ProjectGrant::Owner, GrantType::Effective).checks,
         &[
             Check::HasProjectPrivilege(Actor::Issuer, ProjectPrivilege::HasAccess, Project(1))
         ]

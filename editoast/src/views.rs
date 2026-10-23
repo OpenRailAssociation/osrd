@@ -468,6 +468,9 @@ pub enum AuthorizationError {
     #[editoast_error(status = 403)]
     #[from(::authz::v2::Check)]
     Forbidden,
+    #[error("Forbidden (403) — cannot revoke ownership from the last owner.")]
+    #[editoast_error(status = 403)]
+    ForbiddenRevokeLastOwner,
     #[error("Forbidden (403) — user must be an admin to impersonate")]
     #[editoast_error(status = 403)]
     ForbiddenImpersonation,

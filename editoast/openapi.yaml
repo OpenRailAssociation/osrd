@@ -282,6 +282,7 @@ paths:
     get:
       tags:
       - authz
+      description: Get list of users and groups that have a grant on the resource. Per default it returns the effective list. To retrieve the direct list, you must use ?directGrant=true
       parameters:
       - name: resource_type
         in: path
@@ -294,9 +295,14 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: direct_grant
+        in: query
+        required: false
+        schema:
+          type: boolean
       responses:
         '200':
-          description: Get list of user that have a grant on the resource
+          description: List of users and groups that have a grant on the resource.
           content:
             application/json:
               schema:
@@ -7275,6 +7281,26 @@ components:
           type: string
           enum:
           - editoast:authorization:ForbiddenImpersonation
+    EditoastAuthorizationErrorForbiddenRevokeLastOwner:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthorizationErrorForbiddenRevokeLastOwnerContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 403
+        type:
+          type: string
+          enum:
+          - editoast:authorization:ForbiddenRevokeLastOwner
     EditoastAuthorizationErrorImpersonatedUserNotFound:
       type: object
       required:
@@ -7875,6 +7901,7 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorDbError'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbidden'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbiddenImpersonation'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorForbiddenRevokeLastOwner'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorImpersonatedUserNotFound'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorOpenFga'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
