@@ -20,18 +20,14 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
   }
   const validParts = pathStepMetadata.parts.filter((p) => p.type === 'valid');
   const validPartsCoordinates = validParts.map((part) => part.coordinates);
-  if (pathStepMetadata.secondaryCode && pathStepMetadata.trackName) {
+  if (pathStepMetadata.trackName) {
     const foundPartCoordinates = validParts.find(
       (part) => part.trackName === pathStepMetadata.trackName
     )?.coordinates;
     // If the track name is unknown (not matching any part), fall back to all valid parts coordinates
     return foundPartCoordinates ? [foundPartCoordinates] : validPartsCoordinates;
   }
-  if (pathStepMetadata.secondaryCode) {
-    return validPartsCoordinates;
-  }
-  // If the path step has no secondary code, don't display its marker on the map
-  return [];
+  return validPartsCoordinates;
 };
 
 export const buildOpRef = (op: OperationalPoint): OperationalPointReference => ({
@@ -41,11 +37,11 @@ export const buildOpRef = (op: OperationalPoint): OperationalPointReference => (
   secondary_code: op.secondary_code,
 });
 
-export const buildOpDisplayName = (op: OperationalPoint): string => {
-  const name = op.name;
-  const secondaryCode = op.secondary_code;
-  return secondaryCode ? `${name} ${secondaryCode}` : name;
-};
+export const formatOpLabel = (name: string, secondaryCode?: string | null): string =>
+  secondaryCode ? `${name} ${secondaryCode}` : name;
+
+export const buildOpDisplayName = (op: OperationalPoint): string =>
+  formatOpLabel(op.name, op.secondary_code);
 
 export const getOpKey = (location: PathItemLocation | null): string | null => {
   if (!location || location.type === 'track_offset') return null;

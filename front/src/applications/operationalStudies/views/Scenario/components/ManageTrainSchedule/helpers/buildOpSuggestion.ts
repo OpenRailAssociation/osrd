@@ -8,12 +8,15 @@ import type {
 const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
   const priority: Record<string, number> = { BV: 0, '00': 1 };
 
+  // BV and 00 first, then other codes alphabetically, then the op without secondary code
+  const getPriority = (code: string | null) => (code === null ? 100 : (priority[code] ?? 99));
+
   secondaryCodeList.sort((a, b) => {
-    const pa = priority[a.code] ?? 99;
-    const pb = priority[b.code] ?? 99;
+    const pa = getPriority(a.code);
+    const pb = getPriority(b.code);
 
     if (pa !== pb) return pa - pb;
-    return a.code.localeCompare(b.code);
+    return (a.code ?? '').localeCompare(b.code ?? '');
   });
 };
 
@@ -25,11 +28,10 @@ export const buildOpSuggestion = (
   for (const r of results) {
     const key = `${r.main_code}||${r.name}`;
     const existing = map.get(key);
+    const secondaryCode = r.secondary_code ?? null;
 
     if (!existing) {
-      const secondaryCodeList = r.secondary_code
-        ? [{ code: r.secondary_code, opId: r.obj_id }]
-        : [];
+      const secondaryCodeList = [{ code: secondaryCode, opId: r.obj_id }];
 
       map.set(key, {
         id: key,
@@ -39,11 +41,8 @@ export const buildOpSuggestion = (
         countryCode: r.country_code,
         secondaryCodeList,
       });
-    } else if (
-      r.secondary_code &&
-      !existing.secondaryCodeList.some((c) => c.code === r.secondary_code)
-    ) {
-      existing.secondaryCodeList.push({ code: r.secondary_code, opId: r.obj_id });
+    } else if (!existing.secondaryCodeList.some((c) => c.code === secondaryCode)) {
+      existing.secondaryCodeList.push({ code: secondaryCode, opId: r.obj_id });
     }
   }
 
