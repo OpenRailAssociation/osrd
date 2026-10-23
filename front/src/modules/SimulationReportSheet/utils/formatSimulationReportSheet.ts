@@ -193,7 +193,7 @@ function formatOperationalPointWithTimesAndWeight(
 
 /**
  * Moves each requested OP to its path item position, which the pathfinding may have
- * moved slightly because of the train length train lenght.
+ * moved slightly because of the train length.
  * If no OP is found at the path item position, a new OP is created at that position.
  */
 function moveRequestedOpsToPathItemPositions(
