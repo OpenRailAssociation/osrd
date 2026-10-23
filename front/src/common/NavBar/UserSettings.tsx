@@ -126,6 +126,7 @@ const UserSettings = () => {
             <div className="font-weight-medium mb-2 mt-2">{t('nav-bar.impersonation')}</div>
             <ComboBox
               id="impersonation"
+              testIdPrefix="impersonation"
               value={impersonatedUser}
               getSuggestionLabel={(subject) => subject.name}
               onSelectSuggestion={handleSubjectSelection}
