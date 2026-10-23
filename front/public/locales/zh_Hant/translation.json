@@ -4,6 +4,7 @@
   },
   "home": {
     "applications": {
+      "operational-studies": "專案",
       "rolling-stocks-editor": "車輛"
     }
   },
