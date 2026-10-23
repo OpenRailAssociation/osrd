@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import { expect } from '@playwright/test';
 
 import { StdcmStopTypes } from 'applications/stdcm/types';
@@ -20,7 +18,7 @@ import {
 import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
-import { findFirstPdf, countImagesOfSize, parsePdfText } from './../utils/pdf-parser';
+import { hasNamedDestination, parsePdfText, readFirstPdf } from './../utils/pdf-parser';
 
 test.describe(
   'STDCM simulation with a backtrack on a stop',
@@ -115,17 +113,15 @@ test.describe(
         await stdcmSimulationResultPage.retainSimulation();
         await stdcmSimulationResultPage.downloadSimulation(testInfo.outputDir);
 
-        const pdfFilePath = findFirstPdf(testInfo.outputDir);
-        if (!pdfFilePath) {
-          throw new Error(`No PDF files found in directory: ${testInfo.outputDir}`);
-        }
-        const pdfBuffer = fs.readFileSync(pdfFilePath);
+        const pdfBuffer = readFirstPdf(testInfo.outputDir);
         const pdfText = await parsePdfText(pdfBuffer);
-        for (const operationalPoint of BACKTRACK_DETAILS.operationalPointNames) {
+        for (const [index, operationalPoint] of BACKTRACK_DETAILS.operationalPointNames.entries()) {
           expect(pdfText).toContain(operationalPoint);
+          // The backtrack icon is only shown on the backtrack stop
+          expect(await hasNamedDestination(pdfBuffer, `backtrack-${operationalPoint}`)).toBe(
+            index === 1
+          );
         }
-        // The backtrack icon is shown exactly once in the simulation sheet
-        expect(await countImagesOfSize(pdfBuffer, 64, 64)).toBe(1);
       });
     });
   }
