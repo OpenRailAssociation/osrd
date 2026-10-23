@@ -1,7 +1,11 @@
-import type { PathItemLocation } from 'common/api/osrdEditoastApi';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { Position } from 'geojson';
 
-export type MarkerInformation = Pick<PathStep, 'key' | 'name' | 'coordinates' | 'metadata'> & {
+import type { PathItemLocation } from 'common/api/osrdEditoastApi';
+
+export type MarkerInformation = {
+  key: string;
+  name?: string;
+  coordinates?: Position;
   pointType: MARKER_TYPE;
   location: PathItemLocation;
   isBackTrack?: boolean;
