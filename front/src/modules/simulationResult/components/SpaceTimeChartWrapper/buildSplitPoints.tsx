@@ -213,7 +213,6 @@ export function buildSplitPoints({
         size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
         spaceTimeChartNode: (
           <TrackOccupancyCanvas
-            position={operationalPointPosition}
             tracks={tracks || []}
             occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
             draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}

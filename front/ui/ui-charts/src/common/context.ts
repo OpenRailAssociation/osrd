@@ -1,6 +1,11 @@
 import { createContext } from 'react';
 
-import type { CanvasContextType, TimeChartContextType, MouseContextType } from './types';
+import type {
+  CanvasContextType,
+  TimeChartContextType,
+  MouseContextType,
+  EmbeddedPositionContextType,
+} from './types';
 
 export const TimeChartCanvasContext = createContext<CanvasContextType<TimeChartContextType>>(
   // That value should never be used, since the context should always be accessed within a provider
@@ -15,3 +20,5 @@ export const MouseContext = createContext<MouseContextType>(
   // That value should never be used, since the context should always be accessed within a provider
   undefined as unknown as MouseContextType
 );
+
+export const EmbeddedPositionContext = createContext<EmbeddedPositionContextType | null>(null);

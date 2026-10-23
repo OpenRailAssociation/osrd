@@ -1,6 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 
-import { DEFAULT_THEME, type SpaceTimeChartProps } from '../../spaceTimeChart';
+import type { ChartEventHandlers, TimeChartContextType } from '../../common/types';
+import { DEFAULT_THEME } from '../../spaceTimeChart';
 
 /** How close to the edge we should start panning */
 const PAN_EDGE_DISTANCE = 50;
@@ -55,7 +56,7 @@ const useEdgePan = ({
     stateRef.current.intervalID = null;
   }, []);
 
-  const onMouseMove: SpaceTimeChartProps['onMouseMove'] = useCallback(
+  const onMouseMove: ChartEventHandlers<TimeChartContextType>['onMouseMove'] = useCallback(
     ({ position: { y }, context: { height } }) => {
       if (!enableY) return;
 

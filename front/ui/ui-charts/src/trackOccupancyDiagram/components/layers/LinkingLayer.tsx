@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
+import { TimeChartCanvasContext } from '../../../common/context';
 import { indexToColor } from '../../../common/helpers/colors';
 import { drawAliasedRect } from '../../../common/helpers/utils';
 import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
@@ -7,11 +8,8 @@ import type {
   DrawingFunction,
   PickingDrawingFunction,
   PickingElement,
+  TimeChartContextType,
 } from '../../../common/types';
-import {
-  SpaceTimeChartCanvasContext,
-  type SpaceTimeChartContextType,
-} from '../../../spaceTimeChart';
 import {
   CANVAS_PADDING,
   OCCUPANCY_ZONE_HEIGHT,
@@ -31,12 +29,13 @@ export function isLinkingPickingElement(element: PickingElement): element is Lin
 const LinkingLayer = ({
   tracks,
   linkings,
-  position,
+  top,
   topPadding,
 }: {
   tracks: Track[];
   linkings: Linking[];
-  position: number;
+  top: number;
+  height: number;
   topPadding: number;
 }) => {
   const linkingsToDraw = useMemo(() => {
@@ -53,20 +52,20 @@ const LinkingLayer = ({
     });
   }, [linkings, topPadding, tracks]);
 
-  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
-    (ctx, stcContext) => {
+  const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
+    (ctx, tcContext) => {
       linkingsToDraw.forEach(({ linking, yOffset }) => {
-        drawLinking(ctx, stcContext, { linking, position, yOffset });
+        drawLinking(ctx, tcContext, { linking, top, yOffset });
       });
     },
-    [position, linkingsToDraw]
+    [top, linkingsToDraw]
   );
 
-  const pickingFunction = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
-    (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
+  const pickingFunction = useCallback<PickingDrawingFunction<TimeChartContextType>>(
+    (imageData, { registerPickingElement, getTimePixel }, scalingRatio) => {
       linkingsToDraw.forEach(({ linking, yOffset }) => {
         const { x1, x2 } = getLinkingXRange({ getTimePixel }, linking);
-        const y = getOccupancyZonesY({ getSpacePixel }, position) + yOffset;
+        const y = getOccupancyZonesY(top) + yOffset;
         const width = x2 - x1;
 
         const pickingElement: LinkingPickingElement = {
@@ -86,11 +85,11 @@ const LinkingLayer = ({
         );
       });
     },
-    [position, linkingsToDraw]
+    [top, linkingsToDraw]
   );
 
-  usePicking(SpaceTimeChartCanvasContext, 'paths', pickingFunction);
-  useDraw(SpaceTimeChartCanvasContext, 'paths', drawingFunction);
+  usePicking(TimeChartCanvasContext, 'paths', pickingFunction);
+  useDraw(TimeChartCanvasContext, 'paths', drawingFunction);
 
   return null;
 };
