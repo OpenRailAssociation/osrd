@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type Role } from 'common/api/osrdEditoastApi';
 import { getIsSuperUser, getUserRoles, getUserId } from 'reducers/user/userSelectors';
+import { getErrorMessage } from 'utils/error';
 
 import type { Grant, Privilege, ResourceType } from '../types';
 
@@ -41,9 +42,10 @@ export default function useAuthz() {
         resource_id: resourceId,
         subject_id: subjectId,
       };
-      await updateSubjectGrantApi({
+      const res = await updateSubjectGrantApi({
         body: grant ? { grant: [{ ...basePayload, grant }] } : { revoke: [basePayload] },
       });
+      if (res.error) throw new Error(getErrorMessage(res.error));
     },
     [updateSubjectGrantApi]
   );

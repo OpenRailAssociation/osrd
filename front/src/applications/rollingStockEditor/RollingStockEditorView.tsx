@@ -42,6 +42,7 @@ const RollingStockEditor = () => {
   const { openModal, closeModal } = useModal();
   const dispatch = useAppDispatch();
   const [pageMode, setPageMode] = useState<PageMode>({ type: 'idle' });
+  const [redraw, setRedraw] = useState(0);
   const selectedRollingStockId = useMemo(() => {
     if (pageMode.type === 'view' || pageMode.type === 'edit') return pageMode.rollingStockId;
     return undefined;
@@ -62,12 +63,12 @@ const RollingStockEditor = () => {
     resetFilters,
   } = useFilterRollingStock();
 
-  const { getUserPrivileges } = useAuthz();
+  const { userId, getUserPrivileges } = useAuthz();
   const selectedRollingStockPrivilegesState = useAsyncMemo(async () => {
     if (selectedRollingStockId === undefined) return undefined;
     const data = await getUserPrivileges({ rolling_stock: [selectedRollingStockId] });
     return { id: selectedRollingStockId, privileges: data.rolling_stock?.[selectedRollingStockId] };
-  }, [getUserPrivileges, selectedRollingStockId]);
+  }, [getUserPrivileges, selectedRollingStockId, redraw]);
 
   // Guard against the id/privileges pair from a previous selection still being 'ready'
   // in the render right after selectedRollingStockId changes (state resets in an effect,
@@ -272,6 +273,11 @@ const RollingStockEditor = () => {
                     resourceId={selectedRollingStock.id}
                     resourceType="rolling_stock"
                     userPrivileges={selectedRollingStockPrivileges}
+                    onChangeSuccess={(subjectId) => {
+                      // In case the current user has changed his own grant, we need to redraw the list
+                      // to update the grant display on each infra
+                      if (subjectId === userId) setRedraw((prev) => prev + 1);
+                    }}
                   />
                 </div>
               )}
