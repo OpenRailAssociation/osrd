@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import { StdcmStopTypes } from 'applications/stdcm/types';
 import type { Infra } from 'common/api/osrdEditoastApi';
 
@@ -26,7 +24,7 @@ import DestinationSection from './../pages/stdcm/destination-section';
 import OriginSection from './../pages/stdcm/origin-section';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
-import { findFirstPdf, parsePdfText, verifySimulationContent } from './../utils/pdf-parser';
+import { parsePdfText, readFirstPdf, verifySimulationContent } from './../utils/pdf-parser';
 import type { PdfSimulationContent } from './../utils/types';
 
 test.describe('STDCM simulation sheet', { tag: ['@stdcm, @stdcm-sheet'] }, () => {
@@ -166,16 +164,10 @@ test.describe('STDCM simulation sheet', { tag: ['@stdcm, @stdcm-sheet'] }, () =>
 
   /** *************** Test 2 *************** */
   test('Verify simulation sheet content', { tag: '@smoke' }, async () => {
-    const pdfFilePath = await test.step('Find the downloaded PDF', async () => {
-      const filePath = findFirstPdf(downloadDir!);
-      if (!filePath) {
-        throw new Error(`No PDF files found in directory: ${downloadDir}`);
-      }
-      return filePath;
-    });
+    const pdfBuffer = await test.step('Find the downloaded PDF', async () =>
+      readFirstPdf(downloadDir!));
 
     await test.step('Parse PDF and compare with expected content', async () => {
-      const pdfBuffer = fs.readFileSync(pdfFilePath);
       const actualPdfSimulationContent = await parsePdfText(pdfBuffer);
       const expectedPdfSimulationContent: PdfSimulationContent = simulationSheetDetails();
       verifySimulationContent(actualPdfSimulationContent, expectedPdfSimulationContent);

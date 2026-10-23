@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import { expect } from '@playwright/test';
 
 import { StdcmStopTypes } from 'applications/stdcm/types';
@@ -20,7 +18,7 @@ import {
 import test from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
 import { getInfra } from './../utils/api-utils';
-import { findFirstPdf, countImagesOfSize, parsePdfText } from './../utils/pdf-parser';
+import { countImagesOfSize, parsePdfText, readFirstPdf } from './../utils/pdf-parser';
 
 test.describe(
   'STDCM simulation with a backtrack on a stop',
@@ -115,11 +113,7 @@ test.describe(
         await stdcmSimulationResultPage.retainSimulation();
         await stdcmSimulationResultPage.downloadSimulation(testInfo.outputDir);
 
-        const pdfFilePath = findFirstPdf(testInfo.outputDir);
-        if (!pdfFilePath) {
-          throw new Error(`No PDF files found in directory: ${testInfo.outputDir}`);
-        }
-        const pdfBuffer = fs.readFileSync(pdfFilePath);
+        const pdfBuffer = readFirstPdf(testInfo.outputDir);
         const pdfText = await parsePdfText(pdfBuffer);
         for (const operationalPoint of BACKTRACK_DETAILS.operationalPointNames) {
           expect(pdfText).toContain(operationalPoint);
