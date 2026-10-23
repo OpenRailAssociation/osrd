@@ -113,6 +113,8 @@ export type Tool<S> = {
   ) => void;
   onHover?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
   onMove?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
+  onMouseDown?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
+  onMouseUp?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
   onKeyDown?: (e: KeyboardEvent, context: ExtendedEditorContextType<S>) => void;
   getCursor?: (context: ExtendedEditorContextType<S>, isDragging: boolean) => string;
 

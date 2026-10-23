@@ -7,6 +7,7 @@ import { withTranslation } from 'react-i18next';
 import ReactMapGL, {
   AttributionControl,
   ScaleControl,
+  type MapLayerMouseEvent,
   type MapRef,
   type ViewState,
 } from 'react-map-gl/maplibre';
@@ -125,6 +126,23 @@ const MapUnplugged = ({
     [activeTool, extendedContext, isDraggingState]
   );
 
+  // Returns the event with only the nearest feature, or null if there is none.
+  // Keeps preventDefault bound to the original event, so that tools can
+  // prevent the map from panning.
+  const getEventWithNearestFeature = (e: MapLayerMouseEvent): MapLayerMouseEvent | null => {
+    const nearestResult = getMapMouseEventNearestFeature(
+      e,
+      eventsLayerIDs ? { layersId: eventsLayerIDs } : undefined
+    );
+    if (!nearestResult) return null;
+    return {
+      ...e,
+      preventDefault: () => e.preventDefault(),
+      defaultPrevented: e.defaultPrevented,
+      features: [nearestResult.feature],
+    };
+  };
+
   return (
     <>
       <div
@@ -152,34 +170,17 @@ const MapUnplugged = ({
             setToolState({ hovered: null });
           }}
           onMouseMove={(e) => {
-            const nearestResult = getMapMouseEventNearestFeature(
-              e,
-              eventsLayerIDs
-                ? {
-                    layersId: eventsLayerIDs,
-                  }
-                : undefined
-            );
+            const eventWithFeature = getEventWithNearestFeature(e);
+            const feature = eventWithFeature?.features?.[0];
 
             const partialToolState: Partial<CommonToolState> = {
               mousePosition: [e.lngLat.lng, e.lngLat.lat],
             };
 
             // if we hover something
-            if (nearestResult) {
-              const { feature } = nearestResult;
+            if (eventWithFeature && feature) {
               if (activeTool.onHover) {
-                activeTool.onHover(
-                  {
-                    ...e,
-                    // (don't remove those 2 lines or TypeScript won't be happy)
-                    preventDefault: e.preventDefault,
-                    defaultPrevented: e.defaultPrevented,
-                    // Ensure there is a feature, and the good one:
-                    features: [feature],
-                  },
-                  extendedContext
-                );
+                activeTool.onHover(eventWithFeature, extendedContext);
               } else if (
                 feature.sourceLayer &&
                 LAYERS_SET.has(feature.sourceLayer) &&
@@ -205,22 +206,18 @@ const MapUnplugged = ({
             }
 
             if (activeTool.onMove) {
-              activeTool.onMove(
-                nearestResult
-                  ? {
-                      ...e,
-                      // (don't remove those 2 lines or TypeScript won't be happy)
-                      preventDefault: e.preventDefault,
-                      defaultPrevented: e.defaultPrevented,
-                      // Ensure there is a feature, and the good one:
-                      features: [nearestResult.feature],
-                    }
-                  : e,
-                extendedContext
-              );
+              activeTool.onMove(eventWithFeature ?? e, extendedContext);
             }
 
             if (!isEmpty(partialToolState)) setToolState(partialToolState);
+          }}
+          onMouseDown={(e) => {
+            if (activeTool.onMouseDown)
+              activeTool.onMouseDown(getEventWithNearestFeature(e) ?? e, extendedContext);
+          }}
+          onMouseUp={(e) => {
+            if (activeTool.onMouseUp)
+              activeTool.onMouseUp(getEventWithNearestFeature(e) ?? e, extendedContext);
           }}
           onLoad={(e) => {
             // need to call resize, otherwise sometimes the canvas doesn't take 100%
@@ -245,24 +242,7 @@ const MapUnplugged = ({
           cursor={cursor}
           interactiveLayerIds={interactiveLayerIDs}
           onClick={(e) => {
-            const nearestResult = getMapMouseEventNearestFeature(
-              e,
-              eventsLayerIDs
-                ? {
-                    layersId: eventsLayerIDs,
-                  }
-                : undefined
-            );
-
-            const eventWithFeature = nearestResult
-              ? {
-                  ...e,
-                  // (don't remove those 2 lines or TypeScript won't be happy)
-                  preventDefault: e.preventDefault,
-                  defaultPrevented: e.defaultPrevented,
-                  features: [nearestResult.feature],
-                }
-              : e;
+            const eventWithFeature = getEventWithNearestFeature(e) ?? e;
             if (toolState.hovered && activeTool.onClickEntity) {
               if (toolState.hovered.type) {
                 getEntity(infraID!, toolState.hovered.id, toolState.hovered.type, dispatch).then(
