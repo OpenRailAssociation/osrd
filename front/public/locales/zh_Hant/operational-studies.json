@@ -1,1 +1,27 @@
-{}
+{
+  "main": {
+    "occurrenceMenu": {
+      "project": "專案"
+    },
+    "scenarioCancel": "取消"
+  },
+  "project": {
+    "addImage": "新增圖片",
+    "confirm-delete_one": "您確定要刪除這個專案嗎?",
+    "confirm-delete_other": "您確定要刪除 {{ count }}個專案嗎?",
+    "count_one": "1個專案",
+    "count_other": "{{count}}個專案",
+    "count_zero": "尚無專案",
+    "create": "建立專案",
+    "error": {
+      "unableToCreateProjectTitle": "專案更新失敗",
+      "unableToDeleteProject": "無法刪除專案",
+      "unableToPostDocumentTitle": "圖片上傳失敗",
+      "unableToUpdateProjectTitle": "專案更新失敗",
+      "uploadImageSize": "圖片檔案大小上限為2MB",
+      "uploadImageSizeTitle": "圖片檔案太大",
+      "uploadImageType": "僅支援 jpg、jpeg及png格式",
+      "uploadImageTypeTitle": "圖片類型不支援"
+    }
+  }
+}
