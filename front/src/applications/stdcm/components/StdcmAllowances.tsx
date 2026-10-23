@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { MarginType } from 'applications/stdcm/types';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
@@ -11,7 +12,6 @@ import {
   updateStandardAllowance,
 } from 'reducers/osrdconf/stdcmConf';
 import { getMargins } from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { convertInputStringToNumber } from 'utils/strings';
 

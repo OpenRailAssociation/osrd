@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
@@ -12,7 +13,6 @@ import {
   type SearchJourneyOperationalPoint as SearchJourneyOp,
 } from 'reducers/searchJourney';
 import { getSearchJourneyInfraId } from 'reducers/searchJourney/selectors';
-import { useAppDispatch } from 'store';
 import { normalized } from 'utils/strings';
 
 const formatSecondaryCode = (secondaryCode?: string | null) => secondaryCode || 'BV';

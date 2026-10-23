@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
+
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
@@ -24,7 +26,6 @@ import {
 import { syncOccurrenceException } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainScheduleId, Train } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
 import { Duration, startTimeToMs, subtractStartTime } from 'utils/duration';
 import {

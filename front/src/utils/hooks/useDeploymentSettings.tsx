@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
+
 import defaultLogo from 'assets/logo-color.svg';
 import defaultOsrdLogo from 'assets/logo-osrd-color-white.svg';
 import proudLogo from 'assets/proud-logo-color.svg';
@@ -7,7 +9,6 @@ import proudOsrdLogo from 'assets/proud-logo-osrd-color-white.svg';
 import xmasLogo from 'assets/xmas-logo-color.svg';
 import xmasOsrdLogo from 'assets/xmas-logo-osrd-color-white.svg';
 import { setRailwayManagerInterfaceUrl } from 'reducers/main';
-import { useAppDispatch } from 'store';
 
 const MONTH_VALUES = {
   JUNE: 5,

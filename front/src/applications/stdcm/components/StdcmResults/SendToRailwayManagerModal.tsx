@@ -4,6 +4,7 @@ import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-pro
 import { Download, CheckCircle } from '@osrd-project/ui-icons';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import type {
   StdcmSimulationInputs,
@@ -32,7 +33,6 @@ import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import { setFailure } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import {
   addDurationToDate,

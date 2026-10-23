@@ -1,5 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
+
 import type {
   LightRollingStockWithLiveries,
   PacedTrainException,
@@ -10,7 +12,6 @@ import type {
 import formatTrainScheduleSummaries from 'modules/simulationResult/helpers/formatTrainScheduleSummaries';
 import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { useAppDispatch } from 'store';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
 

@@ -8,6 +8,7 @@ import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import type { Layer } from 'applications/editor/consts';
 import { type GeoJsonLineStringValue, type PathProperties } from 'common/api/osrdEditoastApi';
@@ -20,7 +21,6 @@ import getWarping from 'common/Map/WarpedMap/getWarping';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings } from 'reducers/commonMap';
 import { getSimulationResults } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
 
 import { MapContextProvider } from '../useMapContext';

@@ -3,6 +3,8 @@ import { Suspense, useEffect, useCallback } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import '../i18n';
+import { useAppDispatch } from 'store/hooks';
+
 import AdminDashboard from 'applications/adminDashboard/AdminDashboard';
 import HomeEditor from 'applications/editor/Home';
 import Project from 'applications/operationalStudies/views/Project';
@@ -30,7 +32,6 @@ import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
 import { referenceMapSlice } from 'reducers/referenceMap';
 import referenceMapSelectors from 'reducers/referenceMap/selectors';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import { DeploymentContextProvider } from 'utils/hooks/useDeploymentSettings';

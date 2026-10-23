@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import cx from 'classnames';
 import { isEmpty, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -13,7 +14,6 @@ import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurv
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import convertUnits from 'modules/rollingStock/helpers/convertUnits';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type RollingStockCardDetailProps = {

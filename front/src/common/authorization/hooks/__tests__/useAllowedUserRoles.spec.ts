@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import type { Role } from 'common/api/osrdEditoastApi';
 import { updateAuthzUser } from 'reducers/user';
-import { useAppDispatch } from 'store';
 
 import useAllowedUserRoles from '../useAllowedUserRoles';
 
@@ -92,13 +91,10 @@ describe('useAllowedUserRoles', () => {
   it.each(cases)(
     'should allow expected views for $caseName',
     ({ userRoles, expectedAllowedViews: expected }) => {
-      const { result } = renderHookWithStore(() => ({
-        allowedUserRoles: useAllowedUserRoles(),
-        dispatch: useAppDispatch(),
-      }));
+      const { result: allowedUserRoles, store } = renderHookWithStore(() => useAllowedUserRoles());
 
       act(() => {
-        result.current.dispatch(
+        store.dispatch(
           updateAuthzUser({
             userRoles,
             userId: exampleUserId,
@@ -106,17 +102,14 @@ describe('useAllowedUserRoles', () => {
         );
       });
 
-      expect(result.current.allowedUserRoles).toEqual(expected);
+      expect(allowedUserRoles.current).toEqual(expected);
     }
   );
 
   it('should allow no views when no user is provided', () => {
-    const { result } = renderHookWithStore(() => ({
-      allowedUserRoles: useAllowedUserRoles(),
-      dispatch: useAppDispatch(),
-    }));
+    const { result: allowedUserRoles } = renderHookWithStore(() => useAllowedUserRoles());
 
-    expect(result.current.allowedUserRoles).toEqual({
+    expect(allowedUserRoles.current).toEqual({
       adminDashboardAllowed: false,
       operationalStudiesAllowed: false,
       stdcmAllowed: false,

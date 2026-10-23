@@ -2,16 +2,8 @@ import { renderHookWithStore } from 'store/__tests__';
 import { describe, it, expect, vi } from 'vitest';
 
 import type { Privilege } from 'common/authorization/types';
-import { useAppSelector } from 'store';
 
 import { useCheckProtectedAction } from '../useProtectedAction';
-
-const renderHookWithNotifications = () =>
-  renderHookWithStore(() => {
-    const checkProtectedAction = useCheckProtectedAction();
-    const notifications = useAppSelector((state) => state.main.notifications);
-    return { checkProtectedAction, notifications };
-  });
 
 const requiredPrivileges: Privilege[] = ['can_read', 'can_write'];
 
@@ -20,34 +12,40 @@ describe('useCheckProtectedAction', () => {
     const action = vi.fn();
     const userPrivileges = new Set<Privilege>(['can_read', 'can_write']);
 
-    const { result } = renderHookWithNotifications();
+    const { result: checkProtectedAction, store } = renderHookWithStore(() =>
+      useCheckProtectedAction()
+    );
 
-    await result.current.checkProtectedAction(userPrivileges, requiredPrivileges, action);
+    await checkProtectedAction.current(userPrivileges, requiredPrivileges, action);
 
     expect(action).toHaveBeenCalledOnce();
-    expect(result.current.notifications).toHaveLength(0);
+    expect(store.getState().main.notifications).toHaveLength(0);
   });
 
   it('should dispatch an unauthorized notification when a privilege is missing', async () => {
     const action = vi.fn();
     const userPrivileges = new Set<Privilege>(['can_read']);
 
-    const { result } = renderHookWithNotifications();
+    const { result: checkProtectedAction, store } = renderHookWithStore(() =>
+      useCheckProtectedAction()
+    );
 
-    await result.current.checkProtectedAction(userPrivileges, requiredPrivileges, action);
+    await checkProtectedAction.current(userPrivileges, requiredPrivileges, action);
 
     expect(action).not.toHaveBeenCalled();
-    expect(result.current.notifications).toHaveLength(1);
+    expect(store.getState().main.notifications).toHaveLength(1);
   });
 
   it('should execute action when no privilege is required', async () => {
     const action = vi.fn();
 
-    const { result } = renderHookWithNotifications();
+    const { result: checkProtectedAction, store } = renderHookWithStore(() =>
+      useCheckProtectedAction()
+    );
 
-    await result.current.checkProtectedAction(new Set<Privilege>(), [], action);
+    await checkProtectedAction.current(new Set<Privilege>(), [], action);
 
     expect(action).toHaveBeenCalledOnce();
-    expect(result.current.notifications).toHaveLength(0);
+    expect(store.getState().main.notifications).toHaveLength(0);
   });
 });

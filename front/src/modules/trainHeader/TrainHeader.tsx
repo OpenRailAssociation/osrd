@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -11,7 +12,6 @@ import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingSt
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { Train } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import type { StartTime } from 'utils/duration';
 import { extractEditoastIdFromTrainId, isOccurrenceId } from 'utils/trainId';
 

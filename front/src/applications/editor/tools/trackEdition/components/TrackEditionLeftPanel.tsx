@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef, useMemo, useState } from 'react';
 import type { JSONSchema7 } from 'json-schema';
 import { isNil, omit, uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
@@ -22,7 +23,6 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { InfraObject } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
-import { useAppDispatch } from 'store';
 
 import AttachedRangesItemsList from './AttachedRangesItemsList';
 

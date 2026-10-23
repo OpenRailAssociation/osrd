@@ -2,13 +2,13 @@ import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import { useInfraID } from 'common/osrdContext';
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { normalized } from 'utils/strings';
 
 type StdcmOp = NonNullable<StdcmPathStep['operationalPoint']>;

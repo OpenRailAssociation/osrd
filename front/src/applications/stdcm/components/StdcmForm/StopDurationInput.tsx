@@ -2,10 +2,10 @@ import { useMemo, useEffect, useState } from 'react';
 
 import { Input, type StatusWithMessage } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import { parseNumber } from 'utils/strings';

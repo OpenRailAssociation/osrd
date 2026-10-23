@@ -1,6 +1,7 @@
 import { isObject } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -9,7 +10,6 @@ import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import { adaptPayloadForTargetTimetable, getPayloadTimetableType } from './helpers/adaptJsonImport';

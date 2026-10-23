@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
@@ -9,7 +10,6 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { computeCoordinatesOnClick } from 'common/Map/utils';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettingsActions } from 'reducers/commonMap';
-import { useAppDispatch } from 'store';
 
 import useSearchOperationalPoint from './useSearchOperationalPoint';
 

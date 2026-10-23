@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
+import { useAppDispatch } from 'store/hooks';
 
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
 import { postDocument } from 'common/api/documentApi';
@@ -29,7 +30,6 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import useInputChange from 'utils/hooks/useInputChange';

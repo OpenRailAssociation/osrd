@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import useEtcsBrakingCurves from 'applications/operationalStudies/hooks/useEtcsBrakingCurves';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -30,7 +31,6 @@ import {
   getDisplayOnlyPathSteps,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import type { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,

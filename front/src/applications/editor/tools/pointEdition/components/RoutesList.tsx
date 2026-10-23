@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 import { BsBoxArrowInRight } from 'react-icons/bs';
+import { useAppDispatch } from 'store/hooks';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import type { EditoastType } from 'applications/editor/consts';
@@ -15,7 +16,6 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 
 type RoutesListProps = {
   type: EditoastType;

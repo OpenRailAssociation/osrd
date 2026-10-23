@@ -1,13 +1,13 @@
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { selectSearchJourneySolution } from 'reducers/searchJourney';
 import {
   getSearchJourneyJourneys,
   getSearchJourneySelectedSolutionIndex,
 } from 'reducers/searchJourney/selectors';
-import { useAppDispatch } from 'store';
 import { msSinceMidnightToTime } from 'utils/date';
 
 const SOLUTION_TITLE_KEYS = [

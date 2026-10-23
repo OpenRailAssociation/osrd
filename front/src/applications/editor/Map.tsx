@@ -11,6 +11,7 @@ import ReactMapGL, {
   type ViewState,
 } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import getInfraErrorFromTileProperties from 'applications/editor/components/InfraErrors/utils';
 import type { Layer } from 'applications/editor/consts';
@@ -38,7 +39,6 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import type { MapStyle, Viewport } from 'reducers/commonMap/types';
 import { getEditorState } from 'reducers/editor/selectors';
-import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 /**

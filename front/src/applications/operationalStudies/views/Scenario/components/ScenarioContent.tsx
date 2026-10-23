@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { NetzgrafikDto, Operation } from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   ItineraryModalContext,
@@ -26,7 +27,6 @@ import type { PanelSelectionMode } from 'modules/simulationResult/components/Spa
 import { setFailure } from 'reducers/main';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { updateHoveredTrainId } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';

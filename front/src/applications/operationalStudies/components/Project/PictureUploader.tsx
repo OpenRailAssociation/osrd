@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
 import { Image, XCircle } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { getDocument } from 'common/api/documentApi';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 
 type PicturePlaceholderProps = {
   image?: number | null;

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
@@ -26,7 +27,6 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
   extractOccurrenceIndexFromOccurrenceId,

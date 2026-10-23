@@ -5,6 +5,7 @@ import { Gear, ShieldCheck } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -17,7 +18,6 @@ import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { FEATURE_FLAGS, updateFeatureFlags, updateSafeWord } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
-import { useAppDispatch } from 'store';
 import useAuth from 'utils/hooks/useAuth';
 import { useDebounce } from 'utils/hooks/useDebounce';
 

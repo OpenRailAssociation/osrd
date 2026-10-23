@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
+
 import type { CategoryOption } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
@@ -8,7 +10,6 @@ import type {
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 /**

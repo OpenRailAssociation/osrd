@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
@@ -20,7 +21,6 @@ import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import cleanLocalStorageByProject from 'modules/project/helpers/cleanLocalStorageByProject';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
-import { useAppDispatch } from 'store';
 
 import ProjectCard from './ProjectCard';
 

@@ -6,6 +6,7 @@ import cx from 'classnames';
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import {
@@ -30,7 +31,6 @@ import {
   updateSelectedTrain,
   updateProjectionType,
 } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';

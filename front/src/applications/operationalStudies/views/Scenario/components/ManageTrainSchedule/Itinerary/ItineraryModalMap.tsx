@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildr
 import type { Feature, Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -23,7 +24,6 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { setFailure } from 'reducers/main';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { getBarycenter, nearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';

@@ -1,8 +1,8 @@
+import { createStoreWithoutMiddleware } from 'store/utils';
 import { describe, beforeEach, it, expect } from 'vitest';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
-import { createStoreWithoutMiddleware } from 'store';
 
 const testSpeedLimitByTag = (slice: StdcmConfSlice, newTag: string | null) => {
   const store = createStoreWithoutMiddleware({});

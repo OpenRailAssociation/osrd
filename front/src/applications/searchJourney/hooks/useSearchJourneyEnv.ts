@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAppDispatch } from 'store/hooks';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setSearchJourneyEnv } from 'reducers/searchJourney';
-import { useAppDispatch } from 'store';
 
 export const NO_CONFIG_FOUND_MSG = 'No configuration found';
 

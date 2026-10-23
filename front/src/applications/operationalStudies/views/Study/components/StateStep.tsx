@@ -1,9 +1,9 @@
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi, type StudyWithScenarios } from 'common/api/osrdEditoastApi';
 import { setSuccess } from 'reducers/main';
-import { useAppDispatch } from 'store';
 
 import type { StudyState } from '../consts';
 

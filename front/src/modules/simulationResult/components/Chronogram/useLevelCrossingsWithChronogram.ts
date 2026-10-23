@@ -1,12 +1,12 @@
 import { useEffect, useMemo } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { startTimeToDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 

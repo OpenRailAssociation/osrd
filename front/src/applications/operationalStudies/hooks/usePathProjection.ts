@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next';
 import { isEqual, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -19,7 +20,6 @@ import {
   getProjectionType,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,

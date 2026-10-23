@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from 'react';
 
 import type { MapLibreEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
+import { useAppDispatch } from 'store/hooks';
 
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -10,7 +11,6 @@ import { useInfraID } from 'common/osrdContext';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { syncReferenceMapRouterViewport, updateReferenceMapViewport } from 'reducers/referenceMap';
-import { useAppDispatch } from 'store';
 
 const REFERENCE_MAP_ID = 'reference-map';
 

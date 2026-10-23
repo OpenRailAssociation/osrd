@@ -2,13 +2,13 @@ import { useCallback, useState } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import useScenarioTrainScheduleSet from 'applications/operationalStudies/hooks/useScenarioTrainScheduleSet';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import TimetableToolbar from './TimetableToolbar';

@@ -3,12 +3,12 @@ import { useEffect } from 'react';
 import { Lock } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBar from 'common/NavBar';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 
 import Map from './Map';
 

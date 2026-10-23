@@ -1,3 +1,4 @@
+import { createStoreWithoutMiddleware } from 'store/utils';
 import { describe, it, expect } from 'vitest';
 
 import {
@@ -13,7 +14,6 @@ import {
   addFailureNotification,
   addSuccessNotification,
 } from 'reducers/main';
-import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (initialStateExtra?: MainState) =>
   createStoreWithoutMiddleware({

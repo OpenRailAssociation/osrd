@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -10,7 +11,6 @@ import {
 import { MARKER_TYPE, type MarkerInformation } from 'common/Map/types';
 import type { SearchJourneySolution } from 'reducers/searchJourney';
 import { getSearchJourneyInfraId } from 'reducers/searchJourney/selectors';
-import { useAppDispatch } from 'store';
 
 /** Ordered, deduplicated list of stops: the `to`/`from` of two consecutive segments are
  * merged into a single stop when they reference the same operational point. */

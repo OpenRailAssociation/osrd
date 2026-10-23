@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef } from 'react';
 import { debounce, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
+import { useAppDispatch } from 'store/hooks';
 
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
@@ -20,7 +21,6 @@ import {
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
-import { useAppDispatch } from 'store';
 
 import CustomSchemaField from './CustomSchemaField';
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAppDispatch } from 'store/hooks';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
@@ -10,7 +11,6 @@ import {
   getSelectedTrain,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
-import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToTrainScheduleId,
   isOccurrenceId,

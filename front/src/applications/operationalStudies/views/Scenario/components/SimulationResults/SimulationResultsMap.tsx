@@ -5,6 +5,7 @@ import { lineString } from '@turf/helpers';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
+import { useAppDispatch } from 'store/hooks';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
@@ -26,7 +27,6 @@ import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLe
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
-import { useAppDispatch } from 'store';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 

@@ -12,6 +12,7 @@ import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import useStdcmLightRollingStock from 'applications/stdcm/hooks/useStdcmLightRollingStock';
@@ -48,7 +49,6 @@ import {
   getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';

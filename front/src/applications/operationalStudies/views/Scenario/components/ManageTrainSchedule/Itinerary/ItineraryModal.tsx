@@ -16,6 +16,7 @@ import cx from 'classnames';
 import type { Position } from 'geojson';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
 import {
@@ -58,7 +59,6 @@ import type {
   PathStepMetadata,
   PathStepV2,
 } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';

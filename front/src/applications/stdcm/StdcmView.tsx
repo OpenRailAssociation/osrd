@@ -11,6 +11,7 @@ import {
 
 import { isEqual, isNil } from 'lodash';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { LoaderFill } from 'common/Loaders';
 import { resetMargins, selectSimulation } from 'reducers/osrdconf/stdcmConf';
@@ -22,7 +23,6 @@ import {
   getStdcmSimulations,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 
 import StdcmEmptyConfigError from './components/StdcmEmptyConfigError';
 import StdcmConfig from './components/StdcmForm/StdcmConfig';

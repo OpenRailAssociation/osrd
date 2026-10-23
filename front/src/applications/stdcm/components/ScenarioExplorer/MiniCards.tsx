@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 
 import cx from 'classnames';
+import { useAppDispatch } from 'store/hooks';
 
 import {
   osrdEditoastApi,
@@ -11,7 +12,6 @@ import {
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getScenarioDatetimeWindow } from 'modules/scenario/helpers/utils';
 import { resetStdcmSimulations, updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
-import { useAppDispatch } from 'store';
 
 import Project2Image from './ScenarioExplorerProject2Image';
 

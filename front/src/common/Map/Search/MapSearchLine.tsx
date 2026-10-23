@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store/hooks';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { BoundingBox, SearchPayload, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
@@ -10,7 +11,6 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
-import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/hooks/useDebounce';
 
 type MapSearchLineProps = {

@@ -4,6 +4,7 @@ import { Pencil } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
+import { useAppDispatch } from 'store/hooks';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -17,7 +18,6 @@ import type {
 } from 'applications/editor/tools/routeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
 import type { EndPoint } from '../../switchEdition/types';

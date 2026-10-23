@@ -3,11 +3,11 @@ import { useMemo, useState } from 'react';
 import { DatePicker, Select, TimePicker, TolerancePicker } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store/hooks';
 
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import { getSearchDatetimeWindow } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
