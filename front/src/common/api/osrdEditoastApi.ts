@@ -103,17 +103,19 @@ const osrdEditoastApi = generatedEditoastApi
           const trainScheduleId = isOccurrenceId(trainId)
             ? extractTrainScheduleIdFromOccurrenceId(trainId)
             : trainId;
-          const path: PathfindingResult = await dispatch(
-            generatedEditoastApi.endpoints.getTrainSchedulesByIdPath.initiate(
-              {
-                id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
-                infraId,
-                exceptionId,
-              },
-              { subscribe: false }
-            )
-          ).unwrap();
-          return { data: path };
+          const subscription = dispatch(
+            generatedEditoastApi.endpoints.getTrainSchedulesByIdPath.initiate({
+              id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
+              infraId,
+              exceptionId,
+            })
+          );
+          try {
+            const path: PathfindingResult = await subscription.unwrap();
+            return { data: path };
+          } finally {
+            subscription.unsubscribe();
+          }
         },
         providesTags: ['pathfinding', 'train_schedule'],
       }),
@@ -128,18 +130,20 @@ const osrdEditoastApi = generatedEditoastApi
           const trainScheduleId = isOccurrenceId(trainId)
             ? extractTrainScheduleIdFromOccurrenceId(trainId)
             : trainId;
-          const simulation = await dispatch(
-            generatedEditoastApi.endpoints.getTrainSchedulesByIdSimulation.initiate(
-              {
-                id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
-                infraId,
-                electricalProfileSetId,
-                exceptionId,
-              },
-              { subscribe: false }
-            )
-          ).unwrap();
-          return { data: simulation };
+          const subscription = dispatch(
+            generatedEditoastApi.endpoints.getTrainSchedulesByIdSimulation.initiate({
+              id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
+              infraId,
+              electricalProfileSetId,
+              exceptionId,
+            })
+          );
+          try {
+            const simulation = await subscription.unwrap();
+            return { data: simulation };
+          } finally {
+            subscription.unsubscribe();
+          }
         },
         providesTags: ['train_schedule'],
       }),
@@ -154,18 +158,20 @@ const osrdEditoastApi = generatedEditoastApi
           const trainScheduleId = isOccurrenceId(trainId)
             ? extractTrainScheduleIdFromOccurrenceId(trainId)
             : trainId;
-          const etcsBrakingCurves = await dispatch(
-            generatedEditoastApi.endpoints.getTrainSchedulesByIdEtcsBrakingCurves.initiate(
-              {
-                id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
-                infraId,
-                electricalProfileSetId,
-                exceptionId,
-              },
-              { subscribe: false }
-            )
-          ).unwrap();
-          return { data: etcsBrakingCurves };
+          const subscription = dispatch(
+            generatedEditoastApi.endpoints.getTrainSchedulesByIdEtcsBrakingCurves.initiate({
+              id: extractEditoastIdFromTrainScheduleId(trainScheduleId),
+              infraId,
+              electricalProfileSetId,
+              exceptionId,
+            })
+          );
+          try {
+            const etcsBrakingCurves = await subscription.unwrap();
+            return { data: etcsBrakingCurves };
+          } finally {
+            subscription.unsubscribe();
+          }
         },
         providesTags: ['train_schedule'],
       }),
