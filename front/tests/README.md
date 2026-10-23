@@ -35,6 +35,12 @@ In this mode, Playwright runs on your host machine while OSRD services run in Do
 
 ℹ️ The front is significantly slower using `dev-front` mode, and it can lead to timeout during e2e-tests.
 
+Create the users impersonated by the permission tests:
+
+```bash
+./scripts/load-e2e-users.sh
+```
+
 ## Install specific e2e-tests dependencies
 
 ```bash
