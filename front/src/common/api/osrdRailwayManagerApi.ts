@@ -45,6 +45,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['lmr'],
       }),
+      postSendLastMinuteRequestStatuses: build.mutation<
+        PostSendLastMinuteRequestStatusesApiResponse,
+        PostSendLastMinuteRequestStatusesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/send_last_minute_request/statuses`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['lmr'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -76,8 +87,35 @@ export type PostSendLastMinuteRequestApiArg = {
     simulation_report_sheet: Blob;
   };
 };
+export type PostSendLastMinuteRequestStatusesApiResponse = /** status 200 undefined */ {
+  [key: string]: RequestStatusItem;
+};
+export type PostSendLastMinuteRequestStatusesApiArg = {
+  body: string[];
+};
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1 =
   string;
+export type OperationalPointReference =
+  | {
+      /** The object id of an operational point */
+      operational_point: string;
+      type: 'id';
+    }
+  | {
+      country_code: string;
+      /** The operational point main code */
+      main_code: string;
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: null | string;
+      type: 'domestic';
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: null | string;
+      type: 'uic';
+      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+      uic: number;
+    };
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesScheduleItemsPropertiesReferenceBaseArrivalOneOf1 =
   string;
 export type ConstraintDistribution = 'STANDARD' | 'MARECO';
@@ -108,27 +146,7 @@ export type PathItem = {
       })
     | ({
         local_track_name?: null | string;
-        operational_point:
-          | {
-              /** The object id of an operational point */
-              operational_point: string;
-              type: 'id';
-            }
-          | {
-              country_code: string;
-              /** The operational point main code */
-              main_code: string;
-              /** An optional secondary code to identify a more specific location */
-              secondary_code?: null | string;
-              type: 'domestic';
-            }
-          | {
-              /** An optional secondary code to identify a more specific location */
-              secondary_code?: null | string;
-              type: 'uic';
-              /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-              uic: number;
-            };
+        operational_point: OperationalPointReference;
       } & {
         type: 'operational_point_part_reference';
       });
@@ -218,27 +236,7 @@ export type TransformTimetableResponse = {
           })
         | ({
             local_track_name?: null | string;
-            operational_point:
-              | {
-                  /** The object id of an operational point */
-                  operational_point: string;
-                  type: 'id';
-                }
-              | {
-                  country_code: string;
-                  /** The operational point main code */
-                  main_code: string;
-                  /** An optional secondary code to identify a more specific location */
-                  secondary_code?: null | string;
-                  type: 'domestic';
-                }
-              | {
-                  /** An optional secondary code to identify a more specific location */
-                  secondary_code?: null | string;
-                  type: 'uic';
-                  /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-                  uic: number;
-                };
+            operational_point: OperationalPointReference;
           } & {
             type: 'operational_point_part_reference';
           });
@@ -421,4 +419,18 @@ export type SimulationReport = {
     /** The track section identifier. */
     track_section: string;
   }[];
+};
+export type RequestStatus = 'CREATED' | 'PROCESSING' | 'ACCEPTED' | 'REFUSED' | 'CANCELLED';
+export type RequestStatusItem = {
+  status: RequestStatus;
+  status_message?: string;
+  created_request_url: string;
+  begin_op: OperationalPointReference;
+  begin_time?: string;
+  end_op: OperationalPointReference;
+  end_time?: string;
+  updated_at: string;
+  created_at: string;
+  train_start: string;
+  id: string;
 };
