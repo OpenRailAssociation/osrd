@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { expect } from '@playwright/test';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import { logger } from '../logging-fixture';
 import type { PdfConsistChangeContent, PdfSimulationContent } from './types';
@@ -48,6 +48,32 @@ export async function parsePdfText(buffer: Buffer) {
     fullText += '\n\n';
   }
   return fullText;
+}
+
+/**
+ * Count how many times an image of the given pixel size is drawn in the PDF, across all pages.
+ * @param buffer The PDF content.
+ * @param width The width of the image in pixels.
+ * @param height The height of the image in pixels.
+ */
+export async function countImagesOfSize(
+  buffer: Buffer,
+  width: number,
+  height: number
+): Promise<number> {
+  const doc = await getDocument({ data: new Uint8Array(buffer) }).promise;
+  let count = 0;
+  for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
+    const page = await doc.getPage(pageNum);
+    const { fnArray, argsArray } = await page.getOperatorList();
+    count += fnArray.filter(
+      (fn, index) =>
+        fn === OPS.paintImageXObject &&
+        argsArray[index][1] === width &&
+        argsArray[index][2] === height
+    ).length;
+  }
+  return count;
 }
 
 /**
