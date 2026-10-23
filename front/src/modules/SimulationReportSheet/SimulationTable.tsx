@@ -120,7 +120,11 @@ const SimulationTable = ({
                   <View style={styles.simulation.passageStopContainer}>
                     {row.isBackTrack && (
                       <View style={styles.simulation.backtrackIconContainer}>
-                        <Image src={iconTurnaround} style={styles.simulation.backtrackIcon} />
+                        <Image
+                          id={`backtrack-${row.name}`}
+                          src={iconTurnaround}
+                          style={styles.simulation.backtrackIcon}
+                        />
                       </View>
                     )}
                     <TD style={row.stylesByColumn.passageStop}>{String(row.passageStop)}</TD>

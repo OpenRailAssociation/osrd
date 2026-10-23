@@ -51,6 +51,16 @@ export async function parsePdfText(buffer: Buffer) {
 }
 
 /**
+ * Check whether the PDF contains a named destination, i.e. a react-pdf element rendered with this `id`.
+ * @param buffer The PDF content.
+ * @param name The name of the destination.
+ */
+export async function hasNamedDestination(buffer: Buffer, name: string): Promise<boolean> {
+  const doc = await getDocument({ data: new Uint8Array(buffer) }).promise;
+  return (await doc.getDestination(name)) !== null;
+}
+
+/**
  * Verify the PDF content against the expected simulation.
  * @param pdfText The text extracted from the PDF.
  * @param expectedSimulation The expected simulation data.
