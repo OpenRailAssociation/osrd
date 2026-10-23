@@ -946,7 +946,14 @@ pub(in crate::views) async fn update_grants(
 
             match prot.authorize(&authorizer).await?.access().await? {
                 Ok(_) => Ok(StatusCode::CREATED),
-                Err(_) => Err(AuthorizationError::Forbidden.into()),
+                Err(check) => match check {
+                    Check::IsNotLastInfraOwner(_, _)
+                    | Check::IsNotLastRollingStockOwner(_, _)
+                    | Check::IsNotLastProjectOwner(_, _) => {
+                        Err(AuthorizationError::ForbiddenRevokeLastOwner.into())
+                    }
+                    _ => Err(AuthorizationError::Forbidden.into()),
+                },
             }
         }
         BodyUpdateGrants::Revoke(revokes) => {
@@ -957,6 +964,11 @@ pub(in crate::views) async fn update_grants(
 
             match prot.authorize(&authorizer).await?.access().await? {
                 Ok(_) => Ok(StatusCode::NO_CONTENT),
+                Err(
+                    Check::IsNotLastInfraOwner(_, _)
+                    | Check::IsNotLastRollingStockOwner(_, _)
+                    | Check::IsNotLastProjectOwner(_, _),
+                ) => Err(AuthorizationError::ForbiddenRevokeLastOwner.into()),
                 Err(_) => Err(AuthorizationError::Forbidden.into()),
             }
         }

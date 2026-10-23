@@ -32,6 +32,7 @@
       "DbError": "Database access fatal error",
       "Forbidden": "Access denied",
       "ForbiddenImpersonation": "Impersonation denied",
+      "ForbiddenRevokeLastOwner": "Cannot revoke last owner",
       "ImpersonatedUserNotFound": "Unknown impersonated user",
       "OpenFga": "Authentication/authorization internal error, try again or contact support",
       "Unauthenticated": "Unauthenticated user"

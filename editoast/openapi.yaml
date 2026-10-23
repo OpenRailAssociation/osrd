@@ -7281,6 +7281,26 @@ components:
           type: string
           enum:
           - editoast:authorization:ForbiddenImpersonation
+    EditoastAuthorizationErrorForbiddenRevokeLastOwner:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastAuthorizationErrorForbiddenRevokeLastOwnerContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 403
+        type:
+          type: string
+          enum:
+          - editoast:authorization:ForbiddenRevokeLastOwner
     EditoastAuthorizationErrorImpersonatedUserNotFound:
       type: object
       required:
@@ -7881,6 +7901,7 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorDbError'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbidden'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorForbiddenImpersonation'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorForbiddenRevokeLastOwner'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorImpersonatedUserNotFound'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorOpenFga'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
