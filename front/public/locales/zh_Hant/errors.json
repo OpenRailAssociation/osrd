@@ -31,6 +31,9 @@
     "document": {
       "not_found": "找不到文件 '{{document_key}}'"
     },
+    "infra": {
+      "NotFound": "未找到設施'{{infra_id}}'"
+    },
     "project": {
       "NotFound": "找不到專案 '{{project_id}}'"
     },
