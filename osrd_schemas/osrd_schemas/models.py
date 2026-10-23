@@ -12,6 +12,9 @@ from typing_extensions import TypeAliasType
 
 from .overrides import OffsetInMs
 
+# Activer globalement la validation stricte de Pydantic v2
+BaseModel.model_config["strict"] = True
+
 
 class PowerRestrictionItem(BaseModel):
     model_config = ConfigDict(

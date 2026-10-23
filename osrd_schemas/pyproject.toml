@@ -28,3 +28,5 @@ exclude = ["**/__pycache__"]
 # This is valid Python (PEP 3107) and understood by Pydantic at runtime, but not PEP 484 compliant
 # (constr() is a function call, not a static type expression). Pyright correctly rejects it.
 reportInvalidTypeForm = "none"
+[tool.datamodel-code-generator]
+strict-types = ["str", "bytes", "int", "float", "bool"]
