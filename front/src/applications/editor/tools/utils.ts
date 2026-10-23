@@ -3,7 +3,7 @@ import { featureCollection, type Units } from '@turf/helpers';
 import length from '@turf/length';
 import type { NearestPoint } from '@turf/nearest-point';
 import type { Feature, LineString, Point } from 'geojson';
-import { uniq } from 'lodash';
+import { isEmpty, uniq } from 'lodash';
 import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 import type { Dispatch } from 'redux';
@@ -33,6 +33,7 @@ import { type EditorState, editorSliceActions } from 'reducers/editor';
 import type { AppDispatch } from 'store';
 import type { Bbox } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
+import { getNearestPoint } from 'utils/mapHelper';
 
 import { getLayerSettingNameFromEditorLayer } from '../utils';
 
@@ -116,6 +117,37 @@ export function getTrackSectionEntityFromNearestPoint(
   if (trackState?.type !== 'success') return null;
   const { track } = trackState;
   return track;
+}
+
+/**
+ * Given a mouse event and a trackSectionsCache, return the position under the mouse, as the id of
+ * the nearest cached track section and the distance from its beginning.
+ * - retrieve the trackRanges around the mouse
+ * - retrieve the nearest point of the mouse (and the trackRange it belongs to)
+ * - compute the distance between the beginning of the track and the nearest point (with approximation because of Editoast data)
+ */
+export function getTrackPositionFromEvent(
+  e: MapLayerMouseEvent,
+  trackSectionsCache: Record<string, TrackState>
+) {
+  const hoveredTrackRanges = getHoveredTrackRanges(e);
+  if (isEmpty(hoveredTrackRanges)) {
+    return null;
+  }
+  const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
+  const trackSection = getTrackSectionEntityFromNearestPoint(
+    nearestPoint,
+    hoveredTrackRanges,
+    trackSectionsCache
+  );
+  if (!trackSection) {
+    return null;
+  }
+  const distanceAlongTrack = approximatePointDistanceForEditoast(
+    trackSection,
+    nearestPoint.geometry
+  );
+  return { track: trackSection.properties.id, position: distanceAlongTrack };
 }
 
 function getNeededLayers(entities: EditorEntity[]) {
