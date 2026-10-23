@@ -5,6 +5,7 @@ use database::DbConnection;
 use models::CatalogEntry;
 use models::ElectricalProfileSet;
 use models::SubCategory;
+use models::TimetableInheritance;
 use models::WorkSchedule;
 use models::WorkScheduleGroup;
 use models::prelude::*;
@@ -14,7 +15,6 @@ use models::scenario::Scenario;
 use models::study::Study;
 use models::tags::Tags;
 use models::timetable::Timetable;
-use models::timetable_train_schedule_set::TimetableTrainScheduleSet;
 use models::towed_rolling_stock::TowedRollingStock;
 use models::train_schedule_exception::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
@@ -51,7 +51,9 @@ pub async fn create_timetable_with_train_schedule_set(
 ) -> (Timetable, TrainScheduleSetWithTimetable) {
     let timetable = create_timetable(conn).await;
     let train_schedule_set = create_train_schedule_set(conn).await;
-    let _ = link_train_schedule_set_to_timetable(conn, train_schedule_set.id, timetable.id).await;
+    let _ =
+        link_train_schedule_set_to_timetable(conn, train_schedule_set.timetable_id, timetable.id)
+            .await;
     (timetable, train_schedule_set)
 }
 
@@ -62,7 +64,9 @@ pub async fn create_hourly_timetable_with_train_schedule_set(
     // The train schedule set type must match the timetable type (DB constraint).
     let timetable = create_hourly_timetable(conn).await;
     let train_schedule_set = create_hourly_train_schedule_set(conn).await;
-    let _ = link_train_schedule_set_to_timetable(conn, train_schedule_set.id, timetable.id).await;
+    let _ =
+        link_train_schedule_set_to_timetable(conn, train_schedule_set.timetable_id, timetable.id)
+            .await;
     (timetable, train_schedule_set)
 }
 
@@ -127,12 +131,12 @@ pub async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
 
 async fn link_train_schedule_set_to_timetable(
     conn: &mut DbConnection,
-    train_schedule_set_id: i64,
+    train_schedule_set_timetable_id: i64,
     timetable_id: i64,
-) -> TimetableTrainScheduleSet {
-    TimetableTrainScheduleSet::changeset()
-        .train_schedule_set_id(train_schedule_set_id)
-        .timetable_id(timetable_id)
+) -> TimetableInheritance {
+    TimetableInheritance::changeset()
+        .outer_timetable_id(timetable_id)
+        .inner_timetable_id(train_schedule_set_timetable_id)
         .create(conn)
         .await
         .expect("Failed to link train schedule set to timetable")
