@@ -198,14 +198,27 @@
     "scenarioDescription": "Description",
     "scenarioDescriptionInvalid": "La description pour le scénario ne doit pas dépasser 1024 caractères",
     "scenarioDescriptionPlaceholder": "Courte description du scénario",
+    "scenarioElectricalProfile": "Profil électrique",
     "scenarioInfraInvalid": "Infrastructure requise",
     "scenarioInfrastructureLabel": "Infrastructure",
     "scenarioModificationTitle": "Modifier le scénario",
     "scenarioName": "Nom du scénario",
     "scenarioNameInvalid": "Vous devez renseigner un nom pour le scénario qui ne dépasse pas 128 caractères",
+    "scenarioNoDescription": "Pas de description",
+    "scenarioNoTags": "Pas d'étiquette",
     "scenarioTags": "Étiquettes",
-    "scenarioTimetableTypeCalendar": "Calendrier",
-    "scenarioTimetableTypeHourly": "Trame",
+    "scenarioTimetableSections": {
+      "CALENDAR": {
+        "empty": "Pas de grille calendaire",
+        "title": "Grilles calendaires"
+      },
+      "HOURLY": {
+        "empty": "Pas de trame 2h",
+        "title": "Trames 2h"
+      }
+    },
+    "scenarioTimetableTypeCalendar": "Grille calendaire",
+    "scenarioTimetableTypeHourly": "Trame 2h",
     "scenarioUpdated": "Mise à jour réussie !",
     "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
     "timetable": {
