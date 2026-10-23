@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Select } from '@osrd-project/ui-core';
-import { Check, Alert } from '@osrd-project/ui-icons';
+import { Check } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -78,7 +78,7 @@ const GrantsManagerSubject = ({
       </span>
       <span className="subject-grant">
         {status.type === 'loading' && <ThreeDots />}
-        {status.type === 'error' && <Alert className="text-danger" />}
+        {status.type === 'error' && <span className="text-danger">{status.message}</span>}
         {status.type === 'success' && <Check className="text-success" />}
         <Select
           id={`${subject.id}-${subject.name}`}
@@ -86,7 +86,6 @@ const GrantsManagerSubject = ({
           getOptionLabel={(option) => option.label}
           getOptionValue={(option) => option.value || ''}
           onChange={(option) => updateUserGrant(option?.value)}
-          disabled={subject.id === userId && selectProps.value?.value === 'OWNER'}
           narrow
           {...selectProps}
         />

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext } from 'react';
 
 import { Lock, Search } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -13,7 +13,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
 import useFitViewportToInfra from 'modules/infra/useFitViewportToInfra';
 import { useAppDispatch } from 'store';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
+import { getAsyncMemoData, useRefreshableAsyncMemo } from 'utils/useAsyncMemo';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;
@@ -50,16 +50,15 @@ const InfraSelectorModalBodyStandard = ({
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
   const navigate = useNavigate();
-  const { userId, getUserPrivileges } = useAuthz();
-  const [redraw, setRedraw] = useState(0);
+  const { getUserPrivileges } = useAuthz();
   const fitViewportToInfra = useFitViewportToInfra();
 
   // Get the user privileges for infras
-  const userPrivilegesByInfraId = useAsyncMemo(async () => {
-    const data = await getUserPrivileges({ infra: infraIdsList });
-    return data.infra || {};
-    // redraw is in the deps to force the reload of the privileges when the user changes his own grant
-  }, [getUserPrivileges, infraIdsList, redraw]);
+  const { refresh: userPrivilegesRefresh, data: userPrivilegesByInfraId } =
+    useRefreshableAsyncMemo(async () => {
+      const data = await getUserPrivileges({ infra: infraIdsList });
+      return data.infra || {};
+    }, [getUserPrivileges, infraIdsList]);
 
   const changeInfrastructure = useCallback(
     async (id: number) => {
@@ -102,7 +101,7 @@ const InfraSelectorModalBodyStandard = ({
       <div className="infraslist" data-testid="infra-list">
         {infrasList.map((infra) => (
           <div
-            key={`${JSON.stringify(infra)}-${redraw}`}
+            key={`${infra.id}`}
             className={cx('infraslist-item-choice', {
               locked: infra.locked,
               unlocked: !infra.locked,
@@ -133,16 +132,8 @@ const InfraSelectorModalBodyStandard = ({
               <GrantsManager
                 resourceId={infra.id}
                 resourceType="infra"
-                userPrivileges={
-                  userPrivilegesByInfraId.type === 'ready'
-                    ? userPrivilegesByInfraId.data[infra.id]
-                    : undefined
-                }
-                onChangeSuccess={(subjectId) => {
-                  // In case the current user has changed his own grant, we need to redraw the list
-                  // to update the grant display on each infra
-                  if (subjectId === userId) setRedraw((prev) => prev + 1);
-                }}
+                userPrivileges={getAsyncMemoData(userPrivilegesByInfraId)?.[infra.id]}
+                onChangeSuccess={userPrivilegesRefresh}
               />
             </div>
             <div className="infraslist-item-choice-footer">

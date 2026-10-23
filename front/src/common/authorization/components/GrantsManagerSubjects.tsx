@@ -58,8 +58,8 @@ const GrantsManagerSubjects = ({
         {displayUserSearchSection && (
           <GrantManagerAddSubjectForm
             grants={generateSelectProps().options}
-            onSubmit={async (user, grant) => {
-              await updateGrant(resourceType, resourceId, user.id, grant);
+            onSubmit={async (subject, grant) => {
+              await updateGrant(resourceType, resourceId, subject.id, grant);
               setDisplayUserSearchSection(false);
               // update the list of subjects
               await refetch();
@@ -69,9 +69,9 @@ const GrantsManagerSubjects = ({
       </div>
 
       <div className="subject-list">
-        {subjects?.map(({ grant, ...subject }) => (
+        {subjects.map(({ grant, ...subject }) => (
           <GrantsManagerSubject
-            key={`${subject.id}-${grant}`}
+            key={subject.id}
             subject={subject}
             subjectGrant={grant}
             userId={userId}

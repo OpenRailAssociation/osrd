@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ComboBox, Select } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import { ThreeDots } from 'common/Loaders';
 import type { AsyncStatus } from 'common/types';
 import type { Subject } from 'common/useSearchSubjects';
 import useSearchSubjects from 'common/useSearchSubjects';
+import { getErrorMessage } from 'utils/error';
 
 import type { Grant } from '../types';
 import { GrantSubjectItem } from './GrantSubjectItem';
@@ -26,7 +27,7 @@ const GrantManagerAddSubjectForm = ({
 }: GrantManagerAddSubjectFormProps) => {
   const { t } = useTranslation();
   const [addSubjectForm, setAddSubjectForm] = useState<Partial<AddSubjectForm>>({
-    grant: 'READER',
+    grant: grantOptions.length ? grantOptions[0].value : 'READER',
   });
   const { searchedSubjects, setSearchTerm, resetSearch } = useSearchSubjects();
   const [addUserStatus, setAddUserStatus] = useState<AsyncStatus>({
@@ -46,10 +47,23 @@ const GrantManagerAddSubjectForm = ({
         setAddUserStatus({ type: 'success' });
       } catch (e) {
         console.error(e);
-        setAddUserStatus({ type: 'error' });
+        setAddUserStatus({ type: 'error', message: getErrorMessage(e) });
       }
     }
   }, [addSubjectForm, isAddUserFormValid, onSubmit, resetSearch]);
+
+  useEffect(() => {
+    // In case of an error, we display the error message for 5s
+    let timer: undefined | ReturnType<typeof setTimeout>;
+    if (addUserStatus.type === 'error') {
+      timer = setTimeout(() => {
+        setAddUserStatus({ type: 'idle' });
+      }, 5000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [addUserStatus]);
 
   return (
     <form
@@ -94,6 +108,7 @@ const GrantManagerAddSubjectForm = ({
         </span>
       </div>
       <div className="subject-search-actions">
+        {addUserStatus.type === 'error' && <span className="error">{addUserStatus.message}</span>}
         <button
           type="submit"
           className="subject-search-add-button"

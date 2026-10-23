@@ -31,7 +31,7 @@ import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectMo
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { useProjectImage } from 'utils/hooks/useProjectImage';
 import { budgetFormat } from 'utils/numbers';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
+import { getAsyncMemoData, useRefreshableAsyncMemo } from 'utils/useAsyncMemo';
 
 import StudyCard from './StudyCard';
 
@@ -76,10 +76,11 @@ const ProjectView = () => {
 
   const { getUserPrivileges } = useAuthz();
   // Get the user privileges for the project
-  const userPrivileges = useAsyncMemo(async () => {
-    const data = await getUserPrivileges({ project: [projectId!] });
-    return data.project || {};
-  }, [getUserPrivileges, projectId]);
+  const { refresh: userPrivilegesrefresh, data: userPrivileges } =
+    useRefreshableAsyncMemo(async () => {
+      const data = await getUserPrivileges({ project: [projectId!] });
+      return data.project || {};
+    }, [getUserPrivileges, projectId]);
 
   const imageUrl = useProjectImage(project?.image);
 
@@ -246,13 +247,11 @@ const ProjectView = () => {
                   <div className="project-details-title-img">
                     <img src={imageUrl} alt={t('project.projectImage')} />
                   </div>
-                  {/* TODO: adapt with the good resourceType when back is ready */}
                   <GrantsManager
                     resourceId={project.id}
                     resourceType="project"
-                    userPrivileges={
-                      userPrivileges.type === 'ready' ? userPrivileges.data[project.id] : undefined
-                    }
+                    userPrivileges={getAsyncMemoData(userPrivileges)?.[project.id]}
+                    onChangeSuccess={userPrivilegesrefresh}
                   />
                 </div>
                 <div className={'pl-md-2 col-lg-8 col-md-8'}>

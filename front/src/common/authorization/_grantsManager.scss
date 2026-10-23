@@ -32,6 +32,9 @@
   }
 
   .subject-item {
+    display: flex;
+    align-items: center;
+
     &-icon {
       margin-right: 8px;
     }
@@ -78,6 +81,11 @@
       &-actions {
         display: flex;
         justify-content: end;
+        gap: 8px;
+
+        .error {
+          color: var(--error60);
+        }
       }
 
       &-add-button {
@@ -100,7 +108,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 47px;
+      min-height: 47px;
       margin-inline: 8px;
       padding-inline: 7px 4px;
 
@@ -112,12 +120,13 @@
     &-grant {
       display: flex;
       align-items: center;
+      max-width: 40%;
 
       * > .ui-select,
       * > .ui-select:focus {
         background-color: var(--white100);
         margin: 0 0 0 8px;
-        width: 136px;
+        max-width: 136px;
         height: 32px;
       }
     }
