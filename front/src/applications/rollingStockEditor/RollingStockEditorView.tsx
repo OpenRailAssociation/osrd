@@ -21,7 +21,7 @@ import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingSt
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { useAsyncMemo } from 'utils/useAsyncMemo';
+import { getAsyncMemoData, useRefreshableAsyncMemo } from 'utils/useAsyncMemo';
 
 import {
   RollingStockEditorForm,
@@ -63,19 +63,21 @@ const RollingStockEditor = () => {
   } = useFilterRollingStock();
 
   const { getUserPrivileges } = useAuthz();
-  const selectedRollingStockPrivilegesState = useAsyncMemo(async () => {
-    if (selectedRollingStockId === undefined) return undefined;
-    const data = await getUserPrivileges({ rolling_stock: [selectedRollingStockId] });
-    return { id: selectedRollingStockId, privileges: data.rolling_stock?.[selectedRollingStockId] };
-  }, [getUserPrivileges, selectedRollingStockId]);
+
+  const { refresh: userPrivilegesrefresh, data: selectedRollingStockPrivilegesState } =
+    useRefreshableAsyncMemo(async () => {
+      if (selectedRollingStockId === undefined) return undefined;
+      const data = await getUserPrivileges({ rolling_stock: [selectedRollingStockId] });
+      return {
+        id: selectedRollingStockId,
+        privileges: data.rolling_stock?.[selectedRollingStockId],
+      };
+    }, [getUserPrivileges, selectedRollingStockId]);
 
   // Guard against the id/privileges pair from a previous selection still being 'ready'
   // in the render right after selectedRollingStockId changes (state resets in an effect,
   // which runs after that render), which would apply another rolling stock's privileges.
-  const readyPrivileges =
-    selectedRollingStockPrivilegesState.type === 'ready'
-      ? selectedRollingStockPrivilegesState.data
-      : undefined;
+  const readyPrivileges = getAsyncMemoData(selectedRollingStockPrivilegesState);
   const selectedRollingStockPrivileges =
     readyPrivileges !== undefined && readyPrivileges.id === selectedRollingStockId
       ? readyPrivileges.privileges
@@ -272,6 +274,7 @@ const RollingStockEditor = () => {
                     resourceId={selectedRollingStock.id}
                     resourceType="rolling_stock"
                     userPrivileges={selectedRollingStockPrivileges}
+                    onChangeSuccess={userPrivilegesrefresh}
                   />
                 </div>
               )}

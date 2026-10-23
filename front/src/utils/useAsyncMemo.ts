@@ -1,4 +1,4 @@
-import { type DependencyList, useEffect, useState } from 'react';
+import { type DependencyList, useCallback, useEffect, useState } from 'react';
 
 export type AsyncMemoState<T> =
   | { type: 'loading'; previousData?: T }
@@ -40,4 +40,37 @@ export function useAsyncMemo<T>(fn: () => Promise<T>, deps: DependencyList): Asy
   }, deps);
 
   return state;
+}
+
+/**
+ * This hook helps to manipulate asynchronous memoized values, without having to rewrite every time the same boilerplate
+ * code to handle loading state and errors.
+ * Unlike to `useAsyncMemo`, this hook also provides a refresh function to manually re-execute the asynchronous function.
+ */
+export function useRefreshableAsyncMemo<T>(
+  fn: () => Promise<T>,
+  deps: DependencyList
+): { refresh: () => void; data: AsyncMemoState<T> } {
+  const [state, setState] = useState<AsyncMemoState<T>>({ type: 'loading' });
+
+  const refresh = useCallback(
+    async () => {
+      try {
+        setState({ type: 'loading', previousData: getAsyncMemoData(state) });
+        const data = await fn();
+        setState({ type: 'ready', data });
+      } catch (e) {
+        setState({ type: 'error', error: e as Error });
+      }
+    },
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    deps
+  );
+
+  useEffect(() => {
+    refresh();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, deps);
+
+  return { data: state, refresh };
 }

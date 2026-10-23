@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { sortBy } from 'lodash';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import type { ResourceType, SubjectWithGrant } from '../types';
@@ -29,7 +31,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
         resourceId: id,
         directGrant: true,
       }).unwrap();
-      setSubjects(response);
+      setSubjects(sortBy(response, ['type', 'name']));
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -49,10 +51,5 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
     /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [resourceType, id, fetchPage]);
 
-  const refetch = useCallback(async () => {
-    setSubjects([]);
-    await fetchPage();
-  }, [fetchPage]);
-
-  return { loading, error, subjects, refetch };
+  return { loading, error, subjects, refetch: fetchPage };
 }

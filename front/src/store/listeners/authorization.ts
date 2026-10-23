@@ -24,6 +24,7 @@ type RTKQueryRejectedAction = PayloadAction<
 const ENDPOINTS_SKIP_403_REDIRECT = new Set<EditoastEndpointName>([
   'getRollingStockNameByRollingStockName',
   'getTrainSchedulesByIdPath',
+  'postAuthzGrants',
 ]);
 
 export default function add403HttpErrorListener(startListening: AppStartListening) {
