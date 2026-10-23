@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { uniqueTrainHonored } from 'applications/operationalStudies/__tests__/sampleData';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import type { RoundTrips } from 'common/api/osrdEditoastApi';
+import { Duration } from 'utils/duration';
 
 import { buildTimetableExportPayload } from '../../../Timetable/utils';
 import { processJsonFile } from '../parseJson';
@@ -13,6 +14,11 @@ const tMock = vi.fn().mockImplementation(() => 'translated') as unknown as TFunc
   'operational-studies',
   'importTrains'
 >;
+
+const target = {
+  timetableType: 'CALENDAR' as const,
+  hourlyTimetableDuration: new Duration({ hours: 2 }),
+};
 
 const buildTrainSchedule = (overrides: Record<string, unknown> = {}) => ({
   ...uniqueTrainHonored,
@@ -39,7 +45,8 @@ describe('processJsonFile', () => {
       const importPayload = processJsonFile(
         JSON.stringify(exportPayload),
         'application/json',
-        tMock
+        tMock,
+        target
       );
       expect(importPayload).toEqual(
         expect.objectContaining({
@@ -57,7 +64,12 @@ describe('processJsonFile', () => {
     it('should not set a timetable type when it is missing', () => {
       const payload: TimetableJsonPayload = { train_schedules: [train0] };
 
-      const rawPayload = processJsonFile(JSON.stringify(payload), 'application/json', tMock);
+      const rawPayload = processJsonFile(
+        JSON.stringify(payload),
+        'application/json',
+        tMock,
+        target
+      );
 
       expect(rawPayload).not.toHaveProperty('timetable_type');
     });
@@ -65,7 +77,9 @@ describe('processJsonFile', () => {
     it('should throw when the timetable type is invalid', () => {
       const payload = { timetable_type: 'WEEKLY', train_schedules: [train0] };
 
-      expect(() => processJsonFile(JSON.stringify(payload), 'application/json', tMock)).toThrow();
+      expect(() =>
+        processJsonFile(JSON.stringify(payload), 'application/json', tMock, target)
+      ).toThrow();
     });
   });
 
@@ -76,7 +90,12 @@ describe('processJsonFile', () => {
         round_trips: [[0, null]],
       };
 
-      const rawPayload = processJsonFile(JSON.stringify(payload), 'application/json', tMock);
+      const rawPayload = processJsonFile(
+        JSON.stringify(payload),
+        'application/json',
+        tMock,
+        target
+      );
 
       expect(rawPayload).toEqual(
         expect.objectContaining({
@@ -90,7 +109,12 @@ describe('processJsonFile', () => {
         round_trips: [[0, 1]],
       };
 
-      const rawPayload = processJsonFile(JSON.stringify(payload), 'application/json', tMock);
+      const rawPayload = processJsonFile(
+        JSON.stringify(payload),
+        'application/json',
+        tMock,
+        target
+      );
 
       expect(rawPayload).toEqual(
         expect.objectContaining({
@@ -105,7 +129,7 @@ describe('processJsonFile', () => {
         round_trips: 'invalid',
       };
       expect(() =>
-        processJsonFile(JSON.stringify(invalidPayload), 'application/json', tMock)
+        processJsonFile(JSON.stringify(invalidPayload), 'application/json', tMock, target)
       ).toThrow();
     });
     it('should handle invalid json', () => {
@@ -117,7 +141,7 @@ describe('processJsonFile', () => {
       };
 
       expect(() =>
-        processJsonFile(JSON.stringify(invalidPayload), 'application/json', tMock)
+        processJsonFile(JSON.stringify(invalidPayload), 'application/json', tMock, target)
       ).toThrow();
     });
   });

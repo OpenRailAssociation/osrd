@@ -21,9 +21,54 @@ describe('convertNgeDtoToOsrd', () => {
   test.each(FIXTURES)('ngeToOsrd-inputDto-$0', async (name) => {
     const dto = (await readJsonFile(`./ngeToOsrd-inputDto-${name}.json`)) as NetzgrafikDto;
     const expected = await readJsonFile(`./ngeToOsrd-output-${name}.json`);
-    const result = convertNgeDtoToOsrd(dto);
+    const result = convertNgeDtoToOsrd(dto, {
+      timetableType: 'CALENDAR',
+      hourlyTimetableDuration: new Duration({ hours: 2 }),
+    });
     // Go through JSON encoding to discard undefined fields
     expect(JSON.parse(JSON.stringify(result))).toEqual(expected);
+  });
+
+  describe('hourly timetable', () => {
+    const hourlyTimetableDuration = new Duration({ hours: 6 });
+
+    test('should produce relative start times under the interval and services lasting the lcm of the timetable duration and their interval', async () => {
+      const dto = (await readJsonFile('./ngeToOsrd-inputDto-roundTrip.json')) as NetzgrafikDto;
+
+      const result = convertNgeDtoToOsrd(dto, { timetableType: 'HOURLY', hourlyTimetableDuration });
+
+      expect(result.timetable_type).toBe('HOURLY');
+      expect(
+        result.train_schedules.map(({ start_time, paced }) => ({ start_time, paced }))
+      ).toEqual([
+        {
+          start_time: Duration.zero.ms,
+          paced: { interval: 'PT1H', time_window: 'PT6H', exceptions: [] },
+        },
+        {
+          start_time: new Duration({ minutes: 56 }).ms,
+          paced: { interval: 'PT1H', time_window: 'PT6H', exceptions: [] },
+        },
+      ]);
+      expect(result.round_trips).toEqual([[0, 1]]);
+    });
+
+    test('should convert unique trains to paced trains spanning the hourly timetable duration', async () => {
+      const dto = (await readJsonFile(
+        './ngeToOsrd-inputDto-duplicateShortNames.json'
+      )) as NetzgrafikDto;
+
+      const result = convertNgeDtoToOsrd(dto, { timetableType: 'HOURLY', hourlyTimetableDuration });
+
+      expect(
+        result.train_schedules.map(({ start_time, paced }) => ({ start_time, paced }))
+      ).toEqual([
+        {
+          start_time: Duration.zero.ms,
+          paced: { interval: 'PT6H', time_window: 'PT6H', exceptions: [] },
+        },
+      ]);
+    });
   });
 });
 

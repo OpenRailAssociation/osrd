@@ -38,6 +38,7 @@ import {
   type OperationalPointReferenceNode,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { isPacedTrain } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
@@ -385,6 +386,8 @@ export const loadAndIndexNge = async (
       state.trainrunLabels.add(l);
     });
   });
+
+  state.hourlyTimetableDuration = computeHourlyTimetableDuration(trainSchedules);
 
   // Initialize TrainrunFrequencies
   state.trainrunFrequencies = getNgeTrainrunFrequencies(trainSchedules, state.timetableType, t);

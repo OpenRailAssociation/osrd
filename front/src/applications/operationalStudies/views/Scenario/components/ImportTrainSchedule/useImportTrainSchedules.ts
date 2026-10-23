@@ -7,6 +7,7 @@ import { useTimetableContext } from 'applications/operationalStudies/hooks/useTi
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
+import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
@@ -50,7 +51,10 @@ const useImportTrainSchedules = () => {
 
   const processFile = async (file: File): Promise<TimetableJsonPayload> => {
     const fileContent = await file.text();
-    const jsonPayload = processJsonFile(fileContent, file.type, t);
+    const jsonPayload = processJsonFile(fileContent, file.type, t, {
+      timetableType: scenario.timetable_type,
+      hourlyTimetableDuration: computeHourlyTimetableDuration([...trainSchedules.values()]),
+    });
     if (jsonPayload !== null) return jsonPayload;
     return await processXmlFile(file, fileContent);
   };

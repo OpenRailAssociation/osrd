@@ -15,6 +15,7 @@ import {
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import { computeDefaultHourlyPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createTrainSchedules,
@@ -392,10 +393,25 @@ const populateSecondaryCodesInPath = async (
   await Promise.all(promises);
 };
 
+/**
+ * Default duration (`time_window`) of a service created from NGE: a full day in a calendar
+ * timetable, and the LCM of the timetable duration and the service interval in an hourly one.
+ */
+export const getDefaultTrainrunTimeWindow = (
+  {
+    timetableType,
+    hourlyTimetableDuration,
+  }: Pick<MacroEditorState, 'timetableType' | 'hourlyTimetableDuration'>,
+  interval: Duration
+): Duration =>
+  timetableType === 'HOURLY'
+    ? computeDefaultHourlyPacedTrainTimeWindow(hourlyTimetableDuration, interval)
+    : getDefaultPacedTrainTimeWindow(timetableType);
+
 export const createPacedAttributesFromTrainrun = (
   trainrun: TrainrunDto,
   dto: NetzgrafikDto,
-  defaultTimeWindow: Duration
+  getDefaultTimeWindow: (interval: Duration) => Duration
 ): TrainSchedule['paced'] => {
   const freq = getFrequencyFromFrequencyId(dto.metadata.trainrunFrequencies, trainrun.frequencyId);
   const interval = new Duration({ minutes: freq.frequency });
@@ -405,7 +421,7 @@ export const createPacedAttributesFromTrainrun = (
   }
   return {
     interval: interval.toISOString(),
-    time_window: defaultTimeWindow.toISOString(),
+    time_window: getDefaultTimeWindow(interval).toISOString(),
     exceptions: [],
   };
 };
@@ -429,10 +445,8 @@ const handleCreateTrainSchedule = async (
 
   const baseStartTime = defaultBaseStartTime(state.timetableType);
 
-  const paced = createPacedAttributesFromTrainrun(
-    trainrun,
-    netzgrafikDto,
-    getDefaultPacedTrainTimeWindow(state.timetableType)
+  const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto, (interval) =>
+    getDefaultTrainrunTimeWindow(state, interval)
   );
 
   const pathAndSchedule = generatePathAndSchedule(
@@ -568,10 +582,8 @@ export const handleUpdateTrainSchedule = async ({
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
   const baseStartTime = parseStartTime(oldForwardTrainSchedule.start_time, state.timetableType);
-  const paced = createPacedAttributesFromTrainrun(
-    trainrun,
-    netzgrafikDto,
-    getDefaultPacedTrainTimeWindow(state.timetableType)
+  const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto, (interval) =>
+    getDefaultTrainrunTimeWindow(state, interval)
   );
   const forwardPathAndSchedule = generatePathAndSchedule(
     trainrunSections,

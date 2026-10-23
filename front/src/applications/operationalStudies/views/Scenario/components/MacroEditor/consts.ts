@@ -10,7 +10,6 @@ import {
 } from '@osrd-project/netzgrafik-frontend';
 
 import type { TrainMainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
-import { Duration } from 'utils/duration';
 
 export enum TRAINRUN_DIRECTIONS {
   FORWARD = 'forward',
@@ -163,8 +162,6 @@ export const DEFAULT_TRAIN_SCHEDULE_PAYLOAD: Pick<
   constraint_distribution: 'STANDARD',
   rolling_stock_name: '',
 };
-
-export const DEFAULT_TIME_WINDOW = new Duration({ hours: 2 });
 
 export const TRAIN_MAIN_CATEGORY_TO_NGE: {
   trainCategory: TrainMainCategory | 'NO_CATEGORY';

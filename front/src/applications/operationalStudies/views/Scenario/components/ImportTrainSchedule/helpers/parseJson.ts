@@ -9,6 +9,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
 import { type TimetableType, type TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { Duration } from 'utils/duration';
 
 const TIMETABLE_TYPES: TimetableType[] = ['CALENDAR', 'HOURLY'];
 
@@ -134,13 +135,15 @@ const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
  *   - Otherwise return null (not a json file, needs to be parsed as something else)
  *
  * If the file can be parsed as json:
+ *   - If the content is an NGE dto, convert it directly for the target timetable
  *   - If the content can be parsed to a TimetableJsonPayload containing trains, return the parsed payload!
  *   - Otherwise throw
  */
 export const processJsonFile = (
   fileContent: string,
   fileExtension: string,
-  t: TFunction<'operational-studies', 'importTrains'>
+  t: TFunction<'operational-studies', 'importTrains'>,
+  target: { timetableType: TimetableType; hourlyTimetableDuration: Duration }
 ): TimetableJsonPayload | null => {
   const isJsonFile = fileExtension === 'application/json';
 
@@ -158,7 +161,7 @@ export const processJsonFile = (
 
   // try to parse the content as nge
   if (validateNgeDto(rawContent)) {
-    return convertNgeDtoToOsrd(rawContent);
+    return convertNgeDtoToOsrd(rawContent, target);
   }
 
   // try to parse the content directly as a TimetableJsonPayload
