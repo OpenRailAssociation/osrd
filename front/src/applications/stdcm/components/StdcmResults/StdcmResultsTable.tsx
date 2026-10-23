@@ -90,12 +90,12 @@ const StdcmResultsTable = ({
             <td className={cx('index', { 'muted-text': !isPathStep })}>
               {index + 1}
               {step.isBackTrack && (
-                <div className="backtrack-icon">
+                <div className="backtrack-icon" data-testid="backtrack-icon">
                   <Turnaround className="backtrack-svg" />
                 </div>
               )}
             </td>
-            <td className="name">
+            <td className="name" data-testid="operational-point-name">
               {isNotExtremity &&
               !isRequestedPathStep &&
               step.name === prevStep.name &&
@@ -103,7 +103,9 @@ const StdcmResultsTable = ({
                 ? '='
                 : step.name || t('reportSheet.unknown')}
               {step.isBackTrack && (
-                <div className="backtrack-label">{t('simulation.results.backtrack')}</div>
+                <div className="backtrack-label" data-testid="backtrack-label">
+                  {t('simulation.results.backtrack')}
+                </div>
               )}
             </td>
             <td className={cx('ch', { 'muted-text': !isPathStep })}>{step.secondaryCodeLabel}</td>

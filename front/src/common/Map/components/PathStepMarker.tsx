@@ -106,7 +106,7 @@ const PathStepMarker = ({
         {name && (
           <div className="label">
             {isBackTrack && (
-              <span className="backtrack-icon">
+              <span className="backtrack-icon" data-testid="backtrack-icon">
                 <Turnaround />
               </span>
             )}
