@@ -111,8 +111,33 @@ paths:
                 $ref: '#/components/schemas/SendLastMinuteRequestResponse'
         '403':
           description: User is not authorized to send last minute requests.
+  /send_last_minute_request/statuses:
+    post:
+      tags:
+        - lmr
+      summary: Get the current statuses for the given requests sent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: The ids of the requests we want to get the status of
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/RequestStatusItem"
+                description: Mapping from request id to status, url and metadata
 components:
   schemas:
+    OperationalPointReference:
+      $ref: "../editoast/openapi.yaml#/components/schemas/OperationalPointReference"
     TransformTimetableResponse:
       type: object
       description: Standard OSRD timetable format
@@ -419,3 +444,50 @@ components:
       title: SendLastMinuteRequestResponse
       description: Response model to validate and return when a last-minute request
         has been successfully sent.
+    RequestStatus:
+      type: string
+      enum:
+        - CREATED
+        - PROCESSING
+        - ACCEPTED
+        - REFUSED
+        - CANCELLED
+    RequestStatusItem:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/RequestStatus"
+        status_message:
+          type: string
+        created_request_url:
+          type: string
+        begin_op:
+          $ref: "#/components/schemas/OperationalPointReference"
+        begin_time:
+          type: string
+          format: time
+        end_op:
+          $ref: "#/components/schemas/OperationalPointReference"
+        end_time:
+          type: string
+          format: time
+        updated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        train_start:
+          type: string
+          format: date-time
+        id:
+          type: string
+      required:
+        - status
+        - created_request_url
+        - begin_op
+        - end_op
+        - updated_at
+        - created_at
+        - train_start
+        - id
