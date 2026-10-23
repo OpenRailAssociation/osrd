@@ -25,6 +25,7 @@ import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, startTimeToMs, subtractStartTime } from 'utils/duration';
 
+import DistanceCell from './DistanceCell';
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
@@ -77,6 +78,7 @@ declare module '@tanstack/react-table' {
     onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
     onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
     onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
+    onDistanceChange: (row: TimesStopsRow, distance: number | null) => void;
   }
 }
 
@@ -188,6 +190,7 @@ type TimesStopsTableProps = {
   onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
   onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
+  onDistanceChange: (row: TimesStopsRow, distance: number | null) => void;
 };
 
 const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
@@ -227,6 +230,7 @@ const TimesStopsTable = ({
   onPowerRestrictionChange,
   onApplyTimesFromSimulation,
   onReferenceBaseArrivalChange,
+  onDistanceChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -317,7 +321,7 @@ const TimesStopsTable = ({
           ? row.requestedTheoreticalMargin
           : null;
       const isSpecifiedMargin =
-        (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
+        (isFirstRow || row.isTheoreticalMarginBoundary || (!row.baseArrival && !row.distance)) &&
         row.requestedTheoreticalMargin;
       return (
         <div data-testid="requested-theoretical-margin">
@@ -327,13 +331,12 @@ const TimesStopsTable = ({
             editable={!isLastRow}
             isInherited={!isSpecifiedMargin}
             isFirstRow={isFirstRow}
-            showUnitToggle={isValid && !scheduleNotHonored}
             onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
           />
         </div>
       );
     },
-    [scheduleNotHonored, isValid]
+    []
   );
 
   const returnShortSlipDistanceCell = (
@@ -681,6 +684,41 @@ const TimesStopsTable = ({
     [startTime, registerTimeCellRef, dateTimeLocale, focusCellBelow, t, startTimeCellType, isValid]
   );
 
+  const returnDistanceCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, number | null>) => {
+      // const row = info.row.original;
+      // const { allRows } = info.table.options.meta!;
+      const isFirstRow = info.row.index === 0;
+      const value = info.getValue();
+
+      if (isFirstRow) {
+        return (
+          <span data-testid="first-position" className="distance-cell">
+            0 km
+          </span>
+        );
+      }
+
+      if (!isValid && !isFirstRow) {
+        return (
+          <DistanceCell
+            distanceValue={value ?? undefined}
+            onCommit={(v) => {
+              info.table.options.meta!.onDistanceChange(info.row.original, v);
+            }}
+          />
+        );
+      }
+
+      return (
+        <span data-testid="computed-base-arrival">
+          {value ? String(value).slice(0, 5) + 'km' : '-'}
+        </span>
+      );
+    },
+    [isValid]
+  );
+
   const columns = useMemo(
     () =>
       columnHelper.columns([
@@ -847,6 +885,15 @@ const TimesStopsTable = ({
             'data-testid': 'reference-base-arrival-cell',
           },
         }),
+        columnHelper.accessor('distance', {
+          header: () => t(isValid ? 'calculatedDistance' : 'requestedDistance'),
+          cell: returnDistanceCell,
+          meta: {
+            className: cx('col-reference-base-distance col-with-distance', { computed: isValid }),
+            title: t(isValid ? 'calculatedDistance' : 'requestedDistance'),
+            'data-testid': 'reference-base-distance-cell',
+          },
+        }),
       ]),
     [
       returnDepartureTimeCell,
@@ -857,6 +904,7 @@ const TimesStopsTable = ({
       returnArrivalTimeCell,
       returnRequestTheoreticalMarginCell,
       returnBaseArrivalCell,
+      returnDistanceCell,
       isValid,
       t,
     ]
@@ -880,6 +928,7 @@ const TimesStopsTable = ({
       onPowerRestrictionChange,
       onApplyTimesFromSimulation,
       onReferenceBaseArrivalChange,
+      onDistanceChange,
     },
   });
 
@@ -952,6 +1001,7 @@ const TimesStopsTable = ({
       arrival ? computeDayOffset(arrival) : 0,
       baseArrival ? computeDayOffset(baseArrival) : 0
     );
+
     const offset = Math.max(arrivalOffset, floor);
     effectiveDayOffsets.push(offset);
     floor = departure ? Math.max(offset, computeDayOffset(departure)) : offset;
