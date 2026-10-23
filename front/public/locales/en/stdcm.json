@@ -133,6 +133,7 @@
       "sameElse": "ddd MM/DD"
     },
     "destination": "Destination",
+    "loading": "retriveing data from GESICO, you can start a request in the meantime",
     "noRequests": "No request could be fetched.",
     "origin": "Origin",
     "requestNumber": "Request N°",

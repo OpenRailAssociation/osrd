@@ -5,6 +5,7 @@ import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
 import { useTranslation } from 'react-i18next';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDateTimeLocale } from 'utils/date';
 
 dayjs.extend(calendar);
@@ -65,6 +66,12 @@ const requestsHistory: mockedRequestsHistory[] = [
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
+
+  const { data, isLoading } = osrdEditoastApi.endpoints.getStdcmRequests.useQuery({
+    by: 'user',
+  });
+
+  console.debug(data);
 
   const { t, i18n } = useTranslation(['stdcm', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
@@ -161,8 +168,16 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <tbody>{requestsSentRows()}</tbody>
         </table>
       </div>
-      {requestsHistory.length === 0 && (
+      {!isLoading && requestsHistory.length === 0 && (
         <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
+      )}
+      {isLoading && (
+        <div className="stdcm-requests-sent-loading">
+          <div className="stdcm-requests-sent-loader" />
+          <div className="stdcm-requests-sent-loading-message">
+            {t('requestsSentModal.loading')}
+          </div>
+        </div>
       )}
     </Dialog>
   );
