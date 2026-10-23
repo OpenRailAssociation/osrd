@@ -24,18 +24,20 @@ BEGIN
         FROM timetable AS outer_timetable, timetable AS inner_timetable
         WHERE outer_timetable.id = NEW.outer_timetable_id
             AND inner_timetable.id = NEW.inner_timetable_id
-            AND (outer_timetable.is_train_schedule_set OR NOT inner_timetable.is_train_schedule_set)
+            AND inner_timetable.is_train_schedule_set
+            AND outer_timetable.is_train_schedule_set
     ) THEN
-        RAISE EXCEPTION 'Only the timetable of a train schedule set can be included, in a timetable which is not one';
+        RAISE EXCEPTION 'A train schedule set cannot include another train schedule set';
     END IF;
     IF EXISTS (
         SELECT 1
         FROM timetable AS outer_timetable, timetable AS inner_timetable
         WHERE outer_timetable.id = NEW.outer_timetable_id
             AND inner_timetable.id = NEW.inner_timetable_id
+            AND inner_timetable.is_train_schedule_set
             AND outer_timetable.timetable_type != inner_timetable.timetable_type
     ) THEN
-        RAISE EXCEPTION 'Cannot insert or update timetable_inheritance with mismatched timetable types';
+        RAISE EXCEPTION 'A train schedule set can only be included in a timetable of the same type';
     END IF;
     RETURN NEW;
 END;
