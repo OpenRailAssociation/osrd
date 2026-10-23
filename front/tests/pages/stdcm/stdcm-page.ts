@@ -22,7 +22,7 @@ class STDCMPage {
   private readonly originMarker: Locator;
   private readonly destinationMarker: Locator;
   private readonly viaMarker: Locator;
-  private readonly helpButton: Locator;
+  readonly helpButton: Locator;
   private readonly pathfindingStatusMessage: Locator;
 
   constructor(page: Page) {
