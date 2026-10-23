@@ -1,6 +1,6 @@
 [project]
 name = "osrd_schemas"
-version = "0.2.3"
+version = "0.2.4"
 description = "Auto-generated OSRD pydantic schemas (editoast + railway manager interface openapi)"
 authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
 requires-python = ">= 3.11"
@@ -28,3 +28,6 @@ exclude = ["**/__pycache__"]
 # This is valid Python (PEP 3107) and understood by Pydantic at runtime, but not PEP 484 compliant
 # (constr() is a function call, not a static type expression). Pyright correctly rejects it.
 reportInvalidTypeForm = "none"
+
+[tool.ruff]
+exclude = ["models.py"]

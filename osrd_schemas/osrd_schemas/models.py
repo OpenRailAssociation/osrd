@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
+from datetime import time as time_aliased
+from datetime import timedelta
 from enum import Enum
 from typing import Annotated, Any, Literal
 
@@ -13,13 +15,44 @@ from typing_extensions import TypeAliasType
 from .overrides import OffsetInMs
 
 
-class PowerRestrictionItem(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    from_: Annotated[str, Field(alias="from", min_length=1)]
-    to: Annotated[str, Field(min_length=1)]
-    value: str
+class OperationalPointReferenceId(BaseModel):
+    operational_point: str
+    """
+    The object id of an operational point
+    """
+    type: Literal["id"] = "id"
+
+
+class SecondaryCode(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+    """
+    An optional secondary code to identify a more specific location
+    """
+
+
+class OperationalPointReferenceDomestic(BaseModel):
+    country_code: Annotated[str, Field(min_length=1)]
+    main_code: str
+    """
+    The operational point main code
+    """
+    secondary_code: SecondaryCode | None = None
+    """
+    An optional secondary code to identify a more specific location
+    """
+    type: Literal["domestic"] = "domestic"
+
+
+class OperationalPointReferenceUic(BaseModel):
+    secondary_code: SecondaryCode | None = None
+    """
+    An optional secondary code to identify a more specific location
+    """
+    type: Literal["uic"] = "uic"
+    uic: Annotated[int, Field(ge=0)]
+    """
+    The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+    """
 
 
 class AddOperation(BaseModel):
@@ -3117,51 +3150,20 @@ class LocalTrackName(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
+class OperationalPointPartReference(BaseModel):
+    local_track_name: LocalTrackName | None = None
+    operational_point: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    )
+
+
 class OperationalPointPartSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     kp: str
-
-
-class OperationalPointReferenceId(BaseModel):
-    operational_point: str
-    """
-    The object id of an operational point
-    """
-    type: Literal["id"] = "id"
-
-
-class SecondaryCode(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-    """
-    An optional secondary code to identify a more specific location
-    """
-
-
-class OperationalPointReferenceDomestic(BaseModel):
-    country_code: Annotated[str, Field(min_length=1)]
-    main_code: str
-    """
-    The operational point main code
-    """
-    secondary_code: SecondaryCode | None = None
-    """
-    An optional secondary code to identify a more specific location
-    """
-    type: Literal["domestic"] = "domestic"
-
-
-class OperationalPointReferenceUic(BaseModel):
-    secondary_code: SecondaryCode | None = None
-    """
-    An optional secondary code to identify a more specific location
-    """
-    type: Literal["uic"] = "uic"
-    uic: Annotated[int, Field(ge=0)]
-    """
-    The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-    """
 
 
 class OperationalPointReferenceNodeOperationalPointReference(BaseModel):
@@ -3255,6 +3257,16 @@ class PatchOperationCopyOperation(CopyOperation):
     """
 
     op: Literal["copy"] = "copy"
+
+
+class PathItemLocationOperationalPointPartReference(OperationalPointPartReference):
+    """
+    The location of a path waypoint
+    """
+
+    type: Literal["operational_point_part_reference"] = (
+        "operational_point_part_reference"
+    )
 
 
 class PathItemRelativeLocationExactPathItem(BaseModel):
@@ -3500,6 +3512,15 @@ class PathfindingTrackLocationInput(BaseModel):
     )
     position: float
     track: Annotated[str, Field(max_length=255, min_length=1)]
+
+
+class PowerRestrictionItem(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    from_: Annotated[str, Field(alias="from", min_length=1)]
+    to: Annotated[str, Field(min_length=1)]
+    value: str
 
 
 class TrackSectionRange(BaseModel):
@@ -4752,6 +4773,14 @@ class SendLastMinuteRequestResponse(BaseModel):
     created_request_url: Annotated[str | None, Field(title="Created Request URL")]
 
 
+class RequestStatus(Enum):
+    CREATED = "CREATED"
+    PROCESSING = "PROCESSING"
+    ACCEPTED = "ACCEPTED"
+    REFUSED = "REFUSED"
+    CANCELLED = "CANCELLED"
+
+
 class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
     authorized: bool
     """
@@ -4764,6 +4793,10 @@ class SendLastMinuteRequestFolderUrlGetResponse(BaseModel):
     """
     The url of the folder
     """
+
+
+class SendLastMinuteRequestStatusesPostRequest(RootModel[list[str]]):
+    root: list[str]
 
 
 class BufferStopExtension(BaseModel):
@@ -5503,6 +5536,37 @@ class InfraPathfindingInput(BaseModel):
     starting: PathfindingTrackLocationInput
 
 
+class JourneySearchQuery(BaseModel):
+    destination: OperationalPointPartReference
+    infra_id: int
+    origin: OperationalPointPartReference
+    start_ms: Annotated[int, Field(ge=0)]
+    """
+    Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
+
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
+    """
+    start_tolerance: Annotated[int, Field(ge=0)]
+    """
+    Half the time of the start window in milliseconds.
+
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
+    """
+    timetable_ids: list[int]
+    """
+    Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
+    """
+    transfer_ms: Annotated[int, Field(ge=0)]
+    """
+    Constant time for a transfer/footpath in the same stop in milliseconds.
+
+    The algorithm assumes that changing from one train to another in a stop
+    always take this constant time.
+    """
+
+
 class LevelCrossing(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5630,15 +5694,6 @@ class OperationalPointPartExtension(BaseModel):
     sncf: OperationalPointPartSncfExtension | None = None
 
 
-class OperationalPointPartReference(BaseModel):
-    local_track_name: LocalTrackName | None = None
-    operational_point: (
-        OperationalPointReferenceId
-        | OperationalPointReferenceDomestic
-        | OperationalPointReferenceUic
-    )
-
-
 class OperationalPointReferenceNodeTrackOffset(TrackOffset):
     """
     The location represented by a macro node
@@ -5681,16 +5736,6 @@ class PathItemLocationTrackOffset(TrackOffset):
     """
 
     type: Literal["track_offset"] = "track_offset"
-
-
-class PathItemLocationOperationalPointPartReference(OperationalPointPartReference):
-    """
-    The location of a path waypoint
-    """
-
-    type: Literal["operational_point_part_reference"] = (
-        "operational_point_part_reference"
-    )
 
 
 class PathItemLocation(
@@ -6387,9 +6432,41 @@ class SimulationReport(BaseModel):
     ]
 
 
+class RequestStatusItem(BaseModel):
+    status: RequestStatus
+    status_message: str | None = None
+    created_request_url: str
+    begin_op: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    )
+    begin_time: time_aliased | Literal["dqp"]
+    end_op: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    )
+    end_time: time_aliased | Literal["dqp"]
+    updated_at: AwareDatetime
+    created_at: AwareDatetime
+    train_start: AwareDatetime
+    id: str
+
+
 class SendLastMinuteRequestPostRequest(BaseModel):
     simulation_report: SimulationReport
     simulation_report_sheet: bytes
+
+
+class SendLastMinuteRequestStatusesPostResponse(
+    RootModel[dict[str, RequestStatusItem]]
+):
+    """
+    Mapping from request id to status, url and metadata
+    """
+
+    root: dict[str, RequestStatusItem]
 
 
 class BufferStop(BaseModel):
@@ -6608,37 +6685,6 @@ class JourneyProposals(BaseModel):
     journeys: list[list[TrainSchedulePart]]
     """
     Each journey is a list of train schedule parts.
-    """
-
-
-class JourneySearchQuery(BaseModel):
-    destination: OperationalPointPartReference
-    infra_id: int
-    origin: OperationalPointPartReference
-    start_ms: Annotated[int, Field(ge=0)]
-    """
-    Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
-
-    The start window is defined as the time between
-    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
-    """
-    start_tolerance: Annotated[int, Field(ge=0)]
-    """
-    Half the time of the start window in milliseconds.
-
-    The start window is defined as the time between
-    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
-    """
-    timetable_ids: list[int]
-    """
-    Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
-    """
-    transfer_ms: Annotated[int, Field(ge=0)]
-    """
-    Constant time for a transfer/footpath in the same stop in milliseconds.
-
-    The algorithm assumes that changing from one train to another in a stop
-    always take this constant time.
     """
 
 
@@ -7430,7 +7476,7 @@ class OperationCreate6(InfraObjectSwitch, OperationCreate1):
     pass
 
 
-class OperationalPoint(BaseModel):
+class OperationalPointModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -7524,7 +7570,7 @@ class RailJson(BaseModel):
     """
     `NeutralSections` are designated areas of rail infrastructure where train drivers are instructed to cut the power supply to the train, primarily for safety reasons.
     """
-    operational_points: list[OperationalPoint]
+    operational_points: list[OperationalPointModel]
     """
     Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest.
     """
@@ -7629,7 +7675,7 @@ class StdcmConflictingWorkSchedule(BaseModel):
     """
 
     end_date_time: AwareDatetime
-    last_op: OperationalPoint
+    last_op: OperationalPointModel
     start_date_time: AwareDatetime
 
 
@@ -7640,7 +7686,7 @@ class StdcmLastReachedOperationalPoint(BaseModel):
 
     arrival_time: AwareDatetime
     geographic: GeoJsonPoint
-    operational_point: OperationalPoint
+    operational_point: OperationalPointModel
 
 
 class StdcmResponsePathNotFound(BaseModel):
@@ -7682,7 +7728,7 @@ class TrainScheduleExceptionChangeGroups(BaseModel):
 
 class InfraObjectOperationalPoint(BaseModel):
     obj_type: Literal["OperationalPoint"] = "OperationalPoint"
-    railjson: OperationalPoint
+    railjson: OperationalPointModel
 
 
 class InfraObject(
@@ -7806,19 +7852,6 @@ class PacedTrainException(BaseModel):
     """
 
 
-class TrainScheduleException(BaseModel):
-    change_groups: TrainScheduleExceptionChangeGroups
-    disabled: bool
-    id: int
-    key: str | None = None
-    occurrence_index: int | None = None
-    """
-    If None the exception is created, otherwise it is a modified exception
-    """
-    timetable_id: int
-    train_schedule_id: int
-
-
 class Paced(BaseModel):
     exceptions: list[PacedTrainException]
     interval: Annotated[timedelta, Field(examples=["PT2H"])]
@@ -7851,6 +7884,19 @@ class TrainSchedule(BaseModel):
     """
     train_name: str
     paced: Paced | None = None
+
+
+class TrainScheduleException(BaseModel):
+    change_groups: TrainScheduleExceptionChangeGroups
+    disabled: bool
+    id: int
+    key: str | None = None
+    occurrence_index: int | None = None
+    """
+    If None the exception is created, otherwise it is a modified exception
+    """
+    timetable_id: int
+    train_schedule_id: int
 
 
 class TrainScheduleResponse(TrainSchedule):

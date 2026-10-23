@@ -87,7 +87,7 @@ class Infra:
                 parts_per_op[op_part.operational_point.id].append(op_part.to_rjs(track))
         ops = []
         for op in self.operational_points:
-            new_op = models.OperationalPoint(
+            new_op = models.OperationalPointModel(
                 id=op.id,
                 parts=parts_per_op[op.id],
                 weight=op.weight,
