@@ -17,6 +17,7 @@ export const addTagTypes = [
   'projects',
   'rolling_stock_livery',
   'round_trips',
+  's3',
   'search',
   'search_journeys',
   'search_journey_environment',
@@ -866,6 +867,14 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['round_trips'],
+      }),
+      getS3File: build.query<GetS3FileApiResponse, GetS3FileApiArg>({
+        query: (queryArg) => ({ url: `/s3/file` }),
+        providesTags: ['s3'],
+      }),
+      getS3List: build.query<GetS3ListApiResponse, GetS3ListApiArg>({
+        query: (queryArg) => ({ url: `/s3/list` }),
+        providesTags: ['s3'],
       }),
       getScenarios: build.query<GetScenariosApiResponse, GetScenariosApiArg>({
         query: (queryArg) => ({
@@ -2321,6 +2330,19 @@ export type PostRoundTripsDeleteApiResponse = unknown;
 export type PostRoundTripsDeleteApiArg = {
   /** IDs of train schedules to remove from round trips or one-way. */
   body: number[];
+};
+export type GetS3FileApiResponse = unknown;
+export type GetS3FileApiArg = {
+  /** Path in the S3 bucket */
+  path: string;
+};
+export type GetS3ListApiResponse = /** status 200  */ {
+  directories: string[];
+  files: S3ObjectInfo[];
+};
+export type GetS3ListApiArg = {
+  /** Path in the S3 bucket */
+  path: string;
 };
 export type GetScenariosApiResponse =
   /** status 200 A paginated list of scenarios */ PaginationStats & {
@@ -4328,6 +4350,11 @@ export type RoundTrips = {
   one_ways?: number[];
   /** List of round trips, each represented by a tuple */
   round_trips?: number[][];
+};
+export type S3ObjectInfo = {
+  last_modified: string;
+  path: string;
+  size: number;
 };
 export type Scenario = {
   creation_date: string;

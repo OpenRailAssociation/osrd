@@ -3167,6 +3167,56 @@ paths:
       responses:
         '204':
           description: Round trips were successfully deleted
+  /s3/file:
+    get:
+      tags:
+      - s3
+      summary: |-
+        Returns the content of an S3 object.
+        It is served as `text/plain` when its first chunk looks like UTF-8 text, as `application/octet-stream` otherwise.
+      parameters:
+      - name: path
+        in: path
+        description: Path in the S3 bucket
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Content of the object (`application/octet-stream` if it is not text)
+          content:
+            text/plain: {}
+  /s3/list:
+    get:
+      tags:
+      - s3
+      summary: Lists the direct children of an S3 path, like `ls`
+      parameters:
+      - name: path
+        in: path
+        description: Path in the S3 bucket
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - directories
+                - files
+                properties:
+                  directories:
+                    type: array
+                    items:
+                      type: string
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/S3ObjectInfo'
   /scenarios:
     get:
       tags:
@@ -7961,6 +8011,9 @@ components:
       - $ref: '#/components/schemas/EditoastRoundTripsErrorDatabase'
       - $ref: '#/components/schemas/EditoastRoundTripsErrorDuplicateTrainIds'
       - $ref: '#/components/schemas/EditoastRoundTripsErrorTimetableNotFound'
+      - $ref: '#/components/schemas/EditoastS3ErrorFetch'
+      - $ref: '#/components/schemas/EditoastS3ErrorNotConfigured'
+      - $ref: '#/components/schemas/EditoastS3ErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorDatabase'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
@@ -9467,6 +9520,79 @@ components:
           type: string
           enum:
           - editoast:round_trips:TimetableNotFound
+    EditoastS3ErrorFetch:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastS3ErrorFetchContext
+          required:
+          - message
+          - path
+          properties:
+            message:
+              type: string
+            path:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:s3:Fetch
+    EditoastS3ErrorNotConfigured:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastS3ErrorNotConfiguredContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 503
+        type:
+          type: string
+          enum:
+          - editoast:s3:NotConfigured
+    EditoastS3ErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastS3ErrorNotFoundContext
+          required:
+          - path
+          properties:
+            path:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:s3:NotFound
     EditoastScenarioErrorDatabase:
       type: object
       required:
@@ -14780,6 +14906,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DirectionalTrackRange'
+    S3ObjectInfo:
+      type: object
+      required:
+      - path
+      - size
+      - last_modified
+      properties:
+        last_modified:
+          type: string
+          format: date-time
+        path:
+          type: string
+        size:
+          type: integer
+          format: int64
+          minimum: 0
     Scenario:
       type: object
       required:

@@ -1753,6 +1753,43 @@ class EditoastRoundTripsErrorTimetableNotFound(BaseModel):
     )
 
 
+class EditoastS3ErrorFetchContext(BaseModel):
+    message: str
+    path: str
+
+
+class EditoastS3ErrorFetch(BaseModel):
+    context: Annotated[
+        EditoastS3ErrorFetchContext | None, Field(title="EditoastS3ErrorFetchContext")
+    ] = None
+    message: str
+    status: Literal[500] = 500
+    type: Literal["editoast:s3:Fetch"] = "editoast:s3:Fetch"
+
+
+class EditoastS3ErrorNotConfigured(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastS3ErrorNotConfiguredContext")
+    ] = None
+    message: str
+    status: Literal[503] = 503
+    type: Literal["editoast:s3:NotConfigured"] = "editoast:s3:NotConfigured"
+
+
+class EditoastS3ErrorNotFoundContext(BaseModel):
+    path: str
+
+
+class EditoastS3ErrorNotFound(BaseModel):
+    context: Annotated[
+        EditoastS3ErrorNotFoundContext | None,
+        Field(title="EditoastS3ErrorNotFoundContext"),
+    ] = None
+    message: str
+    status: Literal[404] = 404
+    type: Literal["editoast:s3:NotFound"] = "editoast:s3:NotFound"
+
+
 class EditoastScenarioErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastScenarioErrorDatabaseContext")
@@ -3731,6 +3768,12 @@ class RoutePath(BaseModel):
     track_ranges: list[DirectionalTrackRange]
 
 
+class S3ObjectInfo(BaseModel):
+    last_modified: AwareDatetime
+    path: str
+    size: Annotated[int, Field(ge=0)]
+
+
 class ScenarioReference(BaseModel):
     project_id: int
     project_name: str
@@ -5120,6 +5163,9 @@ class EditoastError(
         | EditoastRoundTripsErrorDatabase
         | EditoastRoundTripsErrorDuplicateTrainIds
         | EditoastRoundTripsErrorTimetableNotFound
+        | EditoastS3ErrorFetch
+        | EditoastS3ErrorNotConfigured
+        | EditoastS3ErrorNotFound
         | EditoastScenarioErrorDatabase
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound
@@ -5295,6 +5341,9 @@ class EditoastError(
         | EditoastRoundTripsErrorDatabase
         | EditoastRoundTripsErrorDuplicateTrainIds
         | EditoastRoundTripsErrorTimetableNotFound
+        | EditoastS3ErrorFetch
+        | EditoastS3ErrorNotConfigured
+        | EditoastS3ErrorNotFound
         | EditoastScenarioErrorDatabase
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound

@@ -16,6 +16,7 @@ pub mod path;
 pub mod projection;
 pub mod rolling_stock;
 pub mod round_trips;
+pub mod s3;
 pub mod search;
 pub mod search_journey_environment;
 mod search_journeys;
@@ -128,6 +129,10 @@ fn service_router() -> server::router::DocumentedRouter {
                 "/stdcm/debug_data/{trace_id}",
                 get!(stdcm_debug::get_debug_data),
             )
+            .nests("/s3", |path| {
+                path.route("/file", get!(s3::get_s3_file))
+                    .route("/list", get!(s3::list_s3_directory))
+            })
             .nests("/infra", |path| {
                 path.route("/", get!(infra::list))
                     .route("/", post!(infra::create))
