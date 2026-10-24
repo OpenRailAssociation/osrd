@@ -3,6 +3,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -10,9 +11,11 @@ import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/useAuth';
 
 import InfraLoadingState from './InfraLoadingState';
+import ScenarioExpandedHeader from './ScenarioExpandedHeader';
 
 const BOARDS: Board[] = [
   'trains',
@@ -35,6 +38,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const navigate = useNavigate();
   const { scenario, timetableId, infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
+  const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
 
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
@@ -196,7 +200,13 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       </div>
 
       {/* scenario details */}
-      {areScenarioDetailsVisible && (
+      {areScenarioDetailsVisible && multipleTimetablesEnabled && (
+        <ScenarioExpandedHeader
+          onEditScenario={() => setOpenEditScenarioModal(true)}
+          onCollapse={() => setAreScenarioDetailsVisible(false)}
+        />
+      )}
+      {areScenarioDetailsVisible && !multipleTimetablesEnabled && (
         <div className="scenario-details">
           <span className="scenario-description" data-testid="scenario-details-description">
             {scenario.description}
