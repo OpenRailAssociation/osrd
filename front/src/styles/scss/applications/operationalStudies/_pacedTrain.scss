@@ -311,9 +311,19 @@
                 min-width: 0;
 
                 span {
+                  // rtl clips the start so the occurrence index stays visible.
+                  // The bdi keeps logical order: a bare rtl direction reorders
+                  // names that both start and end with a number.
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
+                  direction: rtl;
+                  text-align: left;
+
+                  bdi {
+                    direction: ltr;
+                    unicode-bidi: isolate;
+                  }
                 }
 
                 &.start-time-exception {
