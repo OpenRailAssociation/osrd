@@ -7,9 +7,15 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PacedTrain } from 'applications/operationalStudies/types';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import {
+  getHourlyStartTimePeriod,
+  isStartTimeWithinInterval,
+  wrapStartTimeToInterval,
+} from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { getDefaultPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/pacedTrain';
+import useStartTimeWrappedWarning from 'modules/trainSchedule/hooks/useStartTimeWrappedWarning';
 import type { Train } from 'reducers/osrdconf/types';
-import { MAX_DURATION_MS } from 'utils/duration';
+import { Duration, MAX_DURATION_MS } from 'utils/duration';
 import { findExceptionInPacedTrainByOccurrenceId } from 'utils/trainExceptions';
 import { isOccurrenceId } from 'utils/trainId';
 
@@ -62,6 +68,7 @@ export default function TrainServiceForm({
   hasLinkings,
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
   const { scenario } = useScenarioContext();
   const timetableType = scenario.timetable_type;
 
@@ -230,9 +237,17 @@ export default function TrainServiceForm({
               onFieldChange('added_exception_date', newAddedExceptionDate)
             }
             onCreateAddedException={() => {
-              onPersistTrain(train, {
-                addedExceptions: [{ startTime: fields.added_exception_date }],
-              });
+              // In an hourly timetable, an added occurrence must start within the time window
+              let startTime = fields.added_exception_date;
+              if (startTime instanceof Duration) {
+                const period = getHourlyStartTimePeriod(train.paced!, true);
+                if (!isStartTimeWithinInterval(startTime, period)) {
+                  startTime = wrapStartTimeToInterval(startTime, period);
+                  onFieldChange('added_exception_date', startTime);
+                  displayStartTimeWrappedWarning(true);
+                }
+              }
+              onPersistTrain(train, { addedExceptions: [{ startTime }] });
             }}
           />
           <div
