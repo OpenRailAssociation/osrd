@@ -24,8 +24,6 @@ const StdcmPathNotFoundDetails = ({
   const lastReachedOperationalPoint = outputs.last_reached_operational_point;
   // The work schedules delaying the train the most, then the one nearest to the destination.
   // The same work schedule can be reported in both lists, only display it once.
-  // Two fake overtake points share the name of the point they overtake, so the displayed name is
-  // used rather than the operational point id to avoid rendering the very same line twice.
   const workSchedules = uniqBy(
     [...outputs.most_blocking_work_schedules, ...outputs.nearest_to_destination_work_schedules],
     ({ last_op, start_date_time, end_date_time }) =>
