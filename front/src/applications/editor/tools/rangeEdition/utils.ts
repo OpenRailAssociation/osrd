@@ -3,19 +3,12 @@ import { feature, lineString, point } from '@turf/helpers';
 import length from '@turf/length';
 import lineSliceAlong from '@turf/line-slice-along';
 import type { Feature, LineString, Position } from 'geojson';
-import { last, cloneDeep, compact, isEmpty } from 'lodash';
-import type { MapLayerMouseEvent } from 'maplibre-gl';
+import { last, cloneDeep, compact } from 'lodash';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import {
-  approximatePointDistanceForEditoast,
-  getHoveredTrackRanges,
-  getTrackSectionEntityFromNearestPoint,
-} from 'applications/editor/tools/utils';
 import type { PartialOrReducer } from 'applications/editor/types';
 import type { GetInfraByInfraIdRoutesTrackRangesApiResponse } from 'common/api/osrdEditoastApi';
-import { getNearestPoint } from 'utils/mapHelper';
 
 import type {
   ApplicableTrackRange,
@@ -51,37 +44,6 @@ export function getNewElectrification(): ElectrificationEntity {
       coordinates: [],
     },
   };
-}
-
-/**
- * Given a hover event and a trackSectionCache when moving a PslSign, return the new position of the sign, with the trackRange's id on which the sign is and its distance from the beginning of the trackRange.
- * - retrieve the trackRanges around the mouse
- * - retrieve the nearest point of the mouse (and the trackRange it belongs to)
- * - compute the distance between the beginning of the track and the nearest point (with approximation because of Editoast data)
- */
-
-export function getPslSignNewPosition(
-  e: MapLayerMouseEvent,
-  trackSectionsCache: Record<string, TrackState>
-) {
-  const hoveredTrackRanges = getHoveredTrackRanges(e);
-  if (isEmpty(hoveredTrackRanges)) {
-    return null;
-  }
-  const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
-  const trackSection = getTrackSectionEntityFromNearestPoint(
-    nearestPoint,
-    hoveredTrackRanges,
-    trackSectionsCache
-  );
-  if (!trackSection) {
-    return null;
-  }
-  const distanceAlongTrack = approximatePointDistanceForEditoast(
-    trackSection,
-    nearestPoint.geometry
-  );
-  return { track: trackSection.properties.id, position: distanceAlongTrack };
 }
 
 export function getNewSpeedSection(): SpeedSectionEntity {

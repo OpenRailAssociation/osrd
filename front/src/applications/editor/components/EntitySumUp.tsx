@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import type { EditoastType } from 'applications/editor/consts';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import type { OpEntity } from 'applications/editor/tools/opEdition/types';
 import type { BufferStopEntity, SignalEntity } from 'applications/editor/tools/pointEdition/types';
 import type {
   ElectrificationEntity,
@@ -272,6 +273,19 @@ function getSumUpContent(
           </span>
           <span className={classes.muted}>{voltage}</span>
         </>
+      );
+      break;
+    }
+    case 'OperationalPoint': {
+      const { name, main_code, secondary_code, parts } = (entity as OpEntity).properties;
+      text = name;
+      subtexts.push(secondary_code ? `${main_code}/${secondary_code}` : main_code);
+      subtexts.push(
+        <span className={classes.muted}>
+          {t('Editor.tools.select-items.linked-to-n-lines', {
+            count: uniq(parts.map((part) => part.track)).length,
+          }).toString()}
+        </span>
       );
       break;
     }

@@ -2,8 +2,8 @@ import turfBbox from '@turf/bbox';
 import { featureCollection, type Units } from '@turf/helpers';
 import length from '@turf/length';
 import type { NearestPoint } from '@turf/nearest-point';
-import type { Feature, LineString, Point, BBox } from 'geojson';
-import { uniq } from 'lodash';
+import type { Feature, LineString, Point } from 'geojson';
+import { isEmpty, uniq } from 'lodash';
 import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 import type { Dispatch } from 'redux';
@@ -12,7 +12,9 @@ import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
 import type { EditoastType } from 'applications/editor/consts';
 import { getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import { TRACKS_LAYER_ID } from 'applications/editor/tools/consts';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type { OpEntity } from 'applications/editor/tools/opEdition/types';
 import type {
   BufferStopEntity,
   DetectorEntity,
@@ -33,6 +35,7 @@ import { type EditorState, editorSliceActions } from 'reducers/editor';
 import type { AppDispatch } from 'store';
 import type { Bbox } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
+import { getNearestPoint } from 'utils/mapHelper';
 
 import { getLayerSettingNameFromEditorLayer } from '../utils';
 
@@ -96,7 +99,7 @@ export function getHoveredTrackRanges(hoverEvent: MapLayerMouseEvent) {
       [point.x + TOLERANCE / 2, point.y + TOLERANCE / 2],
     ],
     {
-      layers: ['editor/geo/track-main'],
+      layers: [TRACKS_LAYER_ID],
     }
   ) as Feature<LineString>[];
 }
@@ -116,6 +119,37 @@ export function getTrackSectionEntityFromNearestPoint(
   if (trackState?.type !== 'success') return null;
   const { track } = trackState;
   return track;
+}
+
+/**
+ * Given a mouse event and a trackSectionsCache, return the position under the mouse, as the id of
+ * the nearest cached track section and the distance from its beginning.
+ * - retrieve the trackRanges around the mouse
+ * - retrieve the nearest point of the mouse (and the trackRange it belongs to)
+ * - compute the distance between the beginning of the track and the nearest point (with approximation because of Editoast data)
+ */
+export function getTrackPositionFromEvent(
+  e: MapLayerMouseEvent,
+  trackSectionsCache: Record<string, TrackState>
+) {
+  const hoveredTrackRanges = getHoveredTrackRanges(e);
+  if (isEmpty(hoveredTrackRanges)) {
+    return null;
+  }
+  const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
+  const trackSection = getTrackSectionEntityFromNearestPoint(
+    nearestPoint,
+    hoveredTrackRanges,
+    trackSectionsCache
+  );
+  if (!trackSection) {
+    return null;
+  }
+  const distanceAlongTrack = approximatePointDistanceForEditoast(
+    trackSection,
+    nearestPoint.geometry
+  );
+  return { track: trackSection.properties.id, position: distanceAlongTrack };
 }
 
 function getNeededLayers(entities: EditorEntity[]) {
@@ -239,26 +273,18 @@ export function openEntityEditionPanel(
         toolState: getRouteEditionState(entity as RouteEntity),
       });
       break;
+    case 'OperationalPoint':
+      switchTool({
+        toolType: TOOL_NAMES.OP_EDITION,
+        toolState: {
+          initialEntity: entity as OpEntity,
+          entity: entity as OpEntity,
+        },
+      });
+      break;
     default:
       break;
   }
-}
-
-/**
- * Given an array of editor entities, return the bbox which fits all of their geo elements.
- */
-function getLargestBbox(entities: EditorEntity[]): BBox {
-  const bboxList = entities.map((entity) => turfBbox(entity.geometry));
-
-  let [minLeft, minBottom, minRight, minTop] = bboxList[0];
-
-  bboxList.forEach(([left, bottom, right, top]) => {
-    if (left < minLeft) minLeft = left;
-    if (bottom < minBottom) minBottom = bottom;
-    if (right > minRight) minRight = right;
-    if (top > minTop) minTop = top;
-  });
-  return [minLeft, minBottom, minRight, minTop];
 }
 
 /**
@@ -272,8 +298,8 @@ export async function getEntitiesBbox(
   const hasRouteEntity = entities.some((entity) => entity.objType === 'Route');
 
   if (!hasRouteEntity) {
-    let bbox = turfBbox(entities[0].geometry);
-    if (entities.length > 1) bbox = getLargestBbox(entities);
+    const bbox = turfBbox(featureCollection(entities));
+    if (!bbox.every(Number.isFinite)) return null;
     return [
       [bbox[0], bbox[1]],
       [bbox[2], bbox[3]],

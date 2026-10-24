@@ -208,6 +208,43 @@
         },
         "label": "Outil \"Électrification\""
       },
+      "op-edition": {
+        "actions": {
+          "confirm-delete-op": "Êtes-vous sûr(e) de vouloir supprimer le point remarquable ?",
+          "delete-op": "Supprimer le point remarquable",
+          "new-op": "Créer un nouveau point remarquable",
+          "reset-op": "Réinitialiser le point remarquable",
+          "save-op": "Sauvegarder le point remarquable"
+        },
+        "add-part": "Ajouter un point sur cette section de voie",
+        "center-part": "Centrer la carte sur le point",
+        "create-op": "Créer un nouveau point remarquable",
+        "edit-op": "Modifier un point remarquable",
+        "fields": {
+          "country_code": "Code pays",
+          "is_passenger_station": "Gare voyageurs",
+          "main_code": "Trigramme",
+          "name": "Nom",
+          "plc": "Code de localisation primaire (PLC)",
+          "secondary_code": "Code chantier (CH)",
+          "secondary_name": "Libellé CH",
+          "uic": "Code UIC"
+        },
+        "help": {
+          "drag-part": "Relâchez pour poser le point",
+          "init": "Cliquez sur une section de voie pour ajouter un point au point remarquable, ou faites glisser un point existant pour le déplacer"
+        },
+        "label": "Outil \"PR\"",
+        "no-parts": "Cliquez sur une section de voie pour ajouter un point",
+        "part-fields": {
+          "kp": "PK",
+          "local_track_name": "Nom de voie locale",
+          "position": "Position"
+        },
+        "parts": "Points sur voie",
+        "select-part": "Cliquez pour sélectionner ce point, ou faites-le glisser pour le déplacer",
+        "track-error": "Impossible de charger la section de voie \"{{id}}\""
+      },
       "point-edition": {
         "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés.",
         "help": {

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
 import type {
@@ -6,7 +8,7 @@ import type {
   ExpressionSpecification,
   FilterSpecification,
 } from 'maplibre-gl';
-import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
@@ -19,6 +21,8 @@ import {
   trackNameLayer,
 } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
+import type { LayerProps } from '../types';
+import { adaptFilter } from './GeoJSONs';
 
 function getColorByHighlighted(data: {
   highlightedArea?: Geometry;
@@ -70,6 +74,8 @@ type OperationalPointsProps = {
   mutedLayerOrder: number;
   operationnalPointId?: string;
   highlightedArea?: Geometry;
+  hidden?: string[];
+  fingerprint?: string | number;
 };
 
 const OperationalPointsLayer = ({
@@ -78,10 +84,23 @@ const OperationalPointsLayer = ({
   mutedLayerOrder,
   operationnalPointId,
   highlightedArea,
+  hidden,
+  fingerprint,
 }: OperationalPointsProps) => {
   const { infraId, highlightedOperationalPoints } = useMapContext();
 
-  if (isNil(infraId)) return null;
+  const [skipSource, setSkipSource] = useState(true);
+  useEffect(() => {
+    /* eslint-disable-next-line react/set-state-in-effect */
+    setSkipSource(true);
+    const timeout = setTimeout(() => setSkipSource(false), 0);
+    return () => clearTimeout(timeout);
+    /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
+  }, [fingerprint]);
+
+  if (isNil(infraId) || skipSource) return null;
+
+  const hiddenIds = hidden ?? [];
 
   const point: LayerProps = {
     type: 'circle',
@@ -269,7 +288,11 @@ const OperationalPointsLayer = ({
       type="vector"
       url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraId}`}
     >
-      <OrderedLayer {...point} id="osrd_operational_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...adaptFilter(point, hiddenIds, [])}
+        id="osrd_operational_point/geo"
+        layerOrder={layerOrder}
+      />
       <OrderedLayer
         {...{
           ...trackNameLayer(colors, highlightedArea),
@@ -282,11 +305,15 @@ const OperationalPointsLayer = ({
         layerOrder={layerOrder}
         source-layer={MAP_TRACK_SOURCE_LAYER}
       />
-      <OrderedLayer {...name} id="osrd_operational_point_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...adaptFilter(name, hiddenIds, [])}
+        id="osrd_operational_point_name/geo"
+        layerOrder={layerOrder}
+      />
 
       {highlightedOperationalPoints && highlightedOperationalPoints.length > 0 && (
         <OrderedLayer
-          {...nameMuted}
+          {...adaptFilter(nameMuted, hiddenIds, [])}
           id="osrd_operational_point_name_muted/geo"
           layerOrder={mutedLayerOrder}
         />

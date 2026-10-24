@@ -11,7 +11,10 @@ import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, type Layer } from 'applications/edi
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { approximatePointDistanceForEditoast } from 'applications/editor/tools/utils';
+import {
+  approximatePointDistanceForEditoast,
+  getTrackPositionFromEvent,
+} from 'applications/editor/tools/utils';
 import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
@@ -30,7 +33,6 @@ import type {
   ElectrificationEntity,
 } from './types';
 import {
-  getPslSignNewPosition,
   getMovedPslEntity,
   getSignInformationFromInteractionState,
   isOnModeMove,
@@ -439,7 +441,7 @@ function getRangeEditionTool<T extends EditorRange>({
         });
       } else if (interactionState.type === 'moveSign') {
         if (entity.objType === 'SpeedSection' && entity.properties.extensions?.psl_sncf) {
-          const newPosition = getPslSignNewPosition(e, trackSectionsCache);
+          const newPosition = getTrackPositionFromEvent(e, trackSectionsCache);
           if (newPosition) {
             const signInfo = getSignInformationFromInteractionState(interactionState);
             const updatedEntity = getMovedPslEntity(
