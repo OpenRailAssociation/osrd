@@ -12,8 +12,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
-import fr.sncf.osrd.api.pathfinding.findStopPositionAtEndOfBlockConsideringRollingStock
-import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
@@ -143,6 +141,8 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
+            // TODO : not used yet, it will be used for the General Stop Stations feature
+            val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val consistConfigurations =
@@ -521,6 +521,9 @@ fun parseSteps(
     // that it's not a stop.
     pathItems.first().stopDuration = null
 
+    val trackLocations = pathItems.map {
+        it.pathItem.locations.map { parseRJSTrackLocation(infra.rawInfra, it) }
+    }
     return pathItems
         .mapIndexed { index, it ->
             val rollingStockLength =
@@ -528,17 +531,21 @@ fun parseSteps(
             ExplorerStep(
                 if (index != 0 && index != pathItems.size - 1) {
                     val destinationBlock =
-                        findWaypointBlocks(infra, pathItems.last().pathItem.locations)
-                    findWaypointBlocks(infra, it.pathItem.locations).map { waypointBlock ->
-                        findStopPositionAtEndOfBlockConsideringRollingStock(
-                            waypointBlock,
-                            destinationBlock,
-                            rollingStockLength,
-                            infra,
+                        infra.blockInfra.findTrackLocationBlocks(
+                            infra.rawInfra,
+                            trackLocations.last(),
                         )
-                    }
+                    infra.blockInfra
+                        .findTrackLocationBlocks(infra.rawInfra, trackLocations[index])
+                        .map { waypointBlock ->
+                            infra.blockInfra.findStopPositionAtEndOfBlockConsideringRollingStock(
+                                waypointBlock,
+                                destinationBlock,
+                                rollingStockLength,
+                            )
+                        }
                 } else {
-                    findWaypointBlocks(infra, it.pathItem.locations)
+                    infra.blockInfra.findTrackLocationBlocks(infra.rawInfra, trackLocations[index])
                 },
                 it.stopDuration?.seconds,
                 it.stopDuration != null,
@@ -673,6 +680,29 @@ private fun parseSimulationScheduleItems(
 
 fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<TrackSectionId> {
     return trackSectionNames.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }.toSet()
+}
+
+/** Returns the block locations of a given set of operational point stops. */
+fun parseForcedOpStops(
+    infra: FullInfra,
+    forcedOpStops: Set<OperationalPointStop>,
+): Set<BlockLocation> {
+    val opPartIds = forcedOpStops.flatMap { infra.rawInfra.getOperationalPointParts(it.id) }.toSet()
+    val chunkLocations = opPartIds.map {
+        ChunkLocation(
+            infra.rawInfra.getOperationalPointPartChunk(it),
+            infra.rawInfra.getOperationalPointPartChunkOffset(it),
+        )
+    }
+    val res = mutableSetOf<BlockLocation>()
+    for (chunkLocation in chunkLocations) {
+        for (direction in Direction.entries) {
+            res.addAll(
+                infra.blockInfra.findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction),
+            )
+        }
+    }
+    return res
 }
 
 private fun progressCallback(

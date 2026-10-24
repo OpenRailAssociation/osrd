@@ -3,7 +3,7 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.PathItem
-import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.api.RJSTrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.cli.RqFake
 import fr.sncf.osrd.path.interfaces.JsonTrainPath.TrackSectionRange
@@ -95,8 +95,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun simpleTinyInfraTest() {
-        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(50.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.foo_b", Offset(50.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -143,8 +143,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun incompatibleElectrification() {
-        val waypointStart = TrackLocation("ne.micro.foo_b", Offset(50.meters))
-        val waypointEnd = TrackLocation("ne.micro.bar_a", Offset(100.meters))
+        val waypointStart = RJSTrackLocation("ne.micro.foo_b", Offset(50.meters))
+        val waypointEnd = RJSTrackLocation("ne.micro.bar_a", Offset(100.meters))
         val waypointsStart = PathItem(listOf(waypointStart), false)
         val waypointsEnd = PathItem(listOf(waypointEnd), false)
         val waypoints = listOf(waypointsStart, waypointsEnd)
@@ -209,8 +209,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun incompatibleConstraints() {
-        val waypointStart = TrackLocation("TA0", Offset(0.meters))
-        val waypointEnd = TrackLocation("TA6", Offset(2000.meters))
+        val waypointStart = RJSTrackLocation("TA0", Offset(0.meters))
+        val waypointEnd = RJSTrackLocation("TA6", Offset(2000.meters))
         val waypointsStart = PathItem(listOf(waypointStart), false)
         val waypointsEnd = PathItem(listOf(waypointEnd), false)
         val waypoints = listOf(waypointsStart, waypointsEnd)
@@ -286,9 +286,9 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun testMiddleStop() {
-        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
-        val waypointsMid = listOf(TrackLocation("ne.micro.foo_to_bar", Offset(5000.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsMid = listOf(RJSTrackLocation("ne.micro.foo_to_bar", Offset(5000.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -340,8 +340,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun noPathTest() {
-        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.foo_a", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.foo_a", Offset(100.meters)))
         val requestBody =
             pathfindingRequestAdapter.toJson(
                 getPathfindingBlockRequest(
@@ -358,7 +358,7 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun missingTrackTest() {
-        val waypointsStart = listOf(TrackLocation("this_track_does_not_exist", Offset(0.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("this_track_does_not_exist", Offset(0.meters)))
         val requestBody =
             pathfindingRequestAdapter.toJson(
                 getPathfindingBlockRequest(
@@ -377,8 +377,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun incompatibleLoadingGaugeTest() {
-        val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
 
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
         val newTracks =
@@ -434,7 +434,8 @@ class PathfindingTest : ApiTest() {
             )
 
         // Check that we can go until right before the blocked section with a large train
-        val closerWaypointsEnd = listOf(TrackLocation("ne.micro.foo_to_bar", Offset(1000.meters)))
+        val closerWaypointsEnd =
+            listOf(RJSTrackLocation("ne.micro.foo_to_bar", Offset(1000.meters)))
         val shorterPathResp =
             runPathfinding(
                 infra,
@@ -448,8 +449,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun simpleRoutesInverted() {
-        val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.foo_b", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.foo_b", Offset(100.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -498,8 +499,8 @@ class PathfindingTest : ApiTest() {
     @Test
     fun simpleRoutesSameEdge() {
         // Tests that we find a route path between two points on the same edge
-        val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(110.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(110.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -525,8 +526,8 @@ class PathfindingTest : ApiTest() {
 
     @Test
     fun simpleRoutesSameEdgeInverted() {
-        val waypointsStart = listOf(TrackLocation("ne.micro.bar_a", Offset(110.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(110.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -558,8 +559,8 @@ class PathfindingTest : ApiTest() {
               ^             ^
             start          end
         */
-        val waypointsStart = listOf(TrackLocation("ne.micro.foo_a", Offset(200.meters)))
-        val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(0.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("ne.micro.foo_a", Offset(200.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(0.meters)))
 
         val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
 
@@ -621,8 +622,8 @@ class PathfindingTest : ApiTest() {
 class PathfindingAllowedTrackSectionsTest {
     // tiny_infra path: foo_b -> foo_to_bar -> bar_a
     private val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
-    private val waypointsStart = listOf(TrackLocation("ne.micro.foo_b", Offset(50.meters)))
-    private val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(100.meters)))
+    private val waypointsStart = listOf(RJSTrackLocation("ne.micro.foo_b", Offset(50.meters)))
+    private val waypointsEnd = listOf(RJSTrackLocation("ne.micro.bar_a", Offset(100.meters)))
     private val pathItems = listOf(PathItem(waypointsStart, false), PathItem(waypointsEnd, false))
 
     private fun makeRequest(allowedTrackSections: Set<String> = emptySet()) =
@@ -699,13 +700,13 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
     override fun setUp() {
         super.setUp()
         // West_Station
-        val startWaypoint = TrackLocation("TA1", Offset(500.meters))
+        val startWaypoint = RJSTrackLocation("TA1", Offset(500.meters))
         // Mid_West_Station
-        val firstIntermediateWaypoint = TrackLocation("TC1", Offset(550.meters))
+        val firstIntermediateWaypoint = RJSTrackLocation("TC1", Offset(550.meters))
         // Mid_East_Station
-        val secondIntermediateWaypoint = TrackLocation("TD0", Offset(14000.meters))
+        val secondIntermediateWaypoint = RJSTrackLocation("TD0", Offset(14000.meters))
         // South_East_Station
-        val endWaypoint = TrackLocation("TH1", Offset(4400.meters))
+        val endWaypoint = RJSTrackLocation("TH1", Offset(4400.meters))
         waypoints =
             listOf(
                 PathItem(listOf(startWaypoint), false),
@@ -872,9 +873,9 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun penultimateCorrectlyMovedJustBeforeDestination() {
-        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
-        val intermediateWaypoint = TrackLocation("TD0", Offset(12550.meters))
-        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        val startWaypoint = RJSTrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = RJSTrackLocation("TD0", Offset(12550.meters))
+        val endWaypoint = RJSTrackLocation("TD0", Offset(13000.meters))
         val waypoints =
             listOf(
                 PathItem(listOf(startWaypoint), false),
@@ -900,9 +901,9 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun penultimateStopNotMovedExactlyToDestination() {
-        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
-        val intermediateWaypoint = TrackLocation("TD0", Offset(12600.meters))
-        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        val startWaypoint = RJSTrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = RJSTrackLocation("TD0", Offset(12600.meters))
+        val endWaypoint = RJSTrackLocation("TD0", Offset(13000.meters))
         val waypoints =
             listOf(
                 PathItem(listOf(startWaypoint), false),
@@ -932,9 +933,9 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun penultimateStopTooCloseToDestination() {
-        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
-        val intermediateWaypoint = TrackLocation("TD0", Offset(12990.meters))
-        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        val startWaypoint = RJSTrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = RJSTrackLocation("TD0", Offset(12990.meters))
+        val endWaypoint = RJSTrackLocation("TD0", Offset(13000.meters))
         val waypoints =
             listOf(
                 PathItem(listOf(startWaypoint), false),
@@ -964,10 +965,10 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun twoPenultimatesStopTooCloseToDestination() {
-        val startWaypoint = TrackLocation("TC1", Offset(500.meters))
-        val intermediateWaypoint = TrackLocation("TD0", Offset(12950.meters))
-        val secondIntermediateWaypoint = TrackLocation("TD0", Offset(12990.meters))
-        val endWaypoint = TrackLocation("TD0", Offset(13000.meters))
+        val startWaypoint = RJSTrackLocation("TC1", Offset(500.meters))
+        val intermediateWaypoint = RJSTrackLocation("TD0", Offset(12950.meters))
+        val secondIntermediateWaypoint = RJSTrackLocation("TD0", Offset(12990.meters))
+        val endWaypoint = RJSTrackLocation("TD0", Offset(13000.meters))
         val waypoints =
             listOf(
                 PathItem(listOf(startWaypoint), false),
@@ -1000,9 +1001,9 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun simpleBacktrackingYInfraTest() {
-        val waypointsStart = listOf(TrackLocation("t_a", Offset(3100.meters)))
-        val waypointsBacktracking = listOf(TrackLocation("t_center", Offset(2800.meters)))
-        val waypointsEnd = listOf(TrackLocation("t_b", Offset(3400.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("t_a", Offset(3100.meters)))
+        val waypointsBacktracking = listOf(RJSTrackLocation("t_center", Offset(2800.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("t_b", Offset(3400.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -1061,9 +1062,9 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun backtrackingOverRouteDelimiterYInfraTest() {
-        val waypointsStart = listOf(TrackLocation("t_a", Offset(3100.meters)))
-        val waypointsBacktracking = listOf(TrackLocation("t_center", Offset(1100.meters)))
-        val waypointsEnd = listOf(TrackLocation("t_b", Offset(3400.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("t_a", Offset(3100.meters)))
+        val waypointsBacktracking = listOf(RJSTrackLocation("t_center", Offset(1100.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("t_b", Offset(3400.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,
@@ -1120,9 +1121,9 @@ class PathfindingStopsAtEndOfBlock : ApiTest() {
 
     @Test
     fun backtrackingShortlyAfterRouteDelimiterYInfraTest() {
-        val waypointsStart = listOf(TrackLocation("t_a", Offset(3100.meters)))
-        val waypointsBacktracking = listOf(TrackLocation("t_center", Offset(1500.meters)))
-        val waypointsEnd = listOf(TrackLocation("t_b", Offset(3100.meters)))
+        val waypointsStart = listOf(RJSTrackLocation("t_a", Offset(3100.meters)))
+        val waypointsBacktracking = listOf(RJSTrackLocation("t_center", Offset(1500.meters)))
+        val waypointsEnd = listOf(RJSTrackLocation("t_b", Offset(3100.meters)))
         val parsed =
             callPathfindingEndpoint(
                 TestTrains.REALISTIC_FAST_TRAIN,

@@ -101,4 +101,6 @@ interface TrackProperties {
     fun getOperationalPointPartProps(
         operationalPointPart: OperationalPointPartId,
     ): Map<String, String>
+
+    fun getOperationalPointParts(operationalPointId: String): Collection<OperationalPointPartId>
 }
