@@ -39,6 +39,7 @@ import {
 
 import { formatTrainDuration } from '../utils';
 import type useOccurrenceActions from './hooks/useOccurrenceActions';
+import useStartTruncatedText from './hooks/useStartTruncatedText';
 import OccurrenceIndicator from './OccurrenceIndicator';
 
 const ConsecutiveDayDateDisplay = ({
@@ -94,6 +95,7 @@ const OccurrenceItem = ({
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const { trainName, rollingStock, disabled, exception, summary } = occurrence;
+  const { ref: nameRef, displayedText: displayedTrainName } = useStartTruncatedText(trainName);
   const startTime = occurrence.startTime;
   const exceptionChangeGroups = exception?.exceptionChangeGroups;
 
@@ -253,8 +255,11 @@ const OccurrenceItem = ({
                   'start-time-exception': isStartTimeException,
                 })}
               >
-                <span title={trainName}>
-                  <bdi>{trainName}</bdi>
+                <span ref={nameRef} className="occurrence-name" title={trainName}>
+                  <span className="occurrence-name-sizer" aria-hidden>
+                    {trainName}
+                  </span>
+                  <span className="occurrence-name-text">{displayedTrainName}</span>
                 </span>
               </div>
             </div>

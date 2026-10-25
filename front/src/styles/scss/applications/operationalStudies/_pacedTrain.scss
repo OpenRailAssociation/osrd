@@ -310,20 +310,23 @@
                 align-items: center;
                 min-width: 0;
 
-                span {
-                  // rtl clips the start so the occurrence index stays visible.
-                  // The bdi keeps logical order: a bare rtl direction reorders
-                  // names that both start and end with a number.
+                // The hidden copy of the full name gives the label its width, and the visible
+                // name is cropped at the start in JS (useStartTruncatedText) to fit in it.
+                .occurrence-name {
+                  position: relative;
+                  min-width: 0;
                   overflow: hidden;
-                  text-overflow: ellipsis;
                   white-space: nowrap;
-                  direction: rtl;
-                  text-align: left;
+                }
 
-                  bdi {
-                    direction: ltr;
-                    unicode-bidi: isolate;
-                  }
+                .occurrence-name-sizer {
+                  visibility: hidden;
+                }
+
+                .occurrence-name-text {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
                 }
 
                 &.start-time-exception {

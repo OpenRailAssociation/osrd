@@ -142,3 +142,24 @@ export function truncateText(text: string, size: number) {
 
   return text;
 }
+
+/**
+ * Replace the start of `text` with an ellipsis so that the result fits in `maxWidth`, keeping
+ * as much of the end as possible. `measure` returns the rendered width of a string.
+ */
+export function truncateTextStart(
+  text: string,
+  maxWidth: number,
+  measure: (value: string) => number
+) {
+  if (measure(text) <= maxWidth) return text;
+
+  const characters = Array.from(text);
+  let end = '';
+  for (let i = characters.length - 1; i >= 0; i -= 1) {
+    const candidate = characters[i] + end;
+    if (measure(`…${candidate}`) > maxWidth) break;
+    end = candidate;
+  }
+  return `…${end}`;
+}
