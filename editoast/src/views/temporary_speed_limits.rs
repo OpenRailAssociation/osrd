@@ -2,10 +2,9 @@ use axum::extract::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::DateTime;
-use chrono::Utc;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+use models::Timestamp;
 use models::prelude::*;
 use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
@@ -26,8 +25,8 @@ use models::temporary_speed_limits;
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
 struct TemporarySpeedLimitItemForm {
-    start_date_time: DateTime<Utc>,
-    end_date_time: DateTime<Utc>,
+    start_date_time: Timestamp,
+    end_date_time: Timestamp,
     track_ranges: Vec<DirectionalTrackRange>,
     speed_limit: f64,
     obj_id: String,
@@ -130,7 +129,7 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
     // Create the speed limits group
     let TemporarySpeedLimitGroup { id: group_id, .. } = TemporarySpeedLimitGroup::changeset()
         .name(speed_limit_group_name.clone())
-        .creation_date(Utc::now())
+        .creation_date(Timestamp::now())
         .create(conn)
         .await
         .map_err(TemporarySpeedLimitError::from)?;

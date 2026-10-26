@@ -18,6 +18,7 @@ hostname.workspace = true
 http = { workspace = true }
 itertools.workspace = true
 lapin.workspace = true
+models.workspace = true
 opentelemetry.workspace = true
 ordered-float.workspace = true
 schemas.workspace = true

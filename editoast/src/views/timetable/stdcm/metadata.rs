@@ -1,6 +1,7 @@
 use axum_tracing_opentelemetry::tracing_opentelemetry_instrumentation_sdk::find_current_trace_id;
 use chrono::DateTime;
 use chrono::Utc;
+use models::Timestamp;
 use object_store::ObjectStoreExt as _;
 use object_store::aws::AmazonS3;
 use object_store::path::Path as ObjectStorePath;
@@ -24,7 +25,7 @@ pub(super) struct StdcmMetadata {
     pub(super) is_fallback: bool,
     pub(super) steps: Vec<StdcmPathfindingItem>,
     pub(super) preprocessing: Vec<ConsistPreprocessing>,
-    pub(super) earliest_departure_time: DateTime<Utc>,
+    pub(super) earliest_departure_time: Timestamp,
     pub(super) maximum_departure_delay: u64,
     pub(super) maximum_run_time: u64,
 }

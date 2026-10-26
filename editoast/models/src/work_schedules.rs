@@ -1,5 +1,4 @@
-use chrono::DateTime;
-use chrono::Utc;
+use crate::Timestamp;
 use editoast_derive::Model;
 use schemas::infra::TrackRange;
 use serde::Deserialize;
@@ -13,7 +12,7 @@ use utoipa::ToSchema;
 #[model(error(create = WsGroupError, update = WsGroupError))]
 pub struct WorkScheduleGroup {
     pub id: i64,
-    pub creation_date: DateTime<Utc>,
+    pub creation_date: Timestamp,
     pub name: String,
 }
 
@@ -54,8 +53,8 @@ pub enum WorkScheduleType {
 #[model(gen(batch_ops = c, list))]
 pub struct WorkSchedule {
     pub id: i64,
-    pub start_date_time: DateTime<Utc>,
-    pub end_date_time: DateTime<Utc>,
+    pub start_date_time: Timestamp,
+    pub end_date_time: Timestamp,
     #[model(json)]
     pub track_ranges: Vec<TrackRange>,
     pub obj_id: String,
@@ -76,14 +75,14 @@ mod tests {
 
         WorkScheduleGroup::changeset()
             .name("UNIQUE_NAME".to_string())
-            .creation_date(Utc::now())
+            .creation_date(Timestamp::now())
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
 
         let result = WorkScheduleGroup::changeset()
             .name("UNIQUE_NAME".to_string())
-            .creation_date(Utc::now())
+            .creation_date(Timestamp::now())
             .create(&mut db_pool.get_ok())
             .await;
 

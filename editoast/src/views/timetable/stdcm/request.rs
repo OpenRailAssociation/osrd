@@ -1,12 +1,11 @@
 use std::collections::HashSet;
 
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
+use jiff::SignedDuration;
 use schemas::infra::OperationalPointStop;
 
+use models::Timestamp;
 use schemas::RollingStock;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
@@ -84,7 +83,7 @@ pub(super) fn convert_steps(steps: &[StdcmPathfindingItem]) -> Vec<PathItem> {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub(crate) struct StepTimingData {
     /// Time at which the train should arrive at the location
-    pub(crate) arrival_time: DateTime<Utc>,
+    pub(crate) arrival_time: Timestamp,
     /// The train may arrive up to this duration before the expected arrival time
     pub(crate) arrival_time_tolerance_before: u64,
     /// The train may arrive up to this duration after the expected arrival time
@@ -97,7 +96,7 @@ pub(crate) struct StepTimingData {
 #[serde(remote = "Self")]
 pub(crate) struct Request {
     /// Deprecated, first step arrival time should be used instead
-    pub(crate) start_time: Option<DateTime<Utc>>,
+    pub(crate) start_time: Option<Timestamp>,
     pub(crate) steps: Vec<StdcmPathfindingItem>,
     pub(crate) electrical_profile_set_id: Option<i64>,
     pub(crate) work_schedule_group_id: Option<i64>,
@@ -136,7 +135,7 @@ pub(crate) struct Request {
 
 impl Request {
     /// Returns the earliest time that has been set on any step
-    pub(super) fn get_earliest_step_time(&self) -> DateTime<Utc> {
+    pub(super) fn get_earliest_step_time(&self) -> Timestamp {
         // Get the earliest time that has been specified for any step
         self.start_time
             .or_else(|| {
@@ -145,7 +144,7 @@ impl Request {
                     .flat_map(|step| step.timing_data.iter())
                     .map(|data| {
                         data.arrival_time
-                            - Duration::milliseconds(data.arrival_time_tolerance_before as i64)
+                            - SignedDuration::from_millis(data.arrival_time_tolerance_before as i64)
                     })
                     .next()
             })
@@ -190,7 +189,7 @@ impl Request {
     }
 
     /// Returns the earliest time at which the train may start
-    pub(super) fn get_earliest_departure_time(&self, simulation_run_time: u64) -> DateTime<Utc> {
+    pub(super) fn get_earliest_departure_time(&self, simulation_run_time: u64) -> Timestamp {
         // Prioritize: start time, or first step time, or (first specified time - max run time)
         self.start_time.unwrap_or(
             self.steps
@@ -199,21 +198,23 @@ impl Request {
                 .and_then(|data| {
                     Option::from(
                         data.arrival_time
-                            - Duration::milliseconds(data.arrival_time_tolerance_before as i64),
+                            - SignedDuration::from_millis(
+                                data.arrival_time_tolerance_before as i64,
+                            ),
                     )
                 })
                 .unwrap_or(
                     self.get_earliest_step_time()
-                        - Duration::milliseconds(
-                            self.get_maximum_run_time(simulation_run_time) as i64
+                        - SignedDuration::from_millis(
+                            self.get_maximum_run_time(simulation_run_time) as i64,
                         ),
                 ),
         )
     }
 
-    pub(super) fn get_latest_simulation_end(&self, simulation_run_time: u64) -> DateTime<Utc> {
+    pub(super) fn get_latest_simulation_end(&self, simulation_run_time: u64) -> Timestamp {
         self.get_earliest_departure_time(simulation_run_time)
-            + Duration::milliseconds(
+            + SignedDuration::from_millis(
                 (self.get_maximum_run_time(simulation_run_time)
                     + self.get_earliest_step_tolerance_window()) as i64,
             )

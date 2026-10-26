@@ -28,9 +28,6 @@ use axum::http::header;
 use axum::response::IntoResponse as _;
 use axum::response::Response;
 use axum_streams::StreamBodyAs;
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
 use common::geometry::GeoJsonPoint;
 use core_client::AsCoreStreaming as _;
 use core_client::CoreClient;
@@ -52,9 +49,11 @@ use futures::stream;
 use geos::geojson::Geometry;
 use geos::geojson::Value;
 use itertools::Itertools as _;
+use jiff::SignedDuration;
 use metadata::ConsistPreprocessing;
 use metadata::StdcmMetadata;
 use models::Infra;
+use models::Timestamp;
 use models::WorkSchedule;
 use models::prelude::*;
 use models::rolling_stock::RollingStock;
@@ -87,15 +86,15 @@ use utoipa::ToSchema;
 pub struct StdcmLastReachedOperationalPoint {
     #[schema(value_type = GeoJsonPoint)]
     pub geographic: Geometry,
-    pub arrival_time: DateTime<Utc>,
+    pub arrival_time: Timestamp,
     pub operational_point: OperationalPoint,
 }
 
 /// Represents one conflicting work schedule in a partial pathfinding result
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 pub struct StdcmConflictingWorkSchedule {
-    pub start_date_time: DateTime<Utc>,
-    pub end_date_time: DateTime<Utc>,
+    pub start_date_time: Timestamp,
+    pub end_date_time: Timestamp,
     pub last_op: OperationalPoint,
 }
 
@@ -106,7 +105,7 @@ pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,
         pathfinding_result: PathfindingResultSuccess,
-        departure_time: DateTime<Utc>,
+        departure_time: Timestamp,
     },
     PathNotFound {
         most_blocking_work_schedules: Vec<StdcmConflictingWorkSchedule>,
@@ -248,7 +247,7 @@ pub(in crate::views) async fn stdcm(
     headers: HeaderMap,
     Json(request): Json<Request>,
 ) -> Result<Response> {
-    let request_time = Utc::now();
+    let request_time = chrono::Utc::now();
     let consist_schedule_values = &request.consist_schedule.values;
     if authn_state.user().is_some() {
         let authorizer = authn_state.authorizer(&openfga);
@@ -663,7 +662,7 @@ impl VirtualTrainRun {
                 train_name: "".to_string(),
                 labels: vec![],
                 rolling_stock_name: consist.traction_engine.name.clone(),
-                start_time: millisecond::i64::new(approx_start_time.timestamp_millis()),
+                start_time: millisecond::i64::new(approx_start_time.as_millisecond()),
                 schedule: stdcm_request.steps[start..=end]
                     .iter()
                     .zip(&path)
@@ -671,14 +670,12 @@ impl VirtualTrainRun {
                         at: path_item.key.clone(),
                         arrival: stdcm_step.timing_data.as_ref().map(|timing_data| {
                             PositiveDuration::try_from(
-                                timing_data
-                                    .arrival_time
-                                    .signed_duration_since(approx_start_time),
+                                timing_data.arrival_time.duration_since(*approx_start_time),
                             )
                             .unwrap()
                         }),
                         stop_for: stdcm_step.duration.map(|duration| {
-                            PositiveDuration::try_from(Duration::milliseconds(duration as i64))
+                            PositiveDuration::try_from(SignedDuration::from_millis(duration as i64))
                                 .unwrap()
                         }),
                         reception_signal: ReceptionSignal::Stop,
@@ -752,8 +749,8 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 /// Convert a WorkSchedule to a core_client WorkSchedule
 pub fn as_core_work_schedule(
     work_schedule: &WorkSchedule,
-    earliest_departure_time: DateTime<Utc>,
-    latest_simulation_end: DateTime<Utc>,
+    earliest_departure_time: Timestamp,
+    latest_simulation_end: Timestamp,
 ) -> Option<core_client::stdcm::WorkSchedule> {
     if work_schedule.end_date_time <= earliest_departure_time
         || work_schedule.start_date_time >= latest_simulation_end
@@ -763,8 +760,8 @@ pub fn as_core_work_schedule(
 
     Some(core_client::stdcm::WorkSchedule {
         obj_id: work_schedule.obj_id.clone(),
-        start_time: work_schedule.start_date_time.timestamp_millis() as u64,
-        end_time: work_schedule.end_date_time.timestamp_millis() as u64,
+        start_time: work_schedule.start_date_time.as_millisecond() as u64,
+        end_time: work_schedule.end_date_time.as_millisecond() as u64,
         track_ranges: work_schedule
             .track_ranges
             .iter()
@@ -798,7 +795,6 @@ mod tests {
     use authz::Role;
     use authz::RollingStockGrant;
     use axum::http::StatusCode;
-    use chrono::DateTime;
     use core_client;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrainPath;
@@ -844,7 +840,7 @@ mod tests {
     ) -> Request {
         Request {
             start_time: Some(
-                DateTime::from_str("2024-01-01T10:00:00Z").expect("Failed to parse datetime"),
+                Timestamp::from_str("2024-01-01T10:00:00Z").expect("Failed to parse datetime"),
             ),
             steps: vec![
                 StdcmPathfindingItem {
@@ -863,7 +859,7 @@ mod tests {
                         can_backtrack: false,
                     },
                     timing_data: Some(StepTimingData {
-                        arrival_time: DateTime::from_str("2024-01-01T14:00:00Z")
+                        arrival_time: Timestamp::from_str("2024-01-01T14:00:00Z")
                             .expect("Failed to parse datetime"),
                         arrival_time_tolerance_before: 0,
                         arrival_time_tolerance_after: 0,
@@ -978,7 +974,7 @@ mod tests {
         LastReachedOperationalPoint {
             id: "South_East_station".to_string(),
             coordinates: core_client::stdcm::ProgressCoordinates { lat: 2.0, lon: 2.0 },
-            arrival_time: DateTime::from_str("2024-01-02T00:00:00Z")
+            arrival_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                 .expect("Failed to parse datetime"),
         }
     }
@@ -1025,12 +1021,8 @@ mod tests {
 
     fn new_work_schedule_changeset(obj_ids: Vec<String>) -> Vec<Changeset<WorkSchedule>> {
         let track_ranges = vec![schemas::infra::TrackRange::new("d", 100.0, 150.0)];
-        let start_date_time = DateTime::parse_from_rfc3339("2024-03-13 06:00:00Z")
-            .unwrap()
-            .to_utc();
-        let end_date_time = DateTime::parse_from_rfc3339("2024-03-13 12:00:00Z")
-            .unwrap()
-            .to_utc();
+        let start_date_time = Timestamp::from_str("2024-03-13 06:00:00Z").unwrap();
+        let end_date_time = Timestamp::from_str("2024-03-13 12:00:00Z").unwrap();
 
         obj_ids
             .into_iter()
@@ -1287,7 +1279,7 @@ mod tests {
                     result: core_client::stdcm::Response::Success {
                         simulation: simulation_empty_response().success().unwrap(),
                         path: pathfinding_result_success(),
-                        departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                             .expect("Failed to parse datetime"),
                     },
                 })
@@ -1333,7 +1325,7 @@ mod tests {
                 StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                     simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                 }))
             );
@@ -1380,7 +1372,7 @@ mod tests {
             .json(core_client::stdcm::Response::Success {
                 simulation: simulation_empty_response().success().unwrap(),
                 path: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
             })
             .finish();
@@ -1539,7 +1531,7 @@ mod tests {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                 },
             })
@@ -1596,7 +1588,7 @@ mod tests {
                 StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                     simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                 }))
             );
@@ -1747,18 +1739,12 @@ mod tests {
         use models::WorkSchedule;
         let work_schedules = [WorkSchedule {
             id: rand::random::<i64>(),
-            start_date_time: DateTime::parse_from_rfc3339(ws_start_time)
-                .unwrap()
-                .to_utc(),
-            end_date_time: DateTime::parse_from_rfc3339(ws_end_time).unwrap().to_utc(),
+            start_date_time: Timestamp::from_str(ws_start_time).unwrap(),
+            end_date_time: Timestamp::from_str(ws_end_time).unwrap(),
             ..Default::default()
         }];
-        let start_time = DateTime::parse_from_rfc3339("2024-03-14T08:00:00Z")
-            .unwrap()
-            .to_utc();
-        let latest_simulation_end = DateTime::parse_from_rfc3339("2024-03-14T10:00:00Z")
-            .unwrap()
-            .to_utc();
+        let start_time = Timestamp::from_str("2024-03-14T08:00:00Z").unwrap();
+        let latest_simulation_end = Timestamp::from_str("2024-03-14T10:00:00Z").unwrap();
 
         // WHEN
         let filtered: Vec<_> = work_schedules
@@ -1861,7 +1847,7 @@ mod tests {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                 },
             })
@@ -1936,7 +1922,7 @@ mod tests {
             StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                 simulation: simulation_empty_response().success().unwrap().into(),
                 pathfinding_result: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
             }))
         );
@@ -1968,7 +1954,7 @@ mod tests {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                 },
             })
@@ -2029,7 +2015,7 @@ mod tests {
             StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                 simulation: simulation_empty_response().success().unwrap().into(),
                 pathfinding_result: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
             }))
         );
@@ -2102,7 +2088,7 @@ mod tests {
                 result: core_client::stdcm::Response::Success {
                     simulation: simulation_empty_response().success().unwrap(),
                     path: pathfinding_result_success(),
-                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                 },
             })
@@ -2145,7 +2131,7 @@ mod tests {
             StdcmProgression::Completed(Box::new(StdcmResponse::Success {
                 simulation: simulation_empty_response().success().unwrap().into(),
                 pathfinding_result: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                departure_time: Timestamp::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
             }))
         );

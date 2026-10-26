@@ -1,4 +1,3 @@
-use chrono::Duration;
 use core_client::AsCoreRequest as _;
 use core_client::Headers;
 use core_client::pathfinding::PathfindingInputError;
@@ -23,6 +22,7 @@ use core_task::SimulationTrainParameters;
 use database::DbConnection;
 use itertools::Either;
 use itertools::Itertools as _;
+use jiff::SignedDuration;
 use ordered_float::OrderedFloat;
 use schemas::TrainOccurrence;
 use schemas::train_schedule::Margins;
@@ -68,7 +68,7 @@ pub const TRAIN_SIZE_BATCH: usize = 100;
 /// Used when computing whether path items respect times and margins of a simulation.
 ///
 /// This value is chosen because core hard-codes a timestep of two seconds for standalone simulations.
-const TIME_APPROX_ERROR: Duration = Duration::seconds(2);
+const TIME_APPROX_ERROR: SignedDuration = SignedDuration::from_secs(2);
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct SimulationResponseSuccess {
@@ -115,11 +115,11 @@ pub fn path_item_respect_times<T: TrainScheduleLike>(
         let Some(arrival): Option<PositiveDuration> = schedule_item.arrival else {
             continue;
         };
-        let arrival = Duration::from(arrival);
+        let arrival = SignedDuration::from(arrival);
 
         let path_item_index = path_item_key_to_index[&schedule_item.at];
         let path_item_time = i64::try_from(path_item_times_final[path_item_index]).unwrap();
-        let path_item_time = Duration::milliseconds(path_item_time);
+        let path_item_time = SignedDuration::from_millis(path_item_time);
 
         res[path_item_index] = (path_item_time - arrival).abs() < TIME_APPROX_ERROR;
     }
@@ -202,7 +202,7 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
                 path_item_time_provisional - prev_path_item_time_provisional;
             let margin_diff = interval_duration_final - interval_duration_provisional;
 
-            res[prev_path_item_index] = margin_diff >= -TIME_APPROX_ERROR.num_milliseconds();
+            res[prev_path_item_index] = margin_diff >= -TIME_APPROX_ERROR.as_millis() as i64;
         });
 
     res
@@ -714,8 +714,8 @@ pub fn build_simulation_train(
             }) => (
                 at,
                 core_task::ScheduleItem {
-                    arrival_at: arrival.as_ref().map(|a| a.num_milliseconds() as u64),
-                    stop_for: stop_for.as_ref().map(|s| s.num_milliseconds() as u64),
+                    arrival_at: arrival.as_ref().map(|a| a.as_millis() as u64),
+                    stop_for: stop_for.as_ref().map(|s| s.as_millis() as u64),
                     reception_signal: *reception_signal,
                 },
                 *can_backtrack,
@@ -862,12 +862,9 @@ pub fn build_sim_schedule_items(
                 },
                 Some(schedule_item) => SimulationScheduleItem {
                     path_offset: path_items_to_position[&schedule_item.at],
-                    arrival: schedule_item
-                        .arrival
-                        .as_ref()
-                        .map(|t| t.num_milliseconds() as u64),
+                    arrival: schedule_item.arrival.as_ref().map(|t| t.as_millis() as u64),
                     stop_details: schedule_item.stop_for.as_ref().map(|t| StopDetails {
-                        duration: t.num_milliseconds() as u64,
+                        duration: t.as_millis() as u64,
                         reception_signal: schedule_item.reception_signal,
                         is_backtracking,
                     }),

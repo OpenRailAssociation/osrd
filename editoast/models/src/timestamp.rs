@@ -20,13 +20,25 @@ use diesel::sql_types;
 use jiff_diesel::ToDiesel as _;
 use serde::Deserialize;
 use serde::Serialize;
+use std::ops::Deref;
+use std::str::FromStr;
 use utoipa::ToSchema;
 
 #[derive(
-    Debug, Clone, AsExpression, Serialize, Deserialize, FromSqlRow, PartialEq, PartialOrd, ToSchema,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    AsExpression,
+    Serialize,
+    Deserialize,
+    FromSqlRow,
+    PartialEq,
+    PartialOrd,
+    ToSchema,
 )]
 #[diesel(sql_type = sql_types::Timestamptz)]
-pub struct Timestamp(jiff::Timestamp);
+pub struct Timestamp(pub jiff::Timestamp);
 
 impl Timestamp {
     pub fn now() -> Timestamp {
@@ -44,5 +56,48 @@ impl ToSql<sql_types::Timestamptz, Pg> for Timestamp {
 impl FromSql<sql_types::Timestamptz, Pg> for Timestamp {
     fn from_sql(bytes: PgValue<'_>) -> deserialize::Result<Timestamp> {
         jiff_diesel::Timestamp::from_sql(bytes).map(|timestamp| Timestamp(timestamp.to_jiff()))
+    }
+}
+
+impl Deref for Timestamp {
+    type Target = jiff::Timestamp;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl core::fmt::Display for Timestamp {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl FromStr for Timestamp {
+    type Err = jiff::Error;
+    fn from_str(s: &str) -> Result<Timestamp, jiff::Error> {
+        jiff::Timestamp::from_str(s).map(Timestamp)
+    }
+}
+
+impl core::ops::Sub<jiff::SignedDuration> for Timestamp {
+    type Output = Timestamp;
+
+    fn sub(self, rhs: jiff::SignedDuration) -> Timestamp {
+        Timestamp(self.0 - rhs)
+    }
+}
+
+impl core::ops::Add<jiff::SignedDuration> for Timestamp {
+    type Output = Timestamp;
+
+    fn add(self, rhs: jiff::SignedDuration) -> Timestamp {
+        Timestamp(self.0 + rhs)
+    }
+}
+
+impl From<jiff::Timestamp> for Timestamp {
+    fn from(value: jiff::Timestamp) -> Self {
+        Timestamp(value)
     }
 }

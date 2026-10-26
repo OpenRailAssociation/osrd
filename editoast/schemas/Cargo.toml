@@ -10,12 +10,14 @@ testing = []
 [dependencies]
 chrono.workspace = true
 common.workspace = true
+diesel.workspace = true
 editoast_derive.workspace = true
 educe.workspace = true
 enum-map.workspace = true
 geos.workspace = true
 iso8601 = "0.6.3"
 itertools.workspace = true
+jiff.workspace = true
 rand.workspace = true
 regex.workspace = true
 serde.workspace = true

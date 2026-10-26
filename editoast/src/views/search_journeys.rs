@@ -289,8 +289,8 @@ pub(in crate::views) async fn search_journeys(
                                 .iter()
                                 .find(|schedule_item| schedule_item.at == path_item.key)?;
 
-                            arrival_ms = offset_ms + schedule_item.arrival?.num_milliseconds();
-                            stop_for_ms = schedule_item.stop_for?.num_milliseconds();
+                            arrival_ms = offset_ms + schedule_item.arrival?.as_millis() as i64;
+                            stop_for_ms = schedule_item.stop_for?.as_millis() as i64;
                         }
 
                         let PathItemLocation::OperationalPointPartReference(op_ref) =

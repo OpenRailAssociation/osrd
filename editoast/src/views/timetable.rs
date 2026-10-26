@@ -996,8 +996,8 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::http::StatusCode;
-    use chrono::Duration;
     use core_client::simulation::RoutingZoneRequirement;
+    use jiff::SignedDuration;
     use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
@@ -1083,9 +1083,9 @@ mod tests {
         let mut train_schedule_t1_2 = simple_paced_train_base();
         train_schedule_t1_2.train_occurrence.start_time += units::millisecond::i64::new(12_000_000);
         train_schedule_t1_2.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_t1_2.paced.as_mut().unwrap().interval =
-            Duration::seconds(30).try_into().unwrap();
+            SignedDuration::from_secs(30).try_into().unwrap();
 
         let train_schedules_bases_t1 = vec![train_schedule_t1_1, train_schedule_t1_2];
         let train_schedules_changesets_t1 = train_schedules_bases_t1
@@ -1123,9 +1123,9 @@ mod tests {
         let mut train_schedule_t2_1 = simple_paced_train_base();
         train_schedule_t2_1.train_occurrence.start_time += units::millisecond::i64::new(12_000_000);
         train_schedule_t2_1.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_t2_1.paced.as_mut().unwrap().interval =
-            Duration::seconds(30).try_into().unwrap();
+            SignedDuration::from_secs(30).try_into().unwrap();
         let train_schedules_bases_t2 = vec![train_schedule_t2_1];
         let train_schedules_changesets_t2 = train_schedules_bases_t2
             .into_iter()
@@ -1474,7 +1474,7 @@ mod tests {
         ];
         train_schedule_base_2.train_occurrence.schedule = vec![ScheduleItem::new_with_stop(
             "Mid_West_station",
-            Duration::seconds(0),
+            SignedDuration::from_secs(0),
         )];
 
         Changeset::<models::TrainSchedule>::from(train_schedule_base_2)

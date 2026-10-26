@@ -1,15 +1,17 @@
 use crate::prelude::*;
 use crate::rolling_stock::TrainMainCategory;
 use crate::tags::Tags;
-use chrono::Duration as ChronoDuration;
 use derive_more::Display;
+use diesel::pg::data_types::PgInterval;
 use editoast_derive::Model;
 use itertools::Itertools as _;
+use jiff::SignedDuration as JiffDuration;
 use schemas;
 use schemas::TrainScheduleException;
 use schemas::paced_train;
 use schemas::paced_train::Paced;
 use schemas::paced_train::PacedTrainException;
+use schemas::primitives::duration::pg_interval_to_jiff_duration;
 use schemas::rolling_stock::TrainCategory;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
@@ -58,9 +60,9 @@ pub struct TrainSchedule {
     #[model(json)]
     pub options: TrainScheduleOptions,
     /// Time window of the paced train
-    pub time_window: Option<ChronoDuration>,
+    pub time_window: Option<PgInterval>,
     /// Time between two occurrences
-    pub interval: Option<ChronoDuration>,
+    pub interval: Option<PgInterval>,
     pub main_category: Option<TrainMainCategory>,
     /// Sub category code
     pub sub_category: Option<String>,
@@ -182,9 +184,15 @@ impl TrainSchedule {
 
     /// Returns the start time of the occurrence at the given index.
     fn get_occurrence_start_time(&self, occurrence_index: usize) -> Offset {
+        // TODO Error handling, currently panics if month in interval != 0
         if let Some(interval) = self.interval {
             self.start_time
-                + millisecond::i64::new((interval * occurrence_index as i32).num_milliseconds())
+                + millisecond::i64::new(
+                    (pg_interval_to_jiff_duration(interval).unwrap() * occurrence_index as i32)
+                        .as_millis()
+                        .try_into()
+                        .unwrap(),
+                )
         } else {
             self.start_time
         }
@@ -207,8 +215,14 @@ impl TrainSchedule {
     }
 
     /// Returns time window and interval when this train has paced occurrences.
-    pub fn pace(&self) -> Option<(ChronoDuration, ChronoDuration)> {
-        self.time_window.zip(self.interval)
+    pub fn pace(&self) -> Option<(JiffDuration, JiffDuration)> {
+        // TODO Error handling, panics if months in PgInterval != 0
+        self.time_window
+            .map(|window| pg_interval_to_jiff_duration(window).unwrap())
+            .zip(
+                self.interval
+                    .map(|duration| pg_interval_to_jiff_duration(duration).unwrap()),
+            )
     }
 
     /// Returns the number of base train occurrences within the pacing window.
@@ -217,8 +231,8 @@ impl TrainSchedule {
         if let Some((time_window, interval)) = self.pace() {
             // Ideally, we’d use `div_ceil` which is nightly-only at the time of writing
             // https://doc.rust-lang.org/std/primitive.i64.html#method.div_ceil
-            let time_window = time_window.num_seconds();
-            let interval = interval.num_seconds();
+            let time_window = time_window.as_secs();
+            let interval = interval.as_secs();
             (time_window / interval) as usize
                 + if time_window.rem_euclid(interval) != 0 {
                     1
@@ -372,13 +386,8 @@ impl From<paced_train::TrainSchedule> for TrainScheduleChangeset {
             .start_time(train_occurrence.start_time)
             .train_name(train_occurrence.train_name)
             .options(train_occurrence.options)
-            .time_window(
-                paced
-                    .as_ref()
-                    .map(|p| p.time_window)
-                    .map(ChronoDuration::from),
-            )
-            .interval(paced.as_ref().map(|p| p.interval).map(ChronoDuration::from));
+            .time_window(paced.as_ref().map(|p| p.time_window).map(PgInterval::from))
+            .interval(paced.as_ref().map(|p| p.interval).map(PgInterval::from));
 
         match train_occurrence.category {
             Some(TrainCategory::Main { main_category }) => changeset
@@ -511,6 +520,7 @@ mod tests {
     use schemas::fixtures::ms_since_epoch;
     use schemas::paced_train::RollingStockCategoryChangeGroup;
     use schemas::paced_train::StartTimeChangeGroup;
+    use schemas::primitives::duration::jiff_duration_to_pg_interval;
     use unit_system::quantities::Offset;
 
     use crate::prelude::*;
@@ -523,8 +533,11 @@ mod tests {
         Changeset::<TrainSchedule>::from(schemas::paced_train::TrainSchedule {
             train_occurrence: schemas::train_schedule::TrainOccurrence::fake(),
             paced: Some(schemas::paced_train::Paced {
-                time_window: chrono::Duration::try_hours(2).unwrap().try_into().unwrap(),
-                interval: chrono::Duration::try_minutes(15)
+                time_window: jiff::SignedDuration::try_from_hours(2)
+                    .unwrap()
+                    .try_into()
+                    .unwrap(),
+                interval: jiff::SignedDuration::try_from_mins(15)
                     .unwrap()
                     .try_into()
                     .unwrap(),
@@ -582,71 +595,71 @@ mod tests {
             speed_limit_tag: None,
             options: TrainScheduleOptions::default(),
             start_time: ms_since_epoch("2025-05-15T12:00:00Z"),
-            time_window: chrono::Duration::try_hours(2),
-            interval: chrono::Duration::try_minutes(30),
+            time_window: jiff::SignedDuration::try_from_hours(2).map(jiff_duration_to_pg_interval),
+            interval: jiff::SignedDuration::try_from_mins(30).map(jiff_duration_to_pg_interval),
             sub_category: None,
         }
     }
 
     #[rstest]
     #[case(
-        chrono::Duration::try_hours(2),
-        chrono::Duration::try_minutes(30),
+        jiff::SignedDuration::try_from_hours(2),
+        jiff::SignedDuration::try_from_mins(30),
         0,
         true
     )]
     #[case(
-        chrono::Duration::try_hours(2),
-        chrono::Duration::try_minutes(30),
+        jiff::SignedDuration::try_from_hours(2),
+        jiff::SignedDuration::try_from_mins(30),
         1,
         true
     )]
     #[case(
-        chrono::Duration::try_hours(2),
-        chrono::Duration::try_minutes(30),
+        jiff::SignedDuration::try_from_hours(2),
+        jiff::SignedDuration::try_from_mins(30),
         3,
         true
     )]
     #[case(
-        chrono::Duration::try_hours(2),
-        chrono::Duration::try_minutes(30),
+        jiff::SignedDuration::try_from_hours(2),
+        jiff::SignedDuration::try_from_mins(30),
         4,
         false
     )]
     #[case(
-        chrono::Duration::try_hours(2),
-        chrono::Duration::try_minutes(30),
+        jiff::SignedDuration::try_from_hours(2),
+        jiff::SignedDuration::try_from_mins(30),
         100,
         false
     )]
-    #[case(chrono::Duration::try_hours(2), chrono::Duration::try_minutes(30), -1, false)]
+    #[case(jiff::SignedDuration::try_from_hours(2), jiff::SignedDuration::try_from_mins(30), -1, false)]
     #[case(
-        chrono::Duration::try_seconds(120),
-        chrono::Duration::try_seconds(50),
+        Some(jiff::SignedDuration::from_secs(120)),
+        Some(jiff::SignedDuration::from_secs(50)),
         3,
         false
     )]
     #[case(
-        chrono::Duration::try_minutes(60),
-        chrono::Duration::try_minutes(25),
+        jiff::SignedDuration::try_from_mins(60),
+        jiff::SignedDuration::try_from_mins(25),
         2,
         true
     )]
     #[case(
-        chrono::Duration::try_minutes(60),
-        chrono::Duration::try_minutes(25),
+        jiff::SignedDuration::try_from_mins(60),
+        jiff::SignedDuration::try_from_mins(25),
         3,
         false
     )]
     fn train_schedule_is_exception_occurrence_index_invalid(
-        #[case] time_window: Option<chrono::Duration>,
-        #[case] interval: Option<chrono::Duration>,
+        #[case] time_window: Option<jiff::SignedDuration>,
+        #[case] interval: Option<jiff::SignedDuration>,
         #[case] occurrence_index: i64,
         #[case] expected_valid: bool,
     ) {
         let mut train_schedule = create_paced_train();
-        train_schedule.time_window = time_window;
-        train_schedule.interval = interval;
+        train_schedule.time_window = time_window.map(jiff_duration_to_pg_interval);
+        train_schedule.interval = interval.map(jiff_duration_to_pg_interval);
         assert_eq!(
             train_schedule.is_exception_occurrence_index_valid(occurrence_index),
             expected_valid
@@ -667,7 +680,7 @@ mod tests {
         let mut train_schedule_update: schemas::paced_train::TrainSchedule =
             train_schedule_schema_from_model(create_paced_train(), vec![]);
         train_schedule_update.paced.as_mut().unwrap().interval =
-            chrono::Duration::minutes(60).try_into().unwrap();
+            jiff::SignedDuration::from_mins(60).try_into().unwrap();
         assert!(!train_schedule.has_same_pace(train_schedule_update.paced.as_ref()));
     }
 
@@ -677,7 +690,7 @@ mod tests {
         let mut train_schedule_update: schemas::paced_train::TrainSchedule =
             train_schedule_schema_from_model(create_paced_train(), vec![]);
         train_schedule_update.paced.as_mut().unwrap().time_window =
-            chrono::Duration::hours(4).try_into().unwrap();
+            jiff::SignedDuration::from_hours(4).try_into().unwrap();
         assert!(!train_schedule.has_same_pace(train_schedule_update.paced.as_ref()));
     }
 
