@@ -290,7 +290,15 @@ const PathStepItem = ({
     !pathStepMetadata.isValidLocalTrackName;
 
   const isOpValid = !isInvalid && !!pathStep.location;
-
+  const StatusBadge = isOpValid ? Check : X;
+  const InfrastructureIcon = !pathStep.location ? (
+    <Infrastructure size="lg" />
+  ) : (
+    <>
+      <Infrastructure size="sm" />
+      <StatusBadge size="sm" className="path-step-op-status-badge" />
+    </>
+  );
   const opStatusIcon = unrecognizedWaypointsActivated && (
     <span
       className={cx('path-step-op-status-icon', {
@@ -300,19 +308,7 @@ const PathStepItem = ({
         placeholder: !pathStep.location, // isOpValid and isInvalid are both false in this case
       })}
     >
-      {pathStep.location?.type === 'track_offset' ? (
-        <TrackOffset size="lg" />
-      ) : (
-        <>
-          <Infrastructure size={pathStep.location ? 'sm' : 'lg'} />
-          {pathStep.location &&
-            (isOpValid ? (
-              <Check size="sm" className="path-step-op-status-badge" />
-            ) : (
-              <X size="sm" className="path-step-op-status-badge" />
-            ))}
-        </>
-      )}
+      {pathStep.location?.type === 'track_offset' ? <TrackOffset size="lg" /> : InfrastructureIcon}
     </span>
   );
 
