@@ -44,6 +44,7 @@ const DebugSpeedDistanceDiagram = ({ simData }: { simData: SimDebugData }) => {
     curves: [],
     voltages: [],
     geometry: { type: 'LineString', coordinates: [] },
+    geomProjection: simData.path_properties.geom_projection,
   };
 
   return (

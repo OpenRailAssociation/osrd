@@ -1,30 +1,25 @@
+import along from '@turf/along';
 import type { Position } from 'geojson';
 
-import type { CoreTrackRange, TrackSection } from 'common/api/osrdEditoastApi';
-import { getPointOnTrackCoordinates } from 'utils/geometry';
-import { mToMm } from 'utils/physics';
-
-import findTrackSectionOffset from './findTrackSectionOffset';
+import type { CorePropertyGeometryProjection, GeoJsonLineString } from 'common/api/osrdEditoastApi';
+import { convertGeomTopoTrackOffset } from 'utils/geometry';
 
 /**
- * Compute the coordinates of a point on a path from its path offset
- * and the list of tracks (track sections and ranges) composing the path.
+ * Compute the coordinates of a point on a path from its path offset,
+ * the path geometry and the path topological to geometric offset projection.
  */
 const getPointOnPathCoordinates = (
-  tracks: Record<string, TrackSection>,
-  trackRanges: CoreTrackRange[],
-  tracksLengthCumulativeSums: number[],
-  positionOnPath: number
+  positionOnPath: number,
+  geometry: GeoJsonLineString,
+  geomProjection: CorePropertyGeometryProjection
 ): Position => {
-  const trackOffset = findTrackSectionOffset(
+  const geometricOffset = convertGeomTopoTrackOffset(
+    geomProjection,
     positionOnPath,
-    tracksLengthCumulativeSums,
-    trackRanges
+    'topo_to_geom'
   );
 
-  const track = tracks[trackOffset.track];
-
-  return getPointOnTrackCoordinates(track.geo, mToMm(track.length), trackOffset.offset)!;
+  return along(geometry, geometricOffset, { units: 'millimeters' }).geometry.coordinates;
 };
 
 export default getPointOnPathCoordinates;
