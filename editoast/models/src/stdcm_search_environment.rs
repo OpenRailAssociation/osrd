@@ -105,12 +105,12 @@ impl StdcmSearchEnvironment {
 
 #[cfg(any(test, feature = "testing"))]
 pub mod fixtures {
-    use chrono::Utc;
 
     use super::*;
     use crate::ElectricalProfileSet;
     use crate::Infra;
     use crate::TemporarySpeedLimitGroup;
+    use crate::Timestamp;
     use crate::WorkScheduleGroup;
     use crate::timetable::Timetable;
 
@@ -137,14 +137,14 @@ pub mod fixtures {
 
         let work_schedule_group = WorkScheduleGroup::changeset()
             .name("Test work schedule group".to_string())
-            .creation_date(Utc::now())
+            .creation_date(Timestamp::now())
             .create(conn)
             .await
             .expect("Failed to create work schedule group");
 
         let temporary_speed_limit_group = TemporarySpeedLimitGroup::changeset()
             .name("Test temporary speed limit group".to_string())
-            .creation_date(Utc::now())
+            .creation_date(Timestamp::now())
             .create(conn)
             .await
             .expect("Failed to create temporary speed limit group");

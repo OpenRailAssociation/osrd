@@ -937,7 +937,6 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 name = "core_client"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "common",
  "dashmap",
  "deadpool",
@@ -949,6 +948,7 @@ dependencies = [
  "hostname",
  "http",
  "itertools 0.15.0",
+ "jiff",
  "lapin",
  "opentelemetry",
  "ordered-float",
@@ -4704,14 +4704,15 @@ dependencies = [
 name = "schemas"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "common",
+ "diesel",
  "editoast_derive",
  "educe 0.8.1",
  "enum-map",
  "geos",
  "iso8601",
  "itertools 0.15.0",
+ "jiff",
  "proptest",
  "rand 0.10.3",
  "regex",

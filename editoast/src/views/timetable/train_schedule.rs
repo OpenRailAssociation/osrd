@@ -2138,7 +2138,7 @@ fn find_track_occupancy_unknown_operational_point(
                             let arrival_time = if is_first_path_item {
                                 0
                             } else {
-                                schedule_item.arrival?.num_milliseconds()
+                                schedule_item.arrival?.as_millis() as i64
                             };
                             let time_begin =
                                 train_schedule.start_time + millisecond::i64::new(arrival_time);
@@ -2261,8 +2261,6 @@ mod tests {
     use authz::InfraGrant;
     use authz::RollingStockGrant;
     use axum::http::StatusCode;
-    use chrono::Duration;
-    use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
@@ -2274,6 +2272,8 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPool;
+    use diesel::data_types::PgInterval;
+    use jiff::SignedDuration;
     use models::TrainScheduleException;
 
     use models::rolling_stock::TrainMainCategory;
@@ -2481,7 +2481,7 @@ mod tests {
 
         let mut updated_train_schedule = simple_paced_train_base();
         updated_train_schedule.paced.as_mut().unwrap().interval =
-            chrono::Duration::minutes(30).try_into().unwrap();
+            jiff::SignedDuration::from_mins(30).try_into().unwrap();
 
         app.put(&format!(
             "/train_schedules/{}?timetable_id={}",
@@ -2531,7 +2531,7 @@ mod tests {
 
         let mut updated_train_schedule = simple_paced_train_base();
         updated_train_schedule.paced.as_mut().unwrap().interval =
-            chrono::Duration::minutes(30).try_into().unwrap();
+            jiff::SignedDuration::from_mins(30).try_into().unwrap();
 
         app.put(&format!(
             "/train_schedules/{}?timetable_id={}",
@@ -2560,9 +2560,9 @@ mod tests {
 
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.as_mut().unwrap().time_window =
-            Duration::minutes(90).try_into().unwrap();
+            SignedDuration::from_mins(90).try_into().unwrap();
         paced_train_base.paced.as_mut().unwrap().interval =
-            Duration::minutes(15).try_into().unwrap();
+            SignedDuration::from_mins(15).try_into().unwrap();
 
         app.put(
             format!(
@@ -2665,8 +2665,8 @@ mod tests {
                 ..TrainOccurrence::fake()
             },
             paced: Some(Paced {
-                time_window: Duration::hours(1).try_into().unwrap(),
-                interval: Duration::minutes(15).try_into().unwrap(),
+                time_window: SignedDuration::from_hours(1).try_into().unwrap(),
+                interval: SignedDuration::from_mins(15).try_into().unwrap(),
                 exceptions: vec![],
             }),
         };
@@ -3279,8 +3279,8 @@ mod tests {
         let train_schedule = TrainSchedule {
             train_occurrence: schemas::TrainOccurrence::fake(),
             paced: Some(Paced {
-                time_window: Duration::hours(1).try_into().unwrap(),
-                interval: Duration::minutes(15).try_into().unwrap(),
+                time_window: SignedDuration::from_hours(1).try_into().unwrap(),
+                interval: SignedDuration::from_mins(15).try_into().unwrap(),
                 exceptions: vec![],
             }),
         };
@@ -3482,8 +3482,8 @@ mod tests {
         let train_schedule = TrainSchedule {
             train_occurrence: schemas::TrainOccurrence::fake(),
             paced: Some(Paced {
-                time_window: Duration::hours(1).try_into().unwrap(),
-                interval: Duration::minutes(15).try_into().unwrap(),
+                time_window: SignedDuration::from_hours(1).try_into().unwrap(),
+                interval: SignedDuration::from_mins(15).try_into().unwrap(),
                 exceptions: vec![],
             }),
         };
@@ -4671,8 +4671,12 @@ mod tests {
             .rolling_stock_name(rolling_stock.name)
             .path(path)
             .schedule(schedule)
-            .interval(TimeDelta::try_minutes(15))
-            .time_window(TimeDelta::try_hours(1))
+            .interval(Some(PgInterval::from_microseconds(
+                SignedDuration::from_mins(15).as_micros() as i64,
+            )))
+            .time_window(Some(PgInterval::from_microseconds(
+                SignedDuration::from_hours(1).as_micros() as i64,
+            )))
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create paced train");
@@ -4732,7 +4736,7 @@ mod tests {
             ],
             vec![ScheduleItem::new_with_stop(
                 "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
+                SignedDuration::new(0, 0),
             )],
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
@@ -4782,7 +4786,7 @@ mod tests {
             ],
             vec![ScheduleItem::new_with_stop(
                 "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
+                SignedDuration::new(0, 0),
             )],
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
@@ -4811,7 +4815,7 @@ mod tests {
             ],
             vec![ScheduleItem::new_with_stop(
                 "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
+                SignedDuration::new(0, 0),
             )],
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
@@ -4840,7 +4844,7 @@ mod tests {
             ],
             vec![ScheduleItem::new_with_stop(
                 "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
+                SignedDuration::new(0, 0),
             )],
             OperationalPointReference::Id {
                 operational_point: "West_station".into(),
@@ -4917,19 +4921,12 @@ mod tests {
             vec![
                 ScheduleItem {
                     at: "UNKNOWN_ID".into(),
-                    arrival: Some(PositiveDuration::new(
-                        Duration::new(300, 0).expect("Failed to parse duration"),
-                    )),
-                    stop_for: Some(PositiveDuration::new(
-                        Duration::new(120, 0).expect("Failed to parse duration"),
-                    )),
+                    arrival: Some(PositiveDuration::new(SignedDuration::new(300, 0))),
+                    stop_for: Some(PositiveDuration::new(SignedDuration::new(120, 0))),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
                 },
-                ScheduleItem::new_with_stop(
-                    "Mid_East_station",
-                    Duration::new(0, 0).expect("Failed to parse duration"),
-                ),
+                ScheduleItem::new_with_stop("Mid_East_station", SignedDuration::new(0, 0)),
             ],
             OperationalPointReference::Domestic {
                 country_code: "UNKNOWN_COUNTRY_CODE".into(),
@@ -4974,7 +4971,7 @@ mod tests {
             ],
             vec![ScheduleItem::new_with_stop(
                 "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
+                SignedDuration::new(0, 0),
             )],
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
@@ -4999,14 +4996,8 @@ mod tests {
                 PathItem::new_operational_point("North_station"),
             ],
             vec![
-                ScheduleItem::new_with_stop(
-                    "Mid_East_station",
-                    Duration::new(60, 0).expect("Failed to parse duration"),
-                ),
-                ScheduleItem::new_with_stop(
-                    "North_station",
-                    Duration::new(0, 0).expect("Failed to parse duration"),
-                ),
+                ScheduleItem::new_with_stop("Mid_East_station", SignedDuration::new(60, 0)),
+                ScheduleItem::new_with_stop("North_station", SignedDuration::new(0, 0)),
             ],
             OperationalPointReference::Id {
                 operational_point: "Mid_East_station".into(),
@@ -5039,8 +5030,8 @@ mod tests {
             path: vec![path_item.clone()],
             schedule: vec![ScheduleItem {
                 at: "item_1".into(),
-                arrival: Some(PositiveDuration::try_from(Duration::seconds(100)).unwrap()),
-                stop_for: Some(PositiveDuration::try_from(Duration::seconds(60)).unwrap()),
+                arrival: Some(PositiveDuration::try_from(SignedDuration::from_secs(100)).unwrap()),
+                stop_for: Some(PositiveDuration::try_from(SignedDuration::from_secs(60)).unwrap()),
                 reception_signal: ReceptionSignal::Open,
                 ..Default::default()
             }],
@@ -5124,8 +5115,8 @@ mod tests {
             ],
             schedule: vec![ScheduleItem {
                 at: "Mid_West_station".into(),
-                arrival: Some(PositiveDuration::try_from(Duration::seconds(100)).unwrap()),
-                stop_for: Some(PositiveDuration::try_from(Duration::seconds(60)).unwrap()),
+                arrival: Some(PositiveDuration::try_from(SignedDuration::from_secs(100)).unwrap()),
+                stop_for: Some(PositiveDuration::try_from(SignedDuration::from_secs(60)).unwrap()),
                 reception_signal: ReceptionSignal::Open,
                 ..Default::default()
             }],
@@ -5152,7 +5143,7 @@ mod tests {
             ],
             vec![ScheduleItem::new_with_stop(
                 "Mid_East_station",
-                Duration::new(0, 0).expect("Failed to parse duration"),
+                SignedDuration::new(0, 0),
             )],
             OperationalPointReference::Id {
                 operational_point: "Mid_West_station".into(),
