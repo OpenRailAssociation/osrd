@@ -221,7 +221,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
     Ok(next.run(req).await)
 }
 
-#[tracing::instrument(skip_all, fields(x_feature_flags, extracted_flags))]
+#[tracing::instrument(level = "debug", skip_all, fields(feature_flags))]
 pub(in crate::views) async fn feature_flags_extraction_middleware(
     mut req: Request,
     next: Next,
@@ -234,9 +234,7 @@ pub(in crate::views) async fn feature_flags_extraction_middleware(
             .filter_map(|value| FeatureFlag::from_str(value).ok())
             .collect::<HashSet<_>>()
     });
-    tracing::info!("feature flags extracted");
-    tracing::Span::current().record("x_feature_flags", tracing::field::debug(header));
-    tracing::Span::current().record("extracted_flags", tracing::field::debug(&feature_flags));
+    tracing::Span::current().record("feature_flags", tracing::field::debug(&feature_flags));
     req.extensions_mut().insert(feature_flags);
     Ok(next.run(req).await)
 }
@@ -251,6 +249,12 @@ mod tests {
     use axum::http::StatusCode;
     use axum::middleware;
     use axum::routing::get;
+    use itertools::Itertools as _;
+    use proptest::prelude::*;
+    use proptest::strategy::Union;
+    use strum::EnumCount as _;
+    use strum::IntoEnumIterator as _;
+    use tokio::runtime::Builder;
 
     use super::feature_flags_extraction_middleware;
     use crate::feature_flags::FeatureFlag;
@@ -269,39 +273,57 @@ mod tests {
         test_app!().router(router).build()
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn valid_feature_flags() {
-        let app = single_endpoint_app(
-            |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
-                assert_eq!(
-                    flags,
-                    HashSet::from([FeatureFlag::Linkings, FeatureFlag::HourlyTimetables,]),
-                );
-                StatusCode::OK
-            },
-        );
-
-        app.get("/test")
-            .add_header("x-feature-flags", "linkings,hourlyTimetables")
-            .await
-            .assert_status_ok();
+    fn feature_flag() -> impl Strategy<Value = HashSet<FeatureFlag>> {
+        if FeatureFlag::COUNT == 0 {
+            Just(HashSet::<FeatureFlag>::default()).boxed()
+        } else {
+            proptest::collection::hash_set(Union::new(FeatureFlag::iter().map(Just)), 0..10).boxed()
+        }
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn unknown_feature_flags_are_ignored() {
-        let app = single_endpoint_app(
-            |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
-                assert_eq!(
-                    flags,
-                    HashSet::from([FeatureFlag::Linkings, FeatureFlag::HourlyTimetables,]),
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(10))]
+        #[test]
+        fn valid_feature_flags(hashset in feature_flag()) {
+            Builder::new_multi_thread().enable_all().worker_threads(1).build().unwrap().block_on(async {
+                let feature_flags = hashset.iter().join(",");
+                let app = single_endpoint_app(
+                    |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                        assert_eq!(
+                            flags,
+                            hashset,
+                        );
+                        StatusCode::OK
+                    },
                 );
-            },
-        );
 
-        app.get("/test")
-            .add_header("x-feature-flags", "linkings,antimeme,hourlyTimetables")
-            .await
-            .assert_status_ok();
+                app.get("/test")
+                    .add_header("x-feature-flags", feature_flags)
+                    .await
+                    .assert_status_ok();
+            })
+        }
+
+        #[test]
+        fn unknown_feature_flags_are_ignored(hashset in feature_flag()) {
+            Builder::new_multi_thread().enable_all().worker_threads(1).build().unwrap().block_on(async {
+                let feature_flags = hashset.iter().join(",") + ", antimeme";
+                let app = single_endpoint_app(
+                    |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
+                        assert_eq!(
+                            flags,
+                            hashset,
+                        );
+                        StatusCode::OK
+                    },
+                );
+
+                app.get("/test")
+                    .add_header("x-feature-flags", feature_flags)
+                    .await
+                    .assert_status_ok();
+            })
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
