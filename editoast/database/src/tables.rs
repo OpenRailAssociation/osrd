@@ -488,7 +488,8 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    macro_note_history (macro_note_id, validity) {
+    macro_note_history (id) {
+        id -> Int8,
         macro_note_id -> Int8,
         scenario_id -> Int8,
         x -> Int8,
@@ -496,7 +497,7 @@ diesel::table! {
         title -> Text,
         text -> Text,
         labels -> Array<Nullable<Text>>,
-        validity -> Int8range,
+        validity -> Tstzrange,
     }
 }
 

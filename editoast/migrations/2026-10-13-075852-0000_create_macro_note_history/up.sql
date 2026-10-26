@@ -22,30 +22,23 @@ CREATE TABLE macro_note_history (
     title text NOT NULL,
     text text NOT NULL,
     labels text[] NOT NULL,
-    validity int8range NOT NULL,
-    UNIQUE (macro_note_id, validity),
-    CONSTRAINT fk_macro_note
-       FOREIGN KEY(macro_note_id) 
-        REFERENCES macro_note(id),
-    CONSTRAINT fk_scenario
-      FOREIGN KEY(scenario_id) 
-        REFERENCES scenario(id)
+    validity TSTZRANGE NOT NULL CHECK (NOT ISEMPTY(validity)),
+    UNIQUE (macro_note_id, validity)
 );
 
-CREATE INDEX IF NOT EXISTS idx_current_macro_note_history_id ON macro_note_history(scenario_id, validity);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_current_macro_note_history_id ON macro_note_history(macro_note_id) WHERE upper(validity) IS NULL;
+CREATE INDEX IF NOT EXISTS idx_macro_note_history_id ON macro_note_history(scenario_id, validity);
 
 CREATE FUNCTION macro_note_insert_trigger() RETURNS trigger AS $$
 DECLARE
     epoch int8;
-    note RECORD;
 BEGIN
     epoch := current_live_update_epoch();
-    note := NEW;
 
     INSERT INTO macro_note_history(macro_note_id, scenario_id, x, y, title, text, labels, validity)
-    VALUES (note.id, note.scenario_id, note.x, note.y, note.title, note.text, note.labels, int8range(epoch, NULL));
+    VALUES (NEW.*, int8range(epoch, NULL));
 
-    PERFORM pg_notify('macro_note', json_build_object('epoch', epoch, 'type', 'MacroNoteUpserted', 'note_state', row_to_json(note))::text);
+    PERFORM pg_notify('macro_note', json_build_object('epoch', epoch, 'type', 'MacroNoteUpserted', 'note_state', row_to_json(NEW))::text);
 
     RETURN NULL;
 END;
@@ -54,23 +47,21 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION macro_note_update_trigger() RETURNS trigger AS $$
 DECLARE
     epoch int8;
-    note RECORD;
 BEGIN
     IF OLD IS NOT DISTINCT FROM NEW THEN
         RETURN NULL;
     END IF;
 
     epoch := current_live_update_epoch();
-    note := NEW;
 
     UPDATE macro_note_history
     SET validity = int8range(lower(validity), epoch)
-    WHERE macro_note_id = note.id AND upper(validity) IS NULL;
+    WHERE macro_note_id = NEW.id AND upper(validity) IS NULL;
 
     INSERT INTO macro_note_history(macro_note_id, scenario_id, x, y, title, text, labels, validity)
-    VALUES (note.id, note.scenario_id, note.x, note.y, note.title, note.text, note.labels, int8range(epoch, NULL));
+    VALUES (NEW.*, int8range(epoch, NULL));
 
-    PERFORM pg_notify('macro_note', json_build_object('epoch', epoch, 'type', 'MacroNoteUpserted', 'note_state', row_to_json(note))::text);
+    PERFORM pg_notify('macro_note', json_build_object('epoch', epoch, 'type', 'MacroNoteUpserted', 'note_state', row_to_json(NEW))::text);
 
     RETURN NULL;
 END;
@@ -79,16 +70,14 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION macro_note_delete_trigger() RETURNS trigger AS $$
 DECLARE
     epoch int8;
-    note RECORD;
 BEGIN
     epoch := current_live_update_epoch();
-    note := OLD;
 
     UPDATE macro_note_history
     SET validity = int8range(lower(validity), epoch)
-    WHERE macro_note_id = note.id AND upper(validity) IS NULL;
+    WHERE macro_note_id = OLD.id AND upper(validity) IS NULL;
 
-    PERFORM pg_notify('macro_note', json_build_object('epoch', epoch, 'type', 'MacroNoteDeleted', 'note_state', row_to_json(note))::text);
+    PERFORM pg_notify('macro_note', json_build_object('epoch', epoch, 'type', 'MacroNoteDeleted', 'note_state', row_to_json(OLD))::text);
 
     RETURN NULL;
 END;
@@ -100,7 +89,9 @@ FOR EACH ROW EXECUTE FUNCTION macro_note_insert_trigger();
 
 CREATE TRIGGER macro_note_update_trigger
 AFTER UPDATE ON macro_note
-FOR EACH ROW EXECUTE FUNCTION macro_note_update_trigger();
+FOR EACH ROW
+WHEN (OLD.* IS DISTINCT FROM NEW.*)
+EXECUTE FUNCTION macro_note_update_trigger();
 
 CREATE TRIGGER macro_note_delete_trigger
 AFTER DELETE ON macro_note
