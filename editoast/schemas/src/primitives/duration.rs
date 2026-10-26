@@ -1,4 +1,4 @@
-//! Serde support for `chrono::Duration` using the ISO 8601 duration format.
+//! Serde support for `jiff::SignedDuration` using the ISO 8601 duration format.
 //!
 //! **Note**: Years and months are not supported.
 //!
@@ -13,20 +13,26 @@
 //!     duration: PositiveDuration
 //! }
 //!
-//! let s = r#"{"duration":"PT1H"}"#; // 1 hour
-//! let my_struct: MyStruct = serde_json::from_str(s).unwrap();
-//! assert_eq!(my_struct.duration.num_seconds(), 3600);
-//! assert_eq!(r#"{"duration":"PT3600S"}"#, serde_json::to_string(&my_struct).unwrap());
+//! let my_struct = MyStruct {
+//!     duration: jiff::SignedDuration::from_hours(1).try_into().unwrap(),
+//! };
+//! let s = serde_json::to_string(&my_struct).unwrap();
+//! let my_struct: MyStruct = serde_json::from_str(&s).unwrap();
+//! assert_eq!(my_struct.duration.as_secs(), 3600);
 //!
 //! let err_s = r#"{"duration":"P1M"}"#; // 1 month
 //! assert!(serde_json::from_str::<MyStruct>(err_s).is_err());
 //! ```
 
+use std::cmp::min;
 use std::ops::Deref;
 use std::str::FromStr as _;
 
-use chrono::Duration as ChronoDuration;
+use diesel::pg::data_types::PgInterval;
 use iso8601::Duration as IsoDuration;
+use jiff::SignedDuration as JiffDuration;
+use jiff::Span;
+use jiff::SpanRelativeTo;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -41,8 +47,8 @@ pub enum PositiveDurationError {
     NegativeDuration,
 }
 
-/// Wrapper for `chrono::Duration` to use with Serde.
-/// This is useful to serialize `chrono::Duration` using the ISO 8601 duration format.
+/// Wrapper for `jiff::SignedDuration` to use with Serde.
+/// This is useful to serialize `jiff::SignedDuration` using the ISO 8601 duration format.
 ///
 /// ```
 /// use serde::{Serialize, Deserialize};
@@ -53,31 +59,30 @@ pub enum PositiveDurationError {
 ///     duration: PositiveDuration
 /// }
 ///
-/// let s = r#"{"duration":"PT1H"}"#; // 1 hour
-/// let my_struct: MyStruct = serde_json::from_str(s).unwrap();
-/// assert_eq!(my_struct.duration.num_seconds(), 3600);
-/// assert_eq!(r#"{"duration":"PT3600S"}"#, serde_json::to_string(&my_struct).unwrap());
+/// let my_struct = MyStruct {
+///     duration: jiff::SignedDuration::from_hours(1).try_into().unwrap(),
+/// };
+/// let s = serde_json::to_string(&my_struct).unwrap();
+/// let my_struct: MyStruct = serde_json::from_str(&s).unwrap();
+/// assert_eq!(my_struct.duration.as_secs(), 3600);
 ///
 /// let err_s = r#"{"duration":"P1M"}"#; // 1 month
 /// assert!(serde_json::from_str::<MyStruct>(err_s).is_err());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PositiveDuration(ChronoDuration);
+pub struct PositiveDuration(JiffDuration);
 
 #[cfg(feature = "testing")]
 impl PositiveDuration {
-    pub fn new(duration: ChronoDuration) -> Self {
-        assert!(
-            duration.num_milliseconds() >= 0,
-            "Duration must be non-negative"
-        );
+    pub fn new(duration: JiffDuration) -> Self {
+        assert!(!duration.is_negative(), "Duration must be non-negative");
         Self(duration)
     }
 }
 
 impl Default for PositiveDuration {
     fn default() -> Self {
-        PositiveDuration(ChronoDuration::zero())
+        PositiveDuration(JiffDuration::ZERO)
     }
 }
 
@@ -105,27 +110,39 @@ impl utoipa::PartialSchema for PositiveDuration {
 
 impl ToSchema for PositiveDuration {}
 
-impl TryFrom<ChronoDuration> for PositiveDuration {
+impl TryFrom<JiffDuration> for PositiveDuration {
     type Error = PositiveDurationError;
-    /// Create PositiveDuration from `chrono::Duration``
+    /// Create PositiveDuration from `jiff::SignedDuration`
     /// This function errors when the given duration is negative
-    /// The created PositiveDuration is limited to 1 millisecond
-    fn try_from(duration: ChronoDuration) -> Result<Self, PositiveDurationError> {
-        if duration.num_milliseconds() < 0 {
+    fn try_from(duration: JiffDuration) -> Result<Self, PositiveDurationError> {
+        if duration.is_negative() {
             return Err(PositiveDurationError::NegativeDuration);
         }
         Ok(PositiveDuration(duration))
     }
 }
 
-impl From<PositiveDuration> for ChronoDuration {
+impl TryFrom<PgInterval> for PositiveDuration {
+    type Error = PositiveDurationError;
+    /// Create PositiveDuration from `diesel::pg::data_types::PgInterval`
+    /// This function errors when the given duration is negative.
+    fn try_from(interval: PgInterval) -> Result<Self, PositiveDurationError> {
+        let duration = pg_interval_to_jiff_duration(interval);
+        if duration.is_negative() {
+            return Err(PositiveDurationError::NegativeDuration);
+        }
+        Ok(PositiveDuration(duration))
+    }
+}
+
+impl From<PositiveDuration> for JiffDuration {
     fn from(duration: PositiveDuration) -> Self {
         duration.0
     }
 }
 
 impl Deref for PositiveDuration {
-    type Target = ChronoDuration;
+    type Target = JiffDuration;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -150,19 +167,20 @@ impl<'de> Deserialize<'de> for PositiveDuration {
     }
 }
 
-/// Serialize a `chrono::Duration` using the ISO 8601 duration format.
-pub fn serialize<S>(duration: &ChronoDuration, serializer: S) -> Result<S::Ok, S::Error>
+/// Serialize a `jiff::SignedDuration` using the ISO 8601 duration format.
+pub fn serialize<S>(duration: &JiffDuration, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
 {
     serializer.serialize_str(&duration.to_string())
 }
 
-/// Deserialize a `chrono::Duration` from an ISO 8601 duration string.
+/// Deserialize a `jiff::SignedDuration` from an ISO 8601 duration string.
 pub fn deserialize<'de, D>(deserializer: D) -> Result<PositiveDuration, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
+    // Days are assumed to be 24 hours as iso8601::duration does not support DST
     let s = String::deserialize(deserializer)?;
     let iso_dur = IsoDuration::from_str(&s).map_err(serde::de::Error::custom)?;
     Ok(PositiveDuration(match iso_dur {
@@ -180,25 +198,25 @@ where
                     "years and months are not supported",
                 ));
             }
-            ChronoDuration::try_days(day as i64)
+            JiffDuration::try_from_hours(day as i64 * 24)
                 .ok_or_else(|| serde::de::Error::custom("value for days is not valid"))?
-                + ChronoDuration::try_hours(hour as i64)
+                + JiffDuration::try_from_hours(hour as i64)
                     .ok_or_else(|| serde::de::Error::custom("value for hours is not valid"))?
-                + ChronoDuration::try_minutes(minute as i64)
+                + JiffDuration::try_from_mins(minute as i64)
                     .ok_or_else(|| serde::de::Error::custom("value for minutes is not valid"))?
-                + ChronoDuration::try_seconds(second as i64)
-                    .ok_or_else(|| serde::de::Error::custom("value for seconds is not valid"))?
-                + ChronoDuration::try_milliseconds(millisecond as i64)
-                    .ok_or_else(|| serde::de::Error::custom("value for millisecond is not valid"))?
+                + JiffDuration::from_secs(second as i64)
+                + JiffDuration::from_millis(millisecond as i64)
         }
-        IsoDuration::Weeks(weeks) => ChronoDuration::try_weeks(weeks as i64)
-            .ok_or_else(|| serde::de::Error::custom("value for weeks is not valid"))?,
+        IsoDuration::Weeks(weeks) => Span::new()
+            .try_weeks(weeks as i64)
+            .and_then(|span| span.to_duration(SpanRelativeTo::days_are_24_hours()))
+            .map_err(|_e| serde::de::Error::custom("value for weeks is not valid"))?,
     }))
 }
 
-/// Variant of [`PositiveDuration`] that also requires the duration to not be zero.
+/// Variant of [`PositiveDuration`] that also requires the duration to be at least 1 millisecond.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct StrictlyPositiveDuration(ChronoDuration);
+pub struct StrictlyPositiveDuration(JiffDuration);
 
 impl utoipa::PartialSchema for StrictlyPositiveDuration {
     fn schema() -> RefOr<Schema> {
@@ -223,30 +241,64 @@ impl<'de> Deserialize<'de> for StrictlyPositiveDuration {
         D: serde::Deserializer<'de>,
     {
         let duration = deserialize(deserializer)?;
-        if duration.num_milliseconds() == 0 {
+        if duration.as_millis() == 0 {
             return Err(serde::de::Error::custom("duration cannot be zero"));
         }
         Ok(StrictlyPositiveDuration(duration.0))
     }
 }
 
-impl TryFrom<ChronoDuration> for StrictlyPositiveDuration {
+impl TryFrom<JiffDuration> for StrictlyPositiveDuration {
     type Error = PositiveDurationError;
-    /// Create PositiveDuration from `chrono::Duration``
-    /// This function errors when the given duration is negative or null
-    /// The created StrictPositiveDuration is limited to 1 millisecond
-    fn try_from(duration: ChronoDuration) -> Result<Self, PositiveDurationError> {
-        if duration.num_milliseconds() <= 0 {
+    /// Create StrictlyPositiveDuration from `jiff::SignedDuration`
+    /// This function errors when the given duration is negative or null.
+    fn try_from(duration: JiffDuration) -> Result<Self, PositiveDurationError> {
+        if duration.as_millis() <= 0 {
             return Err(PositiveDurationError::NegativeDuration);
         }
         Ok(StrictlyPositiveDuration(duration))
     }
 }
 
-impl From<StrictlyPositiveDuration> for ChronoDuration {
+impl TryFrom<PgInterval> for StrictlyPositiveDuration {
+    type Error = PositiveDurationError;
+    /// Create PositiveDuration from `diesel::pg::data_types::PgInterval`
+    /// This function errors when the given duration is negative.
+    fn try_from(interval: PgInterval) -> Result<Self, PositiveDurationError> {
+        let duration = pg_interval_to_jiff_duration(interval);
+        if duration.as_millis() <= 0 {
+            return Err(PositiveDurationError::NegativeDuration);
+        }
+        Ok(StrictlyPositiveDuration(duration))
+    }
+}
+
+impl From<StrictlyPositiveDuration> for JiffDuration {
     fn from(duration: StrictlyPositiveDuration) -> Self {
         duration.0
     }
+}
+
+impl From<StrictlyPositiveDuration> for PgInterval {
+    fn from(duration: StrictlyPositiveDuration) -> Self {
+        jiff_duration_to_pg_interval(duration.into())
+    }
+}
+
+pub fn pg_interval_to_jiff_duration(interval: PgInterval) -> JiffDuration {
+    if interval.months != 0 {
+        panic!("ambiguous duration in PgInterval, months are not supported")
+    }
+    let hours = (interval.days as i64) * 24;
+    JiffDuration::from_hours(hours) + JiffDuration::from_micros(interval.microseconds)
+}
+
+pub fn jiff_duration_to_pg_interval(duration: JiffDuration) -> PgInterval {
+    // Panics if the duration represented by duration is bigger than what a PgInterval can hold in days and microseconds
+    let days = min(i32::MAX as i64, duration.as_hours() / 24);
+    let duration = duration - JiffDuration::from_hours(days * 24);
+    let micros = duration.as_micros();
+    PgInterval::new(micros as i64, days as i32, 0)
 }
 
 #[cfg(test)]
@@ -267,11 +319,11 @@ mod tests {
     #[test]
     fn serialize_deserialize_works() {
         let my_struct = MyStruct {
-            duration: chrono::Duration::hours(1).try_into().unwrap(),
+            duration: jiff::SignedDuration::from_hours(1).try_into().unwrap(),
         };
         let s = to_string(&my_struct).unwrap();
         let my_struct: MyStruct = from_str(&s).unwrap();
-        assert_eq!(my_struct.duration.num_seconds(), 3600);
+        assert_eq!(my_struct.duration.as_secs(), 3600);
     }
 
     /// Test invalid deserialization

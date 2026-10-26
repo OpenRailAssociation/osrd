@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
-use chrono::DateTime;
-use chrono::Utc;
+use jiff::Timestamp;
 use schemas::infra::OperationalPointStop;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::SupportedSignalingSystemVariant;
@@ -47,7 +46,7 @@ pub struct Request {
     // STDCM search parameters
     /// Numerical integration time step in milliseconds. Use default value if not specified.
     pub time_step: Option<u64>,
-    pub start_time: DateTime<Utc>,
+    pub start_time: Timestamp,
     /// Maximum departure delay in milliseconds.
     pub maximum_departure_delay: u64,
     /// Maximum run time of the simulation in milliseconds
@@ -82,7 +81,7 @@ pub struct STDCMPathItem {
 #[schema(as = CoreStepTimingData)]
 pub struct StepTimingData {
     /// Time the train should arrive at this point
-    pub arrival_time: DateTime<Utc>,
+    pub arrival_time: Timestamp,
     /// Tolerance for the arrival time, when it arrives before the expected time, in ms
     pub arrival_time_tolerance_before: u64,
     /// Tolerance for the arrival time, when it arrives after the expected time, in ms
@@ -157,7 +156,7 @@ pub struct ConsistSchedule {
 pub struct LastReachedOperationalPoint {
     pub id: String,
     pub coordinates: ProgressCoordinates,
-    pub arrival_time: DateTime<Utc>,
+    pub arrival_time: Timestamp,
 }
 
 /// Represents one conflicting work schedule in a partial pathfinding result
@@ -195,7 +194,7 @@ pub enum Response {
     Success {
         simulation: SimulationSuccess,
         path: PathfindingResultSuccess,
-        departure_time: DateTime<Utc>,
+        departure_time: Timestamp,
     },
     PathNotFound {
         most_blocking_work_schedules: Vec<ConflictingWorkSchedule>,

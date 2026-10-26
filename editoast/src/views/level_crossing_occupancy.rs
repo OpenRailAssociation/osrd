@@ -20,11 +20,11 @@ use models::train_schedule::OccurrenceId;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
-use chrono::Duration;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::ReportTrain;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
+use jiff::SignedDuration;
 use models::TrainScheduleException;
 use models::prelude::*;
 use models::rolling_stock::RollingStock;
@@ -348,7 +348,7 @@ fn find_occupancy_time_window(
 
     Some(TimeWindow {
         time_begin: start_time + millisecond::i64::new(arrival_time),
-        duration: Duration::milliseconds(leaving_time - arrival_time)
+        duration: SignedDuration::from_millis(leaving_time - arrival_time)
             .try_into()
             .expect("leaving_time should be greater than arrival_time"),
     })
@@ -386,10 +386,10 @@ mod tests {
     use authz::InfraGrant;
     use authz::Role;
     use authz::RollingStockGrant;
-    use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
+    use diesel::data_types::PgInterval;
     use reqwest::StatusCode;
     use schemas::infra::LevelCrossingPart;
     use schemas::train_schedule::PathItem;
@@ -610,8 +610,12 @@ mod tests {
                 PathItem::new_operational_point("Mid_West_station"),
                 PathItem::new_operational_point("Mid_East_station"),
             ])
-            .interval(Some(TimeDelta::minutes(15)))
-            .time_window(Some(TimeDelta::hours(1)))
+            .interval(Some(PgInterval::from_microseconds(
+                SignedDuration::from_mins(15).as_micros() as i64,
+            )))
+            .time_window(Some(PgInterval::from_microseconds(
+                SignedDuration::from_hours(1).as_micros() as i64,
+            )))
             .create(&mut app.db_pool().get_ok())
             .await
             .expect("Failed to create train")
@@ -658,7 +662,7 @@ mod tests {
             occupancy.time_window.time_begin,
             train.start_time + millisecond::i64::new(10)
         );
-        assert_eq!(occupancy.time_window.duration.num_milliseconds(), 55);
+        assert_eq!(occupancy.time_window.duration.as_millis(), 55);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

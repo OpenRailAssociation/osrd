@@ -147,7 +147,7 @@ fn get_arrival_time(
                 context
                     .schedule_item
                     .and_then(|s| s.arrival.as_ref())
-                    .map(|a| a.num_milliseconds())
+                    .map(|a| a.as_millis() as i64)
             });
     }
     if let (Some(report_train), Some(pathfinding_success)) =
@@ -322,11 +322,11 @@ pub mod tests {
     use crate::error::InternalError;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
-    use chrono::Duration;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ReportTrain;
+    use jiff::SignedDuration;
     use models::OperationalPointModel;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
@@ -488,7 +488,7 @@ pub mod tests {
                     at: "path_item_2".into(),
                     arrival: None,
                     stop_for: Some(
-                        PositiveDuration::try_from(Duration::milliseconds(300000)).unwrap(),
+                        PositiveDuration::try_from(SignedDuration::from_millis(300000)).unwrap(),
                     ),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
@@ -496,10 +496,10 @@ pub mod tests {
                 ScheduleItem {
                     at: "path_item_3".into(),
                     arrival: Some(
-                        PositiveDuration::try_from(Duration::milliseconds(5000)).unwrap(),
+                        PositiveDuration::try_from(SignedDuration::from_millis(5000)).unwrap(),
                     ),
                     stop_for: Some(
-                        PositiveDuration::try_from(Duration::milliseconds(200000)).unwrap(),
+                        PositiveDuration::try_from(SignedDuration::from_millis(200000)).unwrap(),
                     ),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
@@ -561,7 +561,7 @@ pub mod tests {
             );
             assert_eq!(
                 *duration,
-                PositiveDuration::try_from(Duration::milliseconds(expected_stop_duration_ms))
+                PositiveDuration::try_from(SignedDuration::from_millis(expected_stop_duration_ms))
                     .unwrap()
             );
             let expected_location_path_item = match op_id {
@@ -646,9 +646,9 @@ pub mod tests {
             ],
             schedule: vec![ScheduleItem {
                 at: "op_2".into(),
-                arrival: Some(PositiveDuration::try_from(Duration::minutes(5)).unwrap()),
+                arrival: Some(PositiveDuration::try_from(SignedDuration::from_mins(5)).unwrap()),
                 stop_for: Some(
-                    PositiveDuration::try_from(Duration::seconds(0))
+                    PositiveDuration::try_from(SignedDuration::from_secs(0))
                         .expect("Failed to parse duration"),
                 ),
                 reception_signal: ReceptionSignal::Open,
@@ -755,7 +755,7 @@ pub mod tests {
                     at: "path_item_2".into(),
                     arrival: None,
                     stop_for: Some(
-                        PositiveDuration::try_from(Duration::milliseconds(1000)).unwrap(),
+                        PositiveDuration::try_from(SignedDuration::from_millis(1000)).unwrap(),
                     ),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
@@ -763,7 +763,7 @@ pub mod tests {
                 ScheduleItem {
                     at: "path_item_3".into(),
                     arrival: Some(
-                        PositiveDuration::try_from(Duration::milliseconds(5000)).unwrap(),
+                        PositiveDuration::try_from(SignedDuration::from_millis(5000)).unwrap(),
                     ),
                     stop_for: None,
                     reception_signal: ReceptionSignal::Open,

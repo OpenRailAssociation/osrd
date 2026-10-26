@@ -1,5 +1,4 @@
-use chrono::DateTime;
-use chrono::Utc;
+use crate::Timestamp;
 use editoast_derive::Model;
 use schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
@@ -10,7 +9,7 @@ use serde::Serialize;
 #[model(error(create = TslGroupError, update = TslGroupError))]
 pub struct TemporarySpeedLimitGroup {
     pub id: i64,
-    pub creation_date: DateTime<Utc>,
+    pub creation_date: Timestamp,
     pub name: String,
 }
 
@@ -43,8 +42,8 @@ impl From<crate::Error> for TslGroupError {
 #[model(gen(ops = cr, batch_ops = c, list))]
 pub struct TemporarySpeedLimit {
     pub id: i64,
-    pub start_date_time: DateTime<Utc>,
-    pub end_date_time: DateTime<Utc>,
+    pub start_date_time: Timestamp,
+    pub end_date_time: Timestamp,
     pub speed_limit: f64,
     #[model(json)]
     pub track_ranges: Vec<DirectionalTrackRange>,
