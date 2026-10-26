@@ -20,6 +20,7 @@ import type {
   TrainScheduleResponse,
   PathfindingResult,
   TimetableType,
+  CorePropertyGeometryProjection,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { ProjectionWaypoint, PathWaypoint } from 'modules/simulationResult/types';
@@ -116,6 +117,7 @@ export type PathPropertiesFormatted = {
   operationalPoints: PathWaypoint[];
   geometry: PathProperties['geometry'];
   voltages: RangedValue[];
+  geomProjection: CorePropertyGeometryProjection;
 };
 
 export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;

@@ -70,7 +70,7 @@ const fetchPathProperties = async (
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operationalPointsWithMetadata,
       result.geometry,
-      pathfinding_result.length
+      result.geom_projection
     );
 
     return {

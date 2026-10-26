@@ -290,7 +290,14 @@ export const sortPathOperationalPoints = (ops: PathWaypoint[], path: PathItem[])
  */
 export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'] | undefined,
-  { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
+  {
+    slopes,
+    curves,
+    electrifications,
+    operational_points,
+    geometry,
+    geom_projection,
+  }: PathProperties,
   { path_item_positions, length }: CorePathfindingResultSuccess,
   trainSchedulePath: TrainSchedule['path'],
   t: TFunction<'operational-studies'>,
@@ -336,6 +343,7 @@ export const preparePathPropertiesData = (
     operationalPoints: waypointsWithPathStepWeight,
     geometry,
     voltages: voltageRanges,
+    geomProjection: geom_projection,
   };
 };
 

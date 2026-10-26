@@ -22,7 +22,6 @@ import { MapContextProvider } from 'common/Map/useMapContext';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
-import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
@@ -85,9 +84,10 @@ const SimulationResultMap = ({
     const getPathItemsCoordinates = async (
       steps: TrainSchedule['path'],
       matchedOps: Map<string, RelatedOperationalPoint | null>,
-      pathPropertiesOps?: PathPropertiesFormatted['operationalPoints'],
+      simulatedPathProperties?: PathPropertiesFormatted,
       simulatedPath?: CorePathfindingResultSuccess
     ) => {
+      const pathPropertiesOps = simulatedPathProperties?.operationalPoints;
       // 1. Get path steps track ids to fetch their track metadata
       const allTrackIds = steps.reduce<string[]>((acc, step) => {
         // Need only the requested point track ids from the path step input
@@ -108,14 +108,14 @@ const SimulationResultMap = ({
       const markers = steps.map((step, index) => {
         const { location } = step;
 
-        const simulatedCoordinates = simulatedPath
-          ? getPointOnPathCoordinates(
-              trackSectionsById,
-              simulatedPath.path.track_section_ranges,
-              getTrackLengthCumulativeSums(simulatedPath.path.track_section_ranges),
-              simulatedPath.path_item_positions[index]
-            )
-          : null;
+        const simulatedCoordinates =
+          simulatedPath && simulatedPathProperties
+            ? getPointOnPathCoordinates(
+                simulatedPath.path_item_positions[index],
+                simulatedPathProperties.geometry,
+                simulatedPathProperties.geomProjection
+              )
+            : null;
 
         const markerIndicator = (index + 1).toString();
 
@@ -198,14 +198,14 @@ const SimulationResultMap = ({
       getPathItemsCoordinates(
         pathSteps,
         pathStepsOperationalPoints,
-        pathProperties?.operationalPoints,
+        pathProperties,
         pathfindingResults
       );
     }
   }, [
     pathSteps,
     pathStepsOperationalPoints,
-    pathProperties?.operationalPoints,
+    pathProperties,
     pathfindingResults,
     getTrackSectionsByIds,
     t,
