@@ -317,8 +317,8 @@ const TimesStopsTable = ({
           ? row.requestedTheoreticalMargin
           : null;
       const isSpecifiedMargin =
-        (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
-        row.requestedTheoreticalMargin;
+        (isFirstRow || row.isTheoreticalMarginBoundary) && !!row.requestedTheoreticalMargin;
+
       return (
         <div data-testid="requested-theoretical-margin">
           <MarginCell
