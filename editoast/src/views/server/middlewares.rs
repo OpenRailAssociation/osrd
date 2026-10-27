@@ -273,7 +273,7 @@ mod tests {
         test_app!().router(router).build()
     }
 
-    fn feature_flag() -> impl Strategy<Value = HashSet<FeatureFlag>> {
+    fn feature_flag_set_strategy() -> impl Strategy<Value = HashSet<FeatureFlag>> {
         if FeatureFlag::COUNT == 0 {
             Just(HashSet::<FeatureFlag>::default()).boxed()
         } else {
@@ -283,10 +283,13 @@ mod tests {
 
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(10))]
+
         #[test]
-        fn valid_feature_flags(hashset in feature_flag()) {
+        fn valid_feature_flags(hashset in feature_flag_set_strategy()) {
+            // proptest! macro doesn't work with tokio::test, we need to create our own Runtime
+            // See: https://github.com/proptest-rs/proptest/issues/179
             Builder::new_multi_thread().enable_all().worker_threads(1).build().unwrap().block_on(async {
-                let feature_flags = hashset.iter().join(",");
+                let feature_flags = hashset.iter().join(", ");
                 let app = single_endpoint_app(
                     |Extension(flags): Extension<HashSet<FeatureFlag>>| async move {
                         assert_eq!(
@@ -305,7 +308,7 @@ mod tests {
         }
 
         #[test]
-        fn unknown_feature_flags_are_ignored(hashset in feature_flag()) {
+        fn unknown_feature_flags_are_ignored(hashset in feature_flag_set_strategy()) {
             Builder::new_multi_thread().enable_all().worker_threads(1).build().unwrap().block_on(async {
                 let feature_flags = hashset.iter().join(",") + ", antimeme";
                 let app = single_endpoint_app(

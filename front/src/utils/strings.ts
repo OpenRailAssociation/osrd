@@ -39,6 +39,10 @@ export function snakeToCamel(str: string) {
   return str.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr: string) => chr.toUpperCase());
 }
 
+export function camelToScreamingSnake(str: string) {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase();
+}
+
 export function getTranslationKey(translationList: string | undefined, item: string): string {
   return `${translationList ? `${translationList}.` : ''}${item}`;
 }
