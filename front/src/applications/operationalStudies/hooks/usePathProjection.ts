@@ -71,7 +71,6 @@ const createVirtualOp = (
     opId: null,
     pathItemKey,
     name: virtualName,
-    uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
     main_code: opRef.type === 'domestic' ? opRef.main_code : '',
     position,
@@ -264,7 +263,7 @@ const usePathProjection = (
         const occurrenceCount = (opOccurrenceCounts.get(matchedOp.id) ?? 0) + 1;
         opOccurrenceCounts.set(matchedOp.id, occurrenceCount);
         normalizedOps.push({
-          ...omit(matchedOp, 'id'),
+          ...omit(matchedOp, 'id', 'uic'),
           waypointId: buildOpWaypointId(matchedOp.id, occurrenceCount),
           opId: matchedOp.id,
           pathItemKey,

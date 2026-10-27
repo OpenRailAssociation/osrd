@@ -55,7 +55,6 @@ describe('formatStops', () => {
         },
         position: 0,
         secondary_code: 'secondary_code',
-        uic: 0,
         weight: null,
         location: {
           type: 'operational_point_part_reference',
