@@ -123,8 +123,8 @@ fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: BlockLocation,
     consistSchedule: ConsistSchedule,
-    forcedOpStops: Set<BlockLocation>,
     targets: List<ExplorerStep> = listOf(),
+    forcedOpStops: Set<BlockLocation> = setOf(),
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorers(
             fullInfra.rawInfra,
@@ -133,6 +133,7 @@ fun initInfraExplorerWithEnvelope(
             location,
             targets = targets,
             consistSchedule.constraints,
+            forcedOpStops,
         )
         .map { explorer ->
             InfraExplorerWithEnvelopeImpl(

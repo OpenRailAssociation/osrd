@@ -83,7 +83,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                         it.isPlanned
                     },
                     old.envelopeStartOffset,
-                    getNextStopOnCurrentBlock(old.infraExplorer),
+                    getNextStopOffsetOnCurrentBlock(old.infraExplorer),
                 ),
             )
         val path = old.infraExplorer.getCurrentEdgePathProperties(old.envelopeStartOffset, null)

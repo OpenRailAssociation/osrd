@@ -891,7 +891,7 @@ class StopTests {
 
     companion object {
         /** Check that the train actually stops at the expected times and positions */
-        private fun checkStop(
+        fun checkStop(
             res: STDCMCompleteResult,
             expectedStops: List<TrainStop>,
             allowLonger: Boolean = true,

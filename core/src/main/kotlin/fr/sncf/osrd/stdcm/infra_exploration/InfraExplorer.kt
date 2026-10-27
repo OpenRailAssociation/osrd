@@ -210,6 +210,7 @@ fun initInfraExplorers(
     location: BlockLocation,
     targets: List<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint>? = null,
+    forcedOpStopLocations: Set<BlockLocation> = emptySet(),
 ): Collection<InfraExplorer> {
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
     val infraExplorers = mutableListOf<InfraExplorer>()
@@ -229,7 +230,7 @@ fun initInfraExplorers(
                 appendOnlyMapOf(),
                 null,
                 blockToPathProperties,
-                stepTracker = StepTracker(targets),
+                stepTracker = StepTracker(targets, forcedOpStopLocations),
                 constraints = constraints,
             )
         val infraExtended = infraExplorer.extend(route, location)
