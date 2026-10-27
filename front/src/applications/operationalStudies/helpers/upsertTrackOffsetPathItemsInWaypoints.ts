@@ -56,7 +56,6 @@ export function upsertTrackOffsetPathItemsInWaypoints(
         opId: null,
         pathItemKey: step.key,
         name: stepName,
-        uic: 0,
         country_code: '??',
         is_passenger_station: false,
         main_code: '',

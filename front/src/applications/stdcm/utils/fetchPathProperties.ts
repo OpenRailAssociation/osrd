@@ -57,7 +57,7 @@ const fetchPathProperties = async (
     });
 
     const operationalPointsWithUniqueIds: PathWaypoint[] = result.operational_points.map((op) => ({
-      ...omit(op, 'id'),
+      ...omit(op, 'id', 'uic'),
       waypointId: `op-${op.id}-${op.position}`,
       opId: op.id,
       pathItemKey: null,

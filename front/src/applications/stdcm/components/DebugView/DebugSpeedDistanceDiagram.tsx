@@ -32,7 +32,7 @@ const DebugSpeedDistanceDiagram = ({ simData }: { simData: SimDebugData }) => {
       pathLength
     ),
     operationalPoints: simData.path_properties.operational_points.map((op) => ({
-      ...omit(op, 'id'),
+      ...omit(op, 'id', 'uic'),
       opId: op.id,
       waypointId: `${op.id}-${op.position}`,
       pathItemKey: null,
