@@ -500,6 +500,7 @@ const PathStepItem = ({
                   invalid: isInvalid,
                   'unknown-track': isUnknownTrack,
                 })}
+                data-testid="path-step-track-name"
               >
                 <ComboBox
                   id={`pathStep-status-${pathStep.key}`}
