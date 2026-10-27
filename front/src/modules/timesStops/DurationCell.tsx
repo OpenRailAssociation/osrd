@@ -15,8 +15,9 @@ import { Duration } from 'utils/duration';
 import CellPlaceholder from './CellPlaceholder';
 import ClearButton from './ClearButton';
 import DurationPropagationMenu from './DurationPropagationMenu';
+import TimePropagationMenu from './TimePropagationMenu';
 import type { TimesStopsTableFeatures } from './TimesStopsTable';
-import type { StopPropagationMode, TimesStopsRow } from './types';
+import type { PropagationMode, TimesStopsRow } from './types';
 
 type ActiveUnit = 'h' | 'm' | 's';
 
@@ -408,7 +409,7 @@ type DurationCellProps = CellContext<TimesStopsTableFeatures, TimesStopsRow, Dur
     prefillValue?: Duration | null;
     onEnterKeyDown?: () => void;
     onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
-    onCommit?: (seconds: number | null, propagationMode: StopPropagationMode) => void;
+    onCommit?: (seconds: number | null, propagationMode: PropagationMode) => void;
     disabled?: boolean;
     clearButtonTitle?: string;
     disableClear?: boolean;
@@ -430,7 +431,7 @@ const DurationCell = ({
   digital,
   ...props
 }: DurationCellProps) => {
-  const { onCommit, getValue, row, table } = props || {};
+  const { onCommit, getValue, row, column, table } = props || {};
   const controlledValue = getValue();
   const [state, dispatch] = useReducer(durationReducer, controlledValue, initialDurationState);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -439,6 +440,9 @@ const DurationCell = ({
   const blurHandledRef = useRef(false);
   const isFirstRow = row.index === 0;
   const isLastRow = row.index === table.getRowModel().rows.length - 1;
+  // Hourly timetables also use this cell for requested times, which need the time propagation menu.
+  const isRequestedTime = column.id === 'requestedArrival' || column.id === 'requestedDeparture';
+  const isOriginArrival = column.id === 'requestedArrival' && isFirstRow;
   const allDigitsCleared = Object.values(state.units).every((u) => isCleared(u));
 
   useImperativeHandle(
@@ -475,7 +479,7 @@ const DurationCell = ({
     dispatch({ type: 'STOP_EDITING' });
   };
 
-  const commit = (propagationMode: StopPropagationMode = 'atThisWaypoint') => {
+  const commit = (propagationMode: PropagationMode = 'atThisWaypoint') => {
     if (allDigitsCleared) {
       if (controlledValue !== null) onCommit?.(null, propagationMode);
     } else {
@@ -487,7 +491,7 @@ const DurationCell = ({
     dispatch({ type: 'STOP_EDITING' });
   };
 
-  const handleSelectPropagationMode = (mode: StopPropagationMode) => {
+  const handleSelectPropagationMode = (mode: PropagationMode) => {
     blurHandledRef.current = true;
     commit(mode);
     containerRef.current?.blur();
@@ -543,6 +547,8 @@ const DurationCell = ({
   const editedDuration = allDigitsCleared
     ? null
     : new Duration({ seconds: unitsToSeconds(state.units) });
+  /* oxlint-disable-next-line react/refs */
+  const propagationMenuAnchorRef = { current: containerRef.current?.closest('td') ?? null };
 
   const handleMouseDown = () => {
     mouseDownRef.current = true;
@@ -596,16 +602,29 @@ const DurationCell = ({
             ))}
           </>
         )}
-        <DurationPropagationMenu
-          isOpen={shouldShowPropagationMenu}
-          /* oxlint-disable-next-line react/refs */
-          anchorRef={{ current: containerRef.current?.closest('td') ?? null }}
-          oldValue={controlledValue}
-          newValue={editedDuration}
-          onSelectMode={handleSelectPropagationMode}
-          disableFromDeparture={isFirstRow}
-          disableToDestination={isLastRow}
-        />
+        {isRequestedTime ? (
+          <TimePropagationMenu
+            isOpen={shouldShowPropagationMenu}
+            anchorRef={propagationMenuAnchorRef}
+            oldValue={controlledValue}
+            newValue={editedDuration}
+            onSelectMode={handleSelectPropagationMode}
+            disableFromDeparture={isOriginArrival}
+            disableAtThisTime={row.original.stopDuration === null}
+            disableToDestination={isLastRow}
+            isOriginArrival={isOriginArrival}
+          />
+        ) : (
+          <DurationPropagationMenu
+            isOpen={shouldShowPropagationMenu}
+            anchorRef={propagationMenuAnchorRef}
+            oldValue={controlledValue}
+            newValue={editedDuration}
+            onSelectMode={handleSelectPropagationMode}
+            disableFromDeparture={isFirstRow}
+            disableToDestination={isLastRow}
+          />
+        )}
       </div>
       <ClearButton
         isVisible={state.isEditing && !disableClear}
