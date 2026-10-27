@@ -72,10 +72,10 @@ const createVirtualOp = (
     pathItemKey,
     name: virtualName,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
-    main_code: opRef.type === 'domestic' ? opRef.main_code : '',
+    main_code: opRef.type === 'domestic' ? opRef.main_code : null,
     position,
     weight,
-    country_code: opRef.type === 'domestic' ? opRef.country_code : '??',
+    country_code: opRef.type === 'domestic' ? opRef.country_code : null,
     is_passenger_station: false,
     location: {
       type: 'operational_point_part_reference',

@@ -79,7 +79,7 @@ function upsertPathStepTrack(
 
     // OP should always be found in infra because pathfinding succeeded and TOD
     // is non-sensical for track-offset path items
-    if (!op.opId) {
+    if (!op.country_code || !op.main_code) {
       throw new Error('OP not found in infra');
     }
 
