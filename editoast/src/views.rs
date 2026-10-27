@@ -518,6 +518,13 @@ enum DatabaseError {
     Unavailable(#[from] database::DatabasePoolError),
 }
 
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("File '{file}' not found")]
+#[view_error(status = NOT_FOUND, context, path = file_not_found)]
+struct FileNotFound {
+    file: String,
+}
+
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
