@@ -77,21 +77,30 @@ export default function useAuthz() {
    * Retrieve privileges of the connected user for a list of resources.
    */
   const getUserPrivileges = useCallback(
-    async (resources: Partial<Record<ResourceType, number[]>>) => {
-      const result = await retrieveUserPrivileges({ body: resources }).unwrap();
-      return Object.keys(result).reduce(
-        (accByType, resourceType) => {
-          accByType[resourceType as ResourceType] = result[resourceType].reduce(
-            (accById, item) => {
-              accById[item.resource_id] = new Set(item.privileges);
-              return accById;
-            },
-            {} as { [key: number]: Set<Privilege> }
-          );
-          return accByType;
-        },
-        {} as Partial<Record<ResourceType, { [id: number]: Set<Privilege> }>>
-      );
+    async (resources: Partial<Record<ResourceType, number[]>>, signal?: AbortSignal) => {
+      if (signal?.aborted) throw signal.reason ?? new Error('Aborted');
+      const request = retrieveUserPrivileges({ body: resources });
+      const abortRequest = () => request.abort();
+      signal?.addEventListener('abort', abortRequest, { once: true });
+
+      try {
+        const result = await request.unwrap();
+        return Object.keys(result).reduce(
+          (accByType, resourceType) => {
+            accByType[resourceType as ResourceType] = result[resourceType].reduce(
+              (accById, item) => {
+                accById[item.resource_id] = new Set(item.privileges);
+                return accById;
+              },
+              {} as { [id: number]: Set<Privilege> }
+            );
+            return accByType;
+          },
+          {} as Partial<Record<ResourceType, { [id: number]: Set<Privilege> }>>
+        );
+      } finally {
+        signal?.removeEventListener('abort', abortRequest);
+      }
     },
     [retrieveUserPrivileges]
   );

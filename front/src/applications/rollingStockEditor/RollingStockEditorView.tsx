@@ -65,14 +65,20 @@ const RollingStockEditor = () => {
   const { getUserPrivileges } = useAuthz();
 
   const { refresh: userPrivilegesrefresh, data: selectedRollingStockPrivilegesState } =
-    useRefreshableAsyncMemo(async () => {
-      if (selectedRollingStockId === undefined) return undefined;
-      const data = await getUserPrivileges({ rolling_stock: [selectedRollingStockId] });
-      return {
-        id: selectedRollingStockId,
-        privileges: data.rolling_stock?.[selectedRollingStockId],
-      };
-    }, [getUserPrivileges, selectedRollingStockId]);
+    useRefreshableAsyncMemo(
+      async (controller) => {
+        if (selectedRollingStockId === undefined) return undefined;
+        const data = await getUserPrivileges(
+          { rolling_stock: [selectedRollingStockId] },
+          controller.signal
+        );
+        return {
+          id: selectedRollingStockId,
+          privileges: data.rolling_stock?.[selectedRollingStockId],
+        };
+      },
+      [getUserPrivileges, selectedRollingStockId]
+    );
 
   // Guard against the id/privileges pair from a previous selection still being 'ready'
   // in the render right after selectedRollingStockId changes (state resets in an effect,

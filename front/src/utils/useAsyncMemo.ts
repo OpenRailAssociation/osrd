@@ -1,4 +1,4 @@
-import { type DependencyList, useCallback, useEffect, useState } from 'react';
+import { type DependencyList, useCallback, useEffect, useRef, useState } from 'react';
 
 export type AsyncMemoState<T> =
   | { type: 'loading'; previousData?: T }
@@ -48,19 +48,26 @@ export function useAsyncMemo<T>(fn: () => Promise<T>, deps: DependencyList): Asy
  * Unlike to `useAsyncMemo`, this hook also provides a refresh function to manually re-execute the asynchronous function.
  */
 export function useRefreshableAsyncMemo<T>(
-  fn: () => Promise<T>,
+  fn: (controller: AbortController) => Promise<T>,
   deps: DependencyList
 ): { refresh: () => void; data: AsyncMemoState<T> } {
   const [state, setState] = useState<AsyncMemoState<T>>({ type: 'loading' });
+  const activeController = useRef<AbortController | null>(null);
 
   const refresh = useCallback(
     async () => {
+      activeController.current?.abort();
+      const controller = new AbortController();
+      activeController.current = controller;
+      setState((currentState) => ({
+        type: 'loading',
+        previousData: getAsyncMemoData(currentState),
+      }));
       try {
-        setState({ type: 'loading', previousData: getAsyncMemoData(state) });
-        const data = await fn();
-        setState({ type: 'ready', data });
+        const data = await fn(controller);
+        if (!controller.signal.aborted) setState({ type: 'ready', data });
       } catch (e) {
-        setState({ type: 'error', error: e as Error });
+        if (!controller.signal.aborted) setState({ type: 'error', error: e as Error });
       }
     },
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -69,6 +76,9 @@ export function useRefreshableAsyncMemo<T>(
 
   useEffect(() => {
     refresh();
+    return () => {
+      activeController.current?.abort();
+    };
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, deps);
 
