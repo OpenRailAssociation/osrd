@@ -77,15 +77,21 @@ function upsertPathStepTrack(
       throw new Error('Cannot replace origin');
     }
 
+    // OP should always be found in infra because pathfinding succeeded and TOD
+    // is non-sensical for track-offset path items
+    if (!op.opId) {
+      throw new Error('OP not found in infra');
+    }
+
     newPath.splice(beforeIndex, 0, {
       key: uuidV4(),
       location: {
         type: 'operational_point_part_reference',
         operational_point: {
-          // TODO: switch to trigram once international OP model work is done
-          type: 'id',
-          // OP ID is never null because pathfinding succeeded
-          operational_point: op.opId!,
+          type: 'domestic',
+          country_code: op.country_code,
+          main_code: op.main_code,
+          secondary_code: op.secondary_code,
         },
         local_track_name: localTrackName,
       },
