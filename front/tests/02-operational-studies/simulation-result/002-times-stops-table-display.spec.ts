@@ -125,12 +125,12 @@ test.describe('Times Stops Table — Display', { tag: ['@op', '@times-stops'] },
     const via2Row = timesStopsTablePage.getRow(ROW_INDEX_VIA_B);
     const destRow = timesStopsTablePage.getRow(ROW_INDEX_DESTINATION);
 
-    await test.step('Verify power restriction combobox is visible on all rows with correct initial values', async () => {
+    await test.step('Verify power restriction combobox is visible on all rows but the last one with correct initial values', async () => {
       for (const row of [departureRow, via1Row, waypointRow]) {
         await timesStopsTablePage.verifyPowerRestriction(row, '');
       }
       await timesStopsTablePage.verifyPowerRestriction(via2Row, POWER_RESTRICTION_C1);
-      await timesStopsTablePage.verifyPowerRestriction(destRow, POWER_RESTRICTION_C1);
+      await timesStopsTablePage.verifyPowerRestrictionAbsent(destRow);
     });
 
     await test.step(`Verify computed theoretical margin shows ${COMPUTED_THEORETICAL_MARGIN_DEPARTURE} on departure row and is absent on intermediate rows`, async () => {
