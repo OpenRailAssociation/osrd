@@ -189,7 +189,7 @@ export const upsertScheduleItem = (
     !newItem.arrival &&
     !newItem.stop_for &&
     !newItem.reference_base_arrival &&
-    !newItem.reference_position
+    (newItem.reference_position === undefined || newItem.reference_position === null)
   )
     return index < 0 ? undefined : removeElementAtIndex(schedule, index);
 
