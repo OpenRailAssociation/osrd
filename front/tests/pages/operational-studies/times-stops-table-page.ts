@@ -37,6 +37,11 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     return (await locator.textContent()) ?? '';
   }
 
+  private async optionalInputValue(locator: Locator): Promise<string> {
+    if ((await locator.count()) === 0) return '';
+    return locator.inputValue();
+  }
+
   private rowIndexCell(row: Locator): Locator {
     return row.getByTestId('row-index');
   }
@@ -194,6 +199,10 @@ class TimesStopsTablePage extends OpSimulationResultPage {
   async verifyPowerRestriction(row: Locator, expectedValue: string): Promise<void> {
     await expect(this.powerRestrictionCombobox(row)).toBeVisible();
     await expect(this.powerRestrictionCombobox(row)).toHaveValue(expectedValue);
+  }
+
+  async verifyPowerRestrictionAbsent(row: Locator): Promise<void> {
+    await expect(this.powerRestrictionCombobox(row)).toHaveCount(0);
   }
 
   async verifyPowerRestrictionHasOption(row: Locator, value: string, count: number): Promise<void> {
@@ -553,7 +562,7 @@ class TimesStopsTablePage extends OpSimulationResultPage {
       this.getComputedDepartureText(row),
       this.signalReceptionClosedCheckbox(row).isChecked(),
       this.shortSlipDistanceCheckbox(row).isChecked(),
-      this.powerRestrictionCombobox(row).inputValue(),
+      this.optionalInputValue(this.powerRestrictionCombobox(row)),
       this.optionalText(this.requestedTheoreticalMargin(row)),
       this.optionalText(this.computedTheoreticalMargin(row)),
       this.optionalText(this.realMargin(row)),
