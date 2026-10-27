@@ -83,7 +83,6 @@ impl RollingStock {
                 scenario::name,
             ))
             .filter(rolling_stock::id.eq(self.id))
-            .filter(train_schedule::id.is_not_null())
             .distinct()
             .load::<SchedulesFromRollingStock>(conn.write().await.deref_mut())
             .await?;

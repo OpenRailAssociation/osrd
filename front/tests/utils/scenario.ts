@@ -80,7 +80,7 @@ export default async function createScenario(
       study_id: study.id,
       name: scenarioNameFinal,
       infra_id: mediumInfra.id,
-      timetable_id: timetableResult.timetable_id,
+      timetable_ids: [timetableResult.timetable_id],
       electrical_profile_set_id: electricalProfileId,
     },
     undefined,
