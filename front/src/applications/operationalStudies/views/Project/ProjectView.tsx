@@ -76,11 +76,13 @@ const ProjectView = () => {
 
   const { getUserPrivileges } = useAuthz();
   // Get the user privileges for the project
-  const { refresh: userPrivilegesrefresh, data: userPrivileges } =
-    useRefreshableAsyncMemo(async () => {
-      const data = await getUserPrivileges({ project: [projectId!] });
+  const { refresh: userPrivilegesrefresh, data: userPrivileges } = useRefreshableAsyncMemo(
+    async (controller) => {
+      const data = await getUserPrivileges({ project: [projectId!] }, controller.signal);
       return data.project || {};
-    }, [getUserPrivileges, projectId]);
+    },
+    [getUserPrivileges, projectId]
+  );
 
   const imageUrl = useProjectImage(project?.image);
 

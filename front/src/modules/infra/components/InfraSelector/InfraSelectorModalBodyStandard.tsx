@@ -54,11 +54,13 @@ const InfraSelectorModalBodyStandard = ({
   const fitViewportToInfra = useFitViewportToInfra();
 
   // Get the user privileges for infras
-  const { refresh: userPrivilegesRefresh, data: userPrivilegesByInfraId } =
-    useRefreshableAsyncMemo(async () => {
-      const data = await getUserPrivileges({ infra: infraIdsList });
+  const { refresh: userPrivilegesRefresh, data: userPrivilegesByInfraId } = useRefreshableAsyncMemo(
+    async (controller) => {
+      const data = await getUserPrivileges({ infra: infraIdsList }, controller.signal);
       return data.infra || {};
-    }, [getUserPrivileges, infraIdsList]);
+    },
+    [getUserPrivileges, infraIdsList]
+  );
 
   const changeInfrastructure = useCallback(
     async (id: number) => {
