@@ -89,6 +89,8 @@ describe('setupStateWithTrainSchedule', () => {
             arrival: null,
             stopFor: null,
             receptionSignal: 'OPEN',
+            referenceBaseArrival: null,
+            referencePosition: null,
           },
           {
             key: 'id2',
@@ -100,6 +102,8 @@ describe('setupStateWithTrainSchedule', () => {
             arrival: null,
             stopFor: null,
             receptionSignal: 'OPEN',
+            referenceBaseArrival: null,
+            referencePosition: null,
           },
         ],
         startTime: new Date('2021-01-01T00:00:00+00:00'),

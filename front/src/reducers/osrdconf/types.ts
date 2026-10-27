@@ -75,6 +75,8 @@ export type PathStep = {
   stopFor: Duration | null;
   theoreticalMargin: string | null;
   receptionSignal: ReceptionSignal | null;
+  referenceBaseArrival: Duration | null;
+  referencePosition: number | null;
 };
 
 export type LocatedPathStep = PathStep & { location: PathItemLocation };
