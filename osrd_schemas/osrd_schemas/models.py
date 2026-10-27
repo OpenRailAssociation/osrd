@@ -3,36 +3,46 @@
 
 from __future__ import annotations
 
-from datetime import date
-from datetime import time as time_aliased
-from datetime import timedelta
+from datetime import date, timedelta
 from enum import Enum
 from typing import Annotated, Any, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, constr
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    RootModel,
+    StrictBool,
+    StrictBytes,
+    StrictFloat,
+    StrictInt,
+    StrictStr,
+    constr,
+)
 from typing_extensions import TypeAliasType
 
 from .overrides import OffsetInMs
 
 
 class OperationalPointReferenceId(BaseModel):
-    operational_point: str
+    operational_point: StrictStr
     """
     The object id of an operational point
     """
     type: Literal["id"] = "id"
 
 
-class SecondaryCode(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
+class SecondaryCode(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
     """
     An optional secondary code to identify a more specific location
     """
 
 
 class OperationalPointReferenceDomestic(BaseModel):
-    country_code: Annotated[str, Field(min_length=1)]
-    main_code: str
+    country_code: Annotated[StrictStr, Field(min_length=1)]
+    main_code: StrictStr
     """
     The operational point main code
     """
@@ -49,7 +59,7 @@ class OperationalPointReferenceUic(BaseModel):
     An optional secondary code to identify a more specific location
     """
     type: Literal["uic"] = "uic"
-    uic: Annotated[int, Field(ge=0)]
+    uic: Annotated[StrictInt, Field(ge=0)]
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
     """
@@ -60,7 +70,7 @@ class AddOperation(BaseModel):
     JSON Patch 'add' operation representation
     """
 
-    path: str
+    path: StrictStr
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed.
@@ -82,9 +92,9 @@ class ApplicableDirectionsTrackRange(BaseModel):
         extra="forbid",
     )
     applicable_directions: ApplicableDirections
-    begin: float
-    end: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    begin: StrictFloat
+    end: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class BoundingBox(BaseModel):
@@ -92,26 +102,26 @@ class BoundingBox(BaseModel):
     A bounding box
     """
 
-    max_lat: float
-    max_lon: float
-    min_lat: float
-    min_lon: float
+    max_lat: StrictFloat
+    max_lon: StrictFloat
+    min_lat: StrictFloat
+    min_lon: StrictFloat
 
 
 class BufferStopSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kp: str
+    kp: StrictStr
 
 
 class CatalogEntry(BaseModel):
-    id: int
-    name: str | None = None
+    id: StrictInt
+    name: StrictStr | None = None
 
 
 class CatalogEntryForm(BaseModel):
-    name: str | None = None
+    name: StrictStr | None = None
 
 
 class Comfort(Enum):
@@ -125,8 +135,8 @@ class OccurrenceIdBase(BaseModel):
     This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
     """
 
-    index: Annotated[int, Field(ge=0)]
-    train_schedule_id: int
+    index: Annotated[StrictInt, Field(ge=0)]
+    train_schedule_id: StrictInt
     type: Literal["base"] = "base"
 
 
@@ -135,9 +145,9 @@ class OccurrenceIdModified(BaseModel):
     This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
     """
 
-    exception_id: int
-    index: Annotated[int, Field(ge=0)]
-    train_schedule_id: int
+    exception_id: StrictInt
+    index: Annotated[StrictInt, Field(ge=0)]
+    train_schedule_id: StrictInt
     type: Literal["modified"] = "modified"
 
 
@@ -146,13 +156,13 @@ class OccurrenceIdCreated(BaseModel):
     This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
     """
 
-    exception_id: int
-    train_schedule_id: int
+    exception_id: StrictInt
+    train_schedule_id: StrictInt
     type: Literal["created"] = "created"
 
 
-class Boundary(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class Boundary(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
 class CopyOperation(BaseModel):
@@ -160,12 +170,12 @@ class CopyOperation(BaseModel):
     JSON Patch 'copy' operation representation
     """
 
-    from_: Annotated[str, Field(alias="from")]
+    from_: Annotated[StrictStr, Field(alias="from")]
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     to copy value from.
     """
-    path: str
+    path: StrictStr
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed.
@@ -180,11 +190,11 @@ class CoreConflictRequirement(BaseModel):
     requirement's time span).
     """
 
-    duration: Annotated[int, Field(ge=0)]
+    duration: Annotated[StrictInt, Field(ge=0)]
     """
     Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict).
     """
-    start_time: int
+    start_time: StrictInt
     """
     Start of the time range during which the zone is contested: elapsed ms since the implicit
     'request base time'. Earliest start time for any zone use.
@@ -194,7 +204,7 @@ class CoreConflictRequirement(BaseModel):
     Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
     timetables.
     """
-    zone: str
+    zone: StrictStr
 
 
 class CoreConflictType(Enum):
@@ -207,15 +217,15 @@ class CoreObjectRange(BaseModel):
     A range on a linear object (usually block or route)
     """
 
-    begin: Annotated[int, Field(ge=0)]
+    begin: Annotated[StrictInt, Field(ge=0)]
     """
     The beginning of the range in mm.
     """
-    end: Annotated[int, Field(ge=0)]
+    end: Annotated[StrictInt, Field(ge=0)]
     """
     The end of the range in mm.
     """
-    id: str
+    id: StrictStr
     """
     The object identifier.
     """
@@ -227,19 +237,19 @@ class CoreOffsetRange(BaseModel):
     in opposition to geometrical offsets used on the map in the front.
     """
 
-    end: Annotated[int, Field(ge=0)]
-    start: Annotated[int, Field(ge=0)]
+    end: Annotated[StrictInt, Field(ge=0)]
+    start: Annotated[StrictInt, Field(ge=0)]
 
 
-class Plc(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
+class Plc(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
     """
     Primary Location Code : https://rne.eu/it/products/ccs/crd/
     """
 
 
-class SecondaryName(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
+class SecondaryName(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
 
 
 class PathfindingInputErrorNotEnoughPathItems(BaseModel):
@@ -248,12 +258,12 @@ class PathfindingInputErrorNotEnoughPathItems(BaseModel):
 
 class PathfindingInputErrorUnauthorizedRollingStock(BaseModel):
     error_type: Literal["unauthorized_rolling_stock"] = "unauthorized_rolling_stock"
-    rolling_stock_id: int
+    rolling_stock_id: StrictInt
 
 
 class PathfindingInputErrorRollingStockNotFound(BaseModel):
     error_type: Literal["rolling_stock_not_found"] = "rolling_stock_not_found"
-    rolling_stock_name: str
+    rolling_stock_name: StrictStr
 
 
 class PathfindingInputErrorZeroLengthPath(BaseModel):
@@ -264,20 +274,20 @@ class PathfindingNotFoundNotFoundInTracks(BaseModel):
     error_type: Literal["not_found_in_tracks"] = "not_found_in_tracks"
 
 
-class BacktrackPathItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class BacktrackPathItem(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class PathItemPosition(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class PathItemPosition(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class GeomOffset(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class GeomOffset(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class TopoOffset(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class TopoOffset(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
 class CorePropertyGeometryProjection(BaseModel):
@@ -300,20 +310,20 @@ class CorePropertyGeometryProjection(BaseModel):
     """
 
 
-class PathItemTime(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class PathItemTime(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class Position(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class Position(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class Time(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class Time(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
 class CoreRoutingZoneRequirement(BaseModel):
-    end_time: Annotated[int, Field(ge=0)]
+    end_time: Annotated[StrictInt, Field(ge=0)]
     """
     Time in ms since a reference point that depends on which struct embeds this one:
     - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
@@ -322,10 +332,10 @@ class CoreRoutingZoneRequirement(BaseModel):
       hourly ones);
     - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     """
-    entry_detector: str
-    exit_detector: str
-    switches: dict[str, str]
-    zone: str
+    entry_detector: StrictStr
+    exit_detector: StrictStr
+    switches: dict[StrictStr, StrictStr]
+    zone: StrictStr
 
 
 class CoreSignalCriticalPosition(BaseModel):
@@ -334,53 +344,53 @@ class CoreSignalCriticalPosition(BaseModel):
     be free (sighting time or closed-signal stop ending)
     """
 
-    position: Annotated[int, Field(ge=0)]
+    position: Annotated[StrictInt, Field(ge=0)]
     """
     Position in mm
     """
-    signal: str
-    state: str
-    time: Annotated[int, Field(ge=0)]
+    signal: StrictStr
+    state: StrictStr
+    time: Annotated[StrictInt, Field(ge=0)]
     """
     Time in ms
     """
 
 
 class CoreSignalUpdate(BaseModel):
-    aspect_label: str
+    aspect_label: StrictStr
     """
     The labels of the new aspect
     """
-    blinking: bool
+    blinking: StrictBool
     """
     Whether the signal is blinking
     """
-    color: int
+    color: StrictInt
     """
     The color of the aspect
     (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
     """
-    position_end: Annotated[int, Field(ge=0)]
+    position_end: Annotated[StrictInt, Field(ge=0)]
     """
     The route ends at this position in mm on the train path
     """
-    position_start: Annotated[int, Field(ge=0)]
+    position_start: Annotated[StrictInt, Field(ge=0)]
     """
     The route starts at this position in mm on the train path
     """
-    signal_id: str
+    signal_id: StrictStr
     """
     The id of the updated signal
     """
-    signaling_system: str
+    signaling_system: StrictStr
     """
     The name of the signaling system of the signal
     """
-    time_end: Annotated[int, Field(ge=0)]
+    time_end: Annotated[StrictInt, Field(ge=0)]
     """
     The aspects stop being displayed at this time (number of ms since `departure_time`)
     """
-    time_start: Annotated[int, Field(ge=0)]
+    time_start: Annotated[StrictInt, Field(ge=0)]
     """
     The aspects start being displayed at this time (number of ms since `departure_time`)
     """
@@ -392,7 +402,7 @@ class CoreSimpleEnvelope(BaseModel):
     List of positions of a train
     Both positions (in mm) and times (in ms) must have the same length
     """
-    speeds: list[float]
+    speeds: list[StrictFloat]
     """
     List of speeds (in m/s) associated to a position
     """
@@ -403,7 +413,7 @@ class CoreSimpleEnvelope(BaseModel):
 
 
 class CoreSpacingRequirement(BaseModel):
-    begin_time: Annotated[int, Field(ge=0)]
+    begin_time: Annotated[StrictInt, Field(ge=0)]
     """
     Time in ms since a reference point that depends on which struct embeds this one:
     - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
@@ -412,11 +422,11 @@ class CoreSpacingRequirement(BaseModel):
       hourly ones);
     - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     """
-    end_time: Annotated[int, Field(ge=0)]
+    end_time: Annotated[StrictInt, Field(ge=0)]
     """
     Time in ms: see begin_time
     """
-    zone: str
+    zone: StrictStr
 
 
 class SpeedLimitSourceGivenTrainTag(BaseModel):
@@ -425,7 +435,7 @@ class SpeedLimitSourceGivenTrainTag(BaseModel):
     """
 
     speed_limit_source_type: Literal["given_train_tag"] = "given_train_tag"
-    tag: str
+    tag: StrictStr
 
 
 class SpeedLimitSourceFallbackTag(BaseModel):
@@ -434,7 +444,7 @@ class SpeedLimitSourceFallbackTag(BaseModel):
     """
 
     speed_limit_source_type: Literal["fallback_tag"] = "fallback_tag"
-    tag: str
+    tag: StrictStr
 
 
 class SpeedLimitSourceUnknownTag(BaseModel):
@@ -455,33 +465,33 @@ class CoreSpeedLimitProperty(BaseModel):
     """
     source of the speed-limit if relevant (tag used)
     """
-    speed: float
+    speed: StrictFloat
     """
     in meters per second
     """
 
 
 class CoreZoneUpdate(BaseModel):
-    is_entry: bool
-    position: Annotated[int, Field(ge=0)]
-    time: Annotated[int, Field(ge=0)]
-    zone: str
+    is_entry: StrictBool
+    position: Annotated[StrictInt, Field(ge=0)]
+    time: Annotated[StrictInt, Field(ge=0)]
+    zone: StrictStr
 
 
 class Curve(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    begin: float
-    end: float
-    radius: float
+    begin: StrictFloat
+    end: StrictFloat
+    radius: StrictFloat
 
 
 class DetectorSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kp: str
+    kp: StrictStr
 
 
 class Direction(Enum):
@@ -493,10 +503,10 @@ class DirectionalTrackRange(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    begin: float
+    begin: StrictFloat
     direction: Direction
-    end: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    end: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class Distribution(Enum):
@@ -518,7 +528,7 @@ class EditoastAbortJoinError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAbortJoinErrorContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:JoinError:cancelled"] = "editoast:JoinError:cancelled"
 
@@ -527,7 +537,7 @@ class EditoastAppHealthErrorCore(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorCoreContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:app_health:Core"] = "editoast:app_health:Core"
 
@@ -536,7 +546,7 @@ class EditoastAppHealthErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:app_health:Database"] = "editoast:app_health:Database"
 
@@ -545,7 +555,7 @@ class EditoastAppHealthErrorOpenfga(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorOpenfgaContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:app_health:Openfga"] = "editoast:app_health:Openfga"
 
@@ -554,7 +564,7 @@ class EditoastAppHealthErrorTimeout(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorTimeoutContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:app_health:Timeout"] = "editoast:app_health:Timeout"
 
@@ -563,13 +573,13 @@ class EditoastAppHealthErrorValkey(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAppHealthErrorValkeyContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:app_health:Valkey"] = "editoast:app_health:Valkey"
 
 
 class EditoastAttachedErrorTrackNotFoundContext(BaseModel):
-    track_id: str
+    track_id: StrictStr
 
 
 class EditoastAttachedErrorTrackNotFound(BaseModel):
@@ -577,7 +587,7 @@ class EditoastAttachedErrorTrackNotFound(BaseModel):
         EditoastAttachedErrorTrackNotFoundContext | None,
         Field(title="EditoastAttachedErrorTrackNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:attached:TrackNotFound"] = "editoast:attached:TrackNotFound"
 
@@ -586,7 +596,7 @@ class EditoastAuthorizationErrorDbError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorDbErrorContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:authorization:DbError"] = "editoast:authorization:DbError"
 
@@ -595,7 +605,7 @@ class EditoastAuthorizationErrorForbidden(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorForbiddenContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[403] = 403
     type: Literal["editoast:authorization:Forbidden"] = (
         "editoast:authorization:Forbidden"
@@ -607,7 +617,7 @@ class EditoastAuthorizationErrorForbiddenImpersonation(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastAuthorizationErrorForbiddenImpersonationContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[403] = 403
     type: Literal["editoast:authorization:ForbiddenImpersonation"] = (
         "editoast:authorization:ForbiddenImpersonation"
@@ -619,7 +629,7 @@ class EditoastAuthorizationErrorForbiddenRevokeLastOwner(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastAuthorizationErrorForbiddenRevokeLastOwnerContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[403] = 403
     type: Literal["editoast:authorization:ForbiddenRevokeLastOwner"] = (
         "editoast:authorization:ForbiddenRevokeLastOwner"
@@ -627,7 +637,7 @@ class EditoastAuthorizationErrorForbiddenRevokeLastOwner(BaseModel):
 
 
 class EditoastAuthorizationErrorImpersonatedUserNotFoundContext(BaseModel):
-    identity: str
+    identity: StrictStr
 
 
 class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
@@ -635,7 +645,7 @@ class EditoastAuthorizationErrorImpersonatedUserNotFound(BaseModel):
         EditoastAuthorizationErrorImpersonatedUserNotFoundContext | None,
         Field(title="EditoastAuthorizationErrorImpersonatedUserNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:authorization:ImpersonatedUserNotFound"] = (
         "editoast:authorization:ImpersonatedUserNotFound"
@@ -646,7 +656,7 @@ class EditoastAuthorizationErrorOpenFga(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAuthorizationErrorOpenFgaContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:authorization:OpenFga"] = "editoast:authorization:OpenFga"
 
@@ -656,7 +666,7 @@ class EditoastAuthorizationErrorUnauthenticated(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastAuthorizationErrorUnauthenticatedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[401] = 401
     type: Literal["editoast:authorization:Unauthenticated"] = (
         "editoast:authorization:Unauthenticated"
@@ -667,7 +677,7 @@ class EditoastAuthzErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastAuthzErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:authz:Database"] = "editoast:authz:Database"
 
@@ -682,7 +692,7 @@ class EditoastAuthzErrorIncompatibleGrant(BaseModel):
         EditoastAuthzErrorIncompatibleGrantContext | None,
         Field(title="EditoastAuthzErrorIncompatibleGrantContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[422] = 422
     type: Literal["editoast:authz:IncompatibleGrant"] = (
         "editoast:authz:IncompatibleGrant"
@@ -698,7 +708,7 @@ class EditoastAuthzErrorUnknownIdentities(BaseModel):
         EditoastAuthzErrorUnknownIdentitiesContext | None,
         Field(title="EditoastAuthzErrorUnknownIdentitiesContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:authz:UnknownIdentities"] = (
         "editoast:authz:UnknownIdentities"
@@ -706,7 +716,7 @@ class EditoastAuthzErrorUnknownIdentities(BaseModel):
 
 
 class EditoastAuthzErrorUnknownResourceContext(BaseModel):
-    resource_id: int
+    resource_id: StrictInt
 
 
 class EditoastAuthzErrorUnknownResource(BaseModel):
@@ -714,13 +724,13 @@ class EditoastAuthzErrorUnknownResource(BaseModel):
         EditoastAuthzErrorUnknownResourceContext | None,
         Field(title="EditoastAuthzErrorUnknownResourceContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:authz:UnknownResource"] = "editoast:authz:UnknownResource"
 
 
 class EditoastAuthzErrorUnknownSubjectContext(BaseModel):
-    subject_id: int
+    subject_id: StrictInt
 
 
 class EditoastAuthzErrorUnknownSubject(BaseModel):
@@ -728,13 +738,13 @@ class EditoastAuthzErrorUnknownSubject(BaseModel):
         EditoastAuthzErrorUnknownSubjectContext | None,
         Field(title="EditoastAuthzErrorUnknownSubjectContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:authz:UnknownSubject"] = "editoast:authz:UnknownSubject"
 
 
 class EditoastAuthzErrorUnknownUserContext(BaseModel):
-    id: int
+    id: StrictInt
 
 
 class EditoastAuthzErrorUnknownUser(BaseModel):
@@ -742,7 +752,7 @@ class EditoastAuthzErrorUnknownUser(BaseModel):
         EditoastAuthzErrorUnknownUserContext | None,
         Field(title="EditoastAuthzErrorUnknownUserContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:authz:UnknownUser"] = "editoast:authz:UnknownUser"
 
@@ -759,7 +769,7 @@ class EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject(BaseModel):
             title="EditoastAutoFixesEditoastErrorConflictingFixesOnSameObjectContext"
         ),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:auto_fixes:ConflictingFixesOnSameObject"] = (
         "editoast:auto_fixes:ConflictingFixesOnSameObject"
@@ -771,7 +781,7 @@ class EditoastAutoFixesEditoastErrorFixTrialFailure(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastAutoFixesEditoastErrorFixTrialFailureContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:auto_fixes:FixTrialFailure"] = (
         "editoast:auto_fixes:FixTrialFailure"
@@ -783,7 +793,7 @@ class EditoastAutoFixesEditoastErrorMaximumIterationReached(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastAutoFixesEditoastErrorMaximumIterationReachedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:auto_fixes:MaximumIterationReached"] = (
         "editoast:auto_fixes:MaximumIterationReached"
@@ -795,7 +805,7 @@ class EditoastAutoFixesEditoastErrorMissingErrorObject(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastAutoFixesEditoastErrorMissingErrorObjectContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:auto_fixes:MissingErrorObject"] = (
         "editoast:auto_fixes:MissingErrorObject"
@@ -803,8 +813,8 @@ class EditoastAutoFixesEditoastErrorMissingErrorObject(BaseModel):
 
 
 class EditoastCacheOperationErrorDuplicateIdsProvidedContext(BaseModel):
-    obj_id: str
-    obj_type: str
+    obj_id: StrictStr
+    obj_type: StrictStr
 
 
 class EditoastCacheOperationErrorDuplicateIdsProvided(BaseModel):
@@ -812,7 +822,7 @@ class EditoastCacheOperationErrorDuplicateIdsProvided(BaseModel):
         EditoastCacheOperationErrorDuplicateIdsProvidedContext | None,
         Field(title="EditoastCacheOperationErrorDuplicateIdsProvidedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:cache_operation:DuplicateIdsProvided"] = (
         "editoast:cache_operation:DuplicateIdsProvided"
@@ -820,8 +830,8 @@ class EditoastCacheOperationErrorDuplicateIdsProvided(BaseModel):
 
 
 class EditoastCacheOperationErrorObjectNotFoundContext(BaseModel):
-    obj_id: str
-    obj_type: str
+    obj_id: StrictStr
+    obj_type: StrictStr
 
 
 class EditoastCacheOperationErrorObjectNotFound(BaseModel):
@@ -829,7 +839,7 @@ class EditoastCacheOperationErrorObjectNotFound(BaseModel):
         EditoastCacheOperationErrorObjectNotFoundContext | None,
         Field(title="EditoastCacheOperationErrorObjectNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:cache_operation:ObjectNotFound"] = (
         "editoast:cache_operation:ObjectNotFound"
@@ -840,13 +850,13 @@ class EditoastCatalogEntryErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastCatalogEntryErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:catalog_entry:Database"] = "editoast:catalog_entry:Database"
 
 
 class EditoastCatalogEntryErrorNotFoundContext(BaseModel):
-    catalog_entry_id: int
+    catalog_entry_id: StrictInt
 
 
 class EditoastCatalogEntryErrorNotFound(BaseModel):
@@ -854,7 +864,7 @@ class EditoastCatalogEntryErrorNotFound(BaseModel):
         EditoastCatalogEntryErrorNotFoundContext | None,
         Field(title="EditoastCatalogEntryErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:catalog_entry:NotFound"] = "editoast:catalog_entry:NotFound"
 
@@ -863,13 +873,13 @@ class EditoastCoreErrorBrokenPipe(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastCoreErrorBrokenPipeContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:coreclient:BrokenPipe"] = "editoast:coreclient:BrokenPipe"
 
 
 class EditoastCoreErrorCoreResponseFormatErrorContext(BaseModel):
-    msg: str
+    msg: StrictStr
 
 
 class EditoastCoreErrorCoreResponseFormatError(BaseModel):
@@ -877,7 +887,7 @@ class EditoastCoreErrorCoreResponseFormatError(BaseModel):
         EditoastCoreErrorCoreResponseFormatErrorContext | None,
         Field(title="EditoastCoreErrorCoreResponseFormatErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:coreclient:CoreResponseFormatError"] = (
         "editoast:coreclient:CoreResponseFormatError"
@@ -888,7 +898,7 @@ class EditoastCoreErrorMqClientError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastCoreErrorMqClientErrorContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:coreclient:MqClientError"] = (
         "editoast:coreclient:MqClientError"
@@ -900,7 +910,7 @@ class EditoastCoreErrorUnparsableErrorOutput(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastCoreErrorUnparsableErrorOutputContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:coreclient:UnparsableErrorOutput"] = (
         "editoast:coreclient:UnparsableErrorOutput"
@@ -912,7 +922,7 @@ class EditoastDatabaseAccessErrorDatabaseAccessError(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastDatabaseAccessErrorDatabaseAccessErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:DatabaseAccessError"] = "editoast:DatabaseAccessError"
 
@@ -926,7 +936,7 @@ class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
         EditoastDelimitedAreaErrorInvalidLocationsContext | None,
         Field(title="EditoastDelimitedAreaErrorInvalidLocationsContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:delimited_area:InvalidLocations"] = (
         "editoast:delimited_area:InvalidLocations"
@@ -934,7 +944,7 @@ class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
 
 
 class EditoastEditionErrorInfraIsLockedContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastEditionErrorInfraIsLocked(BaseModel):
@@ -942,7 +952,7 @@ class EditoastEditionErrorInfraIsLocked(BaseModel):
         EditoastEditionErrorInfraIsLockedContext | None,
         Field(title="EditoastEditionErrorInfraIsLockedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:edition:InfraIsLocked"] = (
         "editoast:infra:edition:InfraIsLocked"
@@ -950,9 +960,9 @@ class EditoastEditionErrorInfraIsLocked(BaseModel):
 
 
 class EditoastEditionErrorSplitTrackSectionBadOffsetContext(BaseModel):
-    infra_id: int
-    tracksection_id: str
-    tracksection_length: float
+    infra_id: StrictInt
+    tracksection_id: StrictStr
+    tracksection_length: StrictFloat
 
 
 class EditoastEditionErrorSplitTrackSectionBadOffset(BaseModel):
@@ -960,7 +970,7 @@ class EditoastEditionErrorSplitTrackSectionBadOffset(BaseModel):
         EditoastEditionErrorSplitTrackSectionBadOffsetContext | None,
         Field(title="EditoastEditionErrorSplitTrackSectionBadOffsetContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:edition:SplitTrackSectionBadOffset"] = (
         "editoast:infra:edition:SplitTrackSectionBadOffset"
@@ -971,7 +981,7 @@ class EditoastErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:search_journeys:Database"] = (
         "editoast:search_journeys:Database"
@@ -979,7 +989,7 @@ class EditoastErrorDatabase(BaseModel):
 
 
 class EditoastErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastErrorInfraNotFound(BaseModel):
@@ -987,7 +997,7 @@ class EditoastErrorInfraNotFound(BaseModel):
         EditoastErrorInfraNotFoundContext | None,
         Field(title="EditoastErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:search_journeys:InfraNotFound"] = (
         "editoast:search_journeys:InfraNotFound"
@@ -1003,7 +1013,7 @@ class EditoastErrorInvalidInput(BaseModel):
         EditoastErrorInvalidInputContext | None,
         Field(title="EditoastErrorInvalidInputContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:search_journeys:InvalidInput"] = (
         "editoast:search_journeys:InvalidInput"
@@ -1011,8 +1021,8 @@ class EditoastErrorInvalidInput(BaseModel):
 
 
 class EditoastGeometryErrorUnexpectedGeometryContext(BaseModel):
-    actual: str
-    expected: str
+    actual: StrictStr
+    expected: StrictStr
 
 
 class EditoastGeometryErrorUnexpectedGeometry(BaseModel):
@@ -1020,7 +1030,7 @@ class EditoastGeometryErrorUnexpectedGeometry(BaseModel):
         EditoastGeometryErrorUnexpectedGeometryContext | None,
         Field(title="EditoastGeometryErrorUnexpectedGeometryContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:geometry:UnexpectedGeometry"] = (
         "editoast:geometry:UnexpectedGeometry"
@@ -1032,7 +1042,7 @@ class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastGetObjectsErrorsDuplicateIdsProvidedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:objects:DuplicateIdsProvided"] = (
         "editoast:infra:objects:DuplicateIdsProvided"
@@ -1040,7 +1050,7 @@ class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
 
 
 class EditoastGetObjectsErrorsObjectIdNotFoundContext(BaseModel):
-    object_id: str
+    object_id: StrictStr
 
 
 class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
@@ -1048,7 +1058,7 @@ class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
         EditoastGetObjectsErrorsObjectIdNotFoundContext | None,
         Field(title="EditoastGetObjectsErrorsObjectIdNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:objects:ObjectIdNotFound"] = (
         "editoast:infra:objects:ObjectIdNotFound"
@@ -1056,7 +1066,7 @@ class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
 
 
 class EditoastIconErrorsFileNotFoundContext(BaseModel):
-    file: str
+    file: StrictStr
 
 
 class EditoastIconErrorsFileNotFound(BaseModel):
@@ -1064,7 +1074,7 @@ class EditoastIconErrorsFileNotFound(BaseModel):
         EditoastIconErrorsFileNotFoundContext | None,
         Field(title="EditoastIconErrorsFileNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:icons:FileNotFound"] = "editoast:icons:FileNotFound"
 
@@ -1073,13 +1083,13 @@ class EditoastInfraApiErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastInfraApiErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:infra:Database"] = "editoast:infra:Database"
 
 
 class EditoastInfraApiErrorNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastInfraApiErrorNotFound(BaseModel):
@@ -1087,14 +1097,14 @@ class EditoastInfraApiErrorNotFound(BaseModel):
         EditoastInfraApiErrorNotFoundContext | None,
         Field(title="EditoastInfraApiErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:infra:NotFound"] = "editoast:infra:NotFound"
 
 
 class EditoastLayersErrorLayerNotFoundContext(BaseModel):
     expected_names: list[Any]
-    layer_name: str
+    layer_name: StrictStr
 
 
 class EditoastLayersErrorLayerNotFound(BaseModel):
@@ -1102,14 +1112,14 @@ class EditoastLayersErrorLayerNotFound(BaseModel):
         EditoastLayersErrorLayerNotFoundContext | None,
         Field(title="EditoastLayersErrorLayerNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:layers:LayerNotFound"] = "editoast:layers:LayerNotFound"
 
 
 class EditoastLayersErrorViewNotFoundContext(BaseModel):
     expected_names: list[Any]
-    view_name: str
+    view_name: StrictStr
 
 
 class EditoastLayersErrorViewNotFound(BaseModel):
@@ -1117,7 +1127,7 @@ class EditoastLayersErrorViewNotFound(BaseModel):
         EditoastLayersErrorViewNotFoundContext | None,
         Field(title="EditoastLayersErrorViewNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:layers:ViewNotFound"] = "editoast:layers:ViewNotFound"
 
@@ -1126,7 +1136,7 @@ class EditoastLevelCrossingErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastLevelCrossingErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:level_crossing:Database"] = (
         "editoast:level_crossing:Database"
@@ -1134,7 +1144,7 @@ class EditoastLevelCrossingErrorDatabase(BaseModel):
 
 
 class EditoastLevelCrossingErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastLevelCrossingErrorInfraNotFound(BaseModel):
@@ -1142,7 +1152,7 @@ class EditoastLevelCrossingErrorInfraNotFound(BaseModel):
         EditoastLevelCrossingErrorInfraNotFoundContext | None,
         Field(title="EditoastLevelCrossingErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:level_crossing:InfraNotFound"] = (
         "editoast:level_crossing:InfraNotFound"
@@ -1150,7 +1160,7 @@ class EditoastLevelCrossingErrorInfraNotFound(BaseModel):
 
 
 class EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext(BaseModel):
-    count: int
+    count: StrictInt
 
 
 class EditoastLevelCrossingErrorLevelCrossingBatchNotFound(BaseModel):
@@ -1158,7 +1168,7 @@ class EditoastLevelCrossingErrorLevelCrossingBatchNotFound(BaseModel):
         EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext | None,
         Field(title="EditoastLevelCrossingErrorLevelCrossingBatchNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:level_crossing:LevelCrossingBatchNotFound"] = (
         "editoast:level_crossing:LevelCrossingBatchNotFound"
@@ -1166,7 +1176,7 @@ class EditoastLevelCrossingErrorLevelCrossingBatchNotFound(BaseModel):
 
 
 class EditoastLevelCrossingErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastLevelCrossingErrorTimetableNotFound(BaseModel):
@@ -1174,7 +1184,7 @@ class EditoastLevelCrossingErrorTimetableNotFound(BaseModel):
         EditoastLevelCrossingErrorTimetableNotFoundContext | None,
         Field(title="EditoastLevelCrossingErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:level_crossing:TimetableNotFound"] = (
         "editoast:level_crossing:TimetableNotFound"
@@ -1182,7 +1192,7 @@ class EditoastLevelCrossingErrorTimetableNotFound(BaseModel):
 
 
 class EditoastLevelCrossingErrorTrainBatchNotFoundContext(BaseModel):
-    count: int
+    count: StrictInt
 
 
 class EditoastLevelCrossingErrorTrainBatchNotFound(BaseModel):
@@ -1190,7 +1200,7 @@ class EditoastLevelCrossingErrorTrainBatchNotFound(BaseModel):
         EditoastLevelCrossingErrorTrainBatchNotFoundContext | None,
         Field(title="EditoastLevelCrossingErrorTrainBatchNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:level_crossing:TrainBatchNotFound"] = (
         "editoast:level_crossing:TrainBatchNotFound"
@@ -1202,7 +1212,7 @@ class EditoastLevelCrossingErrorUnsupportedTimetableType(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastLevelCrossingErrorUnsupportedTimetableTypeContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[422] = 422
     type: Literal["editoast:level_crossing:UnsupportedTimetableType"] = (
         "editoast:level_crossing:UnsupportedTimetableType"
@@ -1210,7 +1220,7 @@ class EditoastLevelCrossingErrorUnsupportedTimetableType(BaseModel):
 
 
 class EditoastLinesErrorsLineNotFoundContext(BaseModel):
-    line_code: int
+    line_code: StrictInt
 
 
 class EditoastLinesErrorsLineNotFound(BaseModel):
@@ -1218,7 +1228,7 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
         EditoastLinesErrorsLineNotFoundContext | None,
         Field(title="EditoastLinesErrorsLineNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:lines:LineNotFound"] = (
         "editoast:infra:lines:LineNotFound"
@@ -1226,7 +1236,7 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
 
 
 class EditoastLinkingErrorBatchNotFoundContext(BaseModel):
-    count: int
+    count: StrictInt
 
 
 class EditoastLinkingErrorBatchNotFound(BaseModel):
@@ -1234,7 +1244,7 @@ class EditoastLinkingErrorBatchNotFound(BaseModel):
         EditoastLinkingErrorBatchNotFoundContext | None,
         Field(title="EditoastLinkingErrorBatchNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_linking:BatchNotFound"] = (
         "editoast:train_schedule_linking:BatchNotFound"
@@ -1245,7 +1255,7 @@ class EditoastLinkingErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastLinkingErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:train_schedule_linking:Database"] = (
         "editoast:train_schedule_linking:Database"
@@ -1253,7 +1263,7 @@ class EditoastLinkingErrorDatabase(BaseModel):
 
 
 class EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
     timetable_type: dict[str, Any]
 
 
@@ -1262,7 +1272,7 @@ class EditoastLinkingErrorRequestIncompatibleWithTimetableType(BaseModel):
         EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext | None,
         Field(title="EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[409] = 409
     type: Literal[
         "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
@@ -1270,7 +1280,7 @@ class EditoastLinkingErrorRequestIncompatibleWithTimetableType(BaseModel):
 
 
 class EditoastLinkingErrorSourceAlreadyUsedContext(BaseModel):
-    occurrence: str
+    occurrence: StrictStr
 
 
 class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
@@ -1278,7 +1288,7 @@ class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
         EditoastLinkingErrorSourceAlreadyUsedContext | None,
         Field(title="EditoastLinkingErrorSourceAlreadyUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[409] = 409
     type: Literal["editoast:train_schedule_linking:SourceAlreadyUsed"] = (
         "editoast:train_schedule_linking:SourceAlreadyUsed"
@@ -1286,7 +1296,7 @@ class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
 
 
 class EditoastLinkingErrorTargetAlreadyUsedContext(BaseModel):
-    occurrence: str
+    occurrence: StrictStr
 
 
 class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
@@ -1294,7 +1304,7 @@ class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
         EditoastLinkingErrorTargetAlreadyUsedContext | None,
         Field(title="EditoastLinkingErrorTargetAlreadyUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[409] = 409
     type: Literal["editoast:train_schedule_linking:TargetAlreadyUsed"] = (
         "editoast:train_schedule_linking:TargetAlreadyUsed"
@@ -1302,7 +1312,7 @@ class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
 
 
 class EditoastLinkingErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastLinkingErrorTimetableNotFound(BaseModel):
@@ -1310,7 +1320,7 @@ class EditoastLinkingErrorTimetableNotFound(BaseModel):
         EditoastLinkingErrorTimetableNotFoundContext | None,
         Field(title="EditoastLinkingErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_linking:TimetableNotFound"] = (
         "editoast:train_schedule_linking:TimetableNotFound"
@@ -1322,7 +1332,7 @@ class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastListErrorsErrorsWrongErrorTypeProvidedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:errors:WrongErrorTypeProvided"] = (
         "editoast:infra:errors:WrongErrorTypeProvided"
@@ -1333,13 +1343,13 @@ class EditoastMacroNodeErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastMacroNodeErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:macro_node:Database"] = "editoast:macro_node:Database"
 
 
 class EditoastMacroNodeErrorNotFoundContext(BaseModel):
-    node_id: int
+    node_id: StrictInt
 
 
 class EditoastMacroNodeErrorNotFound(BaseModel):
@@ -1347,13 +1357,13 @@ class EditoastMacroNodeErrorNotFound(BaseModel):
         EditoastMacroNodeErrorNotFoundContext | None,
         Field(title="EditoastMacroNodeErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:macro_node:NotFound"] = "editoast:macro_node:NotFound"
 
 
 class EditoastMacroNodeErrorScenarioNotFoundContext(BaseModel):
-    scenario_id: int
+    scenario_id: StrictInt
 
 
 class EditoastMacroNodeErrorScenarioNotFound(BaseModel):
@@ -1361,7 +1371,7 @@ class EditoastMacroNodeErrorScenarioNotFound(BaseModel):
         EditoastMacroNodeErrorScenarioNotFoundContext | None,
         Field(title="EditoastMacroNodeErrorScenarioNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:macro_node:ScenarioNotFound"] = (
         "editoast:macro_node:ScenarioNotFound"
@@ -1372,13 +1382,13 @@ class EditoastMacroNoteErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastMacroNoteErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:macro_note:Database"] = "editoast:macro_note:Database"
 
 
 class EditoastMacroNoteErrorNotFoundContext(BaseModel):
-    note_id: int
+    note_id: StrictInt
 
 
 class EditoastMacroNoteErrorNotFound(BaseModel):
@@ -1386,13 +1396,13 @@ class EditoastMacroNoteErrorNotFound(BaseModel):
         EditoastMacroNoteErrorNotFoundContext | None,
         Field(title="EditoastMacroNoteErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:macro_note:NotFound"] = "editoast:macro_note:NotFound"
 
 
 class EditoastMacroNoteErrorScenarioNotFoundContext(BaseModel):
-    scenario_id: int
+    scenario_id: StrictInt
 
 
 class EditoastMacroNoteErrorScenarioNotFound(BaseModel):
@@ -1400,7 +1410,7 @@ class EditoastMacroNoteErrorScenarioNotFound(BaseModel):
         EditoastMacroNoteErrorScenarioNotFoundContext | None,
         Field(title="EditoastMacroNoteErrorScenarioNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:macro_note:ScenarioNotFound"] = (
         "editoast:macro_note:ScenarioNotFound"
@@ -1411,7 +1421,7 @@ class EditoastModelError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastModelErrorContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:model:ModelError"] = "editoast:model:ModelError"
 
@@ -1420,13 +1430,13 @@ class EditoastOperationErrorEmptyId(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastOperationErrorEmptyIdContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:operation:EmptyId"] = "editoast:operation:EmptyId"
 
 
 class EditoastOperationErrorInvalidPatchContext(BaseModel):
-    error: str
+    error: StrictStr
 
 
 class EditoastOperationErrorInvalidPatch(BaseModel):
@@ -1434,7 +1444,7 @@ class EditoastOperationErrorInvalidPatch(BaseModel):
         EditoastOperationErrorInvalidPatchContext | None,
         Field(title="EditoastOperationErrorInvalidPatchContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:operation:InvalidPatch"] = "editoast:operation:InvalidPatch"
 
@@ -1443,14 +1453,14 @@ class EditoastOperationErrorModifyId(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastOperationErrorModifyIdContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:operation:ModifyId"] = "editoast:operation:ModifyId"
 
 
 class EditoastOperationErrorObjectNotFoundContext(BaseModel):
-    infra_id: int
-    obj_id: str
+    infra_id: StrictInt
+    obj_id: StrictStr
 
 
 class EditoastOperationErrorObjectNotFound(BaseModel):
@@ -1458,7 +1468,7 @@ class EditoastOperationErrorObjectNotFound(BaseModel):
         EditoastOperationErrorObjectNotFoundContext | None,
         Field(title="EditoastOperationErrorObjectNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:operation:ObjectNotFound"] = (
         "editoast:operation:ObjectNotFound"
@@ -1466,8 +1476,8 @@ class EditoastOperationErrorObjectNotFound(BaseModel):
 
 
 class EditoastOperationalPointProjectionErrorInvalidNumberOfDistancesContext(BaseModel):
-    expected: int
-    found: int
+    expected: StrictInt
+    found: StrictInt
 
 
 class EditoastOperationalPointProjectionErrorInvalidNumberOfDistances(BaseModel):
@@ -1477,7 +1487,7 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfDistances(BaseModel)
             title="EditoastOperationalPointProjectionErrorInvalidNumberOfDistancesContext"
         ),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[422] = 422
     type: Literal["editoast:operationalPointProjection:InvalidNumberOfDistances"] = (
         "editoast:operationalPointProjection:InvalidNumberOfDistances"
@@ -1491,7 +1501,7 @@ class EditoastOperationalPointProjectionErrorInvalidNumberOfRefs(BaseModel):
             title="EditoastOperationalPointProjectionErrorInvalidNumberOfRefsContext"
         ),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[422] = 422
     type: Literal["editoast:operationalPointProjection:InvalidNumberOfRefs"] = (
         "editoast:operationalPointProjection:InvalidNumberOfRefs"
@@ -1502,7 +1512,7 @@ class EditoastPanicJoinError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastPanicJoinErrorContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:JoinError:panic"] = "editoast:JoinError:panic"
 
@@ -1511,13 +1521,13 @@ class EditoastPathfindingErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastPathfindingErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:pathfinding:Database"] = "editoast:pathfinding:Database"
 
 
 class EditoastPathfindingErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastPathfindingErrorInfraNotFound(BaseModel):
@@ -1525,7 +1535,7 @@ class EditoastPathfindingErrorInfraNotFound(BaseModel):
         EditoastPathfindingErrorInfraNotFoundContext | None,
         Field(title="EditoastPathfindingErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:pathfinding:InfraNotFound"] = (
         "editoast:pathfinding:InfraNotFound"
@@ -1537,7 +1547,7 @@ class EditoastPathfindingViewErrorsEndingTrackLocationNotFound(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastPathfindingViewErrorsEndingTrackLocationNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:pathfinding:EndingTrackLocationNotFound"] = (
         "editoast:infra:pathfinding:EndingTrackLocationNotFound"
@@ -1545,8 +1555,8 @@ class EditoastPathfindingViewErrorsEndingTrackLocationNotFound(BaseModel):
 
 
 class EditoastPathfindingViewErrorsInvalidNumberOfPathsContext(BaseModel):
-    max_number: int
-    path_number: int
+    max_number: StrictInt
+    path_number: StrictInt
 
 
 class EditoastPathfindingViewErrorsInvalidNumberOfPaths(BaseModel):
@@ -1554,7 +1564,7 @@ class EditoastPathfindingViewErrorsInvalidNumberOfPaths(BaseModel):
         EditoastPathfindingViewErrorsInvalidNumberOfPathsContext | None,
         Field(title="EditoastPathfindingViewErrorsInvalidNumberOfPathsContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:pathfinding:InvalidNumberOfPaths"] = (
         "editoast:infra:pathfinding:InvalidNumberOfPaths"
@@ -1568,7 +1578,7 @@ class EditoastPathfindingViewErrorsStartingTrackLocationNotFound(BaseModel):
             title="EditoastPathfindingViewErrorsStartingTrackLocationNotFoundContext"
         ),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:infra:pathfinding:StartingTrackLocationNotFound"] = (
         "editoast:infra:pathfinding:StartingTrackLocationNotFound"
@@ -1579,13 +1589,13 @@ class EditoastProjectErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastProjectErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:project:Database"] = "editoast:project:Database"
 
 
 class EditoastProjectErrorImageErrorContext(BaseModel):
-    error: str
+    error: StrictStr
 
 
 class EditoastProjectErrorImageError(BaseModel):
@@ -1593,13 +1603,13 @@ class EditoastProjectErrorImageError(BaseModel):
         EditoastProjectErrorImageErrorContext | None,
         Field(title="EditoastProjectErrorImageErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:project:ImageError"] = "editoast:project:ImageError"
 
 
 class EditoastProjectErrorImageNotFoundContext(BaseModel):
-    document_key: int
+    document_key: StrictInt
 
 
 class EditoastProjectErrorImageNotFound(BaseModel):
@@ -1607,13 +1617,13 @@ class EditoastProjectErrorImageNotFound(BaseModel):
         EditoastProjectErrorImageNotFoundContext | None,
         Field(title="EditoastProjectErrorImageNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:project:ImageNotFound"] = "editoast:project:ImageNotFound"
 
 
 class EditoastProjectErrorNotFoundContext(BaseModel):
-    project_id: int
+    project_id: StrictInt
 
 
 class EditoastProjectErrorNotFound(BaseModel):
@@ -1621,14 +1631,14 @@ class EditoastProjectErrorNotFound(BaseModel):
         EditoastProjectErrorNotFoundContext | None,
         Field(title="EditoastProjectErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:project:NotFound"] = "editoast:project:NotFound"
 
 
 class EditoastRailJsonErrorUnsupportedVersionContext(BaseModel):
-    actual: str
-    expected: str
+    actual: StrictStr
+    expected: StrictStr
 
 
 class EditoastRailJsonErrorUnsupportedVersion(BaseModel):
@@ -1636,7 +1646,7 @@ class EditoastRailJsonErrorUnsupportedVersion(BaseModel):
         EditoastRailJsonErrorUnsupportedVersionContext | None,
         Field(title="EditoastRailJsonErrorUnsupportedVersionContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:railjson:UnsupportedVersion"] = (
         "editoast:railjson:UnsupportedVersion"
@@ -1648,7 +1658,7 @@ class EditoastRollingStockErrorBasePowerClassEmpty(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastRollingStockErrorBasePowerClassEmptyContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:rollingstocks:BasePowerClassEmpty"] = (
         "editoast:rollingstocks:BasePowerClassEmpty"
@@ -1660,7 +1670,7 @@ class EditoastRollingStockErrorCannotCreateCompoundImage(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastRollingStockErrorCannotCreateCompoundImageContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:rollingstocks:CannotCreateCompoundImage"] = (
         "editoast:rollingstocks:CannotCreateCompoundImage"
@@ -1672,7 +1682,7 @@ class EditoastRollingStockErrorCannotReadImage(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastRollingStockErrorCannotReadImageContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:rollingstocks:CannotReadImage"] = (
         "editoast:rollingstocks:CannotReadImage"
@@ -1683,13 +1693,13 @@ class EditoastRollingStockErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastRollingStockErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:rollingstocks:Database"] = "editoast:rollingstocks:Database"
 
 
 class EditoastRollingStockErrorIsLockedContext(BaseModel):
-    rolling_stock_id: int
+    rolling_stock_id: StrictInt
 
 
 class EditoastRollingStockErrorIsLocked(BaseModel):
@@ -1697,13 +1707,13 @@ class EditoastRollingStockErrorIsLocked(BaseModel):
         EditoastRollingStockErrorIsLockedContext | None,
         Field(title="EditoastRollingStockErrorIsLockedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[409] = 409
     type: Literal["editoast:rollingstocks:IsLocked"] = "editoast:rollingstocks:IsLocked"
 
 
 class EditoastRollingStockErrorIsUsedContext(BaseModel):
-    rolling_stock_id: int
+    rolling_stock_id: StrictInt
     usage: list[Any]
 
 
@@ -1712,7 +1722,7 @@ class EditoastRollingStockErrorIsUsed(BaseModel):
         EditoastRollingStockErrorIsUsedContext | None,
         Field(title="EditoastRollingStockErrorIsUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[409] = 409
     type: Literal["editoast:rollingstocks:IsUsed"] = "editoast:rollingstocks:IsUsed"
 
@@ -1726,7 +1736,7 @@ class EditoastRollingStockErrorKeyNotFound(BaseModel):
         EditoastRollingStockErrorKeyNotFoundContext | None,
         Field(title="EditoastRollingStockErrorKeyNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:rollingstocks:KeyNotFound"] = (
         "editoast:rollingstocks:KeyNotFound"
@@ -1738,7 +1748,7 @@ class EditoastRollingStockErrorLiveryMultipartError(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastRollingStockErrorLiveryMultipartErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:rollingstocks:LiveryMultipartError"] = (
         "editoast:rollingstocks:LiveryMultipartError"
@@ -1746,7 +1756,7 @@ class EditoastRollingStockErrorLiveryMultipartError(BaseModel):
 
 
 class EditoastRollingStockErrorNameAlreadyUsedContext(BaseModel):
-    name: str
+    name: StrictStr
 
 
 class EditoastRollingStockErrorNameAlreadyUsed(BaseModel):
@@ -1754,7 +1764,7 @@ class EditoastRollingStockErrorNameAlreadyUsed(BaseModel):
         EditoastRollingStockErrorNameAlreadyUsedContext | None,
         Field(title="EditoastRollingStockErrorNameAlreadyUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:rollingstocks:NameAlreadyUsed"] = (
         "editoast:rollingstocks:NameAlreadyUsed"
@@ -1765,7 +1775,7 @@ class EditoastRoundTripsErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastRoundTripsErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:round_trips:Database"] = "editoast:round_trips:Database"
 
@@ -1775,7 +1785,7 @@ class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastRoundTripsErrorDuplicateTrainIdsContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:round_trips:DuplicateTrainIds"] = (
         "editoast:round_trips:DuplicateTrainIds"
@@ -1783,7 +1793,7 @@ class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
 
 
 class EditoastRoundTripsErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastRoundTripsErrorTimetableNotFound(BaseModel):
@@ -1791,7 +1801,7 @@ class EditoastRoundTripsErrorTimetableNotFound(BaseModel):
         EditoastRoundTripsErrorTimetableNotFoundContext | None,
         Field(title="EditoastRoundTripsErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:round_trips:TimetableNotFound"] = (
         "editoast:round_trips:TimetableNotFound"
@@ -1802,13 +1812,13 @@ class EditoastScenarioErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastScenarioErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:scenario:Database"] = "editoast:scenario:Database"
 
 
 class EditoastScenarioErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastScenarioErrorInfraNotFound(BaseModel):
@@ -1816,13 +1826,13 @@ class EditoastScenarioErrorInfraNotFound(BaseModel):
         EditoastScenarioErrorInfraNotFoundContext | None,
         Field(title="EditoastScenarioErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:scenario:InfraNotFound"] = "editoast:scenario:InfraNotFound"
 
 
 class EditoastScenarioErrorNotFoundContext(BaseModel):
-    scenario_id: int
+    scenario_id: StrictInt
 
 
 class EditoastScenarioErrorNotFound(BaseModel):
@@ -1830,13 +1840,13 @@ class EditoastScenarioErrorNotFound(BaseModel):
         EditoastScenarioErrorNotFoundContext | None,
         Field(title="EditoastScenarioErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:scenario:NotFound"] = "editoast:scenario:NotFound"
 
 
 class EditoastScenarioErrorStudyNotFoundContext(BaseModel):
-    study_id: int
+    study_id: StrictInt
 
 
 class EditoastScenarioErrorStudyNotFound(BaseModel):
@@ -1844,13 +1854,13 @@ class EditoastScenarioErrorStudyNotFound(BaseModel):
         EditoastScenarioErrorStudyNotFoundContext | None,
         Field(title="EditoastScenarioErrorStudyNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:scenario:StudyNotFound"] = "editoast:scenario:StudyNotFound"
 
 
 class EditoastScenarioErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastScenarioErrorTimetableNotFound(BaseModel):
@@ -1858,7 +1868,7 @@ class EditoastScenarioErrorTimetableNotFound(BaseModel):
         EditoastScenarioErrorTimetableNotFoundContext | None,
         Field(title="EditoastScenarioErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:scenario:TimetableNotFound"] = (
         "editoast:scenario:TimetableNotFound"
@@ -1866,7 +1876,7 @@ class EditoastScenarioErrorTimetableNotFound(BaseModel):
 
 
 class EditoastSearchApiErrorObjectTypeContext(BaseModel):
-    object_type: str
+    object_type: StrictStr
 
 
 class EditoastSearchApiErrorObjectType(BaseModel):
@@ -1874,7 +1884,7 @@ class EditoastSearchApiErrorObjectType(BaseModel):
         EditoastSearchApiErrorObjectTypeContext | None,
         Field(title="EditoastSearchApiErrorObjectTypeContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:search:ObjectType"] = "editoast:search:ObjectType"
 
@@ -1884,7 +1894,7 @@ class EditoastSearchApiErrorSearchEngineError(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastSearchApiErrorSearchEngineErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:search:SearchEngineError"] = (
         "editoast:search:SearchEngineError"
@@ -1895,7 +1905,7 @@ class EditoastSimilarTrainsErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastSimilarTrainsErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:timetable:similar_trains:Database"] = (
         "editoast:timetable:similar_trains:Database"
@@ -1907,7 +1917,7 @@ class EditoastSimilarTrainsErrorEmptyTrainsTraffic(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastSimilarTrainsErrorEmptyTrainsTrafficContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:timetable:similar_trains:EmptyTrainsTraffic"] = (
         "editoast:timetable:similar_trains:EmptyTrainsTraffic"
@@ -1919,7 +1929,7 @@ class EditoastSimilarTrainsErrorInvalidPath(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastSimilarTrainsErrorInvalidPathContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:timetable:similar_trains:InvalidPath"] = (
         "editoast:timetable:similar_trains:InvalidPath"
@@ -1927,7 +1937,7 @@ class EditoastSimilarTrainsErrorInvalidPath(BaseModel):
 
 
 class EditoastSimilarTrainsErrorRollingStockNotFoundContext(BaseModel):
-    rolling_stock_name: str
+    rolling_stock_name: StrictStr
 
 
 class EditoastSimilarTrainsErrorRollingStockNotFound(BaseModel):
@@ -1935,7 +1945,7 @@ class EditoastSimilarTrainsErrorRollingStockNotFound(BaseModel):
         EditoastSimilarTrainsErrorRollingStockNotFoundContext | None,
         Field(title="EditoastSimilarTrainsErrorRollingStockNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:timetable:similar_trains:RollingStockNotFound"] = (
         "editoast:timetable:similar_trains:RollingStockNotFound"
@@ -1943,7 +1953,7 @@ class EditoastSimilarTrainsErrorRollingStockNotFound(BaseModel):
 
 
 class EditoastSimilarTrainsErrorSpeedLimitNotFoundContext(BaseModel):
-    speed_limit_tag: str
+    speed_limit_tag: StrictStr
 
 
 class EditoastSimilarTrainsErrorSpeedLimitNotFound(BaseModel):
@@ -1951,7 +1961,7 @@ class EditoastSimilarTrainsErrorSpeedLimitNotFound(BaseModel):
         EditoastSimilarTrainsErrorSpeedLimitNotFoundContext | None,
         Field(title="EditoastSimilarTrainsErrorSpeedLimitNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:timetable:similar_trains:SpeedLimitNotFound"] = (
         "editoast:timetable:similar_trains:SpeedLimitNotFound"
@@ -1959,7 +1969,7 @@ class EditoastSimilarTrainsErrorSpeedLimitNotFound(BaseModel):
 
 
 class EditoastSpriteErrorsFileNotFoundContext(BaseModel):
-    file: str
+    file: StrictStr
 
 
 class EditoastSpriteErrorsFileNotFound(BaseModel):
@@ -1967,13 +1977,13 @@ class EditoastSpriteErrorsFileNotFound(BaseModel):
         EditoastSpriteErrorsFileNotFoundContext | None,
         Field(title="EditoastSpriteErrorsFileNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:sprites:FileNotFound"] = "editoast:sprites:FileNotFound"
 
 
 class EditoastSpriteErrorsUnknownSignalingSystemContext(BaseModel):
-    signaling_system: str
+    signaling_system: StrictStr
 
 
 class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
@@ -1981,7 +1991,7 @@ class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
         EditoastSpriteErrorsUnknownSignalingSystemContext | None,
         Field(title="EditoastSpriteErrorsUnknownSignalingSystemContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:sprites:UnknownSignalingSystem"] = (
         "editoast:sprites:UnknownSignalingSystem"
@@ -1989,8 +1999,8 @@ class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
 
 
 class EditoastStdcmDebugErrorJsonParseErrorContext(BaseModel):
-    message: str
-    path: str
+    message: StrictStr
+    path: StrictStr
 
 
 class EditoastStdcmDebugErrorJsonParseError(BaseModel):
@@ -1998,7 +2008,7 @@ class EditoastStdcmDebugErrorJsonParseError(BaseModel):
         EditoastStdcmDebugErrorJsonParseErrorContext | None,
         Field(title="EditoastStdcmDebugErrorJsonParseErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:stdcm_debug:JsonParseError"] = (
         "editoast:stdcm_debug:JsonParseError"
@@ -2006,8 +2016,8 @@ class EditoastStdcmDebugErrorJsonParseError(BaseModel):
 
 
 class EditoastStdcmDebugErrorS3ErrorContext(BaseModel):
-    message: str
-    path: str
+    message: StrictStr
+    path: StrictStr
 
 
 class EditoastStdcmDebugErrorS3Error(BaseModel):
@@ -2015,7 +2025,7 @@ class EditoastStdcmDebugErrorS3Error(BaseModel):
         EditoastStdcmDebugErrorS3ErrorContext | None,
         Field(title="EditoastStdcmDebugErrorS3ErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:stdcm_debug:S3Error"] = "editoast:stdcm_debug:S3Error"
 
@@ -2025,7 +2035,7 @@ class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastStdcmDebugErrorS3NotConfiguredContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[503] = 503
     type: Literal["editoast:stdcm_debug:S3NotConfigured"] = (
         "editoast:stdcm_debug:S3NotConfigured"
@@ -2041,7 +2051,7 @@ class EditoastStdcmErrorBatchRollingStockNotFound(BaseModel):
         EditoastStdcmErrorBatchRollingStockNotFoundContext | None,
         Field(title="EditoastStdcmErrorBatchRollingStockNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:stdcm:BatchRollingStockNotFound"] = (
         "editoast:stdcm:BatchRollingStockNotFound"
@@ -2052,13 +2062,13 @@ class EditoastStdcmErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:Database"] = "editoast:stdcm:Database"
 
 
 class EditoastStdcmErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastStdcmErrorInfraNotFound(BaseModel):
@@ -2066,14 +2076,14 @@ class EditoastStdcmErrorInfraNotFound(BaseModel):
         EditoastStdcmErrorInfraNotFoundContext | None,
         Field(title="EditoastStdcmErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:InfraNotFound"] = "editoast:stdcm:InfraNotFound"
 
 
 class EditoastStdcmErrorInvalidConsistLengthContext(BaseModel):
-    expected_min: float
-    provided_consist_length: float
+    expected_min: StrictFloat
+    provided_consist_length: StrictFloat
 
 
 class EditoastStdcmErrorInvalidConsistLength(BaseModel):
@@ -2081,7 +2091,7 @@ class EditoastStdcmErrorInvalidConsistLength(BaseModel):
         EditoastStdcmErrorInvalidConsistLengthContext | None,
         Field(title="EditoastStdcmErrorInvalidConsistLengthContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:InvalidConsistLength"] = (
         "editoast:stdcm:InvalidConsistLength"
@@ -2089,8 +2099,8 @@ class EditoastStdcmErrorInvalidConsistLength(BaseModel):
 
 
 class EditoastStdcmErrorInvalidConsistMassContext(BaseModel):
-    expected_min: float
-    provided_consist_mass: float
+    expected_min: StrictFloat
+    provided_consist_mass: StrictFloat
 
 
 class EditoastStdcmErrorInvalidConsistMass(BaseModel):
@@ -2098,7 +2108,7 @@ class EditoastStdcmErrorInvalidConsistMass(BaseModel):
         EditoastStdcmErrorInvalidConsistMassContext | None,
         Field(title="EditoastStdcmErrorInvalidConsistMassContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:InvalidConsistMass"] = (
         "editoast:stdcm:InvalidConsistMass"
@@ -2106,8 +2116,8 @@ class EditoastStdcmErrorInvalidConsistMass(BaseModel):
 
 
 class EditoastStdcmErrorInvalidConsistMaxSpeedContext(BaseModel):
-    expected_max: float
-    provided_consist_max_speed: float
+    expected_max: StrictFloat
+    provided_consist_max_speed: StrictFloat
 
 
 class EditoastStdcmErrorInvalidConsistMaxSpeed(BaseModel):
@@ -2115,7 +2125,7 @@ class EditoastStdcmErrorInvalidConsistMaxSpeed(BaseModel):
         EditoastStdcmErrorInvalidConsistMaxSpeedContext | None,
         Field(title="EditoastStdcmErrorInvalidConsistMaxSpeedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:InvalidConsistMaxSpeed"] = (
         "editoast:stdcm:InvalidConsistMaxSpeed"
@@ -2131,13 +2141,13 @@ class EditoastStdcmErrorInvalidPathItems(BaseModel):
         EditoastStdcmErrorInvalidPathItemsContext | None,
         Field(title="EditoastStdcmErrorInvalidPathItemsContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:InvalidPathItems"] = "editoast:stdcm:InvalidPathItems"
 
 
 class EditoastStdcmErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastStdcmErrorTimetableNotFound(BaseModel):
@@ -2145,7 +2155,7 @@ class EditoastStdcmErrorTimetableNotFound(BaseModel):
         EditoastStdcmErrorTimetableNotFoundContext | None,
         Field(title="EditoastStdcmErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:stdcm:TimetableNotFound"] = (
         "editoast:stdcm:TimetableNotFound"
@@ -2153,7 +2163,7 @@ class EditoastStdcmErrorTimetableNotFound(BaseModel):
 
 
 class EditoastStdcmErrorTowedRollingStockNotFoundContext(BaseModel):
-    towed_rolling_stock_id: int
+    towed_rolling_stock_id: StrictInt
 
 
 class EditoastStdcmErrorTowedRollingStockNotFound(BaseModel):
@@ -2161,7 +2171,7 @@ class EditoastStdcmErrorTowedRollingStockNotFound(BaseModel):
         EditoastStdcmErrorTowedRollingStockNotFoundContext | None,
         Field(title="EditoastStdcmErrorTowedRollingStockNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:TowedRollingStockNotFound"] = (
         "editoast:stdcm:TowedRollingStockNotFound"
@@ -2173,7 +2183,7 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastStdcmErrorTrainSimulationFailContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:stdcm:TrainSimulationFail"] = (
         "editoast:stdcm:TrainSimulationFail"
@@ -2184,7 +2194,7 @@ class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:stdcm_search_env:Database"] = (
         "editoast:stdcm_search_env:Database"
@@ -2192,7 +2202,7 @@ class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
 
 
 class EditoastStdcmSearchEnvErrorNotFoundContext(BaseModel):
-    env_id: int
+    env_id: StrictInt
 
 
 class EditoastStdcmSearchEnvErrorNotFound(BaseModel):
@@ -2200,7 +2210,7 @@ class EditoastStdcmSearchEnvErrorNotFound(BaseModel):
         EditoastStdcmSearchEnvErrorNotFoundContext | None,
         Field(title="EditoastStdcmSearchEnvErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:stdcm_search_env:NotFound"] = (
         "editoast:stdcm_search_env:NotFound"
@@ -2211,13 +2221,13 @@ class EditoastStudyErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStudyErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:study:Database"] = "editoast:study:Database"
 
 
 class EditoastStudyErrorNotFoundContext(BaseModel):
-    study_id: int
+    study_id: StrictInt
 
 
 class EditoastStudyErrorNotFound(BaseModel):
@@ -2225,13 +2235,13 @@ class EditoastStudyErrorNotFound(BaseModel):
         EditoastStudyErrorNotFoundContext | None,
         Field(title="EditoastStudyErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:study:NotFound"] = "editoast:study:NotFound"
 
 
 class EditoastStudyErrorProjectNotFoundContext(BaseModel):
-    project_id: int
+    project_id: StrictInt
 
 
 class EditoastStudyErrorProjectNotFound(BaseModel):
@@ -2239,13 +2249,13 @@ class EditoastStudyErrorProjectNotFound(BaseModel):
         EditoastStudyErrorProjectNotFoundContext | None,
         Field(title="EditoastStudyErrorProjectNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:study:ProjectNotFound"] = "editoast:study:ProjectNotFound"
 
 
 class EditoastSubCategoryErrorCodeAlreadyUsedContext(BaseModel):
-    code: str
+    code: StrictStr
 
 
 class EditoastSubCategoryErrorCodeAlreadyUsed(BaseModel):
@@ -2253,7 +2263,7 @@ class EditoastSubCategoryErrorCodeAlreadyUsed(BaseModel):
         EditoastSubCategoryErrorCodeAlreadyUsedContext | None,
         Field(title="EditoastSubCategoryErrorCodeAlreadyUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:sub_categories:CodeAlreadyUsed"] = (
         "editoast:sub_categories:CodeAlreadyUsed"
@@ -2264,7 +2274,7 @@ class EditoastSubCategoryErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastSubCategoryErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:sub_categories:Database"] = (
         "editoast:sub_categories:Database"
@@ -2272,7 +2282,7 @@ class EditoastSubCategoryErrorDatabase(BaseModel):
 
 
 class EditoastSubCategoryErrorNotFoundContext(BaseModel):
-    code: str
+    code: StrictStr
 
 
 class EditoastSubCategoryErrorNotFound(BaseModel):
@@ -2280,7 +2290,7 @@ class EditoastSubCategoryErrorNotFound(BaseModel):
         EditoastSubCategoryErrorNotFoundContext | None,
         Field(title="EditoastSubCategoryErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:sub_categories:NotFound"] = (
         "editoast:sub_categories:NotFound"
@@ -2292,7 +2302,7 @@ class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastTemporarySpeedLimitErrorDatabaseContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:temporary_speed_limit:Database"] = (
         "editoast:temporary_speed_limit:Database"
@@ -2300,7 +2310,7 @@ class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
 
 
 class EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext(BaseModel):
-    name: str
+    name: StrictStr
 
 
 class EditoastTemporarySpeedLimitErrorNameAlreadyUsed(BaseModel):
@@ -2308,7 +2318,7 @@ class EditoastTemporarySpeedLimitErrorNameAlreadyUsed(BaseModel):
         EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext | None,
         Field(title="EditoastTemporarySpeedLimitErrorNameAlreadyUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:temporary_speed_limit:NameAlreadyUsed"] = (
         "editoast:temporary_speed_limit:NameAlreadyUsed"
@@ -2319,13 +2329,13 @@ class EditoastTimetableErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastTimetableErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:timetable:Database"] = "editoast:timetable:Database"
 
 
 class EditoastTimetableErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastTimetableErrorInfraNotFound(BaseModel):
@@ -2333,7 +2343,7 @@ class EditoastTimetableErrorInfraNotFound(BaseModel):
         EditoastTimetableErrorInfraNotFoundContext | None,
         Field(title="EditoastTimetableErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:timetable:InfraNotFound"] = (
         "editoast:timetable:InfraNotFound"
@@ -2341,7 +2351,7 @@ class EditoastTimetableErrorInfraNotFound(BaseModel):
 
 
 class EditoastTimetableErrorInvalidPeriodContext(BaseModel):
-    timetable_period: int
+    timetable_period: StrictInt
 
 
 class EditoastTimetableErrorInvalidPeriod(BaseModel):
@@ -2349,7 +2359,7 @@ class EditoastTimetableErrorInvalidPeriod(BaseModel):
         EditoastTimetableErrorInvalidPeriodContext | None,
         Field(title="EditoastTimetableErrorInvalidPeriodContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[422] = 422
     type: Literal["editoast:timetable:InvalidPeriod"] = (
         "editoast:timetable:InvalidPeriod"
@@ -2357,7 +2367,7 @@ class EditoastTimetableErrorInvalidPeriod(BaseModel):
 
 
 class EditoastTimetableErrorNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastTimetableErrorNotFound(BaseModel):
@@ -2365,13 +2375,13 @@ class EditoastTimetableErrorNotFound(BaseModel):
         EditoastTimetableErrorNotFoundContext | None,
         Field(title="EditoastTimetableErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:timetable:NotFound"] = "editoast:timetable:NotFound"
 
 
 class EditoastTimetableErrorParseErrorContext(BaseModel):
-    train_id: str
+    train_id: StrictStr
 
 
 class EditoastTimetableErrorParseError(BaseModel):
@@ -2379,7 +2389,7 @@ class EditoastTimetableErrorParseError(BaseModel):
         EditoastTimetableErrorParseErrorContext | None,
         Field(title="EditoastTimetableErrorParseErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:timetable:ParseError"] = "editoast:timetable:ParseError"
 
@@ -2388,13 +2398,13 @@ class EditoastTimetableErrorTimeout(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastTimetableErrorTimeoutContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[504] = 504
     type: Literal["editoast:timetable:Timeout"] = "editoast:timetable:Timeout"
 
 
 class EditoastTimetableErrorTrainScheduleNotFoundContext(BaseModel):
-    id: int
+    id: StrictInt
 
 
 class EditoastTimetableErrorTrainScheduleNotFound(BaseModel):
@@ -2402,7 +2412,7 @@ class EditoastTimetableErrorTrainScheduleNotFound(BaseModel):
         EditoastTimetableErrorTrainScheduleNotFoundContext | None,
         Field(title="EditoastTimetableErrorTrainScheduleNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:timetable:TrainScheduleNotFound"] = (
         "editoast:timetable:TrainScheduleNotFound"
@@ -2418,7 +2428,7 @@ class EditoastTimetableErrorTrainScheduleSetsNotFound(BaseModel):
         EditoastTimetableErrorTrainScheduleSetsNotFoundContext | None,
         Field(title="EditoastTimetableErrorTrainScheduleSetsNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:timetable:TrainScheduleSetsNotFound"] = (
         "editoast:timetable:TrainScheduleSetsNotFound"
@@ -2430,7 +2440,7 @@ class EditoastTowedRollingStockErrorDatabase(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastTowedRollingStockErrorDatabaseContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:towedrollingstocks:Database"] = (
         "editoast:towedrollingstocks:Database"
@@ -2438,7 +2448,7 @@ class EditoastTowedRollingStockErrorDatabase(BaseModel):
 
 
 class EditoastTowedRollingStockErrorIdNotFoundContext(BaseModel):
-    towed_rolling_stock_id: int
+    towed_rolling_stock_id: StrictInt
 
 
 class EditoastTowedRollingStockErrorIdNotFound(BaseModel):
@@ -2446,7 +2456,7 @@ class EditoastTowedRollingStockErrorIdNotFound(BaseModel):
         EditoastTowedRollingStockErrorIdNotFoundContext | None,
         Field(title="EditoastTowedRollingStockErrorIdNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:towedrollingstocks:IdNotFound"] = (
         "editoast:towedrollingstocks:IdNotFound"
@@ -2454,7 +2464,7 @@ class EditoastTowedRollingStockErrorIdNotFound(BaseModel):
 
 
 class EditoastTowedRollingStockErrorIsLockedContext(BaseModel):
-    towed_rolling_stock_id: int
+    towed_rolling_stock_id: StrictInt
 
 
 class EditoastTowedRollingStockErrorIsLocked(BaseModel):
@@ -2462,7 +2472,7 @@ class EditoastTowedRollingStockErrorIsLocked(BaseModel):
         EditoastTowedRollingStockErrorIsLockedContext | None,
         Field(title="EditoastTowedRollingStockErrorIsLockedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[409] = 409
     type: Literal["editoast:towedrollingstocks:IsLocked"] = (
         "editoast:towedrollingstocks:IsLocked"
@@ -2470,7 +2480,7 @@ class EditoastTowedRollingStockErrorIsLocked(BaseModel):
 
 
 class EditoastTrainScheduleErrorBatchNotFoundContext(BaseModel):
-    count: int
+    count: StrictInt
 
 
 class EditoastTrainScheduleErrorBatchNotFound(BaseModel):
@@ -2478,7 +2488,7 @@ class EditoastTrainScheduleErrorBatchNotFound(BaseModel):
         EditoastTrainScheduleErrorBatchNotFoundContext | None,
         Field(title="EditoastTrainScheduleErrorBatchNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:BatchNotFound"] = (
         "editoast:train_schedule:BatchNotFound"
@@ -2489,7 +2499,7 @@ class EditoastTrainScheduleErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastTrainScheduleErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:train_schedule:Database"] = (
         "editoast:train_schedule:Database"
@@ -2497,7 +2507,7 @@ class EditoastTrainScheduleErrorDatabase(BaseModel):
 
 
 class EditoastTrainScheduleErrorExceptionNotFoundContext(BaseModel):
-    exception_id: int
+    exception_id: StrictInt
 
 
 class EditoastTrainScheduleErrorExceptionNotFound(BaseModel):
@@ -2505,7 +2515,7 @@ class EditoastTrainScheduleErrorExceptionNotFound(BaseModel):
         EditoastTrainScheduleErrorExceptionNotFoundContext | None,
         Field(title="EditoastTrainScheduleErrorExceptionNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:ExceptionNotFound"] = (
         "editoast:train_schedule:ExceptionNotFound"
@@ -2513,7 +2523,7 @@ class EditoastTrainScheduleErrorExceptionNotFound(BaseModel):
 
 
 class EditoastTrainScheduleErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastTrainScheduleErrorInfraNotFound(BaseModel):
@@ -2521,7 +2531,7 @@ class EditoastTrainScheduleErrorInfraNotFound(BaseModel):
         EditoastTrainScheduleErrorInfraNotFoundContext | None,
         Field(title="EditoastTrainScheduleErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:InfraNotFound"] = (
         "editoast:train_schedule:InfraNotFound"
@@ -2529,9 +2539,9 @@ class EditoastTrainScheduleErrorInfraNotFound(BaseModel):
 
 
 class EditoastTrainScheduleErrorInvalidPathPortionContext(BaseModel):
-    begin: int
-    end: int
-    path_items_count: int
+    begin: StrictInt
+    end: StrictInt
+    path_items_count: StrictInt
 
 
 class EditoastTrainScheduleErrorInvalidPathPortion(BaseModel):
@@ -2539,7 +2549,7 @@ class EditoastTrainScheduleErrorInvalidPathPortion(BaseModel):
         EditoastTrainScheduleErrorInvalidPathPortionContext | None,
         Field(title="EditoastTrainScheduleErrorInvalidPathPortionContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:train_schedule:InvalidPathPortion"] = (
         "editoast:train_schedule:InvalidPathPortion"
@@ -2547,7 +2557,7 @@ class EditoastTrainScheduleErrorInvalidPathPortion(BaseModel):
 
 
 class EditoastTrainScheduleErrorNotFoundContext(BaseModel):
-    train_schedule_id: int
+    train_schedule_id: StrictInt
 
 
 class EditoastTrainScheduleErrorNotFound(BaseModel):
@@ -2555,7 +2565,7 @@ class EditoastTrainScheduleErrorNotFound(BaseModel):
         EditoastTrainScheduleErrorNotFoundContext | None,
         Field(title="EditoastTrainScheduleErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:NotFound"] = (
         "editoast:train_schedule:NotFound"
@@ -2563,7 +2573,7 @@ class EditoastTrainScheduleErrorNotFound(BaseModel):
 
 
 class EditoastTrainScheduleErrorPathfindingFailedContext(BaseModel):
-    train_schedule_id: int
+    train_schedule_id: StrictInt
 
 
 class EditoastTrainScheduleErrorPathfindingFailed(BaseModel):
@@ -2571,7 +2581,7 @@ class EditoastTrainScheduleErrorPathfindingFailed(BaseModel):
         EditoastTrainScheduleErrorPathfindingFailedContext | None,
         Field(title="EditoastTrainScheduleErrorPathfindingFailedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:PathfindingFailed"] = (
         "editoast:train_schedule:PathfindingFailed"
@@ -2579,7 +2589,7 @@ class EditoastTrainScheduleErrorPathfindingFailed(BaseModel):
 
 
 class EditoastTrainScheduleErrorRollingStockNotFoundContext(BaseModel):
-    rolling_stock_name: str
+    rolling_stock_name: StrictStr
 
 
 class EditoastTrainScheduleErrorRollingStockNotFound(BaseModel):
@@ -2587,7 +2597,7 @@ class EditoastTrainScheduleErrorRollingStockNotFound(BaseModel):
         EditoastTrainScheduleErrorRollingStockNotFoundContext | None,
         Field(title="EditoastTrainScheduleErrorRollingStockNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:RollingStockNotFound"] = (
         "editoast:train_schedule:RollingStockNotFound"
@@ -2595,7 +2605,7 @@ class EditoastTrainScheduleErrorRollingStockNotFound(BaseModel):
 
 
 class EditoastTrainScheduleErrorSimulationFailedContext(BaseModel):
-    train_schedule_id: int
+    train_schedule_id: StrictInt
 
 
 class EditoastTrainScheduleErrorSimulationFailed(BaseModel):
@@ -2603,7 +2613,7 @@ class EditoastTrainScheduleErrorSimulationFailed(BaseModel):
         EditoastTrainScheduleErrorSimulationFailedContext | None,
         Field(title="EditoastTrainScheduleErrorSimulationFailedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:SimulationFailed"] = (
         "editoast:train_schedule:SimulationFailed"
@@ -2611,7 +2621,7 @@ class EditoastTrainScheduleErrorSimulationFailed(BaseModel):
 
 
 class EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext(BaseModel):
-    train_schedule_set_id: int
+    train_schedule_set_id: StrictInt
 
 
 class EditoastTrainScheduleErrorTrainScheduleSetNotFound(BaseModel):
@@ -2619,7 +2629,7 @@ class EditoastTrainScheduleErrorTrainScheduleSetNotFound(BaseModel):
         EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext | None,
         Field(title="EditoastTrainScheduleErrorTrainScheduleSetNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule:TrainScheduleSetNotFound"] = (
         "editoast:train_schedule:TrainScheduleSetNotFound"
@@ -2627,7 +2637,7 @@ class EditoastTrainScheduleErrorTrainScheduleSetNotFound(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorBatchNotFoundContext(BaseModel):
-    count: int
+    count: StrictInt
 
 
 class EditoastTrainScheduleExceptionErrorBatchNotFound(BaseModel):
@@ -2635,7 +2645,7 @@ class EditoastTrainScheduleExceptionErrorBatchNotFound(BaseModel):
         EditoastTrainScheduleExceptionErrorBatchNotFoundContext | None,
         Field(title="EditoastTrainScheduleExceptionErrorBatchNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_exception:BatchNotFound"] = (
         "editoast:train_schedule_exception:BatchNotFound"
@@ -2647,7 +2657,7 @@ class EditoastTrainScheduleExceptionErrorDatabase(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastTrainScheduleExceptionErrorDatabaseContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:train_schedule_exception:Database"] = (
         "editoast:train_schedule_exception:Database"
@@ -2655,10 +2665,10 @@ class EditoastTrainScheduleExceptionErrorDatabase(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext(BaseModel):
-    interval: str
-    occurrence_index: int
-    time_window: str
-    train_schedule_id: int
+    interval: StrictStr
+    occurrence_index: StrictInt
+    time_window: StrictStr
+    train_schedule_id: StrictInt
 
 
 class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex(BaseModel):
@@ -2666,7 +2676,7 @@ class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex(BaseModel):
         EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext | None,
         Field(title="EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndexContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:train_schedule_exception:InvalidOccurrenceIndex"] = (
         "editoast:train_schedule_exception:InvalidOccurrenceIndex"
@@ -2674,7 +2684,7 @@ class EditoastTrainScheduleExceptionErrorInvalidOccurrenceIndex(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorNotFoundContext(BaseModel):
-    exception_id: int
+    exception_id: StrictInt
 
 
 class EditoastTrainScheduleExceptionErrorNotFound(BaseModel):
@@ -2682,7 +2692,7 @@ class EditoastTrainScheduleExceptionErrorNotFound(BaseModel):
         EditoastTrainScheduleExceptionErrorNotFoundContext | None,
         Field(title="EditoastTrainScheduleExceptionErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_exception:NotFound"] = (
         "editoast:train_schedule_exception:NotFound"
@@ -2690,7 +2700,7 @@ class EditoastTrainScheduleExceptionErrorNotFound(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorNotPacedTrainContext(BaseModel):
-    train_schedule_id: int
+    train_schedule_id: StrictInt
 
 
 class EditoastTrainScheduleExceptionErrorNotPacedTrain(BaseModel):
@@ -2698,7 +2708,7 @@ class EditoastTrainScheduleExceptionErrorNotPacedTrain(BaseModel):
         EditoastTrainScheduleExceptionErrorNotPacedTrainContext | None,
         Field(title="EditoastTrainScheduleExceptionErrorNotPacedTrainContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:train_schedule_exception:NotPacedTrain"] = (
         "editoast:train_schedule_exception:NotPacedTrain"
@@ -2706,7 +2716,7 @@ class EditoastTrainScheduleExceptionErrorNotPacedTrain(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsedContext(BaseModel):
-    occurrence_index: str
+    occurrence_index: StrictStr
 
 
 class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed(BaseModel):
@@ -2716,7 +2726,7 @@ class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed(BaseModel):
             title="EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsedContext"
         ),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"] = (
         "editoast:train_schedule_exception:OccurrenceIndexAlreadyUsed"
@@ -2724,7 +2734,7 @@ class EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastTrainScheduleExceptionErrorTimetableNotFound(BaseModel):
@@ -2732,7 +2742,7 @@ class EditoastTrainScheduleExceptionErrorTimetableNotFound(BaseModel):
         EditoastTrainScheduleExceptionErrorTimetableNotFoundContext | None,
         Field(title="EditoastTrainScheduleExceptionErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_exception:TimetableNotFound"] = (
         "editoast:train_schedule_exception:TimetableNotFound"
@@ -2740,7 +2750,7 @@ class EditoastTrainScheduleExceptionErrorTimetableNotFound(BaseModel):
 
 
 class EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext(BaseModel):
-    train_schedule_id: int
+    train_schedule_id: StrictInt
 
 
 class EditoastTrainScheduleExceptionErrorTrainScheduleNotFound(BaseModel):
@@ -2748,7 +2758,7 @@ class EditoastTrainScheduleExceptionErrorTrainScheduleNotFound(BaseModel):
         EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext | None,
         Field(title="EditoastTrainScheduleExceptionErrorTrainScheduleNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_exception:TrainScheduleNotFound"] = (
         "editoast:train_schedule_exception:TrainScheduleNotFound"
@@ -2760,7 +2770,7 @@ class EditoastTrainScheduleSetErrorDatabase(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastTrainScheduleSetErrorDatabaseContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:train_schedule_set:Database"] = (
         "editoast:train_schedule_set:Database"
@@ -2768,7 +2778,7 @@ class EditoastTrainScheduleSetErrorDatabase(BaseModel):
 
 
 class EditoastTrainScheduleSetErrorNotFoundContext(BaseModel):
-    train_schedule_set_id: int
+    train_schedule_set_id: StrictInt
 
 
 class EditoastTrainScheduleSetErrorNotFound(BaseModel):
@@ -2776,7 +2786,7 @@ class EditoastTrainScheduleSetErrorNotFound(BaseModel):
         EditoastTrainScheduleSetErrorNotFoundContext | None,
         Field(title="EditoastTrainScheduleSetErrorNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:train_schedule_set:NotFound"] = (
         "editoast:train_schedule_set:NotFound"
@@ -2787,7 +2797,7 @@ class EditoastUnexpectedJoinError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastUnexpectedJoinErrorContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:JoinError:unhandled_add_case_here"] = (
         "editoast:JoinError:unhandled_add_case_here"
@@ -2798,13 +2808,13 @@ class EditoastWorkScheduleErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastWorkScheduleErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:work_schedule:Database"] = "editoast:work_schedule:Database"
 
 
 class EditoastWorkScheduleErrorNameAlreadyUsedContext(BaseModel):
-    name: str
+    name: StrictStr
 
 
 class EditoastWorkScheduleErrorNameAlreadyUsed(BaseModel):
@@ -2812,7 +2822,7 @@ class EditoastWorkScheduleErrorNameAlreadyUsed(BaseModel):
         EditoastWorkScheduleErrorNameAlreadyUsedContext | None,
         Field(title="EditoastWorkScheduleErrorNameAlreadyUsedContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[400] = 400
     type: Literal["editoast:work_schedule:NameAlreadyUsed"] = (
         "editoast:work_schedule:NameAlreadyUsed"
@@ -2820,7 +2830,7 @@ class EditoastWorkScheduleErrorNameAlreadyUsed(BaseModel):
 
 
 class EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext(BaseModel):
-    id: int
+    id: StrictInt
 
 
 class EditoastWorkScheduleErrorWorkScheduleGroupNotFound(BaseModel):
@@ -2828,7 +2838,7 @@ class EditoastWorkScheduleErrorWorkScheduleGroupNotFound(BaseModel):
         EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext | None,
         Field(title="EditoastWorkScheduleErrorWorkScheduleGroupNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:work_schedule:WorkScheduleGroupNotFound"] = (
         "editoast:work_schedule:WorkScheduleGroupNotFound"
@@ -2839,7 +2849,7 @@ class EditoastWorkerLoadErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastWorkerLoadErrorDatabaseContext")
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:worker_load:Database"] = "editoast:worker_load:Database"
 
@@ -2849,7 +2859,7 @@ class EditoastWorkerLoadErrorFetchStatusError(BaseModel):
         dict[str, Any] | None,
         Field(title="EditoastWorkerLoadErrorFetchStatusErrorContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[500] = 500
     type: Literal["editoast:worker_load:FetchStatusError"] = (
         "editoast:worker_load:FetchStatusError"
@@ -2857,7 +2867,7 @@ class EditoastWorkerLoadErrorFetchStatusError(BaseModel):
 
 
 class EditoastWorkerLoadErrorInfraNotFoundContext(BaseModel):
-    infra_id: int
+    infra_id: StrictInt
 
 
 class EditoastWorkerLoadErrorInfraNotFound(BaseModel):
@@ -2865,7 +2875,7 @@ class EditoastWorkerLoadErrorInfraNotFound(BaseModel):
         EditoastWorkerLoadErrorInfraNotFoundContext | None,
         Field(title="EditoastWorkerLoadErrorInfraNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:worker_load:InfraNotFound"] = (
         "editoast:worker_load:InfraNotFound"
@@ -2873,7 +2883,7 @@ class EditoastWorkerLoadErrorInfraNotFound(BaseModel):
 
 
 class EditoastWorkerLoadErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class EditoastWorkerLoadErrorTimetableNotFound(BaseModel):
@@ -2881,7 +2891,7 @@ class EditoastWorkerLoadErrorTimetableNotFound(BaseModel):
         EditoastWorkerLoadErrorTimetableNotFoundContext | None,
         Field(title="EditoastWorkerLoadErrorTimetableNotFoundContext"),
     ] = None
-    message: str
+    message: StrictStr
     status: Literal[404] = 404
     type: Literal["editoast:worker_load:TimetableNotFound"] = (
         "editoast:worker_load:TimetableNotFound"
@@ -2893,12 +2903,14 @@ class EffortCurve(BaseModel):
         extra="forbid",
     )
     max_efforts: Annotated[
-        list[float], Field(examples=[[23500.0, 23200.0, 21200.0]], min_length=2)
+        list[StrictFloat], Field(examples=[[23500.0, 23200.0, 21200.0]], min_length=2)
     ]
     """
     Max efforts in N. Must contains the same number of elements as `speeds`.
     """
-    speeds: Annotated[list[float], Field(examples=[[0.0, 2.958, 46.719]], min_length=2)]
+    speeds: Annotated[
+        list[StrictFloat], Field(examples=[[0.0, 2.958, 46.719]], min_length=2)
+    ]
     """
     Speeds in m/s. Must contains the same number of elements as `max_efforts`
     """
@@ -2909,17 +2921,17 @@ class EffortCurveConditions(BaseModel):
         extra="forbid",
     )
     comfort: Comfort | None
-    electrical_profile_level: str | None
-    power_restriction_code: str | None
+    electrical_profile_level: StrictStr | None
+    power_restriction_code: StrictStr | None
 
 
 class Electrification(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     track_ranges: list[ApplicableDirectionsTrackRange]
-    voltage: Annotated[str, Field(min_length=1)]
+    voltage: Annotated[StrictStr, Field(min_length=1)]
 
 
 class Endpoint(Enum):
@@ -2932,24 +2944,24 @@ class ForcedStopType(Enum):
     OVERTAKE = "OVERTAKE"
 
 
-class Identifier(RootModel[str]):
-    root: Annotated[str, Field(max_length=255, min_length=1)]
+class Identifier(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class Infra(BaseModel):
     created: AwareDatetime
-    generated_version: int | None
-    id: int
-    locked: bool
+    generated_version: StrictInt | None
+    id: StrictInt
+    locked: StrictBool
     modified: AwareDatetime
-    name: str
-    railjson_version: str
-    version: int
+    name: StrictStr
+    railjson_version: StrictStr
+    version: StrictInt
 
 
 class InfraErrorTypeDuplicatedGroup(BaseModel):
     error_type: Literal["duplicated_group"] = "duplicated_group"
-    original_group_path: str
+    original_group_path: StrictStr
 
 
 class InfraErrorTypeEmptyObject(BaseModel):
@@ -2958,8 +2970,8 @@ class InfraErrorTypeEmptyObject(BaseModel):
 
 class InfraErrorTypeInvalidGroup(BaseModel):
     error_type: Literal["invalid_group"] = "invalid_group"
-    group: str
-    switch_type: str
+    group: StrictStr
+    switch_type: StrictStr
 
 
 class InfraErrorTypeInvalidRoute(BaseModel):
@@ -2989,12 +3001,12 @@ class InfraErrorTypeOddBufferStopLocation(BaseModel):
 
 class InfraErrorTypeUnknownPortName(BaseModel):
     error_type: Literal["unknown_port_name"] = "unknown_port_name"
-    port_name: str
+    port_name: StrictStr
 
 
 class InfraErrorTypeUnusedPort(BaseModel):
     error_type: Literal["unused_port"] = "unused_port"
-    port_name: str
+    port_name: StrictStr
 
 
 class InfraObjectElectrification(BaseModel):
@@ -3003,14 +3015,14 @@ class InfraObjectElectrification(BaseModel):
 
 
 class InitialSpeedChangeGroup(BaseModel):
-    value: float
+    value: StrictFloat
 
 
 class InternalError(BaseModel):
-    context: dict[str, Any]
-    message: str
-    status: Annotated[int | None, Field(ge=100, le=599)] = None
-    type: str
+    context: dict[StrictStr, Any]
+    message: StrictStr
+    status: Annotated[StrictInt | None, Field(ge=100, le=599)] = None
+    type: StrictStr
 
 
 class Intersection(BaseModel):
@@ -3018,62 +3030,62 @@ class Intersection(BaseModel):
     Represent the intersection between a track range and a path, relative to the beginning of the path
     """
 
-    end: Annotated[int, Field(ge=0)]
+    end: Annotated[StrictInt, Field(ge=0)]
     """
     Distance of the end of the intersection relative to the beginning of the path
     """
-    start: Annotated[int, Field(ge=0)]
+    start: Annotated[StrictInt, Field(ge=0)]
     """
     Distance of the beginning of the intersection relative to the beginning of the path
     """
 
 
 class LabelsChangeGroup(BaseModel):
-    value: list[str]
+    value: list[StrictStr]
 
 
 class LevelCrossingPart(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    pedal_downstream: Annotated[int, Field(ge=0)]
+    pedal_downstream: Annotated[StrictInt, Field(ge=0)]
     """
     Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track)
     """
-    pedal_upstream: Annotated[int, Field(ge=0)]
+    pedal_upstream: Annotated[StrictInt, Field(ge=0)]
     """
     Offset in mm of the upstream pedal from the main position (upstream refers to the START_TO_STOP direction of the track)
     """
-    position: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    position: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class LightElectricalProfileSet(BaseModel):
-    id: int
-    name: str
+    id: StrictInt
+    name: StrictStr
 
 
 class LightModeEffortCurves(BaseModel):
-    is_electric: bool
+    is_electric: StrictBool
 
 
 class LinkingOccurrenceIdUnique(BaseModel):
-    train_schedule_id: int
-    train_schedule_instance_index: int | None = None
+    train_schedule_id: StrictInt
+    train_schedule_instance_index: StrictInt | None = None
     type: Literal["unique"] = "unique"
 
 
 class LinkingOccurrenceIdPacedOccurrence(BaseModel):
-    occurrence_index: int
-    train_schedule_id: int
-    train_schedule_instance_index: int | None = None
+    occurrence_index: StrictInt
+    train_schedule_id: StrictInt
+    train_schedule_instance_index: StrictInt | None = None
     type: Literal["paced_occurrence"] = "paced_occurrence"
 
 
 class LinkingOccurrenceIdAddedException(BaseModel):
-    added_exception_id: int
-    train_schedule_id: int
-    train_schedule_instance_index: int | None = None
+    added_exception_id: StrictInt
+    train_schedule_id: StrictInt
+    train_schedule_instance_index: StrictInt | None = None
     type: Literal["added_exception"] = "added_exception"
 
 
@@ -3094,12 +3106,12 @@ class MoveOperation(BaseModel):
     JSON Patch 'move' operation representation
     """
 
-    from_: Annotated[str, Field(alias="from")]
+    from_: Annotated[StrictStr, Field(alias="from")]
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     to move value from.
     """
-    path: str
+    path: StrictStr
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed.
@@ -3107,11 +3119,11 @@ class MoveOperation(BaseModel):
 
 
 class NewDocumentResponse(BaseModel):
-    document_key: int
+    document_key: StrictInt
 
 
-class NonBlankString(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
+class NonBlankString(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
 
 
 class ObjectType(Enum):
@@ -3134,7 +3146,7 @@ class OccupancyBlocksTrainScheduleResult(BaseModel):
     Occupancy blocks output is described by blocks (signal updates)
     """
 
-    exceptions: dict[str, list[CoreSignalUpdate]]
+    exceptions: dict[StrictStr, list[CoreSignalUpdate]]
     """
     Exceptions whose blocks are different from the paced train
     """
@@ -3153,13 +3165,13 @@ class OperationCreate12(InfraObjectElectrification, OperationCreate1):
 
 
 class OperationDelete(BaseModel):
-    obj_id: str
+    obj_id: StrictStr
     obj_type: ObjectType
     operation_type: Literal["DELETE"] = "DELETE"
 
 
-class LocalTrackName(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
+class LocalTrackName(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
 
 
 class OperationalPointPartReference(BaseModel):
@@ -3175,7 +3187,7 @@ class OperationalPointPartSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kp: str
+    kp: StrictStr
 
 
 class OperationalPointReferenceNodeOperationalPointReference(BaseModel):
@@ -3192,7 +3204,7 @@ class OperationalPointReferenceNodeOperationalPointReference(BaseModel):
 
 
 class OperationalPointStop(BaseModel):
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     stop_type: ForcedStopType
 
 
@@ -3221,27 +3233,27 @@ class PaginationStats(BaseModel):
     enforced this name. For new paginated responses, the field name is up to your imagination :)
     """
 
-    count: Annotated[int, Field(ge=0)]
+    count: Annotated[StrictInt, Field(ge=0)]
     """
     The total number of items
     """
-    current: Annotated[int, Field(ge=1)]
+    current: Annotated[StrictInt, Field(ge=1)]
     """
     The current page number
     """
-    next: Annotated[int | None, Field(ge=1)]
+    next: Annotated[StrictInt | None, Field(ge=1)]
     """
     The next page number, if any
     """
-    page_count: Annotated[int, Field(ge=0)]
+    page_count: Annotated[StrictInt, Field(ge=0)]
     """
     The total number of pages
     """
-    page_size: Annotated[int, Field(ge=1)]
+    page_size: Annotated[StrictInt, Field(ge=1)]
     """
     The number of items per page
     """
-    previous: Annotated[int | None, Field(ge=1)]
+    previous: Annotated[StrictInt | None, Field(ge=1)]
     """
     The previous page number, if any
     """
@@ -3288,7 +3300,7 @@ class PathItemRelativeLocationExactPathItem(BaseModel):
     else, if the path just passes by the OP, it is located using its previous and following path items keys
     """
 
-    path_item_key: Annotated[str, Field(min_length=1)]
+    path_item_key: Annotated[StrictStr, Field(min_length=1)]
     """
     Path item key, when the operational point matches an item in the input path
     """
@@ -3302,11 +3314,11 @@ class PathItemRelativeLocationBetweenPathItems(BaseModel):
     else, if the path just passes by the OP, it is located using its previous and following path items keys
     """
 
-    following_path_item_key: Annotated[str, Field(min_length=1)]
+    following_path_item_key: Annotated[StrictStr, Field(min_length=1)]
     """
     Following path item key, when the operational point is not one of the input path items
     """
-    previous_path_item_key: Annotated[str, Field(min_length=1)]
+    previous_path_item_key: Annotated[StrictStr, Field(min_length=1)]
     """
     Previous path item key, when the operational point is not one of the input path items
     """
@@ -3338,7 +3350,7 @@ class Curves(BaseModel):
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
     """
-    values: list[float]
+    values: list[StrictFloat]
     """
     List of `n+1` values associated to the ranges
     """
@@ -3350,7 +3362,7 @@ class PropertyElectrificationValueElectrification(BaseModel):
     """
 
     type: Literal["electrification"] = "electrification"
-    voltage: str
+    voltage: StrictStr
 
 
 class PropertyElectrificationValueNeutralSection(BaseModel):
@@ -3358,7 +3370,7 @@ class PropertyElectrificationValueNeutralSection(BaseModel):
     Neutral section with a lower pantograph instruction or just a dead section
     """
 
-    lower_pantograph: bool
+    lower_pantograph: StrictBool
     type: Literal["neutral_section"] = "neutral_section"
 
 
@@ -3400,7 +3412,7 @@ class Slopes(BaseModel):
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
     """
-    values: list[float]
+    values: list[StrictFloat]
     """
     List of `n+1` values associated to the ranges
     """
@@ -3416,7 +3428,7 @@ class Zones(BaseModel):
     List of `n` boundaries of the ranges.
     A boundary is a distance from the beginning of the path in mm.
     """
-    values: list[str]
+    values: list[StrictStr]
     """
     List of `n+1` values associated to the ranges
     """
@@ -3463,14 +3475,15 @@ class PathfindingFailurePathfindingNotFound4(
 
 SwitchesDirectionsAdditionalProperty = TypeAliasType(
     "SwitchesDirectionsAdditionalProperty",
-    Annotated[str, Field(max_length=255, min_length=1)],
+    Annotated[StrictStr, Field(max_length=255, min_length=1)],
 )
 
 
 class PathfindingOutput(BaseModel):
     detectors: list[Identifier]
     switches_directions: dict[
-        constr(min_length=1, max_length=255), SwitchesDirectionsAdditionalProperty
+        constr(min_length=1, max_length=255, strict=True),
+        SwitchesDirectionsAdditionalProperty,
     ]
     track_ranges: list[DirectionalTrackRange]
 
@@ -3522,17 +3535,17 @@ class PathfindingTrackLocationInput(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    position: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    position: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class PowerRestrictionItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    from_: Annotated[str, Field(alias="from", min_length=1)]
-    to: Annotated[str, Field(min_length=1)]
-    value: str
+    from_: Annotated[StrictStr, Field(alias="from", min_length=1)]
+    to: Annotated[StrictStr, Field(min_length=1)]
+    value: StrictStr
 
 
 class TrackSectionRange(BaseModel):
@@ -3541,7 +3554,7 @@ class TrackSectionRange(BaseModel):
     `begin` is always less than `end`.
     """
 
-    begin: Annotated[int, Field(ge=0)]
+    begin: Annotated[StrictInt, Field(ge=0)]
     """
     The beginning of the range in mm.
     """
@@ -3549,21 +3562,21 @@ class TrackSectionRange(BaseModel):
     """
     The direction of the range.
     """
-    end: Annotated[int, Field(ge=0)]
+    end: Annotated[StrictInt, Field(ge=0)]
     """
     The end of the range in mm.
     """
-    track_section: str
+    track_section: StrictStr
     """
     The track section identifier.
     """
 
 
 class ProjectPathForm(BaseModel):
-    electrical_profile_set_id: int | None = None
-    ids: list[int]
-    infra_id: int
-    timetable_id: int
+    electrical_profile_set_id: StrictInt | None = None
+    ids: list[StrictInt]
+    infra_id: StrictInt
+    timetable_id: StrictInt
     track_section_ranges: list[TrackSectionRange]
 
 
@@ -3586,12 +3599,12 @@ class RefillLaw(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    soc_ref: Annotated[float, Field(ge=0.0, le=1.0)]
-    tau: Annotated[float, Field(ge=0.0)]
+    soc_ref: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
+    tau: Annotated[StrictFloat, Field(ge=0.0)]
 
 
-class Plc2(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
+class Plc2(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
 
 
 class RemoveOperation(BaseModel):
@@ -3599,7 +3612,7 @@ class RemoveOperation(BaseModel):
     JSON Patch 'remove' operation representation
     """
 
-    path: str
+    path: StrictStr
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed.
@@ -3611,7 +3624,7 @@ class ReplaceOperation(BaseModel):
     JSON Patch 'replace' operation representation
     """
 
-    path: str
+    path: StrictStr
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed.
@@ -3634,9 +3647,9 @@ class ResourceType(Enum):
 
 
 class RevokeBody(BaseModel):
-    resource_id: int
+    resource_id: StrictInt
     resource_type: ResourceType
-    subject_id: int
+    subject_id: StrictInt
 
 
 class Role(Enum):
@@ -3649,27 +3662,27 @@ class RollingResistancePerWeight(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    A: float
+    A: StrictFloat
     """
      Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
     Acceleration in m·s⁻²
     """
-    B: float
+    B: StrictFloat
     """
      Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
     Viscosity friction per weight in s⁻¹
     """
-    C: float
+    C: StrictFloat
     """
      Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
     Aerodynamic drag per kg in m⁻¹
     """
-    type: str
+    type: StrictStr
 
 
 class RollingStockChangeGroup(BaseModel):
     comfort: Comfort
-    rolling_stock_name: str
+    rolling_stock_name: StrictStr
 
 
 class RollingStockLivery(BaseModel):
@@ -3687,26 +3700,26 @@ class RollingStockLivery(BaseModel):
 
     """
 
-    compound_image_id: int | None = None
-    id: int
-    name: str
-    rolling_stock_id: int
+    compound_image_id: StrictInt | None = None
+    id: StrictInt
+    name: StrictStr
+    rolling_stock_id: StrictInt
 
 
-class Image(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class Image(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
 class RollingStockLiveryCreateForm(BaseModel):
     images: list[list[Image]]
-    name: str
+    name: StrictStr
 
 
 class RollingStockLockedUpdateForm(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    locked: bool
+    locked: StrictBool
     """
     New locked value
     """
@@ -3716,19 +3729,19 @@ class RollingStockMetadata(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    detail: str
-    family: str
-    grouping: str
-    number: str
-    reference: str
-    series: str
-    subseries: str
-    type: str
-    unit: str
+    detail: StrictStr
+    family: StrictStr
+    grouping: StrictStr
+    number: StrictStr
+    reference: StrictStr
+    series: StrictStr
+    subseries: StrictStr
+    type: StrictStr
+    unit: StrictStr
 
 
-class RoundTripItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class RoundTripItem(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
 class RoundTrip(RootModel[list[RoundTripItem]]):
@@ -3740,7 +3753,7 @@ class RoundTrips(BaseModel):
     Represents a collection of round trips and one-way
     """
 
-    one_ways: list[int] | None = None
+    one_ways: list[StrictInt] | None = None
     """
     List of one-way trains
     """
@@ -3750,13 +3763,13 @@ class RoundTrips(BaseModel):
     """
 
 
-class ReleaseDetector(RootModel[str]):
-    root: Annotated[str, Field(max_length=255, min_length=1)]
+class ReleaseDetector(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class SwitchesDirection(BaseModel):
-    group_id: Annotated[str, Field(max_length=255, min_length=1)]
-    switch_id: Annotated[str, Field(max_length=255, min_length=1)]
+    group_id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    switch_id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class RoutePath(BaseModel):
@@ -3765,12 +3778,12 @@ class RoutePath(BaseModel):
 
 
 class ScenarioReference(BaseModel):
-    project_id: int
-    project_name: str
-    scenario_id: int
-    scenario_name: str
-    study_id: int
-    study_name: str
+    project_id: StrictInt
+    project_name: StrictStr
+    scenario_id: StrictInt
+    scenario_name: StrictStr
+    study_id: StrictInt
+    study_name: StrictStr
 
 
 class ScheduleItem(BaseModel):
@@ -3778,21 +3791,21 @@ class ScheduleItem(BaseModel):
         extra="forbid",
     )
     arrival: timedelta | None = None
-    at: str
+    at: StrictStr
     """
     Position on the path of the schedule item.
     """
-    can_backtrack: bool | None = None
+    can_backtrack: StrictBool | None = None
     reception_signal: ReceptionSignal | None = None
     reference_base_arrival: timedelta | None = None
-    reference_position: Annotated[int | None, Field(ge=0)] = None
+    reference_position: Annotated[StrictInt | None, Field(ge=0)] = None
     stop_for: timedelta | None = None
 
 
 class SearchJourneyEnvironmentResponse(BaseModel):
-    id: int
-    infra_id: int
-    timetable_ids: list[int]
+    id: StrictInt
+    infra_id: StrictInt
+    timetable_ids: list[StrictInt]
 
 
 class SearchObjectType(Enum):
@@ -3817,13 +3830,13 @@ class SearchResultItemGroup(BaseModel):
     A search result item for a query with `object = "group"`
     """
 
-    id: Annotated[int, Field(ge=0)]
-    name: str
+    id: Annotated[StrictInt, Field(ge=0)]
+    name: StrictStr
 
 
 class SearchResultItemOperationalPointTrackSections(BaseModel):
-    position: float
-    track: str
+    position: StrictFloat
+    track: StrictStr
 
 
 class SearchResultItemProject(BaseModel):
@@ -3831,13 +3844,13 @@ class SearchResultItemProject(BaseModel):
     A search result item for a query with `object = "project"`
     """
 
-    description: str
-    id: Annotated[int, Field(ge=0)]
-    image: Annotated[int | None, Field(ge=0)]
+    description: StrictStr
+    id: Annotated[StrictInt, Field(ge=0)]
+    image: Annotated[StrictInt | None, Field(ge=0)]
     last_modification: AwareDatetime
-    name: str
-    studies_count: Annotated[int, Field(ge=0)]
-    tags: list[str]
+    name: StrictStr
+    studies_count: Annotated[StrictInt, Field(ge=0)]
+    tags: list[StrictStr]
 
 
 class SearchResultItemScenario(BaseModel):
@@ -3845,16 +3858,16 @@ class SearchResultItemScenario(BaseModel):
     A search result item for a query with `object = "scenario"`
     """
 
-    description: str
-    electrical_profile_set_id: Annotated[int | None, Field(ge=0)]
-    id: Annotated[int, Field(ge=0)]
-    infra_id: Annotated[int, Field(ge=0)]
-    infra_name: str
+    description: StrictStr
+    electrical_profile_set_id: Annotated[StrictInt | None, Field(ge=0)]
+    id: Annotated[StrictInt, Field(ge=0)]
+    infra_id: Annotated[StrictInt, Field(ge=0)]
+    infra_name: StrictStr
     last_modification: AwareDatetime
-    name: str
-    study_id: Annotated[int, Field(ge=0)]
-    tags: list[str]
-    train_schedules_count: Annotated[int, Field(ge=0)]
+    name: StrictStr
+    study_id: Annotated[StrictInt, Field(ge=0)]
+    tags: list[StrictStr]
+    train_schedules_count: Annotated[StrictInt, Field(ge=0)]
 
 
 class SearchResultItemStudy(BaseModel):
@@ -3862,17 +3875,17 @@ class SearchResultItemStudy(BaseModel):
     A search result item for a query with `object = "study"`
     """
 
-    budget: Annotated[int | None, Field(ge=0)]
-    business_code: str | None
-    description: str | None
-    id: Annotated[int, Field(ge=0)]
+    budget: Annotated[StrictInt | None, Field(ge=0)]
+    business_code: StrictStr | None
+    description: StrictStr | None
+    id: Annotated[StrictInt, Field(ge=0)]
     last_modification: AwareDatetime
-    name: str
-    project_id: Annotated[int, Field(ge=0)]
-    scenarios_count: Annotated[int, Field(ge=0)]
-    service_code: str | None
-    study_type: str | None
-    tags: list[str]
+    name: StrictStr
+    project_id: Annotated[StrictInt, Field(ge=0)]
+    scenarios_count: Annotated[StrictInt, Field(ge=0)]
+    service_code: StrictStr | None
+    study_type: StrictStr | None
+    tags: list[StrictStr]
 
 
 class SearchResultItemTrack(BaseModel):
@@ -3881,9 +3894,9 @@ class SearchResultItemTrack(BaseModel):
 
     """
 
-    infra_id: int
-    line_code: int
-    line_name: str
+    infra_id: StrictInt
+    line_code: StrictInt
+    line_name: StrictStr
 
 
 class SearchResultItemUser(BaseModel):
@@ -3891,8 +3904,8 @@ class SearchResultItemUser(BaseModel):
     A search result item for a query with `object = "user"`
     """
 
-    id: Annotated[int, Field(ge=0)]
-    name: str
+    id: Annotated[StrictInt, Field(ge=0)]
+    name: StrictStr
 
 
 class Side(Enum):
@@ -3906,66 +3919,68 @@ class Sign(BaseModel):
         extra="forbid",
     )
     direction: Direction
-    kp: str
-    position: float
+    kp: StrictStr
+    position: StrictFloat
     side: Side
-    track: Annotated[str, Field(max_length=255, min_length=1)]
-    type: Annotated[str, Field(min_length=1)]
-    value: str
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    type: Annotated[StrictStr, Field(min_length=1)]
+    value: StrictStr
 
 
 ParametersAdditionalProperty = TypeAliasType(
-    "ParametersAdditionalProperty", Annotated[str, Field(min_length=1)]
+    "ParametersAdditionalProperty", Annotated[StrictStr, Field(min_length=1)]
 )
 
 
 class ConditionalParameter(BaseModel):
-    on_route: Annotated[str, Field(min_length=1)]
-    parameters: dict[constr(min_length=1), ParametersAdditionalProperty]
+    on_route: Annotated[StrictStr, Field(min_length=1)]
+    parameters: dict[constr(min_length=1, strict=True), ParametersAdditionalProperty]
 
 
 DefaultParametersAdditionalProperty = TypeAliasType(
-    "DefaultParametersAdditionalProperty", Annotated[str, Field(min_length=1)]
+    "DefaultParametersAdditionalProperty", Annotated[StrictStr, Field(min_length=1)]
 )
 
 
 SettingsAdditionalProperty = TypeAliasType(
-    "SettingsAdditionalProperty", Annotated[str, Field(min_length=1)]
+    "SettingsAdditionalProperty", Annotated[StrictStr, Field(min_length=1)]
 )
 
 
 class LogicalSignal(BaseModel):
     conditional_parameters: list[ConditionalParameter]
-    default_parameters: dict[constr(min_length=1), DefaultParametersAdditionalProperty]
-    next_signaling_systems: list[str]
-    settings: dict[constr(min_length=1), SettingsAdditionalProperty]
-    signaling_system: str
+    default_parameters: dict[
+        constr(min_length=1, strict=True), DefaultParametersAdditionalProperty
+    ]
+    next_signaling_systems: list[StrictStr]
+    settings: dict[constr(min_length=1, strict=True), SettingsAdditionalProperty]
+    signaling_system: StrictStr
 
 
 class SignalSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    kp: str
-    label: str
+    kp: StrictStr
+    label: StrictStr
     side: Side | None = None
 
 
 class SimDebugEngineeringAllowanceRange(BaseModel):
-    added_duration: float
-    from_: Annotated[float, Field(alias="from")]
-    to: float
+    added_duration: StrictFloat
+    from_: Annotated[StrictFloat, Field(alias="from")]
+    to: StrictFloat
 
 
 class SimDebugZoneLocation(BaseModel):
-    from_: Annotated[float, Field(alias="from")]
-    name: str
-    to: float
+    from_: Annotated[StrictFloat, Field(alias="from")]
+    name: StrictStr
+    to: StrictFloat
 
 
 class SimilarTrainWaypoint(BaseModel):
-    id: str
-    stop: bool
+    id: StrictStr
+    stop: StrictBool
 
 
 class ResponseSimulationFailed(BaseModel):
@@ -3979,8 +3994,8 @@ class ElectricalProfileValueNoProfile(BaseModel):
 
 class ElectricalProfileValueProfile(BaseModel):
     electrical_profile_type: Literal["profile"] = "profile"
-    handled: bool
-    profile: str | None = None
+    handled: StrictBool
+    profile: StrictStr | None = None
 
 
 class ElectricalProfiles(BaseModel):
@@ -3996,16 +4011,16 @@ class ElectricalProfiles(BaseModel):
     """
 
 
-class PathItemTimesBaseItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class PathItemTimesBaseItem(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class PathItemTimesFinalItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class PathItemTimesFinalItem(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
-class PathItemTimesProvisionalItem(RootModel[int]):
-    root: Annotated[int, Field(ge=0)]
+class PathItemTimesProvisionalItem(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
 
 
 class SummaryResponseSuccess(BaseModel):
@@ -4013,21 +4028,21 @@ class SummaryResponseSuccess(BaseModel):
     Minimal information on a simulation's result
     """
 
-    energy_consumption: float
+    energy_consumption: StrictFloat
     """
     Total energy consumption of a train in kWh
     """
-    length: Annotated[int, Field(ge=0)]
+    length: Annotated[StrictInt, Field(ge=0)]
     """
     Length of a path in mm
     """
-    path_item_respect_margins: list[bool]
+    path_item_respect_margins: list[StrictBool]
     """
     Whether the final path times respect the input margins for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
     Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin.
     """
-    path_item_respect_times: list[bool]
+    path_item_respect_times: list[StrictBool]
     """
     Whether each path item in the train schedule is reached on time.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
@@ -4052,7 +4067,7 @@ class SummaryResponseSuccess(BaseModel):
     The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
     """
     status: Literal["success"] = "success"
-    time: Annotated[int, Field(ge=0)]
+    time: Annotated[StrictInt, Field(ge=0)]
     """
     Travel time in ms
     """
@@ -4079,7 +4094,7 @@ class SummaryResponseSimulationFailed(BaseModel):
     An error has occurred during computing
     """
 
-    error_type: str
+    error_type: StrictStr
     status: Literal["simulation_failed"] = "simulation_failed"
 
 
@@ -4127,9 +4142,9 @@ class Slope(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    begin: float
-    end: float
-    gradient: float
+    begin: StrictFloat
+    end: StrictFloat
+    gradient: StrictFloat
 
 
 class SpaceTimeCurve(BaseModel):
@@ -4152,19 +4167,19 @@ class SpeedDependantPower(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    powers: list[float]
-    speeds: list[float]
+    powers: list[StrictFloat]
+    speeds: list[StrictFloat]
 
 
-class Value(RootModel[float]):
-    root: Annotated[float, Field(ge=0.0)]
+class Value(RootModel[StrictFloat]):
+    root: Annotated[StrictFloat, Field(ge=0.0)]
 
 
 class SpeedIntervalValueCurve(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    boundaries: Annotated[list[float], Field(examples=[[8.333333, 19.444444]])]
+    boundaries: Annotated[list[StrictFloat], Field(examples=[[8.333333, 19.444444]])]
     """
     Speed in m/s (sorted ascending)
     External bounds are implicit to [0, rolling_stock.max_speed]
@@ -4181,12 +4196,12 @@ class SpeedLimitTagChangeGroup(BaseModel):
 
 
 class SpeedLimits(BaseModel):
-    default_speed_limit_tag: str | None = None
-    speed_limit_tags: dict[str, int]
+    default_speed_limit_tag: StrictStr | None = None
+    speed_limit_tags: dict[StrictStr, StrictInt]
 
 
-class OnRoute(RootModel[str]):
-    root: Annotated[str, Field(max_length=255, min_length=1)]
+class OnRoute(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class SpeedSectionPslSncfExtension(BaseModel):
@@ -4231,12 +4246,12 @@ class StdcmResponseInternalError(BaseModel):
 
 
 class StdcmSearchEnvironment(BaseModel):
-    allowed_tracks: dict[str, list[str]] | None
+    allowed_tracks: dict[StrictStr, list[StrictStr]] | None
     """
     Map of a key (ex. loading gauge) with their allowed track section ids.
     """
-    default_speed_limit_tag: str | None = None
-    electrical_profile_set_id: int | None = None
+    default_speed_limit_tag: StrictStr | None = None
+    electrical_profile_set_id: StrictInt | None = None
     enabled_from: AwareDatetime
     """
     The time window start point where the environment is enabled.
@@ -4250,10 +4265,10 @@ class StdcmSearchEnvironment(BaseModel):
     """
     List of operational points where stop is mandatory
     """
-    id: int
-    infra_id: int
-    operational_points: list[int]
-    operational_points_id_filtered: list[str]
+    id: StrictInt
+    infra_id: StrictInt
+    operational_points: list[StrictInt]
+    operational_points_id_filtered: list[StrictStr]
     search_window_begin: AwareDatetime
     """
     The start of the search time window.
@@ -4263,55 +4278,55 @@ class StdcmSearchEnvironment(BaseModel):
     """
     The end of the search time window.
     """
-    speed_limit_tags: dict[str, int]
+    speed_limit_tags: dict[StrictStr, StrictInt]
     """
     Map of speed limit tag with their value
     """
-    temporary_speed_limit_group_id: int | None = None
-    timetable_id: int
-    work_schedule_group_id: int | None = None
+    temporary_speed_limit_group_id: StrictInt | None = None
+    timetable_id: StrictInt
+    work_schedule_group_id: StrictInt | None = None
 
 
 class StdcmSearchEnvironmentCreateForm(BaseModel):
-    allowed_tracks: dict[str, list[str]] | None = None
-    electrical_profile_set_id: int | None = None
+    allowed_tracks: dict[StrictStr, list[StrictStr]] | None = None
+    electrical_profile_set_id: StrictInt | None = None
     enabled_from: AwareDatetime
     enabled_until: AwareDatetime
     forced_op_stops: list[OperationalPointStop] | None = None
-    infra_id: int
-    operational_points: list[int] | None = None
-    operational_points_id_filtered: list[str] | None = None
+    infra_id: StrictInt
+    operational_points: list[StrictInt] | None = None
+    operational_points_id_filtered: list[StrictStr] | None = None
     search_window_begin: AwareDatetime
     search_window_end: AwareDatetime
     speed_limits: SpeedLimits | None = None
-    temporary_speed_limit_group_id: int | None = None
-    timetable_id: int
-    work_schedule_group_id: int | None = None
+    temporary_speed_limit_group_id: StrictInt | None = None
+    timetable_id: StrictInt
+    work_schedule_group_id: StrictInt | None = None
 
 
 class StdcmSearchEnvironmentResponse(BaseModel):
-    allowed_tracks: dict[str, list[str]] | None
+    allowed_tracks: dict[StrictStr, list[StrictStr]] | None
     """
     Map of a gauge with their authorized track section ids.
     None means no zones restrictions.
     """
-    electrical_profile_set_id: int | None = None
+    electrical_profile_set_id: StrictInt | None = None
     enabled_from: AwareDatetime
     enabled_until: AwareDatetime
     forced_op_stops: list[OperationalPointStop] | None = None
     """
     List of operational points where stop is mandatory
     """
-    id: int
-    infra_id: int
-    operational_points: list[int] | None = None
-    operational_points_id_filtered: list[str] | None = None
+    id: StrictInt
+    infra_id: StrictInt
+    operational_points: list[StrictInt] | None = None
+    operational_points_id_filtered: list[StrictStr] | None = None
     search_window_begin: AwareDatetime
     search_window_end: AwareDatetime
     speed_limits: SpeedLimits | None = None
-    temporary_speed_limit_group_id: int | None = None
-    timetable_id: int
-    work_schedule_group_id: int | None = None
+    temporary_speed_limit_group_id: StrictInt | None = None
+    timetable_id: StrictInt
+    work_schedule_group_id: StrictInt | None = None
 
 
 class StepTimingData(BaseModel):
@@ -4319,11 +4334,11 @@ class StepTimingData(BaseModel):
     """
     Time at which the train should arrive at the location
     """
-    arrival_time_tolerance_after: Annotated[int, Field(ge=0)]
+    arrival_time_tolerance_after: Annotated[StrictInt, Field(ge=0)]
     """
     The train may arrive up to this duration after the expected arrival time
     """
-    arrival_time_tolerance_before: Annotated[int, Field(ge=0)]
+    arrival_time_tolerance_before: Annotated[StrictInt, Field(ge=0)]
     """
     The train may arrive up to this duration before the expected arrival time
     """
@@ -4366,27 +4381,29 @@ class SwitchPortConnection(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    dst: Annotated[str, Field(max_length=255, min_length=1)]
-    src: Annotated[str, Field(max_length=255, min_length=1)]
+    dst: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    src: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class SwitchSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    label: Annotated[str, Field(min_length=1)]
+    label: Annotated[StrictStr, Field(min_length=1)]
 
 
-class Port(RootModel[str]):
-    root: Annotated[str, Field(max_length=255, min_length=1)]
+class Port(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class SwitchType(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    groups: dict[constr(min_length=1, max_length=255), list[SwitchPortConnection]]
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    groups: dict[
+        constr(min_length=1, max_length=255, strict=True), list[SwitchPortConnection]
+    ]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     ports: list[Port]
 
 
@@ -4395,7 +4412,7 @@ class TestOperation(BaseModel):
     JSON Patch 'test' operation representation
     """
 
-    path: str
+    path: StrictStr
     """
     JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed.
@@ -4412,69 +4429,69 @@ class TimetableType(Enum):
 
 
 class TowedRollingStock(BaseModel):
-    comfort_acceleration: float
+    comfort_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    const_gamma: float
+    const_gamma: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    id: int
-    inertia_coefficient: float
-    label: str
-    length: float
+    id: StrictInt
+    inertia_coefficient: StrictFloat
+    label: StrictStr
+    length: StrictFloat
     """
     Length in m
     """
-    locked: bool
-    mass: float
+    locked: StrictBool
+    mass: StrictFloat
     """
     Mass in kg
     """
-    max_speed: float | None = None
+    max_speed: StrictFloat | None = None
     """
     Velocity in m·s⁻¹
     """
-    name: str
-    railjson_version: str
+    name: StrictStr
+    railjson_version: StrictStr
     rolling_resistance: RollingResistancePerWeight
-    startup_acceleration: float
+    startup_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    version: int
+    version: StrictInt
 
 
 class TowedRollingStockForm(BaseModel):
-    comfort_acceleration: float
+    comfort_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    const_gamma: float
+    const_gamma: StrictFloat
     """
      The constant gamma braking coefficient used when NOT circulating
      under ETCS/ERTMS signaling system
     Acceleration in m·s⁻²
     """
-    inertia_coefficient: float
-    label: str
-    length: float
+    inertia_coefficient: StrictFloat
+    label: StrictStr
+    length: StrictFloat
     """
     Length in m
     """
-    mass: float
+    mass: StrictFloat
     """
     Mass in kg
     """
-    max_speed: float | None = None
+    max_speed: StrictFloat | None = None
     """
     Velocity in m·s⁻¹
     """
-    name: str
-    railjson_version: str | None = "3.4"
+    name: StrictStr
+    railjson_version: StrictStr | None = "3.4"
     rolling_resistance: RollingResistancePerWeight
-    startup_acceleration: float
+    startup_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
@@ -4484,7 +4501,7 @@ class TowedRollingStockLockedForm(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    locked: bool
+    locked: StrictBool
     """
     New locked value
     """
@@ -4495,15 +4512,15 @@ class TrackEndpoint(BaseModel):
         extra="forbid",
     )
     endpoint: Endpoint
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class TrackOffset(BaseModel):
-    offset: Annotated[int, Field(ge=0)]
+    offset: Annotated[StrictInt, Field(ge=0)]
     """
     Offset in mm
     """
-    track: str
+    track: StrictStr
     """
     Track section identifier
     """
@@ -4513,31 +4530,33 @@ class TrackRange(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    begin: float
-    end: float
-    track: Annotated[str, Field(examples=["01234567-89ab-cdef-0123-456789abcdef"])]
+    begin: StrictFloat
+    end: StrictFloat
+    track: Annotated[
+        StrictStr, Field(examples=["01234567-89ab-cdef-0123-456789abcdef"])
+    ]
 
 
 class Source(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: Annotated[str, Field(min_length=1)]
-    name: Annotated[str, Field(min_length=1)]
+    id: Annotated[StrictStr, Field(min_length=1)]
+    name: Annotated[StrictStr, Field(min_length=1)]
 
 
 class TrackSectionSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    line_code: int
-    line_name: Annotated[str, Field(min_length=1)]
-    track_name: Annotated[str, Field(min_length=1)]
-    track_number: int
+    line_code: StrictInt
+    line_name: Annotated[StrictStr, Field(min_length=1)]
+    track_name: Annotated[StrictStr, Field(min_length=1)]
+    track_number: StrictInt
 
 
 class TrainCategorySub(BaseModel):
-    sub_category_code: str
+    sub_category_code: StrictStr
 
 
 class TrainMainCategory(Enum):
@@ -4554,16 +4573,16 @@ class TrainMainCategory(Enum):
 
 
 class TrainNameChangeGroup(BaseModel):
-    value: str
+    value: StrictStr
 
 
 class TrainScheduleOptions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    stops_at_end_of_block: bool | None = None
-    use_electrical_profiles: bool | None = None
-    use_speed_limits_for_simulation: bool | None = None
+    stops_at_end_of_block: StrictBool | None = None
+    use_electrical_profiles: StrictBool | None = None
+    use_speed_limits_for_simulation: StrictBool | None = None
 
 
 class TrainSchedulePartBound(BaseModel):
@@ -4571,60 +4590,60 @@ class TrainSchedulePartBound(BaseModel):
     A step of the train schedule's path, with its identity and schedule.
     """
 
-    op_id: str
+    op_id: StrictStr
     """
     Id of the operational point of the corresponding step in the train schedule's path.
     """
-    path_step_index: Annotated[int, Field(ge=0)]
+    path_step_index: Annotated[StrictInt, Field(ge=0)]
     """
     Index of the path step in the train schedule's path
     """
-    time_ms: Annotated[int, Field(ge=0)]
+    time_ms: Annotated[StrictInt, Field(ge=0)]
     """
     Scheduled time of the step in milliseconds from 1970-01-01 00:00:00 UTC.
     """
 
 
 class TrainScheduleSet(BaseModel):
-    catalog_entry_id: int | None = None
-    description: str
-    id: int
-    name: str | None = None
-    published: bool
-    timetable_id: int
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr
+    id: StrictInt
+    name: StrictStr | None = None
+    published: StrictBool
+    timetable_id: StrictInt
     timetable_type: TimetableType
 
 
 class TrainScheduleSetForm(BaseModel):
-    catalog_entry_id: int | None = None
-    description: str
-    name: str | None = None
-    published: bool
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr
+    name: StrictStr | None = None
+    published: StrictBool
     timetable_type: TimetableType
 
 
 class TrainScheduleSetResponse(TrainScheduleSet):
-    train_schedule_count: Annotated[int, Field(ge=0)]
+    train_schedule_count: Annotated[StrictInt, Field(ge=0)]
 
 
 class TrainScheduleSetUpdateForm(BaseModel):
-    catalog_entry_id: int | None = None
-    description: str
-    name: str | None = None
-    published: bool
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr
+    name: StrictStr | None = None
+    published: StrictBool
 
 
 class Version(BaseModel):
-    git_describe: str | None
+    git_describe: StrictStr | None
 
 
 class WaypointBufferStop(BaseModel):
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     type: Literal["BufferStop"] = "BufferStop"
 
 
 class WaypointDetector(BaseModel):
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     type: Literal["Detector"] = "Detector"
 
 
@@ -4635,7 +4654,7 @@ class WorkScheduleType(Enum):
 
 class WorkScheduleItemForm(BaseModel):
     end_date_time: AwareDatetime
-    obj_id: str
+    obj_id: StrictStr
     start_date_time: AwareDatetime
     track_ranges: list[TrackRange]
     work_schedule_type: WorkScheduleType
@@ -4649,7 +4668,7 @@ class WorkerStatus(Enum):
 
 
 class ErrorResponse(BaseModel):
-    detail: str
+    detail: StrictStr
     """
     Error message describing what went wrong
     """
@@ -4660,15 +4679,15 @@ class ConsistChange(BaseModel):
     New consist to use from a request step onward.
     """
 
-    rolling_stock: Annotated[str, Field(title="Rolling Stock")]
-    towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
-        None
-    )
-    total_mass: Annotated[int, Field(title="Total Mass")]
+    rolling_stock: Annotated[StrictStr, Field(title="Rolling Stock")]
+    towed_rolling_stock: Annotated[
+        StrictStr | None, Field(title="Towed Rolling Stock")
+    ] = None
+    total_mass: Annotated[StrictInt, Field(title="Total Mass")]
     """
     Total mass of the train in kg
     """
-    total_length: Annotated[int, Field(title="Total Length")]
+    total_length: Annotated[StrictInt, Field(title="Total Length")]
     """
     Total length of the train in m
     """
@@ -4684,8 +4703,8 @@ class Location(BaseModel):
     Information on the operational point.
     """
 
-    uic: Annotated[int, Field(title="Uic")]
-    secondary_code: Annotated[str, Field(title="Secondary Code")]
+    uic: Annotated[StrictInt, Field(title="Uic")]
+    secondary_code: Annotated[StrictStr, Field(title="Secondary Code")]
 
 
 class TimingData(BaseModel):
@@ -4695,13 +4714,13 @@ class TimingData(BaseModel):
 
     arrival_time: Annotated[AwareDatetime, Field(title="Arrival Time")]
     arrival_time_tolerance_before: Annotated[
-        int, Field(title="Arrival Time Tolerance Before")
+        StrictInt, Field(title="Arrival Time Tolerance Before")
     ]
     """
     Tolerance in ms
     """
     arrival_time_tolerance_after: Annotated[
-        int, Field(title="Arrival Time Tolerance After")
+        StrictInt, Field(title="Arrival Time Tolerance After")
     ]
     """
     Tolerance in ms
@@ -4724,7 +4743,7 @@ class RequestedStep(BaseModel):
     """
     New consist to use from this step onward. Not included for the first step.
     """
-    duration: Annotated[int, Field(title="Duration")]
+    duration: Annotated[StrictInt, Field(title="Duration")]
     """
     Duration in ms
     """
@@ -4734,20 +4753,20 @@ class RequestedStep(BaseModel):
 
 
 class SimulatedStep(BaseModel):
-    path_item_time: Annotated[int, Field(title="Path Item Time")]
+    path_item_time: Annotated[StrictInt, Field(title="Path Item Time")]
     """
     The offset in ms from the beginning of the simulation at which the step is reached.
     """
-    path_item_position: Annotated[int, Field(title="Path Item Position")]
+    path_item_position: Annotated[StrictInt, Field(title="Path Item Position")]
     """
     The offset in mm from the beginning of the simulation at which the step is reached.
     """
-    op_id: Annotated[str, Field(title="Operational Point Identifier")]
+    op_id: Annotated[StrictStr, Field(title="Operational Point Identifier")]
     """
     The identifier of the operational point reached at this step
     """
     matching_requested_step_index: Annotated[
-        int | None, Field(title="Matching Requested Step Index")
+        StrictInt | None, Field(title="Matching Requested Step Index")
     ] = None
     """
     The index of the requested step.
@@ -4760,7 +4779,7 @@ class SimilarTrain(BaseModel):
     """
 
     path_date: Annotated[AwareDatetime, Field(title="Path Date")]
-    name: Annotated[str, Field(title="Name")]
+    name: Annotated[StrictStr, Field(title="Name")]
     """
     Train name
     """
@@ -4768,7 +4787,7 @@ class SimilarTrain(BaseModel):
 
 class SubstituteTrain(BaseModel):
     path_date: Annotated[AwareDatetime, Field(title="Path Date")]
-    name: Annotated[str, Field(title="Name")]
+    name: Annotated[StrictStr, Field(title="Name")]
     """
     Train name
     """
@@ -4779,10 +4798,10 @@ class SendLastMinuteRequestResponse(BaseModel):
     Response model to validate and return when a last-minute request has been successfully sent.
     """
 
-    status: Annotated[str, Field(title="Status")]
-    message: Annotated[str, Field(title="Message")]
-    request_identifier: Annotated[str, Field(title="Request Identifier")]
-    created_request_url: Annotated[str | None, Field(title="Created Request URL")]
+    status: Annotated[StrictStr, Field(title="Status")]
+    message: Annotated[StrictStr, Field(title="Message")]
+    request_identifier: Annotated[StrictStr, Field(title="Request Identifier")]
+    created_request_url: Annotated[StrictStr | None, Field(title="Created Request URL")]
 
 
 class RequestStatus(Enum):
@@ -4794,21 +4813,21 @@ class RequestStatus(Enum):
 
 
 class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
-    authorized: bool
+    authorized: StrictBool
     """
     Whether the user is authenticated and authorized to send last-minute requests
     """
 
 
 class SendLastMinuteRequestFolderUrlGetResponse(BaseModel):
-    url: str
+    url: StrictStr
     """
     The url of the folder
     """
 
 
-class SendLastMinuteRequestStatusesPostRequest(RootModel[list[str]]):
-    root: list[str]
+class SendLastMinuteRequestStatusesPostRequest(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
 
 
 class BufferStopExtension(BaseModel):
@@ -4831,7 +4850,7 @@ class Conflict(BaseModel):
     """
     Type of the conflict
     """
-    duration: Annotated[int, Field(ge=0)]
+    duration: Annotated[StrictInt, Field(ge=0)]
     """
     Duration of the conflict in ms.
     """
@@ -4839,7 +4858,7 @@ class Conflict(BaseModel):
     """
     List of requirements causing the conflict
     """
-    start_time: int
+    start_time: StrictInt
     """
     Start of the conflict time range: elapsed ms since an implicit 'request base time'.
     This is the *union* of all the conflicting time ranges.
@@ -4853,7 +4872,7 @@ class Conflict(BaseModel):
     """
     List of trains involved in the conflict.
     """
-    work_schedule_ids: list[int]
+    work_schedule_ids: list[StrictInt]
     """
     List of work schedule ids involved in the conflict
     """
@@ -4861,24 +4880,24 @@ class Conflict(BaseModel):
 
 class ConsistConfiguration(BaseModel):
     loading_gauge_type: LoadingGaugeType | None = None
-    max_speed: float | None = None
+    max_speed: StrictFloat | None = None
     """
     Velocity in m·s⁻¹
     """
-    rolling_stock_id: int
-    speed_limit_tag: str | None = None
+    rolling_stock_id: StrictInt
+    speed_limit_tag: StrictStr | None = None
     """
     Train categories for speed limits
     """
-    total_length: float | None = None
+    total_length: StrictFloat | None = None
     """
     Length in m
     """
-    total_mass: float | None = None
+    total_mass: StrictFloat | None = None
     """
     Mass in kg
     """
-    towed_rolling_stock_id: int | None = None
+    towed_rolling_stock_id: StrictInt | None = None
 
 
 class ConsistSchedule(BaseModel):
@@ -4934,7 +4953,7 @@ class CoreIncompatibleOffsetRange(BaseModel):
 
 class CoreIncompatibleOffsetRangeWithValue(BaseModel):
     range: CoreOffsetRange
-    value: str
+    value: StrictStr
 
 
 class CoreReportTrain(BaseModel):
@@ -4942,7 +4961,7 @@ class CoreReportTrain(BaseModel):
     """
     Describes the driver actions at each point on the path
     """
-    energy_consumption: float
+    energy_consumption: StrictFloat
     """
     Total energy consumption
     """
@@ -4964,7 +4983,7 @@ class CoreReportTrain(BaseModel):
     The length of positions and times is arbitrary and comes from a curve simplification
     made in core
     """
-    speeds: list[float]
+    speeds: list[StrictFloat]
     """
     List of speeds associated to a position
     """
@@ -4976,7 +4995,7 @@ class CoreReportTrain(BaseModel):
 
 
 class CoreRoutingRequirement(BaseModel):
-    begin_time: Annotated[int, Field(ge=0)]
+    begin_time: Annotated[StrictInt, Field(ge=0)]
     """
     Time in ms since a reference point that depends on which struct embeds this one:
     - in `TrainRequirements` & `TrainRequirementsById` (conflict detection & timetable
@@ -4985,7 +5004,7 @@ class CoreRoutingRequirement(BaseModel):
       hourly ones);
     - in `CompleteReportTrain` (simulation results): the train's own `start_time`.
     """
-    route: str
+    route: StrictStr
     zones: list[CoreRoutingZoneRequirement]
 
 
@@ -5012,7 +5031,7 @@ class CoreTrackRange(BaseModel):
     `begin` is always less than `end`.
     """
 
-    begin: Annotated[int, Field(ge=0)]
+    begin: Annotated[StrictInt, Field(ge=0)]
     """
     The beginning of the range in mm.
     """
@@ -5020,11 +5039,11 @@ class CoreTrackRange(BaseModel):
     """
     The direction of the range.
     """
-    end: Annotated[int, Field(ge=0)]
+    end: Annotated[StrictInt, Field(ge=0)]
     """
     The end of the range in mm.
     """
-    track_section: str
+    track_section: StrictStr
     """
     The track section identifier.
     """
@@ -5053,8 +5072,8 @@ class CoreTrainPath(BaseModel):
 class CoreTrainRequirementsById(BaseModel):
     routing_requirements: list[CoreRoutingRequirement]
     spacing_requirements: list[CoreSpacingRequirement]
-    train_id: str
-    train_name: str
+    train_id: StrictStr
+    train_name: StrictStr
     """
     ID that can be used to find the train in tools other than OSRD. Used in debug traces.
     """
@@ -5426,13 +5445,13 @@ class EditoastError(
 
 
 class ElectricalProfile(BaseModel):
-    power_class: Annotated[str, Field(examples=["1"])]
+    power_class: Annotated[StrictStr, Field(examples=["1"])]
     track_ranges: list[TrackRange]
-    value: Annotated[str, Field(examples=["A"])]
+    value: Annotated[StrictStr, Field(examples=["A"])]
 
 
 class ElectricalProfileSetData(BaseModel):
-    level_order: dict[str, list[str]]
+    level_order: dict[StrictStr, list[StrictStr]]
     levels: list[ElectricalProfile]
 
 
@@ -5441,7 +5460,7 @@ class EnergySourceElectrification(BaseModel):
     energy source for a rolling stock representing a electrification
     """
 
-    efficiency: Annotated[float, Field(ge=0.0, le=1.0)]
+    efficiency: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
     energy_source_type: Literal["Electrification"] = "Electrification"
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
@@ -5455,11 +5474,11 @@ class EnergyStorage(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    capacity: float
+    capacity: StrictFloat
     refill_law: RefillLaw | None
-    soc: Annotated[float, Field(ge=0.0, le=1.0)]
-    soc_max: Annotated[float, Field(ge=0.0, le=1.0)]
-    soc_min: Annotated[float, Field(ge=0.0, le=1.0)]
+    soc: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
+    soc_max: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
+    soc_min: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
 
 
 class EtcsBrakeParams(BaseModel):
@@ -5506,26 +5525,26 @@ class EtcsBrakeParams(BaseModel):
     Boundaries should be the same as gammaEmergency
     Values (no unit) should be contained in [0, 1]
     """
-    t_be: float
+    t_be: StrictFloat
     """
     T_be: safe brake build up time in s
     """
-    t_bs1: float
+    t_bs1: StrictFloat
     """
     T_bs1: time service break in s used for SBI1 computation
     """
-    t_bs2: float
+    t_bs2: StrictFloat
     """
     T_bs2: time service break in s used for SBI2 computation
     """
-    t_traction_cut_off: float
+    t_traction_cut_off: StrictFloat
     """
     T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero
     """
 
 
 class PointGeometry(BaseModel):
-    coordinates: list[float]
+    coordinates: list[StrictFloat]
     type: Literal["Point"] = "Point"
 
 
@@ -5535,9 +5554,9 @@ class GeoJsonPoint(RootModel[PointGeometry]):
 
 class GrantBody(BaseModel):
     grant: StandardGrant
-    resource_id: int
+    resource_id: StrictInt
     resource_type: ResourceType
-    subject_id: int
+    subject_id: StrictInt
 
 
 class InfraObjectSwitchType(BaseModel):
@@ -5552,27 +5571,27 @@ class InfraPathfindingInput(BaseModel):
 
 class JourneySearchQuery(BaseModel):
     destination: OperationalPointPartReference
-    infra_id: int
+    infra_id: StrictInt
     origin: OperationalPointPartReference
-    start_ms: Annotated[int, Field(ge=0)]
+    start_ms: Annotated[StrictInt, Field(ge=0)]
     """
     Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
 
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`.
     """
-    start_tolerance: Annotated[int, Field(ge=0)]
+    start_tolerance: Annotated[StrictInt, Field(ge=0)]
     """
     Half the time of the start window in milliseconds.
 
     The start window is defined as the time between
     `start_sec - start_tolerance` and `start_sec + start_tolerance`.
     """
-    timetable_ids: list[int]
+    timetable_ids: list[StrictInt]
     """
     Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
     """
-    transfer_ms: Annotated[int, Field(ge=0)]
+    transfer_ms: Annotated[StrictInt, Field(ge=0)]
     """
     Constant time for a transfer/footpath in the same stop in milliseconds.
 
@@ -5585,10 +5604,10 @@ class LevelCrossing(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    name: str
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    name: StrictStr
     parts: list[LevelCrossingPart]
-    short_zone_length: Annotated[int, Field(ge=0)]
+    short_zone_length: Annotated[StrictInt, Field(ge=0)]
     """
     Short zone length in mm
     """
@@ -5598,8 +5617,8 @@ class LightEffortCurves(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    default_mode: str
-    modes: dict[str, LightModeEffortCurves]
+    default_mode: StrictStr
+    modes: dict[StrictStr, LightModeEffortCurves]
 
 
 class LinkingCreateForm(BaseModel):
@@ -5619,26 +5638,26 @@ class LoadingGaugeLimit(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    begin: float
+    begin: StrictFloat
     category: LoadingGaugeType
-    end: float
+    end: StrictFloat
 
 
 class MacroNoteForm(BaseModel):
-    labels: list[str]
-    text: str
-    title: str
-    x: int
-    y: int
+    labels: list[StrictStr]
+    text: StrictStr
+    title: StrictStr
+    x: StrictInt
+    y: StrictInt
 
 
 class MacroNoteResponse(BaseModel):
-    id: int
-    labels: list[str]
-    text: str
-    title: str
-    x: int
-    y: int
+    id: StrictInt
+    labels: list[StrictStr]
+    text: StrictStr
+    title: StrictStr
+    x: StrictInt
+    y: StrictInt
 
 
 class Margins(BaseModel):
@@ -5646,7 +5665,7 @@ class Margins(BaseModel):
         extra="forbid",
     )
     boundaries: list[NonBlankString]
-    values: Annotated[list[str], Field(examples=[["5%", "2min/100km"]])]
+    values: Annotated[list[StrictStr], Field(examples=[["5%", "2min/100km"]])]
     """
     The values of the margins. Must contains one more element than the boundaries
     Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
@@ -5659,7 +5678,7 @@ class ModeEffortCurves(BaseModel):
     )
     curves: list[ConditionalEffortCurve]
     default_curve: EffortCurve
-    is_electric: bool
+    is_electric: StrictBool
 
 
 class NeutralSectionNeutralSncfExtension(BaseModel):
@@ -5676,16 +5695,16 @@ class ObjectRef(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    obj_id: str
+    obj_id: StrictStr
     type: ObjectType
 
 
 class OccupancyBlockForm(BaseModel):
-    electrical_profile_set_id: int | None = None
-    ids: list[int]
-    infra_id: int
+    electrical_profile_set_id: StrictInt | None = None
+    ids: list[StrictInt]
+    infra_id: StrictInt
     path: CoreTrainPath
-    timetable_id: int
+    timetable_id: StrictInt
 
 
 class InfraObjectLevelCrossing(BaseModel):
@@ -5771,7 +5790,7 @@ class PathPropertiesInput(BaseModel):
 
 
 class Item(BaseModel):
-    index: Annotated[int, Field(ge=0)]
+    index: Annotated[StrictInt, Field(ge=0)]
     path_item: (
         PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
     )
@@ -5793,13 +5812,13 @@ class PathfindingFailurePathfindingInputError2(
 
 class PathfindingNotFoundNotFoundInBlocks(BaseModel):
     error_type: Literal["not_found_in_blocks"] = "not_found_in_blocks"
-    length: Annotated[int, Field(ge=0)]
+    length: Annotated[StrictInt, Field(ge=0)]
     track_section_ranges: list[CoreTrackRange]
 
 
 class PathfindingNotFoundNotFoundInRoutes(BaseModel):
     error_type: Literal["not_found_in_routes"] = "not_found_in_routes"
-    length: Annotated[int, Field(ge=0)]
+    length: Annotated[StrictInt, Field(ge=0)]
     track_section_ranges: list[CoreTrackRange]
 
 
@@ -5816,7 +5835,7 @@ class PathfindingFailurePathfindingNotFound3(
 
 
 class PathfindingItem(BaseModel):
-    can_backtrack: bool
+    can_backtrack: StrictBool
     location: (
         PathItemLocationTrackOffset | PathItemLocationOperationalPointPartReference
     )
@@ -5872,16 +5891,16 @@ class PathfindingResultFailure2(PathfindingResultFailure1):
 
 
 class Project(BaseModel):
-    budget: int | None = None
+    budget: StrictInt | None = None
     creation_date: AwareDatetime
-    description: str | None = None
-    funders: str | None = None
-    id: int
-    image: int | None = None
+    description: StrictStr | None = None
+    funders: StrictStr | None = None
+    id: StrictInt
+    image: StrictInt | None = None
     last_modification: AwareDatetime
-    name: str
-    objectives: str | None = None
-    tags: list[str]
+    name: StrictStr
+    objectives: StrictStr | None = None
+    tags: list[StrictStr]
 
 
 class ProjectCreateForm(BaseModel):
@@ -5889,16 +5908,16 @@ class ProjectCreateForm(BaseModel):
     Creation form for a project
     """
 
-    budget: int | None = None
-    description: Annotated[str | None, Field(max_length=1024)] = None
-    funders: Annotated[str | None, Field(max_length=1024)] = None
-    image: int | None = None
+    budget: StrictInt | None = None
+    description: Annotated[StrictStr | None, Field(max_length=1024)] = None
+    funders: Annotated[StrictStr | None, Field(max_length=1024)] = None
+    image: StrictInt | None = None
     """
     The id of the image document
     """
-    name: Annotated[str, Field(max_length=128)]
-    objectives: Annotated[str | None, Field(max_length=4096)] = None
-    tags: list[str] | None = None
+    name: Annotated[StrictStr, Field(max_length=128)]
+    objectives: Annotated[StrictStr | None, Field(max_length=4096)] = None
+    tags: list[StrictStr] | None = None
 
 
 class ProjectPatchForm(BaseModel):
@@ -5906,16 +5925,16 @@ class ProjectPatchForm(BaseModel):
     Patch form for a project
     """
 
-    budget: int | None = None
-    description: Annotated[str | None, Field(max_length=1024)] = None
-    funders: Annotated[str | None, Field(max_length=1024)] = None
-    image: int | None = None
+    budget: StrictInt | None = None
+    description: Annotated[StrictStr | None, Field(max_length=1024)] = None
+    funders: Annotated[StrictStr | None, Field(max_length=1024)] = None
+    image: StrictInt | None = None
     """
     The id of the image document
     """
-    name: Annotated[str | None, Field(max_length=128)] = None
-    objectives: Annotated[str | None, Field(max_length=4096)] = None
-    tags: list[str] | None = None
+    name: Annotated[StrictStr | None, Field(max_length=128)] = None
+    objectives: Annotated[StrictStr | None, Field(max_length=4096)] = None
+    tags: list[StrictStr] | None = None
 
 
 class ProjectPathTrainScheduleResult(BaseModel):
@@ -5923,7 +5942,7 @@ class ProjectPathTrainScheduleResult(BaseModel):
     Project path output is described by time-space points and blocks
     """
 
-    exceptions: dict[str, list[SpaceTimeCurve]]
+    exceptions: dict[StrictStr, list[SpaceTimeCurve]]
     """
     Exceptions whose projection is different from the train schedule when it has a paced
     """
@@ -5934,11 +5953,11 @@ class ProjectPathTrainScheduleResult(BaseModel):
 
 
 class ProjectWithStudies(Project):
-    studies_count: Annotated[int, Field(ge=0)]
+    studies_count: Annotated[StrictInt, Field(ge=0)]
 
 
 class RequirementId(BaseModel):
-    id: str
+    id: StrictStr
     type: RequirementType
 
 
@@ -5949,24 +5968,25 @@ class Route(BaseModel):
     entry_point: WaypointBufferStop | WaypointDetector
     entry_point_direction: Direction
     exit_point: WaypointBufferStop | WaypointDetector
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     release_detectors: list[ReleaseDetector]
     switches_directions: dict[
-        constr(min_length=1, max_length=255), SwitchesDirectionsAdditionalProperty
+        constr(min_length=1, max_length=255, strict=True),
+        SwitchesDirectionsAdditionalProperty,
     ]
 
 
 class Scenario(BaseModel):
     creation_date: AwareDatetime
-    description: str
-    electrical_profile_set_id: int | None = None
-    id: int
-    infra_id: int
+    description: StrictStr
+    electrical_profile_set_id: StrictInt | None = None
+    id: StrictInt
+    infra_id: StrictInt
     last_modification: AwareDatetime
-    name: str
-    study_id: int
-    tags: list[str]
-    timetable_id: int
+    name: StrictStr
+    study_id: StrictInt
+    tags: list[StrictStr]
+    timetable_id: StrictInt
 
 
 class ScenarioCreateForm(BaseModel):
@@ -5974,13 +5994,13 @@ class ScenarioCreateForm(BaseModel):
     This structure is used by the post endpoint to create a scenario
     """
 
-    description: str | None = None
-    electrical_profile_set_id: int | None = None
-    infra_id: int
-    name: str
-    study_id: int
-    tags: list[str] | None = None
-    timetable_id: int
+    description: StrictStr | None = None
+    electrical_profile_set_id: StrictInt | None = None
+    infra_id: StrictInt
+    name: StrictStr
+    study_id: StrictInt
+    tags: list[StrictStr] | None = None
+    timetable_id: StrictInt
 
 
 class ScenarioPatchForm(BaseModel):
@@ -5988,17 +6008,17 @@ class ScenarioPatchForm(BaseModel):
     This structure is used by the patch endpoint to patch a scenario
     """
 
-    description: str | None = None
-    electrical_profile_set_id: int | None = None
-    infra_id: int | None = None
-    name: str | None = None
-    tags: list[str] | None = None
+    description: StrictStr | None = None
+    electrical_profile_set_id: StrictInt | None = None
+    infra_id: StrictInt | None = None
+    name: StrictStr | None = None
+    tags: list[StrictStr] | None = None
 
 
 class ScenarioWithDetails(Scenario):
-    infra_name: str
+    infra_name: StrictStr
     timetable_type: TimetableType
-    train_schedules_count: int
+    train_schedules_count: StrictInt
 
 
 class SearchPayload(BaseModel):
@@ -6006,7 +6026,7 @@ class SearchPayload(BaseModel):
     The payload of a search request
     """
 
-    dry: bool | None = None
+    dry: StrictBool | None = None
     """
     Whether to return the SQL query instead of executing it
 
@@ -6017,7 +6037,7 @@ class SearchPayload(BaseModel):
     The object kind to query - run `editoast search list` to get all possible values
     """
     query: Annotated[
-        dict[str, Any] | bool | float | int | str,
+        dict[str, Any] | StrictBool | StrictFloat | StrictInt | StrictStr,
         Field(
             examples=[
                 [
@@ -6093,10 +6113,10 @@ class SearchResultItemMacroNode(BaseModel):
     A search result item for a query with `object = "macronode"`
     """
 
-    full_name: str | None
-    id: Annotated[int, Field(ge=0)]
-    is_collapsed: bool
-    labels: list[str | None]
+    full_name: StrictStr | None
+    id: Annotated[StrictInt, Field(ge=0)]
+    is_collapsed: StrictBool
+    labels: list[StrictStr | None]
     node_location: (
         OperationalPointReferenceNodeTrackOffset
         | OperationalPointReferenceNodeOperationalPointReference
@@ -6104,10 +6124,10 @@ class SearchResultItemMacroNode(BaseModel):
     """
     The location represented by a macro node
     """
-    position_x: int
-    position_y: int
-    scenario_id: Annotated[int, Field(ge=0)]
-    short_name: str | None
+    position_x: StrictInt
+    position_y: StrictInt
+    scenario_id: Annotated[StrictInt, Field(ge=0)]
+    short_name: StrictStr | None
 
 
 class SearchResultItemOperationalPoint(BaseModel):
@@ -6116,17 +6136,17 @@ class SearchResultItemOperationalPoint(BaseModel):
 
     """
 
-    country_code: str
+    country_code: StrictStr
     geographic: GeoJsonPoint | None = None
-    infra_id: int
-    is_passenger_station: bool
-    main_code: str
-    name: str
-    obj_id: str
-    secondary_code: str | None = None
-    secondary_name: str | None = None
+    infra_id: StrictInt
+    is_passenger_station: StrictBool
+    main_code: StrictStr
+    name: StrictStr
+    obj_id: StrictStr
+    secondary_code: StrictStr | None = None
+    secondary_name: StrictStr | None = None
     track_sections: list[SearchResultItemOperationalPointTrackSections]
-    uic: int | None = None
+    uic: StrictInt | None = None
 
 
 class SearchResultItemSignal(BaseModel):
@@ -6136,15 +6156,15 @@ class SearchResultItemSignal(BaseModel):
     """
 
     geographic: GeoJsonPoint
-    infra_id: int
-    label: str
-    line_code: Annotated[int, Field(ge=0)]
-    line_name: str
-    obj_id: str
-    settings: list[str]
-    signaling_systems: list[str]
-    sprite: str | None = None
-    sprite_signaling_system: str | None = None
+    infra_id: StrictInt
+    label: StrictStr
+    line_code: Annotated[StrictInt, Field(ge=0)]
+    line_name: StrictStr
+    obj_id: StrictStr
+    settings: list[StrictStr]
+    signaling_systems: list[StrictStr]
+    sprite: StrictStr | None = None
+    sprite_signaling_system: StrictStr | None = None
 
 
 class SignalExtensions(BaseModel):
@@ -6155,10 +6175,10 @@ class SignalExtensions(BaseModel):
 
 
 class SimDebugTrainZoneRequirement(BaseModel):
-    begin_time: float
-    end_time: float
+    begin_time: StrictFloat
+    end_time: StrictFloat
     source: RequirementId | None = None
-    zone_name: str
+    zone_name: StrictStr
 
 
 class FinalOutput(CoreReportTrain):
@@ -6226,7 +6246,7 @@ class SpeedSectionExtensions(BaseModel):
 
 
 class StdcmPathfindingItem(BaseModel):
-    duration: Annotated[int | None, Field(ge=0)] = None
+    duration: Annotated[StrictInt | None, Field(ge=0)] = None
     """
     The stop duration in milliseconds, None if the train does not stop.
     """
@@ -6238,26 +6258,26 @@ class StdcmPathfindingItem(BaseModel):
 
 
 class StdcmProgressionEvent(BaseModel):
-    best_travel_time: Annotated[int, Field(ge=0)]
+    best_travel_time: Annotated[StrictInt, Field(ge=0)]
     point: GeoJsonPoint
 
 
 class Study(BaseModel):
     actual_end_date: date | None = None
-    budget: int | None = None
-    business_code: str | None = None
+    budget: StrictInt | None = None
+    business_code: StrictStr | None = None
     creation_date: AwareDatetime
-    description: str | None = None
+    description: StrictStr | None = None
     expected_end_date: date | None = None
-    id: int
+    id: StrictInt
     last_modification: AwareDatetime
-    name: str
-    project_id: int
-    service_code: str | None = None
+    name: StrictStr
+    project_id: StrictInt
+    service_code: StrictStr | None = None
     start_date: date | None = None
-    state: str
-    study_type: str | None = None
-    tags: list[str]
+    state: StrictStr
+    study_type: StrictStr | None = None
+    tags: list[StrictStr]
 
 
 class StudyCreateForm(BaseModel):
@@ -6266,17 +6286,17 @@ class StudyCreateForm(BaseModel):
     """
 
     actual_end_date: date | None = None
-    budget: int | None = None
-    business_code: str | None = None
-    description: str | None = None
+    budget: StrictInt | None = None
+    business_code: StrictStr | None = None
+    description: StrictStr | None = None
     expected_end_date: date | None = None
-    name: str
-    project_id: int
-    service_code: str | None = None
+    name: StrictStr
+    project_id: StrictInt
+    service_code: StrictStr | None = None
     start_date: date | None = None
-    state: str
-    study_type: str | None = None
-    tags: list[str] | None = None
+    state: StrictStr
+    study_type: StrictStr | None = None
+    tags: list[StrictStr] | None = None
 
 
 class StudyPatchForm(BaseModel):
@@ -6285,43 +6305,43 @@ class StudyPatchForm(BaseModel):
     """
 
     actual_end_date: date | None = None
-    budget: int | None = None
-    business_code: str | None = None
-    description: str | None = None
+    budget: StrictInt | None = None
+    business_code: StrictStr | None = None
+    description: StrictStr | None = None
     expected_end_date: date | None = None
-    name: str | None = None
-    service_code: str | None = None
+    name: StrictStr | None = None
+    service_code: StrictStr | None = None
     start_date: date | None = None
-    state: str | None = None
-    study_type: str | None = None
-    tags: list[str] | None = None
+    state: StrictStr | None = None
+    study_type: StrictStr | None = None
+    tags: list[StrictStr] | None = None
 
 
 class StudyResponse(Study):
     project: Project
-    scenarios_count: Annotated[int, Field(ge=0)]
+    scenarios_count: Annotated[StrictInt, Field(ge=0)]
 
 
 class StudyWithScenarios(Study):
-    scenarios_count: Annotated[int, Field(ge=0)]
+    scenarios_count: Annotated[StrictInt, Field(ge=0)]
 
 
 class SubCategory(BaseModel):
-    background_color: str
+    background_color: StrictStr
     """
     Represents a color for a sub-category in hexadecimal format #RRGGBB.
     """
-    code: str
-    color: str
+    code: StrictStr
+    color: StrictStr
     """
     Represents a color for a sub-category in hexadecimal format #RRGGBB.
     """
-    hovered_color: str
+    hovered_color: StrictStr
     """
     Represents a color for a sub-category in hexadecimal format #RRGGBB.
     """
     main_category: TrainMainCategory
-    name: str
+    name: StrictStr
 
 
 class SubCategoryPage(PaginationStats):
@@ -6349,8 +6369,8 @@ class TimetableResult(BaseModel):
     Creation result for a Timetable
     """
 
-    is_train_schedule_set: bool
-    timetable_id: int
+    is_train_schedule_set: StrictBool
+    timetable_id: StrictInt
     timetable_type: TimetableType
 
 
@@ -6379,16 +6399,16 @@ class TrainSchedulePart(BaseModel):
     """
     Path step of the train_schedule where the part ends
     """
-    train_schedule_id: int
+    train_schedule_id: StrictInt
 
 
 class WorkSchedule(BaseModel):
     end_date_time: AwareDatetime
-    id: int
-    obj_id: str
+    id: StrictInt
+    obj_id: StrictStr
     start_date_time: AwareDatetime
     track_ranges: list[TrackRange]
-    work_schedule_group_id: int
+    work_schedule_group_id: StrictInt
     work_schedule_type: WorkScheduleType
 
 
@@ -6398,27 +6418,27 @@ class SimulationReport(BaseModel):
     """
 
     is_international: Annotated[
-        bool, Field(title="Is the simulated train part of an international train")
+        StrictBool, Field(title="Is the simulated train part of an international train")
     ]
-    rolling_stock: Annotated[str, Field(title="Rolling Stock")]
-    towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
-        None
-    )
+    rolling_stock: Annotated[StrictStr, Field(title="Rolling Stock")]
+    towed_rolling_stock: Annotated[
+        StrictStr | None, Field(title="Towed Rolling Stock")
+    ] = None
     loading_gauge_type: RmiLoadingGaugeType
-    speed_limit_tags: Annotated[str, Field(title="Speed Limit Tags")]
-    total_mass: Annotated[int, Field(title="Total Mass")]
+    speed_limit_tags: Annotated[StrictStr, Field(title="Speed Limit Tags")]
+    total_mass: Annotated[StrictInt, Field(title="Total Mass")]
     """
     Total mass of the train in kg
     """
-    max_speed: Annotated[float, Field(title="Max Speed")]
+    max_speed: Annotated[StrictFloat, Field(title="Max Speed")]
     """
     Maximum speed in m/s
     """
-    total_length: Annotated[int, Field(title="Total Length")]
+    total_length: Annotated[StrictInt, Field(title="Total Length")]
     """
     Total length of the train in m
     """
-    infra_id: Annotated[int, Field(title="Infra Id")]
+    infra_id: Annotated[StrictInt, Field(title="Infra Id")]
     simulated_steps: Annotated[
         list[SimulatedStep], Field(min_length=2, title="Simulated Steps")
     ]
@@ -6426,21 +6446,21 @@ class SimulationReport(BaseModel):
         list[RequestedStep], Field(min_length=2, title="Requested Steps")
     ]
     departure_time: Annotated[AwareDatetime, Field(title="Departure Time")]
-    user_message: Annotated[str | None, Field(title="User Message")] = None
+    user_message: Annotated[StrictStr | None, Field(title="User Message")] = None
     similar_train: SimilarTrain | None = None
-    anterior_train_name: Annotated[str | None, Field(title="Anterior Train Name")] = (
-        None
-    )
-    posterior_train_name: Annotated[str | None, Field(title="Posterior Train Name")] = (
-        None
-    )
+    anterior_train_name: Annotated[
+        StrictStr | None, Field(title="Anterior Train Name")
+    ] = None
+    posterior_train_name: Annotated[
+        StrictStr | None, Field(title="Posterior Train Name")
+    ] = None
     substitute_train: SubstituteTrain | None = None
-    course_type: Annotated[str, Field(title="CourseType")]
-    statistical_category: Annotated[str, Field(title="Statistical Category")]
-    hazardous_materials: Annotated[bool | None, Field(title="Hazardous Materials")] = (
-        None
-    )
-    demand_category: Annotated[str | None, Field(title="Demand Category")] = None
+    course_type: Annotated[StrictStr, Field(title="CourseType")]
+    statistical_category: Annotated[StrictStr, Field(title="Statistical Category")]
+    hazardous_materials: Annotated[
+        StrictBool | None, Field(title="Hazardous Materials")
+    ] = None
+    demand_category: Annotated[StrictStr | None, Field(title="Demand Category")] = None
     track_section_ranges: Annotated[
         list[CoreTrackRange], Field(min_length=1, title="Track Section Ranges")
     ]
@@ -6448,29 +6468,29 @@ class SimulationReport(BaseModel):
 
 class RequestStatusItem(BaseModel):
     status: RequestStatus
-    status_message: str | None = None
-    created_request_url: str
+    status_message: StrictStr | None = None
+    created_request_url: StrictStr
     begin_op: (
         OperationalPointReferenceId
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
-    begin_time: time_aliased | None = None
+    begin_time: StrictFloat | None = None
     end_op: (
         OperationalPointReferenceId
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
-    end_time: time_aliased | None = None
+    end_time: StrictFloat | None = None
     updated_at: AwareDatetime
     created_at: AwareDatetime
     train_start: AwareDatetime
-    id: str
+    id: StrictStr
 
 
 class SendLastMinuteRequestPostRequest(BaseModel):
     simulation_report: SimulationReport
-    simulation_report_sheet: bytes
+    simulation_report_sheet: StrictBytes
 
 
 class SendLastMinuteRequestStatusesPostResponse(
@@ -6488,9 +6508,9 @@ class BufferStop(BaseModel):
         extra="forbid",
     )
     extensions: BufferStopExtension | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    position: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    position: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class CoreETCSBrakingCurvesResponse(BaseModel):
@@ -6549,7 +6569,7 @@ class CorePathfindingResultSuccess(BaseModel):
     """
     The indexes of the path items where the train backtracks
     """
-    length: Annotated[int, Field(ge=0)]
+    length: Annotated[StrictInt, Field(ge=0)]
     """
     Length of the path in mm
     """
@@ -6569,23 +6589,23 @@ class Detector(BaseModel):
         extra="forbid",
     )
     extensions: DetectorExtension | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    position: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    position: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class EffortCurves(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    default_mode: str
-    modes: dict[str, ModeEffortCurves]
+    default_mode: StrictStr
+    modes: dict[StrictStr, ModeEffortCurves]
 
 
 class ElectricalProfileSet(BaseModel):
     data: ElectricalProfileSetData
-    id: int
-    name: str
+    id: StrictInt
+    name: StrictStr
 
 
 class EnergySourcePowerPack(BaseModel):
@@ -6593,7 +6613,7 @@ class EnergySourcePowerPack(BaseModel):
     energy source of a rolling stock
     """
 
-    efficiency: Annotated[float, Field(ge=0.0, le=1.0)]
+    efficiency: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
     energy_source_type: Literal["PowerPack"] = "PowerPack"
     energy_storage: EnergyStorage
     max_input_power: SpeedDependantPower
@@ -6605,7 +6625,7 @@ class EnergySourceBattery(BaseModel):
     energy source for a rolling stock representing a battery
     """
 
-    efficiency: Annotated[float, Field(ge=0.0, le=1.0)]
+    efficiency: Annotated[StrictFloat, Field(ge=0.0, le=1.0)]
     energy_source_type: Literal["Battery"] = "Battery"
     energy_storage: EnergyStorage
     max_input_power: SpeedDependantPower
@@ -6613,7 +6633,7 @@ class EnergySourceBattery(BaseModel):
 
 
 class LineStringGeometry(BaseModel):
-    coordinates: list[list[float]]
+    coordinates: list[list[StrictFloat]]
     type: Literal["LineString"] = "LineString"
 
 
@@ -6622,7 +6642,7 @@ class GeoJsonLineString(RootModel[LineStringGeometry]):
 
 
 class MultiLineStringGeometry(BaseModel):
-    coordinates: list[list[list[float]]]
+    coordinates: list[list[list[StrictFloat]]]
     type: Literal["MultiLineString"] = "MultiLineString"
 
 
@@ -6631,7 +6651,7 @@ class GeoJsonMultiLineString(RootModel[MultiLineStringGeometry]):
 
 
 class MultiPointGeometry(BaseModel):
-    coordinates: list[list[float]]
+    coordinates: list[list[StrictFloat]]
     type: Literal["MultiPoint"] = "MultiPoint"
 
 
@@ -6640,7 +6660,7 @@ class GeoJsonMultiPoint(RootModel[MultiPointGeometry]):
 
 
 class PolygonGeometry(BaseModel):
-    coordinates: list[list[list[float]]]
+    coordinates: list[list[list[StrictFloat]]]
     type: Literal["Polygon"] = "Polygon"
 
 
@@ -6660,8 +6680,8 @@ class InfraErrorTypeObjectOutOfPath(BaseModel):
 
 class InfraErrorTypeOutOfRange(BaseModel):
     error_type: Literal["out_of_range"] = "out_of_range"
-    expected_range: list[float]
-    position: float
+    expected_range: list[StrictFloat]
+    position: StrictFloat
     reference: ObjectRef
 
 
@@ -6703,29 +6723,29 @@ class JourneyProposals(BaseModel):
 
 
 class LightRollingStock(BaseModel):
-    base_power_class: str | None
+    base_power_class: StrictStr | None
     effort_curves: LightEffortCurves
-    id: int
-    length: float
+    id: StrictInt
+    length: StrictFloat
     """
     Length in m
     """
     loading_gauge: LoadingGaugeType
-    locked: bool
-    mass: float
+    locked: StrictBool
+    mass: StrictFloat
     """
     Mass in kg
     """
-    max_speed: float
+    max_speed: StrictFloat
     """
     Velocity in m·s⁻¹
     """
     metadata: RollingStockMetadata | None
-    name: str
+    name: StrictStr
     other_categories: list[TrainMainCategory]
-    power_restrictions: dict[str, str]
+    power_restrictions: dict[StrictStr, StrictStr]
     primary_category: TrainMainCategory
-    railjson_version: str
+    railjson_version: StrictStr
     supported_signaling_systems: list[
         SupportedSignalingSystemBAL
         | SupportedSignalingSystemBAPR
@@ -6740,9 +6760,9 @@ class LightRollingStockWithLiveries(LightRollingStock):
 
 
 class MacroNodeForm(BaseModel):
-    full_name: str | None = None
-    is_collapsed: bool | None = None
-    labels: list[str]
+    full_name: StrictStr | None = None
+    is_collapsed: StrictBool | None = None
+    labels: list[StrictStr]
     node_location: (
         OperationalPointReferenceNodeTrackOffset
         | OperationalPointReferenceNodeOperationalPointReference
@@ -6750,16 +6770,16 @@ class MacroNodeForm(BaseModel):
     """
     The location represented by a macro node
     """
-    position_x: int
-    position_y: int
-    short_name: str | None = None
+    position_x: StrictInt
+    position_y: StrictInt
+    short_name: StrictStr | None = None
 
 
 class MacroNodeResponse(BaseModel):
-    full_name: str | None = None
-    id: int
-    is_collapsed: bool
-    labels: list[str]
+    full_name: StrictStr | None = None
+    id: StrictInt
+    is_collapsed: StrictBool
+    labels: list[StrictStr]
     node_location: (
         OperationalPointReferenceNodeTrackOffset
         | OperationalPointReferenceNodeOperationalPointReference
@@ -6767,14 +6787,14 @@ class MacroNodeResponse(BaseModel):
     """
     The location represented by a macro node
     """
-    position_x: int
-    position_y: int
-    short_name: str | None = None
+    position_x: StrictInt
+    position_y: StrictInt
+    short_name: StrictStr | None = None
 
 
 class MacroNoteBatchForm(BaseModel):
     macro_notes: list[MacroNoteForm]
-    scenario_id: int
+    scenario_id: StrictInt
 
 
 class MacroNoteBatchResponse(BaseModel):
@@ -6805,7 +6825,7 @@ class OperationCreate10(InfraObjectRoute, OperationCreate1):
 
 
 class OperationUpdate(BaseModel):
-    obj_id: str
+    obj_id: StrictStr
     obj_type: ObjectType
     railjson_patch: list[
         PatchOperationAddOperation
@@ -6826,12 +6846,12 @@ class OperationalPointPart(BaseModel):
         extra="forbid",
     )
     extensions: OperationalPointPartExtension | None = None
-    local_track_name: Annotated[str, Field(min_length=1)]
-    position: float
+    local_track_name: Annotated[StrictStr, Field(min_length=1)]
+    position: StrictFloat
     """
     Offset on the track section, in m
     """
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class Patch(
@@ -6868,7 +6888,7 @@ class PathItem(BaseModel):
     A location on the path of a train
     """
 
-    key: str
+    key: StrictStr
     """
     The unique key of the path item.
     This is used to reference path items in the train schedule.
@@ -6899,7 +6919,7 @@ class PathfindingInput(BaseModel):
     and a list of path waypoints
     """
 
-    allowed_track_sections: list[str] | None = None
+    allowed_track_sections: list[StrictStr] | None = None
     """
     Set of authorized track section ids, empty means no restriction
     """
@@ -6911,11 +6931,11 @@ class PathfindingInput(BaseModel):
     """
     List of waypoints given to the pathfinding
     """
-    rolling_stock_is_thermal: bool
+    rolling_stock_is_thermal: StrictBool
     """
     Can the rolling stock run on non-electrified tracks
     """
-    rolling_stock_length: Annotated[int, Field(ge=0)]
+    rolling_stock_length: Annotated[StrictInt, Field(ge=0)]
     """
     Rolling stock length in millimeters
     """
@@ -6923,11 +6943,11 @@ class PathfindingInput(BaseModel):
     """
     The loading gauge of the rolling stock
     """
-    rolling_stock_maximum_speed: float
+    rolling_stock_maximum_speed: StrictFloat
     """
     Rolling stock maximum speed
     """
-    rolling_stock_supported_electrifications: list[str]
+    rolling_stock_supported_electrifications: list[StrictStr]
     """
     List of supported electrification modes.
     Empty if does not support any electrification
@@ -6936,11 +6956,11 @@ class PathfindingInput(BaseModel):
     """
     List of supported signaling systems
     """
-    speed_limit_tag: str | None = None
+    speed_limit_tag: StrictStr | None = None
     """
     Speed limit tag, used to estimate the travel time
     """
-    stops_at_end_of_block: bool | None = None
+    stops_at_end_of_block: StrictBool | None = None
     """
     Stop the train at the next block-delimiting signal,
     staying in the same block and keeping the tail on the initial position
@@ -6985,55 +7005,55 @@ class RelatedOperationalPointPart(OperationalPointPart):
 
 
 class RollingStock(BaseModel):
-    base_power_class: str | None
-    comfort_acceleration: float
+    base_power_class: StrictStr | None
+    comfort_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    const_gamma: float
+    const_gamma: StrictFloat
     """
     Acceleration in m·s⁻²
     """
     effort_curves: EffortCurves
-    electrical_power_startup_time: float | None
+    electrical_power_startup_time: StrictFloat | None
     """
     Duration in s
     """
     energy_sources: list[
         EnergySourceElectrification | EnergySourcePowerPack | EnergySourceBattery
     ]
-    id: int
-    inertia_coefficient: float
-    length: float
+    id: StrictInt
+    inertia_coefficient: StrictFloat
+    length: StrictFloat
     """
     Length in m
     """
     loading_gauge: LoadingGaugeType
-    locked: bool
-    mass: float
+    locked: StrictBool
+    mass: StrictFloat
     """
     Mass in kg
     """
-    max_speed: float
+    max_speed: StrictFloat
     """
     Velocity in m·s⁻¹
     """
     metadata: RollingStockMetadata | None
-    name: str
+    name: StrictStr
     other_categories: list[TrainMainCategory]
-    power_restrictions: dict[str, str]
+    power_restrictions: dict[StrictStr, StrictStr]
     primary_category: TrainMainCategory
-    railjson_version: str
-    raise_pantograph_time: float | None
+    railjson_version: StrictStr
+    raise_pantograph_time: StrictFloat | None
     """
     Duration in s
     """
     rolling_resistance: RollingResistancePerWeight
-    startup_acceleration: float
+    startup_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    startup_time: float
+    startup_time: StrictFloat
     """
     Duration in s
     """
@@ -7044,7 +7064,7 @@ class RollingStock(BaseModel):
         | SupportedSignalingSystemTVM430
         | SupportedSignalingSystemEtcsLevel2
     ]
-    version: int
+    version: StrictInt
 
 
 class RollingStockCategoryChangeGroup(BaseModel):
@@ -7052,19 +7072,21 @@ class RollingStockCategoryChangeGroup(BaseModel):
 
 
 class RollingStockForm(BaseModel):
-    base_power_class: Annotated[str | None, Field(examples=["5"])]
-    comfort_acceleration: float
+    base_power_class: Annotated[StrictStr | None, Field(examples=["5"])]
+    comfort_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    const_gamma: float
+    const_gamma: StrictFloat
     """
      The constant gamma braking coefficient used when NOT circulating
      under ETCS/ERTMS signaling system
     Acceleration in m·s⁻²
     """
     effort_curves: EffortCurves
-    electrical_power_startup_time: Annotated[float | None, Field(examples=[5.0])] = None
+    electrical_power_startup_time: Annotated[
+        StrictFloat | None, Field(examples=[5.0])
+    ] = None
     """
      The time the train takes before actually using electrical power (in seconds).
      Is null if the train is not electric.
@@ -7074,41 +7096,41 @@ class RollingStockForm(BaseModel):
         list[EnergySourceElectrification | EnergySourcePowerPack | EnergySourceBattery]
         | None
     ) = None
-    inertia_coefficient: float
-    length: float
+    inertia_coefficient: StrictFloat
+    length: StrictFloat
     """
     Length in m
     """
     loading_gauge: LoadingGaugeType
-    mass: float
+    mass: StrictFloat
     """
     Mass in kg
     """
-    max_speed: float
+    max_speed: StrictFloat
     """
     Velocity in m·s⁻¹
     """
     metadata: RollingStockMetadata | None = None
-    name: str
+    name: StrictStr
     other_categories: list[TrainMainCategory]
-    power_restrictions: dict[str, str]
+    power_restrictions: dict[StrictStr, StrictStr]
     """
     Mapping of power restriction code to power class
     """
     primary_category: TrainMainCategory
-    railjson_version: str | None = "3.4"
-    raise_pantograph_time: Annotated[float | None, Field(examples=[15.0])] = None
+    railjson_version: StrictStr | None = "3.4"
+    raise_pantograph_time: Annotated[StrictFloat | None, Field(examples=[15.0])] = None
     """
      The time it takes to raise this train's pantograph in seconds.
      Is null if the train is not electric.
     Duration in s
     """
     rolling_resistance: RollingResistancePerWeight
-    startup_acceleration: float
+    startup_acceleration: StrictFloat
     """
     Acceleration in m·s⁻²
     """
-    startup_time: float
+    startup_time: StrictFloat
     """
     Duration in s
     """
@@ -7126,11 +7148,11 @@ class RollingStockWithLiveries(RollingStock):
 
 
 class ScenarioResponse(Scenario):
-    infra_name: str
+    infra_name: StrictStr
     project: Project
     study: Study
     timetable_type: TimetableType
-    train_schedules_count: int
+    train_schedules_count: StrictInt
 
 
 class SearchResultItemSearchResultItemOperationalPoint(
@@ -7169,25 +7191,25 @@ class SearchResultItemTrainSchedule(BaseModel):
     A search result item for a query with `object = "trainschedule"`
     """
 
-    comfort: int
-    constraint_distribution: int
-    id: Annotated[int, Field(ge=0)]
-    initial_speed: float
-    labels: list[str | None]
+    comfort: StrictInt
+    constraint_distribution: StrictInt
+    id: Annotated[StrictInt, Field(ge=0)]
+    initial_speed: StrictFloat
+    labels: list[StrictStr | None]
     margins: Margins
     options: TrainScheduleOptions
     path: list[PathItem]
     power_restrictions: list[PowerRestrictionItem]
-    rolling_stock_name: str
+    rolling_stock_name: StrictStr
     schedule: list[ScheduleItem]
-    speed_limit_tag: str | None = None
-    start_time: int
+    speed_limit_tag: StrictStr | None = None
+    start_time: StrictInt
     """
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start.
     """
-    train_name: str
-    train_schedule_set_id: int
+    train_name: StrictStr
+    train_schedule_set_id: StrictInt
 
 
 class Signal(BaseModel):
@@ -7196,23 +7218,23 @@ class Signal(BaseModel):
     )
     direction: Direction
     extensions: SignalExtensions | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     logical_signals: list[LogicalSignal] | None = None
-    position: float
-    sight_distance: float
-    track: Annotated[str, Field(max_length=255, min_length=1)]
+    position: StrictFloat
+    sight_distance: StrictFloat
+    track: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class SimDebugConflictReport(BaseModel):
     at: AwareDatetime
-    best_remaining_time: float
-    current_travel_time: float
-    lastOPName: str | None = None
-    lat: float
-    lon: float
+    best_remaining_time: StrictFloat
+    current_travel_time: StrictFloat
+    lastOPName: StrictStr | None = None
+    lat: StrictFloat
+    lon: StrictFloat
     path_geometry: GeoJsonLineString | None = None
     source: RequirementId | None = None
-    time_lost: float
+    time_lost: StrictFloat
 
 
 class SimDebugFailureReport(BaseModel):
@@ -7252,10 +7274,10 @@ class SpeedSection(BaseModel):
         extra="forbid",
     )
     extensions: SpeedSectionExtensions | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     on_routes: list[OnRoute] | None = None
-    speed_limit: float | None = None
-    speed_limit_by_tag: dict[constr(min_length=1), float]
+    speed_limit: StrictFloat | None = None
+    speed_limit_by_tag: dict[constr(min_length=1, strict=True), StrictFloat]
     track_ranges: list[ApplicableDirectionsTrackRange]
 
 
@@ -7276,10 +7298,10 @@ class Switch(BaseModel):
         extra="forbid",
     )
     extensions: SwitchExtensions | None = None
-    group_change_delay: float
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    ports: dict[constr(min_length=1, max_length=255), TrackEndpoint]
-    switch_type: Annotated[str, Field(max_length=255, min_length=1)]
+    group_change_delay: StrictFloat
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    ports: dict[constr(min_length=1, max_length=255, strict=True), TrackEndpoint]
+    switch_type: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
 class TrackSectionModel(BaseModel):
@@ -7289,15 +7311,15 @@ class TrackSectionModel(BaseModel):
     curves: list[Curve]
     extensions: TrackSectionExtensions | None = None
     geo: GeoJsonLineString
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    length: float
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    length: StrictFloat
     loading_gauge_limits: list[LoadingGaugeLimit] | None = None
     slopes: list[Slope]
 
 
 class TrainScheduleSimulationSummaryResult(BaseModel):
     exceptions: dict[
-        str,
+        StrictStr,
         SummaryResponseSuccess
         | SummaryResponseSimulationFailed
         | SummaryResponsePathfindingNotFound2
@@ -7333,14 +7355,14 @@ class CoreOperationalPointOnPath(BaseModel):
     Operational point along a path.
     """
 
-    country_code: Annotated[str, Field(min_length=1)]
-    id: str
+    country_code: Annotated[StrictStr, Field(min_length=1)]
+    id: StrictStr
     """
     Id of the operational point
     """
-    is_passenger_station: bool
-    main_code: Annotated[str, Field(min_length=1)]
-    name: Annotated[str, Field(min_length=1)]
+    is_passenger_station: StrictBool
+    main_code: Annotated[StrictStr, Field(min_length=1)]
+    name: Annotated[StrictStr, Field(min_length=1)]
     part: OperationalPointPart
     """
     The part along the path
@@ -7349,14 +7371,14 @@ class CoreOperationalPointOnPath(BaseModel):
     """
     Primary Location Code : https://rne.eu/it/products/ccs/crd/
     """
-    position: Annotated[int, Field(ge=0)]
+    position: Annotated[StrictInt, Field(ge=0)]
     """
     Distance from the beginning of the path in mm
     """
     secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
-    uic: Annotated[int | None, Field(ge=0)] = None
-    weight: Annotated[int | None, Field(ge=0, le=100)]
+    uic: Annotated[StrictInt | None, Field(ge=0)] = None
+    weight: Annotated[StrictInt | None, Field(ge=0, le=100)]
     """
     Importance of the operational point
     """
@@ -7379,7 +7401,7 @@ class CorePathfindingNotFound(
 
 
 class MultiPolygonGeometry(BaseModel):
-    coordinates: list[list[list[list[float]]]]
+    coordinates: list[list[list[list[StrictFloat]]]]
     type: Literal["MultiPolygon"] = "MultiPolygon"
 
 
@@ -7388,9 +7410,9 @@ class GeoJsonMultiPolygon(RootModel[MultiPolygonGeometry]):
 
 
 class InfraError(BaseModel):
-    field: str | None
-    is_warning: bool
-    obj_id: str
+    field: StrictStr | None
+    is_warning: StrictBool
+    obj_id: StrictStr
     obj_type: ObjectType
     sub_type: (
         InfraErrorTypeDuplicatedGroup
@@ -7435,7 +7457,7 @@ class InfraObjectSwitch(BaseModel):
 
 class MacroNodeBatchForm(BaseModel):
     macro_nodes: list[MacroNodeForm]
-    scenario_id: int
+    scenario_id: StrictInt
 
 
 class MacroNodeBatchResponse(BaseModel):
@@ -7460,8 +7482,8 @@ class NeutralSection(BaseModel):
     )
     announcement_track_ranges: list[DirectionalTrackRange]
     extensions: NeutralSectionExtensions | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    lower_pantograph: bool
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    lower_pantograph: StrictBool
     track_ranges: list[DirectionalTrackRange]
 
 
@@ -7494,11 +7516,11 @@ class OperationalPointModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    country_code: Annotated[str, Field(min_length=1)]
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    is_passenger_station: bool
-    main_code: Annotated[str, Field(min_length=1)]
-    name: Annotated[str, Field(min_length=1)]
+    country_code: Annotated[StrictStr, Field(min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    is_passenger_station: StrictBool
+    main_code: Annotated[StrictStr, Field(min_length=1)]
+    name: Annotated[StrictStr, Field(min_length=1)]
     parts: list[OperationalPointPart]
     plc: Plc | None = None
     """
@@ -7506,8 +7528,8 @@ class OperationalPointModel(BaseModel):
     """
     secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
-    uic: Annotated[int | None, Field(ge=0)] = None
-    weight: Annotated[int | None, Field(ge=0)] = None
+    uic: Annotated[StrictInt | None, Field(ge=0)] = None
+    weight: Annotated[StrictInt | None, Field(ge=0)] = None
 
 
 class PathAndScheduleChangeGroup(BaseModel):
@@ -7608,25 +7630,25 @@ class RailJson(BaseModel):
     """
     `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.
     """
-    version: str = "3.5.3"
+    version: StrictStr = "3.5.3"
     """
     The version of the RailJSON format. Defaults to the current version.
     """
 
 
 class RelatedOperationalPoint(BaseModel):
-    country_code: Annotated[str, Field(min_length=1)]
+    country_code: Annotated[StrictStr, Field(min_length=1)]
     geo: GeoJsonPoint | None = None
-    id: Annotated[str, Field(max_length=255, min_length=1)]
-    is_passenger_station: bool
-    main_code: Annotated[str, Field(min_length=1)]
-    name: Annotated[str, Field(min_length=1)]
+    id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+    is_passenger_station: StrictBool
+    main_code: Annotated[StrictStr, Field(min_length=1)]
+    name: Annotated[StrictStr, Field(min_length=1)]
     parts: list[RelatedOperationalPointPart]
     plc: Plc2 | None = None
     secondary_code: NonBlankString | None = None
     secondary_name: SecondaryName | None = None
-    uic: Annotated[int | None, Field(ge=0)] = None
-    weight: Annotated[int | None, Field(ge=0)] = None
+    uic: Annotated[StrictInt | None, Field(ge=0)] = None
+    weight: Annotated[StrictInt | None, Field(ge=0)] = None
 
 
 class SearchResultItemSearchResultItemTrainSchedule(
@@ -7678,8 +7700,8 @@ class SimDebugData(BaseModel):
     other_requirements: list[SimDebugTrainZoneRequirement]
     path_properties: PathProperties
     sim_output: SimulationResponseSuccess | None = None
-    train_positions: list[float]
-    train_times: list[float]
+    train_positions: list[StrictFloat]
+    train_times: list[StrictFloat]
     zone_locations: list[SimDebugZoneLocation]
 
 
@@ -7789,7 +7811,7 @@ class InfraObjectWithGeometry(BaseModel):
     """
     A GeoJSON geometry item
     """
-    obj_id: str
+    obj_id: StrictStr
     railjson: dict[str, Any]
 
 
@@ -7844,7 +7866,7 @@ class PacedTrainException(BaseModel):
     - Modified: An existing occurrence that has been changed
     """
 
-    occurrence_index: int | None = None
+    occurrence_index: StrictInt | None = None
     constraint_distribution: ConstraintDistributionChangeGroup | None = None
     initial_speed: InitialSpeedChangeGroup | None = None
     labels: LabelsChangeGroup | None = None
@@ -7855,12 +7877,12 @@ class PacedTrainException(BaseModel):
     speed_limit_tag: SpeedLimitTagChangeGroup | None = None
     start_time: StartTimeChangeGroup | None = None
     train_name: TrainNameChangeGroup | None = None
-    disabled: bool | None = None
-    id: int | None = None
+    disabled: StrictBool | None = None
+    id: StrictInt | None = None
     """
     TODO The new exception table id (for incremental migration)
     """
-    key: str
+    key: StrictStr
     """
     Unique key for the exception within the paced train, required and generated by the frontend.
     """
@@ -7882,13 +7904,13 @@ class TrainSchedule(BaseModel):
     category: TrainCategoryMain | TrainCategorySub | None = None
     comfort: Comfort | None = None
     constraint_distribution: Distribution
-    initial_speed: float | None = None
-    labels: list[str] | None = None
+    initial_speed: StrictFloat | None = None
+    labels: list[StrictStr] | None = None
     margins: Margins | None = None
     options: TrainScheduleOptions | None = None
     path: list[PathItem]
     power_restrictions: list[PowerRestrictionItem] | None = None
-    rolling_stock_name: str
+    rolling_stock_name: StrictStr
     schedule: list[ScheduleItem] | None = None
     speed_limit_tag: NonBlankString | None = None
     start_time: OffsetInMs
@@ -7896,26 +7918,26 @@ class TrainSchedule(BaseModel):
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start.
     """
-    train_name: str
+    train_name: StrictStr
     paced: Paced | None = None
 
 
 class TrainScheduleException(BaseModel):
     change_groups: TrainScheduleExceptionChangeGroups
-    disabled: bool
-    id: int
-    key: str | None = None
-    occurrence_index: int | None = None
+    disabled: StrictBool
+    id: StrictInt
+    key: StrictStr | None = None
+    occurrence_index: StrictInt | None = None
     """
     If None the exception is created, otherwise it is a modified exception
     """
-    timetable_id: int
-    train_schedule_id: int
+    timetable_id: StrictInt
+    train_schedule_id: StrictInt
 
 
 class TrainScheduleResponse(TrainSchedule):
-    id: int
-    train_schedule_set_id: int
+    id: StrictInt
+    train_schedule_set_id: StrictInt
 
 
 class TransformTimetableResponse(BaseModel):
