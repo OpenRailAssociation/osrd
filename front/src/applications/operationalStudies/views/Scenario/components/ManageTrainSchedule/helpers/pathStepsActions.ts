@@ -9,6 +9,8 @@ export const createEmptyPathStep = (): PathStepV2 => ({
   stopFor: null,
   theoreticalMargin: null,
   receptionSignal: null,
+  referenceBaseArrival: null,
+  referencePosition: null,
 });
 
 export const isEmptyStep = (step: PathStepV2, input?: string) => {
