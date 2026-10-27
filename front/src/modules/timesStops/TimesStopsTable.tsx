@@ -474,9 +474,15 @@ const TimesStopsTable = ({
         ref={registerTimeCellRef(info.row.index, 'stopDuration')}
         clearButtonTitle={t('clearStopDuration')}
         {...info}
-        onCommit={(seconds, propagationMode) =>
-          info.table.options.meta!.onStopDurationChange(info.row.original, seconds, propagationMode)
-        }
+        onCommit={(seconds, propagationMode) => {
+          // The stop duration menu doesn't offer these modes.
+          if (propagationMode === 'shiftAllWaypoints' || propagationMode === 'atThisTime') return;
+          info.table.options.meta!.onStopDurationChange(
+            info.row.original,
+            seconds,
+            propagationMode
+          );
+        }}
       />
     ),
     [t, registerTimeCellRef]

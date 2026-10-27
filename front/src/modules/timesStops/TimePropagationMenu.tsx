@@ -2,6 +2,7 @@ import { ArrowBoth, ArrowDown, ArrowUp, Dot } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { OSRDMenuItem } from 'common/OSRDMenu';
+import type { StartTime } from 'utils/duration';
 
 import { formatPropagationDeltaLabelByMode } from './helpers/timePropagation';
 import PropagationMenu from './PropagationMenu';
@@ -10,8 +11,8 @@ import type { PropagationMode } from './types';
 type TimePropagationMenuProps = {
   isOpen: boolean;
   anchorRef: React.RefObject<HTMLElement | null>;
-  oldValue: Date | null;
-  newValue: Date | null;
+  oldValue: StartTime | null;
+  newValue: StartTime | null;
   onSelectMode: (mode: PropagationMode) => void;
   disableFromDeparture?: boolean;
   disableAtThisTime?: boolean;

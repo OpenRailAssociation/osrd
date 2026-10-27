@@ -46,8 +46,8 @@ const computeDeltaForPropagationMode = (
 };
 
 export const formatPropagationDeltaLabelByMode = (
-  oldValue: Date | null,
-  newValue: Date | null,
+  oldValue: StartTime | null,
+  newValue: StartTime | null,
   mode: PropagationMode,
   isOriginArrival = false
 ): string =>
