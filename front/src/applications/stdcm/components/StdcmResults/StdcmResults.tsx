@@ -202,7 +202,7 @@ const StdcmResults = ({
           (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
             .manchetteOperationalPoints ?? []
         ).map((op) => {
-          const k = key(op.main_code, op.secondary_code ?? '');
+          const k = key(op.main_code ?? '', op.secondary_code ?? '');
           return {
             id: op.opId!,
             stop: isStopByOpKey.get(k) ?? false,

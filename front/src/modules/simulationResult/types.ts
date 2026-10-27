@@ -33,9 +33,14 @@ import type { ArrayElement } from 'utils/types';
  * the same operational point.
  * Can hold an OP found in infra, or a track-offset
  */
-export type PathWaypoint = Omit<CoreOperationalPointOnPath, 'id' | 'uic'> & {
+export type PathWaypoint = Omit<
+  CoreOperationalPointOnPath,
+  'id' | 'uic' | 'country_code' | 'main_code'
+> & {
   waypointId: string;
   opId: string | null;
+  country_code: string | null;
+  main_code: string | null;
   pathItemKey: string | null;
   location: PathItemLocation;
 };
