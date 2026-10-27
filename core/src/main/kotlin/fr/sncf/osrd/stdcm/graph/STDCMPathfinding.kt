@@ -287,13 +287,23 @@ class STDCMPathfinding(
     }
 
     /** Converts start locations into starting nodes. */
-    private fun getStartNodes(graph: STDCMGraph, consistSchedule: ConsistSchedule, forcedOpStops:Set<BlockLocation>): Set<STDCMNode> {
+    private fun getStartNodes(
+        graph: STDCMGraph,
+        consistSchedule: ConsistSchedule,
+        forcedOpStops: Set<BlockLocation>,
+    ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)
         for (location in firstStep.locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(fullInfra, location, consistSchedule, forcedOpStops, steps)
+                initInfraExplorerWithEnvelope(
+                    fullInfra,
+                    location,
+                    consistSchedule,
+                    steps,
+                    forcedOpStops,
+                )
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
                 val node =

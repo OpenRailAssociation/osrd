@@ -34,7 +34,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
     private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
-    override val forcedOpStops: Set<BlockLocation>,
+    override val forcedOpStops: Set<BlockLocation> = emptySet(),
     private var stopTimeData: List<StopTimeData> = listOf(),
     // Can't be a soft reference: spacingRequirementAutomaton is stateful and only generates new
     // requirements (result would be nothing on second identical call).
@@ -69,13 +69,17 @@ data class InfraExplorerWithEnvelopeImpl(
 
     override fun generateReachedTrainStops(): List<TrainStop> {
         val seenSteps = getStepTracker().getSeenSteps()
+        val seenForcedOpStops = getStepTracker().getSeenForcedOpStops()
+        val forcedOpStopOffsets =
+            seenForcedOpStops.iterateBackwards().map { it.travelledPathOffset }.toList()
         val stopOffsets =
             seenSteps
                 .iterateBackwards()
                 .filter { it.originalStep.stop }
                 .map { it.travelledPathOffset }
                 .toList()
-                .reversed()
+                .union(forcedOpStopOffsets)
+                .sorted()
         val stopDurations = stopTimeData.map { it.currentDuration }
 
         // Stop offsets include the lookahead while stop durations doesn't.
