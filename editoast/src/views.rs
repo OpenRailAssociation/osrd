@@ -198,7 +198,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             )
                             .route(
                                 "/train_schedule_sets",
-                                post!(timetable::set_links_train_schedule_sets_to_timetable),
+                                post!(timetable::set_included_train_schedule_sets),
                             )
                             .route(
                                 "/train_schedule_exception",

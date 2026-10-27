@@ -869,7 +869,7 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
         (status = 204, description = "The train schedule set has been linked to the timetable"),
     ),
 )]
-pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
+pub(in crate::views) async fn set_included_train_schedule_sets(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(TrainScheduleSetForm {
@@ -891,7 +891,7 @@ pub(in crate::views) async fn set_links_train_schedule_sets_to_timetable(
     .await?;
 
     // Transaction to ensure consistency of modifications
-    Timetable::set_links_train_schedule_set(timetable_id, train_schedule_set_ids, &mut conn)
+    Timetable::set_included_train_schedule_sets(timetable_id, train_schedule_set_ids, &mut conn)
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -998,6 +998,7 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
     use core_client::simulation::RoutingZoneRequirement;
+    use models::TimetableInheritance;
     use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
@@ -1414,7 +1415,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn set_links_train_schedule_sets_to_timetable() {
+    async fn set_included_train_schedule_sets() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1531,7 +1532,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn set_links_train_schedule_sets_to_timetable_with_hourly_type() {
+    async fn set_included_train_schedule_sets_with_hourly_type() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1575,7 +1576,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn set_links_train_schedule_sets_to_timetable_with_type_mismatch() {
+    async fn set_included_train_schedule_sets_with_type_mismatch() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1616,7 +1617,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn set_links_train_schedule_sets_to_timetable_replaces_the_links() {
+    async fn set_included_train_schedule_sets_replaces_the_inclusions() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1666,7 +1667,7 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn train_schedule_set_linked_to_several_timetables() {
+    async fn train_schedule_set_included_in_several_timetables() {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
@@ -1706,5 +1707,53 @@ mod tests {
             .assert_status_ok()
             .json();
         assert_eq!(train_schedule_sets, vec![train_schedule_set]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn set_included_train_schedule_sets_keeps_other_inclusions() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let included_timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        let inclusion = TimetableInheritance::changeset()
+            .outer_timetable_id(timetable.id)
+            .inner_timetable_id(included_timetable.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to include timetable");
+
+        app.post(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .json(&TrainScheduleSetForm {
+                train_schedule_set_ids: HashSet::from([train_schedule_set.id]),
+            })
+            .await
+            .assert_status_no_content();
+        // Unlinking the train schedule sets keeps the inclusion of a timetable which is not one
+        app.post(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .json(&TrainScheduleSetForm {
+                train_schedule_set_ids: HashSet::new(),
+            })
+            .await
+            .assert_status_no_content();
+
+        let train_schedule_sets: Vec<TrainScheduleSetWithTimetable> = app
+            .get(format!("/timetable/{}/train_schedule_sets", timetable.id).as_str())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(train_schedule_sets, vec![]);
+        let kept_inclusion = TimetableInheritance::retrieve(db_pool.get_ok(), inclusion.id)
+            .await
+            .expect("Failed to retrieve inclusion")
+            .expect("The inclusion should be kept");
+        assert_eq!(
+            (
+                kept_inclusion.outer_timetable_id,
+                kept_inclusion.inner_timetable_id
+            ),
+            (timetable.id, included_timetable.id)
+        );
     }
 }

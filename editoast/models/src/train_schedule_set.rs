@@ -274,13 +274,13 @@ mod tests {
             TrainScheduleSet::create_with_timetable(&mut pool.get_ok(), Timetable::changeset())
                 .await
                 .expect("Failed to create train schedule set");
-        Timetable::set_links_train_schedule_set(
+        Timetable::set_included_train_schedule_sets(
             timetable.id,
             std::collections::HashSet::from([linked_set.id]),
             &mut pool.get_ok(),
         )
         .await
-        .expect("Failed to link train schedule set");
+        .expect("Failed to include train schedule set");
 
         TrainScheduleSet::delete_orphaned(&mut pool.get_ok())
             .await

@@ -51,9 +51,12 @@ pub async fn create_timetable_with_train_schedule_set(
 ) -> (Timetable, TrainScheduleSetWithTimetable) {
     let timetable = create_timetable(conn).await;
     let train_schedule_set = create_train_schedule_set(conn).await;
-    let _ =
-        link_train_schedule_set_to_timetable(conn, train_schedule_set.timetable_id, timetable.id)
-            .await;
+    let _ = include_train_schedule_set_in_timetable(
+        conn,
+        train_schedule_set.timetable_id,
+        timetable.id,
+    )
+    .await;
     (timetable, train_schedule_set)
 }
 
@@ -64,9 +67,12 @@ pub async fn create_hourly_timetable_with_train_schedule_set(
     // The train schedule set type must match the timetable type (DB constraint).
     let timetable = create_hourly_timetable(conn).await;
     let train_schedule_set = create_hourly_train_schedule_set(conn).await;
-    let _ =
-        link_train_schedule_set_to_timetable(conn, train_schedule_set.timetable_id, timetable.id)
-            .await;
+    let _ = include_train_schedule_set_in_timetable(
+        conn,
+        train_schedule_set.timetable_id,
+        timetable.id,
+    )
+    .await;
     (timetable, train_schedule_set)
 }
 
@@ -129,7 +135,7 @@ pub async fn create_catalog_entry(conn: &mut DbConnection) -> CatalogEntry {
     create_catalog_entry_with_name(conn, "test").await
 }
 
-async fn link_train_schedule_set_to_timetable(
+async fn include_train_schedule_set_in_timetable(
     conn: &mut DbConnection,
     train_schedule_set_timetable_id: i64,
     timetable_id: i64,
@@ -139,7 +145,7 @@ async fn link_train_schedule_set_to_timetable(
         .inner_timetable_id(train_schedule_set_timetable_id)
         .create(conn)
         .await
-        .expect("Failed to link train schedule set to timetable")
+        .expect("Failed to include train schedule set in timetable")
 }
 
 pub fn simple_paced_train_base() -> TrainSchedule {

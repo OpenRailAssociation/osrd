@@ -129,12 +129,13 @@ impl Timetable {
             .collect())
     }
 
-    pub async fn set_links_train_schedule_set(
+    pub async fn set_included_train_schedule_sets(
         timetable_id: i64,
         train_schedule_set_ids: HashSet<i64>,
         conn: &mut DbConnection,
     ) -> Result<(), crate::Error> {
         use crate::prelude::*;
+        use database::tables::timetable;
         use database::tables::timetable_inheritance::dsl;
         use database::tables::train_schedule_set;
 
@@ -149,9 +150,16 @@ impl Timetable {
                 .into_iter()
                 .collect();
 
-            // 2. Retrieve the current inclusions
+            // 2. Retrieve the current inclusions of train schedule sets, leaving other inclusions untouched
             let existing_inner_timetable_ids: HashSet<i64> = dsl::timetable_inheritance
                 .filter(dsl::outer_timetable_id.eq(timetable_id))
+                .filter(
+                    dsl::inner_timetable_id.eq_any(
+                        timetable::table
+                            .filter(timetable::is_train_schedule_set.eq(true))
+                            .select(timetable::id),
+                    ),
+                )
                 .select(dsl::inner_timetable_id)
                 .load(conn.write().await.deref_mut())
                 .await?
@@ -233,8 +241,8 @@ impl TimetableWithTrains {
             "SELECT timetable.*,
         array_remove(array_agg(train_schedule.id), NULL) as paced_train_ids
         FROM timetable
-        JOIN timetable_inheritance ON timetable.id = timetable_inheritance.outer_timetable_id
-        JOIN train_schedule_set ON timetable_inheritance.inner_timetable_id = train_schedule_set.timetable_id
+        LEFT JOIN timetable_inheritance ON timetable.id = timetable_inheritance.outer_timetable_id
+        LEFT JOIN train_schedule_set ON timetable_inheritance.inner_timetable_id = train_schedule_set.timetable_id
         LEFT JOIN train_schedule ON train_schedule_set.id = train_schedule.train_schedule_set_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
