@@ -52,7 +52,8 @@ pub(in crate::views) struct ScenarioCreateForm {
     #[serde(default)]
     pub description: String,
     pub infra_id: i64,
-    pub timetable_id: i64,
+    #[serde(default)]
+    pub timetable_ids: Vec<i64>,
     pub study_id: i64,
     #[serde(default)]
     pub tags: Tags,
@@ -185,7 +186,7 @@ pub(in crate::views) async fn create(
 ) -> Result<impl IntoResponse> {
     let infra_id = data.infra_id;
     let study_id = data.study_id;
-    let timetable_id = data.timetable_id;
+    let timetable_ids = data.timetable_ids.clone();
     let scenario_cs = data.into_changeset();
 
     let details = Study::transactional_content_update(
@@ -198,11 +199,13 @@ pub(in crate::views) async fn create(
             .await?;
 
             let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
-            ScenarioTimetable::changeset()
-                .scenario_id(scenario.id)
-                .timetable_id(timetable_id)
-                .create(&mut conn)
-                .await?;
+            for timetable_id in timetable_ids {
+                ScenarioTimetable::changeset()
+                    .scenario_id(scenario.id)
+                    .timetable_id(timetable_id)
+                    .create(&mut conn)
+                    .await?;
+            }
 
             let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
             Ok::<_, InternalError>(details)
@@ -684,7 +687,7 @@ mod tests {
                 "name": scenario_name,
                 "description": scenario_description,
                 "infra_id": scenario_infra_id,
-                "timetable_id": scenario_timetable_id,
+                "timetable_ids": [scenario_timetable_id],
                 "tags": scenario_tags,
                 "study_id": study.id
             }))
@@ -716,6 +719,87 @@ mod tests {
         );
         assert_eq!(created_scenario.tags, scenario_tags);
         assert_eq!(created_scenario.study_id, study.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_scenario_with_multiple_timetables() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
+        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&mut pool.get_ok()).await;
+        let first_timetable = create_timetable(&mut pool.get_ok()).await;
+        let second_timetable = create_timetable(&mut pool.get_ok()).await;
+        let expected_timetable_ids = vec![first_timetable.id, second_timetable.id];
+
+        let response: ScenarioWithDetails = app
+            .post(&scenario_url(None))
+            .json(&json!({
+                "name": "scenario with multiple timetables",
+                "infra_id": infra.id,
+                "timetable_ids": expected_timetable_ids.clone(),
+                "study_id": study.id
+            }))
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        let mut response_timetable_ids: Vec<i64> = response
+            .timetable_summaries
+            .iter()
+            .map(|summary| summary.id)
+            .collect();
+        response_timetable_ids.sort_unstable();
+        assert_eq!(response_timetable_ids, expected_timetable_ids);
+
+        let created_scenario = Scenario::retrieve(pool.get_ok(), response.scenario.id)
+            .await
+            .expect("Failed to retrieve scenario")
+            .expect("Scenario not found");
+        assert_eq!(
+            created_scenario
+                .timetable_ids(&mut pool.get_ok())
+                .await
+                .expect("Failed to retrieve scenario's timetables"),
+            expected_timetable_ids
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_scenario_without_timetables() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
+        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&mut pool.get_ok()).await;
+
+        let response: ScenarioWithDetails = app
+            .post(&scenario_url(None))
+            .json(&json!({
+                "name": "scenario without timetables",
+                "infra_id": infra.id,
+                "study_id": study.id
+            }))
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        assert!(response.timetable_summaries.is_empty());
+        assert_eq!(response.train_schedules_count, 0);
+
+        let created_scenario = Scenario::retrieve(pool.get_ok(), response.scenario.id)
+            .await
+            .expect("Failed to retrieve scenario")
+            .expect("Scenario not found");
+        assert!(
+            created_scenario
+                .timetable_ids(&mut pool.get_ok())
+                .await
+                .expect("Failed to retrieve scenario's timetables")
+                .is_empty()
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

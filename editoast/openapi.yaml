@@ -14823,7 +14823,6 @@ components:
       required:
       - name
       - infra_id
-      - timetable_id
       - study_id
       properties:
         description:
@@ -14843,9 +14842,11 @@ components:
           format: int64
         tags:
           $ref: '#/components/schemas/Tags'
-        timetable_id:
-          type: integer
-          format: int64
+        timetable_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
     ScenarioPatchForm:
       type: object
       description: This structure is used by the patch endpoint to patch a scenario

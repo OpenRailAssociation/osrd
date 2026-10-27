@@ -179,7 +179,7 @@ const AddOrEditScenarioModal = ({
             name: currentScenario.name,
             study_id: studyId,
             tags: currentScenario.tags || [],
-            timetable_id: timetable.timetable_id,
+            timetable_ids: [timetable.timetable_id],
             electrical_profile_set_id: currentScenario.electrical_profile_set_id,
           },
         }).unwrap();

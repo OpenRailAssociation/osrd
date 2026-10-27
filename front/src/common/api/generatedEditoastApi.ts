@@ -4362,7 +4362,7 @@ export type ScenarioCreateForm = {
   name: string;
   study_id: number;
   tags?: Tags;
-  timetable_id: number;
+  timetable_ids?: number[];
 };
 export type Study = {
   actual_end_date?: string | null;
