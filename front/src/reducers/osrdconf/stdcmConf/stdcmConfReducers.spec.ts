@@ -31,7 +31,6 @@ import {
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
-import commonConfBuilder from '../osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from '../osrdConfCommon/__tests__/utils';
 
 const createStore = (initialStateExtra?: Partial<OsrdStdcmConfState>) =>
@@ -73,7 +72,6 @@ function stdcmConfTestDataBuilder() {
 
 const testDataBuilder = {
   ...stdcmConfTestDataBuilder(),
-  ...commonConfBuilder(),
 };
 
 const stdcmPathSteps: StdcmPathStep[] = [
