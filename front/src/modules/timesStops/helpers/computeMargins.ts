@@ -55,7 +55,13 @@ function computeMarginsWithoutPathItemTimes(
     const referencePosition = isOrigin ? 0 : schedule?.reference_position;
     const nextReferencePosition = nextSchedule?.reference_position;
 
-    if (!referencePosition || !nextReferencePosition) return undefinedMarginTimes;
+    if (
+      referencePosition === undefined ||
+      referencePosition === null ||
+      nextReferencePosition === undefined ||
+      nextReferencePosition === null
+    )
+      return undefinedMarginTimes;
 
     const distance = mmToKm(referencePosition);
     const nextDistance = mmToKm(nextReferencePosition);
