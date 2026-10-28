@@ -100,7 +100,7 @@ export const getLabelMarks = (
 
   if (!Number.isFinite(minT) || !Number.isFinite(maxT)) return labelMarks;
 
-  timeRanges.map((range, index) => {
+  timeRanges.forEach((range, index) => {
     const labelLevel = labelLevels[index];
 
     if (!labelLevel) return;
