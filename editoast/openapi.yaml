@@ -16263,6 +16263,7 @@ components:
       type: string
       enum:
       - can_restricted_read
+      - can_share_restricted_read
       - can_read
       - can_share_read
       - can_write

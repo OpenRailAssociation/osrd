@@ -469,6 +469,7 @@ impl_structured_checks!((bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6,
 impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7, U1 U2 U3 U4 U5 U6 U7, a b c d e f g);
 impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7 R8, U1 U2 U3 U4 U5 U6 U7 U8, a b c d e f g h);
 impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7 R8 R9, U1 U2 U3 U4 U5 U6 U7 U8 U9, a b c d e f g h i);
+impl_structured_checks!((bool, bool, bool, bool, bool, bool, bool, bool, bool, bool), R1 R2 R3 R4 R5 R6 R7 R8 R9 R10, U1 U2 U3 U4 U5 U6 U7 U8 U9 U10, a b c d e f g h i j);
 
 impl<R: Relation, U: AsUser<User = R::User>> Request for Check<'_, R, U> {
     type Response = bool;
