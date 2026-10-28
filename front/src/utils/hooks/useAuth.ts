@@ -35,7 +35,7 @@ function useAuth() {
 
   useEffect(() => {
     if (!isUserLogged && !isAuthenticateLoading) {
-      login();
+      void login();
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isUserLogged]);

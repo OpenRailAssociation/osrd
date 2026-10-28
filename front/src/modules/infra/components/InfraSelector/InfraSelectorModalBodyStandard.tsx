@@ -67,7 +67,7 @@ const InfraSelectorModalBodyStandard = ({
       dispatch(updateInfraID(id));
       await fitViewportToInfra(id);
       if (isInEditor) {
-        navigate(`/editor/${id}`);
+        void navigate(`/editor/${id}`);
       }
       if (!onlySelectionMode) {
         closeModal();
@@ -111,8 +111,8 @@ const InfraSelectorModalBodyStandard = ({
             })}
           >
             <div
-              onClick={() => {
-                changeInfrastructure(infra.id);
+              onClick={async () => {
+                await changeInfrastructure(infra.id);
               }}
               tabIndex={0}
               role="button"

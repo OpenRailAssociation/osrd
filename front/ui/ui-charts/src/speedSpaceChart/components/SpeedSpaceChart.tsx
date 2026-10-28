@@ -220,7 +220,7 @@ const SpeedSpaceChart = ({
   useEffect(() => {
     const shouldFetchEtcsCurves = getActiveEtcsBrakingTypes(store.etcsLayersDisplay).length > 0;
     if (fetchEtcsBrakingCurves && shouldFetchEtcsCurves) {
-      fetchEtcsBrakingCurves();
+      void fetchEtcsBrakingCurves();
     }
   }, [fetchEtcsBrakingCurves, store.etcsLayersDisplay]);
 

@@ -223,14 +223,14 @@ const TrainScheduleSetForm = ({
             label={t('catalogEntry')}
             placeholder={t('choose')}
             value={catalogSelected}
-            onChange={(item) => {
+            onChange={async (item) => {
               const newCatalog: TrainScheduleSetFormData['catalog'] = item
                 ? { id: item.id, type: 'selected' }
                 : undefined;
               setCatalogEntry(newCatalog);
               setCatalogEntryError(checkCatalogEntryIsUniq(newCatalog));
               if (checkNameInCatalogIsUniq) {
-                checkNameCatalogUniqueness(name, newCatalog);
+                await checkNameCatalogUniqueness(name, newCatalog);
               }
             }}
             required={checkNameInCatalogIsUniq !== undefined}
@@ -285,12 +285,12 @@ const TrainScheduleSetForm = ({
           label={t('name')}
           required
           value={name}
-          onChange={(e) => {
+          onChange={async (e) => {
             const newValue = e.target.value;
             setNameError(undefined);
             setName(newValue);
             if (checkNameInCatalogIsUniq) {
-              checkNameCatalogUniqueness(newValue, catalogEntry);
+              await checkNameCatalogUniqueness(newValue, catalogEntry);
             }
           }}
           statusWithMessage={inputNameStatus}

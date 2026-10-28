@@ -10,7 +10,7 @@ const version = encodeURIComponent(import.meta.env.VITE_OSRD_GIT_DESCRIBE);
 
 export const supportedLngs = ['de', 'en', 'fr', 'pt'];
 
-i18n
+void i18n
   .use(Backend)
   .use(initReactI18next)
   .use(LanguageDetector)
@@ -31,4 +31,4 @@ i18n
 
 // Errors namespace must be initialized so t function
 // can be used in plain old function (see utils/error)
-i18n.loadNamespaces('errors');
+void i18n.loadNamespaces('errors');

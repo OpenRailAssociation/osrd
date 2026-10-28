@@ -206,7 +206,7 @@ const StdcmMapProgressLayer = ({
           return animation.pointToGeojson(point, elapsedTime);
         }),
       };
-      source.setData(data);
+      void source.setData(data);
       timeoutId = window.setTimeout(animate, 0);
     };
     timeoutId = window.setTimeout(animate, 0);

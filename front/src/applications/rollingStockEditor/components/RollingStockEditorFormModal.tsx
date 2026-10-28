@@ -72,8 +72,8 @@ const RollingStockEditorFormModal = ({
             data-testid="confirm-modal-button-yes"
             type="button"
             className={`btn btn-sm ${deleteAction ? 'bg-red text-white' : 'btn-primary'} ml-3`}
-            onClick={() => {
-              if (onSubmit) onSubmit();
+            onClick={async () => {
+              if (onSubmit) await onSubmit();
               closeModal();
             }}
           >

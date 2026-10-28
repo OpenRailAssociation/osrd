@@ -32,7 +32,7 @@ const useProjectedConflicts = (
 
     setProjectedZones(undefined);
     if (path) {
-      fetchProjectedZones(path);
+      void fetchProjectedZones(path);
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [path]);
