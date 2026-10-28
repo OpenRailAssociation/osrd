@@ -12,6 +12,7 @@ import type { PossibleLinkings } from '../computePossibleLinkings';
 import buildWaypointLinkings, {
   formatLinkingId,
   formatTrainIdToLinkingOccurrence,
+  linkToNextDeparture,
   parseLinkingId,
   parseLinkingOccurrence,
   parseLinkings,
@@ -97,46 +98,99 @@ describe('parseLinkingId', () => {
   });
 });
 
-describe('buildWaypointLinkings', () => {
-  const MINUTE = 60_000;
-  const TRACK_A = 'trackSection_a';
-  const TRACK_B = 'trackSection_b';
+const MINUTE = 60_000;
+const TRACK_A = 'trackSection_a';
+const TRACK_B = 'trackSection_b';
 
-  const zone = ({
+const zone = ({
+  trainId,
+  blockType,
+  trackId = TRACK_A,
+  startTime,
+  endTime,
+}: {
+  trainId: TrainId;
+  blockType: MovableOccupancyZone['blockType'];
+  trackId?: string;
+  startTime: number;
+  endTime: number;
+}): MovableOccupancyZone =>
+  ({
     trainId,
+    trackId,
     blockType,
-    trackId = TRACK_A,
     startTime,
     endTime,
-  }: {
-    trainId: TrainId;
-    blockType: MovableOccupancyZone['blockType'];
-    trackId?: string;
-    startTime: number;
-    endTime: number;
-  }): MovableOccupancyZone =>
-    ({
-      trainId,
-      trackId,
-      blockType,
-      startTime,
-      endTime,
-      active: true,
-    }) as MovableOccupancyZone;
+    active: true,
+  }) as MovableOccupancyZone;
 
-  const ARRIVAL = zone({
-    trainId: TRAIN_1,
-    blockType: 'incoming',
-    startTime: 0,
-    endTime: 10 * MINUTE,
-  });
-  const DEPARTURE = zone({
-    trainId: TRAIN_2,
-    blockType: 'outgoing',
-    startTime: 30 * MINUTE,
-    endTime: 40 * MINUTE,
+const ARRIVAL = zone({
+  trainId: TRAIN_1,
+  blockType: 'incoming',
+  startTime: 0,
+  endTime: 10 * MINUTE,
+});
+const DEPARTURE = zone({
+  trainId: TRAIN_2,
+  blockType: 'outgoing',
+  startTime: 30 * MINUTE,
+  endTime: 40 * MINUTE,
+});
+
+describe('linkToNextDeparture', () => {
+  const id = formatLinkingId({ linkingId: 42 });
+
+  it('should link the arrival to the first departure after it', () => {
+    const laterDeparture = { ...DEPARTURE, startTime: 60 * MINUTE, endTime: 70 * MINUTE };
+
+    const linking = linkToNextDeparture({
+      id,
+      target: TRAIN_2,
+      arrival: ARRIVAL,
+      targetDepartures: [DEPARTURE, laterDeparture],
+    });
+
+    expect(linking).toEqual({
+      id,
+      targetTrainId: TRAIN_2,
+      trackId: TRACK_A,
+      startTime: ARRIVAL.endTime,
+      endTime: DEPARTURE.startTime,
+    });
   });
 
+  it('should accept a departure starting right when the arrival ends', () => {
+    const departure = {
+      ...DEPARTURE,
+      startTime: ARRIVAL.endTime,
+      endTime: ARRIVAL.endTime + MINUTE,
+    };
+
+    const linking = linkToNextDeparture({
+      id,
+      target: TRAIN_2,
+      arrival: ARRIVAL,
+      targetDepartures: [departure],
+    });
+
+    expect(linking?.endTime).toBe(ARRIVAL.endTime);
+  });
+
+  it('should link nothing when the target does not depart after the arrival', () => {
+    const earlierDeparture = { ...DEPARTURE, startTime: 0, endTime: 5 * MINUTE };
+
+    const linking = linkToNextDeparture({
+      id,
+      target: TRAIN_2,
+      arrival: ARRIVAL,
+      targetDepartures: [earlierDeparture],
+    });
+
+    expect(linking).toBeUndefined();
+  });
+});
+
+describe('buildWaypointLinkings', () => {
   const POSSIBLE: PossibleLinkings = new Map([
     [TRAIN_1, { target: TRAIN_2, sourceOffsets: new Set([0]) }],
   ]);
@@ -147,12 +201,14 @@ describe('buildWaypointLinkings', () => {
     possibleLinkings = POSSIBLE,
     existingLinkings = [] as ExistingLinking[],
     showSuggestions = false,
+    hourlyPatternDuration = undefined as number | undefined,
   }) =>
     buildWaypointLinkings({
       zones,
       possibleLinkings,
       existingLinkings,
       showSuggestions,
+      hourlyPatternDuration,
     });
 
   it('should draw an existing linking between the two occupancies it links', () => {
@@ -284,7 +340,7 @@ describe('buildWaypointLinkings', () => {
     expect(linkings).toEqual([]);
   });
 
-  it('should not suggest a linking whose target departs on the next repetition', () => {
+  it('should not draw a linking whose target does not leave the track afterwards', () => {
     const { linkings } = buildLinkings({
       zones: [
         zone({
@@ -304,5 +360,137 @@ describe('buildWaypointLinkings', () => {
     });
 
     expect(linkings).toEqual([]);
+  });
+
+  describe('in an hourly pattern', () => {
+    const HOUR = 60 * MINUTE;
+    const patternDuration = 2 * HOUR;
+
+    /** Repeats a zone on the given offsets, the way the zones of an hourly pattern are. */
+    const repeated = (repeatedZone: MovableOccupancyZone, offsets: number[]) =>
+      offsets.map((repeatOffset) => ({
+        ...repeatedZone,
+        startTime: repeatedZone.startTime + repeatOffset,
+        endTime: repeatedZone.endTime + repeatOffset,
+        repeatOffset,
+      }));
+
+    const repeatOffsets = [0, HOUR, 2 * HOUR, 3 * HOUR];
+    const repeatedZones = [
+      ...repeated(ARRIVAL, repeatOffsets),
+      ...repeated(DEPARTURE, repeatOffsets),
+    ];
+
+    it('should suggest a linking on the repetitions it is possible on only', () => {
+      const { linkings } = buildLinkings({
+        zones: repeatedZones,
+        showSuggestions: true,
+        hourlyPatternDuration: patternDuration,
+      });
+
+      // Possible on the first hour of the pattern, hence on the first and the third ones here.
+      expect(linkings).toEqual(
+        [0, 2 * HOUR].map((offset) => ({
+          id: formatLinkingId({ source: TRAIN_1, target: TRAIN_2 }),
+          targetTrainId: TRAIN_2,
+          trackId: TRACK_A,
+          startTime: ARRIVAL.endTime + offset,
+          endTime: DEPARTURE.startTime + offset,
+          suggested: true,
+        }))
+      );
+    });
+
+    it('should suggest a linking on a zone repeated before the one editoast returned', () => {
+      const { linkings } = buildLinkings({
+        zones: [...repeated(ARRIVAL, [-HOUR]), ...repeated(DEPARTURE, [-HOUR])],
+        possibleLinkings: new Map([[TRAIN_1, { target: TRAIN_2, sourceOffsets: new Set([HOUR]) }]]),
+        showSuggestions: true,
+        hourlyPatternDuration: patternDuration,
+      });
+
+      expect(linkings).toHaveLength(1);
+    });
+
+    it('should draw an existing linking on every repetition, even where it is not possible', () => {
+      const { linkings, brokenLinkings } = buildLinkings({
+        zones: repeatedZones,
+        existingLinkings: EXISTING,
+        hourlyPatternDuration: patternDuration,
+      });
+
+      expect(brokenLinkings).toEqual([]);
+      expect(linkings).toEqual(
+        repeatOffsets.map((offset) => ({
+          id: formatLinkingId({ linkingId: 42 }),
+          targetTrainId: TRAIN_2,
+          trackId: TRACK_A,
+          startTime: ARRIVAL.endTime + offset,
+          endTime: DEPARTURE.startTime + offset,
+        }))
+      );
+    });
+
+    it('should draw a linking up to the departure of the next repetition', () => {
+      const lateArrival = zone({
+        trainId: TRAIN_1,
+        blockType: 'incoming',
+        startTime: 45 * MINUTE,
+        endTime: 55 * MINUTE,
+      });
+      const earlyDeparture = zone({
+        trainId: TRAIN_2,
+        blockType: 'outgoing',
+        startTime: 5 * MINUTE,
+        endTime: 12 * MINUTE,
+      });
+
+      const { linkings } = buildLinkings({
+        zones: [...repeated(lateArrival, [0, HOUR]), ...repeated(earlyDeparture, [0, HOUR])],
+        existingLinkings: EXISTING,
+        hourlyPatternDuration: patternDuration,
+      });
+
+      // The second arrival has no departure to be linked to among the zones.
+      expect(linkings).toEqual([
+        {
+          id: formatLinkingId({ linkingId: 42 }),
+          targetTrainId: TRAIN_2,
+          trackId: TRACK_A,
+          startTime: 55 * MINUTE,
+          endTime: HOUR + 5 * MINUTE,
+        },
+      ]);
+    });
+
+    it('should link each arrival to its next departure whatever the order of the zones', () => {
+      const { linkings } = buildLinkings({
+        zones: [...repeated(DEPARTURE, [2 * HOUR, 0, HOUR]), ...repeated(ARRIVAL, [HOUR, 0])],
+        existingLinkings: EXISTING,
+        hourlyPatternDuration: patternDuration,
+      });
+
+      expect(linkings.map(({ startTime, endTime }) => ({ startTime, endTime }))).toEqual([
+        { startTime: ARRIVAL.endTime, endTime: DEPARTURE.startTime },
+        { startTime: ARRIVAL.endTime + HOUR, endTime: DEPARTURE.startTime + HOUR },
+      ]);
+    });
+
+    it('should break an existing linking on every repetition when none allows it', () => {
+      const { linkings, brokenLinkings } = buildLinkings({
+        zones: [...repeated(ARRIVAL, [0, HOUR]), ...repeated(DEPARTURE, [0, HOUR])],
+        possibleLinkings: new Map(),
+        existingLinkings: EXISTING,
+        hourlyPatternDuration: patternDuration,
+      });
+
+      expect(linkings).toEqual([]);
+      expect(brokenLinkings.map(({ direction, time }) => ({ direction, time }))).toEqual([
+        { direction: 'forward', time: ARRIVAL.endTime },
+        { direction: 'forward', time: ARRIVAL.endTime + HOUR },
+        { direction: 'backward', time: DEPARTURE.startTime },
+        { direction: 'backward', time: DEPARTURE.startTime + HOUR },
+      ]);
+    });
   });
 });

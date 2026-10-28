@@ -21,6 +21,7 @@ import type { TimeRange } from 'modules/simulationResult/helpers/getTrainSchedul
 import type { CurveStyleInput } from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
+import type { Duration } from 'utils/duration';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { PanelSelectionMode } from './CurveSelectionSidePanel';
@@ -60,6 +61,7 @@ type BuildSplitPointsProps = {
     showSuggestions: boolean;
   };
   repeatTimeRange?: TimeRange;
+  hourlyTimetableDuration?: Duration;
 };
 
 export function buildSplitPoints({
@@ -79,6 +81,7 @@ export function buildSplitPoints({
   onTrackDragOver,
   linkings,
   repeatTimeRange,
+  hourlyTimetableDuration,
 }: BuildSplitPointsProps): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -168,10 +171,11 @@ export function buildSplitPoints({
       }
 
       const { linkings: waypointLinkings, brokenLinkings } = buildWaypointLinkings({
-        zones: baseZones,
+        zones: occupancyZones,
         possibleLinkings,
         existingLinkings: linkings?.existing ?? [],
         showSuggestions: linkings?.showSuggestions ?? false,
+        hourlyPatternDuration: hourlyTimetableDuration?.ms,
       });
       // A badge names the train missing at this end of the linking:
       const namedBrokenLinkings = brokenLinkings.flatMap(({ trainId, ...badge }) => {
