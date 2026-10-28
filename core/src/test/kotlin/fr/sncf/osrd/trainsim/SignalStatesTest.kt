@@ -3,6 +3,7 @@ package fr.sncf.osrd.trainsim
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
+import fr.sncf.osrd.standalone_sim.pathSignals
 import fr.sncf.osrd.utils.Helpers
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -30,6 +31,19 @@ class SignalStatesTest {
         mapOf("SB0" to sb0, "SA7_2r" to sa72r, "SA7_5r" to sa75r, "SA6" to sa6)
 
     private fun trainAt(head: PreciseDistance) = occupiedZones(zones, head, trainLength).toSet()
+
+    private fun signalPosition(name: String) =
+        pathSignals(trainPath, infra.blockInfra)
+            .single { infra.rawInfra.getLogicalSignalName(it.signal) == name }
+            .pathOffset
+            .toPrecise()
+
+    private fun ahead(head: PreciseDistance, occupied: Set<ZoneId> = setOf()) =
+        signalsAhead(infra.blockInfra, trainPath, head, signalStates(infra, trainPath, occupied))
+            .entries
+            .map {
+                infra.rawInfra.getLogicalSignalName(it.key.signal)!! to it.value.getEnum("aspect")
+            }
 
     @Test
     fun testClearPathAnnouncesTheStopAtTheEnd() {
@@ -77,5 +91,37 @@ class SignalStatesTest {
         val leader = trainAt(zones.last().pathEnd.toPrecise() - 1.0.meters)
         val follower = trainAt(zones[1].pathBegin.toPrecise() + 1.0.meters)
         assertEquals(aspects("S", "A", "S", "A"), aspects(leader + follower))
+    }
+
+    @Test
+    fun testAllSignalsAreAheadAtThePathStart() {
+        assertEquals(
+            listOf("SB0" to "VL", "SA7_2r" to "VL", "SA7_5r" to "VL", "SA6" to "A"),
+            ahead(0.micrometers),
+        )
+    }
+
+    @Test
+    fun testPassedSignalsAreNotAhead() {
+        val head = signalPosition("SA7_2r") + 1.0.meters
+        assertEquals(listOf("SA7_5r" to "VL", "SA6" to "A"), ahead(head))
+    }
+
+    @Test
+    fun testSignalUnderTheHeadIsStillAhead() {
+        val signal = signalPosition("SA7_5r")
+        assertEquals(listOf("SA7_5r", "SA6"), ahead(signal).map { it.first })
+        assertEquals(listOf("SA6"), ahead(signal + 1.micrometers).map { it.first })
+    }
+
+    @Test
+    fun testFollowerSeesTheCascadeOfTheLeader() {
+        val leader = trainAt(zones.last().pathEnd.toPrecise() - 1.0.meters)
+        val followerHead = zones[1].pathBegin.toPrecise() + 1.0.meters
+        val follower = trainAt(followerHead)
+        assertEquals(
+            listOf("SA7_2r" to "A", "SA7_5r" to "S", "SA6" to "A"),
+            ahead(followerHead, leader + follower),
+        )
     }
 }
