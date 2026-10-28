@@ -477,6 +477,7 @@ const SpaceTimeChartWrapper = ({
           showSuggestions: linkingMode,
         },
         repeatTimeRange,
+        hourlyTimetableDuration,
       }),
     [
       trackOccupancyDiagramsData,
@@ -497,6 +498,7 @@ const SpaceTimeChartWrapper = ({
       linkingMode,
       repeatTimeRange,
       activeWaypointId,
+      hourlyTimetableDuration,
     ]
   );
 
