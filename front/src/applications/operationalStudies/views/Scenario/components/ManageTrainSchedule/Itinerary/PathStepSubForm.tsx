@@ -8,6 +8,8 @@ import { useSelector } from 'react-redux';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 
+import { isOpRefMetadata } from './utils';
+
 type PathStepSubFormFieldsProps = {
   pathStep: PathStepV2;
   isOpValid: boolean;
@@ -190,6 +192,8 @@ type PathStepSubFormProps = {
   pathStepMetadata: PathStepMetadata | undefined;
   isSubFormExpanded: boolean;
   isOpValid: boolean;
+  name: string | undefined;
+  onNameChange: (name: string) => void;
 };
 
 const PathStepSubForm = ({
@@ -197,6 +201,8 @@ const PathStepSubForm = ({
   pathStepMetadata,
   isSubFormExpanded,
   isOpValid,
+  name,
+  onNameChange,
 }: PathStepSubFormProps) => {
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
   const { t } = useTranslation('operational-studies', {
@@ -204,12 +210,7 @@ const PathStepSubForm = ({
   });
 
   const loc = pathStep.location;
-  const defaultName =
-    pathStepMetadata?.validity === 'valid' && pathStepMetadata.type === 'opRef'
-      ? pathStepMetadata.name
-      : '';
-
-  const [subFormName, setSubFormName] = useState<string>(defaultName);
+  const subFormName = isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : (name ?? '');
 
   if (!unrecognizedWaypointsActivated || !isSubFormExpanded) return;
 
@@ -231,7 +232,7 @@ const PathStepSubForm = ({
           readOnly={isOpValid}
           small
           value={subFormName}
-          onChange={(e) => setSubFormName(e.target.value)}
+          onChange={(e) => onNameChange(e.target.value)}
         />
         <SpecificFields pathStep={pathStep} isOpValid={isOpValid} />
       </div>
