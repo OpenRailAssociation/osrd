@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope
 
 import fr.sncf.osrd.envelope.part.EnvelopePart
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_utils.DoubleUtils
@@ -269,34 +270,60 @@ object EnvelopePhysics {
         path: PhysicsPath,
         rollingStock: PhysicsRollingStock,
     ): Double {
+        return getPartMechanicalEnergySteps(part, path, rollingStock).sumOf { max(0.0, it.energy) }
+    }
+
+    /** Mechanical energy at the wheels over [beginPos, endPos], negative when braking */
+    data class MechanicalEnergyStep(val beginPos: Double, val endPos: Double, val energy: Double)
+
+    /**
+     * Returns the mechanical energy at the wheels of the train, computed over regular intervals of
+     * `stepSize` meters (the last one may be shorter). Energy is negative when the train brakes.
+     */
+    fun getPartMechanicalEnergySteps(
+        part: EnvelopePart,
+        path: PhysicsPath,
+        rollingStock: PhysicsRollingStock,
+        stepSize: Double = 10.0,
+    ): List<MechanicalEnergyStep> {
+        if (part.getAttr(EnvelopeProfile::class.java) == EnvelopeProfile.COASTING) {
+            // Special case for coasting, avoids inaccuracies building up
+            return listOf(MechanicalEnergyStep(part.beginPos, part.endPos, 0.0))
+        }
         // The energy consumed by the train corresponds to the kinetic energy delta, subtracting the
-        // work by
-        // gravity and drag / friction
-        val length = part.pointCount()
+        // work by gravity and drag / friction
+        val res = mutableListOf<MechanicalEnergyStep>()
         val mass = rollingStock.mass
         val inertia = rollingStock.inertia
 
-        val meanGrade = 0.001 * path.getAverageGrade(part.beginPos, part.endPos)
-        val altitudeDelta = meanGrade * part.totalDistance
-
-        val workGravity = -mass * TrainPhysicsIntegrator.GRAVITY_ACCELERATION * altitudeDelta
-
-        val kineticEnergyDelta =
-            0.5 * inertia * (part.endSpeed * part.endSpeed - part.beginSpeed * part.beginSpeed)
-
-        var workDrag = 0.0
-        for (i in 0..<length - 1) {
-            val speed = part.getPointSpeed(i)
-            val nextSpeed = part.getPointSpeed(i + 1)
-            val meanSpeed = (speed + nextSpeed) / 2
-            val pos = part.getPointPos(i)
-            val nextPos = part.getPointPos(i + 1)
+        var pos = part.beginPos
+        var speed = part.beginSpeed
+        while (pos < part.endPos) {
+            val nextPos = min(part.endPos, pos + stepSize)
+            val nextSpeed = part.interpolateSpeed(nextPos)
             val positionDelta = nextPos - pos
-            workDrag -= rollingStock.getRollingResistance(meanSpeed) * positionDelta
+
+            val meanGrade =
+                0.001 *
+                    TrainPhysicsIntegrator.getAverageGrade(
+                        rollingStock,
+                        path,
+                        (pos + nextPos) / 2,
+                    )
+            val altitudeDelta = meanGrade * positionDelta
+
+            val workGravity = -mass * TrainPhysicsIntegrator.GRAVITY_ACCELERATION * altitudeDelta
+
+            val kineticEnergyDelta = 0.5 * inertia * (nextSpeed * nextSpeed - speed * speed)
+
+            val meanSpeed = (speed + nextSpeed) / 2
+            val workDrag = -rollingStock.getRollingResistance(meanSpeed) * positionDelta
+
+            val totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag
+            res.add(MechanicalEnergyStep(pos, nextPos, totalEnergyConsumed))
+            pos = nextPos
+            speed = nextSpeed
         }
-
-        val totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag
-
-        return max(0.0, totalEnergyConsumed)
+        return res
     }
 }

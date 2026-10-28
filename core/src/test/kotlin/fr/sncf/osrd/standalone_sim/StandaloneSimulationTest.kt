@@ -2,14 +2,17 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.api.standalone_sim.DriverAction
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.api.standalone_sim.StopDetails
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
+import fr.sncf.osrd.envelope_sim.SimpleRollingStock
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
+import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
@@ -20,7 +23,9 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPE
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
+import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.train.TestTrains.VERY_SHORT_FAST_TRAIN
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.*
 import java.util.stream.Stream
@@ -492,6 +497,111 @@ class StandaloneSimulationTest {
             assertEquals(expected, actual)
             position += 1.0
         }
+    }
+
+    @Test
+    fun testDriverActions() {
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                // First block to speed up
+                infra.addBlock(
+                    "a",
+                    "b",
+                    length = 10_000.meters,
+                    gradient = 0.0,
+                    allowedSpeed = 30.0,
+                ),
+                // Second block: negative gradient, require braking to remain at max speed
+                infra.addBlock(
+                    "b",
+                    "c",
+                    length = 1_000.meters,
+                    gradient = -100.0,
+                    allowedSpeed = 30.0,
+                ),
+                // Third block: positive gradient that prevents the train from maintaining max speed
+                infra.addBlock(
+                    "c",
+                    "d",
+                    length = 1_000.meters,
+                    gradient = 50.0,
+                    allowedSpeed = 30.0,
+                ),
+                // Last block: normal deceleration
+                infra.addBlock(
+                    "d",
+                    "e",
+                    length = 10_000.meters,
+                    gradient = 0.0,
+                    allowedSpeed = 30.0,
+                ),
+            )
+        val path =
+            buildTrainPathFromBlocks(
+                infra,
+                infra,
+                blocks,
+                listOf(),
+                routes = blocks.map { RouteId(it.index) },
+            )
+        val rollingStock = VERY_SHORT_FAST_TRAIN
+        val mrsp =
+            computeMRSP(
+                path,
+                rollingStock,
+                true,
+                "",
+                null,
+            )
+        val context =
+            EnvelopeSimContext(
+                rollingStock,
+                path,
+                2.0,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
+            )
+        val maxSpeedEnvelope =
+            maxSpeedEnvelopeFrom(
+                context,
+                listOf(
+                    SimStop(
+                        offset = path.getLength(),
+                        rjsReceptionSignal = STOP,
+                    ),
+                ),
+                mrsp,
+            )
+        val maxEffortEnvelope = maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
+        val driverActions =
+            mapDriverActions(
+                    maxEffortEnvelope,
+                    path,
+                    distanceRangeMapOf(
+                        DistanceRangeMap.RangeMapEntry(
+                            0.meters,
+                            path.getLength().distance,
+                            rollingStock,
+                        ),
+                    ),
+                )
+                .toDistanceRangeMap(Offset.zero(), path.getLength())
+                .toList()
+
+        // Expected: traction up to 10km, braking up to 11km (second block with high negative
+        // gradient), traction, then one last braking curve. Distances are approximate there
+        // (average grade below the train, discrete step)
+        assertEquals(
+            listOf(
+                DriverAction.TRACTING,
+                DriverAction.BRAKING,
+                DriverAction.TRACTING,
+                DriverAction.BRAKING,
+            ),
+            driverActions.map { it.value },
+        )
+        assertEquals(10_000.0, driverActions[1].lower.meters, 10.0)
+        assertEquals(11_000.0, driverActions[1].upper.meters, 10.0)
     }
 
     private fun testThroughDuplicateOP(): Stream<Arguments> =
