@@ -19,6 +19,7 @@ import StdcmCardMarkerIcon from '../StdcmCardMarkerIcon';
 import StdcmCard from './StdcmCard';
 import StdcmConsist from './StdcmConsist';
 import StdcmDefaultCard from './StdcmDefaultCard';
+import StdcmForcedStopInfo from './StdcmForcedStopInfo';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmStopType from './StdcmStopType';
 import StopDurationInput from './StopDurationInput';
@@ -292,6 +293,7 @@ const StdcmVias = ({
                 stopTypes={pathStep.stopType}
                 updatePathStepStopType={(newStopType) => updateStopType(newStopType, pathStep)}
               />
+              <StdcmForcedStopInfo operationalPointId={pathStep.operationalPoint?.id} />
               {pathStep.stopType !== StdcmStopTypes.PASSAGE_TIME && (
                 <StopDurationInput pathStep={pathStep} />
               )}

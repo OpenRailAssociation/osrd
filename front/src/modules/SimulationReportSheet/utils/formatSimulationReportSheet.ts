@@ -8,7 +8,11 @@ import {
   type StdcmSuccessResponse,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
-import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type {
+  ForcedStopType,
+  OperationalPointStop,
+  SimulationResponseSuccess,
+} from 'common/api/osrdEditoastApi';
 import type { ConsistChange, RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
@@ -314,6 +318,7 @@ function consolidateOvertakesToSingleSteps(
         stopDuration: Duration.subtractDate(nextStep.time, step.time),
         stopEndTime: nextStep.time,
         stopType: StdcmStopTypes.OVERTAKE,
+        forcedStopType: 'OVERTAKE',
         secondaryCodeLabel: 'O', // indicating an overtake
       };
       consolidatedSteps.push(consolidatedStep);
@@ -364,13 +369,32 @@ function normalizeStopsWithoutDuration(ops: StdcmResultsOperationalPoint[]) {
 }
 
 /**
+ * Flags the intermediate OPs where the train stops without a user-requested stop
+ * and which are general stops or overtakes in the search environment.
+ */
+export function addForcedStopTypes(
+  ops: StdcmResultsOperationalPoint[],
+  forcedOpStops: OperationalPointStop[]
+): StdcmResultsOperationalPoint[] {
+  if (!forcedOpStops.length) return ops;
+  const forcedStopTypeByOpId = new Map(forcedOpStops.map(({ id, stop_type }) => [id, stop_type]));
+
+  return ops.map((op, index) => {
+    const isExtremity = index === 0 || index === ops.length - 1;
+    if (isExtremity || !op.opId || op.stopRequested || op.stopDuration === null) return op;
+    return { ...op, forcedStopType: forcedStopTypeByOpId.get(op.opId) ?? op.forcedStopType };
+  });
+}
+
+/**
  * @param operationalPoints List of operational points
  * @param suggestedOperationalPoints List of suggested operational points to be formated and enriched
- * @param opIdsToExclude List of operational point IDs to exclude from the simulation sheet (e.g., service track OPs that cannot be modeled). Exception: OPs explicitly requested by the user (origin, destination, via points, or stops) are never excluded.
+ * @param opIdsToExclude List of operational point IDs to exclude from the simulation sheet (e.g., service track OPs that cannot be modeled). Exception: OPs explicitly requested by the user (origin, destination, via points, or stops) and forced stops are never excluded.
  * @param simulation Simulation response containing final output positions and times
  * @param simulationPathSteps List of simulation path steps
  * @param departureTime Departure time in hh:mm format
  * @param pathfindingResult Pathfinding result, used to detect and consolidate backtrack points
+ * @param forcedOpStops Operational points configured as general stops or overtakes in the search environment
  * @returns A list of formated operational points with weight, times and stop durations
  */
 export function getOperationalPointsWithTimes({
@@ -382,6 +406,7 @@ export function getOperationalPointsWithTimes({
   departureTime,
   pathfindingResult,
   trainLength,
+  forcedOpStops,
 }: {
   operationalPoints: StdcmPathProperties['operational_points'];
   suggestedOperationalPoints: SuggestedOP[];
@@ -391,6 +416,7 @@ export function getOperationalPointsWithTimes({
   departureTime: Date;
   pathfindingResult: StdcmSuccessResponse['pathfinding_result'];
   trainLength: number;
+  forcedOpStops: OperationalPointStop[];
 }): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
@@ -404,7 +430,8 @@ export function getOperationalPointsWithTimes({
       // Keep if the OP is not in the exclusion list
       if (!suggestedOp.opId || !opIdsToExclude.includes(suggestedOp.opId)) return true;
 
-      // Keep if explicitly requested by the user (origin, destination, via point or stop)
+      // Keep forced stops (general stops / overtakes) or OPs explicitly requested by the user
+      if (forcedOpStops.some(({ id }) => id === suggestedOp.opId)) return true;
       const isRequestedPoint = simulationPathSteps.some(
         (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
       );
@@ -431,7 +458,7 @@ export function getOperationalPointsWithTimes({
     pathfindingResult
   );
 
-  return normalizeStopsWithoutDuration(formattedConsolidatedOps);
+  return normalizeStopsWithoutDuration(addForcedStopTypes(formattedConsolidatedOps, forcedOpStops));
 }
 
 export const getArrivalTimes = (
@@ -452,6 +479,11 @@ export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'
   !stopType
     ? t('reportSheet.serviceStop')
     : capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`));
+
+export const getForcedStopTypeLabel = (forcedStopType: ForcedStopType, t: TFunction<'stdcm'>) =>
+  capitalizeFirstLetter(
+    t(`trainPath.stopType.${forcedStopType === 'GENERAL_STOP' ? 'generalStop' : 'overtake'}`)
+  );
 
 // Maps Stdcm path steps to the Step payload expected by the Railway Manager API.
 export const transformStepsToApiFormat = (

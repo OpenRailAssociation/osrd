@@ -29,6 +29,7 @@ import { defaultMapSettings } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import {
+  getForcedOpStops,
   getOperationalPointsIdFiltered,
   getRetainedSimulationIndex,
   getSelectedSimulation,
@@ -82,6 +83,7 @@ const StdcmResults = ({
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
   const opIdsToExclude = useSelector(getOperationalPointsIdFiltered);
+  const forcedOpStops = useSelector(getForcedOpStops);
 
   // Keep local state of the map settings to keep stdcm config and stdcm results maps independent
   const [mapSettings, setMapSettings] = useState(defaultMapSettings);
@@ -138,12 +140,17 @@ const StdcmResults = ({
       departureTime: new Date(outputs.results.departure_time),
       pathfindingResult: outputs.results.pathfinding_result,
       trainLength: maxConsistLength,
-    }).filter(({ weight, stopType }) => stopType || (weight && weight >= MINIMUM_OP_WEIGHT));
+      forcedOpStops,
+    }).filter(
+      ({ weight, stopType, forcedStopType }) =>
+        stopType || forcedStopType || (weight && weight >= MINIMUM_OP_WEIGHT)
+    );
   }, [
     outputs,
     hasSimulationResults,
     opIdsToExclude,
     selectedSimulation.inputs.consist.totalLength,
+    forcedOpStops,
   ]);
 
   const markersInfo = useMemo(() => {
