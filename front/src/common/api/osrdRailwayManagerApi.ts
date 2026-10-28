@@ -45,7 +45,7 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['lmr'],
       }),
-      postSendLastMinuteRequestStatuses: build.mutation<
+      postSendLastMinuteRequestStatuses: build.query<
         PostSendLastMinuteRequestStatusesApiResponse,
         PostSendLastMinuteRequestStatusesApiArg
       >({
@@ -54,7 +54,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['lmr'],
+        providesTags: ['lmr'],
       }),
     }),
     overrideExisting: false,
