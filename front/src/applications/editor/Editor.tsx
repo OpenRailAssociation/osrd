@@ -252,9 +252,9 @@ const Editor = () => {
    */
   useEffect(() => {
     // load the data model
-    dispatch(loadDataModel());
+    void dispatch(loadDataModel());
     if (isNil(urlInfra) && !isNil(infraID)) {
-      navigate(`/editor/${infraID}`);
+      void navigate(`/editor/${infraID}`);
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
@@ -274,7 +274,7 @@ const Editor = () => {
             message: t('Editor.tools.select-items.errors.invalid-url'),
           })
         );
-        navigate(`/editor/${urlInfra}`);
+        void navigate(`/editor/${urlInfra}`);
       }
       const paramsList = params?.split('|');
 
@@ -303,7 +303,8 @@ const Editor = () => {
             }
             selectEntities(entities, { switchTool, dispatch, editorState });
 
-            if (mapRef.current) centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
+            if (mapRef.current)
+              void centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
           } catch (e) {
             dispatch(
               setFailure(
@@ -315,7 +316,7 @@ const Editor = () => {
             );
           }
         };
-        selectObjectsAndFocus(selectedEntities);
+        void selectObjectsAndFocus(selectedEntities);
       }
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -349,14 +350,14 @@ const Editor = () => {
     if (!isNil(urlInfra)) {
       const infradID = toInteger(urlInfra);
       dispatch(updateInfraID(infradID));
-      dispatch(updateTotalsIssue(infradID));
+      void dispatch(updateTotalsIssue(infradID));
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [urlInfra]);
 
   // Lifecycle events on tools:
   useEffect(() => {
-    if (toolAndState.tool.onMount) toolAndState.tool.onMount(extendedContext);
+    if (toolAndState.tool.onMount) void toolAndState.tool.onMount(extendedContext);
 
     const { requiredLayers, incompatibleLayers } = toolAndState.tool;
     if (requiredLayers || incompatibleLayers) {

@@ -53,7 +53,7 @@ const UserSettings = () => {
   };
 
   useEffect(() => {
-    if (!impersonatedUser) getUserList(inputValue);
+    if (!impersonatedUser) void getUserList(inputValue);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [inputValue, impersonatedUser]);
 
@@ -63,7 +63,7 @@ const UserSettings = () => {
   const handleSubjectSelection = useCallback(
     (subject: SearchResultItemUser | undefined) => {
       if (subject) {
-        impersonate(subject);
+        void impersonate(subject);
         closeModal();
       }
     },

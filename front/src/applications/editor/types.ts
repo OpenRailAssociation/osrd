@@ -103,9 +103,12 @@ export type Tool<S> = {
   isHidden?: (context: ReadOnlyEditorContextType<CommonToolState>) => boolean;
 
   // Interactions with MapLibre:
-  onMount?: (context: ExtendedEditorContextType<S>) => void;
+  onMount?: (context: ExtendedEditorContextType<S>) => void | Promise<void>;
   onUnmount?: (context: ExtendedEditorContextType<S>) => void;
-  onClickMap?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
+  onClickMap?: (
+    e: MapLayerMouseEvent,
+    context: ExtendedEditorContextType<S>
+  ) => void | Promise<void>;
   onClickEntity?: (
     entity: EditorEntity,
     e: MapLayerMouseEvent,

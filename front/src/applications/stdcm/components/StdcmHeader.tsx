@@ -75,13 +75,13 @@ const StdcmHeader = ({
     }
   };
 
-  const handleRequestsButton = () => {
+  const handleRequestsButton = async () => {
     // TODO: remove openRequestsFolder() and related code
     // when requests sent modal is fully done
     if (isDebugMode) {
       setShowRequestsSentModal(true);
     } else {
-      openRequestsFolder();
+      await openRequestsFolder();
     }
   };
 

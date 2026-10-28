@@ -193,7 +193,7 @@ export const useOperationalPointSearch = ({
       apply(suggestionsLarge);
     };
 
-    searchOps();
+    void searchOps();
 
     return () => {
       cancelled = true;

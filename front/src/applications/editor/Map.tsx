@@ -14,7 +14,7 @@ import ReactMapGL, {
 import { useSelector } from 'react-redux';
 
 import getInfraErrorFromTileProperties from 'applications/editor/components/InfraErrors/utils';
-import type { Layer } from 'applications/editor/consts';
+import type { EditoastType, Layer } from 'applications/editor/consts';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
@@ -247,27 +247,47 @@ const MapUnplugged = ({
           interactive
           cursor={cursor}
           interactiveLayerIds={interactiveLayerIDs}
-          onClick={(e) => {
-            const eventWithFeature = getEventWithNearestFeature(e) ?? e;
+          onClick={async (e) => {
+            const nearestResult = getMapMouseEventNearestFeature(
+              e,
+              eventsLayerIDs
+                ? {
+                    layersId: eventsLayerIDs,
+                  }
+                : undefined
+            );
+
+            const eventWithFeature = nearestResult
+              ? {
+                  ...e,
+                  // (don't remove those 2 lines or TypeScript won't be happy)
+                  preventDefault: e.preventDefault,
+                  defaultPrevented: e.defaultPrevented,
+                  features: [nearestResult.feature],
+                }
+              : e;
+
             if (toolState.hovered && activeTool.onClickEntity) {
               if (toolState.hovered.type) {
-                getEntity(infraID!, toolState.hovered.id, toolState.hovered.type, dispatch).then(
-                  (entity) => {
-                    if (activeTool.onClickEntity) {
-                      // Those features lack a proper "geometry", and have a "_geometry"
-                      // instead. This fixes it:
-                      entity = {
-                        ...entity,
-                        geometry: entity.geometry || (entity as { _geometry?: Geometry })._geometry,
-                      };
-                      activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
-                    }
+                const getAndClickOnEntity = async (id: string, type: EditoastType) => {
+                  let entity = await getEntity(infraID!, id, type, dispatch);
+
+                  if (activeTool.onClickEntity) {
+                    // Those features lack a proper "geometry", and have a "_geometry"
+                    // instead. This fixes it:
+                    entity = {
+                      ...entity,
+                      geometry: entity.geometry || (entity as { _geometry?: Geometry })._geometry,
+                    };
+                    activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
                   }
-                );
+                };
+
+                void getAndClickOnEntity(toolState.hovered.id, toolState.hovered.type);
               }
             }
             if (activeTool.onClickMap) {
-              activeTool.onClickMap(eventWithFeature, extendedContext);
+              await activeTool.onClickMap(eventWithFeature, extendedContext);
             }
             dispatch(removeMapSearchMarker());
           }}

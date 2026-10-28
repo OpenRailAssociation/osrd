@@ -45,8 +45,8 @@ const Languages = () => {
   const { i18n } = useTranslation();
   const { closeModal } = useModal();
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
+  const changeLanguage = async (lng: string) => {
+    await i18n.changeLanguage(lng);
     closeModal();
   };
 
@@ -58,7 +58,7 @@ const Languages = () => {
           className="btn btn-secondary btn-block language-choice-btn"
           key={`language-btn-${languageCode}`}
           disabled={i18n.language === languageCode}
-          onClick={() => changeLanguage(languageCode)}
+          onClick={async () => await changeLanguage(languageCode)}
         >
           {languageSvgFlag(languageCode)}
           {languageName(languageCode)}

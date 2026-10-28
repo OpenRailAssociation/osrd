@@ -93,7 +93,7 @@ const MapSearchLine = ({
 
   useEffect(() => {
     if (debouncedSearchTerm) {
-      onSearch();
+      void onSearch();
     } else if (searchResults.length !== 0) {
       setSearchResults([]);
     }

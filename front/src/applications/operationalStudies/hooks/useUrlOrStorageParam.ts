@@ -38,7 +38,7 @@ const useUrlOrStorageParam = (keyPrefix: string) => {
    * Set a parameter in the URL and in the local storage.
    * If the parameter value given is undefined, remove the parameter from the URL and local storage instead.
    */
-  const setParamsInUrlAndStorage = (paramName: string, paramValue: string | undefined) => {
+  const setParamsInUrlAndStorage = async (paramName: string, paramValue: string | undefined) => {
     if (paramValue === undefined) {
       searchParams.delete(paramName);
       localStorage.removeItem(`${localKey}_${paramName}`);
@@ -46,7 +46,7 @@ const useUrlOrStorageParam = (keyPrefix: string) => {
       searchParams.set(paramName, paramValue);
       localStorage.setItem(`${localKey}_${paramName}`, paramValue);
     }
-    navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+    await navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
   };
 
   return { getParamFromUrlOrStorage, setParamsInUrlAndStorage };

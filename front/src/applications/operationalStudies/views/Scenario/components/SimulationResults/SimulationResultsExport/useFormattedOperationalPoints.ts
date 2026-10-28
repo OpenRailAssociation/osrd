@@ -36,7 +36,7 @@ const useFormattedOperationalPoints = (
         );
         setOperationalPoints(formattedOperationalPoints);
       };
-      fetchOperationalPoints();
+      void fetchOperationalPoints();
     }
   }, [trainSchedule, simulatedTrainSchedule, pathProperties, getTrackSectionsByIds]);
 

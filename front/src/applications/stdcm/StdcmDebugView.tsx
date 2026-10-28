@@ -27,7 +27,7 @@ const StdcmDebugView = () => {
   const handleSubmit = () => {
     if (formRef.current) {
       const id = (new FormData(formRef.current).get('traceId') as string).trim();
-      if (id) navigate(`/stdcm/debug?traceId=${encodeURIComponent(id)}`);
+      if (id) void navigate(`/stdcm/debug?traceId=${encodeURIComponent(id)}`);
     }
   };
 

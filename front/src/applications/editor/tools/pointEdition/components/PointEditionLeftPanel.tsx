@@ -77,18 +77,20 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
 
     if (trackId && trackState.id !== trackId) {
       setTrackState({ type: 'isLoading', id: trackId });
-      getEntity<TrackSectionEntity>(infraID!, trackId, 'TrackSection', dispatch).then((track) => {
-        setTrackState({ type: 'ready', id: trackId, track });
+      void getEntity<TrackSectionEntity>(infraID!, trackId, 'TrackSection', dispatch).then(
+        (track) => {
+          setTrackState({ type: 'ready', id: trackId, track });
 
-        if (!firstLoading) {
-          const { position } = state.entity.properties;
-          const turfPosition =
-            (position * length(track, { units: 'meters' })) / track.properties.length;
-          const point = along(track, turfPosition, { units: 'meters' });
+          if (!firstLoading) {
+            const { position } = state.entity.properties;
+            const turfPosition =
+              (position * length(track, { units: 'meters' })) / track.properties.length;
+            const point = along(track, turfPosition, { units: 'meters' });
 
-          setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
+            setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
+          }
         }
-      });
+      );
     }
   }, [
     infraID,

@@ -98,7 +98,7 @@ const TrackSectionEndpointSelector = ({
 
   useEffect(() => {
     if (typeof formData?.track === 'string') {
-      getEntity<TrackSectionEntity>(infraID!, formData.track, 'TrackSection', dispatch).then(
+      void getEntity<TrackSectionEntity>(infraID!, formData.track, 'TrackSection', dispatch).then(
         (track) => {
           setTrackSection(track);
         }
