@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 import SwaggerParser from '@apidevtools/swagger-parser';
-import i18next from 'i18next';
+import { createInstance as createInstanceI18n } from 'i18next';
 import type { OpenAPI, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 
 // relative the project's root
@@ -69,7 +69,7 @@ async function checkI18N(
       fs.readFileSync(new URL(localized_i18n_error_path, import.meta.url), 'utf8')
     );
     // Init the i18n system
-    const i18n = i18next.createInstance(
+    const i18n = createInstanceI18n(
       {
         lng: locale,
         resources: {

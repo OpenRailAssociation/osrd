@@ -43,7 +43,6 @@
     "no-floating-promises": "off",
     "no-inline-comments": "off",
     "no-misused-promises": "off",
-    "no-named-as-default-member": "off",
     "no-named-as-default": "off",
     "no-negated-condition": "off",
     "no-redundant-type-constituents": "off",

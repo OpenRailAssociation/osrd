@@ -372,6 +372,7 @@ const GeoJSONs = ({
   const hiddenColors = useMemo(
     () =>
       transformTheme(colors, (color) =>
+        // eslint-disable-next-line import/no-named-as-default-member -- chroma-js does not export scale properly
         chroma.average([color, colors.background.color], 'lab', [1.5, 1]).hex()
       ),
     [colors]

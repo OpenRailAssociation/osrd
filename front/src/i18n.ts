@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import { use as i18nUse, loadNamespaces as loadI18nNamespaces } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 import { initReactI18next } from 'react-i18next';
@@ -10,8 +10,7 @@ const version = encodeURIComponent(import.meta.env.VITE_OSRD_GIT_DESCRIBE);
 
 export const supportedLngs = ['de', 'en', 'fr', 'pt'];
 
-i18n
-  .use(Backend)
+i18nUse(Backend)
   .use(initReactI18next)
   .use(LanguageDetector)
   .init({
@@ -31,4 +30,4 @@ i18n
 
 // Errors namespace must be initialized so t function
 // can be used in plain old function (see utils/error)
-i18n.loadNamespaces('errors');
+loadI18nNamespaces('errors');

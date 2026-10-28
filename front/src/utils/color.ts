@@ -22,6 +22,7 @@ export function linearColorScaleInterpolation(
   if (value <= domain.min) return scale.from;
 
   // Linear interpolation
+  // eslint-disable-next-line import/no-named-as-default-member -- chroma-js does not export scale properly
   const f = chroma.scale([scale.from, scale.to]).domain([domain.min, domain.max]);
   return f(value).hex();
 }

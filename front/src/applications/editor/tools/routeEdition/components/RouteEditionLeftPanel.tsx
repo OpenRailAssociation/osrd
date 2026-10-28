@@ -162,6 +162,7 @@ const RouteEditionPanel = () => {
         infraPathfindingInput: payload,
       }).unwrap();
 
+      // eslint-disable-next-line import/no-named-as-default-member -- chroma-js does not export scale properly
       const candidateColors = chroma
         .scale(['#321BF7CC', '#37B5F0CC', '#F0901FCC', '#F7311BCC', '#D124E0CC'])
         .mode('lch')

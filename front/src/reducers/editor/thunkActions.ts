@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import { t } from 'i18next';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 
@@ -185,8 +185,8 @@ export function saveOperations(
         // success message
         dispatch(
           setSuccess({
-            title: i18n.t('common.success.save.title'),
-            text: i18n.t('common.success.save.text'),
+            title: t('common.success.save.title'),
+            text: t('common.success.save.text'),
           })
         );
         return response.data;
@@ -196,8 +196,8 @@ export function saveOperations(
       dispatch(
         setFailure(
           castErrorToFailure(e, {
-            name: i18n.t('common.failure.save.title'),
-            message: i18n.t('common.failure.save.text'),
+            name: t('common.failure.save.title'),
+            message: t('common.failure.save.text'),
           })
         )
       );
@@ -242,8 +242,8 @@ export function saveSplitTrackSection(
         // success message
         dispatch(
           setSuccess({
-            title: i18n.t('common.success.save.title'),
-            text: i18n.t('common.success.save.text'),
+            title: t('common.success.save.title'),
+            text: t('common.success.save.text'),
           })
         );
         return response.data;
@@ -253,8 +253,8 @@ export function saveSplitTrackSection(
       dispatch(
         setFailure(
           castErrorToFailure(e, {
-            name: i18n.t('common.failure.save.title'),
-            message: i18n.t('common.failure.save.text'),
+            name: t('common.failure.save.title'),
+            message: t('common.failure.save.text'),
           })
         )
       );

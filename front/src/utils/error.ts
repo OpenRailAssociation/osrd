@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import { t } from 'i18next';
 import { isObject } from 'lodash';
 
 import type { ApiError } from 'common/api/baseGeneratedApis';
@@ -8,10 +8,10 @@ import type { ApiError } from 'common/api/baseGeneratedApis';
  * If name can't be found, a default one is return (or the default value specified)
  */
 export function getErrorName(error: unknown, defaultValue?: string): string {
-  let name = defaultValue || i18n.t('default', { ns: 'errors' });
+  let name = defaultValue || t('default', { ns: 'errors' });
   if (isObject(error) && 'name' in error) {
     const i18nName = `${error.name}`;
-    name = i18n.t(i18nName, i18nName, { ns: 'errors' });
+    name = t(i18nName, i18nName, { ns: 'errors' });
   }
   return name;
 }
@@ -21,7 +21,7 @@ export function getErrorName(error: unknown, defaultValue?: string): string {
  * If message can't be found, a default one is return (or the default value specified)
  */
 export function getErrorMessage(error: unknown, defaultValue?: string): string {
-  const defaultMessage = defaultValue || i18n.t('default', { ns: 'errors' });
+  const defaultMessage = defaultValue || t('default', { ns: 'errors' });
   if (!isObject(error)) {
     return defaultMessage;
   }
@@ -32,7 +32,7 @@ export function getErrorMessage(error: unknown, defaultValue?: string): string {
       if ('type' in error.data) {
         const { type, message: i18nMsg, context } = (error as ApiError).data;
         const i18nId = type.split(':').join('.');
-        return i18n.t(i18nId, i18nMsg, { ...context, ns: 'errors' });
+        return t(i18nId, i18nMsg, { ...context, ns: 'errors' });
       }
 
       if ('message' in error.data) return `${error.data.message}`;
