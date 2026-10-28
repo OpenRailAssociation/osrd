@@ -24,6 +24,7 @@ import {
   addDurationToStartTime,
   subtractStartTime,
 } from 'utils/duration';
+import { mmToKm } from 'utils/physics';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
@@ -78,6 +79,7 @@ type BuildTableRowParams = {
   schedule?: ScheduleItem;
   computedArrival?: Duration;
   computedBaseArrival?: Duration;
+  distance: number | null | undefined;
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
@@ -101,6 +103,7 @@ const buildTableRow = ({
   schedule,
   computedArrival,
   computedBaseArrival,
+  distance,
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
@@ -198,6 +201,7 @@ const buildTableRow = ({
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
     baseArrival,
+    distance: distance ? mmToKm(distance) : null,
   };
 };
 
@@ -341,6 +345,7 @@ const useTimesStopsTableData = (
           stablePathItemTimes?.base[stepIndex] !== undefined
             ? getTruncatedToSecondSchedule(stablePathItemTimes.base[stepIndex])
             : undefined;
+        const distance = schedule?.reference_position ?? undefined;
         const scheduleNotHonored = stableIsValid && !stablePathItemRespect?.times[stepIndex];
         const marginNotHonored = stableIsValid && !stablePathItemRespect?.margins[stepIndex];
 
@@ -375,6 +380,7 @@ const useTimesStopsTableData = (
           schedule,
           computedArrival,
           computedBaseArrival,
+          distance,
           invalidPathStep:
             (!matchingOp && pathStepLocation.type === 'operational_point_part_reference') ||
             isRequestedTrackUnknown,
@@ -408,6 +414,7 @@ const useTimesStopsTableData = (
             ...matchingPathStepRow,
             track: trackName ?? matchingPathStepRow.track,
             opOnPathIndex: opIndex,
+            distance: op.position ? mmToKm(op.position) : null,
           });
         } else {
           const computedArrival = stableTrain
@@ -435,6 +442,7 @@ const useTimesStopsTableData = (
               startDate,
               computedArrival,
               computedBaseArrival,
+              distance: op.position ?? null,
               shortSlipDistance,
               closedSignal,
               hasSimulation: stableIsValid,
