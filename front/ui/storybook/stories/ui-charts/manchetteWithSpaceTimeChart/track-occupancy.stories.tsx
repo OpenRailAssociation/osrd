@@ -152,7 +152,11 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
             {...spaceTimeChartProps}
             onClick={({ hoveredItem }) => {
               const element = hoveredItem?.element;
-              if (!element) return setSelectedTrain(undefined);
+              if (!element) {
+                setSelectedTrain(undefined);
+                return;
+              }
+
               // Occupancy zones (TOD) and path items (STD) are both picked on the 'paths'
               // layer, so they're distinguished by element type, not by layer.
               if (

@@ -17,8 +17,8 @@ export function drawAliasedLine(
   drawOnBottom: boolean,
   scalingRatio = 1
 ): void {
-  if (fromX > toX)
-    return drawAliasedLine(
+  if (fromX > toX) {
+    drawAliasedLine(
       imageData,
       { x: toX, y: toY },
       { x: fromX, y: fromY },
@@ -27,6 +27,8 @@ export function drawAliasedLine(
       drawOnBottom,
       scalingRatio
     );
+    return;
+  }
 
   fromX = Math.round(fromX * scalingRatio);
   fromY = Math.round(fromY * scalingRatio);

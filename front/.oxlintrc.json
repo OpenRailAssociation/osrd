@@ -39,7 +39,6 @@
     "max-lines": "off",
     "no-array-index-key": "off",
     "no-await-in-loop": "off",
-    "no-confusing-void-expression": "off",
     "no-else-return": "off",
     "no-floating-promises": "off",
     "no-inline-comments": "off",
@@ -159,6 +158,7 @@
         "fixStyle": "inline-type-imports"
       }
     ],
+    "typescript/no-confusing-void-expression": ["error", { "ignoreArrowShorthand": true }],
     "typescript/no-restricted-types": [
       "error",
       {
