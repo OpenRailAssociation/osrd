@@ -8,7 +8,11 @@ import {
   formatEditoastIdToIndexedOccurrenceId,
 } from 'utils/trainId';
 
-import { repeatOccupancyZonesInRange, type MovableOccupancyZone } from '../zones';
+import {
+  getOffsetInPattern,
+  repeatOccupancyZonesInRange,
+  type MovableOccupancyZone,
+} from '../zones';
 
 function buildOccupancyZoneTimes({
   startTime,
@@ -45,6 +49,26 @@ function buildOccupancyZone({
     active: false,
   };
 }
+
+describe('getOffsetInPattern', () => {
+  const hour = new Duration({ hours: 1 }).ms;
+
+  it('should keep an offset within the pattern', () => {
+    expect(getOffsetInPattern(hour, 2 * hour)).toBe(hour);
+  });
+
+  it('should bring back an offset past the pattern', () => {
+    expect(getOffsetInPattern(3 * hour, 2 * hour)).toBe(hour);
+  });
+
+  it('should bring back a negative offset', () => {
+    expect(getOffsetInPattern(-hour, 2 * hour)).toBe(hour);
+  });
+
+  it('should give 0 in a calendar timetable', () => {
+    expect(getOffsetInPattern(3 * hour)).toBe(0);
+  });
+});
 
 describe('repeatOccupancyZonesInRange', () => {
   const timeRange = {
