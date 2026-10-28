@@ -433,10 +433,10 @@ jobs:
           persist-credentials: false
 
       - name: Download built editoast-test image
-        if: needs.build-editoast.outputs.output_method == 'artifact'
+        if: needs.build-editoast-test.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8.0.2
         with:
-          name: images-editoast
+          name: images-editoast-test
           path: .
 
       - name: Load built images
@@ -484,10 +484,10 @@ jobs:
           persist-credentials: false
 
       - name: Download built images
-        if: needs.build-editoast.outputs.output_method == 'artifact'
+        if: needs.build-editoast-test.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v8.0.2
         with:
-          name: images-editoast
+          name: images-editoast-test
           path: .
 
       - name: Load built images
