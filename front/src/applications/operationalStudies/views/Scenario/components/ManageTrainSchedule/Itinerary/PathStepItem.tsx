@@ -82,9 +82,11 @@ type PathStepProps = {
   customTracks: { trackId: string; trackName: string }[];
   onAddCustomTrack: (track: { trackId: string; trackName: string }) => void;
   onTrackNameChange: (trackName: string) => void;
+  onAddCustomOp: (name: string) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
+  isEditing: boolean;
   opSuggestions: Array<OperationalPointSuggestion | string>;
   onSelectOpSuggestion: (
     suggestion: OperationalPointSuggestion,
@@ -118,9 +120,11 @@ const PathStepItem = ({
   customTracks,
   onAddCustomTrack,
   onTrackNameChange,
+  onAddCustomOp,
   onOpFocus,
   onOpBlur,
   inputValue,
+  isEditing,
   opSuggestions,
   onSelectOpSuggestion,
   resetOpSuggestions,
@@ -149,6 +153,7 @@ const PathStepItem = ({
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
+  const [subFormName, setSubFormName] = useState('');
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -563,6 +568,12 @@ const PathStepItem = ({
                       )
                     : undefined
                 }
+                allowCustomValue={unrecognizedWaypointsActivated && !isOpValid && isEditing}
+                addCustomValueLabel={t('addCustomOp')}
+                onAddCustomValue={(value) => {
+                  setSubFormName(value);
+                  onAddCustomOp(value);
+                }}
                 small
                 narrow
                 onFocusCapture={onOpFocus}
@@ -670,6 +681,8 @@ const PathStepItem = ({
         pathStepMetadata={pathStepMetadata}
         isSubFormExpanded={isSubFormExpanded}
         isOpValid={isOpValid}
+        name={subFormName}
+        onNameChange={setSubFormName}
       />
     </div>
   );
