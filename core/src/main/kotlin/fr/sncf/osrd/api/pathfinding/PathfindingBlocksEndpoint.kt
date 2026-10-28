@@ -15,6 +15,7 @@ import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.hasDuplicateTracks
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.PathfindingResult
 import fr.sncf.osrd.pathfinding.constraints.initConstraintsFromRSProps
@@ -167,7 +168,7 @@ private fun computePaths(
     if (pathFound != null) {
         pathfindingLogger.info("Path found, start postprocessing")
         val res = processPathfindingResponse(infra, pathFound)
-        if (!hasDuplicateTracks(infra, res.trainPath)) return res
+        if (!res.trainPath.hasDuplicateTracks()) return res
         else pathfindingLogger.info("Path has duplicate tracks, dismissing")
     }
 
@@ -182,20 +183,6 @@ private fun computePaths(
         initialRequest,
         timeout.minus(elapsedSeconds),
     )
-}
-
-/**
- * Return true if the path contains a duplicated track. This kind of path is not supported by OSRD
- * yet.
- */
-fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
-    val tracks =
-        path
-            .getChunks()
-            .map { it.value }
-            .map { DirTrackSectionId(infra.rawInfra.getTrackFromChunk(it.value), it.direction) }
-            .withoutConsecutiveDuplicates()
-    return tracks.toSet().size < tracks.size
 }
 
 @WithSpan(value = "Identifying why no path was found")

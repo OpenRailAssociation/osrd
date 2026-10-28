@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.pathfinding
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.hasDuplicateTracks
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
@@ -18,9 +19,9 @@ fun buildIncompatibleConstraintsResponse(
     constraints: Collection<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
 ): IncompatibleConstraintsPathResponse? {
-    val path = possiblePathWithoutErrorNoConstraints.trainPath
-    if (hasDuplicateTracks(infra, path)) return null
+    if (possiblePathWithoutErrorNoConstraints.trainPath.hasDuplicateTracks()) return null
 
+    val path = possiblePathWithoutErrorNoConstraints.trainPath
     val elecConstraints = constraints.filterIsInstance<ElectrificationConstraints>()
     assert(elecConstraints.size < 2)
     val elecBlockedRangeValues =
