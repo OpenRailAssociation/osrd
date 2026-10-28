@@ -25,6 +25,7 @@ import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, startTimeToMs, subtractStartTime } from 'utils/duration';
 
+import DistanceCell from './DistanceCell';
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
@@ -77,6 +78,7 @@ declare module '@tanstack/react-table' {
     onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
     onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
     onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
+    onReferencePositionChange: (row: TimesStopsRow, position: number | null) => void;
   }
 }
 
@@ -188,6 +190,7 @@ type TimesStopsTableProps = {
   onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
   onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
+  onReferencePositionChange: (row: TimesStopsRow, position: number | null) => void;
 };
 
 const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
@@ -227,6 +230,7 @@ const TimesStopsTable = ({
   onPowerRestrictionChange,
   onApplyTimesFromSimulation,
   onReferenceBaseArrivalChange,
+  onReferencePositionChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -303,38 +307,36 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnRequestTheoreticalMarginCell = useCallback(
-    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>) => {
-      const { allRows } = info.table.options.meta!;
-      const row = info.row.original;
-      const isFirstRow = info.row.index === 0;
-      const isLastRow = info.row.index === allRows.length - 1;
+  const returnRequestTheoreticalMarginCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>
+  ) => {
+    const { allRows } = info.table.options.meta!;
+    const row = info.row.original;
+    const isFirstRow = info.row.index === 0;
+    const isLastRow = info.row.index === allRows.length - 1;
 
-      if (isLastRow) return null;
+    if (isLastRow) return null;
 
-      const marginValue =
-        isScheduledOP(row) || !!row.requestedTheoreticalMargin
-          ? row.requestedTheoreticalMargin
-          : null;
-      const isSpecifiedMargin =
-        (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
-        row.requestedTheoreticalMargin;
-      return (
-        <div data-testid="requested-theoretical-margin">
-          <MarginCell
-            data-testid="margin-cell-editable"
-            marginValue={marginValue ?? null}
-            editable={!isLastRow}
-            isInherited={!isSpecifiedMargin}
-            isFirstRow={isFirstRow}
-            showUnitToggle={isValid && !scheduleNotHonored}
-            onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
-          />
-        </div>
-      );
-    },
-    [scheduleNotHonored, isValid]
-  );
+    const marginValue =
+      isScheduledOP(row) || !!row.requestedTheoreticalMargin
+        ? row.requestedTheoreticalMargin
+        : null;
+    const isSpecifiedMargin =
+      (isFirstRow || row.isTheoreticalMarginBoundary) && !!row.requestedTheoreticalMargin;
+
+    return (
+      <div data-testid="requested-theoretical-margin">
+        <MarginCell
+          data-testid="margin-cell-editable"
+          marginValue={marginValue ?? null}
+          editable={!isLastRow}
+          isInherited={!isSpecifiedMargin}
+          isFirstRow={isFirstRow}
+          onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
+        />
+      </div>
+    );
+  };
 
   const returnShortSlipDistanceCell = (
     info: CellContext<TimesStopsTableFeatures, TimesStopsRow, boolean | undefined>
@@ -681,6 +683,39 @@ const TimesStopsTable = ({
     [startTime, registerTimeCellRef, dateTimeLocale, focusCellBelow, t, startTimeCellType, isValid]
   );
 
+  const returnPositionCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, number | null>) => {
+      const isFirstRow = info.row.index === 0;
+      const value = info.getValue();
+
+      if (isFirstRow) {
+        return (
+          <span data-testid="first-position" className="distance-cell">
+            0 km
+          </span>
+        );
+      }
+
+      if (!isValid && !isFirstRow) {
+        return (
+          <DistanceCell
+            distanceValue={value ?? undefined}
+            onCommit={(v) => {
+              info.table.options.meta!.onReferencePositionChange(info.row.original, v);
+            }}
+          />
+        );
+      }
+
+      return (
+        <span data-testid="computed-base-arrival">
+          {value ? String(value).slice(0, 5) + 'km' : '-'}
+        </span>
+      );
+    },
+    [isValid]
+  );
+
   const columns = useMemo(
     () =>
       columnHelper.columns([
@@ -847,6 +882,15 @@ const TimesStopsTable = ({
             'data-testid': 'reference-base-arrival-cell',
           },
         }),
+        columnHelper.accessor('position', {
+          header: () => t(isValid ? 'calculatedPosition' : 'requestedPosition'),
+          cell: returnPositionCell,
+          meta: {
+            className: cx('col-reference-position col-with-distance', { computed: isValid }),
+            title: t(isValid ? 'calculatedPosition' : 'requestedPosition'),
+            'data-testid': 'reference-position',
+          },
+        }),
       ]),
     [
       returnDepartureTimeCell,
@@ -855,8 +899,8 @@ const TimesStopsTable = ({
       returnCalculatedArrivalTimeCell,
       returnRequestedTimeHeader,
       returnArrivalTimeCell,
-      returnRequestTheoreticalMarginCell,
       returnBaseArrivalCell,
+      returnPositionCell,
       isValid,
       t,
     ]
@@ -880,6 +924,7 @@ const TimesStopsTable = ({
       onPowerRestrictionChange,
       onApplyTimesFromSimulation,
       onReferenceBaseArrivalChange,
+      onReferencePositionChange,
     },
   });
 

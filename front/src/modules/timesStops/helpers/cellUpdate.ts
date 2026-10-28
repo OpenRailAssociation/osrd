@@ -185,7 +185,12 @@ export const upsertScheduleItem = (
   const newItem = item.at === path[0].key ? { ...item, arrival: null } : item;
 
   // Nothing left to schedule: remove the item entirely
-  if (!newItem.arrival && !newItem.stop_for && !newItem.reference_base_arrival)
+  if (
+    !newItem.arrival &&
+    !newItem.stop_for &&
+    !newItem.reference_base_arrival &&
+    (newItem.reference_position === undefined || newItem.reference_position === null)
+  )
     return index < 0 ? undefined : removeElementAtIndex(schedule, index);
 
   return index >= 0
@@ -212,6 +217,7 @@ export const computeOptimisticRow = (
     | 'requestedTheoreticalMargin'
     | 'powerRestriction'
     | 'baseArrival'
+    | 'position'
   >
 > => {
   if (edit.field === 'powerRestriction') return { powerRestriction: edit.value };
@@ -225,6 +231,10 @@ export const computeOptimisticRow = (
 
   if (edit.field === 'referenceBaseArrival') {
     return { baseArrival: edit.value };
+  }
+
+  if (edit.field === 'referencePosition') {
+    return { position: edit.value };
   }
 
   const { arrival, stop, departure } = applyScheduleEdit(

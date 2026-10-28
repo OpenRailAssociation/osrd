@@ -146,6 +146,8 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
           stopFor: null,
           theoreticalMargin: null,
           receptionSignal: null,
+          referenceBaseArrival: null,
+          referencePosition: null,
         }));
 
       onSubmit(pathSteps);

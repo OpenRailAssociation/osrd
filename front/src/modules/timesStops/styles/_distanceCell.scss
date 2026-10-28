@@ -1,0 +1,82 @@
+.distance-cell {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  font-family: inherit, monospace;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  &__input,
+  &__display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 84px;
+    padding-bottom: 11px;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  &__input {
+    z-index: 2;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::selection {
+      background: transparent;
+    }
+
+    padding-right: 2ch;
+  }
+
+  &__display {
+    z-index: 1;
+    color: #000;
+    pointer-events: none;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+
+    &--saved {
+      color: var(--primary60);
+    }
+
+    .value {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1ch;
+    }
+
+    .value-editing {
+      position: relative;
+      background-color: var(--primary10);
+      border-radius: 2px;
+    }
+
+    .unit-kilometer {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .custom-caret {
+      width: 1px;
+      height: 20px;
+      background-color: #006dff;
+    }
+  }
+}

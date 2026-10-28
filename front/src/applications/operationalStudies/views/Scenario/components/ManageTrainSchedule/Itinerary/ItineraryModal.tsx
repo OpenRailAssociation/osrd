@@ -654,6 +654,8 @@ const ItineraryModal = ({
         stopFor: pathStep.stopFor ?? null,
         theoreticalMargin: pathStep.theoreticalMargin ?? null,
         receptionSignal: pathStep.receptionSignal ?? null,
+        referenceBaseArrival: pathStep.referenceBaseArrival ?? null,
+        referencePosition: pathStep.referencePosition ?? null,
       }));
     formattedPathSteps.forEach((step) => {
       initCustomTracksEntry(step.location);
@@ -747,6 +749,8 @@ const ItineraryModal = ({
           stopFor: step.stopFor,
           theoreticalMargin: step.theoreticalMargin ?? undefined,
           receptionSignal: step.receptionSignal ?? undefined,
+          referenceBaseArrival: step.referenceBaseArrival ?? undefined,
+          referencePosition: step.referencePosition ?? undefined,
         };
 
         if (!metadata || metadata.validity !== 'valid') {

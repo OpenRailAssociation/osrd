@@ -24,6 +24,7 @@ import {
   addDurationToStartTime,
   subtractStartTime,
 } from 'utils/duration';
+import { mmToKm } from 'utils/physics';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
@@ -78,6 +79,7 @@ type BuildTableRowParams = {
   schedule?: ScheduleItem;
   computedArrival?: Duration;
   computedBaseArrival?: Duration;
+  computedPosition?: number;
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
@@ -101,6 +103,7 @@ const buildTableRow = ({
   schedule,
   computedArrival,
   computedBaseArrival,
+  computedPosition,
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
@@ -154,6 +157,12 @@ const buildTableRow = ({
 
   const baseArrival = hasSimulation ? computedBaseArrivalValue : referenceBaseArrival;
 
+  const referencePosition = schedule?.reference_position ?? null;
+  const computedPositionValue = computedPosition !== undefined ? computedPosition : null;
+
+  const positionValue = hasSimulation ? computedPositionValue : referencePosition;
+  const position = positionValue !== null ? mmToKm(positionValue) : null;
+
   const {
     theoreticalMargin,
     isTheoreticalMarginBoundary,
@@ -198,6 +207,7 @@ const buildTableRow = ({
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
     baseArrival,
+    position,
   };
 };
 
@@ -408,6 +418,7 @@ const useTimesStopsTableData = (
             ...matchingPathStepRow,
             track: trackName ?? matchingPathStepRow.track,
             opOnPathIndex: opIndex,
+            position: mmToKm(op.position),
           });
         } else {
           const computedArrival = stableTrain
@@ -435,6 +446,7 @@ const useTimesStopsTableData = (
               startDate,
               computedArrival,
               computedBaseArrival,
+              computedPosition: op.position,
               shortSlipDistance,
               closedSignal,
               hasSimulation: stableIsValid,
