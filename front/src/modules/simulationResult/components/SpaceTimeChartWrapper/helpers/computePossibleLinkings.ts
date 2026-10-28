@@ -3,7 +3,7 @@ import { groupBy } from 'lodash';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 
-import { repeatOccupancyZonesInRange } from './zones';
+import { getOffsetInPattern, repeatOccupancyZonesInRange } from './zones';
 
 export type LinkableOccupancy = {
   trainId: TrainId;
@@ -68,13 +68,6 @@ const BLOCK_RANK: Record<LinkableOccupancy['blockType'], number> = {
   incoming: 0,
   via: 1,
   outgoing: 2,
-};
-
-/** The offset within the hourly pattern of a copy repeated on the given offset. */
-const getOffsetInPattern = (repeatOffset = 0, hourlyPatternDuration?: number) => {
-  if (!hourlyPatternDuration) return 0;
-  const offset = repeatOffset % hourlyPatternDuration;
-  return offset < 0 ? offset + hourlyPatternDuration : offset;
 };
 
 /**
