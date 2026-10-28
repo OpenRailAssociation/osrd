@@ -171,15 +171,22 @@ export function buildSplitPoints({
         zones: baseZones,
         possibleLinkings,
         existingLinkings: linkings?.existing ?? [],
-        trainNames: (trainId) => pathsById[trainId]?.label,
         showSuggestions: linkings?.showSuggestions ?? false,
       });
-      const hoveredBadges = brokenLinkings.map((brokenLinking) => ({
-        ...brokenLinking,
-        hover:
-          brokenLinking.id === hoveredBadge?.brokenLinkingId &&
-          brokenLinking.direction === hoveredBadge.direction,
-      }));
+      // A badge names the train missing at this end of the linking:
+      const namedBrokenLinkings = brokenLinkings.flatMap(({ trainId, ...badge }) => {
+        const path = pathsById[trainId];
+        if (!path) return [];
+        return [
+          {
+            ...badge,
+            name: path.label,
+            hover:
+              badge.id === hoveredBadge?.brokenLinkingId &&
+              badge.direction === hoveredBadge.direction,
+          },
+        ];
+      });
       // A linking takes the colors of the train departing after it:
       const coloredLinkings = waypointLinkings.flatMap(({ targetTrainId, ...linking }) => {
         const path = pathsById[targetTrainId];
@@ -217,7 +224,7 @@ export function buildSplitPoints({
             occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
             draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}
             linkings={coloredLinkings}
-            brokenLinkings={hoveredBadges}
+            brokenLinkings={namedBrokenLinkings}
             deleteIconUrl={trashIcon}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             onDragOver={onTrackDragOver}
