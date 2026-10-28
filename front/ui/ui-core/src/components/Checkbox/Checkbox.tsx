@@ -41,6 +41,7 @@ const Checkbox = ({
         // Browsers' read-only attribute is not working on checkboxes. See: https://stackoverflow.com/a/70375659
         className={cx({ 'read-only': readOnly })}
         type="checkbox"
+        // eslint-disable-next-line react/checked-requires-onchange-or-readonly -- Done purposefully (Checkbox component)
         checked={checked}
         disabled={disabled}
         ref={(input) => {

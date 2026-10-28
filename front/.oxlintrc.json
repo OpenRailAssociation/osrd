@@ -29,7 +29,6 @@
     "**/storybook-static/**"
   ],
   "rules": {
-    "checked-requires-onchange-or-readonly": "off",
     "click-events-have-key-events": "off",
     "consistent-return": "off",
     "control-has-associated-label": "off",
