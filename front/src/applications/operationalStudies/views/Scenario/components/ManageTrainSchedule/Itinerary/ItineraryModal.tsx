@@ -332,6 +332,7 @@ const ItineraryModal = ({
     activeStepKey,
     setActiveStepKey,
     getInputForStep,
+    isEditingStep,
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
@@ -1016,6 +1017,12 @@ const ItineraryModal = ({
                         })
                       );
                     }}
+                    onAddCustomOp={() => {
+                      confirmedStepKeyRef.current = pathStep.key;
+                      if (!expandedStepKeys.includes(pathStep.key)) {
+                        setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
+                      }
+                    }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];
@@ -1053,6 +1060,7 @@ const ItineraryModal = ({
                       unmarkEditing(pathStep.key);
                     }}
                     inputValue={getInputForStep(pathStep.key)}
+                    isEditing={isEditingStep(pathStep.key)}
                     opSuggestions={activeStepKey === pathStep.key ? opSuggestions : []}
                     onSelectOpSuggestion={(suggestion, chCode) => {
                       applyOperationalPointToStep(pathStep.key, suggestion, chCode);
