@@ -106,66 +106,61 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const invalidFields = checkStudyFields(currentStudy);
   const hasErrors = Object.values(invalidFields).some((field) => field);
 
-  const createStudy = (event: React.SubmitEvent<HTMLFormElement>) => {
+  const createStudy = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (hasErrors) {
       setDisplayErrors(true);
     } else {
-      createStudies({
+      const createdStudy = await createStudies({
         studyCreateForm: { ...currentStudy, project_id: parseInt(projectId, 10) },
-      })
-        .unwrap()
-        .then((createdStudy) => {
-          navigate(`projects/${projectId}/studies/${createdStudy.id}`);
-          closeModal();
-        });
+      }).unwrap();
+
+      void navigate(`projects/${projectId}/studies/${createdStudy.id}`);
+      closeModal();
     }
   };
 
-  const updateStudy = () => {
+  const updateStudy = async () => {
     if (hasErrors) {
       setDisplayErrors(true);
     } else if (study?.id && projectId) {
-      patchStudies({
+      await patchStudies({
         studyId: study.id,
         studyPatchForm: currentStudy,
-      })
-        .unwrap()
-        .then(() => {
-          dispatch(
-            setSuccess({
-              title: t('study.studyUpdated'),
-              text: t('study.studyUpdatedDetails', { name: study.name }),
-            })
-          );
-          closeModal();
-        });
+      }).unwrap();
+
+      dispatch(
+        setSuccess({
+          title: t('study.studyUpdated'),
+          text: t('study.studyUpdatedDetails', { name: study.name }),
+        })
+      );
+
+      closeModal();
     }
   };
 
-  const deleteStudy = useCallback(() => {
+  const deleteStudy = useCallback(async () => {
     if (study?.id && projectId) {
-      deleteStudies({
+      await deleteStudies({
         studyId: study.id,
-      })
-        .unwrap()
-        .then(() => {
-          if (scenarios) {
-            // For each scenario in the study, clean the local storage if a manchette is saved
-            scenarios.forEach((scenario) => {
-              cleanScenarioLocalStorage(scenario.timetable_id);
-            });
-          }
+      }).unwrap();
 
-          dispatch(
-            setSuccess({
-              title: t('study.studyDeleted'),
-              text: t('study.studyDeletedDetails', { name: study.name }),
-            })
-          );
-          navigate(`projects/${projectId}/`);
-          closeModal();
+      if (scenarios) {
+        // For each scenario in the study, clean the local storage if a manchette is saved
+        scenarios.forEach((scenario) => {
+          cleanScenarioLocalStorage(scenario.timetable_id);
         });
+      }
+
+      dispatch(
+        setSuccess({
+          title: t('study.studyDeleted'),
+          text: t('study.studyDeletedDetails', { name: study.name }),
+        })
+      );
+      void navigate(`projects/${projectId}/`);
+      closeModal();
     }
   }, [dispatch, study, scenarios, deleteStudies, t, projectId, navigate, closeModal]);
 

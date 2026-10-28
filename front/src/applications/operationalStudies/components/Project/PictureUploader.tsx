@@ -55,7 +55,7 @@ const PicturePlaceholder = ({ image, isValid, tempProjectImage }: PicturePlaceho
       }
     };
 
-    getProjectImageBlob();
+    void getProjectImageBlob();
   }, [image]);
 
   if (tempProjectImage) {

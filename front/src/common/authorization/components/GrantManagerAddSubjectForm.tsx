@@ -67,9 +67,9 @@ const GrantManagerAddSubjectForm = ({
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        searchSubmit();
+        await searchSubmit();
       }}
     >
       <div className="subject-search-section">

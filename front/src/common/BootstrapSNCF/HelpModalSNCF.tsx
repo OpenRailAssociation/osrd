@@ -28,7 +28,7 @@ const HelpModalSNCF = () => {
         setHelpModalText(DEFAULT_TEXT);
       }
     };
-    checkHelpMarkdown();
+    void checkHelpMarkdown();
   }, []);
 
   return (

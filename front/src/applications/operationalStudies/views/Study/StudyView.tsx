@@ -106,7 +106,7 @@ const StudyView = () => {
     toggleSelection: toggleScenarioSelection,
     deleteItems,
   } = useMultiSelection<ScenarioCardDetails>((scenarioId) => {
-    deleteScenario({ scenarioId });
+    void deleteScenario({ scenarioId });
 
     // For each scenarios, clean the local storage if a manchette is saved
     const deletedScenario = scenarios!.results.find((scenario) => scenario.id === scenarioId);
@@ -225,7 +225,7 @@ const StudyView = () => {
   );
 
   useEffect(() => {
-    getScenarioList();
+    void getScenarioList();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, scenarios]);
 

@@ -108,7 +108,7 @@ const ProjectView = () => {
   } = useMultiSelection<StudyCardDetails>(async (studyId) => {
     const { data: scenarios } = await getScenarios({ studyId });
 
-    deleteStudy({ studyId });
+    await deleteStudy({ studyId });
 
     // For each scenario in the selected studies, clean the local storage if a manchette is saved
     if (scenarios) {
@@ -220,7 +220,7 @@ const ProjectView = () => {
   }, [isProjectError, projectError]);
 
   useEffect(() => {
-    getStudiesList();
+    void getStudiesList();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, projectStudies]);
 

@@ -511,7 +511,7 @@ const handleCreateTrainSchedule = async (
     newTrainSchedules.at(1)?.id ?? null,
   ];
   state.trainScheduleIdByNgeId.set(trainrun.id, newTrainIds);
-  storeRoundTrip(dispatch, newTrainIds[0], newTrainIds[1] ?? undefined);
+  await storeRoundTrip(dispatch, newTrainIds[0], newTrainIds[1] ?? undefined);
 };
 
 const deleteTrainScheduleById = async (

@@ -92,7 +92,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
    */
   useEffect(() => {
     /* eslint-disable-next-line react/set-state-in-effect */
-    fetch(infraID, 1, filterLevel, filterType ?? undefined);
+    void fetch(infraID, 1, filterLevel, filterType ?? undefined);
   }, [infraID, fetch, filterType, filterLevel]);
 
   return (
@@ -106,8 +106,8 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
               label: t(`Editor.infra-errors.error-level.${item}`),
             }))}
             selectedValue={filterLevel || 'all'}
-            onChange={(e) => {
-              dispatch(
+            onChange={async (e) => {
+              await dispatch(
                 updateFiltersIssue(infraID, { filterLevel: e.target.value as InfraErrorLevel })
               );
             }}
@@ -118,8 +118,8 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
             aria-label={t('Editor.infra-errors.list.filter-type')}
             className="form-control"
             value={filterType || 'all'}
-            onChange={(e) => {
-              dispatch(
+            onChange={async (e) => {
+              await dispatch(
                 updateFiltersIssue(infraID, {
                   filterType:
                     e.target.value !== 'all' ? (e.target.value as InfraErrorTypeLabel) : null,
@@ -165,8 +165,8 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
                       type="button"
                       aria-label={t('Editor.infra-errors.list.goto-error')}
                       title={t('Editor.infra-errors.list.goto-error')}
-                      onClick={() => {
-                        onErrorClick(infraID, item);
+                      onClick={async () => {
+                        await onErrorClick(infraID, item);
                       }}
                     >
                       <FaDiamondTurnRight size={30} />

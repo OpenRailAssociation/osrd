@@ -150,7 +150,7 @@ export function updateFiltersIssue(
     }
 
     dispatch(updateFiltersIssueAction({ filterLevel: level, filterType: type }));
-    dispatch(updateTotalsIssue(infraID));
+    void dispatch(updateTotalsIssue(infraID));
 
     // dispatch the list of types matched by the filter to the map
     let derivedTypes = [];
@@ -203,7 +203,7 @@ export function saveOperations(
       );
       throw e;
     } finally {
-      dispatch(updateTotalsIssue(infraId));
+      void dispatch(updateTotalsIssue(infraId));
     }
   };
 }
@@ -260,7 +260,7 @@ export function saveSplitTrackSection(
       );
       throw e;
     } finally {
-      dispatch(updateTotalsIssue(infraId));
+      void dispatch(updateTotalsIssue(infraId));
     }
   };
 }

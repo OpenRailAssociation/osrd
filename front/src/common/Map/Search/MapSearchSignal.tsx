@@ -159,7 +159,7 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
 
   useEffect(() => {
     if ((searchLineState || searchState) && infraID) {
-      updateSearch(infraID);
+      void updateSearch(infraID);
     } else {
       setSearchResults([]);
     }

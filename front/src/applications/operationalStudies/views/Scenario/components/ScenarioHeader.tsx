@@ -77,8 +77,10 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     setAreScenarioDetailsVisible((prev) => !prev);
   };
 
-  const closeScenario = () => {
-    navigate(`/operational-studies/projects/${scenario.project.id}/studies/${scenario.study_id}`);
+  const closeScenario = async () => {
+    await navigate(
+      `/operational-studies/projects/${scenario.project.id}/studies/${scenario.study_id}`
+    );
   };
 
   useEffect(() => {

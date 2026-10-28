@@ -91,13 +91,13 @@ describe('useOccurrenceActions', () => {
     expect(store.getState().simulation.trainIdUsedForProjection).toBe(occurrence1.id);
   });
 
-  it('should edit paced train', () => {
+  it('should edit paced train', async () => {
     const { result } = renderHookWithStore(
       () => useOccurrenceActions(buildOccurrenceActionsArgs()),
       { wrapper: timetableContextWrapper }
     );
 
-    result.current.editOccurrence({
+    await result.current.editOccurrence({
       ...occurrence1,
       ...{
         trainName: 'New Cool Train',
@@ -124,13 +124,13 @@ describe('useOccurrenceActions', () => {
     );
   });
 
-  it('should edit paced train with exceptions', () => {
+  it('should edit paced train with exceptions', async () => {
     const { result } = renderHookWithStore(
       () => useOccurrenceActions(buildOccurrenceActionsArgs({ ...pacedTrainWithExceptions })),
       { wrapper: timetableContextWrapper }
     );
 
-    result.current.editOccurrence({
+    await result.current.editOccurrence({
       ...occurrence1,
       ...{
         trainName: 'New Cool Train',

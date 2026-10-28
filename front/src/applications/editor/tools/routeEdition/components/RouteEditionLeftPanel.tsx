@@ -293,7 +293,7 @@ const RouteEditionPanel = () => {
   useEffect(() => {
     if (isFormSubmited && setIsFormSubmited && state.entity) {
       setIsFormSubmited(false);
-      saveEntity(
+      void saveEntity(
         state.entity,
         state.entity.properties.id !== NEW_ENTITY_ID ? state.initialEntity : undefined
       );

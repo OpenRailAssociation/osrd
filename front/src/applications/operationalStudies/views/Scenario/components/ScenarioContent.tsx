@@ -153,17 +153,17 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   ]);
 
   const upsertTrainSchedulesWithNge = useCallback(
-    (updatedTrainSchedules: TrainScheduleResponse[]) => {
+    async (updatedTrainSchedules: TrainScheduleResponse[]) => {
       upsertTrainSchedules(updatedTrainSchedules);
-      refreshNge();
+      await refreshNge();
     },
     [upsertTrainSchedules, refreshNge]
   );
 
   const removeTrainSchedulesWithNge = useCallback(
-    (trainScheduleIds: number[]) => {
+    async (trainScheduleIds: number[]) => {
       removeTrainSchedules(trainScheduleIds);
-      refreshNge();
+      await refreshNge();
     },
     [removeTrainSchedules, refreshNge]
   );
@@ -175,7 +175,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       panelSelectionMode?: PanelSelectionMode
     ) => {
       await updateTrainScheduleDepartureTime(draggedTrainId, newDeparture, panelSelectionMode);
-      refreshNge();
+      await refreshNge();
     },
     [updateTrainScheduleDepartureTime, refreshNge]
   );
@@ -205,7 +205,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   useEffect(() => {
     if (activeBoards.has('macro')) {
       if (!prevMacroActive) setNGEIsLoading(true);
-      refreshNge();
+      void refreshNge();
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [activeBoards.has('macro'), i18n.language, refreshNge]);

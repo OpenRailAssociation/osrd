@@ -35,7 +35,7 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
       const alertFillImage = await loadSvgImage(alertFillBlobUrl);
       setImages({ questionImage, alertFillImage });
     };
-    fetchImages();
+    void fetchImages();
   }, []);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
         images,
       });
     };
-    updateCanvas();
+    void updateCanvas();
   }, [
     width,
     marginTop,
@@ -79,7 +79,7 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
       const ctx = currentCanvas.getContext('2d') as CanvasRenderingContext2D;
       tooltip.current = computeTooltip({ ctx, width, height: marginTop, store });
     };
-    updateTooltip();
+    void updateTooltip();
   }, [width, marginTop, store]);
 
   return (

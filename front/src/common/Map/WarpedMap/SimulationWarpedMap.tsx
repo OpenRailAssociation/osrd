@@ -191,7 +191,7 @@ const SimulationWarpedMap = ({
   useEffect(() => {
     if (state.type !== 'dataLoaded') return;
 
-    getImprovedOSRDData(infraID!, state.osrd, dispatch).then((betterFeatures) => {
+    void getImprovedOSRDData(infraID!, state.osrd, dispatch).then((betterFeatures) => {
       if (!isEmpty(betterFeatures)) {
         const betterTransformedFeatures = mapValues(betterFeatures, state.transform);
         const newTransformedOSRDData = mapValues(state.osrd, (collection: FeatureCollection) => ({

@@ -44,7 +44,6 @@
     "no-await-in-loop": "off",
     "no-confusing-void-expression": "off",
     "no-else-return": "off",
-    "no-floating-promises": "off",
     "no-inline-comments": "off",
     "no-loop-func": "off",
     "no-misused-promises": "off",
@@ -223,8 +222,7 @@
     {
       "files": ["tests/**/*.ts", "tests/**/*.tsx"],
       "rules": {
-        "react/rules-of-hooks": "off",
-        "typescript/no-floating-promises": "error"
+        "react/rules-of-hooks": "off"
       }
     },
     {
