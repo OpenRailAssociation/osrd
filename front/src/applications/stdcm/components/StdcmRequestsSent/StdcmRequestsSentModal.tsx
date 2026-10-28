@@ -5,6 +5,7 @@ import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
 import { useTranslation } from 'react-i18next';
 
+import { osrdRailwayManagerApi, type PostSendLastMinuteRequestStatusesApiResponse, type RequestStatusItem } from 'common/api/osrdRailwayManagerApi';
 import { useDateTimeLocale } from 'utils/date';
 
 dayjs.extend(calendar);
@@ -29,39 +30,23 @@ type mockedRequestsHistory = {
   application_date: string;
 };
 
-const requestsHistory: mockedRequestsHistory[] = [
-  {
-    id: 'AA00BB',
-    status: 'CREATED',
-    begin_op: { name: 'Woippy', start_time: '2026-10-01T09:00:00Z', main_code: 'DT' },
-    end_op: { name: 'Ébange', start_time: null, main_code: 'FM' },
-    created_at: '2026-09-28T08:15:00Z',
-    updated_at: '2026-10-14T08:15:00Z',
-    application_date: '2026-09-15T07:15:00Z',
+const realMock: PostSendLastMinuteRequestStatusesApiResponse = {
+  ZQAV73: {
+    status: 'PROCESSING' as const,
+    status_message:
+      '*******************Demande rejetée:délai de traitement dépassé*******************\n\n**Demande générée par LMR**',
+    created_request_url:
+      'https://integration-gesico.reseau.sncf.fr/Pages/Demande/VieDuSillon/VieDuSillon.aspx?idVds=1474498',
+    begin_op: { secondary_code: '00', type: 'uic', uic: 87447219 },
+    begin_time: '02:11:00',
+    end_op: { secondary_code: '00', type: 'uic', uic: 87447144 },
+    end_time: 'dqp',
+    updated_at: '2026-10-25T17:04:26Z',
+    created_at: '2026-10-23T15:40:25Z',
+    train_start: '2026-10-23T22:00:00Z',
+    id: 'ZQAV73',
   },
-  {
-    id: 'LK65CV',
-    status: 'PROCESSING',
-    begin_op: { name: 'Somain', start_time: '2026-11-05T10:03:00Z', main_code: 'TR' },
-    end_op: { name: 'Bobigny', start_time: null, main_code: 'GA' },
-    created_at: '2026-09-29T10:30:00Z',
-    updated_at: '2026-09-29T11:00:00Z',
-    application_date: '2026-09-13T10:15:00Z',
-  },
-  {
-    id: 'OP47NB',
-    status: 'ACCEPTED',
-    begin_op: {
-      name: 'Villeneuve-Saint-Georges',
-      start_time: '2026-12-30T11:26:00Z',
-      main_code: 'TS',
-    },
-    end_op: { name: 'St-Jory', start_time: '2026-12-30T13:26:00Z', main_code: 'RT' },
-    created_at: '2026-09-30T09:00:00Z',
-    updated_at: '2026-10-01T14:45:00Z',
-    application_date: '2026-11-14T13:13:00Z',
-  },
-];
+};
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
@@ -79,28 +64,26 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   };
 
   const requestsSentRows = () =>
-    requestsHistory.map((request, index) => {
+    (Object.keys(realMock) as (keyof typeof realMock)[]).map((id) => {
+      const request: RequestStatusItem = realMock[id];
+
       const updateDate = dayjs(request.updated_at)
         .locale(i18n.language)
         .calendar(null, calendarDays);
 
-      const beginStartTime = new Date(request.begin_op.start_time!).toLocaleString(dateTimeLocale, {
-        timeStyle: 'short',
-      });
+      const beginTime = request.begin_time.slice(0, 5)
 
-      const endStartTime: string | Date =
-        request.end_op.start_time !== null
-          ? new Date(request.end_op.start_time).toLocaleString(dateTimeLocale, {
-              timeStyle: 'short',
-            })
+      const endTime: string | Date =
+        request.end_time !== 'dqp'
+          ? request.end_time.slice(0, 5)
           : t('requestsSentModal.asap');
 
-      const applicationDate = dayjs(request.application_date)
+      const applicationDate = dayjs(request.train_start)
         .locale(i18n.language)
         .calendar(null, calendarDays);
 
       return (
-        <tr key={`request-${index}`}>
+        <tr key={`request-${id}`}>
           <td className={`stdcm-requests-color-${request.status}`} />
           <td className="stdcm-requests-id">{request.id}</td>
           <td className={`stdcm-requests-status stdcm-requests-text-color-${request.status}`}>
@@ -110,7 +93,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <td>
             <div className="stdcm-requests-start-time-wrapper">
               <div className="stdcm-requests-start-time-left">
-                <span className="stdcm-requests-start-time">{beginStartTime}</span>
+                <span className="stdcm-requests-start-time">{beginTime}</span>
                 <span className="stdcm-requests-op-name">{request.begin_op.name}</span>
               </div>
               <div className="stdcm-requests-main-code">{request.begin_op.main_code}</div>
@@ -119,7 +102,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <td>
             <div className="stdcm-requests-start-time-wrapper">
               <div className="stdcm-requests-start-time-left">
-                <span className="stdcm-requests-start-time">{endStartTime}</span>
+                <span className="stdcm-requests-start-time">{endTime}</span>
                 <span className="stdcm-requests-op-name">{request.end_op.name}</span>
               </div>
               <div className="stdcm-requests-main-code">{request.end_op.main_code}</div>
