@@ -18,7 +18,7 @@ fun buildIncompatibleConstraintsResponse(
     constraints: Collection<PathfindingConstraint>,
     initialRequest: PathfindingBlockRequest,
 ): IncompatibleConstraintsPathResponse? {
-    val path = possiblePathWithoutErrorNoConstraints.path
+    val path = possiblePathWithoutErrorNoConstraints.trainPath
     if (hasDuplicateTracks(infra, path)) return null
 
     val elecConstraints = constraints.filterIsInstance<ElectrificationConstraints>()

@@ -16,7 +16,7 @@ fun runPathfindingPostProcessing(
     val res =
         runPathfindingBlockPostProcessing(
             infra,
-            rawPath.path,
+            rawPath.trainPath,
             rawPath.waypointOffsets,
             rawPath.backtrackIndexes,
         )
