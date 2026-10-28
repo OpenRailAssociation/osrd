@@ -6,7 +6,6 @@ import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.makeSignalingSimulator
-import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
 import fr.sncf.osrd.api.stdcm.getRequirements
 import fr.sncf.osrd.api.stdcm.parseForcedOpStops
@@ -15,6 +14,7 @@ import fr.sncf.osrd.api.stdcm.parseSteps
 import fr.sncf.osrd.api.stdcm.parseTrackSectionIds
 import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
+import fr.sncf.osrd.path.interfaces.hasDuplicateTracks
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.stdcm.STDCMCompleteResult
@@ -242,7 +242,7 @@ class BenchSTDCM : CliCommand {
                             ),
                             FailureExplainer(request.startTime, infra.rawInfra, infra.blockInfra),
                         )
-                    if (path !is STDCMCompleteResult || hasDuplicateTracks(infra, path.trainPath))
+                    if (path !is STDCMCompleteResult || path.trainPath.hasDuplicateTracks())
                         path = null
                 } catch (e: Exception) {
                     results["error"] = e.toString()

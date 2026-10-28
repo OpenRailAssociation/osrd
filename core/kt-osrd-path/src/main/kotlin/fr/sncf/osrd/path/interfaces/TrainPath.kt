@@ -135,3 +135,20 @@ fun TrainPath.getNonBacktrackingSubPathBoundariesContainingOffset(
     val start = getBacktrackLocations().lastOrNull() ?: Offset(0.meters)
     return OffsetRange(start, getLength())
 }
+
+/**
+ * This method checks if the train path has duplicate tracks. For a path A - Backtracking - C, it
+ * wil check that there are no duplicate tracks on A - B, then on B - C.
+ */
+fun TrainPath.hasDuplicateTracks(): Boolean {
+    // Split the path into smaller sub-paths containing no backtrackings.
+    val subPaths = splitAtBacktracks()
+    // Check for each sub-path if it has duplicate track sections.
+    for (subPath in subPaths) {
+        val tracks = subPath.getTrackRanges().filter { it.length.meters > 0 }.map { it.value.value }
+        val uniqueTracks = tracks.toSet()
+        // If there are no duplicates, both collections should have the same size.
+        if (uniqueTracks.size != tracks.size) return true
+    }
+    return false
+}
