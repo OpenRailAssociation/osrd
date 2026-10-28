@@ -33,6 +33,9 @@ export type LinkingReference = { linkingId: number } | { source: TrainId; target
 /** A linking placed in a TOD, which will take the colors of its target train. */
 export type PositionedLinking = Omit<Linking, 'colors'> & { targetTrainId: TrainId };
 
+/** A badge placed in a TOD on one end of a broken linking, which will name the train it misses. */
+export type PositionedBrokenLinking = Omit<BrokenLinking, 'name'> & { trainId: TrainId };
+
 export function formatTrainIdToLinkingOccurrence(trainId: TrainId): LinkingOccurrenceId {
   const trainScheduleId = extractEditoastIdFromTrainId(trainId);
   if (isIndexedOccurrenceId(trainId)) {
@@ -124,15 +127,13 @@ export default function buildWaypointLinkings({
   zones,
   possibleLinkings,
   existingLinkings,
-  trainNames,
   showSuggestions,
 }: {
   zones: MovableOccupancyZone[];
   possibleLinkings: PossibleLinkings;
   existingLinkings: ExistingLinking[];
-  trainNames: (trainId: TrainId) => string | undefined;
   showSuggestions: boolean;
-}): { linkings: PositionedLinking[]; brokenLinkings: BrokenLinking[] } {
+}): { linkings: PositionedLinking[]; brokenLinkings: PositionedBrokenLinking[] } {
   // Index the trains whose path ends in this waypoint, and those whose path starts in it:
   const arrivals = new Map<TrainId, MovableOccupancyZone>();
   const departures = new Map<TrainId, MovableOccupancyZone>();
@@ -163,7 +164,7 @@ export default function buildWaypointLinkings({
   };
 
   const linkings: PositionedLinking[] = [];
-  const brokenLinkings: BrokenLinking[] = [];
+  const brokenLinkings: PositionedBrokenLinking[] = [];
   // A train may only be the source of one linking, and the target of one other:
   const linkedSources = new Set<TrainId>();
   const linkedTargets = new Set<TrainId>();
@@ -191,24 +192,22 @@ export default function buildWaypointLinkings({
       continue;
     }
 
-    const targetName = trainNames(target);
-    if (arrival && targetName) {
+    if (arrival) {
       brokenLinkings.push({
         id: linkingId,
         trackId: arrival.trackId,
         direction: 'forward',
         time: arrival.endTime,
-        name: targetName,
+        trainId: target,
       });
     }
-    const sourceName = trainNames(source);
-    if (departure && sourceName) {
+    if (departure) {
       brokenLinkings.push({
         id: linkingId,
         trackId: departure.trackId,
         direction: 'backward',
         time: departure.startTime,
-        name: sourceName,
+        trainId: source,
       });
     }
   }

@@ -140,7 +140,6 @@ describe('buildWaypointLinkings', () => {
   const POSSIBLE: PossibleLinkings = new Map([
     [TRAIN_1, { target: TRAIN_2, sourceOffsets: new Set([0]) }],
   ]);
-  const TRAIN_NAMES: Partial<Record<TrainId, string>> = { [TRAIN_1]: '4655', [TRAIN_2]: '8795' };
   const EXISTING: ExistingLinking[] = [{ id: 42, source: TRAIN_1, target: TRAIN_2 }];
 
   const buildLinkings = ({
@@ -153,7 +152,6 @@ describe('buildWaypointLinkings', () => {
       zones,
       possibleLinkings,
       existingLinkings,
-      trainNames: (trainId: TrainId) => TRAIN_NAMES[trainId],
       showSuggestions,
     });
 
@@ -221,14 +219,14 @@ describe('buildWaypointLinkings', () => {
         trackId: TRACK_A,
         direction: 'forward',
         time: ARRIVAL.endTime,
-        name: '8795',
+        trainId: TRAIN_2,
       },
       {
         id: formatLinkingId({ linkingId: 42 }),
         trackId: TRACK_A,
         direction: 'backward',
         time: DEPARTURE.startTime,
-        name: '4655',
+        trainId: TRAIN_1,
       },
     ]);
   });
@@ -246,7 +244,7 @@ describe('buildWaypointLinkings', () => {
         trackId: TRACK_A,
         direction: 'forward',
         time: ARRIVAL.endTime,
-        name: '8795',
+        trainId: TRAIN_2,
       },
     ]);
   });
