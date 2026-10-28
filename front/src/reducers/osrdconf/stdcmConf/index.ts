@@ -17,7 +17,7 @@ import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types'
 import { addElementAtIndex } from 'utils/array';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 import { Duration } from 'utils/duration';
-import type { ArrayElement, PickAndNonNullableFields } from 'utils/types';
+import type { PickAndNonNullableFields } from 'utils/types';
 
 const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
 
@@ -241,7 +241,7 @@ export const stdcmConfSlice = createSlice({
       state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<{
         key: string;
-        updates: Partial<ArrayElement<OsrdStdcmConfState['stdcmPathSteps']>>;
+        updates: Partial<OsrdStdcmConfState['stdcmPathSteps'][number]>;
       }>
     ) {
       const newPathSteps = state.stdcmPathSteps.map((pathStep) =>

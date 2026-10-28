@@ -27,7 +27,6 @@ import type { ProjectionWaypoint, PathWaypoint } from 'modules/simulationResult/
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Train, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
-import type { ArrayElement } from 'utils/types';
 
 export type Board =
   | 'trains'
@@ -120,7 +119,7 @@ export type PathPropertiesFormatted = {
   geomProjection: CorePropertyGeometryProjection;
 };
 
-export type PowerRestriction = ArrayElement<TrainSchedule['power_restrictions']>;
+export type PowerRestriction = NonNullable<TrainSchedule['power_restrictions']>[number];
 
 export type ElectrificationVoltage = {
   type: string;
