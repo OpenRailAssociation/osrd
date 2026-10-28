@@ -141,6 +141,7 @@ const OccupancyZonesLayer = ({
         // else, if there are too much trains:
         else {
           const nextIndex = filteredOccupancyZones.findIndex(
+            // eslint-disable-next-line no-loop-func -- variables are stable inside the loop
             (filteredZone, i) => i > zoneIndex && filteredZone.startTime >= lastEndTime
           );
 

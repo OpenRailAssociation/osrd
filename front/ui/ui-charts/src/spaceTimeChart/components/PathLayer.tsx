@@ -148,7 +148,7 @@ export const PathLayer = ({
           const spaceBreakPoints = getSpaceBreakpoints(prevPosition, position, spaceScaleTree);
           let previousBreakPosition = -Infinity;
 
-          spaceBreakPoints.forEach((breakPosition, index) => {
+          for (const [index, breakPosition] of spaceBreakPoints.entries()) {
             const nextBreakPosition = spaceBreakPoints[index + 1] ?? Infinity;
             const isBeforeFlatStep = previousBreakPosition === breakPosition;
             const isAfterFlatStep = breakPosition === nextBreakPosition;
@@ -176,7 +176,7 @@ export const PathLayer = ({
             }
 
             previousBreakPosition = breakPosition;
-          });
+          }
 
           const newPoint = {
             [timeAxis]: getTimePixel(time),
