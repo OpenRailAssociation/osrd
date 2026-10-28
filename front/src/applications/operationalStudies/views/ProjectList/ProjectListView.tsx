@@ -54,10 +54,10 @@ const ProjectListView = () => {
     // For each scenario in the selected projects, clean the local storage if a manchette is saved
     const { data: studies } = await getStudies({ projectId });
     if (studies) {
-      cleanLocalStorageByProject(studies.results, dispatch);
+      await cleanLocalStorageByProject(studies.results, dispatch);
     }
 
-    deleteProject({ projectId });
+    await deleteProject({ projectId });
   });
 
   const handleDeleteProjects = () => {
@@ -160,7 +160,7 @@ const ProjectListView = () => {
   );
 
   useEffect(() => {
-    getProjectList();
+    void getProjectList();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [sortOption, filter, safeWord, allProjects]);
 

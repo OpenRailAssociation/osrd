@@ -298,7 +298,7 @@ const StdcmResults = ({
     };
 
     if (isSelectedSimulationRetained) {
-      searchForSimilarTrains();
+      void searchForSimilarTrains();
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isSelectedSimulationRetained]);

@@ -229,8 +229,8 @@ export default function TrainServiceForm({
             setAddedExceptionDate={(newAddedExceptionDate) =>
               onFieldChange('added_exception_date', newAddedExceptionDate)
             }
-            onCreateAddedException={() => {
-              onPersistTrain(train, {
+            onCreateAddedException={async () => {
+              await onPersistTrain(train, {
                 addedExceptions: [{ startTime: fields.added_exception_date }],
               });
             }}
@@ -245,10 +245,10 @@ export default function TrainServiceForm({
                 <ExtraOccurrenceRow
                   key={`${occurrence.id}-${occurrence.key}`}
                   startTime={parseStartTime(occurrence.start_time!.value, timetableType)}
-                  onDelete={() => {
+                  onDelete={async () => {
                     // TODO_EXCEPTION: remove this when the exception migration will be done
                     if (occurrence.id !== null && occurrence.id !== undefined) {
-                      onPersistTrain(train, { deletedAddedExceptionId: occurrence.id });
+                      await onPersistTrain(train, { deletedAddedExceptionId: occurrence.id });
                     }
                   }}
                 />

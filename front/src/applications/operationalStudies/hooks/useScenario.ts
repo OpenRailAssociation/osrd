@@ -96,7 +96,7 @@ const useScenario = () => {
       return;
     }
 
-    checkAndCreateSandbox(scenario.timetable_id, scenario.timetable_type);
+    void checkAndCreateSandbox(scenario.timetable_id, scenario.timetable_type);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleSets, scenario?.timetable_id, scenario?.timetable_type]);
 

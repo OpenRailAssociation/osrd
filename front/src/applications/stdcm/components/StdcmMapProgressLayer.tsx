@@ -188,7 +188,7 @@ const StdcmMapProgressLayer = ({
     const map = mapRef.current?.getMap();
 
     let timeoutId: null | number = null;
-    const animate = () => {
+    const animate = async () => {
       if (!map) return;
       const source = map.getSource<GeoJSONSource>('stdcm-algo-progress');
       if (!source) return;
@@ -206,7 +206,7 @@ const StdcmMapProgressLayer = ({
           return animation.pointToGeojson(point, elapsedTime);
         }),
       };
-      source.setData(data);
+      void source.setData(data);
       timeoutId = window.setTimeout(animate, 0);
     };
     timeoutId = window.setTimeout(animate, 0);

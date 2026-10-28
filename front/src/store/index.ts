@@ -47,8 +47,10 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 const persistor = persistStore(store);
 
 // Retrieve the persisted state from storage and purge if new front version
-getStoredState(persistConfig)
-  .then((persistedState) => {
+async function purgeStorageOnNewVersion() {
+  try {
+    const persistedState = await getStoredState(persistConfig);
+
     console.info('Front OSRD Version', import.meta.env.VITE_OSRD_GIT_DESCRIBE);
 
     const envInterfaceVersion = import.meta.env.VITE_OSRD_GIT_DESCRIBE;
@@ -57,13 +59,15 @@ getStoredState(persistConfig)
     if (
       envInterfaceVersion &&
       persistedRootState?.main?.lastInterfaceVersion !== envInterfaceVersion
-    )
-      persistor.purge().then(() => {
-        console.warn('New Front Version since last launch, persisted Store purged');
-      });
-  })
-  .catch((err) => {
+    ) {
+      await persistor.purge();
+      console.warn('New Front Version since last launch, persisted Store purged');
+    }
+  } catch (err) {
     console.error('Error retrieving persisted state:', err);
-  });
+  }
+}
+
+void purgeStorageOnNewVersion();
 
 export { store, persistor, createStore };

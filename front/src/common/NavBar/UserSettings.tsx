@@ -53,7 +53,7 @@ const UserSettings = () => {
   };
 
   useEffect(() => {
-    if (!impersonatedUser) getUserList(inputValue);
+    if (!impersonatedUser) void getUserList(inputValue);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [inputValue, impersonatedUser]);
 
@@ -61,9 +61,9 @@ const UserSettings = () => {
   const userComboBoxDefaultProps = useDefaultComboBox(userList, getSubjectName);
 
   const handleSubjectSelection = useCallback(
-    (subject: SearchResultItemUser | undefined) => {
+    async (subject: SearchResultItemUser | undefined) => {
       if (subject) {
-        impersonate(subject);
+        await impersonate(subject);
         closeModal();
       }
     },

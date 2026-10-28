@@ -173,7 +173,7 @@ function getPointEditionTool<T extends EditorPoint>({
       if (state.isHoveringTarget) return 'pointer';
       return 'default';
     },
-    onClickMap(_e, { setState, state, infraID, dispatch }) {
+    async onClickMap(_e, { setState, state, infraID, dispatch }) {
       const { isHoveringTarget, entity, nearestPoint } = state;
       if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY) && isHoveringTarget) {
         setState({
@@ -191,18 +191,23 @@ function getPointEditionTool<T extends EditorPoint>({
         newEntity.properties = newEntity.properties || {};
         newEntity.properties.track = nearestPoint.trackSectionID;
 
-        getEntity(infraID!, newEntity.properties.track, 'TrackSection', dispatch).then((track) => {
-          const distanceAlongTrack = calculateDistanceAlongTrack(
-            track as TrackSectionEntity,
-            newEntity.geometry as Point
-          );
-          newEntity.properties.position = distanceAlongTrack;
+        const track = await getEntity(
+          infraID!,
+          newEntity.properties.track,
+          'TrackSection',
+          dispatch
+        );
 
-          setState({
-            ...state,
-            entity: newEntity,
-            nearestPoint: null,
-          });
+        const distanceAlongTrack = calculateDistanceAlongTrack(
+          track as TrackSectionEntity,
+          newEntity.geometry
+        );
+        newEntity.properties.position = distanceAlongTrack;
+
+        setState({
+          ...state,
+          entity: newEntity,
+          nearestPoint: null,
         });
       }
     },
@@ -263,33 +268,32 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     // Lifecycle:
-    onMount({ state: { entity }, infraID, dispatch }) {
+    async onMount({ state: { entity }, infraID, dispatch }) {
       const trackId = entity.properties?.track;
 
       if (typeof trackId !== 'string') return;
 
-      getEntity(infraID!, trackId, 'TrackSection', dispatch).then((track) => {
-        const dbPosition = entity.properties.position;
-        const computedPosition = nearestPointOnLine(
-          (track as Feature<LineString>).geometry,
-          (entity as Feature<Point>).geometry,
-          { units: 'meters' }
-        ).properties?.location;
+      const track = await getEntity(infraID!, trackId, 'TrackSection', dispatch);
+      const dbPosition = entity.properties.position;
+      const computedPosition = nearestPointOnLine(
+        (track as Feature<LineString>).geometry,
+        (entity as Feature<Point>).geometry,
+        { units: 'meters' }
+      ).properties?.location;
 
-        if (
-          typeof dbPosition === 'number' &&
-          typeof computedPosition === 'number' &&
-          Math.abs(dbPosition - computedPosition) >= 1
-        ) {
-          console.warn(
-            `
-      The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
-        -> Database position: ${dbPosition}
-        -> Turf.js position: ${computedPosition}
-      `
-          );
-        }
-      });
+      if (
+        typeof dbPosition === 'number' &&
+        typeof computedPosition === 'number' &&
+        Math.abs(dbPosition - computedPosition) >= 1
+      ) {
+        console.warn(
+          `
+    The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
+      -> Database position: ${dbPosition}
+      -> Turf.js position: ${computedPosition}
+    `
+        );
+      }
     },
 
     getInteractiveLayers() {

@@ -75,7 +75,7 @@ export function useRefreshableAsyncMemo<T>(
   );
 
   useEffect(() => {
-    refresh();
+    void refresh();
     return () => {
       activeController.current?.abort();
     };

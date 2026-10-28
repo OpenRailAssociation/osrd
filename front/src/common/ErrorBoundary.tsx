@@ -40,7 +40,7 @@ export default function ErrorBoundary() {
             data-testid="navigation-back-button"
             className="btn btn-primary btn-sm px-2 ml-2"
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => void navigate(-1)}
           >
             {t('common.navigation.goBack')}
           </button>

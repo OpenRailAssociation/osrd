@@ -283,7 +283,7 @@ const useTimesStopsTableData = (
       const sections = await getTrackSectionsByIds(trackIds);
       setTrackSections(sections);
     };
-    fetchTrackSections();
+    void fetchTrackSections();
   }, [trackIds, getTrackSectionsByIds]);
 
   const allRows = useMemo(() => {

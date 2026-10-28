@@ -41,7 +41,7 @@ export default function useSearchJourneyEnv() {
 
   useEffect(() => {
     /* eslint-disable-next-line react/set-state-in-effect */
-    loadSearchJourneyEnv();
+    void loadSearchJourneyEnv();
   }, [loadSearchJourneyEnv]);
 
   return { loading, error, loadSearchJourneyEnv };

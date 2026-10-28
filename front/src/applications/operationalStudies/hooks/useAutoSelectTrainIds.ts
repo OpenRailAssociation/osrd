@@ -71,7 +71,7 @@ const useAutoSelectTrainIds = (
    * If the parameter value given is undefined, remove the parameter from the URL and local storage instead.
    */
   const setParamsInUrlAndStorage = useCallback(
-    (paramName: string, paramValue: string | undefined) => {
+    async (paramName: string, paramValue: string | undefined) => {
       if (paramValue === undefined) {
         searchParams.delete(paramName);
         localStorage.removeItem(`${localKey}_${paramName}`);
@@ -79,7 +79,7 @@ const useAutoSelectTrainIds = (
         searchParams.set(paramName, paramValue);
         localStorage.setItem(`${localKey}_${paramName}`, paramValue);
       }
-      navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+      await navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
     },
     [localKey, searchParams, location.pathname, navigate]
   );
@@ -107,8 +107,8 @@ const useAutoSelectTrainIds = (
   // Update the URL and local storage on redux store change
   useEffect(() => {
     if (parametersLoaded) {
-      setParamsInUrlAndStorage('selected_train', selectedTrainId?.toString());
-      setParamsInUrlAndStorage('projection', currentTrainIdForProjection?.toString());
+      void setParamsInUrlAndStorage('selected_train', selectedTrainId?.toString());
+      void setParamsInUrlAndStorage('projection', currentTrainIdForProjection?.toString());
     }
   }, [parametersLoaded, selectedTrainId, currentTrainIdForProjection, setParamsInUrlAndStorage]);
 
