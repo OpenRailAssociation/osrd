@@ -80,6 +80,7 @@ type PathStepProps = {
   customTracks: { trackId: string; trackName: string }[];
   onAddCustomTrack: (track: { trackId: string; trackName: string }) => void;
   onTrackNameChange: (trackName: string) => void;
+  onAddCustomOp: (name: string) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
@@ -113,6 +114,7 @@ const PathStepItem = ({
   customTracks,
   onAddCustomTrack,
   onTrackNameChange,
+  onAddCustomOp,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -563,6 +565,11 @@ const PathStepItem = ({
                         )
                       : undefined
                   }
+                  allowCustomValue={unrecognizedWaypointsActivated && !isOpValid}
+                  addCustomValueLabel={t('addCustomOp', { opName: inputValue?.trim() })}
+                  onAddCustomValue={(value) => {
+                    onAddCustomOp(value);
+                  }}
                   small
                   narrow
                   onFocusCapture={onOpFocus}

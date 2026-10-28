@@ -1045,6 +1045,12 @@ const ItineraryModal = ({
                         })
                       );
                     }}
+                    onAddCustomOp={() => {
+                      confirmedStepKeyRef.current = pathStep.key;
+                      if (!expandedStepKeys.includes(pathStep.key)) {
+                        setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
+                      }
+                    }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];
