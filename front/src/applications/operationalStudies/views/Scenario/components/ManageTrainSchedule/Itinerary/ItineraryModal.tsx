@@ -947,6 +947,7 @@ const ItineraryModal = ({
               const pathStepMetadata = pathStepsMetadataByKey.get(pathStep.key);
               const isInvalid = isStepInvalid(pathStep, pathStepMetadata);
               const isMapSelecting = mapSelectionStepKey === pathStep.key;
+              const isSubFormExpanded = expandedStepKeys.includes(pathStep.key);
 
               const previousPathStepMetadata = pathStepsMetadataByKey.get(pathSteps[i - 1]?.key);
               const isTrailingPlaceholder =
@@ -1093,13 +1094,13 @@ const ItineraryModal = ({
                     isTrailingPlaceHolder={isTrailingPlaceholder}
                     isOnlyStep={isOnlyStep}
                     isInvalid={isInvalid}
-                    isSubFormExpanded={expandedStepKeys.includes(pathStep.key)}
+                    isSubFormExpanded={isSubFormExpanded}
                     isPreviousSubFormExpanded={
                       i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
                     }
                     onSubFormToggled={() => {
                       setExpandedStepKeys(
-                        expandedStepKeys.includes(pathStep.key)
+                        isSubFormExpanded
                           ? expandedStepKeys.filter((key) => key !== pathStep.key)
                           : [...expandedStepKeys, pathStep.key]
                       );

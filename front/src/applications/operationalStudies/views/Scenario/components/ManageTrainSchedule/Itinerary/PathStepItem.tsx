@@ -403,9 +403,7 @@ const PathStepItem = ({
                   : categoryColors.base
                 : '',
               // @ts-expect-error: variable CSS custom property to be used to style ::before
-              '--pathBackground': isTrailingPlaceHolder
-                ? 'rgba(0, 0, 0, 0.2)'
-                : categoryColors.base,
+              '--pathBackground': isTrailingPlaceHolder ? 'var(--black20)' : categoryColors.base,
               '--counterLink': isPreviousSubFormExpanded
                 ? connectorLong
                   ? '214px'
