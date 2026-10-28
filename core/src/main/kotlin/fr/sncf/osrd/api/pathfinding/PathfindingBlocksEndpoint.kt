@@ -16,6 +16,7 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.PathfindingResult
 import fr.sncf.osrd.pathfinding.constraints.initConstraintsFromRSProps
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -166,7 +167,7 @@ private fun computePaths(
     if (pathFound != null) {
         pathfindingLogger.info("Path found, start postprocessing")
         val res = processPathfindingResponse(infra, pathFound)
-        if (!hasDuplicateTracks(infra, res.path)) return res
+        if (!hasDuplicateTracks(infra, res.trainPath)) return res
         else pathfindingLogger.info("Path has duplicate tracks, dismissing")
     }
 
@@ -238,10 +239,10 @@ private fun buildNoPathFoundException(
 }
 
 data class ProcessedPathfindingResponse(
-    val path: TrainPath,
-    val waypointOffsets: List<Offset<PhysicsPath>>,
-    val backtrackIndexes: List<Int>,
-)
+    override val trainPath: TrainPath,
+    override val waypointOffsets: List<Offset<PhysicsPath>>,
+    override val backtrackIndexes: List<Int>,
+) : PathfindingResult
 
 private fun processPathfindingResponse(
     infra: FullInfra,
