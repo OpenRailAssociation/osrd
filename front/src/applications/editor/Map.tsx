@@ -142,6 +142,7 @@ const MapUnplugged = ({
     );
     if (!nearestResult) return null;
     return {
+      // eslint-disable-next-line typescript/no-misused-spread -- Class prototype is not used anyway
       ...e,
       preventDefault: () => e.preventDefault(),
       defaultPrevented: e.defaultPrevented,
