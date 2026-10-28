@@ -25,7 +25,6 @@ import type {
   TrainId,
 } from 'reducers/osrdconf/types';
 import type { SelectedTrain, SelectionSource } from 'reducers/simulationResults/types';
-import type { ArrayElement } from 'utils/types';
 
 /**
  * This type refers to a waypoint, modified to carry its own unique ID (waypointId), and
@@ -93,7 +92,7 @@ export type IndividualTrainProjection = {
   );
 
 // Speed Space Chart
-export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
+export type SpeedLimitTagValue = SimulationResponseSuccess['mrsp']['values'][number];
 
 export type SpeedDistanceDiagramData = {
   rollingStock: RollingStockWithLiveries;
