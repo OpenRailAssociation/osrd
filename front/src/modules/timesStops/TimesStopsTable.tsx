@@ -328,13 +328,12 @@ const TimesStopsTable = ({
             editable={!isLastRow}
             isInherited={!isSpecifiedMargin}
             isFirstRow={isFirstRow}
-            showUnitToggle={isValid && !scheduleNotHonored}
             onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
           />
         </div>
       );
     },
-    [scheduleNotHonored, isValid]
+    []
   );
 
   const returnShortSlipDistanceCell = (
