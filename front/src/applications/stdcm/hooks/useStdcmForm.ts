@@ -16,7 +16,7 @@ import {
 
 import type { StdcmSimulationInputs } from '../types';
 import { getTimesInfoFromDate } from '../utils';
-import useStdcmLightRollingStock from './useStdcmLightRollingStock';
+import { useStdcmLightRollingStock } from './useStdcmLightRollingStock';
 
 const useStdcmForm = (): StdcmSimulationInputs => {
   const pathSteps = useSelector(getStdcmPathSteps);

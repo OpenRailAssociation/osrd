@@ -1,4 +1,4 @@
-import bearing from '@turf/bearing';
+import { bearing } from '@turf/bearing';
 import { compare } from 'fast-json-patch';
 import type { Position } from 'geojson';
 import type { JSONSchema7 } from 'json-schema';

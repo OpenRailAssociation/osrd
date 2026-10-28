@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 
 import { Info } from '@osrd-project/ui-icons';
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import { featureCollection } from '@turf/helpers';
-import lineSliceAlong from '@turf/line-slice-along';
+import { lineSliceAlong } from '@turf/line-slice-along';
 import type { LineString } from 'geojson';
 import { isArray } from 'lodash';
 import { useTranslation } from 'react-i18next';

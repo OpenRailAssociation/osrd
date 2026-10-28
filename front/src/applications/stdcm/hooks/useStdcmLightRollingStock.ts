@@ -14,5 +14,3 @@ export const useStdcmLightRollingStock = () => {
 
   return rollingStock;
 };
-
-export default useStdcmLightRollingStock;

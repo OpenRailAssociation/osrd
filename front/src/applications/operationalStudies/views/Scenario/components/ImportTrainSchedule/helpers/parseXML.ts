@@ -398,5 +398,3 @@ export const locallyProcessXmlFile = async (fileContent: string): Promise<Timeta
 
   return await parseXML(xmlDoc);
 };
-
-export default locallyProcessXmlFile;

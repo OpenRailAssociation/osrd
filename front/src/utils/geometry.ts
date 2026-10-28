@@ -1,8 +1,8 @@
-import along from '@turf/along';
-import turfDistance from '@turf/distance';
+import { along } from '@turf/along';
+import { distance as turfDistance } from '@turf/distance';
 import { point, featureCollection, lineString, type Units } from '@turf/helpers';
 import { getCoord } from '@turf/invariant';
-import length from '@turf/length';
+import { length } from '@turf/length';
 import type {
   Feature,
   Point,

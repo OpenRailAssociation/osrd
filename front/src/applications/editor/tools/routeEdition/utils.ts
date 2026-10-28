@@ -1,5 +1,5 @@
 import { lineString, point } from '@turf/helpers';
-import lineSlice from '@turf/line-slice';
+import { lineSlice } from '@turf/line-slice';
 import type { Feature, LineString, Position } from 'geojson';
 import { cloneDeep, first, isEqual, isNil, last } from 'lodash';
 

@@ -1,4 +1,4 @@
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry, Position } from 'geojson';
 
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';

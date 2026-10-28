@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import { lineString } from '@turf/helpers';
-import length from '@turf/length';
+import { length } from '@turf/length';
 import type { Feature, FeatureCollection, LineString } from 'geojson';
 import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';

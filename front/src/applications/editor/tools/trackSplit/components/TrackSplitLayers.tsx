@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
-import along from '@turf/along';
-import length from '@turf/length';
+import { along } from '@turf/along';
+import { length } from '@turf/length';
 import type { Feature, Point } from 'geojson';
 import { Layer, Source } from 'react-map-gl/maplibre';
 

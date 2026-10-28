@@ -9,8 +9,8 @@ import {
 } from 'react';
 
 import { ArrowSwitch, Fold, FrameAll, Plus, Unfold } from '@osrd-project/ui-icons';
-import along from '@turf/along';
-import bbox from '@turf/bbox';
+import { along } from '@turf/along';
+import { bbox } from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import cx from 'classnames';
 import type { Position } from 'geojson';

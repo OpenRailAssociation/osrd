@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
-import useStdcmLightRollingStock from 'applications/stdcm/hooks/useStdcmLightRollingStock';
+import { useStdcmLightRollingStock } from 'applications/stdcm/hooks/useStdcmLightRollingStock';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';

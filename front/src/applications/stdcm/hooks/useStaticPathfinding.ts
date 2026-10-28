@@ -27,7 +27,7 @@ import {
   getPathSegmentsIndexes,
   launchSegmentedPathfinding,
 } from '../utils/getConsistChangesConstraints';
-import useStdcmLightRollingStock from './useStdcmLightRollingStock';
+import { useStdcmLightRollingStock } from './useStdcmLightRollingStock';
 
 /**
  * Compute the path items locations from the path steps

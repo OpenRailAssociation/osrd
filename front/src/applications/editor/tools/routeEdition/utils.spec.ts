@@ -1,5 +1,5 @@
 import { lineString } from '@turf/helpers';
-import length from '@turf/length';
+import { length } from '@turf/length';
 import type { LineString, Point, Position } from 'geojson';
 import { describe, it, expect } from 'vitest';
 

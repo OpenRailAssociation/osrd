@@ -1,6 +1,6 @@
 import { Fragment, type PropsWithChildren, useCallback, useEffect, useRef } from 'react';
 
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import type { Geometry } from 'geojson';
 import { compact } from 'lodash';
 import type { MapRef } from 'react-map-gl/maplibre';

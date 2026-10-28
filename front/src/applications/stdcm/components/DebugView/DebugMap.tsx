@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import type { Feature, FeatureCollection, Point } from 'geojson';
 import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';

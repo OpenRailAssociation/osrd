@@ -1,5 +1,5 @@
-import along from '@turf/along';
-import distance from '@turf/distance';
+import { along } from '@turf/along';
+import { distance } from '@turf/distance';
 import type { LineString, FeatureCollection } from 'geojson';
 import { tail, last } from 'lodash';
 import { describe, it, expect, assert } from 'vitest';

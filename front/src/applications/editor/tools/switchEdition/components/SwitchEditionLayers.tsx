@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 
 import { featureCollection, point } from '@turf/helpers';
-import nearestPoint from '@turf/nearest-point';
+import { nearestPoint } from '@turf/nearest-point';
 import { first, last } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';

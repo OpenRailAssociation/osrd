@@ -1,6 +1,6 @@
 import { Zap, Gauge, Question, Signals } from '@osrd-project/ui-icons';
 import { featureCollection } from '@turf/helpers';
-import lineSliceAlong from '@turf/line-slice-along';
+import { lineSliceAlong } from '@turf/line-slice-along';
 import type { FeatureCollection, LineString } from 'geojson';
 import { sortBy, uniq } from 'lodash';
 

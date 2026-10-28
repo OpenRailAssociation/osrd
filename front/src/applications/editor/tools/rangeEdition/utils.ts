@@ -1,7 +1,7 @@
-import along from '@turf/along';
+import { along } from '@turf/along';
 import { feature, lineString, point } from '@turf/helpers';
-import length from '@turf/length';
-import lineSliceAlong from '@turf/line-slice-along';
+import { length } from '@turf/length';
+import { lineSliceAlong } from '@turf/line-slice-along';
 import type { Feature, LineString, Position } from 'geojson';
 import { last, cloneDeep, compact } from 'lodash';
 

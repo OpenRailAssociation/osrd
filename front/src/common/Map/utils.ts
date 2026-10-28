@@ -1,4 +1,4 @@
-import turfCenter from '@turf/center';
+import { center as turfCenter } from '@turf/center';
 import type { AllGeoJSON } from '@turf/helpers';
 
 import type {

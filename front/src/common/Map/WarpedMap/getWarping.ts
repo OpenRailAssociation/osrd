@@ -1,6 +1,6 @@
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import { lineString } from '@turf/helpers';
-import simplify from '@turf/simplify';
+import { simplify } from '@turf/simplify';
 import type { Feature, FeatureCollection, Geometry, LineString, Position } from 'geojson';
 
 import {

@@ -1,4 +1,4 @@
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import html2canvas from 'html2canvas';
 import { isEqual } from 'lodash';
 

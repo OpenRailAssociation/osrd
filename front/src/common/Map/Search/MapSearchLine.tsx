@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useState } from 'react';
 
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 
-import along from '@turf/along';
-import length from '@turf/length';
+import { along } from '@turf/along';
+import { length } from '@turf/length';
 import { uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
 

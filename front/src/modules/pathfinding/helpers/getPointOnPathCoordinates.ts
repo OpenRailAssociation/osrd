@@ -1,4 +1,4 @@
-import along from '@turf/along';
+import { along } from '@turf/along';
 import type { Position } from 'geojson';
 
 import type { CorePropertyGeometryProjection, GeoJsonLineString } from 'common/api/osrdEditoastApi';

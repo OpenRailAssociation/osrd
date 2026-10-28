@@ -1,6 +1,6 @@
 import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
 import { featureCollection } from '@turf/helpers';
-import getNearestPoint from '@turf/nearest-point';
+import { nearestPoint as getNearestPoint } from '@turf/nearest-point';
 import type { Feature, LineString } from 'geojson';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { AiFillSave } from 'react-icons/ai';

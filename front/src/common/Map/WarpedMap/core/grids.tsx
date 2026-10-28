@@ -1,8 +1,8 @@
-import bearing from '@turf/bearing';
-import center from '@turf/center';
-import destination from '@turf/destination';
+import { bearing } from '@turf/bearing';
+import { center } from '@turf/center';
+import { destination } from '@turf/destination';
 import { featureCollection, lineString, polygon } from '@turf/helpers';
-import length from '@turf/length';
+import { length } from '@turf/length';
 import type { Feature, LineString, Position } from 'geojson';
 import { clamp, cloneDeep, keyBy, meanBy } from 'lodash';
 

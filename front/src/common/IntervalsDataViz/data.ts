@@ -1,7 +1,7 @@
 import { retrieveSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import fnLength from '@turf/length';
-import lineSplit from '@turf/line-split';
+import { length as fnLength } from '@turf/length';
+import { lineSplit } from '@turf/line-split';
 import type { Feature, Point, LineString, Position } from 'geojson';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { last, differenceWith, cloneDeep, isEqual, isArray, isNil, isEmpty, sortBy } from 'lodash';

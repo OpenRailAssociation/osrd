@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';

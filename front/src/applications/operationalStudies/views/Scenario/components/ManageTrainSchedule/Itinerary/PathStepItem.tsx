@@ -10,7 +10,7 @@ import {
   KebabHorizontal,
   X,
 } from '@osrd-project/ui-icons';
-import bbox from '@turf/bbox';
+import { bbox } from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 

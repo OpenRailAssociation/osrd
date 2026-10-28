@@ -14,7 +14,7 @@ import { castErrorToFailure } from 'utils/error';
 
 import { adaptPayloadForTargetTimetable, getPayloadTimetableType } from './helpers/adaptJsonImport';
 import { processJsonFile } from './helpers/parseJson';
-import locallyProcessXmlFile from './helpers/parseXML';
+import { locallyProcessXmlFile } from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
 
 const useImportTrainSchedules = () => {
