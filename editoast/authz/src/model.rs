@@ -111,6 +111,7 @@ pub enum GrantType {
 #[strum(serialize_all = "snake_case")]
 pub enum InfraPrivilege {
     CanRestrictedRead,
+    CanShareRestrictedRead,
     CanRead,
     CanShareRead,
     CanWrite,
@@ -185,6 +186,7 @@ pub struct Infra(pub i64);
 #[strum(serialize_all = "snake_case")]
 pub enum RollingStockPrivilege {
     CanRestrictedRead,
+    CanShareRestrictedRead,
     CanRead,
     CanShareRead,
     CanWrite,
@@ -297,6 +299,7 @@ fga::relations! {
         can_read: User,
         can_write: User,
         can_delete: User,
+        can_share_restricted_read: User,
         can_share_read: User,
         can_share_write: User,
         can_share_ownership: User,
@@ -312,6 +315,7 @@ fga::relations! {
         can_read: User,
         can_write: User,
         can_delete: User,
+        can_share_restricted_read: User,
         can_share_read: User,
         can_share_write: User,
         can_share_ownership: User,

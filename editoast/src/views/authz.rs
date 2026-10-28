@@ -446,7 +446,7 @@ pub(in crate::views) async fn user_privileges(
                     }
                     Err(Check::HasRollingStockPrivilege(
                         Actor::Issuer,
-                        RollingStockPrivilege::CanRead,
+                        RollingStockPrivilege::CanRestrictedRead,
                         rolling_stock,
                     )) => {
                         result.entry(ResourceType::RollingStock).or_default().push(
@@ -1456,6 +1456,7 @@ mod tests {
             infra_privileges.remove(&infra1).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanShareRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -1469,6 +1470,7 @@ mod tests {
             infra_privileges.remove(&infra2).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanShareRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
@@ -1479,6 +1481,7 @@ mod tests {
             infra_privileges.remove(&infra3).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanShareRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead
             ])
@@ -1552,6 +1555,7 @@ mod tests {
             privileges.remove(&infra1).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanShareRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead
             ])
@@ -1561,6 +1565,7 @@ mod tests {
             privileges.remove(&infra3).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanShareRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
             ])
@@ -1569,6 +1574,7 @@ mod tests {
             privileges.remove(&infra4).unwrap(),
             HashSet::from([
                 StandardPrivilege::CanRestrictedRead,
+                StandardPrivilege::CanShareRestrictedRead,
                 StandardPrivilege::CanRead,
                 StandardPrivilege::CanShareRead,
                 StandardPrivilege::CanWrite,
