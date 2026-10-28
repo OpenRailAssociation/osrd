@@ -33,7 +33,6 @@
     "consistent-return": "off",
     "control-has-associated-label": "off",
     "eslint/require-await": "off",
-    "max-classes-per-file": "off",
     "max-dependencies": "off",
     "max-depth": "off",
     "max-lines-per-function": "off",

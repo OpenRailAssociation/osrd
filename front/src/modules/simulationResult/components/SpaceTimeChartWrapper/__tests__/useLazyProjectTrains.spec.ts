@@ -1,3 +1,4 @@
+// eslint-disable max-classes-per-file
 import { act } from '@testing-library/react';
 import { renderHookWithStore } from 'store/__tests__';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
