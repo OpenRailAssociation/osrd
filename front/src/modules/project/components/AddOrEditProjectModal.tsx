@@ -142,7 +142,7 @@ export default function AddOrEditProjectModal({
         request
           .unwrap()
           .then((projectCreated) => {
-            navigate(`/operational-studies/projects/${projectCreated.id}`);
+            void navigate(`/operational-studies/projects/${projectCreated.id}`);
             closeModal();
           })
           .catch((error) => {
@@ -210,30 +210,29 @@ export default function AddOrEditProjectModal({
   const removeProject = useCallback(async () => {
     if (projectStudies) {
       // For each scenario in the project, clean the local storage if a manchette is saved
-      cleanLocalStorageByProject(projectStudies, dispatch);
+      await cleanLocalStorageByProject(projectStudies, dispatch);
     }
 
-    await deleteProject({ projectId: project!.id })
-      .unwrap()
-      .then(async () => {
-        navigate(`/operational-studies/projects/`);
-        closeModal();
-        dispatch(
-          setSuccess({
-            title: t('project.projectDeleted'),
-            text: t('project.projectDeletedDetails', { name: project!.name }),
+    try {
+      await deleteProject({ projectId: project!.id }).unwrap();
+
+      void navigate(`/operational-studies/projects/`);
+      closeModal();
+      dispatch(
+        setSuccess({
+          title: t('project.projectDeleted'),
+          text: t('project.projectDeletedDetails', { name: project!.name }),
+        })
+      );
+    } catch (e) {
+      dispatch(
+        setFailure(
+          castErrorToFailure(e, {
+            name: t('project.error.unableToDeleteProject'),
           })
-        );
-      })
-      .catch((e) => {
-        dispatch(
-          setFailure(
-            castErrorToFailure(e, {
-              name: t('project.error.unableToDeleteProject'),
-            })
-          )
-        );
-      });
+        )
+      );
+    }
   }, [dispatch, project, projectStudies, closeModal, t, deleteProject, navigate]);
 
   const debouncedObjectives = useDebounce(currentProject.objectives, 500);

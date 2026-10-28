@@ -195,7 +195,7 @@ const SimulationResultMap = ({
     };
 
     if (pathSteps) {
-      getPathItemsCoordinates(
+      void getPathItemsCoordinates(
         pathSteps,
         pathStepsOperationalPoints,
         pathProperties,
@@ -269,8 +269,8 @@ const SimulationResultMap = ({
         onClick={() => {
           dispatch(removeMapSearchMarker());
         }}
-        onIdle={() => {
-          captureMap(viewport, MAP_ID, setMapCanvas, pathProperties?.geometry);
+        onIdle={async () => {
+          await captureMap(viewport, MAP_ID, setMapCanvas, pathProperties?.geometry);
         }}
         updatePartialViewPort={updateViewportChange}
         mapSettings={mapSettings}

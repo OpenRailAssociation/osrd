@@ -74,7 +74,7 @@ const useScenario = () => {
 
   useEffect(() => {
     if (currentTimetable) {
-      setParamsInUrlAndStorage('timetable', currentTimetable.id.toString());
+      void setParamsInUrlAndStorage('timetable', currentTimetable.id.toString());
     }
   }, [currentTimetable, setParamsInUrlAndStorage]);
 
@@ -120,7 +120,7 @@ const useScenario = () => {
       return;
     }
 
-    checkAndCreateSandbox(currentTimetable.id, currentTimetable.type);
+    void checkAndCreateSandbox(currentTimetable.id, currentTimetable.type);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleSets, currentTimetable?.id, currentTimetable?.type]);
 

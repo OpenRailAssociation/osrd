@@ -7,6 +7,7 @@ export default function postTimetableByIdStdcm(args: PostTimetableByIdStdcmApiAr
   const controller = new AbortController();
   const { signal } = controller;
 
+  // TODO: Rewrite this as an async generator (or get rid of the callback in another way)
   const subscribe = async (
     callback: (
       arg: PostTimetableByIdStdcmApiResponseWithTraceId | { event: 'error'; error: Error }

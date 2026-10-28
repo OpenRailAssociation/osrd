@@ -86,7 +86,7 @@ export default function useLoadCatalog() {
    */
   useEffect(() => {
     /* eslint-disable-next-line react/set-state-in-effect */
-    loadCatalog();
+    void loadCatalog();
   }, [loadCatalog]);
 
   return { loading, error, data, trainScheduleSetsAlreadyImported };

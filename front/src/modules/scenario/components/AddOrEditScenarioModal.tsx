@@ -193,7 +193,7 @@ const AddOrEditScenarioModal = ({
             electrical_profile_set_id: currentScenario.electrical_profile_set_id,
           },
         }).unwrap();
-        navigate(
+        void navigate(
           `/operational-studies/projects/${projectId}/studies/${studyId}/scenarios/${newScenario.id}`
         );
       } catch (error) {
@@ -237,7 +237,7 @@ const AddOrEditScenarioModal = ({
         .unwrap()
         .then(() => {
           cleanScenarioLocalStorage(scenario);
-          navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
+          void navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(
             setSuccess({
@@ -265,8 +265,9 @@ const AddOrEditScenarioModal = ({
     openModal(
       <DeleteItemsModal
         translationKey={t('scenario.confirm-delete', { count: 1 })}
-        handleDeleteItems={() => {
-          removeScenario().then(onCancel);
+        handleDeleteItems={async () => {
+          await removeScenario();
+          onCancel?.();
         }}
       />,
       'sm'
@@ -281,12 +282,12 @@ const AddOrEditScenarioModal = ({
     }
   }, [scenario]);
 
-  const handleOnSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleOnSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editionMode) {
       updateScenario();
     } else {
-      createScenario();
+      await createScenario();
     }
   };
 

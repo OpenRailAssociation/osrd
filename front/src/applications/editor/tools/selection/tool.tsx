@@ -213,7 +213,7 @@ const SelectionTool: Tool<SelectionState> = {
       selection,
     });
   },
-  onClickMap(e, { setState, state, infraID, dispatch }) {
+  async onClickMap(e, { setState, state, infraID, dispatch }) {
     const position = e.lngLat;
     const map = e.target;
 
@@ -235,7 +235,7 @@ const SelectionTool: Tool<SelectionState> = {
             .filter((f) => !f.layer.id.startsWith('osm'));
 
           setState({ isLoading: true });
-          getMixedEntities(
+          const entities = await getMixedEntities(
             infraID!,
             selection.flatMap((entity) =>
               entity.properties?.id
@@ -248,16 +248,16 @@ const SelectionTool: Tool<SelectionState> = {
                 : []
             ),
             dispatch
-          ).then((entities) => {
-            setState({
-              isLoading: false,
-              selectionState: {
-                ...state.selectionState,
-                type: 'rectangle',
-                rectangleTopLeft: null,
-              },
-              selection: Object.values(entities),
-            });
+          );
+
+          setState({
+            isLoading: false,
+            selectionState: {
+              ...state.selectionState,
+              type: 'rectangle',
+              rectangleTopLeft: null,
+            },
+            selection: Object.values(entities),
           });
         }
       } else {
@@ -292,7 +292,7 @@ const SelectionTool: Tool<SelectionState> = {
           );
 
           setState({ isLoading: true });
-          getMixedEntities(
+          const entities = await getMixedEntities(
             infraID!,
             selection.flatMap((entity) =>
               entity.properties?.id
@@ -305,12 +305,12 @@ const SelectionTool: Tool<SelectionState> = {
                 : []
             ),
             dispatch
-          ).then((entities) => {
-            setState({
-              isLoading: false,
-              selectionState: { ...state.selectionState, type: 'polygon', polygonPoints: [] },
-              selection: Object.values(entities),
-            });
+          );
+
+          setState({
+            isLoading: false,
+            selectionState: { ...state.selectionState, type: 'polygon', polygonPoints: [] },
+            selection: Object.values(entities),
           });
         }
       } else {

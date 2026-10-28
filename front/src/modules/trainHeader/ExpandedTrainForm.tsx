@@ -341,7 +341,7 @@ const ExpandedTrainForm = ({
       }
 
       if (trainPayloadChanged(updatedTrain, train)) {
-        onPersistTrain(updatedTrain);
+        void onPersistTrain(updatedTrain);
       }
       return persistedFields;
     },

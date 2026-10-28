@@ -29,7 +29,7 @@ export const useProjectImage = (imageId?: number | null) => {
       }
     };
 
-    getProjectImage();
+    void getProjectImage();
 
     // We revoke the previously created object URL to prevent memory leaks
     return () => {

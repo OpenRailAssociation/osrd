@@ -64,14 +64,14 @@ describe('useUrlOrStorageParam', () => {
   });
 
   describe('setParamsInUrlAndStorage', () => {
-    it('should save the param in the URL and in the local storage', () => {
+    it('should save the param in the URL and in the local storage', async () => {
       mocks.useLocation.mockReturnValue({
         pathname: SCENARIO_PATHNAME,
         search: '?selected_train=5',
       });
       const { result } = renderHook(() => useUrlOrStorageParam(KEY_PREFIX));
 
-      result.current.setParamsInUrlAndStorage('timetable', '100');
+      await result.current.setParamsInUrlAndStorage('timetable', '100');
 
       expect(localStorage.getItem(STORAGE_KEY)).toBe('100');
       expect(mocks.navigate).toHaveBeenCalledWith(
@@ -80,7 +80,7 @@ describe('useUrlOrStorageParam', () => {
       );
     });
 
-    it('should remove the param from the URL and from the local storage when the value is undefined', () => {
+    it('should remove the param from the URL and from the local storage when the value is undefined', async () => {
       mocks.useLocation.mockReturnValue({
         pathname: SCENARIO_PATHNAME,
         search: '?selected_train=5&timetable=100',
@@ -88,7 +88,7 @@ describe('useUrlOrStorageParam', () => {
       localStorage.setItem(STORAGE_KEY, '100');
       const { result } = renderHook(() => useUrlOrStorageParam(KEY_PREFIX));
 
-      result.current.setParamsInUrlAndStorage('timetable', undefined);
+      await result.current.setParamsInUrlAndStorage('timetable', undefined);
 
       expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
       expect(mocks.navigate).toHaveBeenCalledWith(`${SCENARIO_PATHNAME}?selected_train=5`, {

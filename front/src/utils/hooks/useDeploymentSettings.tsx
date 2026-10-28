@@ -181,7 +181,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
       }
     };
 
-    fetchInternalProd();
+    void fetchInternalProd();
   }, [dispatch]);
 
   return (

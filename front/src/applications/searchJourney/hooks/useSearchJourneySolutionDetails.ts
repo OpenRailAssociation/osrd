@@ -67,7 +67,7 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
 
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       setLoading(true);
       setError(null);
       try {

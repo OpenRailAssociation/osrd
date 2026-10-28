@@ -128,36 +128,37 @@ const OccurrenceItem = ({
       disable: {
         title: t('occurrenceMenu.disable'),
         icon: <Skip />,
-        onClick: () => {
-          updateOccurrenceStatus(occurrence, 'disabled');
+        onClick: async () => {
           closeMenu();
+          await updateOccurrenceStatus(occurrence, 'disabled');
         },
         dataTestID: 'occurrence-disable-button',
       },
       enable: {
         title: t('occurrenceMenu.enable'),
         icon: <Play />,
-        onClick: () => {
-          updateOccurrenceStatus(occurrence, 'enable');
+        onClick: async () => {
           closeMenu();
+          await updateOccurrenceStatus(occurrence, 'enable');
         },
         dataTestID: 'occurrence-enable-button',
       },
       edit: {
         title: t('occurrenceMenu.edit'),
         icon: <Pencil />,
-        onClick: () => {
-          editOccurrence(occurrence);
+        onClick: async () => {
           closeMenu();
+          await editOccurrence(occurrence);
         },
         dataTestID: 'occurrence-edit-button',
       },
       restore: {
         title: t('occurrenceMenu.restore'),
         icon: <Reverse />,
-        onClick: () => {
-          resetOccurrenceExceptions(occurrence.id);
+        onClick: async () => {
           closeMenu();
+          // TODO: handle errors gracefully with a toast
+          await resetOccurrenceExceptions(occurrence.id);
         },
         dataTestID: 'occurrence-restore-button',
       },
@@ -173,9 +174,10 @@ const OccurrenceItem = ({
       delete: {
         title: t('occurrenceMenu.delete'),
         icon: <Trash />,
-        onClick: () => {
-          deleteAddedException(occurrence.id);
+        onClick: async () => {
           closeMenu();
+          // TODO: handle errors gracefully with a toast
+          await deleteAddedException(occurrence.id);
         },
         dataTestID: 'occurrence-delete-button',
       },
