@@ -214,7 +214,7 @@ const calculateStartTime = (
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   paced: TrainSchedule['paced'],
-  firstStopFor?: string | null
+  oldSchedule?: ScheduleItem[]
 ): StartTime => {
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock =
@@ -223,6 +223,7 @@ const calculateStartTime = (
       : trainrunSections[0].sourceDeparture;
   // NGE displays the departure from the origin, whereas OSRD start time is the arrival at the
   // origin: the first stop duration must be removed.
+  const firstStopFor = oldSchedule[0].stop_for;
   const firstStopForDuration = firstStopFor ? Duration.parse(firstStopFor) : Duration.zero;
 
   if (baseStartTime instanceof Duration) {
@@ -257,13 +258,13 @@ const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
   trainrunDirection: TRAINRUN_DIRECTIONS,
-  firstStopFor?: string | null,
-  lastStopFor?: string | null
+  oldSchedule?: ScheduleItem[]
 ): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   const firstNodeID = isForward
     ? trainrunSections[0].sourceNodeId
     : trainrunSections[0].targetNodeId;
+  const firstStopFor = oldSchedule ? oldSchedule[0].stop_for : null;
   const firstScheduleItem: ScheduleItem = {
     at: `${firstNodeID}-0`,
     arrival: null,
@@ -293,7 +294,17 @@ const generateSchedule = (
       const nextDepartureTimeLock = isForward
         ? nextSection.sourceDeparture
         : nextSection.targetDeparture;
-      departure = getTimeLockTimeOffset(nextDepartureTimeLock, trainrunStartTimeLock);
+      // get the stop_for if nextDepartureTimeLock.time is null
+      // iterate over schedule (schedule[index].stop_for)
+      if (nextDepartureTimeLock.time === null) {
+        departure =
+          oldSchedule && oldSchedule[index] && oldSchedule[index].stop_for
+            ? Duration.parse(oldSchedule[index].stop_for)
+            : null;
+      }
+
+      // departure = getTimeLockTimeOffset(nextDepartureTimeLock, trainrunStartTimeLock);
+      console.log(departure);
     }
 
     if (!arrival && !departure) {
@@ -314,16 +325,19 @@ const generateSchedule = (
 
     // If missing arrival time, default to a zero stop duration
     arrival = arrival || departure!;
+    console.log(arrival);
 
+    const lastStopFor = oldSchedule?.at(-1)?.stop_for;
     let stop_for: Duration | null = null;
     if (isStopTransit) {
       if (index === trainrunSections.length - 1 && lastStopFor) {
         stop_for = Duration.parse(lastStopFor);
       } else {
-        stop_for = departure ? departure.sub(arrival) : Duration.zero;
+        stop_for = departure ? departure : Duration.zero;
       }
     }
 
+    console.log(lastStopFor);
     return {
       at: `${toNodeId}-${index + 1}`,
       arrival: arrival.toISOString(),
@@ -376,8 +390,7 @@ export const generatePathAndSchedule = (
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   paced: TrainSchedule['paced'],
   state?: MacroEditorState,
-  firstStopFor?: string | null,
-  lastStopFor?: string | null
+  oldSchedule?: ScheduleItem[]
 ): Pick<TrainSchedule, 'start_time' | 'path' | 'schedule'> => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
@@ -389,10 +402,10 @@ export const generatePathAndSchedule = (
     baseStartTime,
     trainrunDirection,
     paced,
-    firstStopFor
+    oldSchedule
   );
   const path = generatePath(sections, nodes, trainrunDirection, state);
-  const schedule = generateSchedule(sections, nodes, trainrunDirection, firstStopFor, lastStopFor);
+  const schedule = generateSchedule(sections, nodes, trainrunDirection, oldSchedule); // add schedule
   return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
@@ -623,10 +636,10 @@ export const handleUpdateTrainSchedule = async ({
     TRAINRUN_DIRECTIONS.FORWARD,
     paced,
     state,
-    firstStopFor,
-    lastStopFor
+    oldForwardTrainSchedule.schedule
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
+  console.log(forwardPathAndSchedule.schedule);
 
   const { id: _id, ...trainScheduleBase } = oldForwardTrainSchedule;
 
