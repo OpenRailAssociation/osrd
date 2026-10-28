@@ -167,7 +167,16 @@ export function buildSplitPoints({
       });
 
       if (repeatTimeRange) {
-        occupancyZones = repeatOccupancyZonesInRange(occupancyZones, repeatTimeRange);
+        // A linking is built from its two zones. Repeat one pattern further than the chart on each
+        // side, so that a linking with one zone off screen is still drawn up to the edge.
+        // No linking is longer than a pattern.
+        const range = hourlyTimetableDuration
+          ? {
+              start: repeatTimeRange.start.sub(hourlyTimetableDuration),
+              end: repeatTimeRange.end.add(hourlyTimetableDuration),
+            }
+          : repeatTimeRange;
+        occupancyZones = repeatOccupancyZonesInRange(occupancyZones, range);
       }
 
       const { linkings: waypointLinkings, brokenLinkings } = buildWaypointLinkings({
