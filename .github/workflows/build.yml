@@ -440,7 +440,7 @@ jobs:
           path: .
 
       - name: Load built images
-        if: needs.build-editoast-test.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-editoast-test.tar
 
@@ -491,7 +491,7 @@ jobs:
           path: .
 
       - name: Load built images
-        if: needs.build-editoast-test.outputs.output_method == 'artifact'
+        if: needs.build-editoast.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-editoast-test.tar
 
