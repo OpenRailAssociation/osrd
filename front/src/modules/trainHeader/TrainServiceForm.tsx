@@ -252,7 +252,7 @@ export default function TrainServiceForm({
             data-testid="train-header-extra-occurrences-list"
           >
             {extraOccurrences
-              .filter((occurrence) => occurrence.start_time?.value)
+              .filter((occurrence) => occurrence.start_time?.value !== undefined)
               .map((occurrence) => (
                 <ExtraOccurrenceRow
                   key={`${occurrence.id}-${occurrence.key}`}
