@@ -233,7 +233,7 @@ const ItineraryModalMap = ({
     [infraID, getInfraObjectEntity, dispatch]
   );
 
-  const onFeatureClick = (e: MapLayerMouseEvent) => {
+  const onFeatureClick = async (e: MapLayerMouseEvent) => {
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'tracks-geo/main',
@@ -246,7 +246,7 @@ const ItineraryModalMap = ({
     if (isMapSelectionMode) {
       if (result?.feature.properties?.id) {
         if (result.feature.sourceLayer === 'operational_points') {
-          handleOpClick(result.feature, result.nearest);
+          await handleOpClick(result.feature, result.nearest);
         } else {
           onMapSelectionClick?.({
             feature: result.feature,

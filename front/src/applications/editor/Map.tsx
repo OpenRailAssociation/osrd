@@ -247,27 +247,48 @@ const MapUnplugged = ({
           interactive
           cursor={cursor}
           interactiveLayerIds={interactiveLayerIDs}
-          onClick={(e) => {
-            const eventWithFeature = getEventWithNearestFeature(e) ?? e;
+          onClick={async (e) => {
+            const nearestResult = getMapMouseEventNearestFeature(
+              e,
+              eventsLayerIDs
+                ? {
+                    layersId: eventsLayerIDs,
+                  }
+                : undefined
+            );
+
+            const eventWithFeature = nearestResult
+              ? {
+                  ...e,
+                  // (don't remove those 2 lines or TypeScript won't be happy)
+                  preventDefault: e.preventDefault,
+                  defaultPrevented: e.defaultPrevented,
+                  features: [nearestResult.feature],
+                }
+              : e;
+
             if (toolState.hovered && activeTool.onClickEntity) {
               if (toolState.hovered.type) {
-                getEntity(infraID!, toolState.hovered.id, toolState.hovered.type, dispatch).then(
-                  (entity) => {
-                    if (activeTool.onClickEntity) {
-                      // Those features lack a proper "geometry", and have a "_geometry"
-                      // instead. This fixes it:
-                      entity = {
-                        ...entity,
-                        geometry: entity.geometry || (entity as { _geometry?: Geometry })._geometry,
-                      };
-                      activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
-                    }
-                  }
+                let entity = await getEntity(
+                  infraID!,
+                  toolState.hovered.id,
+                  toolState.hovered.type,
+                  dispatch
                 );
+
+                if (activeTool.onClickEntity) {
+                  // Those features lack a proper "geometry", and have a "_geometry"
+                  // instead. This fixes it:
+                  entity = {
+                    ...entity,
+                    geometry: entity.geometry || (entity as { _geometry?: Geometry })._geometry,
+                  };
+                  activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                }
               }
             }
             if (activeTool.onClickMap) {
-              activeTool.onClickMap(eventWithFeature, extendedContext);
+              await activeTool.onClickMap(eventWithFeature, extendedContext);
             }
             dispatch(removeMapSearchMarker());
           }}

@@ -45,7 +45,7 @@ const TrackSplitLeftPanel = () => {
   useEffect(() => {
     if (isFormSubmited && setIsFormSubmited) {
       setIsFormSubmited(false);
-      submit(state);
+      void submit(state);
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isFormSubmited, setIsFormSubmited]);
@@ -72,9 +72,9 @@ const TrackSplitLeftPanel = () => {
       </div>
       <div>
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            submit(state);
+            await submit(state);
           }}
         >
           <label className="font-weight-medium" htmlFor="offset">

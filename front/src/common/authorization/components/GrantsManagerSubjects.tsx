@@ -80,7 +80,7 @@ const GrantsManagerSubjects = ({
             onChange={async (value?: Grant) => {
               await updateGrant(resourceType, resourceId, subject.id, value);
               await refetch();
-              onChangeSuccess?.(subject.id, value);
+              await onChangeSuccess?.(subject.id, value);
             }}
           />
         ))}

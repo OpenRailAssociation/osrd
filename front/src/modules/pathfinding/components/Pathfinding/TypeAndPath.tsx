@@ -90,7 +90,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
       });
   };
 
-  function getOpNames() {
+  async function getOpNames() {
     if (infraId !== undefined) {
       const opMainCodes = inputText.toUpperCase().trimEnd().split(' ');
       const constraint = opMainCodes.reduce(
@@ -109,19 +109,18 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
         },
         pageSize: 100,
       };
-      postSearch(payload)
-        .unwrap()
-        .then((results) => {
-          const operationalPoints = [...results] as SearchResultItemOperationalPoint[];
-          setOpList(
-            opMainCodes.map(
-              (mainCode) =>
-                operationalPoints.find((op) => op.main_code === mainCode) || {
-                  main_code: mainCode,
-                }
-            ) as SearchResultItemOperationalPoint[]
-          );
-        });
+
+      const results = await postSearch(payload).unwrap();
+
+      const operationalPoints = [...results] as SearchResultItemOperationalPoint[];
+      setOpList(
+        opMainCodes.map(
+          (mainCode) =>
+            operationalPoints.find((op) => op.main_code === mainCode) || {
+              main_code: mainCode,
+            }
+        ) as SearchResultItemOperationalPoint[]
+      );
     }
   }
 
@@ -182,7 +181,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
 
   useEffect(() => {
     if (debouncedSearchTerm) {
-      searchOperationalPoints();
+      void searchOperationalPoints();
     } else if (searchResults.length) {
       setSearchResults([]);
     }
@@ -191,7 +190,7 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
 
   useEffect(() => {
     if (debouncedInputText !== '') {
-      getOpNames();
+      void getOpNames();
     } else {
       setOpList([]);
     }

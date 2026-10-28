@@ -116,11 +116,8 @@ const InfraSelectorModalBodyEdition = ({
           setErrorMessage(t('jsonUpload.uploadError'));
         });
     } else {
-      postInfra({ body: { name: nameNewInfra } })
-        .unwrap()
-        .then(() => {
-          setErrorMessage(undefined);
-        });
+      await postInfra({ body: { name: nameNewInfra } });
+      setErrorMessage(undefined);
     }
   };
 

@@ -233,7 +233,7 @@ export default function TrainServiceForm({
             setAddedExceptionDate={(newAddedExceptionDate) =>
               onFieldChange('added_exception_date', newAddedExceptionDate)
             }
-            onCreateAddedException={() => {
+            onCreateAddedException={async () => {
               // In an hourly timetable, an added occurrence must start within the time window
               let startTime = fields.added_exception_date;
               const wrappedStartTime =
@@ -245,7 +245,7 @@ export default function TrainServiceForm({
                 onFieldChange('added_exception_date', startTime);
                 displayStartTimeWrappedWarning(true);
               }
-              onPersistTrain(train, { addedExceptions: [{ startTime }] });
+              await onPersistTrain(train, { addedExceptions: [{ startTime }] });
             }}
           />
           <div
@@ -258,10 +258,10 @@ export default function TrainServiceForm({
                 <ExtraOccurrenceRow
                   key={`${occurrence.id}-${occurrence.key}`}
                   startTime={parseStartTime(occurrence.start_time!.value, timetableType)}
-                  onDelete={() => {
+                  onDelete={async () => {
                     // TODO_EXCEPTION: remove this when the exception migration will be done
                     if (occurrence.id !== null && occurrence.id !== undefined) {
-                      onPersistTrain(train, { deletedAddedExceptionId: occurrence.id });
+                      await onPersistTrain(train, { deletedAddedExceptionId: occurrence.id });
                     }
                   }}
                 />

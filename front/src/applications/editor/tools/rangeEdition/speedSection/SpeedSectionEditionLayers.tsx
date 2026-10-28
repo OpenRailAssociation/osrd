@@ -167,17 +167,20 @@ export const SpeedSectionEditionLayers = () => {
         ),
       }));
 
-      getEntities<TrackSectionEntity>(infraID!, missingTrackIDs, 'TrackSection', dispatch).then(
-        (res) => {
-          setState((s) => ({
-            ...s,
-            trackSectionsCache: {
-              ...s.trackSectionsCache,
-              ...mapValues(res, (track) => ({ type: 'success' as const, track })),
-            },
-          }));
-        }
-      );
+      void getEntities<TrackSectionEntity>(
+        infraID!,
+        missingTrackIDs,
+        'TrackSection',
+        dispatch
+      ).then((res) => {
+        setState((s) => ({
+          ...s,
+          trackSectionsCache: {
+            ...s.trackSectionsCache,
+            ...mapValues(res, (track) => ({ type: 'success' as const, track })),
+          },
+        }));
+      });
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [entity.properties?.track_ranges]);
@@ -193,7 +196,7 @@ export const SpeedSectionEditionLayers = () => {
         },
       }));
 
-      getEntity<TrackSectionEntity>(infraID!, hoveredItem.id, 'TrackSection', dispatch).then(
+      void getEntity<TrackSectionEntity>(infraID!, hoveredItem.id, 'TrackSection', dispatch).then(
         (track) => {
           setState((s) => ({
             ...s,

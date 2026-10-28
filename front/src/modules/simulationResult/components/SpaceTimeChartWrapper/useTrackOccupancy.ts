@@ -363,7 +363,7 @@ const useTrackOccupancy = ({
   }, [pathOperationalPointsState, pathOpsByWaypointId, tracksState, t, hourlyTimetableDuration]);
 
   const toggleWaypoint = useCallback(
-    (waypointId: string, selectedState?: boolean) => {
+    async (waypointId: string, selectedState?: boolean) => {
       const waypoint = pathOpsByWaypointId.get(waypointId);
       if (!waypoint)
         throw new Error(`Waypoint ${waypointId} has not been provided to useTrackOccupancy.`);
@@ -432,21 +432,25 @@ const useTrackOccupancy = ({
           );
           if (!opRef) return;
 
-          fetchTrackOccupancy(opRef, waypointId, trainScheduleProjectionsById).then((newZones) => {
-            if (!newZones.length) return;
+          const newZones = await fetchTrackOccupancy(
+            opRef,
+            waypointId,
+            trainScheduleProjectionsById
+          );
 
-            updatePathOperationalPointState(waypointId, (state) =>
-              state
-                ? {
-                    ...state,
-                    zones: {
-                      type: 'ok',
-                      data: newZones,
-                    },
-                  }
-                : undefined
-            );
-          });
+          if (!newZones.length) return;
+
+          updatePathOperationalPointState(waypointId, (state) =>
+            state
+              ? {
+                  ...state,
+                  zones: {
+                    type: 'ok',
+                    data: newZones,
+                  },
+                }
+              : undefined
+          );
         }
       }
     },
@@ -621,7 +625,7 @@ const useTrackOccupancy = ({
       return noop;
     }
 
-    loadAllTracks(waypointsPayload);
+    void loadAllTracks(waypointsPayload);
     return () => {
       aborted = true;
     };
@@ -823,7 +827,7 @@ const useTrackOccupancy = ({
       }
     };
 
-    fetchOperationalPoints();
+    void fetchOperationalPoints();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleProjections, i18n.language]);
 

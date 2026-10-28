@@ -48,12 +48,12 @@ describe('useSearchUsers', () => {
     vi.useRealTimers();
   });
 
-  it('should send a search request when a search term is sent and eventually return its result', () => {
+  it('should send a search request when a search term is sent and eventually return its result', async () => {
     const { result } = renderHook(() => useSearchSubjects());
     expect(result.current.searchedSubjects).toEqual([]);
 
-    act(() => result.current.setSearchTerm(searchTermA));
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
+    await act(async () => result.current.setSearchTerm(searchTermA));
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION));
 
     expect(useQuerySpy).toHaveBeenLastCalledWith({
       searchPayload: {
@@ -65,56 +65,56 @@ describe('useSearchUsers', () => {
     expect(result.current.searchedSubjects).toEqual(searchedUsersA);
   });
 
-  it('should debounce requests on search term changes', () => {
+  it('should debounce requests on search term changes', async () => {
     const { result } = renderHook(() => useSearchSubjects());
     expect(result.current.searchedSubjects).toEqual([]);
 
-    act(() => result.current.setSearchTerm(searchTermB));
+    await act(async () => result.current.setSearchTerm(searchTermB));
     expect(result.current.searchedSubjects).toEqual([]);
 
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
     expect(result.current.searchedSubjects).toEqual([]);
 
-    act(() => vi.advanceTimersByTime(1));
+    await act(async () => vi.advanceTimersByTime(1));
     expect(result.current.searchedSubjects).toEqual(searchedUsersB);
 
-    act(() => result.current.setSearchTerm(searchTermC));
+    await act(async () => result.current.setSearchTerm(searchTermC));
     expect(result.current.searchedSubjects).toEqual(searchedUsersB);
 
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
     expect(result.current.searchedSubjects).toEqual(searchedUsersB);
 
-    act(() => vi.advanceTimersByTime(1));
+    await act(async () => vi.advanceTimersByTime(1));
     expect(result.current.searchedSubjects).toEqual(searchedUsersC);
   });
 
-  it('should skip the request and return an empty list after the debounce timer when the term is removed', () => {
+  it('should skip the request and return an empty list after the debounce timer when the term is removed', async () => {
     const { result } = renderHook(() => useSearchSubjects());
     expect(useQuerySpy).toHaveBeenLastCalledWith(skipToken);
     expect(result.current.searchedSubjects).toEqual([]);
 
-    act(() => result.current.setSearchTerm(searchTermA));
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
+    await act(async () => result.current.setSearchTerm(searchTermA));
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION));
     expect(result.current.searchedSubjects).toEqual(searchedUsersA);
 
-    act(() => result.current.setSearchTerm(''));
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
+    await act(async () => result.current.setSearchTerm(''));
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION - 1));
     expect(useQuerySpy).not.toHaveBeenLastCalledWith(skipToken);
     expect(result.current.searchedSubjects).toEqual(searchedUsersA);
 
-    act(() => vi.advanceTimersByTime(1));
+    await act(async () => vi.advanceTimersByTime(1));
     expect(useQuerySpy).toHaveBeenLastCalledWith(skipToken);
     expect(result.current.searchedSubjects).toEqual([]);
   });
 
-  it('should eventually return an empty list when resetSuggestions is called', () => {
+  it('should eventually return an empty list when resetSuggestions is called', async () => {
     const { result } = renderHook(() => useSearchSubjects());
-    act(() => result.current.setSearchTerm(searchTermA));
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
+    await act(async () => result.current.setSearchTerm(searchTermA));
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION));
     expect(result.current.searchedSubjects).toEqual(searchedUsersA);
 
-    act(() => result.current.resetSearch());
-    act(() => vi.advanceTimersByTime(DEBOUNCE_DURATION));
+    await act(async () => result.current.resetSearch());
+    await act(async () => vi.advanceTimersByTime(DEBOUNCE_DURATION));
     expect(result.current.searchedSubjects).toEqual([]);
   });
 });

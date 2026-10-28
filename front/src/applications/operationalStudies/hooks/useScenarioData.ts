@@ -160,7 +160,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       }
     };
 
-    fetchTrainSchedules();
+    void fetchTrainSchedules();
 
     return () => {
       trainSchedulesResult.unsubscribe();
