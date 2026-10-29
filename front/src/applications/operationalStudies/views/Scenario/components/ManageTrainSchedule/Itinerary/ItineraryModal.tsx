@@ -315,9 +315,12 @@ const ItineraryModal = ({
   const [hoveredGapIndex, setHoveredGapIndex] = useState<number | null>(null);
   const [expandedStepKeys, setExpandedStepKeys] = useState<string[]>([]);
   const [mapSelectionStepKey, setMapSelectionStepKey] = useState<string | null>(null);
+
   const [customTracksByOpKey, setCustomTracksByOpKey] = useState<
     Map<string, { trackId: string; trackName: string }[]>
   >(new Map());
+  const [customOps, setCustomOps] = useState<OperationalPointSuggestion[]>([]);
+
   const [waypointsPanelOpen, setWaypointsPanelOpen] = useState(false);
   const toggleWaypointsPanelLabel = t(
     waypointsPanelOpen
@@ -389,7 +392,7 @@ const ItineraryModal = ({
     forcedCh?: string
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
-    if (!chosenSecondaryCode) return;
+    if (!chosenSecondaryCode && suggestion.source !== 'custom') return;
     pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
@@ -411,9 +414,21 @@ const ItineraryModal = ({
       return ensureTrailingEmptyStep(next);
     });
     initCustomTracksEntry(newLocation);
-    commitSelectionForStep(stepKey, formatChosenValue(suggestion, chosenSecondaryCode));
+    commitSelectionForStep(
+      stepKey,
+      chosenSecondaryCode ? formatChosenValue(suggestion, chosenSecondaryCode) : suggestion.name
+    );
     resetOpSuggestions();
   };
+
+  const filterCustomOps = (input?: string) => {
+    const query = input?.trim().toLowerCase();
+    if (!query) return [];
+    return customOps.filter(
+      (op) => op.name.toLowerCase().includes(query) || op.mainCode.toLowerCase().includes(query)
+    );
+  };
+
   const isOnlyStep = pathSteps.length === 1;
 
   const hasInvalidPathStep = pathSteps.some((step) => {
@@ -1051,6 +1066,22 @@ const ItineraryModal = ({
                         setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
                       }
                     }}
+                    onCustomOpCreation={(name, opRef) => {
+                      const secondaryCode = opRef.secondary_code ?? undefined;
+                      const suggestion: OperationalPointSuggestion = {
+                        id: `${opRef.country_code}-${opRef.main_code}`,
+                        name,
+                        mainCode: opRef.main_code,
+                        countryCode: opRef.country_code,
+                        secondaryCodeList: secondaryCode ? [{ code: secondaryCode }] : [],
+                        source: 'custom',
+                      };
+                      setCustomOps((ops) => [
+                        ...ops.filter((op) => op.id !== suggestion.id),
+                        suggestion,
+                      ]);
+                      applyOperationalPointToStep(pathStep.key, suggestion, secondaryCode);
+                    }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];
@@ -1088,7 +1119,11 @@ const ItineraryModal = ({
                       unmarkEditing(pathStep.key);
                     }}
                     inputValue={getInputForStep(pathStep.key)}
-                    opSuggestions={activeStepKey === pathStep.key ? opSuggestions : []}
+                    opSuggestions={
+                      activeStepKey === pathStep.key
+                        ? [...filterCustomOps(getInputForStep(pathStep.key)), ...opSuggestions]
+                        : []
+                    }
                     onSelectOpSuggestion={(suggestion, chCode) => {
                       applyOperationalPointToStep(pathStep.key, suggestion, chCode);
                     }}

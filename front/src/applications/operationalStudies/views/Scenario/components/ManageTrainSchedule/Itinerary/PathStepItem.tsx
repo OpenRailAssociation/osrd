@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
+import type { OperationalPointReference } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
@@ -81,6 +82,10 @@ type PathStepProps = {
   onAddCustomTrack: (track: { trackId: string; trackName: string }) => void;
   onTrackNameChange: (trackName: string) => void;
   onAddCustomOp: (name: string) => void;
+  onCustomOpCreation: (
+    name: string,
+    opRef: Extract<OperationalPointReference, { type: 'domestic' }>
+  ) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
@@ -115,6 +120,7 @@ const PathStepItem = ({
   onAddCustomTrack,
   onTrackNameChange,
   onAddCustomOp,
+  onCustomOpCreation,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -371,6 +377,7 @@ const PathStepItem = ({
         firstSuggestion.secondaryCodeList.find((sc) => sc.isBestSuggestion)?.code ??
         firstSuggestion.secondaryCodeList[0]?.code;
 
+      setSubFormName(firstSuggestion.name);
       onSelectOpSuggestion(firstSuggestion, defaultSecondaryCode);
       resetOpSuggestions();
       blurActiveElement();
@@ -517,6 +524,7 @@ const PathStepItem = ({
                       return;
                     }
 
+                    setSubFormName(op.name);
                     onSelectOpSuggestion(op);
                     resetOpSuggestions();
                     blurActiveElement();
@@ -537,6 +545,7 @@ const PathStepItem = ({
                         isActive={isActive}
                         isSelected={isSelected}
                         onSelect={(op, secondaryCode) => {
+                          setSubFormName(op.name);
                           onSelectOpSuggestion(op, secondaryCode);
                           resetOpSuggestions();
                           blurActiveElement();
@@ -678,6 +687,7 @@ const PathStepItem = ({
         isOpValid={isOpValid}
         name={subFormName}
         onNameChange={setSubFormName}
+        onCustomOpCreation={onCustomOpCreation}
       />
     </>
   );
