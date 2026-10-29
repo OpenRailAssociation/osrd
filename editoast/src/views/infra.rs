@@ -53,7 +53,6 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
 use crate::views::path::operational_point_cache::OperationalPointCache;
-use authz::Role;
 use authz::authorizers::SystemAuthorizer;
 use authz::authorizers::UserAuthorizer;
 use models::Infra;
@@ -730,7 +729,7 @@ pub(in crate::views) struct MatchOperationalPointsResponse {
     related_operational_points: Vec<Option<RelatedOperationalPoint>>,
 }
 
-#[editoast_derive::route(Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -851,6 +850,7 @@ async fn populate_op_geo(
 
 #[cfg(test)]
 pub mod tests {
+    use authz::Role;
     use axum::http::StatusCode;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
@@ -1819,7 +1819,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn match_operational_points_requires_reader_and_operational_studies() {
+        async fn match_operational_points_requires_reader() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1828,19 +1828,9 @@ pub mod tests {
                 .with_roles([Role::OperationalStudies])
                 .create()
                 .await;
-            let user_no_role = app
-                .user("bob", "Bob")
-                .with_infra_grant(infra.id, InfraGrant::Reader)
-                .create()
-                .await;
             app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
                 .json(&json!({"operational_point_references": []}))
                 .by_user(user_no_grant.as_ref())
-                .await
-                .assert_status_forbidden();
-            app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
-                .json(&json!({"operational_point_references": []}))
-                .by_user(user_no_role.as_ref())
                 .await
                 .assert_status_forbidden();
         }
