@@ -284,7 +284,7 @@ fun makeSimpleReportTrain(
     val simplified = simplifyEnvelopePoints(points, 5.0, 0.2)
     assert(simplified.isNotEmpty()) { "simulation result shouldn't be empty" }
 
-    val driverActions = mapDriverActions(envelope)
+    val driverActions = mapDriverActions(envelope, trainPath, rollingStocks)
 
     return ReportTrain(
         simplified.map { Offset(it.position.meters) },
@@ -296,20 +296,25 @@ fun makeSimpleReportTrain(
     )
 }
 
-fun mapDriverActions(envelope: Envelope): RangeValues<DriverAction> {
-    val entries = envelope.map {
-        val type =
-            when (it.getAttr(EnvelopeProfile::class.java)) {
-                EnvelopeProfile.ACCELERATING -> DriverAction.TRACTING
-                // TODO: may actually be BRAKING on important slopes?
-                EnvelopeProfile.CONSTANT_SPEED -> DriverAction.TRACTING
-                EnvelopeProfile.CATCHING_UP -> DriverAction.TRACTING
-                EnvelopeProfile.COASTING -> DriverAction.COASTING
-                EnvelopeProfile.BRAKING -> DriverAction.BRAKING
-                null ->
-                    throw RuntimeException("Missing envelope profile attribute in envelope part")
-            }
-        DistanceRangeMap.RangeMapEntry(it.beginPos.meters, it.endPos.meters, type)
+fun mapDriverActions(
+    envelope: Envelope,
+    path: PhysicsPath,
+    rollingStocks: DistanceRangeMap<PhysicsRollingStock>,
+): RangeValues<DriverAction> {
+    val entries = envelope.flatMap { part ->
+        if (part.getAttr(EnvelopeProfile::class.java) == EnvelopeProfile.COASTING)
+            return@flatMap listOf(
+                DistanceRangeMap.RangeMapEntry(
+                    part.beginPos.meters,
+                    part.endPos.meters,
+                    DriverAction.COASTING,
+                ),
+            )
+        val rollingStock = rollingStocks.get(((part.beginPos + part.endPos) / 2).meters)!!
+        EnvelopePhysics.getPartMechanicalEnergySteps(part, path, rollingStock).map {
+            val type = if (it.energy < 0) DriverAction.BRAKING else DriverAction.TRACTING
+            DistanceRangeMap.RangeMapEntry(it.beginPos.meters, it.endPos.meters, type)
+        }
     }
     // Going through a DistanceRangeMap is mostly used to flatten repeated values
     val rangeMap = DistanceRangeMapImpl(entries)
