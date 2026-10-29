@@ -351,7 +351,7 @@ const ItineraryModal = ({
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
-  } = useOperationalPointSearch({});
+  } = useOperationalPointSearch({ scenarioId: scenario.id });
 
   const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
@@ -399,7 +399,7 @@ const ItineraryModal = ({
       secondary_code: chosenSecondaryCode,
       country_code: suggestion.countryCode,
     };
-    const newLocation: PathItemLocation = {
+    const newLocation: PathItemLocation = suggestion.location ?? {
       type: 'operational_point_part_reference',
       operational_point: opRef,
     };

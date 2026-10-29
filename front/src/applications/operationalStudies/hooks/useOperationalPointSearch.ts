@@ -5,9 +5,13 @@ import { uniqBy } from 'lodash';
 import {
   osrdEditoastApi,
   type SearchPayload,
+  type SearchResultItemMacroNode,
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import { splitTokens, toUpper } from 'utils/strings';
 
@@ -16,23 +20,30 @@ import {
   largePayload,
   exactTrigramPayload,
   multiPayloadFromTokens,
+  macroNodePayload,
 } from '../helpers/searchPayload';
 import { selectSecondaryCode, shouldKeepMainCodeLock } from '../helpers/suggestionMatchers';
-import { buildOpSuggestion } from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
+import {
+  buildMacroNodeSuggestion,
+  buildOpSuggestion,
+} from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 import { formatOpLabel } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/utils';
 
 type Params = {
+  scenarioId: number;
   pageSize?: number;
   minChars?: number;
   debounceMs?: number;
 };
 
 export const useOperationalPointSearch = ({
+  scenarioId,
   pageSize = 1000,
   minChars = 2,
   debounceMs = 300,
 }: Params) => {
+  const dispatch = useAppDispatch();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [activeStepKey, setActiveStepKey] = useState<string | null>(null);
   const [draftByStepKey, setDraftByStepKey] = useState<Record<string, string>>({});
@@ -128,6 +139,25 @@ export const useOperationalPointSearch = ({
     []
   );
 
+  const searchMacroNodesToBuildSuggestions = useCallback(
+    async (searchQuery: string) => {
+      try {
+        const results = (await postSearch(
+          {
+            searchPayload: macroNodePayload(scenarioId, searchQuery),
+            pageSize,
+          },
+          true
+        ).unwrap()) as SearchResultItemMacroNode[];
+        return buildMacroNodeSuggestion(results);
+      } catch (error) {
+        dispatch(setFailure(castErrorToFailure(error)));
+        return [];
+      }
+    },
+    [scenarioId, postSearch, pageSize, dispatch]
+  );
+
   useEffect(() => {
     if (!activeStepKey) return;
 
@@ -160,7 +190,7 @@ export const useOperationalPointSearch = ({
     const searchOps = async () => {
       // 1) Large call on the entire query
       const largeRes = await search(largePayload(infraId, debouncedTrimmedInput));
-      if (cancelled) return;
+      if (cancelled) return [];
 
       const suggestionsLarge = buildOpSuggestion(largeRes);
 
@@ -171,8 +201,7 @@ export const useOperationalPointSearch = ({
         );
 
         if (keptFromLarge.length > 0) {
-          apply(suggestionsLarge);
-          return;
+          return suggestionsLarge;
         }
       }
 
@@ -180,34 +209,46 @@ export const useOperationalPointSearch = ({
       // We "lock" only if the rest is coherent, otherwise we relaunch a normal call.
       if (firstTokenUpper) {
         const exactRes = await search(exactTrigramPayload(infraId, firstTokenUpper));
-        if (cancelled) return;
+        if (cancelled) return [];
 
         if (exactRes.length > 0) {
           const suggestionsExact = buildOpSuggestion(exactRes);
           const keptExact = suggestionsExact.filter((s) => shouldKeepMainCodeLock(s, tokens));
 
           if (keptExact.length > 0) {
-            apply(uniqBy([...keptExact, ...suggestionsExact, ...suggestionsLarge], 'id'));
-            return;
+            return uniqBy([...keptExact, ...suggestionsExact, ...suggestionsLarge], 'id');
           }
         }
       }
 
       if (tokens.length > 1) {
         const multiRes = await search(multiPayloadFromTokens(infraId, tokens));
-        if (cancelled) return;
+        if (cancelled) return [];
 
         if (multiRes) {
           const multiSuggestions = buildOpSuggestion(multiRes);
-          apply(uniqBy([...suggestionsLarge, ...multiSuggestions], 'id'));
-          return;
+          return uniqBy([...suggestionsLarge, ...multiSuggestions], 'id');
         }
       }
 
-      apply(suggestionsLarge);
+      return suggestionsLarge;
     };
 
-    searchOps();
+    const searchAll = async () => {
+      const [infraOpSuggestions, macroNodeSuggestions] = await Promise.all([
+        searchOps(),
+        searchMacroNodesToBuildSuggestions(debouncedTrimmedInput),
+      ]);
+      if (cancelled) return;
+
+      const opKeys = new Set(infraOpSuggestions.map((s) => `${s.countryCode}-${s.mainCode}`));
+      apply([
+        ...infraOpSuggestions,
+        ...macroNodeSuggestions.filter((s) => !opKeys.has(`${s.countryCode}-${s.mainCode}`)),
+      ]);
+    };
+
+    searchAll();
 
     return () => {
       cancelled = true;
@@ -217,6 +258,7 @@ export const useOperationalPointSearch = ({
     debouncedRawInput,
     debouncedTrimmedInput,
     infraId,
+    searchMacroNodesToBuildSuggestions,
     postSearch,
     pageSize,
     minChars,
