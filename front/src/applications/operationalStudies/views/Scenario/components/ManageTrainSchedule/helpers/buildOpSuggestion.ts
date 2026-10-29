@@ -1,4 +1,8 @@
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type {
+  PathItemLocation,
+  SearchResultItemMacroNode,
+  SearchResultItemOperationalPoint,
+} from 'common/api/osrdEditoastApi';
 
 import type {
   OpSecondaryCode,
@@ -54,3 +58,48 @@ export const buildOpSuggestion = (
 
   return [...map.values()];
 };
+
+export const buildMacroNodeSuggestion = (
+  results: SearchResultItemMacroNode[]
+): OperationalPointSuggestion[] =>
+  results.map((node): OperationalPointSuggestion => {
+    const suggestion: OperationalPointSuggestion = {
+      id: `macroNode:${node.id}`,
+      name: node.full_name ?? node.short_name ?? '',
+      mainCode: node.short_name ?? '',
+      countryCode: '',
+      secondaryCodeList: [],
+      source: 'macroNode',
+    };
+
+    if (node.node_location.type === 'track_offset') {
+      const { track, offset } = node.node_location;
+      return { ...suggestion, location: { type: 'track_offset', track, offset } };
+    }
+
+    const opRef = node.node_location.operational_point;
+    const location: PathItemLocation = {
+      type: 'operational_point_part_reference',
+      operational_point: opRef,
+    };
+
+    switch (opRef.type) {
+      case 'domestic':
+        return {
+          ...suggestion,
+          location,
+          mainCode: opRef.main_code,
+          countryCode: opRef.country_code,
+          secondaryCodeList: opRef.secondary_code ? [{ code: opRef.secondary_code }] : [],
+        };
+      case 'uic':
+        return {
+          ...suggestion,
+          location,
+          uic: opRef.uic,
+          secondaryCodeList: opRef.secondary_code ? [{ code: opRef.secondary_code }] : [],
+        };
+      default:
+        return { ...suggestion, location };
+    }
+  });
