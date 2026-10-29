@@ -13,19 +13,21 @@ import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.legacy_objects.electrification.Neutral
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.standalone_sim.buildFinalAllowance
 import fr.sncf.osrd.standalone_sim.buildSignalingRanges
 import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeSafetySpeedRanges
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.OffsetRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.units.Distance
@@ -165,28 +167,122 @@ fun runSimulation(
         maxEffortStates.add(trainState)
     }
 
-    val margins =
-        margins.toDistanceRangeMap(
+    val provisionalStates = runMargins(
+        allowanceValues = distanceRangeMapOf(margins.toDistanceRangeMap(
             Offset(Distance(0)),
             Offset(Distance.fromMeters(trainPath.length)),
+        ).map {
+            val margin = it.value
+            DistanceRangeMap.RangeMapEntry(
+                lower = it.lower,
+                upper = it.upper,
+                value =
+                    when (margin) {
+                        is MarginValue.MinPer100Km -> AllowanceValue.TimePerDistance(margin.value)
+                        is MarginValue.None -> AllowanceValue.Percentage(0.0)
+                        is MarginValue.Percentage -> AllowanceValue.Percentage(margin.percentage)
+                    },
+            )
+        }),
+        maxEffortStates = maxEffortStates,
+        context = context,
+        tracer = tracer,
+        constraints = constraints,
+    )
+
+    val finalStates = runMargins(
+        allowanceValues = distanceRangeMapOf(
+            buildFinalAllowance(
+                margins = margins,
+                scheduledPoints = schedule,
+                getMaxEffortTimeAt = { offset ->
+                    val r = maxEffortStates.binarySearchBy(offset.toPrecise()) { state -> state.position }
+                    val i = if (r >= 0) r else -r - 1
+                    maxEffortStates[i].time.seconds
+                },
+                getProvisionalTimeAt = { offset ->
+                    val r = provisionalStates.binarySearchBy(offset.toPrecise()) { state -> state.position }
+                    val i = if (r >= 0) r else -r - 1
+                    provisionalStates[i].time.seconds
+                },
+                timeStep = context.timeStep,
+                pathEnd = Offset(maxEffortStates.last().position.distance),
+            ).map {
+                DistanceRangeMap.RangeMapEntry(
+                    lower = Distance.fromMeters(it.beginPos),
+                    upper = Distance.fromMeters(it.endPos),
+                    value = it.value,
+                )
+            }),
+        maxEffortStates = maxEffortStates,
+        context = context,
+        tracer = tracer,
+        constraints = constraints,
+    )
+
+    val baseReport = maxEffortStates.toReportTrain(schedule)
+    val provisionalReport = provisionalStates.toReportTrain(schedule)
+    val finalReport = finalStates.toReportTrain(schedule)
+
+    val completeReport =
+        CompleteReportTrain(
+            positions = finalReport.positions,
+            times = finalReport.times,
+            speeds = finalReport.speeds,
+            energyConsumption = finalReport.energyConsumption,
+            pathItemTimes = finalReport.pathItemTimes,
+            signalCriticalPositions = listOf(), // TODO
+            zoneUpdates = listOf(), // TODO
+            spacingRequirements = listOf(), // TODO
+            routingRequirements = listOf(), // TODO
         )
 
-    val provisionalStates = mutableListOf(TrainState.zero)
+    val electrificationRanges =
+        ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
 
-    margins.forEach { lower, upper, margin ->
-        val lowerI = provisionalStates.size - 1
-        check(provisionalStates[lowerI].position == maxEffortStates[lowerI].position)
-        check(provisionalStates[lowerI].position == lower.toPrecise())
+    return SimulationSuccess(
+        base = baseReport,
+        provisional = provisionalReport,
+        finalOutput = completeReport,
+        mrsp =
+            mrsp.subRangeMap(Range.closed(0.micrometers, trainPath.length.meters)).toRangeValues {
+                speed ->
+                SpeedLimitProperty(
+                    speed =
+                        Speed.fromMetersPerSecond(
+                            speed?.metersPerSecond ?: Double.POSITIVE_INFINITY
+                        ),
+                    source = null,
+                )
+            },
+        electricalProfiles = makeElectricalProfiles(electrificationRanges),
+    )
+}
+
+fun runMargins(
+    allowanceValues: DistanceRangeMap<AllowanceValue>,
+    maxEffortStates: List<TrainState>,
+    context: EnvelopeSimContext,
+    tracer: Tracer?,
+    constraints: List<Constraint>,
+): List<TrainState> {
+    val marginStates = mutableListOf(TrainState.zero)
+
+    allowanceValues.forEach { lower, upper, allowanceValue ->
+        val lowerI = marginStates.size - 1
+        check(marginStates[lowerI].position == maxEffortStates[lowerI].position)
+        check(marginStates[lowerI].position == lower.toPrecise())
 
         val upperI = maxEffortStates.binarySearch(upper.toPrecise())
 
         val prevUpperI = max(lowerI - 1, 0)
-        if (margin.isNone()) {
+        val baseTime = maxEffortStates[upperI].time - maxEffortStates[lowerI].time
+        if (allowanceValue.isNone(baseTime.seconds)) {
             // The binary search below doesn't work when there is no margin.
 
-            if (provisionalStates[prevUpperI] == maxEffortStates[prevUpperI]) {
+            if (marginStates[prevUpperI] == maxEffortStates[prevUpperI]) {
                 for (i in lowerI..upperI) {
-                    provisionalStates.add(maxEffortStates[i])
+                    marginStates.add(maxEffortStates[i])
                 }
                 return@forEach
             }
@@ -195,7 +291,13 @@ fun runSimulation(
 
             context.driver.vMaxFactor = 1.0
 
-            var trainState = provisionalStates.last()
+            for (constraint in constraints) {
+                if (constraint is Updatable) {
+                    constraint.reset()
+                }
+            }
+
+            var trainState = marginStates.last()
             while (trainState.position < upper.toPrecise()) {
                 val nextTrainState = step(context, constraints, trainState, tracer)
                 for (constraint in constraints) {
@@ -204,31 +306,15 @@ fun runSimulation(
                     }
                 }
                 trainState = nextTrainState
-                provisionalStates.add(trainState)
+                marginStates.add(trainState)
             }
 
             return@forEach
         }
 
-        val lowerTime = maxEffortStates[lowerI].time
-        val upperTime = maxEffortStates[upperI].time
-        val baseTime = upperTime - lowerTime
-
-        val allowanceRange =
-            AllowanceRange(
-                beginPos = lower.meters,
-                endPos = upper.meters,
-                value =
-                    when (margin) {
-                        is MarginValue.MinPer100Km -> AllowanceValue.TimePerDistance(margin.value)
-                        is MarginValue.None -> AllowanceValue.Percentage(0.0)
-                        is MarginValue.Percentage -> AllowanceValue.Percentage(margin.percentage)
-                    },
-            )
-
-        val distance = allowanceRange.endPos - allowanceRange.beginPos
+        val distance = maxEffortStates[upperI].position - maxEffortStates[lowerI].position
         val allowanceTime =
-            allowanceRange.value.getAllowanceTime(baseTime.seconds, distance).seconds
+            allowanceValue.getAllowanceTime(baseTime.seconds, distance.meters).seconds
         val provisionalTime = baseTime + allowanceTime
 
         val states = mutableListOf<TrainState>()
@@ -237,7 +323,7 @@ fun runSimulation(
         while (vMaxFactorMax - vMaxFactorMin > 0.1) {
             val vMaxFactor = (vMaxFactorMax + vMaxFactorMin) / 2.0
             context.driver.vMaxFactor = vMaxFactor
-            var trainState = provisionalStates.last()
+            var trainState = marginStates.last()
             states.clear()
 
             for (constraint in constraints) {
@@ -269,47 +355,12 @@ fun runSimulation(
             }
         }
 
-        provisionalStates.addAll(states)
+        marginStates.addAll(states)
     }
 
     context.driver.vMaxFactor = 1.0
 
-    val baseReport = maxEffortStates.toReportTrain(schedule)
-    val provisionalReport = provisionalStates.toReportTrain(schedule)
-
-    val completeReport =
-        CompleteReportTrain(
-            positions = provisionalReport.positions,
-            times = provisionalReport.times,
-            speeds = provisionalReport.speeds,
-            energyConsumption = provisionalReport.energyConsumption,
-            pathItemTimes = provisionalReport.pathItemTimes,
-            signalCriticalPositions = listOf(), // TODO
-            zoneUpdates = listOf(), // TODO
-            spacingRequirements = listOf(), // TODO
-            routingRequirements = listOf(), // TODO
-        )
-
-    val electrificationRanges =
-        ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
-
-    return SimulationSuccess(
-        base = baseReport,
-        provisional = provisionalReport,
-        finalOutput = completeReport,
-        mrsp =
-            mrsp.subRangeMap(Range.closed(0.micrometers, trainPath.length.meters)).toRangeValues {
-                speed ->
-                SpeedLimitProperty(
-                    speed =
-                        Speed.fromMetersPerSecond(
-                            speed?.metersPerSecond ?: Double.POSITIVE_INFINITY
-                        ),
-                    source = null,
-                )
-            },
-        electricalProfiles = makeElectricalProfiles(electrificationRanges),
-    )
+    return marginStates
 }
 
 internal fun List<TrainState>.toReportTrain(

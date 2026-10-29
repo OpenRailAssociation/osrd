@@ -14,7 +14,7 @@ interface Allowance {
  */
 data class AllowanceRange(val beginPos: Double, val endPos: Double, val value: AllowanceValue)
 
-abstract class AllowanceValue {
+sealed class AllowanceValue {
     /** Returns the allowance for a section of a trip, divided over time */
     fun getSectionAllowanceTime(
         sectionTime: Double,
@@ -25,6 +25,12 @@ abstract class AllowanceValue {
         val ratio = getSectionRatio(sectionTime, totalTime, sectionDistance, totalDistance)
         val totalAllowance = getAllowanceTime(totalTime, totalDistance)
         return ratio * totalAllowance
+    }
+
+    fun isNone(basetime: Double): Boolean = when (this) {
+        is FixedTime -> time == basetime
+        is Percentage -> percentage == 0.0
+        is TimePerDistance -> timePerDistance == 0.0
     }
 
     /** Returns the allowance, given the total time and distance of the trip */

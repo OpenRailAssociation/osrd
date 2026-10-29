@@ -262,12 +262,29 @@ fun buildFinalEnvelope(
     allowanceType: RJSAllowanceDistribution,
     scheduledPoints: List<SimulationScheduleItem>,
 ): Envelope {
-    fun getEnvelopeTimeAt(offset: Offset<PhysicsPath>): Double {
-        return provisionalEnvelope.interpolateDepartureFromClamp(offset.meters)
-    }
-    fun getMaxEffortEnvelopeTimeAt(offset: Offset<PhysicsPath>): Double {
-        return maxEffortEnvelope.interpolateDepartureFromClamp(offset.meters)
-    }
+    val marginRanges = buildFinalAllowance(
+        margins = margins,
+        scheduledPoints = scheduledPoints,
+        getMaxEffortTimeAt = { maxEffortEnvelope.interpolateDepartureFromClamp(it.meters) },
+        getProvisionalTimeAt = { provisionalEnvelope.interpolateDepartureFromClamp(it.meters) },
+        timeStep = context.timeStep,
+        pathEnd = Offset(maxEffortEnvelope.endPos.meters),
+    )
+    val margin =
+        if (allowanceType == RJSAllowanceDistribution.MARECO)
+            MarecoAllowance(0.0, maxEffortEnvelope.endPos, 1.0, marginRanges)
+        else LinearAllowance(0.0, maxEffortEnvelope.endPos, 0.0, marginRanges)
+    return margin.apply(maxEffortEnvelope, context)
+}
+
+fun buildFinalAllowance(
+    margins: RangeValues<MarginValue>,
+    scheduledPoints: List<SimulationScheduleItem>,
+    getMaxEffortTimeAt: (Offset<PhysicsPath>) -> Double,
+    getProvisionalTimeAt: (Offset<PhysicsPath>) -> Double,
+    timeStep: Double,
+    pathEnd: Offset<PhysicsPath>,
+): List<AllowanceRange> {
     var prevFixedPointOffset = Offset<PhysicsPath>(0.meters)
     var prevFixedPointDepartureTime = 0.0
     val marginRanges = mutableListOf<AllowanceRange>()
@@ -279,10 +296,10 @@ fun buildFinalEnvelope(
             continue
         }
         val sectionTime =
-            getEnvelopeTimeAt(point.pathOffset) - getEnvelopeTimeAt(prevFixedPointOffset)
+            getProvisionalTimeAt(point.pathOffset) - getProvisionalTimeAt(prevFixedPointOffset)
         val arrivalTime = prevFixedPointDepartureTime + sectionTime
         val extraTime = point.arrival.seconds - arrivalTime
-        if (abs(extraTime) < context.timeStep) {
+        if (abs(extraTime) < timeStep) {
             // The time diff is already within the margin computation tolerance,
             // adding a margin for this can increase the difference
             prevFixedPointDepartureTime += point.stopDetails?.duration?.seconds ?: 0.0
@@ -291,8 +308,14 @@ fun buildFinalEnvelope(
         if (extraTime >= 0.0) {
             marginRanges.addAll(
                 distributeAllowance(
-                    maxEffortEnvelope,
-                    provisionalEnvelope,
+                    maxEffortRangeTime = { from, to ->
+                        assert(from < to)
+                        getMaxEffortTimeAt(to) - getMaxEffortTimeAt(from)
+                    },
+                    provisionalRangeTime = { from, to ->
+                        assert(from < to)
+                        getProvisionalTimeAt(to) - getProvisionalTimeAt(from)
+                    },
                     extraTime,
                     margins,
                     prevFixedPointOffset,
@@ -310,8 +333,8 @@ fun buildFinalEnvelope(
             // we just set the time for the scheduled point without more details. It will be easier
             // to handle it properly when we'll have migrated to standalone sim v3.
             val maxEffortSectionTime =
-                getMaxEffortEnvelopeTimeAt(point.pathOffset) -
-                    getMaxEffortEnvelopeTimeAt(prevFixedPointOffset)
+                getMaxEffortTimeAt(point.pathOffset) -
+                    getMaxEffortTimeAt(prevFixedPointOffset)
             val earliestPossibleArrival = prevFixedPointDepartureTime + maxEffortSectionTime
             var maxEffortExtraTime = point.arrival.seconds - earliestPossibleArrival
             if (maxEffortExtraTime < 0.0) {
@@ -336,27 +359,28 @@ fun buildFinalEnvelope(
         }
         prevFixedPointOffset = point.pathOffset
     }
-    val pathEnd = Offset<PhysicsPath>(maxEffortEnvelope.endPos.meters)
     if (prevFixedPointOffset < pathEnd) {
         // Because the last margin call is based on the max effort envelope,
         // we still need to cover all ranges to keep the standard margin,
         // with 0 extra time compared to the provisional envelope
         marginRanges.addAll(
             distributeAllowance(
-                maxEffortEnvelope,
-                provisionalEnvelope,
-                0.0,
+                maxEffortRangeTime = { from, to ->
+                    assert(from < to)
+                    getMaxEffortTimeAt(to) - getMaxEffortTimeAt(from)
+                },
+                provisionalRangeTime = { from, to ->
+                    assert(from < to)
+                    getProvisionalTimeAt(to) - getProvisionalTimeAt(from)
+                },
+                extraTime = 0.0,
                 margins,
                 prevFixedPointOffset,
                 pathEnd,
             )
         )
     }
-    val margin =
-        if (allowanceType == RJSAllowanceDistribution.MARECO)
-            MarecoAllowance(0.0, maxEffortEnvelope.endPos, 1.0, marginRanges)
-        else LinearAllowance(0.0, maxEffortEnvelope.endPos, 0.0, marginRanges)
-    return margin.apply(maxEffortEnvelope, context)
+    return marginRanges
 }
 
 /**
@@ -369,8 +393,8 @@ fun buildFinalEnvelope(
  * section.
  */
 fun distributeAllowance(
-    maxEffortEnvelope: Envelope,
-    provisionalEnvelope: Envelope,
+    maxEffortRangeTime: (Offset<PhysicsPath>, Offset<PhysicsPath>) -> Double,
+    provisionalRangeTime: (Offset<PhysicsPath>, Offset<PhysicsPath>) -> Double,
     extraTime: Double,
     margins: RangeValues<MarginValue>,
     startOffset: Offset<PhysicsPath>,
@@ -382,27 +406,17 @@ fun distributeAllowance(
         standaloneSimLogger.error("different scheduled points at the same location ($startOffset)")
         return listOf()
     }
-    fun rangeTime(
-        from: Offset<PhysicsPath>,
-        to: Offset<PhysicsPath>,
-        envelope: Envelope = provisionalEnvelope,
-    ): Double {
-        assert(from < to)
-        val start = envelope.interpolateDepartureFromClamp(from.meters)
-        val end = envelope.interpolateDepartureFromClamp(to.meters)
-        return end - start
-    }
     val rangeEnds =
         margins.internalBoundaries.filter { it > startOffset && it < endOffset }.toMutableList()
     rangeEnds.add(endOffset)
     val res = mutableListOf<AllowanceRange>()
-    val baseTotalTime = rangeTime(startOffset, endOffset)
+    val baseTotalTime = provisionalRangeTime(startOffset, endOffset)
     var rangeStart = startOffset
     for (rangeEnd in rangeEnds) {
-        val baseRangeTime = rangeTime(rangeStart, rangeEnd)
+        val baseRangeTime = provisionalRangeTime(rangeStart, rangeEnd)
         val ratio = baseRangeTime / baseTotalTime
         val baseAllowanceValue =
-            rangeTime(rangeStart, rangeEnd) - rangeTime(rangeStart, rangeEnd, maxEffortEnvelope)
+            provisionalRangeTime(rangeStart, rangeEnd) - maxEffortRangeTime(rangeStart, rangeEnd)
         res.add(
             AllowanceRange(
                 rangeStart.meters,
