@@ -8,7 +8,6 @@ import type {
   LightRollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import LightRollingStockCardDetail from 'modules/rollingStock/components/RollingStockCard/LightRollingStockCardDetail';
 import RollingStockCardDetail, {
   getCurvesComforts,
 } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
@@ -16,12 +15,10 @@ import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve
 import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 
 type RollingStockInformationPanelProps = {
-  id: number;
   rollingStock: RollingStockWithLiveries | LightRollingStockWithLiveries;
 };
 
 export default function RollingStockInformationPanel({
-  id,
   rollingStock,
 }: RollingStockInformationPanelProps) {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
@@ -47,20 +44,15 @@ export default function RollingStockInformationPanel({
           <RollingStockInfo rollingStock={rollingStock} />
         </div>
       </div>
-      {!('inertia_coefficient' in rollingStock) ? (
-        <LightRollingStockCardDetail
-          form="rollingstock-editor-form-text"
-          rollingStock={rollingStock}
-        />
-      ) : (
-        <RollingStockCardDetail
-          id={id}
-          hideCurves
-          form="rollingstock-editor-form-text"
-          curvesComfortList={curvesComfortList}
-          setCurvesComfortList={setCurvesComfortList}
-        />
-      )}
+
+      <RollingStockCardDetail
+        rollingStock={rollingStock}
+        hideCurves
+        form="rollingstock-editor-form-text"
+        curvesComfortList={curvesComfortList}
+        setCurvesComfortList={setCurvesComfortList}
+      />
+
       {'inertia_coefficient' in rollingStock && (
         <div className="rollingstock-card-body border-0">
           <RollingStockCurve
