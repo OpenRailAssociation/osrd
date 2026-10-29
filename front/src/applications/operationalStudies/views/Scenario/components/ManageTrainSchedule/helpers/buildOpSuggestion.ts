@@ -38,6 +38,7 @@ export const buildOpSuggestion = (
         name: r.name,
         countryCode: r.country_code,
         secondaryCodeList,
+        source: 'infra',
       });
     } else if (
       r.secondary_code &&
