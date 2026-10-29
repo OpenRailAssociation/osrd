@@ -139,18 +139,16 @@ mod tests {
 
     // The test app has no S3 configured: passing authz results in a 503
     #[rstest]
+    #[case::admin_has_access(vec![Role::Admin], StatusCode::SERVICE_UNAVAILABLE)]
+    #[case::operational_studies_forbidden(vec![Role::OperationalStudies], StatusCode::FORBIDDEN)]
+    #[case::stdcm_forbidden(vec![Role::Stdcm], StatusCode::FORBIDDEN)]
+    #[case::multi_roles_forbidden(vec![Role::OperationalStudies, Role::Stdcm], StatusCode::FORBIDDEN)]
+    #[case::no_role_forbidden(vec![], StatusCode::FORBIDDEN)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn s3_endpoints_are_admin_only(
-        #[values(
-            (vec![Role::Admin], StatusCode::SERVICE_UNAVAILABLE),
-            (vec![Role::OperationalStudies], StatusCode::FORBIDDEN),
-            (vec![Role::Stdcm], StatusCode::FORBIDDEN),
-            (vec![Role::OperationalStudies, Role::Stdcm], StatusCode::FORBIDDEN),
-            (vec![], StatusCode::FORBIDDEN),
-        )]
-        roles_and_status: (Vec<Role>, StatusCode),
+        #[case] roles: Vec<Role>,
+        #[case] expected_status: StatusCode,
     ) {
-        let (roles, expected_status) = roles_and_status;
         let app = test_app!().build();
         let user = app
             .user(Uuid::new_v4().to_string(), "name")
