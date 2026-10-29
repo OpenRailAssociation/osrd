@@ -537,6 +537,27 @@ enum DatabaseError {
     Unavailable(#[from] database::DatabasePoolError),
 }
 
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("openfga error: {0}")]
+#[view_error(status = INTERNAL_SERVER_ERROR, path = authorization::OpenFga)]
+struct OpenFgaError(#[from] ::authz::authorizers::Error);
+
+impl From<::authz::v2::OpenFgaError> for OpenFgaError {
+    fn from(error: ::authz::v2::OpenFgaError) -> Self {
+        Self(error.into())
+    }
+}
+
+/// Convert an Infallible error into an OpenFgaError.
+/// Useful since the SystemAuthorizer uses Infallible as
+/// its rejection type, and using run() forces to handle
+/// the rejection type.
+impl From<std::convert::Infallible> for OpenFgaError {
+    fn from(_: std::convert::Infallible) -> Self {
+        unreachable!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
