@@ -10,7 +10,9 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
-import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import AddAndEditScenarioModal, {
+  type ScenarioField,
+} from 'modules/scenario/components/AddOrEditScenarioModal';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/useAuth';
 
@@ -59,7 +61,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     username: false,
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
-  const [openEditScenarioModal, setOpenEditScenarioModal] = useState(false);
+  const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
@@ -202,7 +204,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       {/* scenario details */}
       {areScenarioDetailsVisible && multipleTimetablesEnabled && (
         <ScenarioExpandedHeader
-          onEditScenario={() => setOpenEditScenarioModal(true)}
+          onEditScenario={setScenarioFieldToEdit}
           onCollapse={() => setAreScenarioDetailsVisible(false)}
         />
       )}
@@ -245,7 +247,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               className="edit-scenario"
               type="button"
               aria-label={t('main.editScenario')}
-              onClick={() => setOpenEditScenarioModal(true)}
+              onClick={() => setScenarioFieldToEdit('name')}
               title={t('main.editScenario')}
               data-testid="edit-scenario"
             >
@@ -254,11 +256,12 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           </div>
         </div>
       )}
-      {openEditScenarioModal ? (
+      {scenarioFieldToEdit ? (
         <AddAndEditScenarioModal
           editionMode
           scenario={scenario}
-          onCancel={() => setOpenEditScenarioModal(false)}
+          fieldToFocus={scenarioFieldToEdit}
+          onCancel={() => setScenarioFieldToEdit(undefined)}
         />
       ) : undefined}
     </header>

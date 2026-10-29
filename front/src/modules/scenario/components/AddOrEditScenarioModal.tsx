@@ -42,9 +42,12 @@ export type ScenarioForm = ScenarioPatchForm & {
   timetable_type?: TimetableType;
 };
 
+export type ScenarioField = 'name' | 'description' | 'tags';
+
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
   scenario?: ScenarioWithDetails;
+  fieldToFocus?: ScenarioField;
   onCancel?: () => void;
 };
 
@@ -66,6 +69,7 @@ const emptyScenario: ScenarioForm = {
 const AddOrEditScenarioModal = ({
   editionMode = false,
   scenario,
+  fieldToFocus = 'name',
   onCancel,
 }: AddOrEditScenarioModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
@@ -346,7 +350,7 @@ const AddOrEditScenarioModal = ({
             name="scenarioInputName"
             label={t('main.scenarioName')}
             /* eslint-disable-next-line jsx-a11y/no-autofocus */
-            autoFocus
+            autoFocus={fieldToFocus === 'name'}
             value={currentScenario.name || ''}
             onChange={(e) => handleScenarioInputChange('name', e.target.value)}
             statusWithMessage={
@@ -363,6 +367,8 @@ const AddOrEditScenarioModal = ({
             id="scenarioDescription"
             data-testid="scenarioDescription-input"
             label={t('main.scenarioDescription')}
+            /* eslint-disable-next-line jsx-a11y/no-autofocus */
+            autoFocus={fieldToFocus === 'description'}
             value={currentScenario.description || ''}
             onChange={(e) => handleScenarioInputChange('description', e.target.value)}
             placeholder={t('main.scenarioDescriptionPlaceholder')}
@@ -382,6 +388,8 @@ const AddOrEditScenarioModal = ({
             tokens={currentScenario.tags || []}
             onChange={(newTags) => handleScenarioInputChange('tags', newTags)}
             dataTestId="scenarioTags"
+            /* eslint-disable-next-line jsx-a11y/no-autofocus */
+            autoFocus={fieldToFocus === 'tags'}
           />
         </div>
 

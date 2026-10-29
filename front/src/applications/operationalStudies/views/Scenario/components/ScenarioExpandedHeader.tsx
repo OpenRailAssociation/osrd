@@ -12,6 +12,7 @@ import {
   type ScenarioPatchForm,
   type TimetableType,
 } from 'common/api/osrdEditoastApi';
+import { type ScenarioField } from 'modules/scenario/components/AddOrEditScenarioModal';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -19,7 +20,7 @@ import { castErrorToFailure } from 'utils/error';
 import InfraLoadingState from './InfraLoadingState';
 
 type ScenarioExpandedHeaderProps = {
-  onEditScenario: () => void;
+  onEditScenario: (field: ScenarioField) => void;
   onCollapse: () => void;
 };
 
@@ -104,12 +105,12 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
       });
   };
 
-  const editButton = (
+  const getEditButton = (field: ScenarioField) => (
     <button
       type="button"
       aria-label={t('main.editScenario')}
       title={t('main.editScenario')}
-      onClick={onEditScenario}
+      onClick={() => onEditScenario(field)}
     >
       <Pencil />
     </button>
@@ -118,11 +119,11 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
   return (
     <div className="scenario-expanded-header">
       <div className="scenario-expanded-header-grid">
-        <DetailsSection title={t('main.scenarioName')} icons={editButton}>
+        <DetailsSection title={t('main.scenarioName')} icons={getEditButton('name')}>
           <p className="details-section-text">{scenario.name}</p>
         </DetailsSection>
 
-        <DetailsSection title={t('main.scenarioDescription')} icons={editButton}>
+        <DetailsSection title={t('main.scenarioDescription')} icons={getEditButton('description')}>
           <p className={cx('details-section-text', { empty: !scenario.description })}>
             {scenario.description || t('main.scenarioNoDescription')}
           </p>
@@ -153,7 +154,7 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
           />
         </DetailsSection>
 
-        <DetailsSection title={t('main.scenarioTags')} icons={editButton}>
+        <DetailsSection title={t('main.scenarioTags')} icons={getEditButton('tags')}>
           {scenario.tags.length > 0 ? (
             <ul className="details-section-tags">
               {scenario.tags.map((tag, index) => (
