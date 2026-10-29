@@ -59,6 +59,20 @@ export const useOperationalPointSearch = ({
   );
 
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
+  const [customOps, setCustomOps] = useState<OperationalPointSuggestion[]>([]);
+
+  const addCustomOp = useCallback((customOp: OperationalPointSuggestion) => {
+    setCustomOps((prev) => [...prev.filter((op) => op.id !== customOp.id), customOp]);
+  }, []);
+
+  const customOpQuery = rawActiveInput.trim().toLowerCase();
+  const matchingCustomOps = customOpQuery
+    ? customOps.filter(
+        (op) =>
+          op.name.toLowerCase().includes(customOpQuery) ||
+          op.mainCode.toLowerCase().includes(customOpQuery)
+      )
+    : [];
 
   const [searchTrigger, setSearchTrigger] = useState(0);
 
@@ -219,8 +233,9 @@ export const useOperationalPointSearch = ({
     getInputForStep,
     isEditingStep,
     setInputForStep,
-    opSuggestions,
+    opSuggestions: [...matchingCustomOps, ...opSuggestions],
     resetOpSuggestions,
+    addCustomOp,
     formatChosenValue,
     commitSelectionForStep,
     startEditingForStep,

@@ -64,6 +64,7 @@ import { Duration, type StartTime } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { msToKmh } from 'utils/physics';
 
+import { buildCustomOpSuggestion } from '../helpers/buildOpSuggestion';
 import {
   createEmptyPathStep,
   ensureTrailingEmptyStep,
@@ -73,7 +74,7 @@ import {
 import { useCreateTrainSchedule } from '../hooks/useCreateTrainSchedule';
 import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import useUpdateTrainSchedule from '../hooks/useUpdateTrainSchedule';
-import type { FeatureInfoClick } from '../types';
+import type { DomesticOperationalPointReference, FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
@@ -336,6 +337,7 @@ const ItineraryModal = ({
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
+    addCustomOp,
     formatChosenValue,
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
@@ -403,6 +405,17 @@ const ItineraryModal = ({
     commitSelectionForStep(stepKey, formatChosenValue(suggestion, chosenSecondaryCode));
     resetOpSuggestions();
   };
+
+  const handleCustomOpCreation = (
+    stepKey: string,
+    name: string,
+    opRef: DomesticOperationalPointReference
+  ) => {
+    const customOp = buildCustomOpSuggestion(name, opRef);
+    addCustomOp(customOp);
+    applyOperationalPointToStep(stepKey, customOp, opRef.secondary_code ?? null);
+  };
+
   const isOnlyStep = pathSteps.length === 1;
 
   const hasInvalidPathStep = pathSteps.some((step) => {
@@ -1023,6 +1036,9 @@ const ItineraryModal = ({
                         setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
                       }
                     }}
+                    onCustomOpCreation={(name, opRef) =>
+                      handleCustomOpCreation(pathStep.key, name, opRef)
+                    }
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];
