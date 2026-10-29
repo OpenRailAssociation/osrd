@@ -272,10 +272,7 @@ const RollingStockEditor = () => {
               {isSelectedRollingStockLoading && <LoaderFill />}
               {selectedRollingStock && (
                 <div className={'rollingstock-editor-form'}>
-                  <RollingStockInformationPanel
-                    id={pageMode.rollingStockId}
-                    rollingStock={selectedRollingStock}
-                  />
+                  <RollingStockInformationPanel rollingStock={selectedRollingStock} />
                   <GrantsManager
                     resourceId={selectedRollingStock.id}
                     resourceType="rolling_stock"
