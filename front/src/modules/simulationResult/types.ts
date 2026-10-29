@@ -8,9 +8,9 @@ import type {
 } from 'applications/operationalStudies/types';
 import type {
   PacedTrainException,
+  CoreOperationalPointOnPath,
   CoreSignalUpdate,
   PathItemLocation,
-  PathProperties,
   RollingStockWithLiveries,
   ScheduleItem,
   SimulationResponseSuccess,
@@ -33,9 +33,14 @@ import type { ArrayElement } from 'utils/types';
  * the same operational point.
  * Can hold an OP found in infra, or a track-offset
  */
-export type PathWaypoint = Omit<PathProperties['operational_points'][number], 'id'> & {
+export type PathWaypoint = Omit<
+  CoreOperationalPointOnPath,
+  'id' | 'uic' | 'country_code' | 'main_code'
+> & {
   waypointId: string;
   opId: string | null;
+  country_code: string | null;
+  main_code: string | null;
   pathItemKey: string | null;
   location: PathItemLocation;
 };

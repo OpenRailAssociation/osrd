@@ -223,7 +223,7 @@ export const buildPathWaypointsFromRawOPs = (
     const pathItem = opRefPathItemsQueue[pathItemIndex];
 
     const waypoint: PathWaypoint = {
-      ...omit(op, 'id'),
+      ...omit(op, 'id', 'uic'),
       waypointId: buildOpWaypointId(op.id, occurrenceCount),
       opId: op.id,
       pathItemKey: null,

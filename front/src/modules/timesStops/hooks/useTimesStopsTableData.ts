@@ -440,11 +440,14 @@ const useTimesStopsTableData = (
               hasSimulation: stableIsValid,
               location: {
                 type: 'operational_point_part_reference',
+                // There's no matching path step, so this is necessarily an OP
+                // coming from the infrastructure. Thus, code fields will be
+                // populated.
                 operational_point: {
                   type: 'domestic',
-                  main_code: op.main_code,
+                  main_code: op.main_code!,
                   secondary_code: op.secondary_code ?? null,
-                  country_code: op.country_code,
+                  country_code: op.country_code!,
                 },
               },
             }),

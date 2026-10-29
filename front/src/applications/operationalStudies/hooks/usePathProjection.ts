@@ -71,12 +71,11 @@ const createVirtualOp = (
     opId: null,
     pathItemKey,
     name: virtualName,
-    uic: opRef.type === 'uic' ? opRef.uic : 0,
     secondary_code: (opRef.type !== 'id' && opRef.secondary_code) || null,
-    main_code: opRef.type === 'domestic' ? opRef.main_code : '',
+    main_code: opRef.type === 'domestic' ? opRef.main_code : null,
     position,
     weight,
-    country_code: opRef.type === 'domestic' ? opRef.country_code : '??',
+    country_code: opRef.type === 'domestic' ? opRef.country_code : null,
     is_passenger_station: false,
     location: {
       type: 'operational_point_part_reference',
@@ -273,7 +272,6 @@ const usePathProjection = (
           name: matchedOp.name,
           position,
           secondary_code: matchedOp.secondary_code,
-          uic: matchedOp.uic,
           weight,
           location: {
             type: 'operational_point_part_reference',
