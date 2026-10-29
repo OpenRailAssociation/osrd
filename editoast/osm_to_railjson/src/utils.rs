@@ -36,13 +36,10 @@ impl<'a> NodeToTrack<'a> {
         Self { nodes_edges }
     }
 
-    /// Given an OSM node, returns the track, the position it is on and the local ref if its available
+    /// Given an OSM node, returns the track, the position it is on
     /// If there is an ambiguity (the node is at intersection), we just pick one
     /// We log weird situations (the are 3 edges for that node)
-    pub fn track_and_position(
-        &self,
-        id: NodeId,
-    ) -> Option<(Identifier, f64, Option<NonBlankString>)> {
+    pub fn track_and_position(&self, id: NodeId) -> Option<(Identifier, f64)> {
         self.nodes_edges.get(&id).and_then(|edges| {
             if edges.is_empty() {
                 error!("Missing edge for node {}", id.0);
@@ -50,12 +47,22 @@ impl<'a> NodeToTrack<'a> {
             } else if edges.len() >= 3 {
                 warn!("Too many edges for node {}", id.0);
             }
-            let local_ref = edges[0].tags.get("local_ref").map(NonBlankString::from);
-            Some((
-                edges[0].id.clone().into(),
-                edges[0].length_until(&id),
-                local_ref,
-            ))
+            Some((edges[0].id.clone().into(), edges[0].length_until(&id)))
+        })
+    }
+
+    /// Given OSM node id, returns local_ref key of the track it is on
+    /// We log weird situations (the are 3 edges for that node)
+    pub fn track_ref(&self, id: NodeId) -> Option<NonBlankString> {
+        self.nodes_edges.get(&id).and_then(|edges| {
+            if edges.is_empty() {
+                error!("Missing edge for node {}", id.0);
+                return None;
+            } else if edges.len() >= 3 {
+                warn!("Too many edges for node {}", id.0);
+            }
+
+            edges[0].tags.get("local_ref").map(NonBlankString::from)
         })
     }
 }
