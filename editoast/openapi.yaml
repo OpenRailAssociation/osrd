@@ -3650,6 +3650,11 @@ paths:
         required: false
         schema:
           type: string
+      - name: before
+        in: query
+        required: false
+        schema:
+          type: string
       - name: limit
         in: query
         required: false
@@ -8021,6 +8026,7 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorForbidden'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorMalformedParameters'
       - $ref: '#/components/schemas/EditoastStdcmRequestErrorNotUser'
+      - $ref: '#/components/schemas/EditoastStdcmRequestErrorRangePaginationNotSupported'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
@@ -10230,6 +10236,26 @@ components:
           type: string
           enum:
           - editoast:stdcm_request:NotUser
+    EditoastStdcmRequestErrorRangePaginationNotSupported:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastStdcmRequestErrorRangePaginationNotSupportedContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_request:RangePaginationNotSupported
     EditoastStdcmSearchEnvErrorDatabase:
       type: object
       required:
@@ -12651,6 +12677,10 @@ components:
           type: object
           properties:
             next:
+              type:
+              - string
+              - 'null'
+            prev:
               type:
               - string
               - 'null'

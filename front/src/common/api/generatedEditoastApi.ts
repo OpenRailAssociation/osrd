@@ -1020,6 +1020,7 @@ const injectedRtkApi = api
           params: {
             by: queryArg.by,
             after: queryArg.after,
+            before: queryArg.before,
             limit: queryArg.limit,
           },
         }),
@@ -2447,6 +2448,7 @@ export type GetStdcmRequestsApiResponse =
 export type GetStdcmRequestsApiArg = {
   by?: 'group' | 'user';
   after?: string;
+  before?: string;
   limit?: number;
 };
 export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
@@ -4904,6 +4906,7 @@ export type StdcmRequest = {
 export type ListStdcmRequestResponse = {
   links: {
     next?: string | null;
+    prev?: string | null;
   };
   requests: StdcmRequest[];
 };
