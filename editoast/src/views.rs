@@ -533,6 +533,23 @@ enum DatabaseError {
     Unavailable(#[from] database::DatabasePoolError),
 }
 
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("openfga error: {0}")]
+#[view_error(status = INTERNAL_SERVER_ERROR, path = authorization::OpenFga)]
+struct AuthorizerError(#[from] ::authz::authorizers::Error);
+
+impl From<::authz::v2::OpenFgaError> for AuthorizerError {
+    fn from(error: ::authz::v2::OpenFgaError) -> Self {
+        Self(error.into())
+    }
+}
+
+impl From<std::convert::Infallible> for AuthorizerError {
+    fn from(_: std::convert::Infallible) -> Self {
+        unreachable!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;

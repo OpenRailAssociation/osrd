@@ -2190,47 +2190,6 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
     )
 
 
-class EditoastStdcmRequestErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_request:Database"] = "editoast:stdcm_request:Database"
-
-
-class EditoastStdcmRequestErrorForbidden(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorForbiddenContext")
-    ] = None
-    message: StrictStr
-    status: Literal[403] = 403
-    type: Literal["editoast:stdcm_request:Forbidden"] = (
-        "editoast:stdcm_request:Forbidden"
-    )
-
-
-class EditoastStdcmRequestErrorMalformedParameters(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastStdcmRequestErrorMalformedParametersContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[422] = 422
-    type: Literal["editoast:stdcm_request:MalformedParameters"] = (
-        "editoast:stdcm_request:MalformedParameters"
-    )
-
-
-class EditoastStdcmRequestErrorNotUser(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorNotUserContext")
-    ] = None
-    message: StrictStr
-    status: Literal[401] = 401
-    type: Literal["editoast:stdcm_request:NotUser"] = "editoast:stdcm_request:NotUser"
-
-
 class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
@@ -5264,10 +5223,6 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
-        | EditoastStdcmRequestErrorDatabase
-        | EditoastStdcmRequestErrorForbidden
-        | EditoastStdcmRequestErrorMalformedParameters
-        | EditoastStdcmRequestErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
@@ -5444,10 +5399,6 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
-        | EditoastStdcmRequestErrorDatabase
-        | EditoastStdcmRequestErrorForbidden
-        | EditoastStdcmRequestErrorMalformedParameters
-        | EditoastStdcmRequestErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
         | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase

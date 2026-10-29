@@ -6,7 +6,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
-use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use models::StdcmRequest;
 use models::stdcm_request::PaginatedList;
 use models::stdcm_request::SelectionSettings;
@@ -18,7 +18,8 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::error::Result;
-use crate::views::AuthorizationError;
+use crate::views::AuthorizerError;
+use crate::views::DatabaseError;
 
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "lowercase")]
@@ -64,21 +65,32 @@ impl From<PaginatedList> for ListStdcmRequestResponse {
     }
 }
 
-#[derive(Debug, Error, EditoastError, derive_more::From)]
-#[editoast_error(base_id = "stdcm_request")]
-pub enum StdcmRequestError {
+#[derive(Debug, Error, ViewError, derive_more::From)]
+pub(in crate::views) enum StdcmRequestError {
     #[error("Invalid cursors in query parameters: {0}")]
-    #[editoast_error(status = 422)]
+    #[view_error(status = UNPROCESSABLE_ENTITY)]
     MalformedParameters(models::stdcm_request::DecodeError),
     #[error("by=group and by=user query parameters require an authenticated user")]
-    #[editoast_error(status = 401)]
+    #[view_error(status = UNAUTHORIZED)]
     NotUser,
     #[error("Forbidden")]
-    #[editoast_error(status = 403)]
+    #[view_error(status = FORBIDDEN)]
     Forbidden,
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(models::Error),
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    Authorizer(
+        #[from]
+        #[view_error]
+        AuthorizerError,
+    ),
+}
+
+impl From<::authz::authorizers::Error> for StdcmRequestError {
+    fn from(error: ::authz::authorizers::Error) -> Self {
+        Self::Authorizer(error.into())
+    }
 }
 
 impl From<models::stdcm_request::Error> for StdcmRequestError {
@@ -87,7 +99,9 @@ impl From<models::stdcm_request::Error> for StdcmRequestError {
             models::stdcm_request::Error::DecodeError(error) => {
                 StdcmRequestError::MalformedParameters(error)
             }
-            models::stdcm_request::Error::Database(error) => StdcmRequestError::Database(error),
+            models::stdcm_request::Error::Database(error) => {
+                StdcmRequestError::Database(error.into())
+            }
         }
     }
 }
@@ -100,6 +114,7 @@ impl From<models::stdcm_request::Error> for StdcmRequestError {
     params(ListStdcmRequestQueryParams, PaginationQueryParams),
     responses(
         (status = 200, body = ListStdcmRequestResponse, description = "List of stdcm requests"),
+        StdcmRequestError
     )
 )]
 pub(in crate::views) async fn list(
@@ -109,7 +124,7 @@ pub(in crate::views) async fn list(
     Query(list_stdcm_request_query_params): Query<ListStdcmRequestQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams>,
     Extension(authn_state): Extension<crate::authentication::State>,
-) -> Result<Json<ListStdcmRequestResponse>> {
+) -> Result<Json<ListStdcmRequestResponse>, StdcmRequestError> {
     let mut settings = SelectionSettings::new();
 
     if let Some(size) = pagination_params.limit {
@@ -123,14 +138,12 @@ pub(in crate::views) async fn list(
             Some(IdentityFilter::User) => settings.user_filter(vec![user.0]),
             Some(IdentityFilter::Group) => {
                 let system = SystemAuthorizer::new_infallible(&openfga);
-                let groups = user_groups(user)
-                    .run::<AuthorizationError, _>(&system)
-                    .await?;
+                let groups = user_groups(user).run::<AuthorizerError, _>(&system).await?;
                 let mut same_group_user_ids = vec![];
                 for group in groups {
                     same_group_user_ids.extend(
                         group_members(group)
-                            .run::<AuthorizationError, _>(&system)
+                            .run::<AuthorizerError, _>(&system)
                             .await?
                             .into_iter()
                             .map(|user| user.0),
@@ -139,10 +152,10 @@ pub(in crate::views) async fn list(
                 settings.user_filter(same_group_user_ids)
             }
             None if authn_state.roles().contains(&Role::Admin) => settings,
-            None => return Err(StdcmRequestError::Forbidden.into()),
+            None => return Err(StdcmRequestError::Forbidden),
         };
     } else if list_stdcm_request_query_params.by.is_some() {
-        return Err(StdcmRequestError::NotUser.into());
+        return Err(StdcmRequestError::NotUser);
     }
     let settings = settings;
 
