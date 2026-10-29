@@ -8,7 +8,6 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
@@ -58,6 +57,7 @@ fun findPath(
     comfort: Comfort?,
     startTime: Double,
     steps: List<ExplorerStep>,
+    forcedOpStops: List<ExplorerStep>,
     blockAvailability: BlockAvailabilityInterface,
     timeStep: Double,
     maxDepartureDelay: Double,
@@ -66,7 +66,6 @@ fun findPath(
     standardAllowance: AllowanceValue?,
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
-    forcedOpStops: Set<BlockLocation>,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
     failureRegister: FailureRegister? = null,
     progressCallback: ProgressCallback? = null,
@@ -77,6 +76,7 @@ fun findPath(
             comfort,
             startTime,
             steps,
+            forcedOpStops,
             blockAvailability,
             timeStep,
             maxDepartureDelay,
@@ -87,7 +87,6 @@ fun findPath(
             temporarySpeedLimitManager,
             searchMetadata,
             failureRegister,
-            forcedOpStops,
             progressCallback,
         )
         .findPath()
@@ -99,6 +98,7 @@ class STDCMPathfinding(
     private val comfort: Comfort?,
     private val startTime: Double,
     private val steps: List<ExplorerStep>,
+    private val forcedOpStops: List<ExplorerStep>,
     private val blockAvailability: BlockAvailabilityInterface,
     private val timeStep: Double,
     private val maxDepartureDelay: Double,
@@ -109,7 +109,6 @@ class STDCMPathfinding(
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata?,
     failureRegister: FailureRegister?,
-    private val forcedOpStops: Set<BlockLocation>,
     private val progressCallback: ProgressCallback? = null,
 ) {
 
@@ -290,7 +289,7 @@ class STDCMPathfinding(
     private fun getStartNodes(
         graph: STDCMGraph,
         consistSchedule: ConsistSchedule,
-        forcedOpStops: Set<BlockLocation>,
+        forcedOpStops: List<ExplorerStep>,
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
@@ -321,6 +320,7 @@ class STDCMPathfinding(
                         explorer as InfraExplorerWithEnvelope,
                         null,
                         location.offset,
+                        null,
                         null,
                         firstStep.plannedTimingData,
                         null,

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
@@ -196,6 +197,7 @@ data class ExplorerStep(
     val stop: Boolean = false,
     val canBacktrack: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,
+    val stopType: StopType? = null,
 )
 
 /**
@@ -209,8 +211,8 @@ fun initInfraExplorers(
     rollingStockLength: Distance,
     location: BlockLocation,
     targets: List<ExplorerStep> = listOf(),
+    forcedOpStops: List<ExplorerStep> = listOf(),
     constraints: List<PathfindingConstraint>? = null,
-    forcedOpStopLocations: Set<BlockLocation> = emptySet(),
 ): Collection<InfraExplorer> {
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
     val infraExplorers = mutableListOf<InfraExplorer>()
@@ -230,7 +232,7 @@ fun initInfraExplorers(
                 appendOnlyMapOf(),
                 null,
                 blockToPathProperties,
-                stepTracker = StepTracker(targets, forcedOpStopLocations),
+                stepTracker = StepTracker(targets, forcedOpStops),
                 constraints = constraints,
             )
         val infraExtended = infraExplorer.extend(route, location)

@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.RJSRoutingZoneRequirement
 import fr.sncf.osrd.api.RJSSpacingRequirement
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.SignalCriticalPosition
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.api.standalone_sim.StopDetails
@@ -395,7 +396,16 @@ class BacktrackTests {
                     rollingStock as PhysicsRollingStock,
                 ),
             )
-        val stops = listOf(TrainStop(9700.0, 60.0, SHORT_SLIP_STOP), TrainStop(18700.0, 0.0, OPEN))
+        val stops =
+            listOf(
+                TrainStop(9700.0, 60.0, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(
+                    18700.0,
+                    0.0,
+                    OPEN,
+                    StopType.INPUT_STOP,
+                ),
+            )
         val envelope = computeMrspWithStops(path, stops)
         val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
 
@@ -454,7 +464,11 @@ class BacktrackTests {
                     rollingStock as PhysicsRollingStock,
                 ),
             )
-        val stops = listOf(TrainStop(8000.0, 60.0, SHORT_SLIP_STOP), TrainStop(15300.0, 0.0, OPEN))
+        val stops =
+            listOf(
+                TrainStop(8000.0, 60.0, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(15300.0, 0.0, OPEN, StopType.INPUT_STOP),
+            )
         val envelope = computeMrspWithStops(path, stops)
         val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
 
@@ -495,7 +509,11 @@ class BacktrackTests {
                     rollingStock as PhysicsRollingStock,
                 ),
             )
-        val stops = listOf(TrainStop(8400.0, 60.0, STOP), TrainStop(16400.0, 0.0, OPEN))
+        val stops =
+            listOf(
+                TrainStop(8400.0, 60.0, STOP, StopType.INPUT_STOP),
+                TrainStop(16400.0, 0.0, OPEN, StopType.INPUT_STOP),
+            )
         val envelope = computeMrspWithStops(path, stops)
         val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
 
@@ -546,7 +564,11 @@ class BacktrackTests {
     @Test
     fun testSignalCriticalPositionBacktrackingOverNothing() {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
-        val stops = listOf(TrainStop(9700.0, 60.0, SHORT_SLIP_STOP), TrainStop(18700.0, 0.0, OPEN))
+        val stops =
+            listOf(
+                TrainStop(9700.0, 60.0, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(18700.0, 0.0, OPEN, StopType.INPUT_STOP),
+            )
         val envelope = computeMrspWithStops(path, stops)
 
         val pos =
@@ -572,7 +594,11 @@ class BacktrackTests {
     @Test
     fun testSignalCriticalPositionBacktrackingOverRouteDelimiter() {
         val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
-        val stops = listOf(TrainStop(8000.0, 60.0, SHORT_SLIP_STOP), TrainStop(15300.0, 0.0, OPEN))
+        val stops =
+            listOf(
+                TrainStop(8000.0, 60.0, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(15300.0, 0.0, OPEN, StopType.INPUT_STOP),
+            )
         val envelope = computeMrspWithStops(path, stops)
 
         val pos =
@@ -598,7 +624,11 @@ class BacktrackTests {
     fun testSignalCriticalPositionBacktrackingShortlyAfterRouteDelimiter() {
         val path =
             buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
-        val stops = listOf(TrainStop(8400.0, 60.0, STOP), TrainStop(16400.0, 0.0, OPEN))
+        val stops =
+            listOf(
+                TrainStop(8400.0, 60.0, STOP, StopType.INPUT_STOP),
+                TrainStop(16400.0, 0.0, OPEN, StopType.INPUT_STOP),
+            )
         val envelope = computeMrspWithStops(path, stops)
 
         val pos =

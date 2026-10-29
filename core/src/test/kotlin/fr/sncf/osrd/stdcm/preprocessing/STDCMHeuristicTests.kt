@@ -303,6 +303,7 @@ class STDCMHeuristicTests {
                 null,
                 null,
                 null,
+                null,
                 0.0,
                 null,
             )
@@ -314,6 +315,7 @@ class STDCMHeuristicTests {
                 defaultNode,
                 Offset(0.meters),
                 false,
+                null,
                 0.0,
                 0.0,
                 Length(0.meters),

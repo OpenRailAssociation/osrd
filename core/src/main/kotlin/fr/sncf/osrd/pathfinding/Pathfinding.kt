@@ -263,7 +263,7 @@ class Pathfinding(
                     rollingStockLength,
                     location,
                     targets,
-                    constraints?.let { MutableList(targets.size) { _ -> it } },
+                    constraints = constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
         }

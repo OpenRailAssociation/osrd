@@ -220,6 +220,7 @@ class BenchSTDCM : CliCommand {
                             request.comfort,
                             0.0,
                             steps,
+                            forcedOpStops,
                             makeBlockAvailability(
                                 requirements.requirements,
                                 gridMarginBeforeTrain = request.timeGapBefore.seconds,
@@ -234,7 +235,6 @@ class BenchSTDCM : CliCommand {
                             parseMarginValue(request.margin),
                             Pathfinding.TIMEOUT,
                             temporarySpeedLimitManager,
-                            forcedOpStops,
                             STDCMGraph.SearchMetadata(
                                 request.startTime,
                                 requirements.metadata,
