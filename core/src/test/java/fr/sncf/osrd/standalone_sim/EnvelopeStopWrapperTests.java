@@ -1,5 +1,6 @@
 package fr.sncf.osrd.standalone_sim;
 
+import fr.sncf.osrd.api.StopType;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeTestUtils;
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
@@ -34,8 +35,8 @@ public class EnvelopeStopWrapperTests {
         var envelopeStopWrapper = new EnvelopeStopWrapper(
                 envelopeFloor,
                 List.of(
-                        new TrainStop(3, 10, RJSReceptionSignal.SHORT_SLIP_STOP),
-                        new TrainStop(6, 5, RJSReceptionSignal.OPEN)));
+                        new TrainStop(3, 10, RJSReceptionSignal.SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                        new TrainStop(6, 5, RJSReceptionSignal.OPEN, StopType.INPUT_STOP)));
         Assertions.assertEquals(
                 List.of(
                         new EnvelopeTimeInterpolate.EnvelopePoint(0, 1, 0),

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.BlockLocationStop
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
@@ -8,7 +9,6 @@ import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
@@ -66,7 +66,7 @@ fun findPath(
     standardAllowance: AllowanceValue?,
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
-    forcedOpStops: Set<BlockLocation>,
+    forcedOpStops: Set<BlockLocationStop>,
     searchMetadata: STDCMGraph.SearchMetadata? = null,
     failureRegister: FailureRegister? = null,
     progressCallback: ProgressCallback? = null,
@@ -109,7 +109,7 @@ class STDCMPathfinding(
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
     searchMetadata: STDCMGraph.SearchMetadata?,
     failureRegister: FailureRegister?,
-    private val forcedOpStops: Set<BlockLocation>,
+    private val forcedOpStops: Set<BlockLocationStop>,
     private val progressCallback: ProgressCallback? = null,
 ) {
 
@@ -290,7 +290,7 @@ class STDCMPathfinding(
     private fun getStartNodes(
         graph: STDCMGraph,
         consistSchedule: ConsistSchedule,
-        forcedOpStops: Set<BlockLocation>,
+        forcedOpStops: Set<BlockLocationStop>,
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
@@ -321,6 +321,7 @@ class STDCMPathfinding(
                         explorer as InfraExplorerWithEnvelope,
                         null,
                         location.offset,
+                        null,
                         null,
                         firstStep.plannedTimingData,
                         null,

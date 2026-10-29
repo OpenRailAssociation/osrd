@@ -4,6 +4,7 @@ import com.squareup.moshi.Json
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackLocation
 import fr.sncf.osrd.sim_infra.api.TrackSection
@@ -128,11 +129,22 @@ data class OperationalPointStop(
     val stop_type: ForcedStopType,
 )
 
+data class BlockLocationStop(
+    val block_location: BlockLocation,
+    val stop_type: ForcedStopType,
+)
+
 enum class ForcedStopType {
     // General stop station are station where the stop is mandatory
     GENERAL_STOP,
 
     // Fake overtake where a stop on the overtake track is mandatory
+    OVERTAKE,
+}
+
+enum class StopType {
+    INPUT_STOP,
+    GENERAL_STOP,
     OVERTAKE,
 }
 

@@ -684,22 +684,29 @@ fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<
 fun parseForcedOpStops(
     infra: FullInfra,
     forcedOpStops: Set<OperationalPointStop>,
-): Set<BlockLocation> {
-    val opPartIds = forcedOpStops.flatMap { infra.rawInfra.getOperationalPointParts(it.id) }.toSet()
-    val chunkLocations = opPartIds.map {
-        ChunkLocation(
-            infra.rawInfra.getOperationalPointPartChunk(it),
-            infra.rawInfra.getOperationalPointPartChunkOffset(it),
-        )
-    }
-    val res = mutableSetOf<BlockLocation>()
-    for (chunkLocation in chunkLocations) {
-        for (direction in Direction.entries) {
-            res.addAll(
-                infra.blockInfra.findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction),
-            )
+): Set<BlockLocationStop> {
+    val res = mutableSetOf<BlockLocationStop>()
+
+    for (forcedOpStop in forcedOpStops) {
+        val opPartIds = infra.rawInfra.getOperationalPointParts(forcedOpStop.id)
+        for (opPartId in opPartIds) {
+            val chunkLocation =
+                ChunkLocation(
+                    infra.rawInfra.getOperationalPointPartChunk(opPartId),
+                    infra.rawInfra.getOperationalPointPartChunkOffset(opPartId),
+                )
+            for (direction in Direction.entries) {
+                val blockLocations =
+                    infra.blockInfra
+                        .findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction)
+                        .map {
+                            BlockLocationStop(it, forcedOpStop.stop_type)
+                        }
+                res.addAll(blockLocations)
+            }
         }
     }
+
     return res
 }
 

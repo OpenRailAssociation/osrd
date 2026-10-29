@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
+import fr.sncf.osrd.api.BlockLocationStop
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.Comfort
@@ -47,7 +48,7 @@ data class STDCMPathfindingBuilder(
     var standardAllowance: AllowanceValue? = null,
     var blockAvailability: BlockAvailabilityInterface? = null,
     var temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
-    var forcedOpStops: MutableSet<BlockLocation> = mutableSetOf(),
+    var forcedOpStops: MutableSet<BlockLocationStop> = mutableSetOf(),
 ) {
     // endregion OPTIONAL
     // region SETTERS
@@ -122,7 +123,7 @@ data class STDCMPathfindingBuilder(
         return this
     }
 
-    fun addForcedOpStop(forcedOpStop: BlockLocation): STDCMPathfindingBuilder {
+    fun addForcedOpStop(forcedOpStop: BlockLocationStop): STDCMPathfindingBuilder {
         forcedOpStops.add(forcedOpStop)
         return this
     }
