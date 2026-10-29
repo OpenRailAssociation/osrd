@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><title>icon/24/turnaround-24</title><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 21v-2c0-6.783 4-5 4-11.02V3m7 18v-2c0-6.783-4-5-4-11.02V3"/><path d="M17 22a.75.75 0 0 1-.53-.22l-3.25-3.25a.749.749 0 1 1 1.06-1.06L17 20.19l2.72-2.72a.749.749 0 1 1 1.06 1.06l-3.25 3.25A.75.75 0 0 1 17 22"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon/24/turnaround-24</title>
+    <g id="icon/24/turnaround-24" stroke="none" fill="none">
+        <path d="M5.99955395,21 L5.99955395,19.000511 C5.99955395,12.2172852 11.5,14 11.5,7.97924805 L11.5,3" id="Path-8" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M16.999554,21 L16.999554,19.000511 C16.999554,12.2172852 11.5,14 11.5,7.97924805 L11.5,3" id="Path-8" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M17,21.99934 C16.8011327,21.9992749 16.610455,21.9201257 16.47,21.77934 L13.22,18.52934 C13.0188907,18.3425977 12.9360158,18.0608217 13.0039994,17.7949348 C13.071983,17.5290479 13.2799374,17.3216329 13.546,17.25434 C13.8115762,17.1862704 14.0931215,17.2687393 14.28,17.46934 L17,20.18934 L19.72,17.46934 C19.9067423,17.2682308 20.1885183,17.1853558 20.4544052,17.2533394 C20.7202922,17.3213231 20.9277071,17.5292775 20.995,17.79534 C21.0630697,18.0609162 20.9806007,18.3424615 20.78,18.52934 L17.53,21.77934 C17.389545,21.9201257 17.1988673,21.9992749 17,21.99934 Z" id="Path" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>
