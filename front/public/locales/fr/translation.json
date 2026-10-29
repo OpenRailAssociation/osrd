@@ -235,6 +235,8 @@
           "init": "Cliquez sur une section de voie pour ajouter un point au point remarquable, ou faites glisser un point existant pour le déplacer"
         },
         "label": "Outil \"PR\"",
+        "move-part-down": "Descendre le point",
+        "move-part-up": "Monter le point",
         "no-parts": "Cliquez sur une section de voie pour ajouter un point",
         "part-fields": {
           "kp": "PK",

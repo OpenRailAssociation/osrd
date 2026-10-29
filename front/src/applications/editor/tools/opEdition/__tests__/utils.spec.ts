@@ -4,7 +4,7 @@ import type { TrackState } from 'applications/editor/tools/rangeEdition/types';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import type { OpEntity } from '../types';
-import { canSaveOp, getEmptyOp, getPartFeatures } from '../utils';
+import { canSaveOp, getEmptyOp, getPartFeatures, movePart } from '../utils';
 
 const track = {
   type: 'Feature',
@@ -94,5 +94,28 @@ describe('getPartFeatures', () => {
 
     expect(features).toHaveLength(1);
     expect(features[0].properties.partIndex).toBe(1);
+  });
+});
+
+describe('movePart', () => {
+  const parts = ['V1', 'V2', 'V3'].map((local_track_name, i) => ({
+    track: 'track',
+    position: i * 10,
+    local_track_name,
+  }));
+  const getNames = (op: OpEntity) => op.properties.parts.map((part) => part.local_track_name);
+
+  it('should move a part up', () => {
+    expect(getNames(movePart(getOp({ parts }), 1, 0))).toEqual(['V2', 'V1', 'V3']);
+  });
+
+  it('should move a part down', () => {
+    expect(getNames(movePart(getOp({ parts }), 1, 2))).toEqual(['V1', 'V3', 'V2']);
+  });
+
+  it('should not mutate the input entity', () => {
+    const op = getOp({ parts });
+    movePart(op, 0, 1);
+    expect(getNames(op)).toEqual(['V1', 'V2', 'V3']);
   });
 });

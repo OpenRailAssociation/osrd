@@ -96,6 +96,13 @@ export function removePart(entity: OpEntity, partIndex: number): OpEntity {
   );
 }
 
+export function movePart(entity: OpEntity, from: number, to: number): OpEntity {
+  const parts = [...entity.properties.parts];
+  const [part] = parts.splice(from, 1);
+  parts.splice(to, 0, part);
+  return updateParts(entity, parts);
+}
+
 export function updatePart(
   entity: OpEntity,
   partIndex: number,

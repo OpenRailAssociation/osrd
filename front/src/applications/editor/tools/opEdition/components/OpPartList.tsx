@@ -2,8 +2,9 @@ import { useContext, useEffect, useRef } from 'react';
 
 import cx from 'classnames';
 import { clamp } from 'lodash';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { FaRegDotCircle, FaTimes } from 'react-icons/fa';
+import { FaArrowDown, FaArrowUp, FaRegDotCircle, FaTimes } from 'react-icons/fa';
 import { RiPinDistanceLine } from 'react-icons/ri';
 
 import EditorContext from 'applications/editor/context';
@@ -16,12 +17,45 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
 import type { OpEditionState } from '../types';
-import { removePart, updatePart } from '../utils';
+import { movePart, removePart, updatePart } from '../utils';
 
 const CENTER_PART_MIN_ZOOM = 16;
 
-function getPartFieldId(partIndex: number, field: keyof OperationalPointPart | 'kp') {
+type MoveDirection = 'up' | 'down';
+
+function getPartFieldId(
+  partIndex: number,
+  field: keyof OperationalPointPart | 'kp' | `move-${MoveDirection}`
+) {
   return `op-part-${partIndex}-${field}`;
+}
+
+// Makes two list items visually slide to each other's place.
+// Resolves when the animations end, and rejects if they are interrupted by
+// another swap.
+function animateSwap(a: HTMLElement, b: HTMLElement, swap: () => void) {
+  const aTop = a.getBoundingClientRect().top;
+  const bTop = b.getBoundingClientRect().top;
+  [a, b].forEach((element) => element.getAnimations().forEach((animation) => animation.cancel()));
+
+  // Items are keyed by index, so swap() exchanges their contents, not their
+  // DOM nodes. Node a now shows what was at bTop, and b what was at aTop
+  swap();
+
+  const moves: [HTMLElement, number][] = [
+    [a, bTop],
+    [b, aTop],
+  ];
+
+  return Promise.all(
+    moves.map(([element, oldTop]) => {
+      const offset = oldTop - element.getBoundingClientRect().top;
+      return element.animate(
+        [{ transform: `translateY(${offset}px)` }, { transform: 'translateY(0)' }],
+        { duration: 200, easing: 'ease-in-out' }
+      ).finished;
+    })
+  );
 }
 
 // Shows the track ID until the track is loaded
@@ -42,7 +76,15 @@ const PartTrackSumUp = ({ id, trackState }: { id: string; trackState?: TrackStat
   );
 };
 
-const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number }) => {
+const OpPartItem = ({
+  part,
+  index,
+  partsCount,
+}: {
+  part: OperationalPointPart;
+  index: number;
+  partsCount: number;
+}) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
@@ -67,6 +109,38 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
 
   const update = (patch: Partial<OperationalPointPart>) =>
     setState({ entity: updatePart(entity, index, patch) });
+
+  const move = (direction: MoveDirection) => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+    // Buttons are only aria-disabled, so that they keep the focus:
+    if (newIndex < 0 || newIndex >= partsCount) return;
+
+    // flushSync makes React update the DOM right away, so that we can measure
+    // the new positions and focus the new button just after:
+    const swap = () =>
+      flushSync(() =>
+        setState({ entity: movePart(entity, index, newIndex), hoveredPartIndex: null })
+      );
+
+    const item = itemRef.current;
+    const sibling = direction === 'up' ? item?.previousElementSibling : item?.nextElementSibling;
+    if (!item || !(sibling instanceof HTMLElement)) return;
+
+    const moves = animateSwap(item, sibling, swap);
+
+    // Keep the focus on the clicked button, which now belongs to the moved
+    // part. This also selects the moved part. There is no scroll yet, since
+    // the item is still drawn at its old position:
+    const button = document.getElementById(getPartFieldId(newIndex, `move-${direction}`));
+    button?.focus({ preventScroll: true });
+    moves.then(
+      () => button?.closest('li')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+      () => {
+        /* Slides can be canceled by a fast next move */
+      }
+    );
+  };
 
   return (
     <li ref={itemRef}>
@@ -93,7 +167,7 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
           </button>
           <button
             type="button"
-            className="btn btn-primary btn-sm px-2"
+            className="btn btn-primary btn-sm px-2 mb-3"
             aria-label={t('common.delete')}
             title={t('common.delete')}
             onClick={() =>
@@ -105,6 +179,28 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
             }
           >
             <FaTimes />
+          </button>
+          <button
+            id={getPartFieldId(index, 'move-up')}
+            type="button"
+            className={cx('btn btn-primary btn-sm px-2 mb-1', index === 0 && 'disabled')}
+            aria-label={t('Editor.tools.op-edition.move-part-up')}
+            title={t('Editor.tools.op-edition.move-part-up')}
+            aria-disabled={index === 0}
+            onClick={() => move('up')}
+          >
+            <FaArrowUp />
+          </button>
+          <button
+            id={getPartFieldId(index, 'move-down')}
+            type="button"
+            className={cx('btn btn-primary btn-sm px-2', index === partsCount - 1 && 'disabled')}
+            aria-label={t('Editor.tools.op-edition.move-part-down')}
+            title={t('Editor.tools.op-edition.move-part-down')}
+            aria-disabled={index === partsCount - 1}
+            onClick={() => move('down')}
+          >
+            <FaArrowDown />
           </button>
         </div>
         <div className="flex-grow-1 flex-shrink-1">
@@ -162,6 +258,7 @@ const OpPartItem = ({ part, index }: { part: OperationalPointPart; index: number
             </div>
           </div>
         </div>
+        <div className="flex-shrink-0 ml-2 small text-muted">{index + 1}</div>
       </div>
     </li>
   );
@@ -184,7 +281,7 @@ const OpPartList = () => {
       ) : (
         <ul className="list-unstyled">
           {parts.map((part, index) => (
-            <OpPartItem key={index} part={part} index={index} />
+            <OpPartItem key={index} part={part} index={index} partsCount={parts.length} />
           ))}
         </ul>
       )}
