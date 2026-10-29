@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { expect } from '@playwright/test';
-import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import { logger } from '../logging-fixture';
 import type { PdfConsistChangeContent, PdfSimulationContent } from './types';
@@ -67,29 +67,13 @@ export async function parsePdfText(buffer: Buffer) {
 }
 
 /**
- * Count how many times an image of the given pixel size is drawn in the PDF, across all pages.
+ * Check whether the PDF contains a named destination, i.e. a react-pdf element rendered with this `id`.
  * @param buffer The PDF content.
- * @param width The width of the image in pixels.
- * @param height The height of the image in pixels.
+ * @param name The name of the destination.
  */
-export async function countImagesOfSize(
-  buffer: Buffer,
-  width: number,
-  height: number
-): Promise<number> {
+export async function hasNamedDestination(buffer: Buffer, name: string): Promise<boolean> {
   const doc = await loadPdf(buffer);
-  let count = 0;
-  for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
-    const page = await doc.getPage(pageNum);
-    const { fnArray, argsArray } = await page.getOperatorList();
-    count += fnArray.filter(
-      (fn, index) =>
-        fn === OPS.paintImageXObject &&
-        argsArray[index][1] === width &&
-        argsArray[index][2] === height
-    ).length;
-  }
-  return count;
+  return (await doc.getDestination(name)) !== null;
 }
 
 /**
