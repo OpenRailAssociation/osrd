@@ -291,30 +291,42 @@ fn scan_connections(p: &JourneyListParams, order_criterion: OrderCriterion) -> V
             arrival_ms: arrival.arrival_ms,
         };
 
-        let stop_profiles = &mut profiles[connection.departure];
-
-        // A candidate departs at his connection's departure_ms (no footpath variation).
-        // Since connections are scanned by decreasing departure_ms, the candidate can only be
-        // inserted at the end and we only need to compare it with the last profile.
-        match stop_profiles.last_mut() {
-            Some(last) => {
-                if !last.dominates(&candidate, order_criterion) {
-                    if last.departure_ms == candidate.departure_ms {
-                        *last = candidate
-                    } else {
-                        stop_profiles.push(candidate);
-                    }
-                }
-            }
-            None => {
-                stop_profiles.push(candidate);
-            }
-        }
+        insert_profile(
+            &mut profiles[connection.departure],
+            candidate,
+            order_criterion,
+        );
 
         trip_arrivals[connection.trip] = Some(arrival);
     }
 
     profiles
+}
+
+/// Insert a profile in a Pareto front or drop it if it is dominated.
+///
+/// A candidate departs at its connection's departure_ms (no footpath variation).
+/// Connections must be scanned by decreasing departure_ms, so the candidate can only be
+/// inserted at the end and we only need to compare it with the last profile.
+fn insert_profile(
+    pareto_front: &mut Vec<Profile>,
+    candidate: Profile,
+    order_criterion: OrderCriterion,
+) {
+    match pareto_front.last_mut() {
+        Some(last) => {
+            if !last.dominates(&candidate, order_criterion) {
+                if last.departure_ms == candidate.departure_ms {
+                    *last = candidate
+                } else {
+                    pareto_front.push(candidate);
+                }
+            }
+        }
+        None => {
+            pareto_front.push(candidate);
+        }
+    }
 }
 
 /// Rebuilds the journey starting at `starting_profile`, leg by leg, until it reaches `end`.
