@@ -1,4 +1,7 @@
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type {
+  SearchResultItemMacroNode,
+  SearchResultItemOperationalPoint,
+} from 'common/api/osrdEditoastApi';
 
 import type {
   OpSecondaryCode,
@@ -65,4 +68,21 @@ export const buildOpSuggestion = (
   }
 
   return [...map.values()];
+};
+
+export const buildMacroNodeSuggestion = (
+  node: SearchResultItemMacroNode
+): OperationalPointSuggestion | null => {
+  if (node.node_location.type !== 'operational_point_reference') return null;
+  const opRef = node.node_location.operational_point;
+  if (opRef.type !== 'domestic') return null;
+
+  return {
+    id: `macroNode:${node.id}`,
+    name: node.full_name ?? node.short_name ?? '',
+    mainCode: opRef.main_code,
+    countryCode: opRef.country_code,
+    secondaryCodeList: [{ code: opRef.secondary_code ?? null }],
+    source: 'macroNode',
+  };
 };
