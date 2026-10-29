@@ -235,6 +235,8 @@
           "init": "Click on a track section to add a part to the operational point, or drag an existing part to move it"
         },
         "label": "Operational point tool",
+        "move-part-down": "Move the part down",
+        "move-part-up": "Move the part up",
         "no-parts": "Click on a track section to add a part",
         "part-fields": {
           "kp": "KP",
