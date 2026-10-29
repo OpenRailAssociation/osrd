@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import cx from 'classnames';
 
+import type { PathItemLocation } from 'common/api/osrdEditoastApi';
+
 import './ListElementComponent.scss';
 
 export type OpSecondaryCode = {
@@ -18,7 +20,8 @@ export type OperationalPointSuggestion = {
   name: string;
   countryCode: string;
   secondaryCodeList: OpSecondaryCode[];
-  source: 'infra' | 'custom';
+  source: 'infra' | 'custom' | 'macroNode';
+  location?: PathItemLocation;
 };
 
 export type ListElementComponentProps = {

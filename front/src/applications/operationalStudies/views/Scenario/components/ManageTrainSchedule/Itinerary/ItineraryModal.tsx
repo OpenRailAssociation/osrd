@@ -28,13 +28,13 @@ import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { buildPathWaypointsFromRawOPs } from 'applications/operationalStudies/utils';
 import type {
   CoreOperationalPointOnPath,
-  OperationalPointReference,
   PathProperties,
   PathItemLocation,
   TrainCategory,
   Distribution,
   Comfort,
   TimetableType,
+  OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
 import Banner from 'common/Banner';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
@@ -353,7 +353,7 @@ const ItineraryModal = ({
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
-  } = useOperationalPointSearch({});
+  } = useOperationalPointSearch({ scenarioId: scenario.id });
 
   const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
@@ -392,7 +392,7 @@ const ItineraryModal = ({
     forcedCh?: string
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
-    if (!chosenSecondaryCode && suggestion.source !== 'custom') return;
+    if (!chosenSecondaryCode && suggestion.source === 'infra') return;
     pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
