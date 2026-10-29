@@ -104,7 +104,7 @@ pub struct Leg {
 ///
 /// More specifically, at `departure_ms`, a traveler can take the leg
 /// `leg` to reach the destination at `arrival_ms` in `leg_count` legs.
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 struct Profile {
     /// The leg taken at the departure stop
     leg: Leg,
@@ -145,8 +145,8 @@ pub struct JourneyListParams {
     pub connections: Vec<Connection>,
     pub start_ms: u32,
     pub start_tolerance: u32,
-    pub start: StopId,
-    pub end: StopId,
+    pub start: Vec<StopId>,
+    pub end: Vec<StopId>,
     pub transfer_ms: u32,
 }
 
@@ -164,18 +164,19 @@ pub struct JourneyListParams {
 /// - All connections' `departure`s and `arrival`s must be strictly lower than [`JourneyListParams::stop_count`]
 ///
 /// See asserts below for more pre-conditions.
+///
+/// NB: a journey can come back to a starting stop to take a train that was leaving outside of the start window.
 pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
-    assert!(p.start < p.stop_count);
-    assert!(p.end < p.stop_count);
-
-    if p.start == p.end {
+    assert!(p.start.iter().all(|&s| s < p.stop_count));
+    assert!(p.end.iter().all(|&e| e < p.stop_count));
+    if p.start.iter().any(|s| p.end.contains(s)) {
         return Vec::new();
     }
 
-    let profiles_by_time = scan_connections(&p, order_by_time);
-    let profiles_by_legs = scan_connections(&p, order_by_legs);
+    let (profiles_by_time, start_profiles_by_time) = scan_connections(&p, order_by_time);
+    let (profiles_by_legs, start_profiles_by_legs) = scan_connections(&p, order_by_legs);
 
-    let closest_departure_journey = profiles_by_time[p.start]
+    let closest_departure_journey = start_profiles_by_time
         .iter()
         .min_by_key(|profile| {
             (
@@ -188,12 +189,12 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
                 &profiles_by_time,
                 &p.connections,
                 p.transfer_ms,
-                p.end,
+                &p.end,
                 profile,
             )
         });
 
-    let fastest_journey = profiles_by_time[p.start]
+    let fastest_journey = start_profiles_by_time
         .iter()
         .min_by_key(|profile| {
             (
@@ -207,12 +208,12 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
                 &profiles_by_time,
                 &p.connections,
                 p.transfer_ms,
-                p.end,
+                &p.end,
                 profile,
             )
         });
 
-    let fewest_legs_journey = profiles_by_legs[p.start]
+    let fewest_legs_journey = start_profiles_by_legs
         .iter()
         .min_by_key(|profile| {
             (
@@ -226,7 +227,7 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
                 &profiles_by_legs,
                 &p.connections,
                 p.transfer_ms,
-                p.end,
+                &p.end,
                 profile,
             )
         });
@@ -238,25 +239,24 @@ pub fn journey_list(p: JourneyListParams) -> Vec<Vec<Leg>> {
         .collect()
 }
 
-/// Scans every connection and returns the profiles of each stop, indexed by stop id.
+/// Scans every connection and returns the profiles of each stop, indexed by stop id,
+/// along with the merged profiles of all the starting stops that are in the start window.
 ///
 /// Profiles are ordered by decreasing `departure_ms`.
 /// They are also ordered by decreasing first criterion (`arrival_ms` or `leg_count`),
 /// since they all lie on the Pareto front.
-fn scan_connections(p: &JourneyListParams, order_criterion: OrderCriterion) -> Vec<Vec<Profile>> {
+fn scan_connections(
+    p: &JourneyListParams,
+    order_criterion: OrderCriterion,
+) -> (Vec<Vec<Profile>>, Vec<Profile>) {
     let mut profiles: Vec<Vec<Profile>> = vec![Vec::new(); p.stop_count];
+    let mut start_profiles: Vec<Profile> = Vec::new();
 
     // This maps trips to the best TripArrival found over the connections scanned so far
     let mut trip_arrivals = vec![None; p.trip_count];
 
     for (connection_id, connection) in p.connections.iter().enumerate() {
-        if connection.departure == p.start
-            && u32::abs_diff(connection.departure_ms, p.start_ms) > p.start_tolerance
-        {
-            continue;
-        }
-
-        let direct = (connection.arrival == p.end).then_some(TripArrival {
+        let direct = p.end.contains(&connection.arrival).then_some(TripArrival {
             arrival_ms: connection.arrival_ms,
             leg_count: 1,
             exit_connection_id: connection_id,
@@ -291,6 +291,12 @@ fn scan_connections(p: &JourneyListParams, order_criterion: OrderCriterion) -> V
             arrival_ms: arrival.arrival_ms,
         };
 
+        if p.start.contains(&connection.departure)
+            && u32::abs_diff(connection.departure_ms, p.start_ms) <= p.start_tolerance
+        {
+            insert_profile(&mut start_profiles, candidate, order_criterion);
+        }
+
         insert_profile(
             &mut profiles[connection.departure],
             candidate,
@@ -300,7 +306,7 @@ fn scan_connections(p: &JourneyListParams, order_criterion: OrderCriterion) -> V
         trip_arrivals[connection.trip] = Some(arrival);
     }
 
-    profiles
+    (profiles, start_profiles)
 }
 
 /// Insert a profile in a Pareto front or drop it if it is dominated.
@@ -329,12 +335,12 @@ fn insert_profile(
     }
 }
 
-/// Rebuilds the journey starting at `starting_profile`, leg by leg, until it reaches `end`.
+/// Rebuilds the journey starting at `starting_profile`, leg by leg, until it reaches a stop of `end`.
 fn extract_journey(
     profiles: &[Vec<Profile>],
     connections: &[Connection],
     transfer_ms: u32,
-    end: StopId,
+    end: &[StopId],
     starting_profile: &Profile,
 ) -> Vec<Leg> {
     let mut journey = Vec::new();
@@ -344,7 +350,7 @@ fn extract_journey(
         journey.push(stop_profile.leg);
         let exit_connection = connections[stop_profile.leg.exit_connection_id];
 
-        if exit_connection.arrival == end {
+        if end.contains(&exit_connection.arrival) {
             return journey;
         }
 
