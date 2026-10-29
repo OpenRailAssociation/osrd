@@ -26,8 +26,7 @@ pub(crate) fn signals(
         })
         .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
         .flat_map(|node| {
-            if let Some((track, position, _local_ref)) = nodes_to_tracks.track_and_position(node.id)
-            {
+            if let Some((track, position)) = nodes_to_tracks.track_and_position(node.id) {
                 let mut settings = HashMap::new();
                 settings.insert("Nf".into(), "true".into());
 
