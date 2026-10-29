@@ -53,7 +53,6 @@ use jiff::SignedDuration;
 use metadata::ConsistPreprocessing;
 use metadata::StdcmMetadata;
 use models::Infra;
-use models::Timestamp;
 use models::WorkSchedule;
 use models::prelude::*;
 use models::rolling_stock::RollingStock;
@@ -86,15 +85,15 @@ use utoipa::ToSchema;
 pub struct StdcmLastReachedOperationalPoint {
     #[schema(value_type = GeoJsonPoint)]
     pub geographic: Geometry,
-    pub arrival_time: Timestamp,
+    pub arrival_time: jiff::Timestamp,
     pub operational_point: OperationalPoint,
 }
 
 /// Represents one conflicting work schedule in a partial pathfinding result
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 pub struct StdcmConflictingWorkSchedule {
-    pub start_date_time: Timestamp,
-    pub end_date_time: Timestamp,
+    pub start_date_time: jiff::Timestamp,
+    pub end_date_time: jiff::Timestamp,
     pub last_op: OperationalPoint,
 }
 
@@ -105,7 +104,7 @@ pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,
         pathfinding_result: PathfindingResultSuccess,
-        departure_time: Timestamp,
+        departure_time: jiff::Timestamp,
     },
     PathNotFound {
         most_blocking_work_schedules: Vec<StdcmConflictingWorkSchedule>,
@@ -454,7 +453,11 @@ pub(in crate::views) async fn stdcm(
         work_schedules: work_schedules
             .iter()
             .filter_map(|ws| {
-                as_core_work_schedule(ws, earliest_departure_time, latest_simulation_end)
+                as_core_work_schedule(
+                    ws,
+                    earliest_departure_time.into(),
+                    latest_simulation_end.into(),
+                )
             })
             .collect(),
     };
@@ -623,8 +626,8 @@ async fn enrich_conflicting_work_schedules(
         );
         let op: OperationalPoint = fetch_operational_point(infra, conn, &last_op_id).await;
         enriched.push(StdcmConflictingWorkSchedule {
-            start_date_time: ws.start_date_time,
-            end_date_time: ws.end_date_time,
+            start_date_time: ws.start_date_time.into(),
+            end_date_time: ws.end_date_time.into(),
             last_op: op,
         });
     }
@@ -670,7 +673,7 @@ impl VirtualTrainRun {
                         at: path_item.key.clone(),
                         arrival: stdcm_step.timing_data.as_ref().map(|timing_data| {
                             PositiveDuration::try_from(
-                                timing_data.arrival_time.duration_since(*approx_start_time),
+                                timing_data.arrival_time.duration_since(approx_start_time),
                             )
                             .unwrap()
                         }),
@@ -749,8 +752,8 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 /// Convert a WorkSchedule to a core_client WorkSchedule
 pub fn as_core_work_schedule(
     work_schedule: &WorkSchedule,
-    earliest_departure_time: Timestamp,
-    latest_simulation_end: Timestamp,
+    earliest_departure_time: models::Timestamp,
+    latest_simulation_end: models::Timestamp,
 ) -> Option<core_client::stdcm::WorkSchedule> {
     if work_schedule.end_date_time <= earliest_departure_time
         || work_schedule.start_date_time >= latest_simulation_end
@@ -760,8 +763,8 @@ pub fn as_core_work_schedule(
 
     Some(core_client::stdcm::WorkSchedule {
         obj_id: work_schedule.obj_id.clone(),
-        start_time: work_schedule.start_date_time.as_millisecond() as u64,
-        end_time: work_schedule.end_date_time.as_millisecond() as u64,
+        start_time: jiff::Timestamp::from(work_schedule.start_date_time).as_millisecond() as u64,
+        end_time: jiff::Timestamp::from(work_schedule.end_date_time).as_millisecond() as u64,
         track_ranges: work_schedule
             .track_ranges
             .iter()
@@ -799,6 +802,7 @@ mod tests {
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::PhysicsConsist;
+    use jiff::Timestamp;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::fixtures::simple_rolling_stock;
@@ -1028,8 +1032,8 @@ mod tests {
             .into_iter()
             .map(|obj_id| {
                 WorkSchedule::changeset()
-                    .start_date_time(start_date_time)
-                    .end_date_time(end_date_time)
+                    .start_date_time(start_date_time.into())
+                    .end_date_time(end_date_time.into())
                     .track_ranges(track_ranges.clone())
                     .obj_id(obj_id)
                     .work_schedule_type(models::work_schedules::WorkScheduleType::Track)
@@ -1366,6 +1370,8 @@ mod tests {
         #[case] expected_context_key: &str,
         #[case] expected_context_value: f64,
     ) {
+        use jiff::Timestamp;
+
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .response(StatusCode::OK)
@@ -1478,16 +1484,16 @@ mod tests {
             .iter()
             .zip(vec![new_ses_op(), new_ss_op()])
             .map(|(ws, op)| StdcmConflictingWorkSchedule {
-                start_date_time: ws.start_date_time,
-                end_date_time: ws.end_date_time,
+                start_date_time: ws.start_date_time.into(),
+                end_date_time: ws.end_date_time.into(),
                 last_op: op,
             })
             .collect();
         let stdm_nearest_blocking_work_schedules = nearest_to_destination_work_schedules
             .iter()
             .map(|ws| StdcmConflictingWorkSchedule {
-                start_date_time: ws.start_date_time,
-                end_date_time: ws.end_date_time,
+                start_date_time: ws.start_date_time.into(),
+                end_date_time: ws.end_date_time.into(),
                 last_op: new_ses_op(),
             })
             .collect();
@@ -1665,16 +1671,16 @@ mod tests {
             .iter()
             .zip(vec![new_ss_op(), new_ses_op()])
             .map(|(ws, op)| StdcmConflictingWorkSchedule {
-                start_date_time: ws.start_date_time,
-                end_date_time: ws.end_date_time,
+                start_date_time: ws.start_date_time.into(),
+                end_date_time: ws.end_date_time.into(),
                 last_op: op,
             })
             .collect();
         let stdcm_nearest_blocking_work_schedules = nearest_to_destination_work_schedules
             .iter()
             .map(|ws| StdcmConflictingWorkSchedule {
-                start_date_time: ws.start_date_time,
-                end_date_time: ws.end_date_time,
+                start_date_time: ws.start_date_time.into(),
+                end_date_time: ws.end_date_time.into(),
                 last_op: new_ss_op(),
             })
             .collect();
@@ -1739,8 +1745,8 @@ mod tests {
         use models::WorkSchedule;
         let work_schedules = [WorkSchedule {
             id: rand::random::<i64>(),
-            start_date_time: Timestamp::from_str(ws_start_time).unwrap(),
-            end_date_time: Timestamp::from_str(ws_end_time).unwrap(),
+            start_date_time: Timestamp::from_str(ws_start_time).unwrap().into(),
+            end_date_time: Timestamp::from_str(ws_end_time).unwrap().into(),
             ..Default::default()
         }];
         let start_time = Timestamp::from_str("2024-03-14T08:00:00Z").unwrap();
@@ -1749,7 +1755,9 @@ mod tests {
         // WHEN
         let filtered: Vec<_> = work_schedules
             .iter()
-            .filter_map(|ws| as_core_work_schedule(ws, start_time, latest_simulation_end))
+            .filter_map(|ws| {
+                as_core_work_schedule(ws, start_time.into(), latest_simulation_end.into())
+            })
             .collect();
 
         // THEN

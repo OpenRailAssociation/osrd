@@ -66,6 +66,7 @@ pub struct WorkSchedule {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Timestamp;
     use crate::prelude::*;
     use database::DbConnectionPool;
 

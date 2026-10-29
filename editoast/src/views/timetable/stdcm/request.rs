@@ -3,9 +3,9 @@ use std::collections::HashSet;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 use jiff::SignedDuration;
+use jiff::Timestamp;
 use schemas::infra::OperationalPointStop;
 
-use models::Timestamp;
 use schemas::RollingStock;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
@@ -241,8 +241,8 @@ impl Request {
             .await?
             .into_iter()
             .filter(|speed_limit| {
-                !(end_date_time <= speed_limit.start_date_time
-                    || speed_limit.end_date_time <= start_date_time)
+                !(end_date_time <= speed_limit.start_date_time.into()
+                    || speed_limit.end_date_time <= start_date_time.into())
             })
             .map(into_core_temporary_speed_limit)
             .collect();

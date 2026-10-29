@@ -1,8 +1,7 @@
+use crate::Timestamp;
 use editoast_derive::Model;
 use schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
-
-use crate::Timestamp;
 
 #[derive(Debug, Clone, Model)]
 #[model(table = database::tables::temporary_speed_limit_group)]

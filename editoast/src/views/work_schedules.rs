@@ -14,7 +14,6 @@ use axum::response::IntoResponse;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 
-use models::Timestamp;
 use models::WorkSchedule;
 use models::WorkScheduleGroup;
 use models::prelude::*;
@@ -64,8 +63,8 @@ impl From<WsGroupError> for WorkScheduleError {
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub(in crate::views) struct WorkScheduleItemForm {
-    pub start_date_time: Timestamp,
-    pub end_date_time: Timestamp,
+    pub start_date_time: jiff::Timestamp,
+    pub end_date_time: jiff::Timestamp,
     pub track_ranges: Vec<TrackRange>,
     pub obj_id: String,
     #[schema(inline)]
@@ -104,8 +103,8 @@ impl WorkScheduleItemForm {
         work_schedule_group_id: i64,
     ) -> Changeset<WorkSchedule> {
         WorkSchedule::changeset()
-            .start_date_time(self.start_date_time)
-            .end_date_time(self.end_date_time)
+            .start_date_time(self.start_date_time.into())
+            .end_date_time(self.end_date_time.into())
             .track_ranges(self.track_ranges)
             .obj_id(self.obj_id)
             .work_schedule_type(self.work_schedule_type)
@@ -184,9 +183,9 @@ pub(in crate::views) struct WorkScheduleProjection {
     /// The type of the work schedule.
     pub work_schedule_type: WorkScheduleType,
     /// The date and time when the work schedule takes effect.
-    pub start_date_time: Timestamp,
+    pub start_date_time: jiff::Timestamp,
     /// The date and time when the work schedule ends.
-    pub end_date_time: Timestamp,
+    pub end_date_time: jiff::Timestamp,
     /// a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
     /// - `a` is the distance from the beginning of the path to the beginning of the track range
     /// - `b` is the distance from the beginning of the path to the end of the track range
@@ -244,8 +243,8 @@ pub(in crate::views) async fn project_path(
             } else {
                 Some(WorkScheduleProjection {
                     work_schedule_type: ws.work_schedule_type,
-                    start_date_time: ws.start_date_time,
-                    end_date_time: ws.end_date_time,
+                    start_date_time: ws.start_date_time.into(),
+                    end_date_time: ws.end_date_time.into(),
                     path_position_ranges,
                 })
             }
@@ -285,7 +284,7 @@ pub(in crate::views) async fn create_group(
     // Create the work_schedule_group
     let work_schedule_group = WorkScheduleGroup::changeset()
         .name(group_name.clone())
-        .creation_date(Timestamp::now())
+        .creation_date(models::Timestamp::now())
         .create(conn)
         .await
         .map_err(WorkScheduleError::from)?;
@@ -497,7 +496,7 @@ pub mod tests {
 
         WorkScheduleGroup::changeset()
             .name("duplicated work schedule group name".to_string())
-            .creation_date(Timestamp::now())
+            .creation_date(models::Timestamp::now())
             .create(&mut pool.get_ok())
             .await
             .expect("Failed to create work schedule group");
@@ -650,8 +649,8 @@ pub mod tests {
             .enumerate()
             .map(|(index, position_ranges)| WorkScheduleProjection {
                 work_schedule_type: work_schedules[index].work_schedule_type,
-                start_date_time: work_schedules[index].start_date_time,
-                end_date_time: work_schedules[index].end_date_time,
+                start_date_time: work_schedules[index].start_date_time.into(),
+                end_date_time: work_schedules[index].end_date_time.into(),
                 path_position_ranges: position_ranges
                     .into_iter()
                     .map(Intersection::from)

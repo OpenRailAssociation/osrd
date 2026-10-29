@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use models::Timestamp;
+use jiff::Timestamp;
 use schemas::infra::OperationalPointStop;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::SupportedSignalingSystemVariant;

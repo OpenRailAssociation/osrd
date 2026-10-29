@@ -4,7 +4,6 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
-use models::Timestamp;
 use models::prelude::*;
 use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
@@ -25,8 +24,8 @@ use models::temporary_speed_limits;
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]
 struct TemporarySpeedLimitItemForm {
-    start_date_time: Timestamp,
-    end_date_time: Timestamp,
+    start_date_time: jiff::Timestamp,
+    end_date_time: jiff::Timestamp,
     track_ranges: Vec<DirectionalTrackRange>,
     speed_limit: f64,
     obj_id: String,
@@ -51,8 +50,8 @@ impl TemporarySpeedLimitItemForm {
         temporary_speed_limit_group_id: i64,
     ) -> Changeset<TemporarySpeedLimit> {
         TemporarySpeedLimit::changeset()
-            .start_date_time(self.start_date_time)
-            .end_date_time(self.end_date_time)
+            .start_date_time(self.start_date_time.into())
+            .end_date_time(self.end_date_time.into())
             .track_ranges(self.track_ranges)
             .speed_limit(self.speed_limit)
             .obj_id(self.obj_id)
@@ -129,7 +128,7 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
     // Create the speed limits group
     let TemporarySpeedLimitGroup { id: group_id, .. } = TemporarySpeedLimitGroup::changeset()
         .name(speed_limit_group_name.clone())
-        .creation_date(Timestamp::now())
+        .creation_date(models::Timestamp::now())
         .create(conn)
         .await
         .map_err(TemporarySpeedLimitError::from)?;

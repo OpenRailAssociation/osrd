@@ -8,7 +8,6 @@ edition.workspace = true
 testing = []
 
 [dependencies]
-chrono.workspace = true
 common.workspace = true
 diesel.workspace = true
 editoast_derive.workspace = true

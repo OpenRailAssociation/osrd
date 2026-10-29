@@ -949,8 +949,8 @@ dependencies = [
  "hostname",
  "http",
  "itertools 0.15.0",
+ "jiff",
  "lapin",
- "models",
  "opentelemetry",
  "ordered-float",
  "pretty_assertions",
@@ -4703,7 +4703,6 @@ dependencies = [
 name = "schemas"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "common",
  "diesel",
  "editoast_derive",

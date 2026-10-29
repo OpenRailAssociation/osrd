@@ -1,7 +1,7 @@
 use axum_tracing_opentelemetry::tracing_opentelemetry_instrumentation_sdk::find_current_trace_id;
 use chrono::DateTime;
 use chrono::Utc;
-use models::Timestamp;
+use jiff::Timestamp;
 use object_store::ObjectStoreExt as _;
 use object_store::aws::AmazonS3;
 use object_store::path::Path as ObjectStorePath;

@@ -76,7 +76,7 @@ pub struct PositiveDuration(JiffDuration);
 #[cfg(feature = "testing")]
 impl PositiveDuration {
     pub fn new(duration: JiffDuration) -> Self {
-        assert!(duration.as_millis() >= 0, "Duration must be non-negative");
+        assert!(!duration.is_negative(), "Duration must be non-negative");
         Self(duration)
     }
 }
@@ -113,11 +113,10 @@ impl ToSchema for PositiveDuration {}
 
 impl TryFrom<JiffDuration> for PositiveDuration {
     type Error = PositiveDurationError;
-    /// Create PositiveDuration from `jiff::SignedDuration``
+    /// Create PositiveDuration from `jiff::SignedDuration`
     /// This function errors when the given duration is negative
-    /// The created PositiveDuration is limited to 1 millisecond
     fn try_from(duration: JiffDuration) -> Result<Self, PositiveDurationError> {
-        if duration.as_millis() < 0 {
+        if duration.is_negative() {
             return Err(PositiveDurationError::NegativeDuration);
         }
         Ok(PositiveDuration(duration))
@@ -126,14 +125,12 @@ impl TryFrom<JiffDuration> for PositiveDuration {
 
 impl TryFrom<PgInterval> for PositiveDuration {
     type Error = PositiveDurationError;
-    /// Create PositiveDuration from `diesel::pg::data_types::PgInterval``
+    /// Create PositiveDuration from `diesel::pg::data_types::PgInterval`
     /// This function errors when the given duration is negative or when
     /// PgInterval has a months component.
-    /// Panics in case of overflow.
-    /// The created PositiveDuration is limited to 1 millisecond
     fn try_from(interval: PgInterval) -> Result<Self, PositiveDurationError> {
         let duration = pg_interval_to_jiff_duration(interval)?;
-        if duration.as_millis() < 0 {
+        if duration.is_negative() {
             return Err(PositiveDurationError::NegativeDuration);
         }
         Ok(PositiveDuration(duration))
@@ -218,7 +215,7 @@ where
     }))
 }
 
-/// Variant of [`PositiveDuration`] that also requires the duration to not be zero.
+/// Variant of [`PositiveDuration`] that also requires the duration to be at least 1 millisecond.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StrictlyPositiveDuration(JiffDuration);
 
@@ -254,9 +251,8 @@ impl<'de> Deserialize<'de> for StrictlyPositiveDuration {
 
 impl TryFrom<JiffDuration> for StrictlyPositiveDuration {
     type Error = PositiveDurationError;
-    /// Create PositiveDuration from `jiff::SignedDuration``
-    /// This function errors when the given duration is negative or null
-    /// The created StrictPositiveDuration is limited to 1 millisecond
+    /// Create StrictlyPositiveDuration from `jiff::SignedDuration`
+    /// This function errors when the given duration is negative or null.
     fn try_from(duration: JiffDuration) -> Result<Self, PositiveDurationError> {
         if duration.as_millis() <= 0 {
             return Err(PositiveDurationError::NegativeDuration);
@@ -267,11 +263,10 @@ impl TryFrom<JiffDuration> for StrictlyPositiveDuration {
 
 impl TryFrom<PgInterval> for StrictlyPositiveDuration {
     type Error = PositiveDurationError;
-    /// Create PositiveDuration from `diesel::pg::data_types::PgInterval``
+    /// Create PositiveDuration from `diesel::pg::data_types::PgInterval`
+    ///
     /// This function errors when the given duration is negative or when
     /// PgInterval has a months component.
-    /// Panics in case of overflow.
-    /// The created PositiveDuration is limited to 1 millisecond
     fn try_from(interval: PgInterval) -> Result<Self, PositiveDurationError> {
         let duration = pg_interval_to_jiff_duration(interval)?;
         if duration.as_millis() <= 0 {
@@ -300,8 +295,7 @@ pub fn pg_interval_to_jiff_duration(
         return Err(PositiveDurationError::MonthsUnsupported);
     }
     let hours = (interval.days as i64) * 24;
-    let millis = interval.microseconds / 1000;
-    Ok(JiffDuration::from_hours(hours) + JiffDuration::from_millis(millis))
+    Ok(JiffDuration::from_hours(hours) + JiffDuration::from_micros(interval.microseconds))
 }
 
 pub fn jiff_duration_to_pg_interval(duration: JiffDuration) -> PgInterval {
