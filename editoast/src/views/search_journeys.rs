@@ -360,8 +360,8 @@ pub(in crate::views) async fn search_journeys(
                 connections,
                 start_ms,
                 start_tolerance,
-                start: origin_index,
-                end: destination_index,
+                start: vec![origin_index],
+                end: vec![destination_index],
                 transfer_ms,
             });
 
