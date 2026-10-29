@@ -8,14 +8,24 @@ import { useSelector } from 'react-redux';
 import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 
+import type { DomesticOperationalPointReference } from '../types';
 import { isOpRefMetadata } from './utils';
+
+export type OnCustomOpCreation = (name: string, opRef: DomesticOperationalPointReference) => void;
 
 type PathStepSubFormFieldsProps = {
   pathStep: PathStep;
   isOpValid: boolean;
+  name: string;
+  onCustomOpCreation: OnCustomOpCreation;
 };
 
-const DomesticFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => {
+const DomesticFields = ({
+  pathStep,
+  isOpValid,
+  name,
+  onCustomOpCreation,
+}: PathStepSubFormFieldsProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
@@ -39,6 +49,16 @@ const DomesticFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => 
   const [subFormMainCode, setSubFormMainCode] = useState<string>(defaultMainCode);
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
 
+  const validateCustomOp = () => {
+    if (isOpValid || !subFormCountryCode || !subFormMainCode) return;
+    onCustomOpCreation(name || subFormMainCode, {
+      type: 'domestic',
+      country_code: subFormCountryCode,
+      main_code: subFormMainCode,
+      secondary_code: subFormSecondaryCode || undefined,
+    });
+  };
+
   return (
     <div className="path-step-subform-domestic-fields">
       <div className="path-step-subform-field">
@@ -50,6 +70,7 @@ const DomesticFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => 
           small
           value={subFormCountryCode}
           onChange={(e) => setSubFormCountryCode(e.target.value)}
+          onBlur={validateCustomOp}
         />
       </div>
       <div className="path-step-subform-field">
@@ -61,6 +82,7 @@ const DomesticFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => 
           small
           value={subFormMainCode}
           onChange={(e) => setSubFormMainCode(e.target.value)}
+          onBlur={validateCustomOp}
         />
       </div>
       <div className="path-step-subform-field">
@@ -71,6 +93,7 @@ const DomesticFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => 
           small
           value={subFormSecondaryCode}
           onChange={(e) => setSubFormSecondaryCode(e.target.value)}
+          onBlur={validateCustomOp}
         />
       </div>
     </div>
@@ -194,6 +217,7 @@ type PathStepSubFormProps = {
   isOpValid: boolean;
   name: string;
   onNameChange: (name: string) => void;
+  onCustomOpCreation: OnCustomOpCreation;
 };
 
 const PathStepSubForm = ({
@@ -203,6 +227,7 @@ const PathStepSubForm = ({
   isOpValid,
   name,
   onNameChange,
+  onCustomOpCreation,
 }: PathStepSubFormProps) => {
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
   const { t } = useTranslation('operational-studies', {
@@ -234,7 +259,12 @@ const PathStepSubForm = ({
           value={subFormName}
           onChange={(e) => onNameChange(e.target.value)}
         />
-        <SpecificFields pathStep={pathStep} isOpValid={isOpValid} />
+        <SpecificFields
+          pathStep={pathStep}
+          isOpValid={isOpValid}
+          name={subFormName}
+          onCustomOpCreation={onCustomOpCreation}
+        />
       </div>
     </div>
   );
