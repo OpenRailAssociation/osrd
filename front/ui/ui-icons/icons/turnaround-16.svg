@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><title>icon/16/turnaround-16</title><path d="M14.75 12a.25.25 0 0 1 .177.427l-3 3a.25.25 0 0 1-.354 0l-3-3A.25.25 0 0 1 8.75 12z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15v-3c0-3 3-3 3-6.02V2m5.75 11v-1C11.75 9 9 9 9 5.98V2"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon/16/turnaround-16</title>
+    <g id="icon/16/turnaround-16" stroke="none" fill="none">
+        <path d="M14.75,11.9999996 C14.8512544,11.9998188 14.9426192,12.0607314 14.9813922,12.1542684 C15.0201651,12.2478053 14.9986884,12.3554929 14.927,12.427 L11.927,15.427 C11.8800979,15.4740209 11.8164136,15.5004469 11.75,15.5004469 C11.6835864,15.5004469 11.6199021,15.4740209 11.573,15.427 L8.573,12.427 C8.50131158,12.3554929 8.47983493,12.2478053 8.51860785,12.1542684 C8.55738076,12.0607314 8.64874556,11.9998188 8.75,11.9999996 L14.75,11.9999996 Z" id="Path" fill="#000000" fill-rule="nonzero"></path>
+        <path d="M2.99955395,15 L2.99955395,12.000511 C2.99955395,9 7.5,9 7.5,5.97924805 L7.5,2" id="Path-8" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M11.75,13 L11.75,12.000511 C11.75,9 7.5,9 7.5,5.97924805 L7.5,2" id="Path-8" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </g>
+</svg>
