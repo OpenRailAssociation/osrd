@@ -4,6 +4,7 @@ import type {
   OpSecondaryCode,
   OperationalPointSuggestion,
 } from '../Itinerary/ComboBoxCustomList/ListElementComponent';
+import type { DomesticOperationalPointReference } from '../types';
 
 const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
   const priority: Record<string, number> = { BV: 0, '00': 1 };
@@ -19,6 +20,18 @@ const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
     return (a.code ?? '').localeCompare(b.code ?? '');
   });
 };
+
+export const buildCustomOpSuggestion = (
+  name: string,
+  opRef: DomesticOperationalPointReference
+): OperationalPointSuggestion => ({
+  id: `${opRef.country_code}-${opRef.main_code}`,
+  name,
+  mainCode: opRef.main_code,
+  countryCode: opRef.country_code,
+  secondaryCodeList: [{ code: opRef.secondary_code ?? null }],
+  source: 'custom',
+});
 
 export const buildOpSuggestion = (
   results: SearchResultItemOperationalPoint[]
@@ -40,6 +53,7 @@ export const buildOpSuggestion = (
         name: r.name,
         countryCode: r.country_code,
         secondaryCodeList,
+        source: 'infra',
       });
     } else if (!existing.secondaryCodeList.some((c) => c.code === secondaryCode)) {
       existing.secondaryCodeList.push({ code: secondaryCode });
