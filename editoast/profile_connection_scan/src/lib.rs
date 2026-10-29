@@ -54,7 +54,7 @@ pub struct Connection {
 
     /// The ID of the station where the train departs.
     ///
-    /// It is expected that `depature` is different from `arrival`.
+    /// It is expected that `departure` is different from `arrival`.
     pub departure: StopId,
 
     /// The time of day when the train departs from `departure`.
@@ -64,7 +64,7 @@ pub struct Connection {
 
     /// The ID of the station where the train arrives.
     ///
-    /// It is expected that `depature` is different from `arrival`.
+    /// It is expected that `departure` is different from `arrival`.
     pub arrival: StopId,
 
     /// The time of day when the train arrives at `arrival`.
