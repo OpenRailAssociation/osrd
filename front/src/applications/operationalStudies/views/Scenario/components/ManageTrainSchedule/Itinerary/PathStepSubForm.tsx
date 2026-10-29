@@ -8,20 +8,26 @@ import type { OperationalPointReference, TrackOffset } from 'common/api/osrdEdit
 import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 
+import type { DomesticOperationalPointReference } from '../types';
 import { isOpRefMetadata } from './utils';
+
+export type OnCustomOpCreation = (name: string, opRef: DomesticOperationalPointReference) => void;
 
 type PathStepSubFormFieldsProps = {
   pathStep: PathStep;
   isOpValid: boolean;
+  name: string;
+  onCustomOpCreation: OnCustomOpCreation;
 };
 
-type DomesticOperationalPointReference = Extract<OperationalPointReference, { type: 'domestic' }>;
 type UicOperationalPointReference = Extract<OperationalPointReference, { type: 'uic' }>;
 type IdOperationalPointReference = Extract<OperationalPointReference, { type: 'id' }>;
 
 const DomesticFields = ({
   pathStep,
   isOpValid,
+  name,
+  onCustomOpCreation,
   operationalPoint,
 }: PathStepSubFormFieldsProps & {
   operationalPoint: DomesticOperationalPointReference | undefined;
@@ -37,6 +43,16 @@ const DomesticFields = ({
   const [subFormMainCode, setSubFormMainCode] = useState<string>(defaultMainCode);
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
 
+  const validateCustomOp = () => {
+    if (isOpValid || !subFormCountryCode || !subFormMainCode) return;
+    onCustomOpCreation(name || subFormMainCode, {
+      type: 'domestic',
+      country_code: subFormCountryCode,
+      main_code: subFormMainCode,
+      secondary_code: subFormSecondaryCode || undefined,
+    });
+  };
+
   return (
     <div className="path-step-subform-specific-fields path-step-subform-domestic-fields">
       <Input
@@ -47,6 +63,7 @@ const DomesticFields = ({
         required
         value={isOpValid ? defaultCountryCode : subFormCountryCode}
         onChange={(e) => setSubFormCountryCode(e.target.value)}
+        onBlur={validateCustomOp}
       />
       <Input
         id={`path-step-subform-main-code-${pathStep.key}`}
@@ -56,6 +73,7 @@ const DomesticFields = ({
         required
         value={isOpValid ? defaultMainCode : subFormMainCode}
         onChange={(e) => setSubFormMainCode(e.target.value)}
+        onBlur={validateCustomOp}
       />
       <Input
         id={`path-step-subform-secondary-code-${pathStep.key}`}
@@ -64,6 +82,7 @@ const DomesticFields = ({
         small
         value={isOpValid ? defaultSecondaryCode : subFormSecondaryCode}
         onChange={(e) => setSubFormSecondaryCode(e.target.value)}
+        onBlur={validateCustomOp}
       />
     </div>
   );
@@ -174,6 +193,7 @@ type PathStepSubFormProps = {
   isOpValid: boolean;
   name: string;
   onNameChange: (name: string) => void;
+  onCustomOpCreation: OnCustomOpCreation;
 };
 
 const PathStepSubForm = ({
@@ -183,6 +203,7 @@ const PathStepSubForm = ({
   isOpValid,
   name,
   onNameChange,
+  onCustomOpCreation,
 }: PathStepSubFormProps) => {
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
   const { t } = useTranslation('operational-studies', {
@@ -194,15 +215,14 @@ const PathStepSubForm = ({
   if (!unrecognizedWaypointsActivated || !isSubFormExpanded) return;
 
   const specificFields = () => {
+    const commonProps = { pathStep, isOpValid, name: subFormName, onCustomOpCreation };
     const loc = pathStep.location;
     if (loc?.type === 'track_offset')
-      return <TrackOffsetFields pathStep={pathStep} isOpValid={isOpValid} trackOffset={loc} />;
+      return <TrackOffsetFields {...commonProps} trackOffset={loc} />;
     const op = loc?.operational_point;
-    if (op?.type === 'uic')
-      return <UicFields pathStep={pathStep} isOpValid={isOpValid} operationalPoint={op} />;
-    if (op?.type === 'id')
-      return <OpIdFields pathStep={pathStep} isOpValid={isOpValid} operationalPoint={op} />;
-    return <DomesticFields pathStep={pathStep} isOpValid={isOpValid} operationalPoint={op} />;
+    if (op?.type === 'uic') return <UicFields {...commonProps} operationalPoint={op} />;
+    if (op?.type === 'id') return <OpIdFields {...commonProps} operationalPoint={op} />;
+    return <DomesticFields {...commonProps} operationalPoint={op} />;
   };
 
   return (
