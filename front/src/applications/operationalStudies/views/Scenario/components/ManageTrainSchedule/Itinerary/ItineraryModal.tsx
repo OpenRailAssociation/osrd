@@ -218,7 +218,7 @@ const ItineraryModal = ({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
-  const { workerStatus, timetableType } = useScenarioContext();
+  const { workerStatus, timetableType, scenario } = useScenarioContext();
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
@@ -340,7 +340,7 @@ const ItineraryModal = ({
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
-  } = useOperationalPointSearch({});
+  } = useOperationalPointSearch({ scenarioId: scenario.id });
 
   const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
