@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.interfaces.TrainPath
@@ -216,6 +217,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                         // TODO: forward and use receptionSignal param from request
                         if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP
                         else OPEN,
+                        prevNode.stopType,
                     ),
                 )
             offset += edge.length.distance
@@ -227,7 +229,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     private fun makeOpStops(trainPath: TrainPath): List<TrainStop> {
         val res = ArrayList<TrainStop>()
         for ((_, offset) in trainPath.getOperationalPointParts()) {
-            res.add(TrainStop(offset.meters, 0.0, OPEN))
+            res.add(TrainStop(offset.meters, 0.0, OPEN, StopType.INPUT_STOP))
         }
         return res
     }

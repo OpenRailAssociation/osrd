@@ -44,6 +44,7 @@ import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
+import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_TIME
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.tracing.FailureCombiner
@@ -199,6 +200,7 @@ class STDCMEndpoint(
                     request.comfort,
                     0.0,
                     steps,
+                    forcedOpStops,
                     makeBlockAvailability(
                         requirements.requirements,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
@@ -213,7 +215,6 @@ class STDCMEndpoint(
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
-                    forcedOpStops,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
                     failureCombiner,
                     callback,
@@ -684,23 +685,37 @@ fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<
 fun parseForcedOpStops(
     infra: FullInfra,
     forcedOpStops: Set<OperationalPointStop>,
-): Set<BlockLocation> {
-    val opPartIds = forcedOpStops.flatMap { infra.rawInfra.getOperationalPointParts(it.id) }.toSet()
-    val chunkLocations = opPartIds.map {
-        ChunkLocation(
-            infra.rawInfra.getOperationalPointPartChunk(it),
-            infra.rawInfra.getOperationalPointPartChunkOffset(it),
-        )
-    }
-    val res = mutableSetOf<BlockLocation>()
-    for (chunkLocation in chunkLocations) {
-        for (direction in Direction.entries) {
-            res.addAll(
-                infra.blockInfra.findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction),
-            )
+): List<ExplorerStep> {
+    val res = mutableSetOf<ExplorerStep>()
+
+    for (forcedOpStop in forcedOpStops) {
+        val opPartIds = infra.rawInfra.getOperationalPointParts(forcedOpStop.id)
+        for (opPartId in opPartIds) {
+            val chunkLocation =
+                ChunkLocation(
+                    infra.rawInfra.getOperationalPointPartChunk(opPartId),
+                    infra.rawInfra.getOperationalPointPartChunkOffset(opPartId),
+                )
+            for (direction in Direction.entries) {
+                val explorerStep =
+                    infra.blockInfra
+                        .findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction)
+                        .map {
+                            ExplorerStep(
+                                setOf(it),
+                                FORCED_OP_STOP_TIME,
+                                true,
+                                stopType =
+                                    if (forcedOpStop.stop_type == ForcedStopType.GENERAL_STOP)
+                                        StopType.GENERAL_STOP
+                                    else StopType.OVERTAKE,
+                            )
+                        }
+                res.addAll(explorerStep)
+            }
         }
     }
-    return res
+    return res.toList()
 }
 
 private fun progressCallback(

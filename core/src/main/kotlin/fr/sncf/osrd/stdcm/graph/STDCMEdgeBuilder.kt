@@ -8,7 +8,6 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import kotlin.math.max
 import kotlin.math.min
 
 /** This class handles the creation of new edges, handling the many optional parameters. */
@@ -198,7 +197,9 @@ internal constructor(
                     ),
                 )
         }
-        val endStopDuration = getEndOfEdgeStopDuration()
+        val nextStop =
+            getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
+        val endStopDuration = nextStop?.originalStep?.duration
         val endAtStop = endStopDuration != null
         if (endAtStop) {
             // We don't use the result, just making sure that there's enough lookahead to compute it
@@ -228,6 +229,7 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
+                nextStop?.stopType,
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

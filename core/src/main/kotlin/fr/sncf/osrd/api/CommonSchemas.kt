@@ -136,6 +136,12 @@ enum class ForcedStopType {
     OVERTAKE,
 }
 
+enum class StopType {
+    INPUT_STOP,
+    GENERAL_STOP,
+    OVERTAKE,
+}
+
 /** Converts a DistanceRangeMap into an API compatible RangeValues. */
 fun <T> DistanceRangeMap<T>.toRangeValues(): RangeValues<T> {
     val boundaries = mutableListOf<Offset<PhysicsPath>>()

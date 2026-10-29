@@ -31,7 +31,13 @@ fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: Bloc
     return when {
         stepOffset < forcedOpStopOffset -> step
         forcedOpStopOffset < stepOffset -> forcedOpStop
-        stepDuration < forcedOpStopDuration -> forcedOpStop
+        // In the case where there is an input stop with a shorter stop time than a forced op stop
+        // at the same offset, we want to keep the max stop time but still know that it was an input
+        // stop
+        stepDuration < forcedOpStopDuration -> {
+            forcedOpStop?.stopType = step?.stopType
+            forcedOpStop
+        }
         else -> step
     }
 }

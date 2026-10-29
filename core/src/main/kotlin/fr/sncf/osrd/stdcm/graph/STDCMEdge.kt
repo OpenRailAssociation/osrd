@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.sim_infra.api.Block
@@ -25,6 +26,8 @@ data class STDCMEdge(
     val envelopeStartOffset: Offset<Block>,
     // True if the edge end is a stop
     val endAtStop: Boolean,
+    // Type at the end of the edge if there is a stop
+    val endEdgeType: StopType?,
     // Speed at the beginning of the edge
     val beginSpeed: Double,
     // Speed at the end of the edge
@@ -81,6 +84,7 @@ data class STDCMEdge(
                     null,
                     null,
                     null,
+                    null,
                     previousPlannedNodeRelativeTimeDiff,
                     graph.remainingTimeEstimator.invoke(this, null, stepTracker),
                     graph,
@@ -106,6 +110,7 @@ data class STDCMEdge(
                     this,
                     envelopeStartOffset + length.distance,
                     stopDuration,
+                    nextStop.stopType,
                     nextStop.originalStep.plannedTimingData,
                     previousPlannedNodeRelativeTimeDiff,
                     graph.remainingTimeEstimator.invoke(this, locationOnEdge, stepTracker),
