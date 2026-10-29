@@ -274,6 +274,9 @@ impl TestAppBuilder {
                     app_state.clone(),
                     crate::views::server::middlewares::authentication_extraction_middleware,
                 ))
+                .layer(axum::middleware::from_fn(
+                    crate::views::server::middlewares::feature_flags_extraction_middleware,
+                ))
                 .layer(OtelAxumLayer::default())
                 .layer(TraceLayer::new_for_http())
                 .with_state(app_state.clone()),
