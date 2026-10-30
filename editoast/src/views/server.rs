@@ -15,7 +15,7 @@ use axum::extract::DefaultBodyLimit;
 use axum::extract::FromRef;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
-use core_client::CoreClient;
+use core_client::SharedCoreClient;
 use core_client::mq_client;
 use dashmap::DashMap;
 use database::DbConnectionPool;
@@ -104,7 +104,7 @@ pub struct AppState {
     pub valkey_client: Arc<cache::Client>,
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
-    pub core_client: Arc<CoreClient>,
+    pub core_client: Arc<SharedCoreClient>,
     pub health_check_timeout: Duration,
     pub openfga: fga::Client,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
@@ -123,7 +123,7 @@ impl FromRef<AppState> for Arc<SpeedLimitTagIds> {
     }
 }
 
-impl FromRef<AppState> for Arc<CoreClient> {
+impl FromRef<AppState> for Arc<SharedCoreClient> {
     fn from_ref(input: &AppState) -> Self {
         input.core_client.clone()
     }
@@ -154,7 +154,7 @@ impl AppState {
                 worker_pool_id,
                 mq_url,
             }: CoreConfig,
-        ) -> anyhow::Result<Arc<CoreClient>> {
+        ) -> anyhow::Result<Arc<SharedCoreClient>> {
             let options = mq_client::Options {
                 uri: mq_url,
                 worker_pool_identifier: worker_pool_id,
@@ -162,7 +162,7 @@ impl AppState {
                 single_worker,
                 num_channels,
             };
-            let client = CoreClient::new_mq(options).await?;
+            let client = SharedCoreClient::new_mq(options).await?;
             Ok(Arc::new(client))
         }
         let core_client_fut =
@@ -291,7 +291,11 @@ impl Server {
                 app_state.clone(),
                 middlewares::authentication_extraction_middleware,
             ))
-            .layer(axum::middleware::from_fn(
+            .route_layer(axum::middleware::from_fn_with_state(
+                app_state.clone(),
+                middlewares::core_client_building_middleware,
+            ))
+            .route_layer(axum::middleware::from_fn(
                 middlewares::feature_flags_extraction_middleware,
             ))
             .layer(OtelInResponseLayer)

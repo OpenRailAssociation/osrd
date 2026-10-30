@@ -8,8 +8,8 @@ use http::StatusCode;
 use serde::Serialize;
 use serde_json::Value;
 
-use super::CoreClient;
 use super::CoreResponse;
+use super::SharedCoreClient;
 
 /// A mocking core client maintaining a list of stub requests to simulate
 ///
@@ -19,7 +19,7 @@ pub struct MockingClient {
     stubs: HashMap<String, Arc<Mutex<VecDeque<StubRequest>>>>,
 }
 
-impl From<MockingClient> for CoreClient {
+impl From<MockingClient> for SharedCoreClient {
     fn from(value: MockingClient) -> Self {
         Self::Mocked(value)
     }

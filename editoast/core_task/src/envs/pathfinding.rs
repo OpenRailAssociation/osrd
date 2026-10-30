@@ -435,7 +435,7 @@ fn build_request(
 impl Task for core_client::pathfinding::PathfindingRequest {
     type Output = core_client::pathfinding::PathfindingCoreResult;
     type Error = core_client::Error;
-    type Context = Arc<CoreClient>;
+    type Context = CoreClient;
 
     // The compressed size of a pathfinding is:
     // - Mean: 3.5kB
@@ -452,7 +452,7 @@ impl Task for core_client::pathfinding::PathfindingRequest {
     }
 
     async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(ctx.as_ref(), Headers::default()).await
+        self.fetch(&ctx, Headers::default()).await
     }
 }
 

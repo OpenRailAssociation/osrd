@@ -257,18 +257,22 @@ impl axum::response::IntoResponse for StdcmProgressionStream {
         (status = 200, body = inline(StdcmProgression), description = "The simulation result"),
     )
 )]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "by design of the function: 1 to 1 mapping of the API"
+)]
 pub(in crate::views) async fn stdcm(
     State(AppState {
         config,
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         s3_client,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Extension(user): Extension<Option<models::User>>,
+    Extension(core_client): Extension<CoreClient>,
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     headers: HeaderMap,
@@ -492,9 +496,7 @@ pub(in crate::views) async fn stdcm(
 
     let (response_tx, response_rx) = mpsc::unbounded_channel();
     let stdcm_task = async move {
-        let stdcm_stream = stdcm_request
-            .fetch(core_client.as_ref(), Headers::default())
-            .await;
+        let stdcm_stream = stdcm_request.fetch(&core_client, Headers::default()).await;
 
         match stdcm_stream {
             Err(error) => response_tx
@@ -664,7 +666,7 @@ impl VirtualTrainRun {
     async fn simulate_consists_sequence(
         db_pool: Arc<DbConnectionPool>,
         valkey_client: Arc<cache::Client>,
-        core_client: Arc<CoreClient>,
+        core_client: CoreClient,
         app_version: Option<&str>,
         stdcm_request: &Request,
         infra: &Infra,
