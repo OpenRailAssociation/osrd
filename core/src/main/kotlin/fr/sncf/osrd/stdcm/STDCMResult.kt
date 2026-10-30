@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.pathfinding.PathfindingResult
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
 import fr.sncf.osrd.train.RollingStock
@@ -12,11 +13,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Offset
 
 /** Generic result of an STDCM computation. */
-interface STDCMResult {
-    val trainPath: TrainPath
-    val waypointOffsets: List<Offset<PhysicsPath>>
-    val backtrackIndexes: List<Int>
-}
+typealias STDCMResult = PathfindingResult
 
 /**
  * This is the result of a successful STDCM computation. It is made of a physical path part and

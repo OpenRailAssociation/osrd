@@ -12,7 +12,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockResponse
-import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
 import fr.sncf.osrd.cli.*
@@ -26,6 +25,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -220,9 +220,9 @@ class STDCMEndpoint(
                 )
 
             fullFailureExplainer.saveReport(s3Context)
-            // STDCM has found a valid solution: return the result with the complete path and
-            // simulation.
-            if (path is STDCMCompleteResult && !hasDuplicateTracks(infra, path.trainPath)) {
+            // STDCM has found a valid solution: path is complete and has no duplicate tracks.
+            // Return the result with the complete path and simulation.
+            if (path is STDCMCompleteResult && !path.hasDuplicateTracks()) {
                 val pathfindingResponse =
                     runPathfindingBlockPostProcessing(
                         infra,
@@ -267,8 +267,8 @@ class STDCMEndpoint(
             var lastReachedOperationalPoint: LastReachedOperationalPoint? = null
 
             // No solution was found, but STDCM managed to go up to a certain point: return the
-            // corresponding partial path.
-            if (path is STDCMPartialResult) {
+            // corresponding partial path if it has no duplicated tracks.
+            if (path is STDCMPartialResult && !path.hasDuplicateTracks()) {
                 partialPathfindingResult =
                     runPathfindingBlockPostProcessing(
                         infra,
