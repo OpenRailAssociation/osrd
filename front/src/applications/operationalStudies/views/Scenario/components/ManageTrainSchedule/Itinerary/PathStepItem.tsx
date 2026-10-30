@@ -606,14 +606,14 @@ const PathStepItem = ({
           {unrecognizedWaypointsActivated && (
             <button
               type="button"
-              className="path-step-form-toggle"
+              className="path-step-subform-toggle"
               onClick={(e) => {
                 e.stopPropagation();
                 onSubFormToggled();
               }}
               aria-expanded={isSubFormExpanded}
               aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
-              data-testid="path-step-form-toggle"
+              data-testid="path-step-subform-toggle"
             >
               {isSubFormExpanded ? <ChevronUp size="sm" /> : <ChevronDown size="sm" />}
             </button>
