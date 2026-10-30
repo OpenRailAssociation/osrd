@@ -82,7 +82,7 @@ const RollingStockCard = ({
       </div>
       {isOpen && !isOnEditMode ? (
         <RollingStockCardDetail
-          id={rollingStock.id}
+          rollingStock={rollingStock}
           curvesComfortList={curvesComfortList}
           setCurvesComfortList={setCurvesComfortList}
         />
