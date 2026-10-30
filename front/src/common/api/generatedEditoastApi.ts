@@ -1017,6 +1017,36 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['stdcm_search_environment'],
       }),
+      getStdcmRequests: build.query<GetStdcmRequestsApiResponse, GetStdcmRequestsApiArg>({
+        query: (queryArg) => ({
+          url: `/stdcm_requests`,
+          params: {
+            by: queryArg.by,
+            after: queryArg.after,
+            before: queryArg.before,
+            size: queryArg.size,
+          },
+        }),
+        providesTags: ['stdcm'],
+      }),
+      postStdcmRequests: build.mutation<PostStdcmRequestsApiResponse, PostStdcmRequestsApiArg>({
+        query: (queryArg) => ({
+          url: `/stdcm_requests`,
+          method: 'POST',
+          body: queryArg.stdcmRequestForm,
+        }),
+        invalidatesTags: ['stdcm'],
+      }),
+      deleteStdcmRequestsById: build.mutation<
+        DeleteStdcmRequestsByIdApiResponse,
+        DeleteStdcmRequestsByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/stdcm_requests/${queryArg.id}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['stdcm'],
+      }),
       getStudies: build.query<GetStudiesApiResponse, GetStudiesApiArg>({
         query: (queryArg) => ({
           url: `/studies`,
@@ -2434,6 +2464,22 @@ export type DeleteStdcmSearchEnvironmentByEnvIdApiResponse = unknown;
 export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
   /** An stdcm search environment ID */
   envId: number;
+};
+export type GetStdcmRequestsApiResponse =
+  /** status 200 List of stdcm requests */ ListStdcmRequestResponse;
+export type GetStdcmRequestsApiArg = {
+  by?: 'group' | 'user';
+  after?: string;
+  before?: string;
+  size?: number;
+};
+export type PostStdcmRequestsApiResponse = /** status 201 Stdcm request */ StdcmRequest;
+export type PostStdcmRequestsApiArg = {
+  stdcmRequestForm: StdcmRequestForm;
+};
+export type DeleteStdcmRequestsByIdApiResponse = unknown;
+export type DeleteStdcmRequestsByIdApiArg = {
+  id: number;
 };
 export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
   results: StudyWithScenarios[];
@@ -4893,6 +4939,23 @@ export type StdcmSearchEnvironmentCreateForm = {
   temporary_speed_limit_group_id?: number | null;
   timetable_id: number;
   work_schedule_group_id?: number | null;
+};
+export type StdcmRequest = {
+  created_by: number;
+  id: number;
+  rmi_id: string;
+  trace_id?: string | null;
+};
+export type ListStdcmRequestResponse = {
+  links: {
+    next?: string | null;
+    prev?: string | null;
+  };
+  requests: StdcmRequest[];
+};
+export type StdcmRequestForm = {
+  rmi_id: string;
+  trace_id?: string | null;
 };
 export type StudyWithScenarios = Study & {
   scenarios_count: number;

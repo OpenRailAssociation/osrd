@@ -22,6 +22,7 @@ mod search_journeys;
 mod server;
 pub mod sprites;
 pub mod stdcm_debug;
+pub mod stdcm_request;
 pub mod stdcm_search_environment;
 pub mod sub_categories;
 pub mod temporary_speed_limits;
@@ -38,6 +39,7 @@ pub use server::*;
 mod test_app;
 
 use ::core::str;
+use std::convert::Infallible;
 
 use axum::extract::FromRequestParts;
 use axum::http::StatusCode;
@@ -455,6 +457,14 @@ fn service_router() -> server::router::DocumentedRouter {
                 "/level_crossing_occupancy",
                 post!(level_crossing_occupancy::occupancy),
             )
+            //
+            // stdcm_requests
+            //
+            .nests("/stdcm_requests", |path| {
+                path.route("/", get!(stdcm_request::list))
+                    .route("/", post!(stdcm_request::post))
+                    .route("/{id}", delete!(stdcm_request::delete))
+            })
     })
 }
 
@@ -487,6 +497,12 @@ pub enum AuthorizationError {
 impl From<::authz::authorizers::Error> for AuthorizationError {
     fn from(::authz::authorizers::Error(fga_error): ::authz::authorizers::Error) -> Self {
         Self::from(fga_error)
+    }
+}
+
+impl From<Infallible> for AuthorizationError {
+    fn from(_: Infallible) -> Self {
+        unreachable!()
     }
 }
 

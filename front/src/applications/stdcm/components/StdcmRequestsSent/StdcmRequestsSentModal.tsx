@@ -5,6 +5,7 @@ import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
 import { useTranslation } from 'react-i18next';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDateTimeLocale } from 'utils/date';
 
 dayjs.extend(calendar);
@@ -65,6 +66,12 @@ const requestsHistory: mockedRequestsHistory[] = [
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
+
+  const { data } = osrdEditoastApi.endpoints.getStdcmRequests.useQuery({
+    by: 'user',
+  });
+
+  console.debug(data);
 
   const { t, i18n } = useTranslation(['stdcm', 'translation']);
   const dateTimeLocale = useDateTimeLocale();
