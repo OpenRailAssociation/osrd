@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { ComboBox, Input, SegmentedControl } from '@osrd-project/ui-core';
+import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
@@ -12,7 +12,6 @@ import {
   InfrastructureInvalid,
   InfrastructureValid,
   KebabHorizontal,
-  RequiredInput,
   Square,
   TrackOffset,
   X,
@@ -34,6 +33,7 @@ import {
   ListElementComponent,
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
+import PathStepSubForm from './PathStepSubForm';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
@@ -145,10 +145,6 @@ const PathStepItem = ({
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
-  const [formName, setFormName] = useState<string>();
-  const [formCountryCode, setFormCountryCode] = useState<string>();
-  const [formMainCode, setFormMainCode] = useState<string>();
-  const [formSecondaryCode, setFormSecondaryCode] = useState<string>();
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -667,85 +663,12 @@ const PathStepItem = ({
           )}
         </div>
       </div>
-
-      {unrecognizedWaypointsActivated && isSubFormExpanded && (
-        <div className="path-step-form-wrapper">
-          <div className="path-step-form-content">
-            <Input
-              id={`path-step-form-name-${pathStep.key}`}
-              label={t('name')}
-              readOnly={isOpValid}
-              small
-              type="text"
-              value={
-                formName ??
-                (pathStepMetadata?.validity === 'valid' && pathStepMetadata.type === 'opRef'
-                  ? pathStepMetadata.name
-                  : pathStep.location?.type === 'operational_point_part_reference' &&
-                      pathStep.location.operational_point.type === 'domestic'
-                    ? pathStep.location.operational_point.main_code
-                    : '')
-              }
-              onChange={(e) => setFormName(e.target.value)}
-            />
-            <div className="path-step-form-codes-wrapper">
-              <div className="path-step-form-field">
-                <RequiredInput className="path-step-form-required-input" size="sm"></RequiredInput>
-                <Input
-                  id={`path-step-form-country-code-${pathStep.key}`}
-                  label={t('countryCode')}
-                  readOnly={isOpValid}
-                  small
-                  type="text"
-                  value={
-                    formCountryCode ??
-                    (pathStep.location?.type === 'operational_point_part_reference' &&
-                    pathStep.location.operational_point.type === 'domestic'
-                      ? pathStep.location.operational_point.country_code
-                      : '')
-                  }
-                  onChange={(e) => setFormCountryCode(e.target.value)}
-                />
-              </div>
-              <div className="path-step-form-field">
-                <RequiredInput className="path-step-form-required-input" size="sm"></RequiredInput>
-                <Input
-                  id={`path-step-form-main-code-${pathStep.key}`}
-                  label={t('mainCode')}
-                  readOnly={isOpValid}
-                  small
-                  type="text"
-                  value={
-                    formMainCode ??
-                    (pathStepMetadata?.validity === 'valid' && pathStepMetadata.type === 'opRef'
-                      ? pathStepMetadata.mainCode
-                      : '')
-                  }
-                  onChange={(e) => setFormMainCode(e.target.value)}
-                />
-              </div>
-              <div className="path-step-form-field">
-                <Input
-                  id={`pathStep-form-secondary-code-${pathStep.key}`}
-                  label={t('secondaryCode')}
-                  readOnly={isOpValid}
-                  small
-                  type="text"
-                  value={
-                    formSecondaryCode ??
-                    (pathStepMetadata?.validity === 'valid' &&
-                    pathStepMetadata.type === 'opRef' &&
-                    pathStepMetadata.secondaryCode
-                      ? pathStepMetadata.secondaryCode
-                      : '')
-                  }
-                  onChange={(e) => setFormSecondaryCode(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <PathStepSubForm
+        pathStep={pathStep}
+        pathStepMetadata={pathStepMetadata}
+        isSubFormExpanded={isSubFormExpanded}
+        isOpValid={isOpValid}
+      />
     </>
   );
 };
