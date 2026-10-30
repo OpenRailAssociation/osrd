@@ -491,6 +491,15 @@ const createDepartureTimeLock = (scheduleItem: ScheduleItem | undefined, startTi
   return createTimeLock(arrival.add(stopFor), startTime);
 };
 
+const createFirstDepartureTimeLock = (
+  scheduleItem: ScheduleItem | undefined,
+  startTime: StartTime
+) => {
+  const stopFor = scheduleItem?.stop_for ? Duration.parse(scheduleItem.stop_for) : Duration.zero;
+
+  return createTimeLock(stopFor, startTime);
+};
+
 /**
  * Translate the TrainScheduleResponse in NGE "TrainrunSection" & "Nodes".
  * It is needed to return the nodes as well, because we add ports & transitions on them.
@@ -592,7 +601,7 @@ const getNgeTrainrunSectionsWithNodes = (
 
         let sourceDeparture;
         if (i === 0) {
-          sourceDeparture = createTimeLock(Duration.zero, startTime);
+          sourceDeparture = createFirstDepartureTimeLock(sourceScheduleEntry, startTime);
         } else {
           sourceDeparture = createDepartureTimeLock(sourceScheduleEntry, startTime);
         }

@@ -13,6 +13,7 @@ import {
   type PathItemLocation,
   type TimetableType,
   type TrainScheduleResponse,
+  type ScheduleItem,
 } from 'common/api/osrdEditoastApi';
 import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { computeDefaultHourlyPacedTrainTimeWindow } from 'modules/trainSchedule/helpers/hourlyTimetable';
@@ -25,7 +26,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import { updateSelectedTrain } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
-import { Duration, startTimeToMs, type StartTime } from 'utils/duration';
+import { Duration, startTimeToMs, subtractDurationFromDate, type StartTime } from 'utils/duration';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTrainSchedule/helpers/buildPacedTrainException';
@@ -212,19 +213,24 @@ const calculateStartTime = (
   trainrunSections: TrainrunSectionDto[],
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
-  paced: TrainSchedule['paced']
+  paced: TrainSchedule['paced'],
+  oldSchedule?: ScheduleItem[]
 ): StartTime => {
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock =
     trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD
       ? trainrunSections[0].targetDeparture
       : trainrunSections[0].sourceDeparture;
+  // NGE displays the departure from the origin, whereas OSRD start time is the arrival at the
+  // origin: the first stop duration must be removed.
+  const firstStopFor = oldSchedule[0].stop_for;
+  const firstStopForDuration = firstStopFor ? Duration.parse(firstStopFor) : Duration.zero;
 
   if (baseStartTime instanceof Duration) {
     const startTime = new Duration({
       hours: Math.floor(baseStartTime.total('hour')),
       minutes: startTimeLock.time!,
-    });
+    }).sub(firstStopForDuration);
     if (!paced) return startTime;
     /*In an hourly timetable the start time is an offset from the timetable start, and the
      * database enforces `0 <= start_time < interval <= time_window` on every paced train of an
@@ -240,7 +246,7 @@ const calculateStartTime = (
 
   const startDate = new Date(baseStartTime);
   startDate.setMinutes(startTimeLock.time!, 0, 0);
-  return startDate;
+  return subtractDurationFromDate(startDate, firstStopForDuration);
 };
 
 /**
@@ -251,10 +257,20 @@ const calculateStartTime = (
 const generateSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  trainrunDirection: TRAINRUN_DIRECTIONS
+  trainrunDirection: TRAINRUN_DIRECTIONS,
+  oldSchedule?: ScheduleItem[]
 ): TrainSchedule['schedule'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
-  return trainrunSections.flatMap((section, index) => {
+  const firstNodeID = isForward
+    ? trainrunSections[0].sourceNodeId
+    : trainrunSections[0].targetNodeId;
+  const firstStopFor = oldSchedule ? oldSchedule[0].stop_for : null;
+  const firstScheduleItem: ScheduleItem = {
+    at: `${firstNodeID}-0`,
+    arrival: null,
+    stop_for: firstStopFor,
+  };
+  const scheduleItems: ScheduleItem[] = trainrunSections.flatMap((section, index) => {
     const nextSection = trainrunSections[index + 1];
     const toNodeId = isForward ? section.targetNodeId : section.sourceNodeId;
     const toPortId = isForward ? section.targetPortId : section.sourcePortId;
@@ -278,7 +294,17 @@ const generateSchedule = (
       const nextDepartureTimeLock = isForward
         ? nextSection.sourceDeparture
         : nextSection.targetDeparture;
-      departure = getTimeLockTimeOffset(nextDepartureTimeLock, trainrunStartTimeLock);
+      // get the stop_for if nextDepartureTimeLock.time is null
+      // iterate over schedule (schedule[index].stop_for)
+      if (nextDepartureTimeLock.time === null) {
+        departure =
+          oldSchedule && oldSchedule[index] && oldSchedule[index].stop_for
+            ? Duration.parse(oldSchedule[index].stop_for)
+            : null;
+      }
+
+      // departure = getTimeLockTimeOffset(nextDepartureTimeLock, trainrunStartTimeLock);
+      console.log(departure);
     }
 
     if (!arrival && !departure) {
@@ -299,10 +325,19 @@ const generateSchedule = (
 
     // If missing arrival time, default to a zero stop duration
     arrival = arrival || departure!;
+    console.log(arrival);
 
+    const lastStopFor = oldSchedule?.at(-1)?.stop_for;
     let stop_for: Duration | null = null;
-    if (isStopTransit) stop_for = departure ? departure.sub(arrival) : Duration.zero;
+    if (isStopTransit) {
+      if (index === trainrunSections.length - 1 && lastStopFor) {
+        stop_for = Duration.parse(lastStopFor);
+      } else {
+        stop_for = departure ? departure : Duration.zero;
+      }
+    }
 
+    console.log(lastStopFor);
     return {
       at: `${toNodeId}-${index + 1}`,
       arrival: arrival.toISOString(),
@@ -311,6 +346,8 @@ const generateSchedule = (
       reception_signal: 'OPEN',
     };
   });
+
+  return [firstScheduleItem, ...scheduleItems];
 };
 
 /**
@@ -352,16 +389,23 @@ export const generatePathAndSchedule = (
   baseStartTime: StartTime,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
   paced: TrainSchedule['paced'],
-  state?: MacroEditorState
+  state?: MacroEditorState,
+  oldSchedule?: ScheduleItem[]
 ): Pick<TrainSchedule, 'start_time' | 'path' | 'schedule'> => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
     sections = [...trainrunSections].reverse();
   }
 
-  const startTime = calculateStartTime(sections, baseStartTime, trainrunDirection, paced);
+  const startTime = calculateStartTime(
+    sections,
+    baseStartTime,
+    trainrunDirection,
+    paced,
+    oldSchedule
+  );
   const path = generatePath(sections, nodes, trainrunDirection, state);
-  const schedule = generateSchedule(sections, nodes, trainrunDirection);
+  const schedule = generateSchedule(sections, nodes, trainrunDirection, oldSchedule); // add schedule
   return { start_time: startTimeToMs(startTime), path, schedule };
 };
 
@@ -573,6 +617,12 @@ export const handleUpdateTrainSchedule = async ({
     state.timetableId,
     dispatch
   );
+  const firstStopFor = oldForwardTrainSchedule?.schedule
+    ? oldForwardTrainSchedule?.schedule[0]?.stop_for
+    : undefined;
+  const lastStopFor = oldForwardTrainSchedule?.schedule
+    ? oldForwardTrainSchedule?.schedule.at(-1)?.stop_for
+    : undefined;
   const trainrunSections = getContinuousTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = getTrainrunLabels(netzgrafikDto, trainrun);
   const baseStartTime = parseStartTime(oldForwardTrainSchedule.start_time, state.timetableType);
@@ -585,9 +635,11 @@ export const handleUpdateTrainSchedule = async ({
     baseStartTime,
     TRAINRUN_DIRECTIONS.FORWARD,
     paced,
-    state
+    state,
+    oldForwardTrainSchedule.schedule
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
+  console.log(forwardPathAndSchedule.schedule);
 
   const { id: _id, ...trainScheduleBase } = oldForwardTrainSchedule;
 
