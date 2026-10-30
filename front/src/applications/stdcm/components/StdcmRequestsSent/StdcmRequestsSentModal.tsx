@@ -5,7 +5,7 @@ import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
 import { useTranslation } from 'react-i18next';
 
-import { useDateTimeLocale } from 'utils/date';
+import useStdcmRequestsSent from 'applications/stdcm/hooks/useStdcmRequestsSent';
 
 dayjs.extend(calendar);
 
@@ -13,61 +13,10 @@ type StdcmRequestsSentModalProps = {
   onClose: () => void;
 };
 
-type mockedOP = {
-  name: string;
-  start_time: string | null;
-  main_code: string;
-};
-
-type mockedRequestsHistory = {
-  id: string;
-  status: 'CREATED' | 'PROCESSING' | 'ACCEPTED' | 'REFUSED' | 'CANCELLED';
-  begin_op: mockedOP;
-  end_op: mockedOP;
-  updated_at: string;
-  created_at: string;
-  application_date: string;
-};
-
-const requestsHistory: mockedRequestsHistory[] = [
-  {
-    id: 'AA00BB',
-    status: 'CREATED',
-    begin_op: { name: 'Woippy', start_time: '2026-10-01T09:00:00Z', main_code: 'DT' },
-    end_op: { name: 'Ébange', start_time: null, main_code: 'FM' },
-    created_at: '2026-09-28T08:15:00Z',
-    updated_at: '2026-10-14T08:15:00Z',
-    application_date: '2026-09-15T07:15:00Z',
-  },
-  {
-    id: 'LK65CV',
-    status: 'PROCESSING',
-    begin_op: { name: 'Somain', start_time: '2026-11-05T10:03:00Z', main_code: 'TR' },
-    end_op: { name: 'Bobigny', start_time: null, main_code: 'GA' },
-    created_at: '2026-09-29T10:30:00Z',
-    updated_at: '2026-09-29T11:00:00Z',
-    application_date: '2026-09-13T10:15:00Z',
-  },
-  {
-    id: 'OP47NB',
-    status: 'ACCEPTED',
-    begin_op: {
-      name: 'Villeneuve-Saint-Georges',
-      start_time: '2026-12-30T11:26:00Z',
-      main_code: 'TS',
-    },
-    end_op: { name: 'St-Jory', start_time: '2026-12-30T13:26:00Z', main_code: 'RT' },
-    created_at: '2026-09-30T09:00:00Z',
-    updated_at: '2026-10-01T14:45:00Z',
-    application_date: '2026-11-14T13:13:00Z',
-  },
-];
-
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
 
   const { t, i18n } = useTranslation(['stdcm', 'translation']);
-  const dateTimeLocale = useDateTimeLocale();
 
   const calendarDays = {
     sameDay: t('requestsSentModal.calendar.sameDay'),
@@ -78,24 +27,20 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
+  const { requestsSentData } = useStdcmRequestsSent();
+
   const requestsSentRows = () =>
-    requestsHistory.map((request, index) => {
+    requestsSentData.map((request, index) => {
       const updateDate = dayjs(request.updated_at)
         .locale(i18n.language)
         .calendar(null, calendarDays);
 
-      const beginStartTime = new Date(request.begin_op.start_time!).toLocaleString(dateTimeLocale, {
-        timeStyle: 'short',
-      });
-
-      const endStartTime: string | Date =
-        request.end_op.start_time !== null
-          ? new Date(request.end_op.start_time).toLocaleString(dateTimeLocale, {
-              timeStyle: 'short',
-            })
+      const endStartTime: string =
+        request.end_time && request.end_time !== 'dqp'
+          ? request.end_time.slice(0, 5)
           : t('requestsSentModal.asap');
 
-      const applicationDate = dayjs(request.application_date)
+      const applicationDate = dayjs(request.train_start)
         .locale(i18n.language)
         .calendar(null, calendarDays);
 
@@ -110,19 +55,19 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <td>
             <div className="stdcm-requests-start-time-wrapper">
               <div className="stdcm-requests-start-time-left">
-                <span className="stdcm-requests-start-time">{beginStartTime}</span>
-                <span className="stdcm-requests-op-name">{request.begin_op.name}</span>
+                <span className="stdcm-requests-start-time">{request.begin_time?.slice(0, 5)}</span>
+                <span className="stdcm-requests-op-name">{request.matchedBeginOp?.name}</span>
               </div>
-              <div className="stdcm-requests-main-code">{request.begin_op.main_code}</div>
+              <div className="stdcm-requests-main-code">{request.matchedBeginOp?.main_code}</div>
             </div>
           </td>
           <td>
             <div className="stdcm-requests-start-time-wrapper">
               <div className="stdcm-requests-start-time-left">
                 <span className="stdcm-requests-start-time">{endStartTime}</span>
-                <span className="stdcm-requests-op-name">{request.end_op.name}</span>
+                <span className="stdcm-requests-op-name">{request.matchedEndOp?.name}</span>
               </div>
-              <div className="stdcm-requests-main-code">{request.end_op.main_code}</div>
+              <div className="stdcm-requests-main-code">{request.matchedEndOp?.main_code}</div>
             </div>
           </td>
           <td className="stdcm-requests-application-date">{applicationDate}</td>
@@ -161,7 +106,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <tbody>{requestsSentRows()}</tbody>
         </table>
       </div>
-      {requestsHistory.length === 0 && (
+      {requestsSentData.length === 0 && (
         <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
       )}
     </Dialog>
