@@ -133,6 +133,7 @@
       "sameElse": "ddd DD/MM"
     },
     "destination": "Destination",
+    "loading": "récupération des informations auprès de GESICO, vous pouvez démarrer une requête en parallèle",
     "noRequests": "Aucune demande n’a pu être récupérée.",
     "origin": "Origine",
     "requestNumber": "N° de demande",
