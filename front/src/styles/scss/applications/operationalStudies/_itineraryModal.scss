@@ -33,6 +33,7 @@
   --path-step-type-width: 60px;
   --map-interactions-width: 58px;
   --map-interactions-margin-left: 7px;
+  --subform-fields-width: 470px;
 
   margin: 16px;
   width: 100%;
@@ -610,27 +611,37 @@
           }
         }
 
-        .path-step-form-wrapper {
+        .path-step-subform-wrapper {
           background-color: var(--ambientB5);
 
-          .path-step-form-content {
-            width: 60%;
+          .path-step-subform-content {
+            width: var(--subform-fields-width);
             margin: auto;
 
-            .path-step-form-codes-wrapper {
+            .path-step-subform-uic-fields {
+              display: grid;
+              grid-template-columns: 2fr 1fr;
+            }
+
+            .path-step-subform-track-offset-fields {
+              display: grid;
+              grid-template-columns: 1fr 2fr;
+            }
+
+            .path-step-subform-domestic-fields {
               display: flex;
               justify-content: space-between;
 
-              .path-step-form-field {
+              .path-step-subform-field {
                 position: relative;
                 width: 150px;
-              }
 
-              .path-step-form-required-input {
-                position: absolute;
-                right: 100%;
-                top: 8px;
-                color: var(--info30);
+                .path-step-subform-required-input {
+                  position: absolute;
+                  right: 100%;
+                  top: 8px;
+                  color: var(--info30);
+                }
               }
             }
           }
