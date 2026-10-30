@@ -5,11 +5,12 @@ import {
   AddedLocation,
   AddLocation,
   ArrowRight,
-  Check,
   ChevronDown,
   ChevronUp,
   FocusLocation,
   Infrastructure,
+  InfrastructureInvalid,
+  InfrastructureValid,
   KebabHorizontal,
   RequiredInput,
   Square,
@@ -36,6 +37,38 @@ import {
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
+
+type StatusIconProps = {
+  pathStep: PathStepV2;
+  isOpValid: boolean;
+  isInvalid: boolean;
+};
+
+const StatusIcon = ({ pathStep, isOpValid, isInvalid }: StatusIconProps) => {
+  const loc = pathStep.location;
+  const Icon = !loc ? (
+    <Infrastructure />
+  ) : loc.type === 'track_offset' ? (
+    <TrackOffset size="lg" />
+  ) : isOpValid ? (
+    <InfrastructureValid size="lg" />
+  ) : (
+    <InfrastructureInvalid size="lg" />
+  );
+
+  return (
+    <span
+      className={cx('path-step-op-status-icon', {
+        'in-infra': isOpValid && loc?.type !== 'track_offset',
+        'track-offset': isOpValid && loc?.type === 'track_offset',
+        'not-in-infra': isInvalid,
+        placeholder: !loc, // isOpValid and isInvalid are both false in this case
+      })}
+    >
+      {Icon}
+    </span>
+  );
+};
 
 type PathStepProps = {
   pathStep: PathStepV2;
@@ -290,26 +323,8 @@ const PathStepItem = ({
     !pathStepMetadata.isValidLocalTrackName;
 
   const isOpValid = !isInvalid && !!pathStep.location;
-  const StatusBadge = isOpValid ? Check : X;
-  const InfrastructureIcon = !pathStep.location ? (
-    <Infrastructure size="lg" />
-  ) : (
-    <>
-      <Infrastructure size="sm" />
-      <StatusBadge size="sm" className="path-step-op-status-badge" />
-    </>
-  );
   const opStatusIcon = unrecognizedWaypointsActivated && (
-    <span
-      className={cx('path-step-op-status-icon', {
-        'in-infra': isOpValid && pathStep.location?.type !== 'track_offset',
-        'track-offset': isOpValid && pathStep.location?.type === 'track_offset',
-        'not-in-infra': isInvalid,
-        placeholder: !pathStep.location, // isOpValid and isInvalid are both false in this case
-      })}
-    >
-      {pathStep.location?.type === 'track_offset' ? <TrackOffset size="lg" /> : InfrastructureIcon}
-    </span>
+    <StatusIcon pathStep={pathStep} isOpValid={isOpValid} isInvalid={isInvalid} />
   );
 
   const comboBoxValue = useMemo(() => {
