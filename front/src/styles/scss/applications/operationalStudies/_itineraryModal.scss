@@ -371,7 +371,9 @@
           .path-step {
             display: grid;
             grid-template-columns:
-              24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
+              20px 20px minmax(184px, 1fr) var(--path-step-track-name-width) var(
+                --path-step-type-width
+              )
               auto auto;
             align-items: center;
             column-gap: 8px;
@@ -543,11 +545,8 @@
               display: flex;
               align-items: center;
               justify-content: center;
-              color: var(--grey50);
-
-              &:hover {
-                color: var(--grey80);
-              }
+              width: 24px;
+              color: var(--black25);
             }
 
             .map-interactions {
