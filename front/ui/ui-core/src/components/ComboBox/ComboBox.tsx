@@ -342,6 +342,7 @@ const ComboBox = <T,>({
               })}
               onClick={confirmCustomValue}
               onMouseEnter={() => setActiveSuggestionIndex(customValueIndex)}
+              onMouseDown={(e) => e.preventDefault()}
               data-testid={testIdPrefix ? `${testIdPrefix}-add-custom` : undefined}
             >
               {addCustomValueLabel ?? `Add "${inputValue.trim()}"`}

@@ -418,6 +418,7 @@
     },
     "inputOPMainCodesExample": "E.g., LSN CIG CCS",
     "itineraryModal": {
+      "addCustomOp": "Add \"{{opName}}\"",
       "addCustomTrackName": "Add \"{{trackName}}\"",
       "addLocationOnMap": "Add a location on the map",
       "addPoint": "Add point",
@@ -428,7 +429,10 @@
       "alertMissingRequestedPoint": "At least two path steps are required to define an itinerary",
       "cancel": "Cancel",
       "cancelMapSelection": "Cancel",
+      "collapseSubForm": "Collapse details",
+      "countryCode": "Country code",
       "destination": "Destination",
+      "expandSubForm": "Expand details",
       "focusLocationOnMap": "Focus the map on this operational point",
       "frameAll": "Center on all path steps on map",
       "intermediateWaypointsPanel": {
@@ -446,13 +450,18 @@
       "mainCode": "Main code",
       "moveLocationOnMap": "Move location on the map",
       "movePointOnMap": "Move this waypoint using the map",
+      "name": "Name",
       "noComputation": "There will be no computation for this train",
+      "offset": "Offset (m)",
       "opId": "Operational point identifier",
+      "opIdCode": "OPID code",
       "opName": "Operational point name",
       "opType": "Type",
       "origin": "Origin",
       "pass": "Pass",
+      "primaryCode": "Primary code",
       "requestedPoint": "Point on map",
+      "secondaryCode": "Secondary code",
       "stop": "Stop",
       "submit": {
         "addService": "Add service",
@@ -462,8 +471,10 @@
         "editSingleTrain": "Edit single train"
       },
       "track": "Track",
+      "trackId": "Track ID",
       "trainName": "Train name",
       "uic": "UIC",
+      "uicCode": "UIC code",
       "unknownTrack": "Unknown track at {{names}}"
     },
     "launchPathFinding": "Launch pathfinding",
