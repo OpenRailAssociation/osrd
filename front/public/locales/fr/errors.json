@@ -212,6 +212,11 @@
       "DuplicateTrainIds": "Les informations transmises contiennent des identifiants de train en double, ce qui n'est pas autorisé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
+    "s3": {
+      "Fetch": "Erreur lors du téléchargement de '{{path}}' : {{message}}",
+      "NotConfigured": "Editoast n'est pas configuré pour accéder au S3",
+      "NotFound": "'{{path}}' non trouvé"
+    },
     "scenario": {
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",

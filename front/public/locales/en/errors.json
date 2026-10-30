@@ -211,6 +211,11 @@
       "DuplicateTrainIds": "The payload contains duplicate train IDs which is not allowed",
       "TimetableNotFound": "Timetable '{{timetable_id}}' not found"
     },
+    "s3": {
+      "Fetch": "Error fetching '{{path}}': {{message}}",
+      "NotConfigured": "Editoast isn't configured to access S3",
+      "NotFound": "'{{path}}' not found"
+    },
     "scenario": {
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' not found",
