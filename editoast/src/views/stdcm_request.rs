@@ -4,12 +4,18 @@ use authz::v2::group_members;
 use authz::v2::user_groups;
 use axum::Extension;
 use axum::extract::Json;
+use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use models::StdcmRequest;
+use models::prelude::Changeset;
+use models::prelude::Create as _;
+use models::prelude::DeleteStatic as _;
 use models::stdcm_request::PaginatedList;
 use models::stdcm_request::SelectionSettings;
+use reqwest::StatusCode;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -70,12 +76,15 @@ pub enum StdcmRequestError {
     #[error("Invalid cursors in query parameters: {0}")]
     #[editoast_error(status = 422)]
     MalformedParameters(models::stdcm_request::DecodeError),
-    #[error("by=group and by=user query parameters require an authenticated user")]
+    #[error("Creating a request or listing by=group or by=user requires an authenticated user")]
     #[editoast_error(status = 401)]
     NotUser,
     #[error("Forbidden")]
     #[editoast_error(status = 403)]
     Forbidden,
+    #[error("Not found")]
+    #[editoast_error(status = 404)]
+    NotFound,
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(models::Error),
@@ -154,6 +163,68 @@ pub(in crate::views) async fn list(
     Ok(Json(requests))
 }
 
+#[derive(Deserialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(Serialize))]
+pub struct StdcmRequestForm {
+    rmi_id: String,
+    trace_id: Option<String>,
+}
+
+/// Create an stdcm request
+#[editoast_derive::route(authz::Role::Stdcm)]
+#[utoipa::path(
+    post, path = "",
+    tag = "stdcm",
+    request_body = StdcmRequestForm,
+    responses(
+        (status = 201, body = StdcmRequest, description = "Stdcm request"),
+    ),
+)]
+pub(in crate::views) async fn post(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+    Json(stdcm_request_create_form): Json<StdcmRequestForm>,
+) -> Result<Json<StdcmRequest>> {
+    match authn_state.user() {
+        None => return Err(StdcmRequestError::NotUser.into()),
+        Some(user) => {
+            let stdcm_request = Changeset::<StdcmRequest>::default()
+                .rmi_id(stdcm_request_create_form.rmi_id)
+                .trace_id(stdcm_request_create_form.trace_id)
+                .created_by(user.0)
+                .create(&mut db_pool.get().await?)
+                .await?;
+            Ok(Json(stdcm_request))
+        }
+    }
+}
+
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct StdcmRequestIdParam {
+    id: i64,
+}
+
+/// Delete an stdcm request
+#[editoast_derive::route(authz::Role::Admin)]
+#[utoipa::path(
+    delete, path = "",
+    tag = "stdcm",
+    params(StdcmRequestIdParam),
+    responses(
+        (status = 204, description = "The stdcm request was deleted successfully"),
+    )
+)]
+pub(in crate::views) async fn delete(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Path(StdcmRequestIdParam { id }): Path<StdcmRequestIdParam>,
+) -> Result<impl IntoResponse> {
+    StdcmRequest::delete_static_or_fail(&mut db_pool.get().await?, id, || {
+        StdcmRequestError::NotFound
+    })
+    .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[cfg(test)]
 pub mod tests {
     use pretty_assertions::assert_eq;
@@ -161,6 +232,7 @@ pub mod tests {
     use super::StdcmRequest;
     use crate::views::stdcm_request::Links;
     use crate::views::stdcm_request::ListStdcmRequestResponse;
+    use crate::views::stdcm_request::StdcmRequestForm;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
     use authz::Role;
@@ -469,5 +541,146 @@ pub mod tests {
         );
         assert_eq!(response.links.next, None);
         // Next cursor is None as while Bob_req_2 is after Alice_req_3 (created_requests[3]), it doesn't match the user
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_ok() {
+        let app = test_app!().build();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let response: StdcmRequest = app
+            .post("/stdcm_requests")
+            .json(&StdcmRequestForm {
+                rmi_id: "Alice_req_1".to_string(),
+                trace_id: Some("trace1".to_string()),
+            })
+            .by_user(user.as_ref())
+            .await
+            .assert_status_ok()
+            .json();
+        assert_eq!(response.rmi_id, "Alice_req_1".to_string());
+        assert_eq!(response.trace_id, Some("trace1".to_string()));
+        let requests_in_db = app
+            .get(&format!("/stdcm_requests"))
+            .skip_authz()
+            .await
+            .assert_status_ok()
+            .json::<ListStdcmRequestResponse>()
+            .requests;
+        assert_eq!(requests_in_db.len(), 1);
+        assert_eq!(response.rmi_id, "Alice_req_1".to_string());
+        assert_eq!(response.trace_id, Some("trace1".to_string()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_no_user() {
+        let app = test_app!().build();
+        app.post("/stdcm_requests")
+            .json(&StdcmRequestForm {
+                rmi_id: "Alice_req_1".to_string(),
+                trace_id: Some("trace1".to_string()),
+            })
+            .skip_authz()
+            .await
+            .assert_status_unauthorized();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_not_stdcm_forbidden() {
+        let app = test_app!().build();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        app.post("/stdcm_requests")
+            .json(&StdcmRequestForm {
+                rmi_id: "Alice_req_1".to_string(),
+                trace_id: Some("trace1".to_string()),
+            })
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_skip_authz_ok() {
+        let app = test_app!().build();
+        let mut conn = app.db_pool().get_ok();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let created_request = request_fixture(&mut conn, "Alice_req_1", user.id).await;
+        app.delete(&format!("/stdcm_requests/{}", created_request.id))
+            .skip_authz()
+            .await
+            .assert_status_no_content();
+
+        let requests_in_db = app
+            .get("/stdcm_requests")
+            .skip_authz()
+            .await
+            .assert_status_ok()
+            .json::<ListStdcmRequestResponse>()
+            .requests;
+        assert!(requests_in_db.is_empty());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_admin_ok() {
+        let app = test_app!().build();
+        let mut conn = app.db_pool().get_ok();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let created_request = request_fixture(&mut conn, "Alice_req_1", user.id).await;
+        app.delete(&format!("/stdcm_requests/{}", created_request.id))
+            .by_user(user.as_ref())
+            .await
+            .assert_status_no_content();
+
+        let requests_in_db = app
+            .get("/stdcm_requests")
+            .skip_authz()
+            .await
+            .assert_status_ok()
+            .json::<ListStdcmRequestResponse>()
+            .requests;
+        assert!(requests_in_db.is_empty());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_not_found() {
+        let app = test_app!().build();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        app.delete("/stdcm_requests/1")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_not_found();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_not_admin_forbidden() {
+        let app = test_app!().build();
+        let user = app
+            .user("Alice", "Alice")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        app.delete("/stdcm_requests/1")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
     }
 }
