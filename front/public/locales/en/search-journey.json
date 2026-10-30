@@ -15,7 +15,7 @@
     "title": "Origin"
   },
   "results": {
-    "noResult": "No result",
+    "noResult": "No results",
     "solution": "Solution {{number}}",
     "solutionTitles": {
       "closestDeparture": "Closest to requested departure time",
