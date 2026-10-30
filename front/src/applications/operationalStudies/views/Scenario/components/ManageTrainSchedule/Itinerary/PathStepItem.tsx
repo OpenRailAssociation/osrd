@@ -383,6 +383,15 @@ const PathStepItem = ({
     blurActiveElement();
   };
 
+  // TODO: find a better way to handle the counter link so its length is inherited from the elements height
+  const counterLinkSize = isPreviousSubFormExpanded
+    ? connectorLong
+      ? '214px'
+      : '194px'
+    : connectorLong
+      ? '44px'
+      : '24px';
+
   return (
     <>
       <div
@@ -419,13 +428,7 @@ const PathStepItem = ({
                 : '',
               // @ts-expect-error: variable CSS custom property to be used to style ::before
               '--pathBackground': isTrailingPlaceHolder ? 'var(--black20)' : categoryColors.base,
-              '--counterLink': isPreviousSubFormExpanded
-                ? connectorLong
-                  ? '214px'
-                  : '194px'
-                : connectorLong
-                  ? '44px'
-                  : '24px',
+              '--counterLink': counterLinkSize,
             }}
             onClick={(e) => {
               e.stopPropagation();
