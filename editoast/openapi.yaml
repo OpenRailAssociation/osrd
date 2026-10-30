@@ -13469,6 +13469,11 @@ components:
           format: int64
         origin:
           $ref: '#/components/schemas/OperationalPointPartReference'
+        search_whole_stations:
+          type: boolean
+          description: |-
+            If true, the search is made on the entire origin and destination stations:
+            all the op sharing the country code + main code with the given ones are considered.
         start_ms:
           type: integer
           format: int32

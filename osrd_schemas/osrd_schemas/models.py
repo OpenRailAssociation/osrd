@@ -5596,6 +5596,11 @@ class JourneySearchQuery(BaseModel):
     destination: OperationalPointPartReference
     infra_id: StrictInt
     origin: OperationalPointPartReference
+    search_whole_stations: StrictBool | None = None
+    """
+    If true, the search is made on the entire origin and destination stations:
+    all the op sharing the country code + main code with the given ones are considered.
+    """
     start_ms: Annotated[StrictInt, Field(ge=0)]
     """
     Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
