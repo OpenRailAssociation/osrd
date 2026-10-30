@@ -9,13 +9,14 @@ use axum::extract::Request;
 use axum::extract::State;
 use axum::middleware::Next;
 use axum::response::Response;
+use core_client::NewClient;
 use models::authn::user::AddIdentitiesError;
 
 use crate::AppState;
 use crate::authentication::AuthenticationParameters;
 use crate::error::Result;
-use crate::feature_flags::FeatureFlag;
 use crate::views::AuthorizationError;
+use crate::views::FeatureFlag;
 
 #[tracing::instrument(skip_all, fields(authn))]
 pub(in crate::views) async fn authentication_extraction_middleware(
@@ -239,6 +240,21 @@ pub(in crate::views) async fn feature_flags_extraction_middleware(
     Ok(next.run(req).await)
 }
 
+pub(in crate::views) async fn core_client_building_middleware(
+    Extension(feature_flags): Extension<HashSet<FeatureFlag>>,
+    State(AppState { core_client, .. }): State<AppState>,
+    mut req: Request,
+    next: Next,
+) -> Result<Response> {
+    let feature_flags = feature_flags.iter().map(|flag| flag.to_string()).collect();
+    let new_client = NewClient {
+        client: core_client,
+        feature_flags,
+    };
+    req.extensions_mut().insert(new_client);
+    Ok(next.run(req).await)
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -257,7 +273,7 @@ mod tests {
     use tokio::runtime::Builder;
 
     use super::feature_flags_extraction_middleware;
-    use crate::feature_flags::FeatureFlag;
+    use crate::views::FeatureFlag;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::test_app;
 

@@ -13,8 +13,8 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use core_client::AsCoreRequest as _;
-use core_client::CoreClient;
 use core_client::Headers;
+use core_client::NewClient;
 use core_client::pathfinding::PathfindingCoreResult;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
@@ -274,11 +274,11 @@ pub(in crate::views) async fn post(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Path(infra_id): Path<i64>,
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
@@ -303,7 +303,7 @@ pub(in crate::views) async fn post(
         Err(result) => return Ok(Json(*result)),
     };
     use core_task::Task as _;
-    let result = pathfinding_request.run(valkey_client, core_client).await?;
+    let result = pathfinding_request.run(valkey_client, new_client).await?;
     Ok(Json(result.into()))
 }
 
@@ -311,7 +311,7 @@ pub(in crate::views) async fn post(
 async fn pathfinding_blocks_batch(
     conn: DbConnection,
     valkey_conn: &mut cache::Connection,
-    core: Arc<CoreClient>,
+    core: NewClient,
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
     app_version: Option<&str>,
@@ -401,7 +401,7 @@ async fn pathfinding_blocks_batch(
     );
     let mut futures = vec![];
     for request in &pathfinding_requests {
-        futures.push(Box::pin(request.fetch(core.as_ref(), Headers::default())));
+        futures.push(Box::pin(request.fetch(&core, Headers::default())));
     }
     let computed_paths: Vec<_> = futures::future::join_all(futures)
         .await
@@ -476,7 +476,7 @@ pub struct TrainScheduleWithConsist<T: TrainScheduleLike> {
 pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     conn: DbConnection,
     valkey: &mut cache::Connection,
-    core: Arc<CoreClient>,
+    core: NewClient,
     infra: &Infra,
     train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
     app_version: Option<&str>,

@@ -1,6 +1,6 @@
 use core_client::AsCoreRequest as _;
-use core_client::CoreClient;
 use core_client::Headers;
+use core_client::NewClient;
 use core_client::pathfinding::TrainPath;
 use core_client::signal_projection::SignalUpdate;
 use core_client::signal_projection::SignalUpdatesRequest;
@@ -97,7 +97,7 @@ pub(in crate::views) struct OccupancyBlockForm {
 
 /// Compute the signal updates of a list of train schedules
 pub(super) async fn compute_batch_signal_updates<'a>(
-    core: Arc<CoreClient>,
+    core: NewClient,
     infra: &Infra,
     path: &'a TrainPath,
     trains_details: &'a [TrainBlockOccupancyDetails],
@@ -131,7 +131,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
 )]
 pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     conn: &mut DbConnection,
-    core_client: Arc<CoreClient>,
+    core_client: NewClient,
     valkey_client: Arc<cache::Client>,
     path: TrainPath,
     infra: &Infra,

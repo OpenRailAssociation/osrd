@@ -18,8 +18,8 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use core_client::AsCoreRequest as _;
-use core_client::CoreClient;
 use core_client::Headers;
+use core_client::NewClient;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingInputError::UnauthorizedRollingStock;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -340,11 +340,11 @@ pub(in crate::views) async fn simulation_summary(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Json(SimulationBatchForm {
         infra_id,
         timetable_id,
@@ -371,7 +371,7 @@ pub(in crate::views) async fn simulation_summary(
     let core_env = core_task::CoreEnv {
         infra_id: infra.id as u64,
         infra_version: infra.version,
-        client: core_client.clone(),
+        client: new_client.clone(),
     };
     let mut simulation_env =
         if let Some(electrical_profile_set_id) = electrical_profile_set_id.map(|i| i as u64) {
@@ -648,11 +648,11 @@ pub(in crate::views) async fn get_path(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -782,7 +782,7 @@ pub(in crate::views) async fn get_path(
     );
 
     use core_task::Task as _;
-    let result = pathfinding_request.run(valkey_client, core_client).await?;
+    let result = pathfinding_request.run(valkey_client, new_client).await?;
     Ok(Json(result.into()))
 }
 
@@ -805,12 +805,12 @@ pub struct ElectricalProfileSetIdQueryParam {
 pub(in crate::views) async fn simulation(
     State(AppState {
         valkey_client,
-        core_client,
         db_pool,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -906,7 +906,7 @@ pub(in crate::views) async fn simulation(
     let core_env = core_task::CoreEnv {
         infra_id: infra.id as u64,
         infra_version: infra.version,
-        client: core_client.clone(),
+        client: new_client.clone(),
     };
     let mut simulation_env = match electrical_profile_set_id {
         Some(electrical_profile_set_id) => {
@@ -960,12 +960,12 @@ pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
         config,
         valkey_client,
-        core_client,
         db_pool,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -1030,7 +1030,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     let (simulation_result, pathfinding_result) = train_simulation_ordered_batch(
         &mut db_pool.get().await?,
         valkey_client,
-        core_client.clone(),
+        new_client.clone(),
         std::slice::from_ref(&train_occurrence),
         &infra,
         electrical_profile_set_id,
@@ -1090,7 +1090,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     let etcs_braking_curves_response = etcs_braking_curves_request
-        .fetch(core_client.as_ref(), Headers::default())
+        .fetch(&new_client, Headers::default())
         .await?;
 
     Ok(Json(etcs_braking_curves_response))
@@ -1132,12 +1132,12 @@ pub(in crate::views) async fn project_path(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         config,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Json(ProjectPathForm {
         infra_id,
         timetable_id,
@@ -1241,7 +1241,7 @@ pub(in crate::views) async fn project_path(
 
     let simulated_projections = compute_projected_train_paths(
         conn,
-        core_client,
+        new_client,
         valkey_client,
         track_section_ranges,
         infra,
@@ -1317,12 +1317,12 @@ pub(in crate::views) async fn project_path_op(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         config,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Json(ProjectPathOperationalPointForm {
         infra_id,
         train_ids,
@@ -1449,7 +1449,7 @@ pub(in crate::views) async fn project_path_op(
         let simulated_projections = compute_projected_train_path_op(
             conn,
             valkey_client,
-            core_client,
+            new_client,
             &readable_occurrences,
             &op_cache,
             &operational_points_projection,
@@ -1556,12 +1556,12 @@ pub(in crate::views) async fn occupancy_blocks(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         config,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Json(OccupancyBlockForm {
         infra_id,
         timetable_id,
@@ -1737,7 +1737,7 @@ pub(in crate::views) async fn occupancy_blocks(
 
     let occupancy_blocks_result = compute_occupancy_blocks(
         conn,
-        core_client,
+        new_client,
         valkey_client,
         path,
         infra,
@@ -1824,11 +1824,11 @@ pub(in crate::views) async fn track_occupancy(
         config,
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Json(TrackOccupancyForm {
         train_schedule_ids,
         operational_point_reference,
@@ -1945,7 +1945,7 @@ pub(in crate::views) async fn track_occupancy(
                 let simulation_params = TrackOccupancySimulationParams {
                     conn,
                     valkey_client,
-                    core_client,
+                    core_client: new_client,
                     infra: &infra,
                     electrical_profile_set_id,
                     app_version: config.app_version.as_deref(),
@@ -2000,7 +2000,7 @@ pub(in crate::views) async fn track_occupancy(
 struct TrackOccupancySimulationParams<'a> {
     conn: &'a mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core_client: Arc<CoreClient>,
+    core_client: NewClient,
     infra: &'a Infra,
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&'a str>,
@@ -2018,7 +2018,7 @@ async fn find_track_occupancy_for_known_operational_point_with_simulation(
     let TrackOccupancySimulationParams {
         conn,
         valkey_client,
-        core_client,
+        core_client: new_client,
         infra,
         electrical_profile_set_id,
         app_version,
@@ -2027,7 +2027,7 @@ async fn find_track_occupancy_for_known_operational_point_with_simulation(
     let simulations_result = train_simulation_ordered_batch(
         conn,
         valkey_client,
-        core_client,
+        new_client,
         &train_occurrences,
         infra,
         electrical_profile_set_id,

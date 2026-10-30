@@ -11,6 +11,7 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_ordered_batch;
 use authz::v2;
+use core_client::NewClient;
 use models::Infra;
 use models::LevelCrossingModel;
 use models::Timetable;
@@ -102,11 +103,11 @@ pub(in crate::views) async fn occupancy(
         config,
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Json(LevelCrossingOccupancyForm {
         train_ids,
         level_crossing_ids,
@@ -199,7 +200,7 @@ pub(in crate::views) async fn occupancy(
     let simulations_result = train_simulation_ordered_batch(
         conn,
         valkey_client,
-        core_client,
+        new_client,
         &train_schedules,
         &infra,
         electrical_profile_set_id,

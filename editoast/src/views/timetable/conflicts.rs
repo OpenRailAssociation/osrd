@@ -1,5 +1,6 @@
 use authz::v2;
 use core_client::Headers;
+use core_client::NewClient;
 use models::TrainScheduleLinking;
 use schemas::primitives::duration::pg_interval_to_jiff_duration;
 use std::collections::HashMap;
@@ -311,11 +312,11 @@ pub(in crate::views) async fn conflicts(
         config,
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(new_client): Extension<NewClient>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ElectricalProfileSetIdQueryParam {
@@ -455,7 +456,7 @@ pub(in crate::views) async fn conflicts(
         super::train_simulation_ordered_batch(
             &mut db_pool.get().await?,
             valkey_client.clone(),
-            core_client.clone(),
+            new_client.clone(),
             &occurrence_trains,
             &infra,
             electrical_profile_set_id,
@@ -551,7 +552,7 @@ pub(in crate::views) async fn conflicts(
 
     // 3. Call core
     let conflict_detection_response = conflict_detection_request
-        .fetch(&core_client, Headers::default())
+        .fetch(&new_client.clone(), Headers::default())
         .await?;
     let conflicts = conflict_detection_response.conflicts;
     let conflicts_response: Result<Vec<Conflict>> = conflicts
