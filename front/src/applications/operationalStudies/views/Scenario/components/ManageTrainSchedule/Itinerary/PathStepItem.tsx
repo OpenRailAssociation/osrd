@@ -5,8 +5,6 @@ import {
   AddedLocation,
   AddLocation,
   ArrowRight,
-  ChevronDown,
-  ChevronUp,
   FocusLocation,
   Infrastructure,
   InfrastructureInvalid,
@@ -14,6 +12,8 @@ import {
   KebabHorizontal,
   Square,
   TrackOffset,
+  TriangleRight,
+  TriangleDown,
   X,
 } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
@@ -458,6 +458,21 @@ const PathStepItem = ({
             </div>
           ) : (
             <>
+              {unrecognizedWaypointsActivated && (
+                <button
+                  type="button"
+                  className="path-step-subform-toggle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSubFormToggled();
+                  }}
+                  aria-expanded={isSubFormExpanded}
+                  aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+                  data-testid="path-step-subform-toggle"
+                >
+                  {isSubFormExpanded ? <TriangleDown size="lg" /> : <TriangleRight size="lg" />}
+                </button>
+              )}
               <div
                 role="button"
                 tabIndex={0}
@@ -598,21 +613,6 @@ const PathStepItem = ({
             small
             data-testid="stop-pass-segmented-control"
           />
-          {unrecognizedWaypointsActivated && (
-            <button
-              type="button"
-              className="path-step-subform-toggle"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSubFormToggled();
-              }}
-              aria-expanded={isSubFormExpanded}
-              aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
-              data-testid="path-step-subform-toggle"
-            >
-              {isSubFormExpanded ? <ChevronUp size="sm" /> : <ChevronDown size="sm" />}
-            </button>
-          )}
           <div className="map-interactions">
             <button
               type="button"
