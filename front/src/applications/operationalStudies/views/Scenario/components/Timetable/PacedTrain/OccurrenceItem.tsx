@@ -256,9 +256,7 @@ const OccurrenceItem = ({
                 })}
               >
                 <span ref={nameRef} className="occurrence-name" title={trainName}>
-                  <span className="occurrence-name-sizer" aria-hidden>
-                    {trainName}
-                  </span>
+                  <span className="occurrence-name-sizer" aria-hidden data-text={trainName} />
                   <span className="occurrence-name-text">{displayedTrainName}</span>
                 </span>
               </div>

@@ -76,5 +76,7 @@ describe('OccurrenceItem', () => {
     renderOccurrence(buildOccurrence('8210 coucou 1'));
 
     expect(getDisplayedName()).toBe('8210 coucou 1');
+    // The hidden full-width copy is drawn in CSS, so the name only appears once in the text.
+    expect(screen.getByTestId('occurrence-item-name').textContent).toBe('8210 coucou 1');
   });
 });

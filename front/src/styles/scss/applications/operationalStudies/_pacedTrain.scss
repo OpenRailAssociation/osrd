@@ -312,6 +312,7 @@
 
                 // The hidden copy of the full name gives the label its width, and the visible
                 // name is cropped at the start in JS (useStartTruncatedText) to fit in it.
+                // The copy is drawn by a pseudo-element so it stays out of the text content.
                 .occurrence-name {
                   position: relative;
                   min-width: 0;
@@ -321,6 +322,10 @@
 
                 .occurrence-name-sizer {
                   visibility: hidden;
+
+                  &::before {
+                    content: attr(data-text);
+                  }
                 }
 
                 .occurrence-name-text {
