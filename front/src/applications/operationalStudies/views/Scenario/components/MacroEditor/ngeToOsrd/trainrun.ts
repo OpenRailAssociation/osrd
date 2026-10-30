@@ -397,10 +397,16 @@ const populateSecondaryCodesInPath = async (
  * Default duration (`time_window`) of a service created from NGE: a full day in a calendar
  * timetable, and the least common multiple (LCM) of the timetable duration and the service interval in an hourly one.
  */
-const getDefaultTrainrunTimeWindow = (state: MacroEditorState, interval: Duration): Duration =>
-  state.timetableType === 'HOURLY'
-    ? computeDefaultHourlyPacedTrainTimeWindow(state.hourlyTimetableDuration, interval)
-    : getDefaultPacedTrainTimeWindow(state.timetableType);
+export const getDefaultTrainrunTimeWindow = (
+  {
+    timetableType,
+    hourlyTimetableDuration,
+  }: Pick<MacroEditorState, 'timetableType' | 'hourlyTimetableDuration'>,
+  interval: Duration
+): Duration =>
+  timetableType === 'HOURLY'
+    ? computeDefaultHourlyPacedTrainTimeWindow(hourlyTimetableDuration, interval)
+    : getDefaultPacedTrainTimeWindow(timetableType);
 
 export const createPacedAttributesFromTrainrun = (
   trainrun: TrainrunDto,
