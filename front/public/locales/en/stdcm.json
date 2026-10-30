@@ -136,6 +136,7 @@
     },
     "dest": "dest.",
     "destination": "Destination",
+    "folder": "VDS",
     "noRequests": "No request could be fetched.",
     "origin": "Origin",
     "requestNumber": "Request N°",
