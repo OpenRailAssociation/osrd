@@ -46,7 +46,7 @@ pub(crate) fn operational_points(
 
     relations.iter()
         .flat_map(|rel| {
-            let parts = parts(rel, nodes_to_tracks, track_sections);
+            let parts = parts(rel, nodes_to_tracks, track_sections, &node_id_to_metadata);
             let main_code = main_code(rel, &node_id_to_metadata);
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
             if parts.is_empty() {
@@ -113,6 +113,8 @@ fn default_secondary_code_and_name(
 struct NodeMetadata {
     main_code: Option<NonBlankString>,
     uic: Option<u32>,
+    ref_code: Option<NonBlankString>,
+    local_ref: Option<NonBlankString>,
 }
 
 /// Find all nodes that have a `railway:ref` and `uic_ref` tag and create a mapping from their id to their metadata.
@@ -134,10 +136,26 @@ fn map_node_id_to_metadata(
                 .tags
                 .get("uic_ref")
                 .and_then(|tag| tag.parse::<u32>().ok());
-            if uic.is_none() && main_code.is_none() {
+            let ref_code = node
+                .tags
+                .get("ref")
+                .map(|tag| NonBlankString::from(tag.to_string()));
+            let local_ref = node
+                .tags
+                .get("local_ref")
+                .map(|tag| NonBlankString::from(tag.to_string()));
+            if uic.is_none() && main_code.is_none() && ref_code.is_none() && local_ref.is_none() {
                 None
             } else {
-                Some((node.id, NodeMetadata { main_code, uic }))
+                Some((
+                    node.id,
+                    NodeMetadata {
+                        main_code,
+                        uic,
+                        ref_code,
+                        local_ref,
+                    },
+                ))
             }
         })
         .collect()
@@ -147,6 +165,7 @@ fn parts(
     relation: &Relation,
     nodes_to_tracks: &NodeToTrack,
     track_sections: &[TrackSection],
+    node_id_to_metadata: &HashMap<NodeId, NodeMetadata>,
 ) -> Vec<OperationalPointPart> {
     relation
 		.refs
@@ -159,17 +178,31 @@ fn parts(
 				None
 			},
 		})
-		.flat_map(|node| {
+		.flat_map(|node_id| {
 			nodes_to_tracks
-				.track_and_position(node)
-				.map(|(track, position, local_track_name)| OperationalPointPart {
+				.track_and_position(node_id)
+				.map(|(track, position)| OperationalPointPart {
 					track: track.clone(),
 					position,
-					local_track_name: local_track_name.unwrap_or_else(|| local_track_name_fallback(&track, track_sections)),
+					local_track_name: local_track_name(node_id, nodes_to_tracks, node_id_to_metadata).unwrap_or_else(|| local_track_name_fallback(&track, track_sections)),
 					extensions: Default::default()
 				})
 		})
 		.collect()
+}
+
+/// Get local_track_name from track
+/// If none is found check local_ref and ref of stop node
+fn local_track_name(
+    node_id: NodeId,
+    nodes_to_tracks: &NodeToTrack,
+    node_id_to_metadata: &HashMap<NodeId, NodeMetadata>,
+) -> Option<NonBlankString> {
+    nodes_to_tracks.track_ref(node_id).or_else(|| {
+        node_id_to_metadata
+            .get(&node_id)
+            .and_then(|meta| meta.local_ref.as_ref().or(meta.ref_code.as_ref()).cloned())
+    })
 }
 
 /// If the local_track_name is None, we try to find if the track_section associated with this operational_point_part has a track_name.
