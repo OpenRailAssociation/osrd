@@ -1,3 +1,9 @@
+.stdcm-requests-sent-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .stdcm-requests-sent-modal-body {
   padding: 0 !important;
   min-height: 600px;
@@ -7,6 +13,18 @@
 
 .stdcm-requests-sent-modal-footer {
   display: none !important;
+}
+
+.stdcm-requests-sent-modal-header-left {
+  display: flex;
+  gap: 20px;
+}
+
+.stdcm-requests-sent-folder-button {
+  color: var(--primary50);
+  background-color: var(--black5);
+  border-radius: 5px;
+  padding: 3px 10px;
 }
 
 .stdcm-requests-sent-no-requests {

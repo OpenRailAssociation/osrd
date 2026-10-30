@@ -1,11 +1,14 @@
 import { Dialog } from '@osrd-project/ui-core';
-import { X } from '@osrd-project/ui-icons';
+import { LinkExternal, X } from '@osrd-project/ui-icons';
 import dayjs from 'dayjs';
 import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
 import { useTranslation } from 'react-i18next';
 
 import useStdcmRequestsSent from 'applications/stdcm/hooks/useStdcmRequestsSent';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 dayjs.extend(calendar);
 
@@ -16,6 +19,7 @@ type StdcmRequestsSentModalProps = {
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
 
+  const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation(['stdcm', 'translation']);
 
   const calendarDays = {
@@ -28,6 +32,23 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   };
 
   const { requestsSentData } = useStdcmRequestsSent();
+
+  const openRequestsFolder = async () => {
+    try {
+      if (requestsSentData().length !== 0) {
+        window.open(requestsSentData()[0].created_request_url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (err) {
+      dispatch(
+        setFailure(
+          castErrorToFailure(err, {
+            name: t('translation:common.error'),
+            message: t('header.errorRequestsFolder'),
+          })
+        )
+      );
+    }
+  };
 
   const requestsSentRows = () =>
     requestsSentData().map((request, index) => {
@@ -77,11 +98,18 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
   return (
     <Dialog
-      headerClassname="flex justify-between items-center"
+      headerClassname="stdcm-requests-sent-modal-header"
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
         <>
-          <h5>{t('requestsSentModal.title')}</h5>
+          <div className="stdcm-requests-sent-modal-header-left">
+            <h5>{t('requestsSentModal.title')}</h5>
+            {requestsSentData().length !== 0 && (
+              <button className="stdcm-requests-sent-folder-button" onClick={openRequestsFolder}>
+                <LinkExternal /> {t('requestsSentModal.folder')}
+              </button>
+            )}
+          </div>
           <button type="button" onClick={onClose}>
             <X size="lg" />
           </button>
