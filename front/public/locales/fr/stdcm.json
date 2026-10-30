@@ -124,6 +124,7 @@
   },
   "requestsSentModal": {
     "applicationDate": "Date d'application",
+    "asSoonAsPossible": "dès que possible",
     "asap": "d.q.p.",
     "calendar": {
       "lastDay": "[hie. -] HH:mm",
@@ -133,10 +134,12 @@
       "sameDay": "[auj. -] HH:mm",
       "sameElse": "ddd DD/MM"
     },
+    "dest": "dest.",
     "destination": "Destination",
     "noRequests": "Aucune demande n’a pu être récupérée.",
     "origin": "Origine",
     "requestNumber": "N° de demande",
+    "respectDestinationSchedule": "heure permettant le respect de l'horaire à destination",
     "status": "État",
     "statuses": {
       "ACCEPTED": "Allouée",
