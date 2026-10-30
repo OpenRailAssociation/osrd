@@ -36,6 +36,8 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value' | 'onChange'> & {
   allowCustomValue?: boolean;
   onAddCustomValue?: (value: string) => void;
   addCustomValueLabel?: string;
+
+  emptyValue?: T;
 };
 
 /**
@@ -47,6 +49,9 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value' | 'onChange'> & {
  * When `allowCustomValue` is true, an option appears at the bottom of the dropdown
  * when the typed value doesn't match any existing suggestion.
  * Defocusing without selecting cancels the input.
+ *
+ * When `emptyValue` is given (ex: a "None" option), it is displayed when there is no value,
+ * so the field is never left empty. The clear icon on a real value goes back to `emptyValue`.
  */
 const ComboBox = <T,>({
   suggestions,
@@ -64,10 +69,12 @@ const ComboBox = <T,>({
   allowCustomValue = false,
   onAddCustomValue,
   addCustomValueLabel,
+  emptyValue,
   ...inputProps
 }: ComboBoxProps<T>) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
-  const suggestionLabel = value ? getSuggestionLabel(value) : '';
+  const displayedValue = value ?? emptyValue;
+  const suggestionLabel = displayedValue ? getSuggestionLabel(displayedValue) : '';
   const [inputValue, setInputValue] = useState(suggestionLabel);
 
   const [prevSuggestionLabel, setPrevSuggestionLabel] = useState(suggestionLabel);
@@ -91,13 +98,18 @@ const ComboBox = <T,>({
     resetSuggestions();
   }, [resetSuggestions]);
 
+  const closeSuggestions = useCallback(() => {
+    setInputValue(displayedValue ? getSuggestionLabel(displayedValue) : '');
+    removeFocus();
+  }, [displayedValue, getSuggestionLabel, removeFocus]);
+
   const focusInput = useCallback(() => {
     if (isInputFocused) {
-      removeFocus();
+      closeSuggestions();
     } else {
       inputRef.current?.focus();
     }
-  }, [inputRef, isInputFocused, removeFocus]);
+  }, [inputRef, isInputFocused, closeSuggestions]);
 
   const normalizedInputValue = useMemo(() => inputValue.trim().toLowerCase(), [inputValue]);
 
@@ -136,11 +148,6 @@ const ComboBox = <T,>({
     const trimmed = inputValue.trim();
     if (!trimmed) return;
     onAddCustomValue?.(trimmed);
-    removeFocus();
-  };
-
-  const closeSuggestions = () => {
-    setInputValue(value ? getSuggestionLabel(value) : '');
     removeFocus();
   };
 
@@ -232,12 +239,18 @@ const ComboBox = <T,>({
   };
 
   const clearInput = useCallback(() => {
+    // A real value is selected: the clear icon goes back to emptyValue
+    if (emptyValue && value) {
+      onSelectSuggestion(undefined);
+      resetSuggestions();
+      return;
+    }
     setInputValue('');
     onChange?.('');
     resetSuggestions();
     setIsInputFocused(true);
     inputRef.current?.focus();
-  }, [resetSuggestions, onChange]);
+  }, [emptyValue, value, onSelectSuggestion, resetSuggestions, onChange]);
 
   useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
 
@@ -312,7 +325,9 @@ const ComboBox = <T,>({
               data-testid={testIdPrefix ? `${testIdPrefix}-item` : undefined}
               className={cx('suggestion-item', {
                 active: index === activeSuggestionIndex,
-                selected: value && getSuggestionLabel(value) === getSuggestionLabel(suggestion),
+                selected:
+                  displayedValue &&
+                  getSuggestionLabel(displayedValue) === getSuggestionLabel(suggestion),
                 small,
                 'suggestion-item--custom': renderListElementComponent,
               })}
@@ -325,7 +340,8 @@ const ComboBox = <T,>({
                     index,
                     isActive: index === activeSuggestionIndex,
                     isSelected:
-                      !!value && getSuggestionLabel(value) === getSuggestionLabel(suggestion),
+                      !!displayedValue &&
+                      getSuggestionLabel(displayedValue) === getSuggestionLabel(suggestion),
                   })
                 : getSuggestionLabel(suggestion)}
             </li>
