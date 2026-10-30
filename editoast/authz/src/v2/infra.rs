@@ -266,6 +266,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
             let (
                 admin,
                 can_restricted_read,
+                can_share_restricted_read,
                 can_read,
                 can_share_read,
                 can_write,
@@ -277,6 +278,7 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
                 .checks((
                     User::role().check(&Role::Admin, &user),
                     Infra::can_restricted_read().check(&user, &infra),
+                    Infra::can_share_restricted_read().check(&user, &infra),
                     Infra::can_read().check(&user, &infra),
                     Infra::can_share_read().check(&user, &infra),
                     Infra::can_write().check(&user, &infra),
@@ -289,6 +291,10 @@ pub fn infra_privileges(user: User, infra: Infra) -> Protected<HashSet<InfraPriv
             let mut privileges = HashSet::new();
             privileges.extend(
                 (admin || can_restricted_read).then_some(InfraPrivilege::CanRestrictedRead),
+            );
+            privileges.extend(
+                (admin || can_share_restricted_read)
+                    .then_some(InfraPrivilege::CanShareRestrictedRead),
             );
             privileges.extend((admin || can_read).then_some(InfraPrivilege::CanRead));
             privileges.extend((admin || can_share_read).then_some(InfraPrivilege::CanShareRead));
@@ -416,7 +422,7 @@ pub fn infra_granted_subjects(
         })
         .with_check(Check::HasInfraPrivilege(
             Actor::Issuer,
-            InfraPrivilege::CanRead,
+            InfraPrivilege::CanRestrictedRead,
             infra,
         ))
 }
@@ -431,6 +437,11 @@ pub fn infra_list(user: User, privilege: InfraPrivilege) -> Protected<ResourcesL
                 InfraPrivilege::CanRestrictedRead => {
                     openfga
                         .list_objects(Infra::can_restricted_read().query_objects(&user))
+                        .await?
+                }
+                InfraPrivilege::CanShareRestrictedRead => {
+                    openfga
+                        .list_objects(Infra::can_share_restricted_read().query_objects(&user))
                         .await?
                 }
                 InfraPrivilege::CanRead => {
@@ -492,6 +503,9 @@ pub fn infra_privilege_filter(
                 match privilege {
                     InfraPrivilege::CanRestrictedRead => {
                         checks.push(&Infra::can_restricted_read().check(&user, infra))
+                    }
+                    InfraPrivilege::CanShareRestrictedRead => {
+                        checks.push(&Infra::can_share_restricted_read().check(&user, infra))
                     }
                     InfraPrivilege::CanRead => checks.push(&Infra::can_read().check(&user, infra)),
                     InfraPrivilege::CanShareRead => {
@@ -821,6 +835,7 @@ mod tests {
             openfga.infra_privileges(User(1), Infra(1)).await,
             HashSet::from_iter([
                 InfraPrivilege::CanRestrictedRead,
+                InfraPrivilege::CanShareRestrictedRead,
                 InfraPrivilege::CanRead,
                 InfraPrivilege::CanShareRead,
                 InfraPrivilege::CanWrite,
@@ -845,6 +860,7 @@ mod tests {
             openfga.infra_privileges(User(1), Infra(1)).await,
             HashSet::from_iter([
                 InfraPrivilege::CanRestrictedRead,
+                InfraPrivilege::CanShareRestrictedRead,
                 InfraPrivilege::CanRead,
                 InfraPrivilege::CanShareRead,
                 InfraPrivilege::CanWrite,
@@ -984,7 +1000,7 @@ mod tests {
     )]
     #[case::infra_privileges(
         infra_granted_subjects(Infra(1), InfraGrant::Owner, GrantType::Effective).checks,
-        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRead, Infra(1))]
+        &[Check::HasInfraPrivilege(Actor::Issuer, InfraPrivilege::CanRestrictedRead, Infra(1))]
     )]
     #[case::infra_list(infra_list(User(1), InfraPrivilege::CanRead).checks, &[])]
     fn protected_contains_expected_checks(
