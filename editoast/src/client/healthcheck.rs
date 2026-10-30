@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::anyhow;
-use core_client::CoreClient;
+use core_client::SharedCoreClient;
 use core_client::mq_client;
 use database::DbConnectionPool;
 
@@ -19,7 +19,7 @@ pub async fn healthcheck_cmd(
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let valkey = cache::Client::new(valkey_config.into_cache_config(), "HEALTHCHECK");
-    let core_client = CoreClient::new_mq(mq_client::Options {
+    let core_client = SharedCoreClient::new_mq(mq_client::Options {
         uri: core_config.mq_url,
         worker_pool_identifier: core_config.worker_pool_id,
         timeout: core_config.core_timeout,

@@ -1,4 +1,5 @@
 use core_client::AsCoreRequest as _;
+use core_client::CoreClient;
 use core_client::Headers;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
@@ -46,7 +47,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::views::CoreClient;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::TrainScheduleWithConsist;
@@ -374,7 +374,7 @@ impl From<PathfindingFailure> for SummaryResponse {
 pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core: Arc<CoreClient>,
+    core: CoreClient,
     train_schedules: &[T],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
@@ -427,7 +427,7 @@ pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
                     consist_train_simulation_batch(
                         &mut conn.clone(),
                         valkey_client.clone(),
-                        core.clone(),
+                        core,
                         &infra,
                         &chunk,
                         electrical_profile_set_id,
@@ -481,7 +481,7 @@ pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
 pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core: Arc<CoreClient>,
+    core: CoreClient,
     infra: &Infra,
     train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
     electrical_profile_set_id: Option<i64>,
@@ -582,9 +582,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             continue;
         }
         let sim_request = &sim_request_map[train_hash];
-        futures.push(Box::pin(
-            sim_request.fetch(core.as_ref(), Headers::default()),
-        ));
+        futures.push(Box::pin(sim_request.fetch(&core, Headers::default())));
         futures_hash.push(train_hash);
     }
 
