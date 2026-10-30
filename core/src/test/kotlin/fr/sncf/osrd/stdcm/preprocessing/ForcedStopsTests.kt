@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.OperationalPointStop
 import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.api.stdcm.parseForcedOpStops
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.stdcm.STDCMCompleteResult
 import fr.sncf.osrd.stdcm.STDCMPathfindingBuilder
@@ -15,17 +16,32 @@ import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_TIME
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.Helpers
-import fr.sncf.osrd.utils.areSpeedsEqual
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 private const val SHORT_STOP_TIME = 50.0
 private const val IMPORTANT_STOP_TIME = 50000.0
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ForcedStopsTests {
+    data class ForcedOpStopLocation(
+        val blockId: Int,
+        val stopOffset: Offset<Block>,
+        val stopType: StopType = StopType.GENERAL_STOP,
+    )
+
+    data class StopScenario(
+        val stops: List<ForcedOpStopLocation>,
+        val expectedStops: List<TrainStop>,
+    )
+
     @Test
     fun parseForcedOpStopsSmallInfraTests() {
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
@@ -57,240 +73,47 @@ class ForcedStopsTests {
         assertEquals(expectedParseForcedOpStops, actualParseForcedOpStops)
     }
 
-    @Test
-    fun emptyTimetableWithForcedOpStopOnSecondBlock() {
-        /*
-        a --> b -(forced op stop)-> c
-         */
+    @ParameterizedTest
+    @MethodSource("forcedOpStopLocations")
+    fun emptyTimetableWithForcedOpStopAndInputStop(stopScenario: StopScenario) {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
-        val res =
+        val blocks = listOf(firstBlock, secondBlock)
+        val stdcmBuilder =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
                 .addStep(
                     ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
                 )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(secondBlock, Offset(40.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        val expectedOffset = 140.0
 
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-
-        // Check that we stop
-        Assertions.assertTrue(
-            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(expectedOffset)),
-        )
-
-        // Check that the stop is properly returned
-        Assertions.assertEquals(
-            listOf(
-                TrainStop(
-                    expectedOffset,
-                    FORCED_OP_STOP_TIME,
-                    SHORT_SLIP_STOP,
-                    StopType.GENERAL_STOP,
+        stopScenario.stops.forEach { stop ->
+            stdcmBuilder.addForcedOpStop(
+                BlockLocationStop(
+                    BlockLocation(blocks[stop.blockId], stop.stopOffset),
+                    ForcedStopType.GENERAL_STOP,
                 ),
-            ),
-            resSuccess.stopResults,
-        )
-    }
+            )
+        }
+        val res = stdcmBuilder.run()!!
 
-    @Test
-    fun emptyTimetableWithForcedOpStopOnFirstBlock() {
-        /*
-        a -(forced op stop)-> b --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(50.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        val expectedOffset = 50.0
-
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-
-        // Check that we stop
-        Assertions.assertTrue(
-            areSpeedsEqual(0.0, resSuccess.envelope.interpolateSpeed(expectedOffset)),
-        )
-
-        // Check that the stop is properly returned
-        Assertions.assertEquals(
-            listOf(
-                TrainStop(
-                    expectedOffset,
-                    FORCED_OP_STOP_TIME,
-                    SHORT_SLIP_STOP,
-                    StopType.GENERAL_STOP,
-                ),
-            ),
-            resSuccess.stopResults,
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithForcedOpStopOnSecondBlockStart() {
-        /*
-        a --> b (forced op stop) --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(secondBlock, Offset(0.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(100.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP)),
+            stopScenario.expectedStops,
         )
     }
 
-    @Test
-    fun emptyTimetableWithForcedOpStopOnFirstBlockEnd() {
+    @ParameterizedTest
+    @MethodSource("forcedOpStopsAndInputStopAtSameOffsetParameters")
+    fun emptyTimetableWithForcedOpStopAndInputStopAtSameOffset(
+        userStopDuration: Double,
+        expectedStopDuration: Double,
+    ) {
         /*
-        a --> b (forced op stop) --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(100.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-        checkStop(
-            resSuccess,
-            listOf(TrainStop(100.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP)),
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithForcedOpStopOnFirstBlockAndSecondBlock() {
-        /*
-        a -(forced op stop)-> b -(forced op stop)-> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(50.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(secondBlock, Offset(50.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-        checkStop(
-            resSuccess,
-            listOf(
-                TrainStop(50.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
-                TrainStop(150.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
-            ),
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithMultipleForcedOpStopOnFirstBlock() {
-        /*
-        a --(forced op stop)--(forced op stop)--> b --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(50.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(80.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-        checkStop(
-            resSuccess,
-            listOf(
-                TrainStop(50.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
-                TrainStop(80.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
-            ),
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithForcedOpStopWithHigherStopDurationThanUserStop() {
-        /*
-        a --(forced op stop > input stop)--> b --> c
+        a --(forced op stop / input stop)--> b --> c
          */
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
@@ -302,7 +125,7 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(50.meters))),
-                        SHORT_STOP_TIME,
+                        userStopDuration,
                         true,
                     ),
                 )
@@ -320,81 +143,7 @@ class ForcedStopsTests {
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(50.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP)),
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithForcedOpStopWithLowerStopDurationThanUserStop() {
-        /*
-        a --(forced op stop < user stop)--> b --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(50.meters))),
-                        IMPORTANT_STOP_TIME,
-                        true,
-                    ),
-                )
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(50.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-        checkStop(
-            resSuccess,
-            listOf(TrainStop(50.0, IMPORTANT_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP)),
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithForcedOpStopWithSameOffsetAndSameTimeAsUserStop() {
-        /*
-        a --(forced op stop == user stop)--> b --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(50.meters))),
-                        FORCED_OP_STOP_TIME,
-                        true,
-                    ),
-                )
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(50.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .run()!!
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-        checkStop(
-            resSuccess,
-            listOf(TrainStop(50.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP)),
+            listOf(TrainStop(50.0, expectedStopDuration, SHORT_SLIP_STOP, StopType.INPUT_STOP)),
         )
     }
 
@@ -449,7 +198,7 @@ class ForcedStopsTests {
     @Test
     fun emptyTimetableWithForcedOpStopInputStopAndOvertake() {
         /*
-        a --(forced op stop)--(user stop)--> b -(user stop)--(overtake)--> c
+        a --(forced op stop)--(input stop)--> b -(input stop)--(overtake)--> c
          */
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
@@ -497,44 +246,6 @@ class ForcedStopsTests {
                 TrainStop(80.0, IMPORTANT_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
                 TrainStop(150.0, SHORT_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
                 TrainStop(160.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.OVERTAKE),
-            ),
-        )
-    }
-
-    @Test
-    fun emptyTimetableWithForcedOpStopAndOvertakeAtSameOffset() {
-        /*
-        a --(forced op stop == overtake)--> b --> c
-         */
-        val infra = DummyInfra()
-        val firstBlock = infra.addBlock("a", "b")
-        val secondBlock = infra.addBlock("b", "c")
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .addStep(ExplorerStep(setOf(BlockLocation(firstBlock, Offset(0.meters)))))
-                .addStep(
-                    ExplorerStep(setOf(BlockLocation(secondBlock, Offset(100.meters))), 0.0, true),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(60.meters)),
-                        ForcedStopType.GENERAL_STOP,
-                    ),
-                )
-                .addForcedOpStop(
-                    BlockLocationStop(
-                        BlockLocation(firstBlock, Offset(60.meters)),
-                        ForcedStopType.OVERTAKE,
-                    ),
-                )
-                .run()!!
-        Assertions.assertTrue(res is STDCMCompleteResult)
-        val resSuccess = res as STDCMCompleteResult
-        checkStop(
-            resSuccess,
-            listOf(
-                TrainStop(60.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
             ),
         )
     }
@@ -661,9 +372,171 @@ class ForcedStopsTests {
             ),
         )
     }
-    // TODO : Add test with Overtake
-    // Input stop type > Forced op stop type > Overtake type
-    // time max of 3
+
+    private fun forcedOpStopLocations() =
+        listOf(
+            /*
+            a --(forced op stop)--> b --> c
+            */
+            Arguments.of(
+                StopScenario(
+                    stops = listOf(ForcedOpStopLocation(0, Offset(40.0.meters))),
+                    expectedStops =
+                        listOf(
+                            TrainStop(
+                                40.0,
+                                FORCED_OP_STOP_TIME,
+                                SHORT_SLIP_STOP,
+                                StopType.GENERAL_STOP,
+                            ),
+                        ),
+                ),
+                /*
+                a --> b --(forced op stop)--> c
+                */
+                Arguments.of(
+                    StopScenario(
+                        stops = listOf(ForcedOpStopLocation(1, Offset(40.0.meters))),
+                        expectedStops =
+                            listOf(
+                                TrainStop(
+                                    140.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                            ),
+                    ),
+                ),
+                /*
+                a --> b (forced op stop)--> c
+                */
+                Arguments.of(
+                    StopScenario(
+                        stops = listOf(ForcedOpStopLocation(1, Offset(0.0.meters))),
+                        expectedStops =
+                            listOf(
+                                TrainStop(
+                                    100.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                            ),
+                    ),
+                ),
+                /*
+                a --> (forced op stop) b --> c
+                */
+                Arguments.of(
+                    StopScenario(
+                        stops = listOf(ForcedOpStopLocation(0, Offset(100.0.meters))),
+                        expectedStops =
+                            listOf(
+                                TrainStop(
+                                    100.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                            ),
+                    ),
+                ),
+                /*
+                a --(forced op stop)--> b --(forced op stop)--> c
+                */
+                Arguments.of(
+                    StopScenario(
+                        stops =
+                            listOf(
+                                ForcedOpStopLocation(0, Offset(50.0.meters)),
+                                ForcedOpStopLocation(1, Offset(50.0.meters)),
+                            ),
+                        expectedStops =
+                            listOf(
+                                TrainStop(
+                                    50.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                                TrainStop(
+                                    150.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                            ),
+                    ),
+                ),
+                /*
+                a --(forced op stop)--(forced op stop)--> b --> c
+                */
+                Arguments.of(
+                    StopScenario(
+                        stops =
+                            listOf(
+                                ForcedOpStopLocation(0, Offset(50.0.meters)),
+                                ForcedOpStopLocation(0, Offset(80.0.meters)),
+                            ),
+                        expectedStops =
+                            listOf(
+                                TrainStop(
+                                    50.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                                TrainStop(
+                                    80.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                            ),
+                    ),
+                ),
+                /*
+                a --(forced op stop == overtake)--> b --> c
+                 */
+                Arguments.of(
+                    StopScenario(
+                        stops =
+                            listOf(
+                                ForcedOpStopLocation(
+                                    0,
+                                    Offset(50.0.meters),
+                                    stopType = StopType.GENERAL_STOP,
+                                ),
+                                ForcedOpStopLocation(
+                                    0,
+                                    Offset(50.0.meters),
+                                    stopType = StopType.OVERTAKE,
+                                ),
+                            ),
+                        expectedStops =
+                            listOf(
+                                TrainStop(
+                                    50.0,
+                                    FORCED_OP_STOP_TIME,
+                                    SHORT_SLIP_STOP,
+                                    StopType.GENERAL_STOP,
+                                ),
+                            ),
+                    ),
+                ),
+            ),
+        )
+
+    private fun forcedOpStopsAndInputStopAtSameOffsetParameters() =
+        listOf(
+            // (forced op stop > input stop)
+            Arguments.of(SHORT_STOP_TIME, FORCED_OP_STOP_TIME),
+            // (forced op stop < input stop)
+            Arguments.of(IMPORTANT_STOP_TIME, IMPORTANT_STOP_TIME),
+            // (forced op stop == input stop)
+            Arguments.of(FORCED_OP_STOP_TIME, FORCED_OP_STOP_TIME),
+        )
 
     // rebroussement sur forced op stop (vol de test)
 }
