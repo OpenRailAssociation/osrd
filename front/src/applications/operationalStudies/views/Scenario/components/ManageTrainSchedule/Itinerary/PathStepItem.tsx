@@ -59,9 +59,8 @@ const StatusIcon = ({ pathStep, isOpValid, isInvalid }: StatusIconProps) => {
   return (
     <span
       className={cx('path-step-op-status-icon', {
-        'in-infra': isOpValid && loc?.type !== 'track_offset',
-        'track-offset': isOpValid && loc?.type === 'track_offset',
-        'not-in-infra': isInvalid,
+        valid: isOpValid,
+        invalid: isInvalid,
         placeholder: !loc, // isOpValid and isInvalid are both false in this case
       })}
     >
