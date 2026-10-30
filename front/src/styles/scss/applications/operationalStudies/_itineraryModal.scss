@@ -516,6 +516,8 @@
               .leading-content-wrapper {
                 width: 32px;
                 padding: 0 4px;
+                border-radius: 6px 0 0 6px;
+                box-shadow: 0 0 0 0.063rem var(--black25) inset;
 
                 &:has(.path-step-op-status-icon.in-infra),
                 &:has(.path-step-op-status-icon.track-offset) {
