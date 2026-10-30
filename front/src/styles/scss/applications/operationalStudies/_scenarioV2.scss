@@ -135,6 +135,23 @@
           }
         }
       }
+
+      .timetable-name-container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--grey50);
+        white-space: nowrap;
+
+        &:hover {
+          cursor: pointer;
+          color: var(--black100);
+        }
+
+        &:active {
+          color: var(--grey70);
+        }
+      }
     }
 
     .board-bar {
