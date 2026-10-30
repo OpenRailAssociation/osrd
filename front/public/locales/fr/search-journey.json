@@ -20,7 +20,7 @@
     "solutionTitles": {
       "closestDeparture": "Horaire le plus proche",
       "fastest": "Plus rapide",
-      "fewestTransfers": "Moins de transfert"
+      "fewestTransfers": "Moins de transferts"
     },
     "trainPathPrefix": "Sillon n° "
   },
