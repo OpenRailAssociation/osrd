@@ -3,16 +3,21 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
-import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import AddAndEditScenarioModal, {
+  type ScenarioField,
+} from 'modules/scenario/components/AddOrEditScenarioModal';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/useAuth';
 
 import InfraLoadingState from './InfraLoadingState';
+import ScenarioExpandedHeader from './ScenarioExpandedHeader';
 
 const BOARDS: Board[] = [
   'trains',
@@ -35,6 +40,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const navigate = useNavigate();
   const { scenario, timetableId, infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
+  const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
 
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
@@ -55,7 +61,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     username: false,
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
-  const [openEditScenarioModal, setOpenEditScenarioModal] = useState(false);
+  const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
@@ -196,7 +202,13 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       </div>
 
       {/* scenario details */}
-      {areScenarioDetailsVisible && (
+      {areScenarioDetailsVisible && multipleTimetablesEnabled && (
+        <ScenarioExpandedHeader
+          onEditScenario={setScenarioFieldToEdit}
+          onCollapse={() => setAreScenarioDetailsVisible(false)}
+        />
+      )}
+      {areScenarioDetailsVisible && !multipleTimetablesEnabled && (
         <div className="scenario-details">
           <span className="scenario-description" data-testid="scenario-details-description">
             {scenario.description}
@@ -235,7 +247,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               className="edit-scenario"
               type="button"
               aria-label={t('main.editScenario')}
-              onClick={() => setOpenEditScenarioModal(true)}
+              onClick={() => setScenarioFieldToEdit('name')}
               title={t('main.editScenario')}
               data-testid="edit-scenario"
             >
@@ -244,11 +256,12 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           </div>
         </div>
       )}
-      {openEditScenarioModal ? (
+      {scenarioFieldToEdit ? (
         <AddAndEditScenarioModal
           editionMode
           scenario={scenario}
-          onCancel={() => setOpenEditScenarioModal(false)}
+          fieldToFocus={scenarioFieldToEdit}
+          onCancel={() => setScenarioFieldToEdit(undefined)}
         />
       ) : undefined}
     </header>

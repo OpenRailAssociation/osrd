@@ -42,9 +42,12 @@ export type ScenarioForm = ScenarioPatchForm & {
   timetable_type?: TimetableType;
 };
 
+export type ScenarioField = 'name' | 'description' | 'tags';
+
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
   scenario?: ScenarioWithDetails;
+  fieldToFocus?: ScenarioField;
   onCancel?: () => void;
 };
 
@@ -66,6 +69,7 @@ const emptyScenario: ScenarioForm = {
 const AddOrEditScenarioModal = ({
   editionMode = false,
   scenario,
+  fieldToFocus = 'name',
   onCancel,
 }: AddOrEditScenarioModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
@@ -74,6 +78,7 @@ const AddOrEditScenarioModal = ({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const hourlyTimetableActivated = useSelector(getFeatureFlag('hourlyTimetables'));
+  const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
 
   const { data: infrasList } = osrdEditoastApi.endpoints.getInfra.useQuery({ pageSize: 1000 });
   const infras = infrasList?.results ?? [];
@@ -345,7 +350,7 @@ const AddOrEditScenarioModal = ({
             name="scenarioInputName"
             label={t('main.scenarioName')}
             /* eslint-disable-next-line jsx-a11y/no-autofocus */
-            autoFocus
+            autoFocus={fieldToFocus === 'name'}
             value={currentScenario.name || ''}
             onChange={(e) => handleScenarioInputChange('name', e.target.value)}
             statusWithMessage={
@@ -362,6 +367,8 @@ const AddOrEditScenarioModal = ({
             id="scenarioDescription"
             data-testid="scenarioDescription-input"
             label={t('main.scenarioDescription')}
+            /* eslint-disable-next-line jsx-a11y/no-autofocus */
+            autoFocus={fieldToFocus === 'description'}
             value={currentScenario.description || ''}
             onChange={(e) => handleScenarioInputChange('description', e.target.value)}
             placeholder={t('main.scenarioDescriptionPlaceholder')}
@@ -381,6 +388,8 @@ const AddOrEditScenarioModal = ({
             tokens={currentScenario.tags || []}
             onChange={(newTags) => handleScenarioInputChange('tags', newTags)}
             dataTestId="scenarioTags"
+            /* eslint-disable-next-line jsx-a11y/no-autofocus */
+            autoFocus={fieldToFocus === 'tags'}
           />
         </div>
 
@@ -407,49 +416,51 @@ const AddOrEditScenarioModal = ({
           </div>
         ) : undefined}
 
-        <div className="scenario-add-or-edit-modal-infra-section">
-          <ComboBox
-            id="scenario-add-or-edit-modal-infra-select"
-            label={t('main.scenarioInfrastructureLabel')}
-            autoComplete="off"
-            value={infraValue || undefined}
-            suggestions={infraSuggestions}
-            getSuggestionLabel={(s) => getInfraLabel(s)}
-            onSelectSuggestion={(s) => {
-              handleScenarioInputChange('infra_id', s ? s.id : undefined);
-            }}
-            resetSuggestions={resetInfraSuggestions}
-            onChange={onInfraQueryChange}
-            data-testid="infra-combobox-input"
-            testIdPrefix="infra-combobox"
-            statusWithMessage={
-              displayErrors && invalidFields.infra_id
-                ? {
-                    message: t('main.scenarioInfraInvalid'),
-                    status: 'error',
-                  }
-                : undefined
-            }
-          />
-
-          {!editionMode && electricalProfilOptions.length > 1 && (
-            <Select
-              id="electricalProfileSet"
-              dataTestId="electrical-profile-select"
-              label={t('main.electricalProfileSet')}
-              value={selectedValue}
-              options={electricalProfilOptions.map((e) => ({
-                id: `${e.key}`,
-                label: e.value,
-              }))}
-              getOptionValue={(ep) => ep.id}
-              getOptionLabel={(ep) => ep.label}
-              onChange={(e) => {
-                handleScenarioInputChange('electrical_profile_set_id', e?.id ? +e.id : undefined);
+        {(!editionMode || !multipleTimetablesEnabled) && (
+          <div className="scenario-add-or-edit-modal-infra-section">
+            <ComboBox
+              id="scenario-add-or-edit-modal-infra-select"
+              label={t('main.scenarioInfrastructureLabel')}
+              autoComplete="off"
+              value={infraValue || undefined}
+              suggestions={infraSuggestions}
+              getSuggestionLabel={(s) => getInfraLabel(s)}
+              onSelectSuggestion={(s) => {
+                handleScenarioInputChange('infra_id', s ? s.id : undefined);
               }}
+              resetSuggestions={resetInfraSuggestions}
+              onChange={onInfraQueryChange}
+              data-testid="infra-combobox-input"
+              testIdPrefix="infra-combobox"
+              statusWithMessage={
+                displayErrors && invalidFields.infra_id
+                  ? {
+                      message: t('main.scenarioInfraInvalid'),
+                      status: 'error',
+                    }
+                  : undefined
+              }
             />
-          )}
-        </div>
+
+            {!editionMode && electricalProfilOptions.length > 1 && (
+              <Select
+                id="electricalProfileSet"
+                dataTestId="electrical-profile-select"
+                label={t('main.electricalProfileSet')}
+                value={selectedValue}
+                options={electricalProfilOptions.map((e) => ({
+                  id: `${e.key}`,
+                  label: e.value,
+                }))}
+                getOptionValue={(ep) => ep.id}
+                getOptionLabel={(ep) => ep.label}
+                onChange={(e) => {
+                  handleScenarioInputChange('electrical_profile_set_id', e?.id ? +e.id : undefined);
+                }}
+              />
+            )}
+          </div>
+        )}
       </form>
     </Dialog>
   );

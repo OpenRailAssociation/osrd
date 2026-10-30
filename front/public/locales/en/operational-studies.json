@@ -198,13 +198,26 @@
     "scenarioDescription": "Description",
     "scenarioDescriptionInvalid": "The description for the scenario must not exceed 1024 characters",
     "scenarioDescriptionPlaceholder": "Short description of the scenario",
+    "scenarioElectricalProfile": "Electrical profile",
     "scenarioInfraInvalid": "Infrastructure is required",
     "scenarioInfrastructureLabel": "Infrastructure",
     "scenarioModificationTitle": "Edit scenario",
     "scenarioName": "Scenario's name",
     "scenarioNameInvalid": "You have to set a name for scenario which does not exceed 128 characters",
+    "scenarioNoDescription": "No description",
+    "scenarioNoTags": "No tags",
     "scenarioTags": "Tags",
-    "scenarioTimetableTypeCalendar": "Calendar",
+    "scenarioTimetableSections": {
+      "CALENDAR": {
+        "empty": "No calendar timetable",
+        "title": "Calendar timetables"
+      },
+      "HOURLY": {
+        "empty": "No hourly timetable",
+        "title": "Hourly timetables"
+      }
+    },
+    "scenarioTimetableTypeCalendar": "Calendar timetable",
     "scenarioTimetableTypeHourly": "Hourly timetable",
     "scenarioUpdated": "Successful update!",
     "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
