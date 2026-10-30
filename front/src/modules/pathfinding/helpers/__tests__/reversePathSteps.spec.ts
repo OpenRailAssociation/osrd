@@ -21,6 +21,8 @@ describe('reversePathSteps', () => {
       },
       stopFor: null,
       receptionSignal: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       stopFor: new Duration({ milliseconds: 30 }),
@@ -36,6 +38,8 @@ describe('reversePathSteps', () => {
         },
       },
       receptionSignal: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       arrival: new Duration({ milliseconds: 1500000 }),
@@ -51,6 +55,8 @@ describe('reversePathSteps', () => {
       stopFor: null,
       receptionSignal: null,
       theoreticalMargin: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       stopFor: new Duration({ milliseconds: 50 }),
@@ -66,6 +72,8 @@ describe('reversePathSteps', () => {
       },
       receptionSignal: null,
       theoreticalMargin: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       arrival: null,
@@ -78,6 +86,8 @@ describe('reversePathSteps', () => {
       },
       stopFor: null,
       receptionSignal: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       key: 'key206',
@@ -94,6 +104,8 @@ describe('reversePathSteps', () => {
       stopFor: new Duration({ milliseconds: 0 }),
       receptionSignal: 'OPEN',
       theoreticalMargin: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
   ];
 
@@ -113,6 +125,8 @@ describe('reversePathSteps', () => {
       stopFor: null,
       receptionSignal: 'OPEN',
       theoreticalMargin: '2min/100km',
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       arrival: null,
@@ -125,6 +139,8 @@ describe('reversePathSteps', () => {
       },
       stopFor: null,
       receptionSignal: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       stopFor: new Duration({ milliseconds: 50 }),
@@ -140,6 +156,8 @@ describe('reversePathSteps', () => {
       },
       receptionSignal: null,
       theoreticalMargin: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       arrival: null,
@@ -155,6 +173,8 @@ describe('reversePathSteps', () => {
       stopFor: null,
       receptionSignal: null,
       theoreticalMargin: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       stopFor: new Duration({ milliseconds: 30 }),
@@ -170,6 +190,8 @@ describe('reversePathSteps', () => {
         },
       },
       receptionSignal: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
     {
       arrival: null,
@@ -185,6 +207,8 @@ describe('reversePathSteps', () => {
       stopFor: new Duration({ milliseconds: 0 }),
       receptionSignal: null,
       theoreticalMargin: null,
+      referenceBaseArrival: null,
+      referencePosition: null,
     },
   ];
 

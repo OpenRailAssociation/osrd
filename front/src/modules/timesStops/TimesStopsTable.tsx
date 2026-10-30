@@ -303,38 +303,36 @@ const TimesStopsTable = ({
     );
   };
 
-  const returnRequestTheoreticalMarginCell = useCallback(
-    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>) => {
-      const { allRows } = info.table.options.meta!;
-      const row = info.row.original;
-      const isFirstRow = info.row.index === 0;
-      const isLastRow = info.row.index === allRows.length - 1;
+  const returnRequestTheoreticalMarginCell = (
+    info: CellContext<TimesStopsTableFeatures, TimesStopsRow, MarginValue | undefined>
+  ) => {
+    const { allRows } = info.table.options.meta!;
+    const row = info.row.original;
+    const isFirstRow = info.row.index === 0;
+    const isLastRow = info.row.index === allRows.length - 1;
 
-      if (isLastRow) return null;
+    if (isLastRow) return null;
 
-      const marginValue =
-        isScheduledOP(row) || !!row.requestedTheoreticalMargin
-          ? row.requestedTheoreticalMargin
-          : null;
-      const isSpecifiedMargin =
-        (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
-        row.requestedTheoreticalMargin;
-      return (
-        <div data-testid="requested-theoretical-margin">
-          <MarginCell
-            data-testid="margin-cell-editable"
-            marginValue={marginValue ?? null}
-            editable={!isLastRow}
-            isInherited={!isSpecifiedMargin}
-            isFirstRow={isFirstRow}
-            showUnitToggle={isValid && !scheduleNotHonored}
-            onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
-          />
-        </div>
-      );
-    },
-    [scheduleNotHonored, isValid]
-  );
+    const marginValue =
+      isScheduledOP(row) || !!row.requestedTheoreticalMargin
+        ? row.requestedTheoreticalMargin
+        : null;
+    const isSpecifiedMargin =
+      (isFirstRow || row.isTheoreticalMarginBoundary) && !!row.requestedTheoreticalMargin;
+
+    return (
+      <div data-testid="requested-theoretical-margin">
+        <MarginCell
+          data-testid="margin-cell-editable"
+          marginValue={marginValue ?? null}
+          editable={!isLastRow}
+          isInherited={!isSpecifiedMargin}
+          isFirstRow={isFirstRow}
+          onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
+        />
+      </div>
+    );
+  };
 
   const returnShortSlipDistanceCell = (
     info: CellContext<TimesStopsTableFeatures, TimesStopsRow, boolean | undefined>
@@ -870,7 +868,6 @@ const TimesStopsTable = ({
       returnCalculatedArrivalTimeCell,
       returnRequestedTimeHeader,
       returnArrivalTimeCell,
-      returnRequestTheoreticalMarginCell,
       returnBaseArrivalCell,
       isValid,
       t,

@@ -80,14 +80,12 @@ const MarginCellEditable = ({
   initialValue,
   isInherited = false,
   isFirstRow = false,
-  showUnitToggle = true,
   onCommit,
   'data-testid': dataTestId,
 }: {
   initialValue: MarginValue | null;
   isInherited: boolean;
   isFirstRow: boolean;
-  showUnitToggle: boolean;
   onCommit?: (value: MarginValue | null) => void;
   'data-testid'?: string;
 }) => {
@@ -192,19 +190,13 @@ const MarginCellEditable = ({
           }
         }}
       />
-      {showUnitToggle ? (
-        <UnitToggle
-          value={unit}
-          onChange={(u) => {
-            setUnit(u);
-            inputRef.current?.focus();
-          }}
-        />
-      ) : (
-        <div className="unit-selection">
-          <span className="unit">%</span>
-        </div>
-      )}
+      <UnitToggle
+        value={unit}
+        onChange={(u) => {
+          setUnit(u);
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 };
@@ -243,7 +235,6 @@ const MarginCell = ({
   showPolarity = false,
   isInherited = false,
   isFirstRow = false,
-  showUnitToggle = true,
   onCommit,
   'data-testid': dataTestId,
 }: {
@@ -252,7 +243,6 @@ const MarginCell = ({
   showPolarity?: boolean;
   isInherited?: boolean;
   isFirstRow?: boolean;
-  showUnitToggle?: boolean;
   onCommit?: (value: MarginValue | null) => void;
   'data-testid'?: string;
 }) =>
@@ -263,7 +253,6 @@ const MarginCell = ({
       isFirstRow={isFirstRow}
       onCommit={onCommit}
       data-testid={dataTestId}
-      showUnitToggle={showUnitToggle}
     />
   ) : (
     <MarginCellReadOnly

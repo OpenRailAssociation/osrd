@@ -74,6 +74,8 @@ export type PathStep = {
   stopFor?: Duration | null;
   theoreticalMargin?: string;
   receptionSignal?: ReceptionSignal;
+  referenceBaseArrival?: Duration | null;
+  referencePosition?: number | null;
   kp?: string;
   /** Distance from the beginning of the path in mm */
   positionOnPath?: number;
@@ -105,6 +107,8 @@ export type PathStepV2 = {
   stopFor: Duration | null;
   theoreticalMargin: string | null;
   receptionSignal: ReceptionSignal | null;
+  referenceBaseArrival: Duration | null;
+  referencePosition: number | null;
 };
 
 export type PathStepMetadata =
