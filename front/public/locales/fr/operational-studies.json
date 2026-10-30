@@ -418,7 +418,7 @@
     },
     "inputOPMainCodesExample": "Ex : LSN CIG CCS",
     "itineraryModal": {
-      "addCustomOp": "Ajouter « {{opName}} »",
+      "addCustomOp": "Ajouter ce point de passage personnalisé",
       "addCustomTrackName": "Ajouter « {{trackName}} »",
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
       "addPoint": "Ajouter",
