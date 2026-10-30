@@ -23,7 +23,17 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 #[derive(
-    Debug, Clone, AsExpression, Serialize, Deserialize, FromSqlRow, PartialEq, PartialOrd, ToSchema,
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    AsExpression,
+    Serialize,
+    Deserialize,
+    FromSqlRow,
+    PartialEq,
+    PartialOrd,
+    ToSchema,
 )]
 #[diesel(sql_type = sql_types::Timestamptz)]
 pub struct Timestamp(jiff::Timestamp);
@@ -44,5 +54,17 @@ impl ToSql<sql_types::Timestamptz, Pg> for Timestamp {
 impl FromSql<sql_types::Timestamptz, Pg> for Timestamp {
     fn from_sql(bytes: PgValue<'_>) -> deserialize::Result<Timestamp> {
         jiff_diesel::Timestamp::from_sql(bytes).map(|timestamp| Timestamp(timestamp.to_jiff()))
+    }
+}
+
+impl From<jiff::Timestamp> for Timestamp {
+    fn from(value: jiff::Timestamp) -> Self {
+        Timestamp(value)
+    }
+}
+
+impl From<Timestamp> for jiff::Timestamp {
+    fn from(value: Timestamp) -> Self {
+        value.0
     }
 }

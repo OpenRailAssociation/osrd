@@ -46,7 +46,7 @@ pub struct ScheduleItem {
 
 #[cfg(feature = "testing")]
 impl ScheduleItem {
-    pub fn new_with_stop(at: &str, duration: chrono::Duration) -> Self {
+    pub fn new_with_stop(at: &str, duration: jiff::SignedDuration) -> Self {
         Self {
             at: at.into(),
             arrival: None,

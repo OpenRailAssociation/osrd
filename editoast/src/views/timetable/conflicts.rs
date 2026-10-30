@@ -1,6 +1,7 @@
 use authz::v2;
 use core_client::Headers;
 use models::TrainScheduleLinking;
+use schemas::primitives::duration::pg_interval_to_jiff_duration;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -166,10 +167,12 @@ pub(super) fn compute_hourly_pattern_period(
     let paced_train_lcm = paced_trains
         .iter()
         .map(|paced_train| {
-            paced_train
+            let time_window = paced_train
                 .time_window
-                .expect("a paced_train should have a time_window")
-                .num_milliseconds()
+                .expect("a paced_train should have a time_window");
+            pg_interval_to_jiff_duration(time_window)
+                .expect("months unsupported in train schedule's time_window")
+                .as_millis() as i64
         })
         .reduce(lcm)?;
     Some(Duration::milliseconds(paced_train_lcm))
@@ -438,10 +441,12 @@ pub(in crate::views) async fn conflicts(
                 None => single_period_occurrences,
                 Some(period) => {
                     // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
-                    let time_window_ms = ts
+                    let time_window_interval = ts
                         .time_window
-                        .expect("all time_window are defined when timetable_period exists")
-                        .num_milliseconds();
+                        .expect("all time_window are defined when timetable_period exists");
+                    let time_window_ms = pg_interval_to_jiff_duration(time_window_interval)
+                        .expect("months unsupported in train schedule's time_window")
+                        .as_millis() as i64;
                     let repetition = (period.num_milliseconds() / time_window_ms) as usize;
                     populate_timetable(single_period_occurrences, repetition, time_window_ms)
                 }
@@ -785,6 +790,7 @@ mod tests {
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
     use core_client::simulation::SpeedLimitProperties;
+    use jiff::SignedDuration;
     use models::train_schedule::TrainScheduleChangeset;
     use reqwest::StatusCode;
     use rstest::rstest;
@@ -1010,8 +1016,9 @@ mod tests {
             let mut base = simple_paced_train_base();
             base.train_occurrence.start_time = units::millisecond::i64::new(0);
             base.paced.as_mut().unwrap().time_window =
-                Duration::hours(time_window).try_into().unwrap();
-            base.paced.as_mut().unwrap().interval = Duration::hours(1).try_into().unwrap();
+                SignedDuration::from_hours(time_window).try_into().unwrap();
+            base.paced.as_mut().unwrap().interval =
+                SignedDuration::from_hours(1).try_into().unwrap();
             TrainScheduleChangeset::from(base)
                 .train_schedule_set_id(train_schedule_set.id)
                 .create(&mut pool.get_ok())

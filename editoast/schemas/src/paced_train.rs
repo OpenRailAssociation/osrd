@@ -10,7 +10,7 @@ use crate::train_schedule::PowerRestrictionItem;
 use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainOccurrence;
 use crate::train_schedule::TrainScheduleOptions;
-use chrono::Duration;
+use jiff::SignedDuration;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -66,11 +66,11 @@ impl<'de> Deserialize<'de> for TrainSchedule {
             })
             .and_then(|ScheduleItem { arrival, .. }| arrival.as_deref().copied());
         if let Some(arrival) = arrival_time_on_first_path_item
-            && arrival != Duration::seconds(0)
+            && arrival != SignedDuration::from_secs(0)
         {
             return Err(serde::de::Error::custom(format!(
                 "Scheduled arrival time on the origin of the path is necessary 0 seconds, but is: '{}'",
-                arrival.num_seconds()
+                arrival.as_secs()
             )));
         }
         Ok(train_schedule)

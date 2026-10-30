@@ -1,6 +1,5 @@
-use chrono::Duration as ChronoDuration;
-use chrono::Utc;
 use database::DbConnection;
+use jiff::SignedDuration as JiffDuration;
 
 use models::CatalogEntry;
 use models::ElectricalProfileSet;
@@ -142,8 +141,8 @@ pub fn simple_paced_train_base() -> TrainSchedule {
     TrainSchedule {
         train_occurrence: schemas::TrainOccurrence::fake(),
         paced: Some(Paced {
-            time_window: ChronoDuration::hours(2).try_into().unwrap(),
-            interval: ChronoDuration::minutes(15).try_into().unwrap(),
+            time_window: JiffDuration::from_hours(2).try_into().unwrap(),
+            interval: JiffDuration::from_mins(15).try_into().unwrap(),
             exceptions: vec![],
         }),
     }
@@ -329,7 +328,7 @@ pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
 pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkScheduleGroup {
     WorkScheduleGroup::changeset()
         .name("Empty work schedule group".to_string())
-        .creation_date(Utc::now())
+        .creation_date(Timestamp::now())
         .create(conn)
         .await
         .expect("Failed to create empty work schedule group")

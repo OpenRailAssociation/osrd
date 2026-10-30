@@ -14,6 +14,7 @@ use models::timetable::Timetable;
 use models::train_schedule_exception::TrainScheduleExceptionChangeset;
 use schemas::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
+use schemas::primitives::duration::pg_interval_to_jiff_duration;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -157,15 +158,16 @@ pub(in crate::views) async fn create_train_schedule_exception(
         && !train_schedule.is_exception_occurrence_index_valid(occurrence_index)
     {
         return Err(TrainScheduleExceptionError::InvalidOccurrenceIndex {
+            // TODO error handling, panics if there are months in time_window or interval
             train_schedule_id: train_schedule_exception_form.train_schedule_id,
             occurrence_index,
             time_window: train_schedule
                 .time_window
-                .map(|t| t.to_string())
+                .map(|t| pg_interval_to_jiff_duration(t).unwrap().to_string())
                 .unwrap_or_else(|| "None".to_string()),
             interval: train_schedule
                 .interval
-                .map(|i| i.to_string())
+                .map(|i| pg_interval_to_jiff_duration(i).unwrap().to_string())
                 .unwrap_or_else(|| "None".to_string()),
         }
         .into());
@@ -246,15 +248,16 @@ pub(in crate::views) async fn update(
         && !train_schedule.is_exception_occurrence_index_valid(occurrence_index)
     {
         return Err(TrainScheduleExceptionError::InvalidOccurrenceIndex {
+            // TODO error handling, panics if there are months in time_window or interval
             train_schedule_id: train_schedule_exception_form.train_schedule_id,
             occurrence_index,
             time_window: train_schedule
                 .time_window
-                .map(|t| t.to_string())
+                .map(|t| pg_interval_to_jiff_duration(t).unwrap().to_string())
                 .unwrap_or_else(|| "None".to_string()),
             interval: train_schedule
                 .interval
-                .map(|i| i.to_string())
+                .map(|i| pg_interval_to_jiff_duration(i).unwrap().to_string())
                 .unwrap_or_else(|| "None".to_string()),
         }
         .into());

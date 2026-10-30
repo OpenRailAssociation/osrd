@@ -11,10 +11,9 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use chrono::DateTime;
-use chrono::Utc;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+
 use models::WorkSchedule;
 use models::WorkScheduleGroup;
 use models::prelude::*;
@@ -64,8 +63,8 @@ impl From<WsGroupError> for WorkScheduleError {
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub(in crate::views) struct WorkScheduleItemForm {
-    pub start_date_time: DateTime<Utc>,
-    pub end_date_time: DateTime<Utc>,
+    pub start_date_time: jiff::Timestamp,
+    pub end_date_time: jiff::Timestamp,
     pub track_ranges: Vec<TrackRange>,
     pub obj_id: String,
     #[schema(inline)]
@@ -104,8 +103,8 @@ impl WorkScheduleItemForm {
         work_schedule_group_id: i64,
     ) -> Changeset<WorkSchedule> {
         WorkSchedule::changeset()
-            .start_date_time(self.start_date_time)
-            .end_date_time(self.end_date_time)
+            .start_date_time(self.start_date_time.into())
+            .end_date_time(self.end_date_time.into())
             .track_ranges(self.track_ranges)
             .obj_id(self.obj_id)
             .work_schedule_type(self.work_schedule_type)
@@ -184,9 +183,9 @@ pub(in crate::views) struct WorkScheduleProjection {
     /// The type of the work schedule.
     pub work_schedule_type: WorkScheduleType,
     /// The date and time when the work schedule takes effect.
-    pub start_date_time: DateTime<Utc>,
+    pub start_date_time: jiff::Timestamp,
     /// The date and time when the work schedule ends.
-    pub end_date_time: DateTime<Utc>,
+    pub end_date_time: jiff::Timestamp,
     /// a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
     /// - `a` is the distance from the beginning of the path to the beginning of the track range
     /// - `b` is the distance from the beginning of the path to the end of the track range
@@ -244,8 +243,8 @@ pub(in crate::views) async fn project_path(
             } else {
                 Some(WorkScheduleProjection {
                     work_schedule_type: ws.work_schedule_type,
-                    start_date_time: ws.start_date_time,
-                    end_date_time: ws.end_date_time,
+                    start_date_time: ws.start_date_time.into(),
+                    end_date_time: ws.end_date_time.into(),
                     path_position_ranges,
                 })
             }
@@ -285,7 +284,7 @@ pub(in crate::views) async fn create_group(
     // Create the work_schedule_group
     let work_schedule_group = WorkScheduleGroup::changeset()
         .name(group_name.clone())
-        .creation_date(Utc::now())
+        .creation_date(models::Timestamp::now())
         .create(conn)
         .await
         .map_err(WorkScheduleError::from)?;
@@ -428,7 +427,8 @@ pub(in crate::views) async fn get_group(
 
 #[cfg(test)]
 pub mod tests {
-    use chrono::NaiveDate;
+    use jiff::civil::DateTime;
+    use jiff::tz::TimeZone;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -496,7 +496,7 @@ pub mod tests {
 
         WorkScheduleGroup::changeset()
             .name("duplicated work schedule group name".to_string())
-            .creation_date(Utc::now())
+            .creation_date(models::Timestamp::now())
             .create(&mut pool.get_ok())
             .await
             .expect("Failed to create work schedule group");
@@ -583,17 +583,19 @@ pub mod tests {
             .enumerate()
             .map(|(index, track_ranges)| {
                 let start_date_time =
-                    NaiveDate::from_ymd_opt(2024, 1, (index + 1).try_into().unwrap())
+                    DateTime::new(2024, 1, (index + 1).try_into().unwrap(), 0, 0, 0, 0)
                         .unwrap()
-                        .and_hms_opt(0, 0, 0)
+                        .to_zoned(TimeZone::UTC)
                         .unwrap()
-                        .and_utc();
+                        .timestamp()
+                        .into();
                 let end_date_time =
-                    NaiveDate::from_ymd_opt(2024, 1, (index + 2).try_into().unwrap())
+                    DateTime::new(2024, 1, (index + 2).try_into().unwrap(), 0, 0, 0, 0)
                         .unwrap()
-                        .and_hms_opt(0, 0, 0)
+                        .to_zoned(TimeZone::UTC)
                         .unwrap()
-                        .and_utc();
+                        .timestamp()
+                        .into();
                 WorkSchedule::changeset()
                     .start_date_time(start_date_time)
                     .end_date_time(end_date_time)
@@ -647,8 +649,8 @@ pub mod tests {
             .enumerate()
             .map(|(index, position_ranges)| WorkScheduleProjection {
                 work_schedule_type: work_schedules[index].work_schedule_type,
-                start_date_time: work_schedules[index].start_date_time,
-                end_date_time: work_schedules[index].end_date_time,
+                start_date_time: work_schedules[index].start_date_time.into(),
+                end_date_time: work_schedules[index].end_date_time.into(),
                 path_position_ranges: position_ranges
                     .into_iter()
                     .map(Intersection::from)

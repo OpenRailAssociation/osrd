@@ -289,27 +289,27 @@ impl TrainOccurrence {
                 ScheduleItem {
                     at: NonBlankString::from("a"),
                     arrival: None,
-                    stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
+                    stop_for: Some(jiff::SignedDuration::from_mins(5).try_into().unwrap()),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
                 },
                 ScheduleItem {
                     at: NonBlankString::from("b"),
-                    arrival: Some(chrono::Duration::minutes(10).try_into().unwrap()),
-                    stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
+                    arrival: Some(jiff::SignedDuration::from_mins(10).try_into().unwrap()),
+                    stop_for: Some(jiff::SignedDuration::from_mins(5).try_into().unwrap()),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
                 },
                 ScheduleItem {
                     at: NonBlankString::from("c"),
                     arrival: None,
-                    stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
+                    stop_for: Some(jiff::SignedDuration::from_mins(5).try_into().unwrap()),
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
                 },
                 ScheduleItem {
                     at: NonBlankString::from("d"),
-                    arrival: Some(chrono::Duration::minutes(50).try_into().unwrap()),
+                    arrival: Some(jiff::SignedDuration::from_mins(50).try_into().unwrap()),
                     stop_for: None,
                     reception_signal: ReceptionSignal::Open,
                     ..Default::default()
@@ -348,7 +348,7 @@ impl TrainOccurrence {
 
 #[cfg(test)]
 mod tests {
-    use chrono::Duration;
+    use jiff::SignedDuration;
     use serde_json::from_str;
     use serde_json::to_string;
 
@@ -476,7 +476,7 @@ mod tests {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![ScheduleItem {
                 at: "a".into(),
-                arrival: Some(Duration::minutes(5).try_into().unwrap()),
+                arrival: Some(SignedDuration::from_mins(5).try_into().unwrap()),
                 stop_for: None,
                 reception_signal: ReceptionSignal::Open,
                 ..Default::default()
