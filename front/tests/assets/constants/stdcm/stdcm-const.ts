@@ -89,6 +89,16 @@ export const LIGHT_DESTINATION_DETAILS = {
   arrivalType: 'asSoonAsPossible',
 };
 
+export const BACKTRACK_DETAILS = {
+  input: 'Branch',
+  suggestions: ['BRR Branch_backtracking', 'BRS Branch_station'],
+  origin: 'BRS Branch_station',
+  viaSearchText: 'Branch_backtracking',
+  via: 'BRR Branch_backtracking',
+  destination: CI_SUGGESTIONS.north[0],
+  operationalPointNames: ['Branch_station', 'Branch_backtracking', 'North_East_station'],
+};
+
 export const VIA_STOP_TIMES = {
   serviceStop: {
     default: '0',

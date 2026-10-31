@@ -26,8 +26,24 @@ export function findFirstPdf(directory: string): string | null {
   }
 }
 
+/**
+ * Read the first PDF file found in a directory.
+ * @param directory - The directory to search in.
+ * @returns The content of the PDF file.
+ * @throws If no PDF file is found.
+ */
+export function readFirstPdf(directory: string): Buffer {
+  const pdfFilePath = findFirstPdf(directory);
+  if (!pdfFilePath) {
+    throw new Error(`No PDF files found in directory: ${directory}`);
+  }
+  return fs.readFileSync(pdfFilePath);
+}
+
+const loadPdf = (buffer: Buffer) => getDocument({ data: new Uint8Array(buffer) }).promise;
+
 export async function parsePdfText(buffer: Buffer) {
-  const doc = await getDocument({ data: new Uint8Array(buffer) }).promise;
+  const doc = await loadPdf(buffer);
   let fullText = '';
   for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
     const page = await doc.getPage(pageNum);
@@ -48,6 +64,16 @@ export async function parsePdfText(buffer: Buffer) {
     fullText += '\n\n';
   }
   return fullText;
+}
+
+/**
+ * Check whether the PDF contains a named destination, i.e. a react-pdf element rendered with this `id`.
+ * @param buffer The PDF content.
+ * @param name The name of the destination.
+ */
+export async function hasNamedDestination(buffer: Buffer, name: string): Promise<boolean> {
+  const doc = await loadPdf(buffer);
+  return (await doc.getDestination(name)) !== null;
 }
 
 /**

@@ -3,7 +3,6 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { EMPTY_SELECT_VALUE } from '../../assets/constants/stdcm/stdcm-const';
 import { expectFieldsToHaveValues } from '../../utils';
 import type {
-  ViaSearchText,
   FillAndVerifyViaDetailsParams,
   VerifyViaDetailsParams,
 } from '../../utils/stdcm-types';
@@ -93,7 +92,7 @@ class ViaSection extends STDCMPage {
     defaultViaType,
   }: {
     viaNumber: number;
-    ciSearchText: ViaSearchText;
+    ciSearchText: string;
     expectedChValue: string;
     expectAutofilledCh: boolean;
     selectedSuggestionText: string;
@@ -208,7 +207,7 @@ class ViaSection extends STDCMPage {
     stopTime,
   }: {
     viaNumber: number;
-    ciSearchText: ViaSearchText;
+    ciSearchText: string;
     expectedChValue: string;
     expectAutofilledCh: boolean;
     selectedSuggestionText: string;
