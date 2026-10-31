@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use authz::Role;
@@ -20,11 +21,13 @@ use crate::error::Result;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use models::macro_node::MacroNode;
 use models::macro_node::OperationalPointReferenceNode;
 use models::prelude::*;
 use models::scenario::Scenario;
 use models::tags::Tags;
+use schemas::train_schedule::OperationalPointReference;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "macro_node")]
@@ -221,6 +224,96 @@ pub(in crate::views) async fn create(
     ))
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
+pub(in crate::views) struct MatchMacroNodesForm {
+    operational_point_references: Vec<OperationalPointReference>,
+}
+
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct MatchMacroNodesScenarioIdParam {
+    scenario_id: i64,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+pub(in crate::views) struct MatchMacroNodesResponse {
+    related_operational_points: Vec<Option<MacroNodeResponse>>,
+}
+
+/// Take a list of operational point references and return for each of them the macro node
+/// of the scenario referencing the same operational point, if any
+///
+/// References are resolved on the scenario infra, so a reference matches a node referencing the
+/// same operational point by id, domestic code or UIC. A reference to an operational point that
+/// is not in the infra only matches a node with the exact same reference.
+#[editoast_derive::route(Role::OperationalStudies)]
+#[utoipa::path(
+    post, path = "",
+    tag = "scenarios",
+    params(MatchMacroNodesScenarioIdParam),
+    request_body = MatchMacroNodesForm,
+    responses(
+        (status = 200, body = MatchMacroNodesResponse, description = "The macro node matching each operational point reference"),
+    )
+)]
+pub(in crate::views) async fn match_macro_nodes(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Path(MatchMacroNodesScenarioIdParam { scenario_id }): Path<MatchMacroNodesScenarioIdParam>,
+    Json(MatchMacroNodesForm {
+        operational_point_references,
+    }): Json<MatchMacroNodesForm>,
+) -> Result<Json<MatchMacroNodesResponse>> {
+    let mut conn = db_pool.get().await?;
+    let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
+        MacroNodeError::ScenarioNotFound { scenario_id }
+    })
+    .await?;
+    let settings = SelectionSettings::new().filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
+    let nodes: HashMap<_, _> = MacroNode::list(&mut conn, settings)
+        .await?
+        .into_iter()
+        .filter_map(|node| match &node.node_location {
+            OperationalPointReferenceNode::OperationalPointReference { operational_point } => {
+                Some((operational_point.clone(), node))
+            }
+            OperationalPointReferenceNode::TrackOffset(_) => None,
+        })
+        .collect();
+
+    // Load the infra operational points referenced by the nodes
+    let op_cache = OperationalPointCache::load_from_operational_points(
+        conn,
+        scenario.infra_id,
+        &nodes.keys().cloned().collect_vec(),
+    )
+    .await?;
+
+    // References to the same infra operational point share its id as key
+    let key = |reference: &OperationalPointReference| match op_cache.get_op_ref_id(reference) {
+        Some(op_id) => OperationalPointReference::Id {
+            operational_point: op_id.into(),
+        },
+        None => reference.clone(),
+    };
+    let nodes_by_key: HashMap<_, _> = nodes
+        .into_iter()
+        .map(|(reference, node)| (key(&reference), node))
+        .collect();
+
+    Ok(Json(MatchMacroNodesResponse {
+        related_operational_points: operational_point_references
+            .iter()
+            .map(|reference| {
+                nodes_by_key
+                    .get(&key(reference))
+                    .cloned()
+                    .map(MacroNodeResponse::from)
+            })
+            .collect(),
+    }))
+}
+
 /// Retrieve a macro node by id
 #[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
@@ -343,7 +436,12 @@ pub mod test {
     use schemas::train_schedule::OperationalPointReference;
 
     use super::*;
+    use crate::fixtures::create_project;
+    use crate::fixtures::create_scenario;
     use crate::fixtures::create_scenario_fixtures_set;
+    use crate::fixtures::create_small_infra;
+    use crate::fixtures::create_study;
+    use crate::fixtures::create_timetable_with_train_schedule_set;
     use crate::views::test_app;
 
     impl PartialEq<MacroNodeResponse> for MacroNode {
@@ -515,6 +613,132 @@ pub mod test {
     struct MacroNodeFixtureSet {
         scenario: Scenario,
         nodes: Vec<MacroNode>,
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn match_macro_nodes() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        let conn = &mut db_pool.get_ok();
+        let infra = create_small_infra(conn).await;
+        let (timetable, _) = create_timetable_with_train_schedule_set(conn).await;
+        let project = create_project(conn, "project").await;
+        let study = create_study(conn, "study", project.id).await;
+        let scenario = create_scenario(conn, "scenario", study.id, timetable.id, infra.id).await;
+        let (other_timetable, _) = create_timetable_with_train_schedule_set(conn).await;
+        let other_scenario = create_scenario(
+            conn,
+            "other_scenario",
+            study.id,
+            other_timetable.id,
+            infra.id,
+        )
+        .await;
+
+        let west_station_domestic = OperationalPointReference::Domestic {
+            country_code: "FR".into(),
+            main_code: "WS".into(),
+            secondary_code: Some("BV".into()),
+        };
+        let west_station_uic = OperationalPointReference::Uic {
+            uic: 8722,
+            secondary_code: Some("BV".into()),
+        };
+        let mid_east_station_id = OperationalPointReference::Id {
+            operational_point: "Mid_East_station".into(),
+        };
+        let unknown_op_id = OperationalPointReference::Id {
+            operational_point: "unknown".into(),
+        };
+        let unknown_op_domestic = OperationalPointReference::Domestic {
+            country_code: "FR".into(),
+            main_code: "PLY".into(),
+            secondary_code: Some("BV".into()),
+        };
+        let south_west_station_id = OperationalPointReference::Id {
+            operational_point: "South_West_station".into(),
+        };
+        let op_location = |operational_point: &OperationalPointReference| {
+            OperationalPointReferenceNode::OperationalPointReference {
+                operational_point: operational_point.clone(),
+            }
+        };
+
+        let mut nodes = Vec::new();
+        for (scenario_id, location) in [
+            (scenario.id, op_location(&west_station_domestic)),
+            (scenario.id, op_location(&mid_east_station_id)),
+            (scenario.id, op_location(&unknown_op_id)),
+            // West_station part, never matched since it is a track offset
+            (
+                scenario.id,
+                OperationalPointReferenceNode::TrackOffset(TrackOffset::new("TA1", 500_000)),
+            ),
+            (other_scenario.id, op_location(&south_west_station_id)),
+            (scenario.id, op_location(&unknown_op_domestic)),
+        ] {
+            let node = MacroNode::changeset()
+                .scenario_id(scenario_id)
+                .position_x(0)
+                .position_y(0)
+                .labels(Tags::default())
+                .node_location(location)
+                .create(conn)
+                .await
+                .expect("Failed to create macro node");
+            nodes.push(node);
+        }
+
+        let operational_point_references = vec![
+            OperationalPointReference::Id {
+                operational_point: "West_station".into(),
+            },
+            west_station_uic,
+            OperationalPointReference::Domestic {
+                country_code: "FR".into(),
+                main_code: "MES".into(),
+                secondary_code: Some("BV".into()),
+            },
+            unknown_op_id,
+            unknown_op_domestic,
+            OperationalPointReference::Id {
+                operational_point: "unknown_without_node".into(),
+            },
+            south_west_station_id,
+        ];
+        let response: MatchMacroNodesResponse = app
+            .post(format!("/scenarios/{}/match_macro_nodes", scenario.id).as_str())
+            .json(&MatchMacroNodesForm {
+                operational_point_references,
+            })
+            .await
+            .assert_status(StatusCode::OK)
+            .json();
+
+        let matched_ids = response
+            .related_operational_points
+            .iter()
+            .map(|node| node.as_ref().map(|node| node.id))
+            .collect_vec();
+        assert_eq!(
+            matched_ids,
+            [
+                // West_station by id and by UIC, its node references it by domestic code
+                Some(nodes[0].id),
+                Some(nodes[0].id),
+                Some(nodes[1].id),
+                // Not in the infra: only the exact same reference matches
+                Some(nodes[2].id),
+                Some(nodes[5].id),
+                None,
+                // Only in another scenario
+                None,
+            ]
+        );
+        assert_eq!(
+            &nodes[0],
+            response.related_operational_points[0].as_ref().unwrap()
+        );
     }
 
     async fn create_macro_node_fixtures_set(

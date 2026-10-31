@@ -3306,6 +3306,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioWithDetails'
+  /scenarios/{scenario_id}/match_macro_nodes:
+    post:
+      tags:
+      - scenarios
+      summary: |-
+        Take a list of operational point references and return for each of them the macro node
+        of the scenario referencing the same operational point, if any
+      description: |-
+        References are resolved on the scenario infra, so a reference matches a node referencing the
+        same operational point by id, domestic code or UIC. A reference to an operational point that
+        is not in the infra only matches a node with the exact same reference.
+      parameters:
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchMacroNodesForm'
+        required: true
+      responses:
+        '200':
+          description: The macro node matching each operational point reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchMacroNodesResponse'
   /search:
     post:
       tags:
@@ -12910,6 +12941,26 @@ components:
           - 5%
           - 2min/100km
       additionalProperties: false
+    MatchMacroNodesForm:
+      type: object
+      required:
+      - operational_point_references
+      properties:
+        operational_point_references:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationalPointReference'
+    MatchMacroNodesResponse:
+      type: object
+      required:
+      - related_operational_points
+      properties:
+        related_operational_points:
+          type: array
+          items:
+            oneOf:
+            - type: 'null'
+            - $ref: '#/components/schemas/MacroNodeResponse'
     ModeEffortCurves:
       type: object
       required:

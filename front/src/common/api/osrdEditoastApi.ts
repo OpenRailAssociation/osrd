@@ -395,7 +395,7 @@ const osrdEditoastApi = generatedEditoastApi
       postSearch: {
         providesTags: (_result, _error, args) =>
           (
-            {
+            ({
               user: [],
               group: [],
               study: ['studies'],
@@ -406,7 +406,7 @@ const osrdEditoastApi = generatedEditoastApi
               operationalpoint: ['infra'],
               trainschedule: ['train_schedule'],
               macronode: ['scenarios'],
-            } as const
+            }) as const
           )[args.searchPayload.object] ?? [],
       },
 
