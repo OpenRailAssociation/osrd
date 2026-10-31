@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.generatePreviousSimulationSegments
@@ -24,6 +25,8 @@ data class STDCMNode(
     val locationOnEdge: Offset<Block>?,
     // When the node is a stop, how long the train remains here
     val stopDuration: Double?,
+    // When the node is a stop, what is its type
+    val stopType: StopType?,
     // Planned arrival time at node, with its tolerance. Is null at least when the node is not a
     // stop
     val plannedTimingData: PlannedTimingData?,

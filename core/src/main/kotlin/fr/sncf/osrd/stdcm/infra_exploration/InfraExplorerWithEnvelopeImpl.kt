@@ -1,6 +1,8 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.BlockLocationStop
 import fr.sncf.osrd.api.ConsistSchedule
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
@@ -33,6 +35,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
     private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
+    override val forcedOpStops: Set<BlockLocationStop> = emptySet(),
     private var stopTimeData: List<StopTimeData> = listOf(),
     // Can't be a soft reference: spacingRequirementAutomaton is stateful and only generates new
     // requirements (result would be nothing on second identical call).
@@ -49,6 +52,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 envelopes.shallowCopy(),
                 spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
                 consistSchedule,
+                forcedOpStops,
                 stopTimeData,
                 spacingRequirementsCache,
             )
@@ -66,20 +70,29 @@ data class InfraExplorerWithEnvelopeImpl(
 
     override fun generateReachedTrainStops(): List<TrainStop> {
         val seenSteps = getStepTracker().getSeenSteps()
+        val seenForcedOpStops = getStepTracker().getSeenForcedOpStops().iterateBackwards().toList()
         val stopOffsets =
             seenSteps
                 .iterateBackwards()
                 .filter { it.originalStep.stop }
-                .map { it.travelledPathOffset }
                 .toList()
-                .reversed()
+                .union(seenForcedOpStops)
+                .sortedWith(
+                    compareBy<LocatedStep> { it.travelledPathOffset }
+                        .thenBy { it.stopType == StopType.INPUT_STOP },
+                )
         val stopDurations = stopTimeData.map { it.currentDuration }
 
         // Stop offsets include the lookahead while stop durations doesn't.
         // We want the intersection, which is what `zip` does here.
         assert(stopDurations.size <= stopOffsets.size)
         return (stopOffsets zip stopDurations).map {
-            TrainStop(it.first.meters, it.second, SHORT_SLIP_STOP)
+            TrainStop(
+                it.first.travelledPathOffset.meters,
+                it.second,
+                SHORT_SLIP_STOP,
+                it.first.stopType,
+            )
         }
     }
 
@@ -265,6 +278,7 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopes.shallowCopy(),
             spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             consistSchedule,
+            forcedOpStops,
             stopTimeData,
             spacingRequirementsCache,
         )

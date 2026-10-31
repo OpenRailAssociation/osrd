@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.api.StopType;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Objects;
@@ -8,11 +10,15 @@ public class TrainStop {
     public double position;
     public double duration;
     public RJSReceptionSignal receptionSignal;
+    // This field is not used yet, it will be forwarded to the frontend later
+    @SuppressFBWarnings
+    public StopType stopType;
 
-    public TrainStop(double position, double duration, RJSReceptionSignal receptionSignal) {
+    public TrainStop(double position, double duration, RJSReceptionSignal receptionSignal, StopType stopType) {
         this.position = position;
         this.duration = duration;
         this.receptionSignal = receptionSignal;
+        this.stopType = stopType;
     }
 
     @Override

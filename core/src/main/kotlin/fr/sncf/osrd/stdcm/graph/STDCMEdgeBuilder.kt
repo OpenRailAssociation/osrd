@@ -106,7 +106,7 @@ internal constructor(
                         prevNode.speed,
                         infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex(),
                         startOffset,
-                        getNextStopOnCurrentBlock(infraExplorer),
+                        getNextStopOffsetOnCurrentBlock(infraExplorer),
                     ),
                 )
         return envelope
@@ -160,11 +160,7 @@ internal constructor(
      * new edge goes up to the first encountered stop on the block that hasn't been simulated yet.
      */
     private fun getEndOfEdgeStopDuration(): Double? {
-        return prevNode.infraExplorer
-            .getStepTracker()
-            .iterateStepsInLookaheadBackwards()
-            .filter { it.location.edge == infraExplorer.getCurrentBlock() }
-            .lastOrNull { it.originalStep.stop }
+        return getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
             ?.originalStep
             ?.duration
     }
@@ -201,7 +197,9 @@ internal constructor(
                     ),
                 )
         }
-        val endStopDuration = getEndOfEdgeStopDuration()
+        val nextStop =
+            getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
+        val endStopDuration = nextStop?.originalStep?.duration
         val endAtStop = endStopDuration != null
         if (endAtStop) {
             // We don't use the result, just making sure that there's enough lookahead to compute it
@@ -231,6 +229,7 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
+                nextStop?.stopType,
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.BlockLocationStop
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.SpacingRequirement
@@ -40,6 +41,8 @@ import kotlin.math.abs
  * `Offset<TravelledPath>` using the underlying incremental path.
  */
 interface InfraExplorerWithEnvelope : InfraExplorer {
+    val forcedOpStops: Set<BlockLocationStop>
+
     /** Access the full envelope from the train start. */
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
@@ -122,6 +125,7 @@ fun initInfraExplorerWithEnvelope(
     location: BlockLocation,
     consistSchedule: ConsistSchedule,
     targets: List<ExplorerStep> = listOf(),
+    forcedOpStops: Set<BlockLocationStop> = setOf(),
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorers(
             fullInfra.rawInfra,
@@ -130,6 +134,7 @@ fun initInfraExplorerWithEnvelope(
             location,
             targets = targets,
             consistSchedule.constraints,
+            forcedOpStops,
         )
         .map { explorer ->
             InfraExplorerWithEnvelopeImpl(
@@ -137,6 +142,7 @@ fun initInfraExplorerWithEnvelope(
                 appendOnlyLinkedListOf(),
                 mutableListOf(SpacingResourceGenerator(fullInfra, Offset(0.meters))),
                 consistSchedule,
+                forcedOpStops,
             )
         }
 }

@@ -34,7 +34,7 @@ class StepTrackerTests {
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
                 ExplorerStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
             )
-        val tracker = StepTracker(steps)
+        val tracker = StepTracker(steps, emptySet())
 
         val firstSteps =
             tracker.exploreBlockRange(blocks[0], Offset(25.meters), Offset(100.meters), false)

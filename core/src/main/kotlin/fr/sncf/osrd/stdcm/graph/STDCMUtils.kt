@@ -2,15 +2,51 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.utils.units.Offset
 
+/**
+ * Returns the LocatedStep of the next stop (if any) on the current block, starting at startOffset
+ */
+fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: BlockId): LocatedStep? {
+    val step =
+        infraExplorer
+            .getStepTracker()
+            .iterateStepsInLookaheadBackwards()
+            .filter { it.location.edge == currentBlockId }
+            .lastOrNull { it.originalStep.stop }
+    val forcedOpStop =
+        infraExplorer
+            .getStepTracker()
+            .iterateForcedOpStopsInLookaheadBackwards()
+            .filter { it.location.edge == currentBlockId }
+            .lastOrNull { it.originalStep.stop }
+    if (step == null && forcedOpStop == null) return null
+    val stepOffset = step?.location?.offset?.meters ?: Double.POSITIVE_INFINITY
+    val forcedOpStopOffset = forcedOpStop?.location?.offset?.meters ?: Double.POSITIVE_INFINITY
+
+    val stepDuration = step?.originalStep?.duration ?: Double.POSITIVE_INFINITY
+    val forcedOpStopDuration = forcedOpStop?.originalStep?.duration ?: Double.POSITIVE_INFINITY
+
+    return when {
+        stepOffset < forcedOpStopOffset -> step
+        forcedOpStopOffset < stepOffset -> forcedOpStop
+        // In the case where there is an input stop with a shorter stop time than a forced op stop
+        // at the same offset, we want to keep the max stop time but still know that it was an input
+        // stop
+        stepDuration < forcedOpStopDuration -> {
+            forcedOpStop?.stopType = step?.stopType
+            forcedOpStop
+        }
+        else -> step
+    }
+}
+
 /** Returns the offset of the next stop (if any) on the current block, starting at startOffset */
-fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
-    return infraExplorer
-        .getStepTracker()
-        .iterateStepsInLookaheadBackwards()
-        .filter { it.originalStep.stop && it.location.edge == infraExplorer.getCurrentBlock() }
-        .minOfOrNull { it.location.offset }
+fun getNextStopOffsetOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
+    return getNextStopOnCurrentBlock(infraExplorer, infraExplorer.getCurrentBlock())
+        ?.location
+        ?.offset
 }
 
 /**

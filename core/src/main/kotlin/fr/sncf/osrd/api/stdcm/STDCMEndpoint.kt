@@ -141,8 +141,7 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
-            // TODO : not used yet, it will be used for the General Stop Stations feature
-            val forcedOpstops = parseForcedOpStops(infra, request.forcedOpStops)
+            val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val consistConfigurations =
@@ -214,6 +213,7 @@ class STDCMEndpoint(
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
+                    forcedOpStops,
                     STDCMGraph.SearchMetadata(request.startTime, requirements.metadata, s3Context),
                     failureCombiner,
                     callback,
@@ -684,22 +684,29 @@ fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<
 fun parseForcedOpStops(
     infra: FullInfra,
     forcedOpStops: Set<OperationalPointStop>,
-): Set<BlockLocation> {
-    val opPartIds = forcedOpStops.flatMap { infra.rawInfra.getOperationalPointParts(it.id) }.toSet()
-    val chunkLocations = opPartIds.map {
-        ChunkLocation(
-            infra.rawInfra.getOperationalPointPartChunk(it),
-            infra.rawInfra.getOperationalPointPartChunkOffset(it),
-        )
-    }
-    val res = mutableSetOf<BlockLocation>()
-    for (chunkLocation in chunkLocations) {
-        for (direction in Direction.entries) {
-            res.addAll(
-                infra.blockInfra.findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction),
-            )
+): Set<BlockLocationStop> {
+    val res = mutableSetOf<BlockLocationStop>()
+
+    for (forcedOpStop in forcedOpStops) {
+        val opPartIds = infra.rawInfra.getOperationalPointParts(forcedOpStop.id)
+        for (opPartId in opPartIds) {
+            val chunkLocation =
+                ChunkLocation(
+                    infra.rawInfra.getOperationalPointPartChunk(opPartId),
+                    infra.rawInfra.getOperationalPointPartChunkOffset(opPartId),
+                )
+            for (direction in Direction.entries) {
+                val blockLocations =
+                    infra.blockInfra
+                        .findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction)
+                        .map {
+                            BlockLocationStop(it, forcedOpStop.stop_type)
+                        }
+                res.addAll(blockLocations)
+            }
         }
     }
+
     return res
 }
 
