@@ -490,6 +490,7 @@ const PathStepItem = ({
                   invalid: isInvalid,
                   'unknown-track': isUnknownTrack,
                 })}
+                data-testid="path-step-track-name"
               >
                 <ComboBox
                   id={`pathStep-status-${pathStep.key}`}
@@ -570,7 +571,9 @@ const PathStepItem = ({
           </button>
         </div>
         {shouldShowInvalidMessage && (
-          <div className="invalid-step-message">{getInvalidMessage()}</div>
+          <div className="invalid-step-message" data-testid="invalid-step-message">
+            {getInvalidMessage()}
+          </div>
         )}
       </div>
     </div>
