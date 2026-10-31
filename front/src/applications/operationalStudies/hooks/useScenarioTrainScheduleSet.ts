@@ -102,7 +102,7 @@ export default function useScenarioTrainScheduleSet(
         trainScheduleSetForm: {
           ...trainScheduleSetData,
           catalog_entry_id: catalogEntryId,
-          timetable_type: scenario.timetable_type,
+          timetable_type: scenario.timetable_summaries[0].type,
         },
       }).unwrap();
 
@@ -121,7 +121,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
-      scenario.timetable_type,
+      scenario.timetable_summaries,
     ]
   );
 
@@ -311,7 +311,7 @@ export default function useScenarioTrainScheduleSet(
               catalog_entry_id: item.trainScheduleSet.catalog_entry_id,
               published: false,
               description: item.trainScheduleSet.description,
-              timetable_type: scenario.timetable_type,
+              timetable_type: scenario.timetable_summaries[0].type,
             },
           }).unwrap();
 
@@ -348,7 +348,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       upsertTrainSchedules,
-      scenario.timetable_type,
+      scenario.timetable_summaries,
       dispatch,
     ]
   );

@@ -185,7 +185,7 @@ const TimetableBoardWrapper = ({
         selectedTrainScheduleIds,
         trainSchedules,
         trainScheduleRoundTrips,
-        scenario.timetable_type
+        scenario.timetable_summaries[0].type
       );
       dispatch(
         setSuccess({
@@ -203,7 +203,7 @@ const TimetableBoardWrapper = ({
     timetableId,
     t,
     dispatch,
-    scenario.timetable_type,
+    scenario.timetable_summaries,
   ]);
 
   const handlePaste = useCallback(async () => {
@@ -213,15 +213,15 @@ const TimetableBoardWrapper = ({
       data = JSON.parse(clipboardContent);
       const pastedPayload = validateTimetableJsonPayload(data);
       const importedPayload =
-        getPayloadTimetableType(pastedPayload) === scenario.timetable_type
+        getPayloadTimetableType(pastedPayload) === scenario.timetable_summaries[0].type
           ? pastedPayload
-          : adaptPayloadForTargetTimetable(pastedPayload, scenario.timetable_type, [
+          : adaptPayloadForTargetTimetable(pastedPayload, scenario.timetable_summaries[0].type, [
               ...trainSchedules.values(),
             ]);
 
       const newTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_id,
+        scenario.timetable_summaries[0].id,
         scenario.id,
         importedPayload,
         subCategories,
@@ -249,8 +249,7 @@ const TimetableBoardWrapper = ({
     upsertTrainSchedules,
     setSelectedTrainScheduleIds,
     t,
-    scenario.timetable_id,
-    scenario.timetable_type,
+    scenario.timetable_summaries,
     scenario.id,
     dispatch,
   ]);
@@ -273,7 +272,7 @@ const TimetableBoardWrapper = ({
           selectedTrainScheduleIds,
           trainSchedules,
           trainScheduleRoundTrips,
-          scenario.timetable_type
+          scenario.timetable_summaries[0].type
         );
         await handleTrainsDelete(true);
         dispatch(
@@ -294,7 +293,7 @@ const TimetableBoardWrapper = ({
       handleTrainsDelete,
       t,
       dispatch,
-      scenario.timetable_type,
+      scenario.timetable_summaries,
     ]
   );
 

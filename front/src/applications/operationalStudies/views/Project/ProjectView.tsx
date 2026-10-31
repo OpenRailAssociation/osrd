@@ -113,7 +113,7 @@ const ProjectView = () => {
     // For each scenario in the selected studies, clean the local storage if a manchette is saved
     if (scenarios) {
       scenarios.results.forEach((scenario) => {
-        cleanScenarioLocalStorage(scenario.timetable_id);
+        cleanScenarioLocalStorage(scenario.timetable_summaries[0].id);
       });
     }
   });

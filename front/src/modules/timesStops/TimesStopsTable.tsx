@@ -235,7 +235,7 @@ const TimesStopsTable = ({
   const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
   const startTimeCellType: 'time' | 'duration' =
-    scenario.timetable_type === 'CALENDAR' ? 'time' : 'duration';
+    scenario.timetable_summaries[0].type === 'CALENDAR' ? 'time' : 'duration';
 
   const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
   const [mouseOverTimeField, setMouseOverTimeField] = useState<RequestedTimeField>();

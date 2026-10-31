@@ -179,7 +179,7 @@ const AddOrEditScenarioModal = ({
             name: currentScenario.name,
             study_id: studyId,
             tags: currentScenario.tags || [],
-            timetable_id: timetable.timetable_id,
+            timetable_ids: [timetable.timetable_id],
             electrical_profile_set_id: currentScenario.electrical_profile_set_id,
           },
         }).unwrap();
@@ -226,7 +226,7 @@ const AddOrEditScenarioModal = ({
       return deleteScenario({ scenarioId: scenario.id })
         .unwrap()
         .then(() => {
-          cleanScenarioLocalStorage(scenario.timetable_id);
+          cleanScenarioLocalStorage(scenario.timetable_summaries[0].id);
           navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(
