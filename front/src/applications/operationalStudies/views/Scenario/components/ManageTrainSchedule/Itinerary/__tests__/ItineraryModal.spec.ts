@@ -109,5 +109,11 @@ describe('setupStateWithTrainSchedule', () => {
       };
       expect(state).toEqual(expectedState);
     });
+
+    it('keeps the departure offset of a paced train in an hourly timetable', () => {
+      const startTime = new Duration({ hours: 8, minutes: 37 });
+      const state = setupStateWithTrainSchedule({ ...pacedTrain, startTime }, 'HOURLY');
+      expect(state.startTime).toEqual(startTime);
+    });
   });
 });

@@ -60,7 +60,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
-import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
+import { Duration, type StartTime } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { msToKmh } from 'utils/physics';
 
@@ -160,8 +160,7 @@ export function setupStateWithTrainSchedule(
     rollingStockId: trainSchedule.rollingStock?.id,
     rollingStockComfort: trainSchedule.comfort ?? 'STANDARD',
     pathSteps: trainSchedule.path.map((_, index) => computeBasePathStep(trainSchedule, index)),
-    // TODO Hourly timetables: keep the Duration start time in the conf state instead of a fictive date
-    startTime: startTimeToDate(trainSchedule.startTime),
+    startTime: trainSchedule.startTime,
     name: trainSchedule.name,
     category: trainSchedule.category ?? null,
     initialSpeed: trainSchedule.initial_speed
