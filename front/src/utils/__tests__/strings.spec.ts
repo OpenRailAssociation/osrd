@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { capitalizeFirstLetter, conditionalStringConcat } from 'utils/strings';
+import { capitalizeFirstLetter, conditionalStringConcat, truncateTextStart } from 'utils/strings';
 
 describe('conditionalStringConcat', () => {
   it('should return concatenated string', () => {
@@ -41,5 +41,19 @@ describe('capitalizeFirstLetter', () => {
   });
   it('should capitalize first letter if there is one word', () => {
     expect(capitalizeFirstLetter('passage')).toBe('Passage');
+  });
+});
+
+describe('truncateTextStart', () => {
+  const measure = (value: string) => value.length;
+
+  it('should return the text unchanged when it fits', () => {
+    expect(truncateTextStart('8210 coucou 1', 13, measure)).toBe('8210 coucou 1');
+  });
+  it('should replace the start with an ellipsis and keep the end', () => {
+    expect(truncateTextStart('8210 coucou 12', 10, measure)).toBe('…coucou 12');
+  });
+  it('should return only the ellipsis when nothing else fits', () => {
+    expect(truncateTextStart('8210 coucou 1', 1, measure)).toBe('…');
   });
 });
