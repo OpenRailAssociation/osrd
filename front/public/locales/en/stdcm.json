@@ -31,6 +31,7 @@
     "length": "Length",
     "loadingGauge": "Loading gauge",
     "maxSpeed": "Max speed",
+    "noTowedRollingStock": "None",
     "tonnage": "Tonnage",
     "towedRollingStock": "Towed rolling stock",
     "tractionEngine": "Traction engine"

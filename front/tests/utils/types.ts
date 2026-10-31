@@ -171,6 +171,7 @@ export type StdcmTranslations = {
   consist: {
     tractionEngine: string;
     towedRollingStock: string;
+    noTowedRollingStock: string;
     compositionCode: string;
     consistChange: string;
     loadingGauge: string;
