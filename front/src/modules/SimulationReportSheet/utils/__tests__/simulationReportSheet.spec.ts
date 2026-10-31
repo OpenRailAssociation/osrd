@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { createInstance } from 'i18next';
+import { beforeAll, describe, it, expect } from 'vitest';
 
+import type { StdcmResultsOperationalPoint } from 'applications/stdcm/types';
+import { formatStdcmDataForSimulationTable } from 'applications/stdcm/utils/simulationOutputUtils';
 import { Duration } from 'utils/duration';
 
 import {
+  addForcedStopTypes,
   generateCodeNumber,
   getStopDurationTime,
   getStopDurationAtPosition,
@@ -187,5 +191,88 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
       },
       opD,
     ]);
+  });
+});
+
+describe('forced stops', () => {
+  const makeOp = (
+    opId: string,
+    overrides: Partial<StdcmResultsOperationalPoint> = {}
+  ): StdcmResultsOperationalPoint => ({
+    opId,
+    name: opId,
+    positionOnPath: 100,
+    time: new Date(2026, 0, 1, 10),
+    stopEndTime: new Date(2026, 0, 1, 10, 1),
+    stopDuration: new Duration({ minutes: 1 }),
+    stopRequested: false,
+    weight: null,
+    ...overrides,
+  });
+
+  describe('addForcedStopTypes', () => {
+    it('flags intermediate stops on general stop and overtake operational points', () => {
+      const result = addForcedStopTypes(
+        [makeOp('origin'), makeOp('general-stop'), makeOp('overtake'), makeOp('destination')],
+        [
+          { id: 'general-stop', stop_type: 'GENERAL_STOP' },
+          { id: 'overtake', stop_type: 'OVERTAKE' },
+        ]
+      );
+
+      expect(result.map((op) => op.forcedStopType)).toEqual([
+        undefined,
+        'GENERAL_STOP',
+        'OVERTAKE',
+        undefined,
+      ]);
+    });
+
+    it('ignores user-requested stops, passages without stop and path extremities', () => {
+      const result = addForcedStopTypes(
+        [
+          makeOp('forced'),
+          makeOp('forced', { stopRequested: true }),
+          makeOp('forced', { stopDuration: null }),
+          makeOp('forced'),
+        ],
+        [{ id: 'forced', stop_type: 'GENERAL_STOP' }]
+      );
+
+      expect(result.every((op) => op.forcedStopType === undefined)).toBe(true);
+    });
+  });
+
+  describe('formatStdcmDataForSimulationTable', () => {
+    const i18n = createInstance();
+    const t = i18n.getFixedT('fr', 'stdcm');
+
+    beforeAll(async () => {
+      await i18n.init({
+        lng: 'fr',
+        resources: {
+          fr: {
+            stdcm: {
+              trainPath: { stopType: { generalStop: 'arrêt général', overtake: 'dépassement' } },
+            },
+          },
+        },
+      });
+    });
+
+    it.each([
+      ['GENERAL_STOP', 'Arrêt général'],
+      ['OVERTAKE', 'Dépassement'],
+    ] as const)('displays the %s label in the report sheet', (forcedStopType, label) => {
+      const rows = formatStdcmDataForSimulationTable(
+        [makeOp('origin'), makeOp('forced', { forcedStopType }), makeOp('destination')],
+        [],
+        { rollingStockName: 'Test train', mass: 100, length: 100 },
+        t
+      );
+
+      expect(rows[1].forcedStopType).toBe(forcedStopType);
+      expect(rows[1].stopTypeLabel).toBe(label);
+    });
   });
 });

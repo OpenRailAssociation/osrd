@@ -2,6 +2,8 @@ import { Fragment, useState, type JSX } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { ArrowRight, CheckCircle, Container, Turnaround } from '@osrd-project/ui-icons';
+// TODO: uncomment once the icons are available in ui-icons
+// import { GeneralStop, Overtake } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -14,6 +16,7 @@ import type {
 } from 'applications/stdcm/types';
 import {
   dateToHHMM,
+  getForcedStopTypeLabel,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
@@ -102,6 +105,17 @@ const StdcmResultsTable = ({
               step.stopDuration === null
                 ? '='
                 : step.name || t('reportSheet.unknown')}
+              {step.forcedStopType && (
+                <span
+                  role="img"
+                  title={getForcedStopTypeLabel(step.forcedStopType, t)}
+                  aria-label={getForcedStopTypeLabel(step.forcedStopType, t)}
+                >
+                  {/* TODO: replace the X / Y placeholders with the icons below once available */}
+                  {step.forcedStopType === 'GENERAL_STOP' ? 'X' : 'Y'}
+                  {/* {step.forcedStopType === 'GENERAL_STOP' ? <GeneralStop size="sm" /> : <Overtake size="sm" />} */}
+                </span>
+              )}
               {step.isBackTrack && (
                 <div className="backtrack-label">{t('simulation.results.backtrack')}</div>
               )}

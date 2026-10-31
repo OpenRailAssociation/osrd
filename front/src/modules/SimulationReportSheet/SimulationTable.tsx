@@ -163,8 +163,14 @@ const SimulationTable = ({
                     {(index === 0 ||
                       index === rows.length - 1 ||
                       row.stopType ||
+                      row.forcedStopType ||
                       row.consistChanges) && (
-                      <TD style={row.stylesByColumn.others}>{row.stopTypeLabel}</TD>
+                      <TD style={row.stylesByColumn.others}>
+                        {/* TODO: replace X / Y placeholders with the general stop / overtake icons */}
+                        {row.forcedStopType &&
+                          `${row.forcedStopType === 'GENERAL_STOP' ? 'X' : 'Y'} `}
+                        {row.stopTypeLabel}
+                      </TD>
                     )}
                   </View>
                 ) : (

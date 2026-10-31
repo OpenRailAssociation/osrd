@@ -324,6 +324,10 @@
     },
     "date": "Date",
     "destination": "Destination",
+    "ForcedStopInfo": {
+      "GENERAL_STOP": "Ce point remarquable fait partie d’une gare d’arrêt général. La simulation marquera un arrêt de 1min.",
+      "OVERTAKE": "Ce point remarquable fait partie d’une voie de dépassement. La simulation marquera un arrêt de 1min."
+    },
     "linkedTrain": {
       "anterior": "Sillon antérieur",
       "error": "Erreur de sillons liés",
@@ -338,6 +342,7 @@
       "backtrack": "rebroussement",
       "consistChange": "ch. de convoi",
       "driverSwitch": "relève conducteur",
+      "generalStop": "arrêt général",
       "overtake": "dépassement",
       "passageTime": "passage",
       "serviceStop": "arrêt de service"

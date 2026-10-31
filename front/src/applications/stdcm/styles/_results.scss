@@ -256,8 +256,10 @@
             }
 
             .name {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
               width: 232px;
-              font-style: 'semibold';
               font-weight: 600;
               color: var(--grey80);
             }
@@ -271,7 +273,6 @@
 
             .ch {
               width: 48px;
-              font-style: 'semibold';
               font-weight: 600;
             }
 
