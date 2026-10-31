@@ -178,6 +178,13 @@ export function getMovableOccupancyZone(
   };
 }
 
+/** The offset within the hourly pattern of a copy repeated on the given offset. */
+export const getOffsetInPattern = (repeatOffset = 0, hourlyPatternDuration?: number) => {
+  if (!hourlyPatternDuration) return 0;
+  const offset = repeatOffset % hourlyPatternDuration;
+  return offset < 0 ? offset + hourlyPatternDuration : offset;
+};
+
 /**
  * Repeats the zones of paced trains every time window, to fill a time range. Each copy keeps in
  * `repeatOffset` how far it was shifted from the given zone. Unique trains are returned as is.
