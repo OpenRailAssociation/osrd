@@ -730,7 +730,6 @@ pub(in crate::views) struct MatchOperationalPointsResponse {
     related_operational_points: Vec<Option<RelatedOperationalPoint>>,
 }
 
-#[editoast_derive::route(Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -1819,7 +1818,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn match_operational_points_requires_reader_and_operational_studies() {
+        async fn match_operational_points_requires_reader() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1828,19 +1827,9 @@ pub mod tests {
                 .with_roles([Role::OperationalStudies])
                 .create()
                 .await;
-            let user_no_role = app
-                .user("bob", "Bob")
-                .with_infra_grant(infra.id, InfraGrant::Reader)
-                .create()
-                .await;
             app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
                 .json(&json!({"operational_point_references": []}))
                 .by_user(user_no_grant.as_ref())
-                .await
-                .assert_status_forbidden();
-            app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
-                .json(&json!({"operational_point_references": []}))
-                .by_user(user_no_role.as_ref())
                 .await
                 .assert_status_forbidden();
         }
