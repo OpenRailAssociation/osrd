@@ -158,6 +158,27 @@ export const useOperationalPointSearch = ({
     [scenarioId, postSearch, pageSize, dispatch]
   );
 
+  const doesOpExist = useCallback(
+    async (countryCode: string, mainCode: string) => {
+      const [infraOps, macroNodeSuggestions] = await Promise.all([
+        postSearch(
+          { searchPayload: exactTrigramPayload(infraId, mainCode), pageSize },
+          true
+        ).unwrap() as Promise<SearchResultItemOperationalPoint[]>,
+        searchMacroNodesToBuildSuggestions(mainCode),
+      ]);
+      return (
+        infraOps.some((op) => op.country_code === countryCode) ||
+        macroNodeSuggestions.some(
+          (macroNodeSuggestion) =>
+            macroNodeSuggestion.countryCode === countryCode &&
+            macroNodeSuggestion.mainCode === mainCode
+        )
+      );
+    },
+    [postSearch, infraId, pageSize, searchMacroNodesToBuildSuggestions]
+  );
+
   useEffect(() => {
     if (!activeStepKey) return;
 
@@ -275,6 +296,7 @@ export const useOperationalPointSearch = ({
     opSuggestions: [...matchingCustomOps, ...opSuggestions],
     resetOpSuggestions,
     addCustomOp,
+    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     startEditingForStep,

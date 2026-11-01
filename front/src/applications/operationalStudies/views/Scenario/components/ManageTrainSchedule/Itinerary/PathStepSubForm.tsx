@@ -12,12 +12,14 @@ import type { DomesticOperationalPointReference } from '../types';
 import { isOpRefMetadata } from './utils';
 
 export type OnCustomOpCreation = (name: string, opRef: DomesticOperationalPointReference) => void;
+export type isOpDuplicate = (countryCode: string, mainCode: string) => Promise<boolean>;
 
 type PathStepSubFormFieldsProps = {
   pathStep: PathStep;
   isOpValid: boolean;
   name: string;
   onCustomOpCreation: OnCustomOpCreation;
+  doesOpExist: isOpDuplicate;
 };
 
 const DomesticFields = ({
@@ -25,6 +27,7 @@ const DomesticFields = ({
   isOpValid,
   name,
   onCustomOpCreation,
+  doesOpExist,
 }: PathStepSubFormFieldsProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
@@ -48,9 +51,16 @@ const DomesticFields = ({
   const [subFormCountryCode, setSubFormCountryCode] = useState<string>(defaultCountryCode);
   const [subFormMainCode, setSubFormMainCode] = useState<string>(defaultMainCode);
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
+  const [countryCodeError, setCountryCodeError] = useState<string>();
+  const [mainCodeError, setMainCodeError] = useState<string>();
 
-  const validateCustomOp = () => {
+  const validateCustomOp = async () => {
     if (isOpValid || !subFormCountryCode || !subFormMainCode) return;
+    if (await doesOpExist(subFormCountryCode, subFormMainCode)) {
+      setMainCodeError(t('existingOp'));
+      return;
+    }
+    setMainCodeError(undefined);
     onCustomOpCreation(name || subFormMainCode, {
       type: 'domestic',
       country_code: subFormCountryCode,
@@ -69,8 +79,16 @@ const DomesticFields = ({
           readOnly={isOpValid}
           small
           value={subFormCountryCode}
+          statusWithMessage={
+            countryCodeError
+              ? { status: 'error', tooltip: 'left', message: countryCodeError }
+              : undefined
+          }
           onChange={(e) => setSubFormCountryCode(e.target.value)}
-          onBlur={validateCustomOp}
+          onBlur={() => {
+            setCountryCodeError(subFormCountryCode ? undefined : t('missingCountryCode'));
+            validateCustomOp();
+          }}
         />
       </div>
       <div className="path-step-subform-field">
@@ -81,8 +99,14 @@ const DomesticFields = ({
           readOnly={isOpValid}
           small
           value={subFormMainCode}
+          statusWithMessage={
+            mainCodeError ? { status: 'error', tooltip: 'left', message: mainCodeError } : undefined
+          }
           onChange={(e) => setSubFormMainCode(e.target.value)}
-          onBlur={validateCustomOp}
+          onBlur={() => {
+            setMainCodeError(subFormMainCode ? undefined : t('missingPrimaryCode'));
+            validateCustomOp();
+          }}
         />
       </div>
       <div className="path-step-subform-field">
@@ -218,6 +242,7 @@ type PathStepSubFormProps = {
   name: string;
   onNameChange: (name: string) => void;
   onCustomOpCreation: OnCustomOpCreation;
+  doesOpExist: isOpDuplicate;
 };
 
 const PathStepSubForm = ({
@@ -228,6 +253,7 @@ const PathStepSubForm = ({
   name,
   onNameChange,
   onCustomOpCreation,
+  doesOpExist,
 }: PathStepSubFormProps) => {
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
   const { t } = useTranslation('operational-studies', {
@@ -264,6 +290,7 @@ const PathStepSubForm = ({
           isOpValid={isOpValid}
           name={subFormName}
           onCustomOpCreation={onCustomOpCreation}
+          doesOpExist={doesOpExist}
         />
       </div>
     </div>

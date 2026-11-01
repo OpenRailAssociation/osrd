@@ -347,6 +347,7 @@ const ItineraryModal = ({
     opSuggestions,
     resetOpSuggestions,
     addCustomOp,
+    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
@@ -1026,6 +1027,7 @@ const ItineraryModal = ({
                     onCustomOpCreation={(name, opRef) =>
                       handleCustomOpCreation(pathStep.key, name, opRef)
                     }
+                    doesOpExist={doesOpExist}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];

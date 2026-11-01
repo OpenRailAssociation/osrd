@@ -628,6 +628,16 @@
                   top: 8px;
                   color: var(--info30);
                 }
+
+                .status-message {
+                  white-space: pre-line;
+                  font-weight: 400;
+
+                  // the first line of the message is its title
+                  &::first-line {
+                    font-weight: 600;
+                  }
+                }
               }
             }
           }
