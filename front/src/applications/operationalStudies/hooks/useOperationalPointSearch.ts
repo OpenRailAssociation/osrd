@@ -11,6 +11,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -34,6 +35,7 @@ import { formatOpLabel } from '../views/Scenario/components/ManageTrainSchedule/
 
 type Params = {
   scenarioId: number;
+  pathSteps: PathStep[];
   pageSize?: number;
   minChars?: number;
   debounceMs?: number;
@@ -41,6 +43,7 @@ type Params = {
 
 export const useOperationalPointSearch = ({
   scenarioId,
+  pathSteps,
   pageSize = 1000,
   minChars = 2,
   debounceMs = 300,
@@ -161,6 +164,37 @@ export const useOperationalPointSearch = ({
       }
     },
     [scenarioId, postSearch, pageSize, dispatch]
+  );
+
+  const doesOpExist = useCallback(
+    async (stepKey: string, countryCode: string, mainCode: string) => {
+      const isUsedByAnotherStep = pathSteps.some(
+        ({ key, location }) =>
+          key !== stepKey &&
+          location?.type === 'operational_point_part_reference' &&
+          location.operational_point.type === 'domestic' &&
+          location.operational_point.country_code === countryCode &&
+          location.operational_point.main_code === mainCode
+      );
+      if (isUsedByAnotherStep) return true;
+
+      const [infraOps, macroNodeSuggestions] = await Promise.all([
+        postSearch(
+          { searchPayload: exactTrigramPayload(infraId, mainCode), pageSize },
+          true
+        ).unwrap() as Promise<SearchResultItemOperationalPoint[]>,
+        searchMacroNodesToBuildSuggestions(mainCode),
+      ]);
+      return (
+        infraOps.some((op) => op.country_code === countryCode) ||
+        macroNodeSuggestions.some(
+          (macroNodeSuggestion) =>
+            macroNodeSuggestion.countryCode === countryCode &&
+            macroNodeSuggestion.mainCode === mainCode
+        )
+      );
+    },
+    [pathSteps, postSearch, infraId, pageSize, searchMacroNodesToBuildSuggestions]
   );
 
   useEffect(() => {
@@ -284,6 +318,7 @@ export const useOperationalPointSearch = ({
     opSuggestions: [...matchingCustomOps, ...opSuggestions],
     resetOpSuggestions,
     addCustomOp,
+    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     startEditingForStep,
