@@ -291,6 +291,8 @@ const ItineraryModal = ({
   // Make a custom setter for pathSteps so that we remember to also set submitAttempted to false.
   const [pathSteps, setPathStepsRaw] = useState<PathStep[]>([]);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const subFormHasErrorsByStepKey = useRef<Record<string, boolean>>({});
   const setPathSteps = useCallback((newPathSteps: SetStateAction<PathStep[]>) => {
     setPathStepsRaw(newPathSteps);
     setSubmitAttempted(false);
@@ -336,11 +338,12 @@ const ItineraryModal = ({
     opSuggestions,
     resetOpSuggestions,
     addCustomOp,
+    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
-  } = useOperationalPointSearch({ scenarioId: scenario.id });
+  } = useOperationalPointSearch({ scenarioId: scenario.id, pathSteps });
 
   const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
     pathSteps,
@@ -752,6 +755,11 @@ const ItineraryModal = ({
   };
 
   const submitItinerary = async (trainType?: EditingTrainType) => {
+    const hasSubFormErrors = pathSteps.some(
+      ({ key }) => expandedStepKeys.includes(key) && subFormHasErrorsByStepKey.current[key]
+    );
+    if (hasSubFormErrors) return;
+
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
 
@@ -1037,6 +1045,10 @@ const ItineraryModal = ({
                     onCustomOpCreation={(name, opRef) =>
                       handleCustomOpCreation(pathStep.key, name, opRef)
                     }
+                    doesOpExist={doesOpExist}
+                    onSubFormHasErrors={(hasErrors) => {
+                      subFormHasErrorsByStepKey.current[pathStep.key] = hasErrors;
+                    }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];
@@ -1092,6 +1104,8 @@ const ItineraryModal = ({
                       i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
                     }
                     onSubFormToggled={() => {
+                      if (isSubFormExpanded && subFormHasErrorsByStepKey.current[pathStep.key])
+                        return;
                       setExpandedStepKeys(
                         isSubFormExpanded
                           ? expandedStepKeys.filter((key) => key !== pathStep.key)

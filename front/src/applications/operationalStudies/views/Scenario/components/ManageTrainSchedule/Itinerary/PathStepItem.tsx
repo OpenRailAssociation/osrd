@@ -33,7 +33,11 @@ import {
   ListElementComponent,
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
-import PathStepSubForm, { type OnCustomOpCreation } from './PathStepSubForm';
+import PathStepSubForm, {
+  type isOpDuplicate,
+  type OnCustomOpCreation,
+  type OnSubFormHasErrors,
+} from './PathStepSubForm';
 import { computePathStepCoordinates, formatOpLabel, isOpRefMetadata } from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
@@ -82,6 +86,8 @@ type PathStepProps = {
   onTrackNameChange: (trackName: string) => void;
   onAddCustomOp: (name: string) => void;
   onCustomOpCreation: OnCustomOpCreation;
+  doesOpExist: isOpDuplicate;
+  onSubFormHasErrors: OnSubFormHasErrors;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
@@ -121,6 +127,8 @@ const PathStepItem = ({
   onTrackNameChange,
   onAddCustomOp,
   onCustomOpCreation,
+  doesOpExist,
+  onSubFormHasErrors,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -678,6 +686,8 @@ const PathStepItem = ({
         name={subFormName}
         onNameChange={setSubFormName}
         onCustomOpCreation={onCustomOpCreation}
+        doesOpExist={doesOpExist}
+        onSubFormHasErrors={onSubFormHasErrors}
       />
     </div>
   );

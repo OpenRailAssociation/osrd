@@ -328,9 +328,9 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
-          grid-template-columns:
-            24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-            auto auto [last-col];
+          grid-template-columns: 24px minmax(184px, 1fr) var(--path-step-track-name-width) var(
+              --path-step-type-width
+            ) auto auto [last-col];
           display: grid;
 
           &:has(.unrecognized-waypoints-activated) {
@@ -626,11 +626,42 @@
               grid-template-columns: 1fr 2fr;
             }
 
-            .path-step-subform-domestic-fields {
+            .path-step-subform-error-box {
+              width: calc(100% + 16px);
+              border-radius: 8px;
+              box-shadow:
+                0 3px 5px -2px var(--black10),
+                0 16px 30px -5px rgba(0, 0, 0, 0.16),
+                0 6px 21px -5px rgba(24, 68, 239, 0.26),
+                0 0 0 4px rgba(255, 255, 255, 1) inset;
+              background-color: var(--color-error-5);
+              color: var(--color-error-60);
               display: flex;
-              justify-content: space-between;
+              flex-direction: column;
+              padding: 16px 30px;
+              margin-bottom: 30px;
 
-              // gap: 10px;
+              .path-step-subform-error-message {
+                margin: 0;
+                white-space: pre-line;
+
+                &::first-line {
+                  font-weight: 600;
+                }
+              }
+            }
+
+            .path-step-subform-domestic-fields {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+
+              .path-step-subform-error-box {
+                grid-column: 1 / -1;
+              }
+
+              .has-error .input {
+                border: 0.094rem solid var(--color-error-30);
+              }
             }
           }
         }
