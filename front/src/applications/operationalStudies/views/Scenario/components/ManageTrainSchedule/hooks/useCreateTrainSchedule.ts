@@ -19,10 +19,7 @@ import { formatTrainSchedulePayload } from '../helpers/formatTrainSchedulePayloa
 import { validateTrainSchedule } from '../helpers/validateTrainSchedule';
 import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 
-export function useCreateTrainSchedule(
-  setIsWorking: (isWorking: boolean) => void,
-  onTrainCreated: () => void
-) {
+export function useCreateTrainSchedule(setIsWorking: (isWorking: boolean) => void) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dateTimeLocale = useDateTimeLocale();
@@ -30,7 +27,7 @@ export function useCreateTrainSchedule(
   const { sandboxId, timetableId } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
 
-  return async (trainState: ItineraryModalTrainState) => {
+  return async (trainState: ItineraryModalTrainState): Promise<boolean> => {
     setIsWorking(true);
 
     try {
@@ -47,7 +44,7 @@ export function useCreateTrainSchedule(
           );
         });
 
-        return;
+        return false;
       }
 
       const formattedNewTrainSchedule: TrainScheduleResponse = (
@@ -111,12 +108,13 @@ export function useCreateTrainSchedule(
         })
       );
       upsertTrainSchedules([trainScheduleToUpsert]);
-
-      onTrainCreated();
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
+      return false;
     } finally {
       setIsWorking(false);
     }
+
+    return true;
   };
 }

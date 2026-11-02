@@ -240,8 +240,8 @@ const ItineraryModal = ({
   }, [closeItineraryModal, setWasInitialized]);
 
   const [isWorking, setIsWorking] = useState(false);
-  const createTrain = useCreateTrainSchedule(setIsWorking, closeModal);
-  const updateTimetable = useUpdateTrainSchedule(setIsWorking, closeModal);
+  const createTrain = useCreateTrainSchedule(setIsWorking);
+  const updateTimetable = useUpdateTrainSchedule(setIsWorking);
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name: trainState.name,
@@ -748,7 +748,7 @@ const ItineraryModal = ({
     setPathStepsWithTrailing(reversePathSteps(filledSteps));
   };
 
-  const submitItinerary = (trainType?: EditingTrainType) => {
+  const submitItinerary = async (trainType?: EditingTrainType) => {
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
 
@@ -785,10 +785,14 @@ const ItineraryModal = ({
     };
     setTrainState(newTrainState);
 
+    let ok: boolean;
     if (trainScheduleToEditData) {
-      updateTimetable(newTrainState);
+      ok = await updateTimetable(newTrainState);
     } else {
-      createTrain(newTrainState);
+      ok = await createTrain(newTrainState);
+    }
+    if (ok) {
+      closeModal();
     }
     onTrainCreated();
   };

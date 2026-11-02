@@ -283,10 +283,7 @@ export async function updateTrainSchedule({
   return { success: true, trainScheduleId, originalTrainSchedule, occurrenceId };
 }
 
-const useUpdateTrainSchedule = (
-  setIsWorking: (isWorking: boolean) => void,
-  onTrainUpdated: () => void
-) => {
+const useUpdateTrainSchedule = (setIsWorking: (isWorking: boolean) => void) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule',
   });
@@ -329,12 +326,10 @@ const useUpdateTrainSchedule = (
     ) {
       dispatch(updateTrainIdUsedForProjection(formatEditoastIdToTrainScheduleId(trainScheduleId)));
     }
-
-    onTrainUpdated();
   };
 
-  return async (trainState: ItineraryModalTrainState) => {
-    if (!trainScheduleToEditData) return;
+  return async (trainState: ItineraryModalTrainState): Promise<boolean> => {
+    if (!trainScheduleToEditData) return true;
 
     setIsWorking(true);
 
@@ -366,10 +361,13 @@ const useUpdateTrainSchedule = (
             })
           );
         }
+        return false;
       }
     } finally {
       setIsWorking(false);
     }
+
+    return true;
   };
 };
 
