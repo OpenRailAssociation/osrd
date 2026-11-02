@@ -29,15 +29,11 @@
           "content": [
             {
               "type": "text",
-              "value": "Mis en service au tout début de l’année 2025, Last Minute Request fait ses premiers pas dans un périmètre limité pour pouvoir l’évaluer et le corriger avec le moins d’impact sur votre opérationnel."
+              "value": "Mis en service au tout début de l’année 2025, Last Minute Request a fait ses premiers pas dans un périmètre limité pour pouvoir l’évaluer et le corriger avec le moins d’impact sur votre opérationnel."
             },
             {
               "type": "text",
-              "value": "Vos requêtes sont pour le moment possibles uniquement entre Perrigny et Miramas, entre J-7 et J-1 17 heures, et ne prennent pas en compte les ATEs, matières dangereuses, et gabarits GB."
-            },
-            {
-              "type": "text",
-              "value": "<a href='mailto:{{stdcmFeedbackMail}}' target=\"_blank\">Contactez-nous</a>"
+              "value": "Vos requêtes sont pour le moment possibles uniquement entre J-7 et J-1 17 heures."
             }
           ],
           "title": "Périmètre"
@@ -46,7 +42,11 @@
           "content": [
             {
               "type": "text",
-              "value": "Nous avons une belle feuille de route pour rendre Last Minute Request plus pertinent et utile pour vous. Vos retours sont très importants pour que nous apprenions de votre utilisation, et pour que nous puissions prioriser correctement ces efforts. N’hésitez surtout pas à communiquer vos idées et commentaires."
+              "value": "Nous avons une belle feuille de route pour rendre Last Minute Request plus pertinent et utile pour vous. Vos retours sont très importants pour que nous apprenions de votre utilisation, et pour que nous puissions prioriser correctement ces efforts."
+            },
+            {
+              "type": "text",
+              "value": "N’hésitez surtout pas à communiquer vos idées et commentaires."
             },
             {
               "type": "text",
@@ -276,7 +276,7 @@
       "content": [
         {
           "type": "text",
-          "value": "Indiquez l'origine, la destination, et les éventuels points de passage et arrêts de votre parcours pour pouvoir obtenir une simulation. Ceux-ci sont limités à l'axe Perrigny-Miramas dans un premier temps."
+          "value": "Indiquez l'origine, la destination, et les éventuels points de passage et arrêts de votre parcours pour pouvoir obtenir une simulation."
         },
         {
           "type": "text",

@@ -33,6 +33,10 @@
             },
             {
               "type": "text",
+              "value": "Please don't hesitate to share your ideas and comments."
+            },
+            {
+              "type": "text",
               "value": "<a href='mailto:{{stdcmFeedbackMail}}' target=\"_blank\">Contact us</a>"
             }
           ],
