@@ -65,8 +65,8 @@ export const getRenderingInstructions = (
 
     const filteredOccupancyZones = zonesByTrackId[track.id] ?? [];
 
-    let primaryStartTime = 0;
-    let lastEndTime = 0;
+    // No zone yet on this track: the first one never overlaps, whatever its time
+    let lastEndTime = -Infinity;
     let yPosition = OCCUPANCY_ZONE_Y_START;
     let yOffset = Y_OFFSET_INCREMENT;
     let zoneCounter = 0;
@@ -89,7 +89,6 @@ export const getRenderingInstructions = (
       if (startTime >= lastEndTime) {
         // reset to initial value if the zone is not overlapping
         yPosition = OCCUPANCY_ZONE_Y_START;
-        primaryStartTime = startTime;
         lastEndTime = endTime;
         yOffset = Y_OFFSET_INCREMENT;
         zoneCounter = 1;
@@ -106,12 +105,10 @@ export const getRenderingInstructions = (
 
       // if so and it's an even index, move it to the bottom, if it's an odd index, move it to the top
       else if (zoneCounter < MAX_ZONES) {
-        if (startTime >= primaryStartTime) {
-          if (zoneCounter % 2 === 0) {
-            yPosition -= yOffset;
-          } else {
-            yPosition += yOffset;
-          }
+        if (zoneCounter % 2 === 0) {
+          yPosition -= yOffset;
+        } else {
+          yPosition += yOffset;
         }
 
         // update the last departure time if the current zone is longer
