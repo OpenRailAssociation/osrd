@@ -78,9 +78,9 @@ const UnitToggle = ({
 
 const MarginCellEditable = ({
   initialValue,
-  isInherited = false,
-  isFirstRow = false,
-  showUnitToggle = true,
+  isInherited,
+  isFirstRow,
+  showUnitToggle,
   onCommit,
   'data-testid': dataTestId,
 }: {

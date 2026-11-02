@@ -98,7 +98,7 @@ const SplitManchetteWithSpaceTimeChartWrapper = ({
   waypoints,
   paths,
   selectedTrain,
-  height = 561,
+  height,
   splitPoints = NO_SPLIT_POINTS,
 }: {
   waypoints: typeof SAMPLE_WAYPOINTS;

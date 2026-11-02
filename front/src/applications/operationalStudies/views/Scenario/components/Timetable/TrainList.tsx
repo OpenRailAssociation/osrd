@@ -62,7 +62,7 @@ const TrainList = ({
   isSelectMode,
   timetableMode,
   moveTrainSchedule,
-  trainSchedulesByTrainScheduleSets = null,
+  trainSchedulesByTrainScheduleSets,
   handleClickTrainScheduleSet,
   handleSelectTrainScheduleSet,
   catalogEntries,

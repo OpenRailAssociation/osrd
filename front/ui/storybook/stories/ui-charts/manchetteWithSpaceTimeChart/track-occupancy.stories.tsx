@@ -55,7 +55,7 @@ const getOccupancyCurveStyle = (color: string, isSelected: boolean): CurveStyle 
  * This component shows how to use the useManchetteWithSpaceTimeChart hook with track-occupancy
  * diagrams:
  */
-const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { height: number }) => {
+const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height }: { height: number }) => {
   const [selectedTrain, setSelectedTrain] = useState<string>();
   const [selectedWaypoint, setSelectedWaypoint] = useState<undefined | string>(
     OPERATIONAL_POINTS[2].id

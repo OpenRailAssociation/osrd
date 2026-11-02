@@ -19,7 +19,7 @@ const {
 } = getDefaultRegistry();
 
 const CustomSchemaField = (props: FieldProps) => {
-  const { name = '' } = props;
+  const { name } = props;
   const { switchType } = useSwitch();
   if (name === GROUP_CHANGE_DELAY)
     return (

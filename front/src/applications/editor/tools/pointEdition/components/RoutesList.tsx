@@ -47,7 +47,7 @@ const RoutesList = ({ type, id }: RoutesListProps) => {
         setRoutesState({ type: 'loading' });
         getRoutesFromWaypoint({ infraId: infraID, waypointType: type, waypointId: id })
           .unwrap()
-          .then(({ starting = [], ending = [] }) => {
+          .then(({ starting, ending }) => {
             if (starting.length || ending.length) {
               getEntities<RouteEntity>(infraID, [...starting, ...ending], 'Route', dispatch)
                 .then((entities) => {

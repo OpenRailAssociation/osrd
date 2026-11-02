@@ -55,7 +55,6 @@
     "no-unsafe-enum-comparison": "off",
     "no-unsafe-member-access": "off",
     "no-unsafe-type-assertion": "off",
-    "no-useless-default-assignment": "off",
     "no-useless-return": "off",
     "no-warning-comments": "off",
     "only-throw-error": "off",

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { zoomX, timeScaleToZoomValue, getDistance } from '../../common/helpers/utils';
 import type { SpaceTimeChartProps } from '../../spaceTimeChart';
-import { DEFAULT_ZOOM_MS_PER_PX, MAX_ZOOM_Y, MIN_ZOOM_Y, ZOOM_Y_DELTA } from '../consts';
+import { DEFAULT_ZOOM_MS_PER_PX, MIN_ZOOM_Y, ZOOM_Y_DELTA } from '../consts';
 
 const INITIAL_STATE = {
   xZoom: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
@@ -60,7 +60,7 @@ const useSyncManchette = ({
     spaceOrigin: 0,
     xOffset: 0,
   },
-  maxYZoom = MAX_ZOOM_Y,
+  maxYZoom,
   enableTimeZoom = true,
 }: {
   manchetteWithSpaceTimeChartRef: React.RefObject<HTMLDivElement | null>;

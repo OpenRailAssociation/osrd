@@ -27,8 +27,8 @@ function getColorByHighlighted(data: {
 export default function geoMainLayer(
   theme: Theme,
   bigger = false,
-  highlightedArea: Geometry | undefined = undefined,
-  highlightedTrackSections: string[] | undefined = undefined
+  highlightedArea?: Geometry,
+  highlightedTrackSections?: string[]
 ): Omit<LineLayerSpecification, 'source'> {
   return {
     id: 'geoMainLayer',

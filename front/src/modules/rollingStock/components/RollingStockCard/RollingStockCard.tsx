@@ -29,7 +29,7 @@ const RollingStockCard = ({
   isOnEditMode = false,
   noCardSelected,
   rollingStock,
-  ref2scroll = undefined,
+  ref2scroll,
   onClick,
   onSelectRollingStock,
 }: RollingStockCardProps) => {

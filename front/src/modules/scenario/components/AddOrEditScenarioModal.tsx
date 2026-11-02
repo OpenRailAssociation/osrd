@@ -109,8 +109,9 @@ const AddOrEditScenarioModal = ({
   const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation({});
   const [deleteScenario] = osrdEditoastApi.endpoints.deleteScenariosByScenarioId.useMutation({});
 
-  const { electricalProfilOptions = [] } =
-    osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(undefined, {
+  const { electricalProfilOptions } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
+    undefined,
+    {
       selectFromResult: (response) => ({
         ...response,
         electricalProfilOptions: [
@@ -121,7 +122,8 @@ const AddOrEditScenarioModal = ({
           })),
         ],
       }),
-    });
+    }
+  );
 
   const [displayErrors, setDisplayErrors] = useState(false);
 

@@ -14,7 +14,7 @@ export const drawTracks = (
     height,
     tracks,
     drawBorders,
-    topPadding = 0,
+    topPadding,
     highlightedTrackId,
     showTicks = true,
   }: {

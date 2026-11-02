@@ -43,7 +43,7 @@ export function getDynamicTextSize(opts?: {
 
 export function trackNameLayer(
   colors: Theme,
-  highlightedArea: Geometry | undefined = undefined
+  highlightedArea?: Geometry
 ): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',
@@ -71,7 +71,7 @@ export function trackNameLayer(
 
 export function lineNameLayer(
   colors: Theme,
-  highlightedArea: Geometry | undefined = undefined
+  highlightedArea?: Geometry
 ): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',
@@ -96,7 +96,7 @@ export function lineNameLayer(
 
 export function lineNumberLayer(
   colors: Theme,
-  highlightedArea: Geometry | undefined = undefined
+  highlightedArea?: Geometry
 ): OmitLayer<SymbolLayerSpecification> {
   return {
     type: 'symbol',

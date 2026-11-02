@@ -75,7 +75,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: string | number
   additionalData,
   creating = false,
   data,
-  emptyValue = undefined,
+  emptyValue,
   field = 'value',
   highlighted,
   intervalType,

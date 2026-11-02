@@ -37,11 +37,11 @@ export function editoastUpToDateIndicator(
 }
 
 const InfraSelectorModalBodyStandard = ({
-  filter = '',
+  filter,
   setFilter,
   infrasList,
   infraIdsList,
-  onlySelectionMode = false,
+  onlySelectionMode,
   isInEditor,
 }: InfraSelectorModalBodyStandardProps) => {
   const { t } = useTranslation();

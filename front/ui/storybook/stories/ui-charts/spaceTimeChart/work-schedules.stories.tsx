@@ -48,9 +48,6 @@ const SAMPLE_WORK_SCHEDULES: WorkSchedule[] = [
 
 const DEFAULT_HEIGHT = 550;
 
-const NO_OPERATIONAL_POINTS: OperationalPoint[] = [];
-const NO_PATHS: (PathData & { color: string })[] = [];
-
 type WorkSchedulesWrapperProps = {
   operationalPoints: OperationalPoint[];
   paths: (PathData & { color: string })[];
@@ -58,8 +55,8 @@ type WorkSchedulesWrapperProps = {
 };
 
 const WorkSchedulesWrapper = ({
-  operationalPoints = NO_OPERATIONAL_POINTS,
-  paths = NO_PATHS,
+  operationalPoints,
+  paths,
   workSchedules,
 }: WorkSchedulesWrapperProps) => {
   const [state, setState] = useState<{

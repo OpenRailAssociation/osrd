@@ -12,7 +12,7 @@ export type StdcmCardProps = {
 
 const StdcmCard = ({
   name,
-  tip = undefined,
+  tip,
   disabled = false,
   title,
   children,

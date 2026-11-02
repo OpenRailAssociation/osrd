@@ -13,7 +13,7 @@ type StdcmCardProps = {
 const StdcmDefaultCard = ({
   text,
   Icon,
-  tip = undefined,
+  tip,
   onClick,
   disabled = false,
   className = '',

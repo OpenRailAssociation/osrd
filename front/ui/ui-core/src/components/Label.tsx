@@ -12,7 +12,7 @@ type LabelProps = {
   small: boolean;
 };
 
-const Label = ({ htmlFor, text, required, hasHint, disabled, small = false }: LabelProps) => (
+const Label = ({ htmlFor, text, required, hasHint, disabled, small }: LabelProps) => (
   <div className={cx('ui-label-wrapper', { 'has-hint': hasHint, small })}>
     {required && (
       <span className="required">

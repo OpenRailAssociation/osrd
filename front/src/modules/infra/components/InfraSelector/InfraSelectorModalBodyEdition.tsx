@@ -28,7 +28,7 @@ type FileSelection = {
 const InfraSelectorModalBodyEdition = ({
   infrasList,
   setFilter,
-  filter = '',
+  filter,
 }: InfraSelectorModalBodyEditionProps) => {
   const [isFocused, setIsFocused] = useState<number | undefined>(undefined);
   const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');

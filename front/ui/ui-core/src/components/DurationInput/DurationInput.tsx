@@ -275,8 +275,6 @@ const UnitField = function UnitField({
   );
 };
 
-const DEFAULT_UNITS: UnitProps[] = ['m', 's'];
-
 /**
  * Duration units can be set up via their shorthand strings (h, m, s, ms)
  * or more precisely through objects.
@@ -284,10 +282,10 @@ const DEFAULT_UNITS: UnitProps[] = ['m', 's'];
  */
 export const DurationInput = ({
   id,
-  units = DEFAULT_UNITS,
-  value = 0,
+  units,
+  value,
   onChange,
-  padChar = '0',
+  padChar,
   small = false,
   max = Infinity,
   label,
