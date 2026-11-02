@@ -1,4 +1,9 @@
-import type { Operation, NetzgrafikDto, NodeDto } from '@osrd-project/netzgrafik-frontend';
+import type {
+  Operation,
+  NetzgrafikDto,
+  NodeDto,
+  OperationType,
+} from '@osrd-project/netzgrafik-frontend';
 
 import type {
   OperationalPointReferenceNode,
@@ -61,8 +66,8 @@ export const handleNodeOperation = async ({
 }): Promise<void> => {
   const indexNode = state.getNodeByNgeId(node.id);
   switch (type) {
-    case 'create':
-    case 'update': {
+    case 'create' as OperationType.create:
+    case 'update' as OperationType.update: {
       if (indexNode) {
         if (indexNode.dbId) {
           // Update the key if mainCode has changed and key is based on it
@@ -166,7 +171,7 @@ export const handleNodeOperation = async ({
       }
       break;
     }
-    case 'delete': {
+    case 'delete' as OperationType.delete: {
       if (indexNode) await deleteMacroNodeByNgeId(state, dispatch, node.id);
       break;
     }

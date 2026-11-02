@@ -54,28 +54,23 @@ const handleLabelOperation = async ({
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { trainruns } = netzgrafikDto;
-  switch (type) {
-    case 'update': {
-      const trainrunUpdateLabels = trainruns.filter((trainrun) =>
-        trainrun.labelIds.includes(label.id)
-      );
-      trainrunUpdateLabels.forEach(async (trainrun) => {
-        await handleUpdateTrainSchedule({
-          netzgrafikDto,
-          trainrun,
-          trainScheduleSetId,
-          infraId,
-          state,
-          dispatch,
-          addUpsertedTrainSchedules,
-          addDeletedTrainScheduleIds,
-        });
+
+  if (type === 'update') {
+    const trainrunUpdateLabels = trainruns.filter((trainrun) =>
+      trainrun.labelIds.includes(label.id)
+    );
+    trainrunUpdateLabels.forEach(async (trainrun) => {
+      await handleUpdateTrainSchedule({
+        netzgrafikDto,
+        trainrun,
+        trainScheduleSetId,
+        infraId,
+        state,
+        dispatch,
+        addUpsertedTrainSchedules,
+        addDeletedTrainScheduleIds,
       });
-      break;
-    }
-    default: {
-      break;
-    }
+    });
   }
 };
 
@@ -86,14 +81,8 @@ const handleMetadataOperation = async ({
   type: Operation['type'];
   netzgrafikDto: NetzgrafikDto;
 }) => {
-  switch (type) {
-    case 'update': {
-      localStorage.setItem('trafficSideNetworkGraph', netzgrafikDto.metadata.trafficSide!);
-      break;
-    }
-    default: {
-      break;
-    }
+  if (type === 'update') {
+    localStorage.setItem('trafficSideNetworkGraph', netzgrafikDto.metadata.trafficSide!);
   }
 };
 
@@ -106,17 +95,11 @@ const handleFilterSettingOperation = async ({
   filterSetting: FilterSettingDto;
   state: MacroEditorState;
 }) => {
-  switch (type) {
-    case 'update': {
-      localStorage.setItem(
-        localStorageFilterSettingKey(state.scenarioId),
-        JSON.stringify(filterSetting)
-      );
-      break;
-    }
-    default: {
-      break;
-    }
+  if (type === 'update') {
+    localStorage.setItem(
+      localStorageFilterSettingKey(state.scenarioId),
+      JSON.stringify(filterSetting)
+    );
   }
 };
 
@@ -140,6 +123,7 @@ export const handleOperation = async ({
   addDeletedTrainScheduleIds: (trainScheduleIds: number[]) => void;
 }) => {
   const { type } = operation;
+  // eslint-disable-next-line typescript/switch-exhaustiveness-check
   switch (operation.objectType) {
     case 'node':
       await handleNodeOperation({

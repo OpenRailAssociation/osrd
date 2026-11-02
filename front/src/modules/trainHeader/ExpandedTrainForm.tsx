@@ -558,6 +558,7 @@ const ExpandedTrainForm = ({
                     status: 'error',
                     message: t('manageTrainSchedule.trainHeader.form.initialSpeedTooHigh'),
                   };
+                case null:
                 default:
                   return undefined;
               }

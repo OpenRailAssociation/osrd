@@ -2,6 +2,7 @@ import type {
   FreeFloatingTextDto,
   Operation,
   NetzgrafikDto,
+  OperationType,
 } from '@osrd-project/netzgrafik-frontend';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -89,15 +90,15 @@ export const handleNoteOperation = async ({
   dispatch: AppDispatch;
 }) => {
   switch (type) {
-    case 'create': {
+    case 'create' as OperationType.create: {
       await createMacroNote(state, dispatch, netzgrafikDto, note);
       break;
     }
-    case 'update': {
+    case 'update' as OperationType.update: {
       await updateMacroNote(state, dispatch, netzgrafikDto, note);
       break;
     }
-    case 'delete': {
+    case 'delete' as OperationType.delete: {
       await deleteMacroNote(state, dispatch, note.id);
       break;
     }

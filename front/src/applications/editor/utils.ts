@@ -6,6 +6,7 @@ import type { Layer } from './consts';
 export const getLayerSettingNameFromEditorLayer = (
   editorLayer: Layer
 ): keyof LayersSettings | null => {
+  // eslint-disable-next-line typescript/switch-exhaustiveness-check
   switch (editorLayer) {
     case 'psl':
     case 'psl_signs':

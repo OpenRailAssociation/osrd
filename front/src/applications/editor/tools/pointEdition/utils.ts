@@ -79,6 +79,7 @@ function getLogicalSignalSettings(signalingSystem: SignalingSystemForm) {
         Nf: settings?.Nf || 'false',
         distant: settings?.distant || 'false',
       };
+    case 'BAL':
     default:
       return {
         Nf: settings?.Nf || 'false',

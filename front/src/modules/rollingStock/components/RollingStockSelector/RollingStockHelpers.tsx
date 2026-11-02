@@ -86,6 +86,7 @@ export function comfort2pictogram(comfort: Comfort | undefined) {
       );
     case 'STANDARD':
       return <span className="comfort-STANDARD">S</span>;
+    case undefined:
     default:
       return null;
   }

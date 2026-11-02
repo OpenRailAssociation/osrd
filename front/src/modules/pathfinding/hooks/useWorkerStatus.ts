@@ -36,14 +36,8 @@ export default function useWorkerStatus({
   }
 
   if (shouldPoll) {
-    switch (workerStatus) {
-      case 'READY':
-      case 'ERROR': {
-        setShouldPoll(false);
-        break;
-      }
-      default:
-        break;
+    if (workerStatus === 'READY' || workerStatus === 'ERROR') {
+      setShouldPoll(false);
     }
   }
 

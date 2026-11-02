@@ -19,7 +19,7 @@ enum TRACK_NODE_TYPES_ID {
 const TrackNodeTypeDiagram = ({ trackNodeType }: { trackNodeType: TrackNodeTypeId }) => {
   const trackNodeTypeImage = useMemo(() => {
     let source: string | undefined;
-    switch (trackNodeType) {
+    switch (trackNodeType as TRACK_NODE_TYPES_ID) {
       case TRACK_NODE_TYPES_ID.CROSSING:
         source = crossing;
         break;

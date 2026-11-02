@@ -5,6 +5,7 @@ import type {
   NodeDto,
   TimeLockDto,
   TrainrunDto,
+  OperationType,
 } from '@osrd-project/netzgrafik-frontend';
 import { compact, uniq } from 'lodash';
 
@@ -741,7 +742,7 @@ export const handleTrainrunOperation = async ({
 }) => {
   const trainrun = netzgrafikDto.trainruns.find((tr) => tr.id === trainrunId);
   switch (type) {
-    case 'create': {
+    case 'create' as OperationType.create: {
       await handleCreateTrainSchedule(
         netzgrafikDto,
         trainrun!,
@@ -753,7 +754,7 @@ export const handleTrainrunOperation = async ({
       );
       break;
     }
-    case 'update': {
+    case 'update' as OperationType.update: {
       await handleUpdateTrainSchedule({
         netzgrafikDto,
         trainrun: trainrun!,
@@ -766,7 +767,7 @@ export const handleTrainrunOperation = async ({
       });
       break;
     }
-    case 'delete': {
+    case 'delete' as OperationType.delete: {
       await handleDeleteTrainSchedule(trainrunId, state, dispatch, addDeletedTrainScheduleIds);
       break;
     }

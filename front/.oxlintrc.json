@@ -68,7 +68,6 @@
     "return-await": "off",
     "strict-boolean-expressions": "off",
     "strict-void-return": "off",
-    "switch-exhaustiveness-check": "off",
     "typescript/prefer-promise-reject-errors": "off",
     "typescript/require-await": "off",
     "vitest/no-conditional-expect": "off",

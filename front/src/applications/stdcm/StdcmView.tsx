@@ -138,6 +138,10 @@ const StdcmViewContent = ({
         if (!isReloading) setShowStatusBanner(true);
         break;
       }
+      case STDCM_REQUEST_STATUS.idle:
+      case STDCM_REQUEST_STATUS.noresults: {
+        break;
+      }
     }
   }, [requestStatus, isReloading, setShowStatusBanner]);
 

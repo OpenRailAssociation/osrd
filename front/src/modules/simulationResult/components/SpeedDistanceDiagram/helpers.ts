@@ -36,6 +36,7 @@ const getTag = (source?: SpeedLimitTagValue['source']): { name: string; color: s
       name = 'incompatible';
       color = TAG_COLORS.INCOMPATIBLE;
       break;
+    case undefined:
     default:
       name = 'missing_from_train';
       color = TAG_COLORS.MISSING;

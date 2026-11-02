@@ -282,6 +282,9 @@ export function openEntityEditionPanel(
         },
       });
       break;
+    case 'LevelCrossing':
+    case 'NeutralSection':
+    case 'SwitchType':
     default:
       break;
   }

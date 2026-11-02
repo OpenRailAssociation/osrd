@@ -381,6 +381,8 @@ export function getMapMouseEventNearestFeature(
             nearestFeaturePoint = pt;
             break;
           }
+          case 'GeometryCollection':
+          case 'MultiPolygon':
           default:
             distance = Infinity;
             break;

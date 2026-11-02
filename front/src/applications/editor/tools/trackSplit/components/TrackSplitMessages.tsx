@@ -13,6 +13,7 @@ const TrackSplitMessages = () => {
       return t('Editor.tools.track-split.help.split').toString();
     case 'movePoint':
       return t('Editor.tools.track-split.help.move').toString();
+    case 'idle':
     default:
       return t('Editor.tools.track-split.help.default').toString();
   }

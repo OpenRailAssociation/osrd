@@ -81,6 +81,7 @@ export const applyScheduleEdit = (
 ): ScheduleState & { departure: StartTime | null } => {
   const { arrival, stop } = current;
 
+  // eslint-disable-next-line typescript/switch-exhaustiveness-check
   switch (edit.field) {
     case 'requestedArrival': {
       const newArrival = edit.value;

@@ -112,6 +112,13 @@ async function getAdditionalEntities(
       }
       return results;
     }
+    case 'Electrification':
+    case 'LevelCrossing':
+    case 'NeutralSection':
+    case 'OperationalPoint':
+    case 'SpeedSection':
+    case 'SwitchType':
+    case 'TrackSection':
     default:
       return {};
   }
@@ -289,6 +296,9 @@ function getSumUpContent(
       );
       break;
     }
+    case 'LevelCrossing':
+    case 'NeutralSection':
+    case 'SwitchType':
     default: {
       text = entity.properties.id;
     }
