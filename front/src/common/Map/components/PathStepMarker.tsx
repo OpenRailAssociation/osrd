@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Turnaround } from '@osrd-project/ui-icons';
+import { Backtrack } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import type { Position } from 'geojson';
 import { Marker } from 'react-map-gl/maplibre';
@@ -107,7 +107,7 @@ const PathStepMarker = ({
           <div className="label">
             {isBackTrack && (
               <span className="backtrack-icon" data-testid="backtrack-icon">
-                <Turnaround />
+                <Backtrack />
               </span>
             )}
             {name}
