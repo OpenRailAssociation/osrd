@@ -149,17 +149,6 @@ export const startTimeToMs = (startTime: StartTime): number =>
 export const msToStartTime = (ms: number, reference: StartTime): StartTime =>
   reference instanceof Duration ? new Duration({ milliseconds: ms }) : new Date(ms);
 
-/**
- * TODO Hourly timetables: temporary helper, remove once components handle Duration start times.
- *
- * Components are not adapted to hourly timetables yet but still expect a Date. Since no
- * Date is meaningful for an offset from the timetable start, deliberately return the
- * epoch as an obviously fictive placeholder instead of a value that could pass for a
- * real date. Each call site marks a component to migrate in a follow-up PR.
- */
-export const startTimeToDate = (startTime: StartTime): Date =>
-  startTime instanceof Duration ? new Date(0) : startTime;
-
 export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.getTime() + dur.ms);
 
 /** Add a duration to a start time, keeping it a Date for calendar timetables or a Duration
