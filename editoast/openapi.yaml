@@ -15199,6 +15199,13 @@ components:
           oneOf:
           - type: 'null'
           - $ref: '#/components/schemas/Tags'
+        timetable_ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: integer
+            format: int64
     ScenarioReference:
       type: object
       required:
