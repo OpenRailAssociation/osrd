@@ -7,7 +7,7 @@ import { useInfraID } from 'common/osrdContext';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { startTimeToDate } from 'utils/duration';
+import { startTimeToMs } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
 import { formatLevelCrossingOccupanciesForChronogram } from './buildOccupancyBlocks';
@@ -23,8 +23,7 @@ const useLevelCrossingsWithChronogram = (
   const infraId = useInfraID();
   const dispatch = useAppDispatch();
 
-  // TODO Hourly timetables: use the actual start time instead of a fictive date
-  const timeOrigin = useMemo(() => startTimeToDate(trains[0].startTime).getTime(), [trains]);
+  const timeOrigin = useMemo(() => startTimeToMs(trains[0].startTime), [trains]);
 
   const trainIds = useMemo(() => trains.map((train) => train.id), [trains]);
 
