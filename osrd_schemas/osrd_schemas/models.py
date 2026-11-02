@@ -6075,6 +6075,7 @@ class ScenarioPatchForm(BaseModel):
     infra_id: StrictInt | None = None
     name: StrictStr | None = None
     tags: list[StrictStr] | None = None
+    timetable_ids: list[StrictInt] | None = None
 
 
 class SearchPayload(BaseModel):
