@@ -448,31 +448,29 @@ class PacedTrainSection extends ScenarioTimetableSection {
     await expect(this.testedPacedTrainOccurrences).toHaveCount(length);
   }
 
-  // Iterate over each paced train occurrences and verify the visibility of simulation results
-  async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
-    for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
-      const pacedTrain = this.trainSchedules.nth(pacedTrainIndex);
-      await expect(pacedTrain).toBeVisible();
+  // Iterate over one paced train occurrences and verify the visibility of simulation results
+  async verifyPacedTrainSimulation(pacedTrainIndex: number): Promise<void> {
+    const pacedTrain = this.trainSchedules.nth(pacedTrainIndex);
+    await expect(pacedTrain).toBeVisible();
 
-      await this.expandPacedTrainOccurrenceList(pacedTrainIndex);
+    await this.expandPacedTrainOccurrenceList(pacedTrainIndex);
 
-      const occurrences = this.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
+    const occurrences = this.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
 
-      const count = await occurrences.count();
-      for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
-        const occurrenceButton = occurrences.nth(occurrenceIndex);
+    const count = await occurrences.count();
+    for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
+      const occurrenceButton = occurrences.nth(occurrenceIndex);
 
-        const isSelected =
-          (await occurrenceButton.getAttribute('class'))?.includes('selected') ?? false;
-        if (!isSelected) {
-          await occurrenceButton.click();
-        }
-
-        await this.verifySimulationResultsVisibility();
+      const isSelected =
+        (await occurrenceButton.getAttribute('class'))?.includes('selected') ?? false;
+      if (!isSelected) {
+        await occurrenceButton.click();
       }
 
-      await this.collapsePacedTrainOccurrenceList(pacedTrainIndex);
+      await this.verifySimulationResultsVisibility();
     }
+
+    await this.collapsePacedTrainOccurrenceList(pacedTrainIndex);
   }
 }
 
