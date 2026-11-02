@@ -12,7 +12,7 @@ import {
 } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, startTimeToMs, type StartTime } from 'utils/duration';
 import { isTrainId } from 'utils/trainId';
 
 import type { BaseTrainProjection, CurveStyleExceptionType } from '../../../types';
@@ -119,11 +119,11 @@ export function getMovableOccupancyZone(
   occupation: PostTrainSchedulesTrackOccupancyApiResponse[number]['trains'][number],
   spaceTimeCurves: BaseTrainProjection['spaceTimeCurves'],
   trainName: string,
-  departureTime: Date,
+  departureTime: StartTime,
   paced: TrainScheduleWithDetails['paced'],
   exception: PacedTrainException | undefined
 ): DrawableOccupancyZone {
-  const trainStartTime = departureTime.getTime();
+  const trainStartTime = startTimeToMs(departureTime);
   const occupationStartTime = occupation.time_begin;
   const occupationEndTime = occupationStartTime + Duration.parse(occupation.duration).ms;
   const timeToPosition = getTimeToPosition(spaceTimeCurves);

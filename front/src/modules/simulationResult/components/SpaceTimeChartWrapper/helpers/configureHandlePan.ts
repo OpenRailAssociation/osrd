@@ -9,6 +9,7 @@ import {
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectionSource } from 'reducers/simulationResults/types';
+import { msToStartTime, startTimeToMs, type StartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -27,7 +28,7 @@ const SNAP_DISTANCE_PX = 8;
 type DraggingState =
   | {
       draggedTrain: IndividualTrainProjection;
-      initialDepartureTime: Date;
+      initialDepartureTime: StartTime;
       /** Original exceptions captured at drag start — used to compute shifts without accumulation */
       originalPacedExceptions?: SimulatedException[];
       /** Cadence grid (model start + k × interval) a 'single'-mode occurrence snaps onto. */
@@ -62,8 +63,8 @@ type ConfigureHandlePanParams = {
   spaceTimeChartOnPan?: SpaceTimeChartProps['onPan'];
   handleTrainDrag?: (args: {
     draggedTrainId: TrainId;
-    initialDepartureTime: Date;
-    newDepartureTime: Date;
+    initialDepartureTime: StartTime;
+    newDepartureTime: StartTime;
     stopPanning: boolean;
     panelSelectionMode: PanelSelectionMode;
     originalPacedExceptions?: SimulatedException[];
@@ -120,15 +121,16 @@ export function configureHandlePan({
 
       // Snap onto the cadence grid (single mode) so an occurrence can be re-aligned — and made
       // conforming — without pixel-perfect aiming, or back onto the pre-drag departure.
+      const initialDepartureMs = startTimeToMs(initialDepartureTime);
       const snappedMs = snapDepartureTime(
-        initialDepartureTime.getTime() + payload.data.time - payload.initialData.time,
-        initialDepartureTime.getTime(),
+        initialDepartureMs + payload.data.time - payload.initialData.time,
+        initialDepartureMs,
         pacedGrid,
         payload.context.timeScale
       );
-      const newDepartureTime = new Date(snappedMs);
+      const newDepartureTime = msToStartTime(snappedMs, initialDepartureTime);
 
-      setDragOffsetMs(snappedMs - initialDepartureTime.getTime());
+      setDragOffsetMs(snappedMs - initialDepartureMs);
 
       // stop dragging if necessary
       if (!isPanning) {
@@ -198,7 +200,7 @@ export function configureHandlePan({
             // 'single' snaps the occurrence onto the model's cadence grid.
             if (panelSelectionMode === 'single' && modelTrain.paced) {
               pacedGrid = {
-                startTimeMs: modelTrain.departureTime.getTime(),
+                startTimeMs: startTimeToMs(modelTrain.departureTime),
                 intervalMs: modelTrain.paced.interval.ms,
               };
             }

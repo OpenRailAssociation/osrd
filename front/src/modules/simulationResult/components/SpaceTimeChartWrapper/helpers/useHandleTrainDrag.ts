@@ -7,7 +7,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { startTimeToMs, subtractStartTime, type Duration, type StartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractOccurrenceIndexFromOccurrenceId,
@@ -34,13 +34,13 @@ type DragContext = DragDeps & {
   draggedTrain: TrainSpaceTimeData;
   updateTrainScheduleDepartureTime: (
     draggedTrainId: TrainId,
-    newDepartureTime: Date,
+    newDepartureTime: StartTime,
     panelSelectionMode?: PanelSelectionMode
   ) => Promise<void>;
   /** Returns the full projections array with the dragged train replaced by `updated`. */
   replaceProjection: (updated: TrainSpaceTimeData) => TrainSpaceTimeData[];
-  newDepartureTime: Date;
-  initialDepartureTime: Date;
+  newDepartureTime: StartTime;
+  initialDepartureTime: StartTime;
   stopPanning: boolean;
   /** Exceptions captured at drag start — stable base so repeated frames don't accumulate. */
   originalPacedExceptions?: SimulatedException[];
@@ -76,7 +76,7 @@ async function handleSingleOccurrenceDrag({
       : undefined;
     const previewException: SimulatedException = {
       ...(existingException ?? { key: '', occurrence_index: occurrenceIndex }),
-      start_time: { value: newDepartureTime.getTime() },
+      start_time: { value: startTimeToMs(newDepartureTime) },
     };
     previewExceptions = updatePacedTrainExceptionsList(
       baseExceptions,
@@ -92,7 +92,7 @@ async function handleSingleOccurrenceDrag({
 
   // Register the train as "being dragged" (stopPanning: false) so the trains-update effect in
   // useTrackOccupancy skips it instead of refetching its occupancy on every frame.
-  const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
+  const offset = subtractStartTime(newDepartureTime, initialDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     selectionMode: 'single',
@@ -136,7 +136,7 @@ async function handleAllOccurrencesDrag({
 
   // initialDepartureTime is the model departure at drag start, so the offset is absolute
   // (no per-frame accumulation). The exceptions are shifted from their captured originals.
-  const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
+  const offset = subtractStartTime(newDepartureTime, initialDepartureTime);
   const baseExceptions = originalPacedExceptions ?? draggedTrain.paced.exceptions;
   const newTrainData: TrainSpaceTimeData = {
     ...draggedTrain,
@@ -183,7 +183,7 @@ async function handleModelDrag({
 }: DragContext & { draggedTrainId: TrainId }) {
   const newTrainData: TrainSpaceTimeData = { ...draggedTrain, departureTime: newDepartureTime };
 
-  const offset = Duration.subtractDate(newDepartureTime, initialDepartureTime);
+  const offset = subtractStartTime(newDepartureTime, initialDepartureTime);
   await handleTrainDragInTrackOccupancy({
     draggedTrainId,
     selectionMode: 'compliant',
@@ -221,8 +221,8 @@ export default function useHandleTrainDrag({
     originalPacedExceptions,
   }: {
     draggedTrainId: TrainId;
-    newDepartureTime: Date;
-    initialDepartureTime: Date;
+    newDepartureTime: StartTime;
+    initialDepartureTime: StartTime;
     stopPanning: boolean;
     panelSelectionMode: PanelSelectionMode;
     originalPacedExceptions?: SimulatedException[];
@@ -245,7 +245,7 @@ export default function useHandleTrainDrag({
       initialDepartureTime,
       stopPanning,
       originalPacedExceptions,
-      isUnchanged: newDepartureTime.getTime() === initialDepartureTime.getTime(),
+      isUnchanged: startTimeToMs(newDepartureTime) === startTimeToMs(initialDepartureTime),
     };
 
     if (panelSelectionMode === 'single' && isOccurrenceId(draggedTrainId)) {
