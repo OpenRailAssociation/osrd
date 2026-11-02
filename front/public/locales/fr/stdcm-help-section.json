@@ -233,10 +233,6 @@
               "question": "Est-ce possible de faire une simulation à J-10 ?"
             },
             {
-              "answer": "Dans le cadre du démonstrateur, l’outil LMR ne permet pas de faire des demandes de rebroussement. Ces développements sont néanmoins pris en compte pour de prochaines versions de l’outil.",
-              "question": "Existe-t-il une possibilité de faire des demandes de rebroussement dans l’outil ?"
-            },
-            {
               "answer": "Dans le cadre du démonstrateur, LMR ne prend pas en compte les voies d’évitement. Ces développements sont néanmoins pris en compte pour de prochaines versions de l’outil.",
               "question": "L’outil prend-t-il en compte les voies d’évitement ?"
             }
@@ -280,7 +276,7 @@
       "content": [
         {
           "type": "text",
-          "value": "Indiquez l'origine, la destination, et les éventuels points de passage et arrêts de votre parcours (hors rebroussements) pour pouvoir obtenir une simulation. Ceux-ci sont limités à l'axe Perrigny-Miramas dans un premier temps."
+          "value": "Indiquez l'origine, la destination, et les éventuels points de passage et arrêts de votre parcours pour pouvoir obtenir une simulation. Ceux-ci sont limités à l'axe Perrigny-Miramas dans un premier temps."
         },
         {
           "type": "text",
@@ -339,10 +335,6 @@
             {
               "type": "text",
               "value": "Dans le cas de relève conducteur ou arrêt de service, indiquez le temps d'arrêt minimum souhaité, en minutes. Pour trouver davantage de solutions, l'outil peut rallonger ces arrêts dans la simulation."
-            },
-            {
-              "type": "text",
-              "value": "N.B. : Les rebroussements ne sont pas encore pris en compte dans l'outil."
             }
           ],
           "title": "PR intermédiaire"
