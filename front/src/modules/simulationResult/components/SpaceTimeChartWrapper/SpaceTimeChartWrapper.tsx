@@ -61,7 +61,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import type { SelectionSource } from 'reducers/simulationResults/types';
 import { useAppDispatch } from 'store';
-import { Duration, subtractDurationFromDate } from 'utils/duration';
+import { Duration, startTimeToMs, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import {
   extractEditoastIdFromTrainScheduleId,
@@ -130,8 +130,8 @@ type SpaceTimeChartWrapperBaseProps = {
     panelSelectionMode,
   }: {
     draggedTrainId: TrainId;
-    initialDepartureTime: Date;
-    newDepartureTime: Date;
+    initialDepartureTime: StartTime;
+    newDepartureTime: StartTime;
     stopPanning: boolean;
     panelSelectionMode: PanelSelectionMode;
   }) => Promise<void>;
@@ -534,10 +534,7 @@ const SpaceTimeChartWrapper = ({
     if (trainUsedForProjection) {
       // Center the view on the newly projected train (+5mn).
       setTimeOrigin(
-        +subtractDurationFromDate(
-          trainUsedForProjection.departureTime,
-          new Duration({ minutes: 5 })
-        )
+        startTimeToMs(trainUsedForProjection.departureTime) - new Duration({ minutes: 5 }).ms
       );
       // Only reset the pan when the projected train actually changed, not when this effect
       // re-runs because trainScheduleProjections.length changed for another reason (e.g.
@@ -549,7 +546,7 @@ const SpaceTimeChartWrapper = ({
       const minTime = Math.min(
         ...trainScheduleProjections
           .filter((train) => train.spaceTimeCurves.length > 0)
-          .map((p) => +p.departureTime)
+          .map((p) => startTimeToMs(p.departureTime))
       );
 
       if (Number.isFinite(minTime)) {

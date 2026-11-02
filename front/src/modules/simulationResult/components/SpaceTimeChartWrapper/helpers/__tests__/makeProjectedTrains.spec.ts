@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { describe, expect, test } from 'vitest';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
@@ -269,7 +268,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2564_1',
         key: 'indexedoccurrence_2564_1-2025-07-09T06:30:00.000Z',
         name: `${pacedTrain.name} 3`,
-        departureTime: dayjs(pacedTrain.departureTime).add(1, 'hour').toDate(),
+        departureTime: new Date('2025-07-09T06:30:00.000Z'),
         type: 'occurrence',
         spaceTimeCurves: pacedTrain.spaceTimeCurves,
         signalUpdates: pacedTrain.signalUpdates,
@@ -278,7 +277,7 @@ describe('makeProjectedTrains', () => {
         id: 'indexedoccurrence_2564_2',
         key: 'indexedoccurrence_2564_2-2025-07-09T07:30:00.000Z',
         name: `${pacedTrain.name} 5`,
-        departureTime: dayjs(pacedTrain.departureTime).add(2, 'hour').toDate(),
+        departureTime: new Date('2025-07-09T07:30:00.000Z'),
         type: 'occurrence',
         spaceTimeCurves: pacedTrain.spaceTimeCurves,
         signalUpdates: pacedTrain.signalUpdates,
@@ -328,7 +327,7 @@ describe('makeProjectedTrains', () => {
     });
 
     // In an hourly timetable, start times are offsets from the timetable start.
-    const hourlyTime = (minutes: number) => new Date(new Duration({ minutes }).ms);
+    const hourlyTime = (minutes: number) => new Duration({ minutes });
     const hourlyTimeRange = {
       start: new Duration({ minutes: -5 }),
       end: new Duration({ minutes: 10 }),
