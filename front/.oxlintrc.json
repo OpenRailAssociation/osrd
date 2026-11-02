@@ -72,7 +72,6 @@
     "switch-exhaustiveness-check": "off",
     "typescript/prefer-promise-reject-errors": "off",
     "typescript/require-await": "off",
-    "unbound-method": "off",
     "vitest/no-conditional-expect": "off",
     "vitest/no-conditional-in-test": "off",
     "vitest/no-disabled-tests": "off",
@@ -170,6 +169,7 @@
         }
       }
     ],
+    "typescript/unbound-method": ["error", { "ignoreStatic": true }],
 
     "import-js/no-extraneous-dependencies": [
       "error",

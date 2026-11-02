@@ -258,11 +258,12 @@ function visitNode(
  * all translation function calls, and record a list of translation keys.
  */
 function extractKeysFromTypeScript() {
-  const tsconfigPath = ts.findConfigFile(process.cwd(), ts.sys.fileExists, 'tsconfig.json');
+  const fileExists = (filePath: string) => ts.sys.fileExists(filePath);
+  const tsconfigPath = ts.findConfigFile(process.cwd(), fileExists, 'tsconfig.json');
   if (!tsconfigPath) {
     throw new Error('Failed to find tsconfig.json');
   }
-  const tsconfigFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
+  const tsconfigFile = ts.readConfigFile(tsconfigPath, (filePath) => ts.sys.readFile(filePath));
   const tsconfig = ts.parseJsonConfigFileContent(
     tsconfigFile.config,
     ts.sys,

@@ -19,7 +19,7 @@ type AddSubjectForm = {
 
 type GrantManagerAddSubjectFormProps = {
   grants: Array<{ label: string; value?: Grant }>;
-  onSubmit(subject: Subject, grant: Grant): Promise<void>;
+  onSubmit(this: void, subject: Subject, grant: Grant): Promise<void>;
 };
 const GrantManagerAddSubjectForm = ({
   grants: grantOptions,

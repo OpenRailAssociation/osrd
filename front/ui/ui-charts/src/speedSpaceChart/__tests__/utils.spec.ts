@@ -156,6 +156,7 @@ describe('clearCanvas', () => {
       clearRect: fn(),
     } as unknown as CanvasRenderingContext2D;
     clearCanvas(ctx, 100, 200);
+    // eslint-disable-next-line typescript/unbound-method -- the function is never called, only referenced
     expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 100, 200);
   });
 });
