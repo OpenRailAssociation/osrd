@@ -6,6 +6,7 @@ import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type { CurveStyleExceptionType } from 'modules/simulationResult/types';
 import type { OccurrenceId, TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
+import { startTimeToMs } from 'utils/duration';
 import { isOccurrenceId, extractTrainScheduleIdFromTrainId } from 'utils/trainId';
 
 import type { AspectLabel, IndividualTrainProjection } from '../../../types';
@@ -76,7 +77,7 @@ export const isIndividualOccurrenceProjection = (
 
 export const getOccupancyBlocks = (trains: IndividualTrainProjection[]): OccupancyBlock[] =>
   trains.flatMap((train) => {
-    const departureTime = train.departureTime.getTime();
+    const departureTime = startTimeToMs(train.departureTime);
 
     return train.signalUpdates.map((block) => ({
       timeStart: departureTime + block.time_start,
