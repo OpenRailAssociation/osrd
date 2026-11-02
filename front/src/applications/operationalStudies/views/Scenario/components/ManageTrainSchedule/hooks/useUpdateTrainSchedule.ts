@@ -290,7 +290,7 @@ const useUpdateTrainSchedule = (setIsWorking: (isWorking: boolean) => void) => {
   const dispatch = useAppDispatch();
   const dateTimeLocale = useDateTimeLocale();
 
-  const { timetableId } = useScenarioContext();
+  const { timetableId, scenario } = useScenarioContext();
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -343,7 +343,10 @@ const useUpdateTrainSchedule = (setIsWorking: (isWorking: boolean) => void) => {
         dispatch,
         timetableId,
         addedExceptions: trainState.addedExceptions,
-        updatedTrainSchedule: formatTrainSchedulePayload(trainState),
+        updatedTrainSchedule: formatTrainSchedulePayload(
+          trainState,
+          scenario.timetable_summaries.at(0)!.type
+        ),
       });
 
       if (result.success) {
