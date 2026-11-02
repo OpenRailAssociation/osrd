@@ -5007,9 +5007,11 @@ export type SubCategoryPage = PaginationStats & {
 export type TimetableResult = {
   is_train_schedule_set: boolean;
   timetable_id: number;
+  timetable_name?: string | null;
   timetable_type: TimetableType;
 };
 export type TimetableForm = {
+  timetable_name?: string | null;
   timetable_type: TimetableType;
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
