@@ -11,6 +11,21 @@ function extraOccurrencesLabel(count: number): string {
   return form.extraOccurrences_other.replace('{{count}}', String(count));
 }
 
+/**
+ * Click on a checkbox manually if necessary and expect the new checked parameter to match the new value.
+ *
+ * Playwright's `.setChecked()` verify the value of the `checked` attribute immediately, even with the
+ * `timeout` option, so we have to reimplement it to allow values set asynchronously to be checked.
+ */
+async function setCheckedAndWait(checkbox: Locator, checked: boolean) {
+  const alreadyChecked = await checkbox.isChecked();
+
+  if ((alreadyChecked && !checked) || (!alreadyChecked && checked)) {
+    await checkbox.click();
+    await expect(checkbox).toBeChecked({ checked });
+  }
+}
+
 class HeaderPageObject extends CommonPage {
   private readonly collapsedHeader: Locator;
   private readonly expandedHeader: Locator;
@@ -239,11 +254,11 @@ class HeaderPageObject extends CommonPage {
   }
 
   async toggleElectricalProfiles(checked: boolean) {
-    await this.electricalProfilesCheckbox.setChecked(checked, { force: true });
+    await setCheckedAndWait(this.electricalProfilesCheckbox, checked);
   }
 
   async toggleScheduleKind(checked: boolean) {
-    await this.scheduleKindToggle.setChecked(checked, { force: true });
+    await setCheckedAndWait(this.scheduleKindToggle, checked);
   }
 
   async openItinerary() {
