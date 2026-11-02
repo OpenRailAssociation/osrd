@@ -136,7 +136,7 @@ export async function selectFirstDropDownItem(
 
 /**
  * Waits until the infrastructure state becomes 'CACHED' before proceeding to the next step.
- * The function polls the `workerStatus` every 10 seconds, up to a total of 60 seconds.
+ * The function polls the `workerStatus` every second, up to a total of 60 seconds.
  * Displays the total time taken for the state to reach 'CACHED'.
  *
  * @param infraId - The ID of the infrastructure to retrieve and check.
@@ -144,8 +144,8 @@ export async function selectFirstDropDownItem(
  * @returns {Promise<void>} - Resolves when the state is 'CACHED'.
  */
 export const waitForInfraStateToBeCached = async (infraId: number): Promise<void> => {
-  const maxRetries = 6; // Total attempts (60 seconds / 10 seconds)
-  const delay = 10000; // Delay in milliseconds (10 seconds)
+  const maxRetries = 60; // Total attempts (60 seconds / 1 second)
+  const delay = 1000; // Delay in milliseconds (1 second)
   const startTime = Date.now(); // Record start time
 
   for (let attempt = 0; attempt < maxRetries; attempt += 1) {
@@ -171,7 +171,7 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
     });
   }
 
-  throw new Error("Infrastructure state did not reach 'CACHED' within the allotted 3 minutes.");
+  throw new Error("Infrastructure state did not reach 'CACHED' within the allotted 60 seconds.");
 };
 
 /**
