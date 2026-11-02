@@ -1,6 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { expectFieldsToHaveValues, handleAndVerifyInput, selectAndCheckOption } from '../../utils';
+import {
+  type ExpectedListing,
+  expectFieldsToHaveValues,
+  expectListedItems,
+  handleAndVerifyInput,
+  selectAndCheckOption,
+} from '../../utils';
 
 class ItineraryModalPage {
   private readonly itineraryModal: Locator;
@@ -27,6 +33,7 @@ class ItineraryModalPage {
   readonly compositionCodeInput: Locator;
   readonly trainNameInput: Locator;
   private readonly launchRocketSearchButton: Locator;
+  private readonly rollingStockSuggestions: Locator;
   private readonly rollingStockFirstSuggestion: Locator;
   private readonly pathStepMarker: Locator;
   private readonly itineraryReverseButton: Locator;
@@ -71,7 +78,8 @@ class ItineraryModalPage {
     this.compositionCodeInput = page.getByTestId('itinerary-modal-composition-code');
     this.trainNameInput = page.getByTestId('itinerary-modal-train-name');
     this.launchRocketSearchButton = page.getByTestId('submit-search-by-main-code');
-    this.rollingStockFirstSuggestion = page.getByTestId('rolling-stock-combobox-item').first();
+    this.rollingStockSuggestions = page.getByTestId('rolling-stock-combobox-item');
+    this.rollingStockFirstSuggestion = this.rollingStockSuggestions.first();
     this.pathStepMarker = page.getByTestId('path-step-marker');
     this.itineraryReverseButton = page.getByTestId('reverse-itinerary-button');
     this.trackNameSelector = page.getByTestId('track-name');
@@ -228,6 +236,12 @@ class ItineraryModalPage {
     await this.rollingStockSelector.fill(rollingStockQuery);
     await expect(this.rollingStockFirstSuggestion).toBeVisible();
     await this.rollingStockFirstSuggestion.click();
+  }
+
+  async searchRollingStockAndCheckSuggestions(query: string, expected: ExpectedListing) {
+    await this.rollingStockSelector.click();
+    await this.rollingStockSelector.fill(query);
+    await expectListedItems(this.rollingStockSuggestions, expected);
   }
 
   async launchRocketSearch(mainCode: string) {

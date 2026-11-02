@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import { HOME_URLS } from '../assets/constants/homepage-const';
+import { getUserGrantText } from '../assets/constants/permission-const';
 import { logger } from '../logging-fixture';
 
 class CommonPage {
@@ -14,6 +15,8 @@ class CommonPage {
   private readonly loader: Locator;
   private readonly spinner: Locator;
   private readonly error403: Locator;
+  private readonly userGrant: Locator;
+  private readonly grantDetailsButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -26,6 +29,8 @@ class CommonPage {
     this.loader = page.getByTestId('loader');
     this.spinner = page.getByTestId('spinner');
     this.error403 = page.getByTestId('error-403');
+    this.userGrant = page.getByTestId('grant-manager-user-grant');
+    this.grantDetailsButton = page.getByTestId('grant-manager-details-button');
   }
 
   // Set the tag of project, study or scenario
@@ -78,6 +83,11 @@ class CommonPage {
   async expectAccessDeniedPage() {
     await expect(this.page).toHaveURL(HOME_URLS.error403);
     await expect(this.error403).toBeVisible();
+  }
+
+  async expectUserGrant(grantLabel: string, { canSeeDetails }: { canSeeDetails: boolean }) {
+    await expect(this.userGrant).toHaveText(getUserGrantText(grantLabel));
+    await expect(this.grantDetailsButton).toBeVisible({ visible: canSeeDetails });
   }
 
   async waitForLoaderToDisappear({ timeout }: { timeout?: number } = {}): Promise<void> {

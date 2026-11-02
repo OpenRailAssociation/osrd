@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { fillAndCheckInputById } from '../../utils';
+import { type ExpectedListing, fillAndCheckInputById } from '../../utils';
 import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 import RollingStockSelector from './rolling-stock-selector';
@@ -33,6 +33,7 @@ class RollingstockEditorPage extends RollingStockSelector {
   private readonly editRollingStockButton: Locator;
   private readonly duplicateRollingStockButton: Locator;
   private readonly deleteRollingStockButton: Locator;
+  private readonly exportRollingStockButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -60,6 +61,7 @@ class RollingstockEditorPage extends RollingStockSelector {
     this.editRollingStockButton = page.getByTestId('rollingstock-edit-button');
     this.duplicateRollingStockButton = page.getByTestId('rollingstock-duplicate-button');
     this.deleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
+    this.exportRollingStockButton = page.getByTestId('rollingstock-export-button');
   }
 
   private getCategoryCheckboxLocator(rollingstockCategory: string): Locator {
@@ -91,6 +93,17 @@ class RollingstockEditorPage extends RollingStockSelector {
       await expect(rollingStockCard).toBeVisible();
     } else {
       await expect(rollingStockCard).not.toBeVisible();
+    }
+  }
+
+  async searchRollingStockAndCheckResults(query: string, { listed, notListed }: ExpectedListing) {
+    await this.rollingStockSearchInput.fill(query);
+    await this.waitForLoaderToDisappear();
+    for (const name of listed) {
+      await expect(this.getRollingStockCard(name)).toBeVisible();
+    }
+    for (const name of notListed) {
+      await expect(this.getRollingStockCard(name)).toBeHidden();
     }
   }
 
@@ -291,6 +304,11 @@ class RollingstockEditorPage extends RollingStockSelector {
     await this.confirmModalButtonYes.click();
   }
 
+  async saveRollingStock() {
+    await this.confirmRollingStockCreation();
+    await expect(this.submitRollingstockButton).toBeHidden();
+  }
+
   async duplicateRollingStock() {
     await this.duplicateRollingStockButton.click();
   }
@@ -299,6 +317,24 @@ class RollingstockEditorPage extends RollingStockSelector {
     await this.selectRollingStock(rollingStockName);
     await this.deleteRollingStockButton.click();
     await this.confirmModalButtonYes.click();
+  }
+
+  async expectRollingStockActions({
+    canEdit,
+    canDuplicate,
+    canDelete,
+  }: {
+    canEdit: boolean;
+    canDuplicate: boolean;
+    canDelete: boolean;
+  }) {
+    await expect(this.editRollingStockButton).toBeEnabled({ enabled: canEdit });
+    await expect(this.duplicateRollingStockButton).toBeEnabled({ enabled: canDuplicate });
+    await expect(this.deleteRollingStockButton).toBeEnabled({ enabled: canDelete });
+  }
+
+  async expectFullInformationPanel(visible: boolean) {
+    await expect(this.exportRollingStockButton).toBeVisible({ visible });
   }
 
   async verifyRollingStockDetailsTable(

@@ -79,6 +79,7 @@ export default function RollingStockInformationPanel({
           <button
             type="button"
             className="btn btn-primary mt-4"
+            data-testid="rollingstock-export-button"
             aria-label={t('rollingStock.exportRollingStock')}
             title={t('rollingStock.exportRollingStock')}
             onClick={exportRollingStock}
