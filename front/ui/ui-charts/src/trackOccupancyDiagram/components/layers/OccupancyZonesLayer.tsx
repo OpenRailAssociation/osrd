@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { sortBy } from 'lodash';
+import { groupBy, sortBy } from 'lodash';
 
 import { TimeChartCanvasContext } from '../../../common/context';
 import { indexToColor } from '../../../common/helpers/colors';
@@ -48,6 +48,115 @@ export function isOccupancyPickingElement(
   return element.type === 'occupancyZone';
 }
 
+export const getRenderingInstructions = (
+  tracks: Track[],
+  occupancyZones: OccupancyZone[],
+  topPadding: number
+): RenderingInstruction[] => {
+  const instructions: RenderingInstruction[] = [];
+
+  if (!tracks || !occupancyZones || occupancyZones.length === 0) return instructions;
+
+  const sortedOccupancyZones = occupancyZones.toSorted((a, b) => a.startTime - b.startTime);
+  const zonesByTrackId = groupBy(sortedOccupancyZones, (zone) => zone.trackId);
+
+  tracks.forEach((track, index) => {
+    const trackY = topPadding + CANVAS_PADDING + index * TRACK_HEIGHT_CONTAINER;
+
+    const filteredOccupancyZones = zonesByTrackId[track.id] ?? [];
+
+    let primaryStartTime = 0;
+    let lastEndTime = 0;
+    let yPosition = OCCUPANCY_ZONE_Y_START;
+    let yOffset = Y_OFFSET_INCREMENT;
+    let zoneCounter = 0;
+    let zoneIndex = 0;
+
+    while (zoneIndex < filteredOccupancyZones.length) {
+      const zone = filteredOccupancyZones[zoneIndex];
+      const { startTime, endTime } = zone;
+
+      // * if the zone is not overlapping with any previous one, draw it in the center of the track
+      // * and reset the primary values
+      // *
+      // * if the zone is overlapping with the previous one, draw it below or above the previous one
+      // * depending on the overlapping counter
+      // *
+      // * if the zone is overlapping with the previous one and the counter is higher than the max zones
+      // * draw the remaining trains box
+      // *
+      // a zone taking the track when the previous one leaves it is adjacent, not overlapping
+      if (startTime >= lastEndTime) {
+        // reset to initial value if the zone is not overlapping
+        yPosition = OCCUPANCY_ZONE_Y_START;
+        primaryStartTime = startTime;
+        lastEndTime = endTime;
+        yOffset = Y_OFFSET_INCREMENT;
+        zoneCounter = 1;
+
+        instructions.push({
+          type: 'occupancyZone',
+          zone,
+          offsetY: trackY + yPosition,
+          trailingText: zone.trailingText,
+        });
+
+        zoneIndex++;
+      }
+
+      // if so and it's an even index, move it to the bottom, if it's an odd index, move it to the top
+      else if (zoneCounter < MAX_ZONES) {
+        if (startTime >= primaryStartTime) {
+          if (zoneCounter % 2 === 0) {
+            yPosition -= yOffset;
+          } else {
+            yPosition += yOffset;
+          }
+        }
+
+        // update the last departure time if the current zone is longer
+        if (endTime >= lastEndTime) lastEndTime = endTime;
+
+        instructions.push({
+          type: 'occupancyZone',
+          zone,
+          offsetY: trackY + yPosition,
+        });
+
+        zoneCounter++;
+        yOffset += Y_OFFSET_INCREMENT;
+        zoneIndex++;
+      }
+
+      // else, if there are too much trains:
+      else {
+        // skip the zones up to the next one not overlapping, or to the end
+        let endIndex = zoneIndex + 1;
+        while (
+          endIndex < filteredOccupancyZones.length &&
+          filteredOccupancyZones[endIndex].startTime < lastEndTime
+        ) {
+          endIndex++;
+        }
+        const remainingTrainsNb = endIndex - zoneIndex;
+
+        instructions.push({
+          type: 'remainingTrains',
+          amount: remainingTrainsNb,
+          time: (startTime + endTime) / 2,
+          offsetY: trackY,
+        });
+
+        zoneIndex = endIndex;
+      }
+    }
+  });
+
+  return sortBy(instructions, (instruction) =>
+    instruction.type === 'occupancyZone' && instruction.zone.curveStyle.outline ? 0 : 1
+  );
+};
+
 const OccupancyZonesLayer = ({
   tracks,
   occupancyZones,
@@ -61,109 +170,10 @@ const OccupancyZonesLayer = ({
   height: number;
   topPadding: number;
 }) => {
-  const instructionsToDraw = useMemo(() => {
-    const instructions: RenderingInstruction[] = [];
-
-    if (!tracks || !occupancyZones || occupancyZones.length === 0) return instructions;
-
-    const sortedOccupancyZones = occupancyZones.toSorted((a, b) => a.startTime - b.startTime);
-
-    tracks.forEach((track, index) => {
-      const trackY = topPadding + CANVAS_PADDING + index * TRACK_HEIGHT_CONTAINER;
-
-      const filteredOccupancyZones = sortedOccupancyZones.filter(
-        (zone) => zone.trackId === track.id
-      );
-
-      let primaryStartTime = 0;
-      let lastEndTime = 0;
-      let yPosition = OCCUPANCY_ZONE_Y_START;
-      let yOffset = Y_OFFSET_INCREMENT;
-      let zoneCounter = 0;
-      let zoneIndex = 0;
-
-      while (zoneIndex < filteredOccupancyZones.length) {
-        const zone = filteredOccupancyZones[zoneIndex];
-        const { startTime, endTime } = zone;
-
-        // * if the zone is not overlapping with any previous one, draw it in the center of the track
-        // * and reset the primary values
-        // *
-        // * if the zone is overlapping with the previous one, draw it below or above the previous one
-        // * depending on the overlapping counter
-        // *
-        // * if the zone is overlapping with the previous one and the counter is higher than the max zones
-        // * draw the remaining trains box
-        // *
-        // a zone taking the track when the previous one leaves it is adjacent, not overlapping
-        if (startTime >= lastEndTime) {
-          // reset to initial value if the zone is not overlapping
-          yPosition = OCCUPANCY_ZONE_Y_START;
-          primaryStartTime = startTime;
-          lastEndTime = endTime;
-          yOffset = Y_OFFSET_INCREMENT;
-          zoneCounter = 1;
-
-          instructions.push({
-            type: 'occupancyZone',
-            zone,
-            offsetY: trackY + yPosition,
-            trailingText: zone.trailingText,
-          });
-
-          zoneIndex++;
-        }
-
-        // if so and it's an even index, move it to the bottom, if it's an odd index, move it to the top
-        else if (zoneCounter < MAX_ZONES) {
-          if (startTime >= primaryStartTime) {
-            if (zoneCounter % 2 === 0) {
-              yPosition -= yOffset;
-            } else {
-              yPosition += yOffset;
-            }
-          }
-
-          // update the last departure time if the current zone is longer
-          if (endTime >= lastEndTime) lastEndTime = endTime;
-
-          instructions.push({
-            type: 'occupancyZone',
-            zone,
-            offsetY: trackY + yPosition,
-          });
-
-          zoneCounter++;
-          yOffset += Y_OFFSET_INCREMENT;
-          zoneIndex++;
-        }
-
-        // else, if there are too much trains:
-        else {
-          const nextIndex = filteredOccupancyZones.findIndex(
-            (filteredZone, i) => i > zoneIndex && filteredZone.startTime >= lastEndTime
-          );
-
-          // nextIndex === -1 means all remaining zones overlap — skip to the end
-          const endIndex = nextIndex === -1 ? filteredOccupancyZones.length : nextIndex;
-          const remainingTrainsNb = endIndex - zoneIndex;
-
-          instructions.push({
-            type: 'remainingTrains',
-            amount: remainingTrainsNb,
-            time: (startTime + endTime) / 2,
-            offsetY: trackY,
-          });
-
-          zoneIndex = endIndex;
-        }
-      }
-    });
-
-    return sortBy(instructions, (instruction) =>
-      instruction.type === 'occupancyZone' && instruction.zone.curveStyle.outline ? 0 : 1
-    );
-  }, [occupancyZones, topPadding, tracks]);
+  const instructionsToDraw = useMemo(
+    () => getRenderingInstructions(tracks, occupancyZones, topPadding),
+    [occupancyZones, topPadding, tracks]
+  );
 
   const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
     (ctx, tcContext) => {
