@@ -13,6 +13,11 @@
   "default": "Es ist ein Fehler aufgetreten.",
   "editoast": {
     "DatabaseAccessError": "Fehler beim Datenbankzugriff",
+    "JoinError": {
+      "cancelled": "Vorgang abgebrochen",
+      "panic": "Schwerwiegender Fehler",
+      "unhandled_add_case_here": "Unerwarteter JoinError-Fall"
+    },
     "app_health": {
       "Core": "Core ist fehlerhaft",
       "Database": "Datenbankfehler",
