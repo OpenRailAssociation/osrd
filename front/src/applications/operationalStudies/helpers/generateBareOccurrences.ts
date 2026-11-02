@@ -2,50 +2,21 @@ import {
   getOccurrencesNb,
   computeIndexedOccurrenceStartTime,
 } from 'modules/trainSchedule/helpers/pacedTrain';
-import type {
-  PacedDetails,
-  PacedTrainWithDetails,
-  SimulatedException,
-} from 'modules/trainSchedule/types';
+import type { PacedTrainWithDetails, SimulatedException } from 'modules/trainSchedule/types';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
-import { msToStartTime, type Duration, type StartTime } from 'utils/duration';
+import { msToStartTime, type StartTime } from 'utils/duration';
 import {
   formatEditoastIdToIndexedOccurrenceId,
   formatEditoastIdToExceptionId,
 } from 'utils/trainId';
 
-export type BareOccurrence<T extends StartTime = StartTime> = {
+export type BareOccurrence = {
   id: OccurrenceId;
-  startTime: T;
+  startTime: StartTime;
   exception: SimulatedException | undefined;
 };
 
-/**
- * Given a paced train, generate basic details for all occurrences.
- *
- * Overloaded on the paced train's start time type so that callers still working with a
- * plain Date (e.g. TrainSpaceTimeData.departureTime, not yet adapted for hourly
- * timetables) get back a Date, while callers holding a StartTime (Date | Duration) get
- * back a StartTime.
- *
- * TODO Hourly timetables: this overload only exists for the migration. Once
- * TrainSpaceTimeData.departureTime (and the rest of the STD) is adapted to StartTime,
- * drop the Date-only overload and the BareOccurrence<T> generic, and type this function
- * with StartTime only.
- */
-export function generateBareOccurrences(pacedTrain: {
-  id: number;
-  startTime: Date;
-  paced: PacedDetails;
-}): BareOccurrence<Date>[];
-export function generateBareOccurrences(pacedTrain: {
-  id: number;
-  startTime: Duration;
-  paced: PacedDetails;
-}): BareOccurrence<Duration>[];
-export function generateBareOccurrences(
-  pacedTrain: Pick<PacedTrainWithDetails, 'id' | 'startTime' | 'paced'>
-): BareOccurrence[];
+/** Given a paced train, generate basic details for all occurrences. */
 export function generateBareOccurrences(
   pacedTrain: Pick<PacedTrainWithDetails, 'id' | 'startTime' | 'paced'>
 ): BareOccurrence[] {

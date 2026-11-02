@@ -25,6 +25,7 @@ import type {
   TrainId,
 } from 'reducers/osrdconf/types';
 import type { SelectedTrain, SelectionSource } from 'reducers/simulationResults/types';
+import type { StartTime } from 'utils/duration';
 
 /**
  * This type refers to a waypoint, modified to carry its own unique ID (waypointId), and
@@ -67,7 +68,7 @@ export type BaseTrainProjection = {
 export type TrainSpaceTimeData = {
   id: number;
   name: string;
-  departureTime: Date;
+  departureTime: StartTime;
   originPathItem: PathItem;
   destinationPathItem: PathItem;
   schedule?: ScheduleItem[];
@@ -81,7 +82,7 @@ export type TrainSpaceTimeData = {
 export type IndividualTrainProjection = {
   key: string;
   name: string;
-  departureTime: Date;
+  departureTime: StartTime;
 } & BaseTrainProjection &
   (
     | { id: TrainScheduleId; type: 'trainSchedule' }
@@ -151,7 +152,7 @@ export type AspectLabel =
 
 export type DraggingState = {
   draggedTrain: IndividualTrainProjection;
-  initialDepartureTime: Date;
+  initialDepartureTime: StartTime;
 };
 
 /**

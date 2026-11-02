@@ -1,5 +1,6 @@
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { TimetableType, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import type { BaseTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
+import { parseStartTime } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import { Duration } from 'utils/duration';
 
 import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
@@ -8,7 +9,8 @@ import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 const upsertNewProjectedTrains = (
   projectedTrains: Map<number, TrainSpaceTimeData>,
   projectedTrainsToUpsert: Map<number, ProjectionResult>,
-  trainSchedulesById: Map<number, TrainScheduleResponse>
+  trainSchedulesById: Map<number, TrainScheduleResponse>,
+  timetableType: TimetableType
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 
@@ -31,7 +33,7 @@ const upsertNewProjectedTrains = (
 
     const base = {
       name: matchingTrain?.train_name || 'Train name not found',
-      departureTime: new Date(matchingTrain?.start_time),
+      departureTime: parseStartTime(matchingTrain.start_time, timetableType),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates || [],
       originPathItem: matchingTrain.path.at(0)!,
