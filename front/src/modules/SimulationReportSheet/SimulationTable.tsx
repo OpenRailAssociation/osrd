@@ -4,7 +4,7 @@ import { Table, TR, TH, TD } from '@ag-media/react-pdf-table';
 import { Image, Link, Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import iconTurnaround from 'assets/simulationReportSheet/turnaround-16@4x.png';
+import iconBacktrack from 'assets/simulationReportSheet/backtrack-16@4x.png';
 import { mmToKm } from 'utils/physics';
 
 import styles from './styles/SimulationReportStyleSheet';
@@ -122,7 +122,7 @@ const SimulationTable = ({
                       <View style={styles.simulation.backtrackIconContainer}>
                         <Image
                           id={`backtrack-${row.name}`}
-                          src={iconTurnaround}
+                          src={iconBacktrack}
                           style={styles.simulation.backtrackIcon}
                         />
                       </View>
