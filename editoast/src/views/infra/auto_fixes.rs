@@ -416,7 +416,7 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        assert!(operations.is_empty());
+        assert_eq!(operations, []);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -745,7 +745,7 @@ mod tests {
 
         // Don't delete the route: entry and exit points are fine.
         let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
-        assert!(operations.is_empty());
+        assert_eq!(operations, []);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

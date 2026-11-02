@@ -227,7 +227,7 @@ mod tests {
             None,
         )
         .unwrap();
-        assert!(railjson.signals.is_empty());
+        assert_eq!(railjson.signals, []);
         assert_eq!(2, railjson.buffer_stops.len());
     }
 

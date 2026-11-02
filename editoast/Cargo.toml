@@ -30,6 +30,7 @@ async_fn_in_trait = "allow" # all of our public traits are only used inside the 
 [workspace.lints.clippy]
 allow_attributes = "deny"
 allow_attributes_without_reason = "deny"
+assert_is_empty = "deny"
 dbg_macro = "deny"
 decimal_literal_representation = "deny"
 float_cmp_const = "deny"

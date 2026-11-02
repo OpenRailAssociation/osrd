@@ -330,6 +330,6 @@ mod tests {
     #[test]
     fn empty_tile() {
         let empty_tile = create_and_fill_mvt_tile("track_sections", vec![]);
-        assert!(empty_tile.to_bytes().unwrap().is_empty());
+        assert_eq!(empty_tile.to_bytes().unwrap(), [] as [u8; 0]);
     }
 }

@@ -254,7 +254,7 @@ mod tests {
             .update_batch(&mut pool.get_ok(), ids.iter().cloned().take(2))
             .await
             .expect("Failed to update documents");
-        assert!(missing.is_empty());
+        assert_eq!(missing, HashSet::new());
         assert!(updated_docs.iter().all(|d| d.content_type == new_ct));
         assert_eq!(updated_docs.len(), 2);
 
@@ -416,7 +416,7 @@ mod tests {
                 .collect::<Vec<&Document>>()
         );
         assert_eq!(unique_count, 1);
-        assert!(past_unique_ct_index.is_empty());
+        assert_eq!(past_unique_ct_index, []);
         assert_eq!(unique_count_bis, 1);
         assert_eq!(with_unique.len(), 1);
         assert_eq!(with_unique[0], documents[unique_doc_idx]);
