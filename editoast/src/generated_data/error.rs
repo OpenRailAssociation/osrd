@@ -601,6 +601,20 @@ mod tests {
             &[],
         )
         .await;
-        assert_eq!(1, errors.len());
+
+        let expected = [InfraError {
+            obj_id: "BF_error".into(),
+            obj_type: ObjectType::BufferStop,
+            field: Some("track".into()),
+            is_warning: false,
+            sub_type: InvalidReference {
+                reference: ObjectRef {
+                    obj_type: ObjectType::TrackSection,
+                    obj_id: "E".into(),
+                },
+            },
+        }];
+
+        assert_eq!(errors, expected);
     }
 }
