@@ -580,7 +580,6 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        assert!(!response.results.is_empty());
         assert_eq!(
             response
                 .results

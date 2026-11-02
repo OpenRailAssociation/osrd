@@ -107,7 +107,7 @@ mod tests {
     fn create_empty_graph() {
         let empty_infra_cache = InfraCache::default();
         let empty_graph = Graph::load(&empty_infra_cache);
-        assert!(empty_graph.links.is_empty());
+        assert_eq!(empty_graph.links, HashMap::new());
     }
 
     #[test]

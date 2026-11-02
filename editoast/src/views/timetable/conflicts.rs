@@ -1134,7 +1134,7 @@ mod tests {
             .await
             .assert_status_ok()
             .json();
-        assert!(conflicts.is_empty());
+        assert_eq!(conflicts, []);
     }
 
     fn fake_report_train() -> ReportTrain {
