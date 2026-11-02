@@ -538,7 +538,7 @@ form.addEventListener('submit', (event) => {
     data.maxGradient = Math.max(...g.ys);
     data.speedCurves = sc;
     data.viewBounds.x1 = Math.min(g.xs.length === 0 ? 0 : g.xs[0], ...r.map(run => run.minX()));
-    data.viewBounds.x2 = Math.min(g.xs.length === 0 ? 0 : g.xs[g.xs.length - 1], ...r.map(run => run.maxX()));
+    data.viewBounds.x2 = Math.max(g.xs.length === 0 ? 0 : g.xs[g.xs.length - 1], ...r.map(run => run.maxX()));
 
     drawGraph(graphCanvas, data);
   }
