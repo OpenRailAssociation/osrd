@@ -53,34 +53,43 @@ export default function useSearchJourney() {
     setRequestStatus(SEARCH_JOURNEY_REQUEST_STATUS.pending);
     setError(null);
     dispatch(clearSearchJourneyResults());
-    const request = postSearchJourneys({
-      journeySearchQuery: {
-        infra_id: infraId,
-        timetable_ids: timetableIds,
-        origin: {
-          operational_point: {
-            type: 'domestic',
-            main_code: origin.mainCode,
-            country_code: origin.countryCode,
-            secondary_code: origin.secondaryCode,
+    const searchJourney = (searchWholeStations: boolean) => {
+      const request = postSearchJourneys({
+        journeySearchQuery: {
+          infra_id: infraId,
+          timetable_ids: timetableIds,
+          origin: {
+            operational_point: {
+              type: 'domestic',
+              main_code: origin.mainCode,
+              country_code: origin.countryCode,
+              secondary_code: origin.secondaryCode,
+            },
           },
-        },
-        destination: {
-          operational_point: {
-            type: 'domestic',
-            main_code: destination.mainCode,
-            country_code: destination.countryCode,
-            secondary_code: destination.secondaryCode,
+          destination: {
+            operational_point: {
+              type: 'domestic',
+              main_code: destination.mainCode,
+              country_code: destination.countryCode,
+              secondary_code: destination.secondaryCode,
+            },
           },
+          search_whole_stations: searchWholeStations,
+          start_ms: new Duration(startTime).ms,
+          start_tolerance: START_TOLERANCE_MS,
+          transfer_ms: TRANSFER_MS,
         },
-        start_ms: new Duration(startTime).ms,
-        start_tolerance: START_TOLERANCE_MS,
-        transfer_ms: TRANSFER_MS,
-      },
-    });
-    currentRequestRef.current = request;
+      });
+      currentRequestRef.current = request;
+      return request.unwrap();
+    };
     try {
-      const { journeys: result } = await request.unwrap();
+      let { journeys: result } = await searchJourney(false);
+      // If there is no result with the given secondary code,
+      // try to find a journey between the two stations whatever the secondary code.
+      if (result.length === 0) {
+        ({ journeys: result } = await searchJourney(true));
+      }
       dispatch(setSearchJourneyResults(result));
       setRequestStatus(SEARCH_JOURNEY_REQUEST_STATUS.success);
     } catch (e) {
