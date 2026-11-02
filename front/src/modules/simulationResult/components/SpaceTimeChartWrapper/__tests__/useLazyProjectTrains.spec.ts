@@ -49,6 +49,7 @@ describe.skip('useLazyProjectTrains', () => {
   const baseOptions = {
     infraId: 1,
     timetableId: 1,
+    timetableType: 'CALENDAR' as const,
     electricalProfileSetId: 1,
     operationalPointDistances: [100, 200],
     operationalPointReferences,

@@ -13,7 +13,7 @@ import { computeIndexedOccurrenceStartTime } from 'modules/trainSchedule/helpers
 import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
-import type { Duration } from 'utils/duration';
+import { msToStartTime, type Duration, type StartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -246,7 +246,7 @@ const useTrackOccupancy = ({
 
             let trainId: TrainId;
             let trainName: string;
-            let startTime: Date;
+            let startTime: StartTime;
 
             if (occupation.type === 'created') {
               if (!exception?.start_time)
@@ -257,7 +257,7 @@ const useTrackOccupancy = ({
                 occupation.exception_id
               );
               trainName = (exception.train_name?.value ?? `${train.name}/+`) + EXCEPTION_SUFFIX;
-              startTime = new Date(exception.start_time.value);
+              startTime = msToStartTime(exception.start_time.value, train.departureTime);
             } else {
               trainId = formatTrainScheduleIdToIndexedOccurrenceId(
                 trainScheduleId,
@@ -268,9 +268,9 @@ const useTrackOccupancy = ({
               if (exception) trainName += EXCEPTION_SUFFIX;
 
               startTime = exception?.start_time
-                ? new Date(exception.start_time.value)
+                ? msToStartTime(exception.start_time.value, train.departureTime)
                 : computeIndexedOccurrenceStartTime(
-                    new Date(train.departureTime),
+                    train.departureTime,
                     train.paced.interval,
                     occupation.index
                   );

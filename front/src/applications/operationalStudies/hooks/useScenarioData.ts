@@ -17,7 +17,10 @@ import {
 import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PanelSelectionMode } from 'modules/simulationResult/components/SpaceTimeChartWrapper/CurveSelectionSidePanel';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
-import { formatTrainScheduleWithDetails } from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
+import {
+  formatTrainScheduleWithDetails,
+  parseStartTime,
+} from 'modules/trainSchedule/helpers/formatTrainScheduleWithDetails';
 import {
   computeHourlyTimetableDuration,
   wrapHourlyStartTime,
@@ -36,7 +39,7 @@ import {
 } from 'modules/trainSchedule/helpers/updateTrainScheduleHelpers';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, startTimeToMs, type StartTime } from 'utils/duration';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -52,7 +55,8 @@ import { useScenarioContext } from './useScenarioContext';
 type ScenarioBroadcastMessage =
   | { type: 'upsertTrainSchedules'; trainSchedules: TrainScheduleResponse[] }
   | { type: 'removeTrainSchedules'; trainScheduleIds: number[] }
-  | { type: 'setTrainScheduleDepartureTime'; trainScheduleId: number; newDeparture: Date };
+  // A start time in ms, as a Duration does not survive the channel's structured clone
+  | { type: 'setTrainScheduleDepartureTime'; trainScheduleId: number; newDepartureMs: number };
 
 function upsertAndSort(
   prev: TrainScheduleResponse[] | undefined,
@@ -68,11 +72,13 @@ function upsertAndSort(
  */
 function computeShiftedExceptions(
   trainSchedule: TrainScheduleResponse,
-  newDeparture: Date,
+  newDeparture: StartTime,
   panelSelectionMode?: PanelSelectionMode
 ): PacedTrainException[] | undefined {
   if (panelSelectionMode !== 'all' || !trainSchedule.paced) return undefined;
-  const offset = Duration.subtractDate(newDeparture, new Date(trainSchedule.start_time));
+  const offset = new Duration({
+    milliseconds: startTimeToMs(newDeparture) - trainSchedule.start_time,
+  });
   return shiftPacedExceptions(trainSchedule.paced.exceptions, offset);
 }
 
@@ -95,21 +101,21 @@ const wrapHourlyStartTimeMs = (
  */
 function computeMovedTrainSchedule(
   trainSchedule: TrainScheduleResponse,
-  newDeparture: Date,
-  panelSelectionMode: PanelSelectionMode | undefined,
-  isHourlyTimetable: boolean
-): { departure: Date; exceptions?: PacedTrainException[] } {
+  newDeparture: StartTime,
+  panelSelectionMode: PanelSelectionMode | undefined
+): { departure: StartTime; exceptions?: PacedTrainException[] } {
   const shiftedExceptions = computeShiftedExceptions(
     trainSchedule,
     newDeparture,
     panelSelectionMode
   );
   const { paced } = trainSchedule;
-  if (!isHourlyTimetable || !paced) {
+  // Only hourly timetables have Duration start times
+  if (!(newDeparture instanceof Duration) || !paced) {
     return { departure: newDeparture, exceptions: shiftedExceptions };
   }
   return {
-    departure: new Date(wrapHourlyStartTimeMs(newDeparture.getTime(), paced, false)),
+    departure: wrapHourlyStartTime(newDeparture, paced, false) ?? newDeparture,
     exceptions: shiftedExceptions?.map((exception) =>
       exception.start_time
         ? {
@@ -177,6 +183,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   } = useLazyProjectTrains({
     infraId,
     timetableId: scenarioTimetableId,
+    timetableType,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     path:
       projectionPath?.pathfindingStatus === 'succeeded'
@@ -292,14 +299,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   );
 
   const setTrainScheduleDepartureTime = useCallback(
-    (trainScheduleId: number, newDeparture: Date, movedExceptions?: PacedTrainException[]) => {
+    (trainScheduleId: number, newDeparture: StartTime, movedExceptions?: PacedTrainException[]) => {
       setTrainSchedules((prev) => {
         const prevTrainSchedule = prev?.find((train) => train.id === trainScheduleId);
         if (!prevTrainSchedule) {
           return prev;
         }
         const updatedTrainSchedule = withPacedExceptions(
-          { ...prevTrainSchedule, start_time: newDeparture.getTime() },
+          { ...prevTrainSchedule, start_time: startTimeToMs(newDeparture) },
           movedExceptions
         );
         return upsertAndSort(prev, updatedTrainSchedule);
@@ -340,9 +347,9 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const updateTrainScheduleDepartureTime = useCallback(
     async (
       draggedTrainId: TrainId,
-      newDeparture: Date,
+      newDeparture: StartTime,
       panelSelectionMode?: PanelSelectionMode
-    ): Promise<Date | undefined> => {
+    ): Promise<StartTime | undefined> => {
       const editoastId = extractEditoastIdFromTrainScheduleId(
         isOccurrenceId(draggedTrainId)
           ? extractTrainScheduleIdFromOccurrenceId(draggedTrainId)
@@ -369,9 +376,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
         const updatedOccurrence: TrainSchedule = {
           ...extractOccurrenceDetailsFromPacedTrain(occurrenceBaseTrain, existingException),
           train_name: getOccurrenceTrainName(trainSchedule, draggedTrainId),
-          start_time: isHourlyTimetable
-            ? wrapHourlyStartTimeMs(newDeparture.getTime(), trainSchedule.paced, true)
-            : newDeparture.getTime(),
+          start_time:
+            newDeparture instanceof Duration
+              ? (wrapHourlyStartTime(newDeparture, trainSchedule.paced, true) ?? newDeparture).ms
+              : newDeparture.getTime(),
         };
 
         const {
@@ -400,15 +408,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       const { departure, exceptions: movedExceptions } = computeMovedTrainSchedule(
         trainSchedule,
         newDeparture,
-        panelSelectionMode,
-        isHourlyTimetable
+        panelSelectionMode
       );
 
       // Update the model start_time. The train schedule PUT ignores paced.exceptions, so moved
       // exceptions are persisted through their own endpoint below.
       await updateTrainSchedule({
         id: trainSchedule.id,
-        trainSchedule: { ...trainSchedule, start_time: departure.getTime() },
+        trainSchedule: { ...trainSchedule, start_time: startTimeToMs(departure) },
       }).unwrap();
 
       if (movedExceptions) {
@@ -429,7 +436,6 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       upsertTrainScheduleExceptions,
       setTrainScheduleDepartureTime,
       updateTrainSchedule,
-      isHourlyTimetable,
     ]
   );
 
@@ -458,7 +464,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const updateTrainScheduleDepartureTimeWithBroadcast = useCallback(
     async (
       draggedTrainId: TrainId,
-      newDeparture: Date,
+      newDeparture: StartTime,
       panelSelectionMode?: PanelSelectionMode
     ) => {
       const savedDeparture = await updateTrainScheduleDepartureTime(
@@ -477,7 +483,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       broadcastScenarioMessage({
         type: 'setTrainScheduleDepartureTime',
         trainScheduleId: editoastId,
-        newDeparture: savedDeparture,
+        newDepartureMs: startTimeToMs(savedDeparture),
       });
     },
     [updateTrainScheduleDepartureTime]
@@ -498,7 +504,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
           removeTrainSchedules(msg.trainScheduleIds);
           break;
         case 'setTrainScheduleDepartureTime':
-          setTrainScheduleDepartureTime(msg.trainScheduleId, msg.newDeparture);
+          setTrainScheduleDepartureTime(
+            msg.trainScheduleId,
+            parseStartTime(msg.newDepartureMs, timetableType)
+          );
           break;
         default:
           console.error('Unknown scenario broadcast channel message type:', msg);

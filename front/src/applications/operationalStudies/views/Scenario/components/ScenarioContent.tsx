@@ -27,7 +27,7 @@ import { setFailure } from 'reducers/main';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { updateHoveredTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, type StartTime } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
@@ -166,7 +166,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const updateTrainScheduleDepartureTimeWithNge = useCallback(
     async (
       draggedTrainId: TrainId,
-      newDeparture: Date,
+      newDeparture: StartTime,
       panelSelectionMode?: PanelSelectionMode
     ) => {
       await updateTrainScheduleDepartureTime(draggedTrainId, newDeparture, panelSelectionMode);
