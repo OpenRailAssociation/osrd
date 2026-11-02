@@ -4465,6 +4465,7 @@ export type ScenarioPatchForm = {
   infra_id?: number | null;
   name?: string | null;
   tags?: null | Tags;
+  timetable_ids?: number[] | null;
 };
 export type SearchResultItemTrack = {
   infra_id: number;

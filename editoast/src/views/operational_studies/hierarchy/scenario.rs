@@ -15,6 +15,7 @@ use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
+use std::ops::DerefMut as _;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -266,6 +267,7 @@ pub(in crate::views) struct ScenarioPatchForm {
     pub infra_id: Option<i64>,
     #[serde(default, with = "double_option")]
     pub electrical_profile_set_id: Option<Option<i64>>,
+    pub timetable_ids: Option<Vec<i64>>,
 }
 
 impl ScenarioPatchForm {
@@ -305,6 +307,27 @@ pub(in crate::views) async fn patch(
                     infra_id,
                 })
                 .await?;
+            }
+
+            if let Some(ref timetable_ids) = form.timetable_ids {
+                use database::tables::scenario_timetable::dsl;
+                use diesel::prelude::*;
+                diesel_async::RunQueryDsl::execute(
+                    diesel::delete(
+                        dsl::scenario_timetable.filter(dsl::scenario_id.eq(scenario_id)),
+                    ),
+                    conn.write().await.deref_mut(),
+                )
+                .await
+                .map_err(|err| ScenarioError::Database(err.into()))?;
+
+                let scenario_timetable_cs = timetable_ids.iter().map(|timetable_id| {
+                    ScenarioTimetable::changeset()
+                        .scenario_id(scenario_id)
+                        .timetable_id(*timetable_id)
+                });
+                ScenarioTimetable::create_batch::<_, Vec<_>>(&mut conn, scenario_timetable_cs)
+                    .await?;
             }
 
             let scenario_cs = form.into_changeset();
@@ -800,6 +823,50 @@ mod tests {
                 .expect("Failed to retrieve scenario's timetables")
                 .is_empty()
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_scenario_timetables_later() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
+        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&mut pool.get_ok()).await;
+        let timetable0 = create_timetable(&mut pool.get_ok()).await;
+
+        // Insert scenario
+        let created_scenario: ScenarioWithDetails = app
+            .post(&scenario_url(None))
+            .json(&json!({
+                "name": "scenario name",
+                "infra_id": infra.id,
+                "study_id": study.id,
+                "timetable_ids": [timetable0.id],
+            }))
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+        assert_eq!(created_scenario.timetable_summaries.len(), 1);
+
+        let timetable1 = create_timetable(&mut pool.get_ok()).await;
+        let timetable2 = create_timetable(&mut pool.get_ok()).await;
+
+        let updated_scenario: ScenarioWithDetails = app
+            .patch(&scenario_url(Some(created_scenario.scenario.id)))
+            .json(&json!({
+                "name": "scenario name",
+                "infra_id": infra.id,
+                "study_id": study.id,
+                "timetable_ids": [timetable1.id, timetable2.id]
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(updated_scenario.timetable_summaries.len(), 2);
+        assert_eq!(updated_scenario.timetable_summaries[0].id, timetable1.id);
+        assert_eq!(updated_scenario.timetable_summaries[1].id, timetable2.id);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
