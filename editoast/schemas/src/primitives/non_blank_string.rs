@@ -57,7 +57,7 @@ impl DerefMut for NonBlankString {
 
 impl From<String> for NonBlankString {
     fn from(s: String) -> Self {
-        assert!(!s.is_empty());
+        assert_ne!(s, "");
         NonBlankString(s)
     }
 }

@@ -661,7 +661,7 @@ mod tests {
     #[tokio::test]
     async fn no_project_list() {
         let openfga = authz_client!();
-        assert!(list(&openfga, User(1)).await.is_empty());
+        assert_eq!(list(&openfga, User(1)).await, []);
     }
 
     #[tokio::test]

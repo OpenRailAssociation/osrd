@@ -664,7 +664,7 @@ pub mod tests {
             .assert_status_ok()
             .json::<ListStdcmRequestResponse>()
             .requests;
-        assert!(requests_in_db.is_empty());
+        assert_eq!(requests_in_db, []);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -689,7 +689,7 @@ pub mod tests {
             .assert_status_ok()
             .json::<ListStdcmRequestResponse>()
             .requests;
-        assert!(requests_in_db.is_empty());
+        assert_eq!(requests_in_db, []);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

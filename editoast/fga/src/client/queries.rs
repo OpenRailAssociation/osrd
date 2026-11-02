@@ -797,7 +797,7 @@ mod tests {
             .list_objects(Infra::can_read().query_objects(&fga!(User:"bob")))
             .await
             .unwrap();
-        assert!(objects.is_empty());
+        assert_eq!(objects, []);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -947,7 +947,7 @@ mod tests {
             .fetch(&client)
             .await
             .unwrap();
-        assert!(groups.is_empty());
+        assert_eq!(groups, []);
 
         let mut groups = Infra::can_read()
             .query_usersets(Group::member(), &fga!(Infra:"eu"))

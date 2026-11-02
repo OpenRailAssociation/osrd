@@ -604,7 +604,6 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        assert!(!response.results.is_empty());
         assert_eq!(
             response
                 .results
@@ -816,12 +815,12 @@ mod tests {
             .await
             .expect("Failed to retrieve scenario")
             .expect("Scenario not found");
-        assert!(
+        assert_eq!(
             created_scenario
                 .timetable_ids(&mut pool.get_ok())
                 .await
-                .expect("Failed to retrieve scenario's timetables")
-                .is_empty()
+                .expect("Failed to retrieve scenario's timetables"),
+            [] as [i64; 0]
         );
     }
 

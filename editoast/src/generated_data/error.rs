@@ -452,8 +452,11 @@ mod tests {
     use super::switches;
     use super::track_sections;
     use crate::generated_data::error::level_crossings;
+    use crate::generated_data::infra_error::InfraError;
+    use crate::generated_data::infra_error::InfraErrorType::InvalidReference;
     use crate::infra_cache::tests::create_buffer_stop_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
+    use schemas::primitives::ObjectRef;
     use schemas::primitives::ObjectType;
 
     #[tokio::test]
@@ -463,7 +466,7 @@ mod tests {
         let graph = Graph::load(&small_infra_cache);
 
         // Generate the errors
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::TrackSection,
                 &small_infra_cache,
@@ -471,10 +474,10 @@ mod tests {
                 &track_sections::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::Signal,
                 &small_infra_cache,
@@ -482,10 +485,10 @@ mod tests {
                 &signals::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::SpeedSection,
                 &small_infra_cache,
@@ -493,10 +496,10 @@ mod tests {
                 &speed_sections::OBJECT_GENERATORS,
                 &speed_sections::GLOBAL_GENERATORS,
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::SwitchType,
                 &small_infra_cache,
@@ -504,10 +507,10 @@ mod tests {
                 &switch_types::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::Detector,
                 &small_infra_cache,
@@ -515,10 +518,10 @@ mod tests {
                 &detectors::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::BufferStop,
                 &small_infra_cache,
@@ -526,10 +529,10 @@ mod tests {
                 &buffer_stops::OBJECT_GENERATORS,
                 &buffer_stops::GLOBAL_GENERATORS,
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::Route,
                 &small_infra_cache,
@@ -537,10 +540,10 @@ mod tests {
                 &routes::OBJECT_GENERATORS,
                 &routes::GLOBAL_GENERATORS,
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::OperationalPoint,
                 &small_infra_cache,
@@ -548,10 +551,10 @@ mod tests {
                 &operational_points::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::LevelCrossing,
                 &small_infra_cache,
@@ -559,10 +562,10 @@ mod tests {
                 &level_crossings::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::Switch,
                 &small_infra_cache,
@@ -570,10 +573,10 @@ mod tests {
                 &switches::OBJECT_GENERATORS,
                 &[],
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
-        assert!(
+        assert_eq!(
             generate_errors(
                 ObjectType::Electrification,
                 &small_infra_cache,
@@ -581,8 +584,8 @@ mod tests {
                 &electrifications::OBJECT_GENERATORS,
                 &electrifications::GLOBAL_GENERATORS,
             )
-            .await
-            .is_empty()
+            .await,
+            []
         );
     }
 
