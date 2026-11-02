@@ -1,5 +1,5 @@
 import { Dialog } from '@osrd-project/ui-core';
-import { LinkExternal, X } from '@osrd-project/ui-icons';
+import { LinkExternal, Sync, X } from '@osrd-project/ui-icons';
 import dayjs from 'dayjs';
 import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
@@ -31,7 +31,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData } = useStdcmRequestsSent();
+  const { requestsSentData, refetchData } = useStdcmRequestsSent();
 
   const openRequestsFolder = async () => {
     try {
@@ -102,7 +102,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
         <>
-          <div className="stdcm-requests-sent-modal-header-left">
+          <div className="stdcm-requests-sent-modal-header-section">
             <h5>{t('requestsSentModal.title')}</h5>
             {requestsSentData.length !== 0 && (
               <button className="stdcm-requests-sent-folder-button" onClick={openRequestsFolder}>
@@ -110,9 +110,14 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
               </button>
             )}
           </div>
-          <button type="button" onClick={onClose}>
-            <X size="lg" />
-          </button>
+          <div className="stdcm-requests-sent-modal-header-section">
+            <button className="stdcm-requests-sent-sync-button" type="button" onClick={refetchData}>
+              <Sync />
+            </button>
+            <button type="button" onClick={onClose}>
+              <X size="lg" />
+            </button>
+          </div>
         </>
       }
       footer={null}
