@@ -17694,6 +17694,10 @@ components:
       required:
       - timetable_type
       properties:
+        timetable_name:
+          type:
+          - string
+          - 'null'
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
     TimetableResult:
@@ -17709,6 +17713,10 @@ components:
         timetable_id:
           type: integer
           format: int64
+        timetable_name:
+          type:
+          - string
+          - 'null'
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
     TimetableSummary:

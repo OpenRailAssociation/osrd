@@ -6430,6 +6430,7 @@ class SwitchExtensions(BaseModel):
 
 
 class TimetableForm(BaseModel):
+    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 
@@ -6440,6 +6441,7 @@ class TimetableResult(BaseModel):
 
     is_train_schedule_set: StrictBool
     timetable_id: StrictInt
+    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 

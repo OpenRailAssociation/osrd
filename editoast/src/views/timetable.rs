@@ -114,6 +114,7 @@ pub(in crate::views) struct TimetableResult {
     pub timetable_id: i64,
     pub timetable_type: TimetableType,
     pub is_train_schedule_set: bool,
+    pub timetable_name: Option<String>,
 }
 
 impl From<Timetable> for TimetableResult {
@@ -122,6 +123,7 @@ impl From<Timetable> for TimetableResult {
             timetable_id: timetable.id,
             timetable_type: timetable.timetable_type.0,
             is_train_schedule_set: timetable.is_train_schedule_set,
+            timetable_name: timetable.name,
         }
     }
 }
@@ -135,12 +137,14 @@ pub struct TimetableIdParam {
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TimetableForm {
     timetable_type: schemas::timetable_type::TimetableType,
+    timetable_name: Option<String>,
 }
 
 impl TimetableForm {
     pub fn into_changeset(self) -> Changeset<Timetable> {
         Timetable::changeset()
             .timetable_type(models::timetable_type::TimetableType(self.timetable_type))
+            .name(self.timetable_name)
     }
 }
 
@@ -1038,6 +1042,7 @@ mod tests {
             .post("/timetable")
             .json(&TimetableForm {
                 timetable_type: schemas::timetable_type::TimetableType::Hourly,
+                timetable_name: Some("Name".into()),
             })
             .await
             .assert_status(StatusCode::CREATED)
@@ -1050,6 +1055,7 @@ mod tests {
                 .expect("Timetable not found");
 
         assert_eq!(created_timetable, retrieved_timetable.into());
+        assert_eq!(created_timetable.timetable_name, Some("Name".into()));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
