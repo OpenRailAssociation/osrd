@@ -376,6 +376,7 @@ fn service_router() -> server::router::DocumentedRouter {
                                 "/match_macro_nodes",
                                 post!(operational_studies::macro_view::macro_nodes::match_macro_nodes),
                             )
+                            .route("/events", get!(operational_studies::hierarchy::scenario::events::events))
                     })
             })
             .nests("/macro_nodes", |path| {

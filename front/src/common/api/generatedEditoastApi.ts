@@ -958,6 +958,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getScenariosByScenarioIdEvents: build.query<
+        GetScenariosByScenarioIdEventsApiResponse,
+        GetScenariosByScenarioIdEventsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/scenarios/${queryArg.scenarioId}/events`,
+        }),
+        providesTags: ['scenarios'],
+      }),
       postScenariosByScenarioIdMatchMacroNodes: build.query<
         PostScenariosByScenarioIdMatchMacroNodesApiResponse,
         PostScenariosByScenarioIdMatchMacroNodesApiArg
@@ -2501,6 +2510,10 @@ export type PatchScenariosByScenarioIdApiResponse =
 export type PatchScenariosByScenarioIdApiArg = {
   scenarioId: number;
   scenarioPatchForm: ScenarioPatchForm;
+};
+export type GetScenariosByScenarioIdEventsApiResponse = unknown;
+export type GetScenariosByScenarioIdEventsApiArg = {
+  scenarioId: number;
 };
 export type PostScenariosByScenarioIdMatchMacroNodesApiResponse =
   /** status 200 The macro node matching each operational point reference */ {
@@ -4571,6 +4584,22 @@ export type ScenarioPatchForm = {
   tags?: null | Tags;
   timetable_ids?: number[] | null;
 };
+export type ScenarioEvent =
+  | (MacroNoteResponse & {
+      type: 'MacroNoteUpserted';
+    })
+  | {
+      id: number;
+      type: 'MacroNoteDeleted';
+    };
+export type ScenarioEventMessage =
+  | {
+      Event: {
+        at: string;
+        event: ScenarioEvent;
+      };
+    }
+  | 'FatalError';
 export type SearchResultItemTrack = {
   infra_id: number;
   line_code: number;
