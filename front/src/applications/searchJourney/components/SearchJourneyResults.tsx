@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import Banner from 'common/Banner';
 import {
+  getSearchJourneyIsWholeStationSearch,
   getSearchJourneyJourneys,
   getSearchJourneySelectedSolution,
 } from 'reducers/searchJourney/selectors';
@@ -17,6 +19,7 @@ type SearchJourneyResultsProps = {
 const SearchJourneyResults = ({ trainNames, operationalPointNames }: SearchJourneyResultsProps) => {
   const { t } = useTranslation('search-journey');
   const journeys = useSelector(getSearchJourneyJourneys);
+  const isWholeStationSearch = useSelector(getSearchJourneyIsWholeStationSearch);
   const selectedSolution = useSelector(getSearchJourneySelectedSolution);
 
   if (!journeys) return null;
@@ -30,23 +33,28 @@ const SearchJourneyResults = ({ trainNames, operationalPointNames }: SearchJourn
   }
 
   return (
-    <div className="search-journey-results">
-      <SearchJourneySolutionNavigator />
-      <div className="search-journey-results__segments">
-        {selectedSolution?.map((part, index) => (
-          <SolutionSegmentCard
-            key={`${part.train_schedule_id}-${part.from.path_step_index}-${part.to.path_step_index}`}
-            index={index + 1}
-            isFirst={index === 0}
-            isLast={index === selectedSolution.length - 1}
-            part={part}
-            trainName={trainNames[part.train_schedule_id]}
-            fromOperationalPointName={operationalPointNames[part.from.op_id]}
-            toOperationalPointName={operationalPointNames[part.to.op_id]}
-          />
-        ))}
+    <>
+      {isWholeStationSearch && (
+        <Banner type="warning" message={t('results.extendedSearchWarning')} />
+      )}
+      <div className="search-journey-results">
+        <SearchJourneySolutionNavigator />
+        <div className="search-journey-results__segments">
+          {selectedSolution?.map((part, index) => (
+            <SolutionSegmentCard
+              key={`${part.train_schedule_id}-${part.from.path_step_index}-${part.to.path_step_index}`}
+              index={index + 1}
+              isFirst={index === 0}
+              isLast={index === selectedSolution.length - 1}
+              part={part}
+              trainName={trainNames[part.train_schedule_id]}
+              fromOperationalPointName={operationalPointNames[part.from.op_id]}
+              toOperationalPointName={operationalPointNames[part.to.op_id]}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

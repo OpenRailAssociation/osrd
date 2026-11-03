@@ -15,6 +15,7 @@
     "title": "Origin"
   },
   "results": {
+    "extendedSearchWarning": "No results for the requested CH: the proposed solutions include other CH of the same stations.",
     "noResult": "No results",
     "solution": "Solution {{number}}",
     "solutionTitles": {
