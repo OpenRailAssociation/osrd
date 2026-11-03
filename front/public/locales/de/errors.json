@@ -88,14 +88,11 @@
       "Database": "Interner Fehler (Datenbank)",
       "NotFound": "Bahnstromprofil '{{electrical_profile_set_id}}' nicht gefunden"
     },
-    "fonts": {
-      "FileNotFound": "Datei für die angeforderte Schriftart nicht gefunden"
+    "file": {
+      "not_found": "Datei '{{file}}' nicht gefunden"
     },
     "geometry": {
       "UnexpectedGeometry": "Geometrie {{expected}} erwartet, aber {{actual}} erhalten"
-    },
-    "icons": {
-      "FileNotFound": "Datei nicht gefunden"
     },
     "infra": {
       "Database": "Interner Fehler",

@@ -56,8 +56,8 @@
       "Database": "Error interno (de la base de datos)",
       "NotFound": "No se encontró el documento «{{document_key}}»"
     },
-    "icons": {
-      "FileNotFound": "Archivo no encontrado"
+    "file": {
+      "not_found": "Archivo '{{file}}' no encontrado"
     },
     "infra": {
       "Database": "Error interno",
