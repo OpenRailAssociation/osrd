@@ -157,7 +157,11 @@ export default function useSearchJourneySolutionDetails(solution?: SearchJourney
         const newOperationalPointNames = stops.reduce<Record<string, string>>(
           (names, stop, index) => {
             const relatedOp = relatedOps[index];
-            if (relatedOp) names[stop.opId] = relatedOp.name;
+            if (relatedOp) {
+              names[stop.opId] = relatedOp.secondary_code
+                ? `${relatedOp.name} ${relatedOp.secondary_code}`
+                : relatedOp.name;
+            }
             return names;
           },
           {}
