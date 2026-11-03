@@ -91,4 +91,85 @@ div:has(> #adm-dash-user-table) {
       }
     }
   }
+
+  tr {
+    border-top: 1px solid rgba(1, 1, 1, 0.25);
+
+    &:last-child {
+      border-bottom: 1px solid rgba(1, 1, 1, 0.25);
+    }
+
+    &:nth-child(even) {
+      background-color: white;
+    }
+
+    &:nth-child(odd) {
+      background-color: var(--grey5);
+    }
+
+    td {
+      padding: 8px;
+      font-size: 14px;
+
+      &:first-child {
+        padding-left: 16px;
+      }
+
+      &:last-child {
+        padding-right: 16px;
+      }
+
+      ul {
+        margin: 0;
+
+        li {
+          // Identities, groups, roles. Names can wrap.
+          text-wrap: nowrap;
+        }
+      }
+    }
+
+    td:nth-child(2) {
+      // user's groups
+      li {
+        color: rgba(121, 118, 113, 1);
+      }
+    }
+
+    td:nth-child(4) {
+      // roles
+      ul {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+
+      li {
+        font-size: 12px;
+        font-family: IBMPlexSans-Bold, 'IBM Plex Sans', system-ui, sans-serif;
+        font-weight: 600;
+        border-radius: 3px;
+        padding: 0 4px;
+
+        &[data-role='Admin'] {
+          background-color: var(--trainYellow30);
+          color: black;
+        }
+
+        &[data-role='Stdcm'] {
+          background-color: var(--trainBlue50);
+          color: white;
+        }
+
+        &[data-role='OperationalStudies'] {
+          background-color: var(--trainGreen50);
+          color: white;
+        }
+
+        // unknown role
+        background-color: red;
+        color: yellow;
+      }
+    }
+  }
 }
