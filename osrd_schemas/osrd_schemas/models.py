@@ -846,29 +846,6 @@ class EditoastCacheOperationErrorObjectNotFound(BaseModel):
     )
 
 
-class EditoastCatalogEntryErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastCatalogEntryErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:catalog_entry:Database"] = "editoast:catalog_entry:Database"
-
-
-class EditoastCatalogEntryErrorNotFoundContext(BaseModel):
-    catalog_entry_id: StrictInt
-
-
-class EditoastCatalogEntryErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastCatalogEntryErrorNotFoundContext | None,
-        Field(title="EditoastCatalogEntryErrorNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:catalog_entry:NotFound"] = "editoast:catalog_entry:NotFound"
-
-
 class EditoastCoreErrorBrokenPipe(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastCoreErrorBrokenPipeContext")
@@ -5166,8 +5143,6 @@ class EditoastError(
         | EditoastAutoFixesEditoastErrorMissingErrorObject
         | EditoastCacheOperationErrorDuplicateIdsProvided
         | EditoastCacheOperationErrorObjectNotFound
-        | EditoastCatalogEntryErrorDatabase
-        | EditoastCatalogEntryErrorNotFound
         | EditoastCoreErrorBrokenPipe
         | EditoastCoreErrorCoreResponseFormatError
         | EditoastCoreErrorMqClientError
@@ -5346,8 +5321,6 @@ class EditoastError(
         | EditoastAutoFixesEditoastErrorMissingErrorObject
         | EditoastCacheOperationErrorDuplicateIdsProvided
         | EditoastCacheOperationErrorObjectNotFound
-        | EditoastCatalogEntryErrorDatabase
-        | EditoastCatalogEntryErrorNotFound
         | EditoastCoreErrorBrokenPipe
         | EditoastCoreErrorCoreResponseFormatError
         | EditoastCoreErrorMqClientError

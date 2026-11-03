@@ -1,9 +1,11 @@
 use database::DbConnectionPool;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
+use crate::views::DatabaseError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -20,16 +22,24 @@ use serde::Serialize;
 use std::sync::Arc;
 use thiserror::Error;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "catalog_entry")]
-pub enum CatalogEntryError {
-    #[error("Catalog entry '{catalog_entry_id}' could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { catalog_entry_id: i64 },
+#[derive(Debug, Error, ViewError)]
+#[error("Catalog entry '{catalog_entry_id}' could not be found")]
+#[view_error(status = NOT_FOUND, context, path = catalog_entry::not_found)]
+pub(in crate::views) struct CatalogEntryNotFound {
+    catalog_entry_id: i64,
+}
 
+#[derive(Debug, Error, ViewError, From)]
+pub(in crate::views) enum CatalogEntryError {
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] models::Error),
+    NotFound(
+        #[from]
+        #[view_error]
+        CatalogEntryNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -56,12 +66,13 @@ pub(in crate::views) struct CatalogEntryIdParam {
     request_body = CatalogEntryForm,
     responses(
         (status = 201, description = "Catalog entry", body = CatalogEntry),
+        DatabaseError,
     ),
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(catalog_entry_create_form): Json<CatalogEntryForm>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let catalog_entry_changeset = catalog_entry_create_form.into_changeset();
     let catalog_entry = catalog_entry_changeset
         .create(&mut db_pool.get().await?)
@@ -84,12 +95,13 @@ pub(in crate::views) struct CatalogEntryPage {
     params(PaginationQueryParams<100>),
     responses(
         (status = 200, description = "List of catalog entries", body = inline(CatalogEntryPage)),
+        DatabaseError,
     ),
 )]
 pub(in crate::views) async fn list_paginated(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
-) -> Result<Json<CatalogEntryPage>> {
+) -> Result<Json<CatalogEntryPage>, DatabaseError> {
     let settings = pagination_params.into_selection_settings();
     let conn = &mut db_pool.get().await?;
     let (catalog_entries, stats) = CatalogEntry::list_paginated(conn, settings).await?;
@@ -108,7 +120,7 @@ pub(in crate::views) async fn list_paginated(
     request_body = CatalogEntryForm,
     responses(
         (status = 200, description = "Catalog entry", body = CatalogEntry),
-        (status = 404, description = "Catalog entry not found"),
+        CatalogEntryError,
     ),
 )]
 pub(in crate::views) async fn put(
@@ -117,12 +129,12 @@ pub(in crate::views) async fn put(
         id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,
     Json(catalog_entry_form): Json<CatalogEntryForm>,
-) -> Result<Json<CatalogEntry>> {
+) -> Result<Json<CatalogEntry>, CatalogEntryError> {
     let conn = &mut db_pool.get().await?;
     let catalog_entry_changeset = catalog_entry_form.into_changeset();
     let catalog_entry = catalog_entry_changeset
-        .update_or_fail(conn, catalog_entry_id, || CatalogEntryError::NotFound {
-            catalog_entry_id,
+        .update_or_fail(conn, catalog_entry_id, || {
+            CatalogEntryError::NotFound(CatalogEntryNotFound { catalog_entry_id })
         })
         .await?;
     Ok(Json(catalog_entry))
@@ -134,18 +146,18 @@ pub(in crate::views) async fn put(
     tag = "catalog_entry",
     params(CatalogEntryIdParam),
     responses(
-            (status = 204, description = "The catalog entry was deleted"),
-        (status = 404, description = "Catalog entry not found"),
-),
+        (status = 204, description = "The catalog entry was deleted"),
+        CatalogEntryError
+    ),
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
     }): Path<CatalogEntryIdParam>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, CatalogEntryError> {
     CatalogEntry::delete_static_or_fail(&mut db_pool.get().await?, catalog_entry_id, || {
-        CatalogEntryError::NotFound { catalog_entry_id }
+        CatalogEntryError::NotFound(CatalogEntryNotFound { catalog_entry_id })
     })
     .await?;
     Ok(StatusCode::NO_CONTENT)

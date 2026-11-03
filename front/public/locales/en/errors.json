@@ -69,8 +69,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} could not be found everywhere in the infrastructure cache"
     },
     "catalog_entry": {
-      "Database": "Internal error (database)",
-      "NotFound": "Catalog entry '{{catalog_entry_id}}' could not be found"
+      "not_found": "Catalog entry '{{catalog_entry_id}}' could not be found"
     },
     "core": {
       "pathfinding": {
