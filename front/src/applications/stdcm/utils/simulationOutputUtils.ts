@@ -9,6 +9,7 @@ import type {
 import type { SimulationTableRow } from 'modules/SimulationReportSheet/types';
 import {
   dateToHHMM,
+  getForcedStopTypeLabel,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { getRowStyle } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
@@ -52,11 +53,14 @@ export const formatStdcmDataForSimulationTable = (
 
     const startTime = isFirst || isStop ? dateToHHMM(op.stopEndTime) : '';
     const endTime = isLast || isStop ? dateToHHMM(op.time) : '';
-    const { stopType, trackName } = op;
+    const { stopType, trackName, forcedStopType } = op;
 
-    const stopTypeLabel = stopType
-      ? capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`))
-      : t('reportSheet.serviceStop');
+    let stopTypeLabel = t('reportSheet.serviceStop');
+    if (forcedStopType) {
+      stopTypeLabel = getForcedStopTypeLabel(forcedStopType, t);
+    } else if (stopType) {
+      stopTypeLabel = capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`));
+    }
 
     let passageStop = '';
     if (!isFirst && !isLast) {
@@ -85,6 +89,7 @@ export const formatStdcmDataForSimulationTable = (
       name: !isPathStep && op.name === previousOp.name ? '=' : op.name || t('reportSheet.unknown'),
       secondaryCode: op.secondaryCode,
       secondaryCodeLabel: op.secondaryCodeLabel,
+      forcedStopType,
       trackName,
       endTime,
       passageStop,

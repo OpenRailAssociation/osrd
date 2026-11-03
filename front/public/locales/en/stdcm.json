@@ -324,6 +324,10 @@
     },
     "date": "Date",
     "destination": "Destination",
+    "ForcedStopInfo": {
+      "GENERAL_STOP": "This operational point is part of a general stop station. The simulation will stop for 1min.",
+      "OVERTAKE": "This operational point is part of an overtaking track. The simulation will stop for 1min."
+    },
     "linkedTrain": {
       "anterior": "Anterior train",
       "error": "Linked trains error",
@@ -338,6 +342,7 @@
       "backtrack": "backtrack",
       "consistChange": "consist change",
       "driverSwitch": "driver switch",
+      "generalStop": "general stop",
       "overtake": "overtake",
       "passageTime": "passage time",
       "serviceStop": "service stop"

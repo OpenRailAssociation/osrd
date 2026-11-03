@@ -549,6 +549,11 @@ const styles = {
     stopType: {
       width: '155',
     },
+    forcedStopTypeIcon: {
+      width: '16',
+      height: '16',
+      marginRight: '4',
+    },
     convSignWidth: {
       width: '112',
     },

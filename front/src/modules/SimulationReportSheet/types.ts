@@ -2,6 +2,7 @@ import type { Style } from '@react-pdf/types';
 
 import type { StdcmStopTypes } from 'applications/stdcm/types';
 import type {
+  ForcedStopType,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -49,6 +50,7 @@ export type SimulationTableRow = {
   referenceEngine: string;
   stopTypeLabel?: string;
   stopType?: string;
+  forcedStopType?: ForcedStopType;
   isBackTrack?: boolean;
   rowStyle: Style;
   consistChanges?: {

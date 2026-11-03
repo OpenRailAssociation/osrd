@@ -4,11 +4,18 @@ import { Table, TR, TH, TD } from '@ag-media/react-pdf-table';
 import { Image, Link, Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
+import generalStopIcon from 'assets/simulationReportSheet/general-stop-16@4x.png';
+import overtakeIcon from 'assets/simulationReportSheet/overtake-16@4x.png';
 import iconTurnaround from 'assets/simulationReportSheet/turnaround-16@4x.png';
 import { mmToKm } from 'utils/physics';
 
 import styles from './styles/SimulationReportStyleSheet';
 import type { SimulationTableRow } from './types';
+
+const forcedStopTypeIcons = {
+  GENERAL_STOP: generalStopIcon,
+  OVERTAKE: overtakeIcon,
+};
 
 type SimulationTableProps = {
   rows: SimulationTableRow[];
@@ -167,8 +174,17 @@ const SimulationTable = ({
                     {(index === 0 ||
                       index === rows.length - 1 ||
                       row.stopType ||
+                      row.forcedStopType ||
                       row.consistChanges) && (
-                      <TD style={row.stylesByColumn.others}>{row.stopTypeLabel}</TD>
+                      <TD style={row.stylesByColumn.others}>
+                        {row.forcedStopType && (
+                          <Image
+                            src={forcedStopTypeIcons[row.forcedStopType]}
+                            style={styles.simulation.forcedStopTypeIcon}
+                          />
+                        )}
+                        {row.stopTypeLabel}
+                      </TD>
                     )}
                   </View>
                 ) : (
