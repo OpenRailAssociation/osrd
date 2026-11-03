@@ -748,7 +748,10 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
             val trackSectionOffset = Offset<TrackSection>(opPart.position.meters)
             val props = mutableMapOf<String, String>()
             props["name"] = operationalPoint.name
-            props["uic"] = operationalPoint.uic.toString()
+            val uic = operationalPoint.uic
+            if (uic != null) {
+                props["uic"] = uic.toString()
+            }
             props["mainCode"] = operationalPoint.mainCode
             props["countryCode"] = operationalPoint.countryCode
             props["isPassengerStation"] = operationalPoint.isPassengerStation.toString()
