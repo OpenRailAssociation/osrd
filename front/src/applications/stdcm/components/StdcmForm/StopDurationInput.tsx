@@ -65,10 +65,20 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
       <Input
         id="stdcm-via-stop-time"
         testIdPrefix="stdcm-via-stop-time"
-        type="text"
+        type="number"
+        step={1}
+        min={0}
+        onKeyDown={(e) => {
+          if (['.', ',', 'e', 'E', '+', '-'].includes(e.key)) {
+            e.preventDefault();
+          }
+        }}
         label={t('trainPath.stopFor')}
         onChange={(e) => {
-          setStopDuration(e.target.value);
+          const val = e.target.value;
+          if (/^\d*$/.test(val)) {
+            setStopDuration(val);
+          }
         }}
         value={stopDuration}
         trailingContent="minutes"
