@@ -358,7 +358,7 @@ impl DbConnectionPool {
     }
 
     #[cfg(any(test, feature = "testing"))]
-    async fn new_test(
+    pub async fn new_test(
         test_name: String,
         connections: usize,
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
@@ -370,7 +370,8 @@ impl DbConnectionPool {
         )?);
         let osrd_conn = osrd_pool.get().await?;
         let osrd_conn = DbConnection::new(Arc::new(RwLock::new(osrd_conn)));
-        let (test_db_name, test_db_url) = create_test_database(osrd_conn, test_name).await?;
+        let (test_db_name, test_db_url) =
+            create_test_database(osrd_conn, format!("test_{test_name}")).await?;
         let url = Url::parse(&test_db_url).expect("Failed to parse postgresql url");
         tracing::info!(%url, "Using test database URL");
         let pool = create_connection_pool(url, 2)?.into();
@@ -385,8 +386,7 @@ impl DbConnectionPool {
     #[cfg(any(test, feature = "testing"))]
     pub fn for_tests() -> Self {
         let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
-        let test_name = format!("test_{uuid_str}");
-        futures::executor::block_on(Self::new_test(test_name, 1))
+        futures::executor::block_on(Self::new_test(uuid_str, 1))
             .expect("Failed to create test database")
     }
 }
