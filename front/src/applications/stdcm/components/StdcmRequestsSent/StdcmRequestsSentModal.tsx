@@ -1,4 +1,4 @@
-import { Dialog } from '@osrd-project/ui-core';
+import { Dialog, SegmentedControl } from '@osrd-project/ui-core';
 import { LinkExternal, Sync, X } from '@osrd-project/ui-icons';
 import dayjs from 'dayjs';
 import calendar from 'dayjs/plugin/calendar';
@@ -15,6 +15,8 @@ dayjs.extend(calendar);
 type StdcmRequestsSentModalProps = {
   onClose: () => void;
 };
+
+type SegmentedControlOption = { value: string; label: string };
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
@@ -114,6 +116,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
             <button className="stdcm-requests-sent-sync-button" type="button" onClick={refetchData}>
               <Sync />
             </button>
+            <div className="stdcm-requests-my-requests">{t('requestsSentModal.myRequests')}</div>
             <button type="button" onClick={onClose}>
               <X size="lg" />
             </button>

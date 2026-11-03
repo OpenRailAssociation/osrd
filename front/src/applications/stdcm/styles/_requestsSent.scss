@@ -18,6 +18,7 @@
 .stdcm-requests-sent-modal-header-section {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
 .stdcm-requests-sent-folder-button {
@@ -25,6 +26,14 @@
   background-color: var(--black5);
   border-radius: 5px;
   padding: 3px 10px;
+}
+
+.stdcm-requests-sent-sync-button {
+  color: var(--primary40);
+}
+
+.stdcm-requests-my-requests {
+  font-size: 12px;
 }
 
 .stdcm-requests-sent-no-requests {
