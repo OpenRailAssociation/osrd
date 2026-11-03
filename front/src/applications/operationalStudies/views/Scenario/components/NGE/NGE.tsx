@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { NetzgrafikDto, Operation } from '@osrd-project/netzgrafik-frontend';
+import type {
+  NetzgrafikDto,
+  Operation,
+  AppElementInterface,
+} from '@osrd-project/netzgrafik-frontend';
 import { useTranslation } from 'react-i18next';
 
 import { setFailure } from 'reducers/main';
@@ -9,11 +13,7 @@ import { castErrorToFailure, getErrorMessage } from 'utils/error';
 
 import { EMPTY_DTO } from './consts';
 
-type NGEElement = HTMLElement & {
-  language: string;
-  netzgrafikDto: NetzgrafikDto;
-  activeFilterSettingId: number;
-};
+type NGEElement = HTMLElement & AppElementInterface;
 
 type NGEProps = {
   activeFilterSettingId?: number;
