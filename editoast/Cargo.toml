@@ -200,6 +200,7 @@ axum = { version = "0.8.7", default-features = false, features = [
   "multipart",
   "query",
   "tracing",
+  "ws",
 ] }
 axum-streams = { version = "0.30", features = ["json"] }
 axum-tracing-opentelemetry = { version = "0.42.1", default-features = false, features = [
