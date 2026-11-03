@@ -46,9 +46,9 @@ function Table() {
           </td>
           <td>
             <ul>
-              <li>Admin</li>
-              <li>ST DCM</li>
-              <li>Operational Studies</li>
+              <li data-role="Admin">Admin</li>
+              <li data-role="Stdcm">ST DCM</li>
+              <li data-role="OperationalStudies">Operational Studies</li>
             </ul>
           </td>
         </tr>
