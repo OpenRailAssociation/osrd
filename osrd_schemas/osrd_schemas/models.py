@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
+from datetime import time as time_aliased
+from datetime import timedelta
 from enum import Enum
 from typing import Annotated, Any, Literal
 
@@ -18,7 +20,7 @@ from pydantic import (
     StrictFloat,
     StrictInt,
     StrictStr,
-    constr,
+    StringConstraints,
 )
 from typing_extensions import TypeAliasType
 
@@ -3205,6 +3207,9 @@ class OperationCreate12(InfraObjectElectrification, OperationCreate1):
 
 
 class OperationDelete(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     obj_id: StrictStr
     obj_type: ObjectType
     operation_type: Literal["DELETE"] = "DELETE"
@@ -3522,7 +3527,7 @@ SwitchesDirectionsAdditionalProperty = TypeAliasType(
 class PathfindingOutput(BaseModel):
     detectors: list[Identifier]
     switches_directions: dict[
-        constr(min_length=1, max_length=255, strict=True),
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
         SwitchesDirectionsAdditionalProperty,
     ]
     track_ranges: list[DirectionalTrackRange]
@@ -3974,7 +3979,10 @@ ParametersAdditionalProperty = TypeAliasType(
 
 class ConditionalParameter(BaseModel):
     on_route: Annotated[StrictStr, Field(min_length=1)]
-    parameters: dict[constr(min_length=1, strict=True), ParametersAdditionalProperty]
+    parameters: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        ParametersAdditionalProperty,
+    ]
 
 
 DefaultParametersAdditionalProperty = TypeAliasType(
@@ -3990,10 +3998,14 @@ SettingsAdditionalProperty = TypeAliasType(
 class LogicalSignal(BaseModel):
     conditional_parameters: list[ConditionalParameter]
     default_parameters: dict[
-        constr(min_length=1, strict=True), DefaultParametersAdditionalProperty
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        DefaultParametersAdditionalProperty,
     ]
     next_signaling_systems: list[StrictStr]
-    settings: dict[constr(min_length=1, strict=True), SettingsAdditionalProperty]
+    settings: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        SettingsAdditionalProperty,
+    ]
     signaling_system: StrictStr
 
 
@@ -4453,7 +4465,8 @@ class SwitchType(BaseModel):
         extra="forbid",
     )
     groups: dict[
-        constr(min_length=1, max_length=255, strict=True), list[SwitchPortConnection]
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
+        list[SwitchPortConnection],
     ]
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     ports: list[Port]
@@ -6034,7 +6047,7 @@ class Route(BaseModel):
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     release_detectors: list[ReleaseDetector]
     switches_directions: dict[
-        constr(min_length=1, max_length=255, strict=True),
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
         SwitchesDirectionsAdditionalProperty,
     ]
 
@@ -6537,13 +6550,13 @@ class RequestStatusItem(BaseModel):
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
-    begin_time: StrictFloat | None = None
+    begin_time: time_aliased | None = None
     end_op: (
         OperationalPointReferenceId
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
-    end_time: StrictFloat | None = None
+    end_time: time_aliased | None = None
     updated_at: AwareDatetime
     created_at: AwareDatetime
     train_start: AwareDatetime
@@ -6887,6 +6900,9 @@ class OperationCreate10(InfraObjectRoute, OperationCreate1):
 
 
 class OperationUpdate(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     obj_id: StrictStr
     obj_type: ObjectType
     railjson_patch: list[
@@ -7345,7 +7361,9 @@ class SpeedSection(BaseModel):
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     on_routes: list[OnRoute] | None = None
     speed_limit: StrictFloat | None = None
-    speed_limit_by_tag: dict[constr(min_length=1, strict=True), StrictFloat]
+    speed_limit_by_tag: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)], StrictFloat
+    ]
     track_ranges: list[ApplicableDirectionsTrackRange]
 
 
@@ -7368,7 +7386,10 @@ class Switch(BaseModel):
     extensions: SwitchExtensions | None = None
     group_change_delay: StrictFloat
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
-    ports: dict[constr(min_length=1, max_length=255, strict=True), TrackEndpoint]
+    ports: dict[
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
+        TrackEndpoint,
+    ]
     switch_type: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 
