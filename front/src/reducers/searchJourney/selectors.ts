@@ -11,6 +11,8 @@ export const getSearchJourneyTimetableIds = makeSearchJourneySelector('timetable
 export const getSearchJourneyStartTime = makeSearchJourneySelector('startTime');
 export const getSearchJourneyOrigin = makeSearchJourneySelector('origin');
 export const getSearchJourneyDestination = makeSearchJourneySelector('destination');
+export const getSearchJourneyIsWholeStationSearch =
+  makeSearchJourneySelector('isWholeStationSearch');
 export const getSearchJourneyJourneys = makeSearchJourneySelector('journeys');
 export const getSearchJourneySelectedSolutionIndex =
   makeSearchJourneySelector('selectedSolutionIndex');
@@ -28,6 +30,7 @@ const selectors = {
   getSearchJourneyStartTime,
   getSearchJourneyOrigin,
   getSearchJourneyDestination,
+  getSearchJourneyIsWholeStationSearch,
   getSearchJourneyJourneys,
   getSearchJourneySelectedSolutionIndex,
   getSearchJourneySelectedSolution,

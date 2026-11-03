@@ -28,6 +28,7 @@ export type SearchJourneyState = {
   startTime: SearchJourneyStartTime;
   origin?: SearchJourneyOperationalPoint;
   destination?: SearchJourneyOperationalPoint;
+  isWholeStationSearch: boolean;
   journeys?: SearchJourneySolution[];
   selectedSolutionIndex?: number;
 };
@@ -38,6 +39,7 @@ export const searchJourneyInitialState: SearchJourneyState = {
   startTime: { hours: 0, minutes: 0 },
   origin: undefined,
   destination: undefined,
+  isWholeStationSearch: false,
   journeys: undefined,
   selectedSolutionIndex: undefined,
 };
@@ -75,16 +77,18 @@ export const searchJourneySlice = createSlice({
     /** Set the journeys returned by POST /search_journeys, selecting the first one by default. */
     setSearchJourneyResults(
       state: Draft<SearchJourneyState>,
-      action: PayloadAction<SearchJourneySolution[]>
+      action: PayloadAction<{ isWholeStationSearch: boolean; journeys: SearchJourneySolution[] }>
     ) {
-      state.journeys = action.payload;
-      state.selectedSolutionIndex = action.payload.length > 0 ? 0 : undefined;
+      state.isWholeStationSearch = action.payload.isWholeStationSearch;
+      state.journeys = action.payload.journeys;
+      state.selectedSolutionIndex = action.payload.journeys.length > 0 ? 0 : undefined;
     },
     selectSearchJourneySolution(state: Draft<SearchJourneyState>, action: PayloadAction<number>) {
       state.selectedSolutionIndex = action.payload;
     },
     clearSearchJourneyResults(state: Draft<SearchJourneyState>) {
       state.journeys = undefined;
+      state.isWholeStationSearch = false;
       state.selectedSolutionIndex = undefined;
     },
     resetSearchJourneyConfig() {
