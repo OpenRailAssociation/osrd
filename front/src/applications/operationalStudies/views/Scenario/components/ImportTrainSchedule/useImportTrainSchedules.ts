@@ -55,19 +55,21 @@ const useImportTrainSchedules = () => {
     return await processXmlFile(file, fileContent);
   };
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableId = scenario.timetable_summaries[0].id;
+  const timetableType = scenario.timetable_summaries[0].type;
+
   const importFile = async (file: File) => {
     try {
       const rawPayload = await processFile(file);
       const timetableJsonPayload =
-        getPayloadTimetableType(rawPayload) === scenario.timetable_summaries[0].type
+        getPayloadTimetableType(rawPayload) === timetableType
           ? rawPayload
-          : adaptPayloadForTargetTimetable(rawPayload, scenario.timetable_summaries[0].type, [
-              ...trainSchedules.values(),
-            ]);
+          : adaptPayloadForTargetTimetable(rawPayload, timetableType, [...trainSchedules.values()]);
 
       const importedTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_summaries[0].id,
+        timetableId,
         scenario.id,
         timetableJsonPayload,
         subCategories,

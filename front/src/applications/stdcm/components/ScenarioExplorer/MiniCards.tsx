@@ -88,8 +88,10 @@ export const ScenarioMiniCard = ({
 
   const selectScenario = async () => {
     const speedLimitTags = await getSpeedLimitTags({ infraId: scenario.infra_id }).unwrap();
+    // TODO: adapt once the front handles multiple timetable per scenario
+    const timetableId = scenario.timetable_summaries[0].id;
     const trainSchedules = await getTrainSchedules({
-      timetableId: scenario.timetable_summaries[0].id,
+      timetableId,
     }).unwrap();
 
     const scenarioDateTimeWindow = getScenarioDatetimeWindow(trainSchedules);
@@ -98,7 +100,7 @@ export const ScenarioMiniCard = ({
     dispatch(
       updateStdcmEnvironment({
         infraID: scenario.infra_id,
-        timetableID: scenario.timetable_summaries[0].id,
+        timetableID: timetableId,
         electricalProfileSetId: scenario.electrical_profile_set_id,
         searchDatetimeWindow: scenarioDateTimeWindow,
         projectID,

@@ -224,9 +224,10 @@ const ItineraryModal = ({
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
   const fitViewportToInfra = useFitViewportToInfra();
-
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
   const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
-    blankNewTrainState(defaultStartTime, scenario.timetable_summaries[0].type)
+    blankNewTrainState(defaultStartTime, timetableType)
   );
 
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -256,11 +257,7 @@ const ItineraryModal = ({
       if (trainScheduleToEditData) {
         const train = trainScheduleToEditData.trainSchedule;
         setTrainState(
-          setupStateWithTrainSchedule(
-            train,
-            scenario.timetable_summaries[0].type,
-            !!trainScheduleToEditData.occurrenceId
-          )
+          setupStateWithTrainSchedule(train, timetableType, !!trainScheduleToEditData.occurrenceId)
         );
         setModalFormState({
           name: train.name,
@@ -271,7 +268,7 @@ const ItineraryModal = ({
         });
       } else {
         if (infraId) fitViewportToInfra(infraId);
-        setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_summaries[0].type));
+        setTrainState(blankNewTrainState(defaultStartTime, timetableType));
         setModalFormState({
           name: '',
           rollingStockName: '',
@@ -284,13 +281,7 @@ const ItineraryModal = ({
       setWasInitialized(true);
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [
-    wasInitialized,
-    trainScheduleToEditData,
-    scenario.timetable_summaries,
-    infraId,
-    fitViewportToInfra,
-  ]);
+  }, [wasInitialized, trainScheduleToEditData, timetableType, infraId, fitViewportToInfra]);
 
   const { categoryColors, currentSubCategory } = useCategoryColors(modalFormState.category);
 

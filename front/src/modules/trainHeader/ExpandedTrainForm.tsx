@@ -266,6 +266,8 @@ const ExpandedTrainForm = ({
   const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
   const infraID = useInfraID();
   const { scenario } = useScenarioContext();
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableId = scenario.timetable_summaries[0].id;
   const timetableType = scenario.timetable_summaries[0].type;
   const speedLimitTags = useSpeedLimitTags(infraID);
   const categoryOptions = useCategoryOptions(false);
@@ -276,7 +278,7 @@ const ExpandedTrainForm = ({
   const { data: linkings } = osrdEditoastApi.endpoints.postTrainSchedulesLinkings.useQuery(
     {
       body: {
-        timetable_id: scenario.timetable_summaries[0].id,
+        timetable_id: timetableId,
         train_schedules: [extractEditoastIdFromTrainId(train.id)],
       },
     },

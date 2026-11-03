@@ -207,6 +207,7 @@ const useUpdateTimesStopsTable = (
     [selectedTrain, allRows]
   );
 
+  const timetableType = scenario.timetable_summaries[0].type;
   const computeTimesUpdate = useCallback(
     (originalUpdate: ArrivalUpdate | DepartureUpdate | StopDurationUpdate): ComputedUpdate => {
       // The origin arrival is the start time: an entered value out of the interval is replaced by
@@ -218,10 +219,11 @@ const useUpdateTimesStopsTable = (
         if (wrappedOriginArrival) update = { ...update, value: wrappedOriginArrival };
       }
 
+      // TODO: adapt once the front handles multiple timetable per scenario
       const propagatedResult =
         update.field === 'stopDuration'
-          ? propagateStopDuration(update, selectedTrain, scenario.timetable_summaries[0].type)
-          : propagateTime(update, selectedTrain, scenario.timetable_summaries[0].type);
+          ? propagateStopDuration(update, selectedTrain, timetableType)
+          : propagateTime(update, selectedTrain, timetableType);
       if (propagatedResult) {
         // The propagation itself may also move the start time out of the interval
         const wrappedStartTime = wrapEditedStartTime(
@@ -246,10 +248,7 @@ const useUpdateTimesStopsTable = (
 
       const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
       const currentSchedule = selectedTrain.schedule ?? [];
-      const startTime = getTruncatedToSecondStartTime(
-        selectedTrain,
-        scenario.timetable_summaries[0].type
-      );
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
 
       // Convert CellUpdate to OptimisticEdit (stopDuration: number → Duration)
       let edit: OptimisticEdit;
@@ -298,7 +297,7 @@ const useUpdateTimesStopsTable = (
         edits: computePendingEditsFromSchedule(cascadedSchedule, startTime, editedRows),
       };
     },
-    [selectedTrain, allRows, scenario.timetable_summaries]
+    [selectedTrain, allRows, timetableType]
   );
 
   /**
@@ -330,10 +329,7 @@ const useUpdateTimesStopsTable = (
       let currentPath = selectedTrain.path;
       const edits: PendingEdit[] = [];
 
-      const startTime = getTruncatedToSecondStartTime(
-        selectedTrain,
-        scenario.timetable_summaries[0].type
-      );
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
 
       for (const row of update.rows) {
         const { pathStepKey, updatedPath: updatedPathForRow } = upsertPathStep(
@@ -378,7 +374,7 @@ const useUpdateTimesStopsTable = (
         edits,
       };
     },
-    [selectedTrain, allRows, scenario.timetable_summaries]
+    [selectedTrain, allRows, timetableType]
   );
 
   const computeReferenceBaseArrival = useCallback(
@@ -386,10 +382,7 @@ const useUpdateTimesStopsTable = (
       const { pathStepKey, updatedPath } = upsertPathStep(update.row, selectedTrain.path, allRows);
 
       const currentSchedule = selectedTrain.schedule ?? [];
-      const startTime = getTruncatedToSecondStartTime(
-        selectedTrain,
-        scenario.timetable_summaries[0].type
-      );
+      const startTime = getTruncatedToSecondStartTime(selectedTrain, timetableType);
 
       const referenceBaseArrival =
         update.value !== null ? subtractStartTime(update.value, startTime).toISOString() : null;
@@ -407,7 +400,7 @@ const useUpdateTimesStopsTable = (
         edits: [{ rowId: update.row.id, field: 'referenceBaseArrival', value: update.value }],
       };
     },
-    [selectedTrain, allRows, scenario.timetable_summaries]
+    [selectedTrain, allRows, timetableType]
   );
 
   /** Compute the updated train fields for a cell update, and the edits to display meanwhile. */

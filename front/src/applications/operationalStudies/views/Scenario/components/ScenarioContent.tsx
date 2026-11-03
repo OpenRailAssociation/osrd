@@ -130,19 +130,22 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     setIsScrollingToTimeStopsTable(true);
   }, [activeBoards, toggleBoard]);
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableSummary = scenario.timetable_summaries[0];
+
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
     const state = new MacroEditorState(
       infraId,
       scenario.id,
-      scenario.timetable_summaries[0].id,
-      scenario.timetable_summaries[0].type
+      timetableSummary.id,
+      timetableSummary.type
     );
 
-    const dto = await loadNgeDto(state, scenario.timetable_summaries[0].id, dispatch, t);
+    const dto = await loadNgeDto(state, timetableSummary.id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
-  }, [dispatch, infraId, scenario.id, scenario.timetable_summaries, activeBoards, t]);
+  }, [dispatch, infraId, scenario.id, timetableSummary, activeBoards, t]);
 
   const upsertTrainSchedulesWithNge = useCallback(
     (updatedTrainSchedules: TrainScheduleResponse[]) => {
@@ -227,10 +230,10 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const defaultStartTime = useMemo(
     () =>
-      scenario.timetable_summaries[0].type === 'CALENDAR'
+      timetableSummary.type === 'CALENDAR'
         ? computeLatestMidnight([...trainSchedulesById.values()], now)
         : Duration.zero,
-    [scenario.timetable_summaries, trainSchedulesById]
+    [timetableSummary.type, trainSchedulesById]
   );
 
   return (
@@ -314,7 +317,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                 </BoardWrapper>
               )}
               {/* CHRONOGRAM */}
-              {scenario.timetable_summaries[0].type === 'CALENDAR' &&
+              {timetableSummary.type === 'CALENDAR' &&
                 isInfraLoaded &&
                 trainSchedulesWithDetails.length > 0 && (
                   <BoardWrapper

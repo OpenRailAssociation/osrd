@@ -244,6 +244,7 @@ const SpaceTimeChartWrapper = ({
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
   const { scenario: { timetable_summaries } = {} } = useScenario();
+  // TODO: adapt once the front handles multiple timetable per scenario
   const timetableType = timetable_summaries !== undefined ? timetable_summaries[0].type : undefined;
   const selection = useSelector(getSelectedTrain);
   const { id: selectedTrainId, by: selectedTrainBy } = selection ?? {};

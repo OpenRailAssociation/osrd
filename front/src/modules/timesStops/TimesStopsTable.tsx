@@ -234,6 +234,7 @@ const TimesStopsTable = ({
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
   const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
+  // TODO: adapt once the front handles multiple timetable per scenario
   const startTimeCellType: 'time' | 'duration' =
     scenario.timetable_summaries[0].type === 'CALENDAR' ? 'time' : 'duration';
 
