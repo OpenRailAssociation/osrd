@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useSelector } from 'react-redux';
 
@@ -9,6 +11,7 @@ const useStdcmRequestsSent = () => {
   'use memo';
 
   const infraId = useSelector(getStdcmInfraID);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 1. Get sent requests IDs from editoast
   const {
@@ -55,14 +58,20 @@ const useStdcmRequestsSent = () => {
     .toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
   const refetchData = async () => {
-    await refetchIDs();
-    await refetchStatuses();
-    await refetchOps();
+    setIsRefreshing(true);
+    try {
+      await refetchIDs();
+      await refetchStatuses();
+      await refetchOps();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return {
     requestsSentData,
     isLoading: statusLoading || matchLoading || idsLoading,
+    isRefreshing,
     refetchData,
   };
 };

@@ -30,6 +30,16 @@
 
 .stdcm-requests-sent-sync-button {
   color: var(--primary40);
+
+  &.spinning svg {
+    animation: stdcm-requests-sent-spin 1s linear infinite;
+  }
+}
+
+@keyframes stdcm-requests-sent-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .stdcm-requests-my-requests {
