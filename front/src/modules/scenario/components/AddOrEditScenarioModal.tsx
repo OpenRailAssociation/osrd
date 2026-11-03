@@ -226,6 +226,7 @@ const AddOrEditScenarioModal = ({
       return deleteScenario({ scenarioId: scenario.id })
         .unwrap()
         .then(() => {
+          // TODO: adapt once the front handles multiple timetable per scenario
           cleanScenarioLocalStorage(scenario.timetable_summaries[0].id);
           navigate(`/operational-studies/projects/${projectId}/studies/${studyId}`);
           closeModal();

@@ -73,6 +73,7 @@ const TrainList = ({
   const dateTimeLocale = useDateTimeLocale();
 
   const { workerStatus, timetableId, scenario } = useScenarioContext();
+  // TODO: adapt once the front handles multiple timetable per scenario
   const isHourlyTimetable = scenario.timetable_summaries[0].type === 'HOURLY';
   const subCategories = useSubCategoryContext();
 

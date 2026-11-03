@@ -286,11 +286,10 @@ const useTimesStopsTableData = (
     fetchTrackSections();
   }, [trackIds, getTrackSectionsByIds]);
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
   const allRows = useMemo(() => {
-    const startDate = getTruncatedToSecondStartTime(
-      selectedTrain,
-      scenario.timetable_summaries[0].type
-    );
+    const startDate = getTruncatedToSecondStartTime(selectedTrain, timetableType);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');
     const pathKeyToIndex = new Map(selectedTrain.path.map((step, idx) => [step.key, idx]));
 
@@ -464,7 +463,7 @@ const useTimesStopsTableData = (
 
     return formattedRows;
   }, [
-    scenario.timetable_summaries,
+    timetableType,
     selectedTrain,
     stableIsValid,
     stableTrain,

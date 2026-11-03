@@ -110,6 +110,7 @@ const StudyView = () => {
 
     // For each scenarios, clean the local storage if a manchette is saved
     const deletedScenario = scenarios!.results.find((scenario) => scenario.id === scenarioId);
+    // TODO: adapt once the front handles multiple timetable per scenario
     cleanScenarioLocalStorage(deletedScenario!.timetable_summaries[0].id);
   });
   const handleDeleteScenario = () => {

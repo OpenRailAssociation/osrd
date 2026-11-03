@@ -169,6 +169,8 @@ const TimetableBoardWrapper = ({
 
   // --- END BOARD WRAPPER MENU ITEMS CONFIGURATION ---
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
   const handleCopy = useCallback(async () => {
     const selectedText = document.getSelection()?.toString();
     if (selectedText !== undefined && selectedText.length > 0) return;
@@ -185,7 +187,7 @@ const TimetableBoardWrapper = ({
         selectedTrainScheduleIds,
         trainSchedules,
         trainScheduleRoundTrips,
-        scenario.timetable_summaries[0].type
+        timetableType
       );
       dispatch(
         setSuccess({
@@ -203,7 +205,7 @@ const TimetableBoardWrapper = ({
     timetableId,
     t,
     dispatch,
-    scenario.timetable_summaries,
+    timetableType,
   ]);
 
   const handlePaste = useCallback(async () => {
@@ -213,15 +215,15 @@ const TimetableBoardWrapper = ({
       data = JSON.parse(clipboardContent);
       const pastedPayload = validateTimetableJsonPayload(data);
       const importedPayload =
-        getPayloadTimetableType(pastedPayload) === scenario.timetable_summaries[0].type
+        getPayloadTimetableType(pastedPayload) === timetableType
           ? pastedPayload
-          : adaptPayloadForTargetTimetable(pastedPayload, scenario.timetable_summaries[0].type, [
+          : adaptPayloadForTargetTimetable(pastedPayload, timetableType, [
               ...trainSchedules.values(),
             ]);
 
       const newTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_summaries[0].id,
+        timetableId,
         scenario.id,
         importedPayload,
         subCategories,
@@ -249,7 +251,8 @@ const TimetableBoardWrapper = ({
     upsertTrainSchedules,
     setSelectedTrainScheduleIds,
     t,
-    scenario.timetable_summaries,
+    timetableId,
+    timetableType,
     scenario.id,
     dispatch,
   ]);
@@ -272,7 +275,7 @@ const TimetableBoardWrapper = ({
           selectedTrainScheduleIds,
           trainSchedules,
           trainScheduleRoundTrips,
-          scenario.timetable_summaries[0].type
+          timetableType
         );
         await handleTrainsDelete(true);
         dispatch(
@@ -293,7 +296,7 @@ const TimetableBoardWrapper = ({
       handleTrainsDelete,
       t,
       dispatch,
-      scenario.timetable_summaries,
+      timetableType,
     ]
   );
 
