@@ -8,6 +8,7 @@ pub mod infra_objects;
 pub mod macro_node;
 pub mod macro_note;
 pub mod map;
+pub mod notifications;
 pub mod pagination;
 pub mod prelude;
 pub mod project;

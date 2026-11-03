@@ -50,6 +50,15 @@ impl MacroNote {
     }
 }
 
+impl MacroNoteNotification {
+    pub fn note(&self) -> &MacroNote {
+        match self {
+            MacroNoteNotification::Upserted(note) => note,
+            MacroNoteNotification::Deleted(note) => note,
+        }
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;

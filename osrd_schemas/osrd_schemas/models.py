@@ -3742,6 +3742,11 @@ class RoutePath(BaseModel):
     track_ranges: list[DirectionalTrackRange]
 
 
+class ScenarioEventMacroNoteDeleted(BaseModel):
+    id: StrictInt
+    type: Literal["MacroNoteDeleted"] = "MacroNoteDeleted"
+
+
 class ScenarioReference(BaseModel):
     project_id: StrictInt
     project_name: StrictStr
@@ -6000,6 +6005,25 @@ class ScenarioCreateForm(BaseModel):
     study_id: StrictInt
     tags: list[StrictStr] | None = None
     timetable_ids: list[StrictInt] | None = None
+
+
+class ScenarioEventMacroNoteUpserted(MacroNoteResponse):
+    type: Literal["MacroNoteUpserted"] = "MacroNoteUpserted"
+
+
+class Event(BaseModel):
+    at: AwareDatetime
+    event: ScenarioEventMacroNoteUpserted | ScenarioEventMacroNoteDeleted
+
+
+class ScenarioEventMessageEvent(BaseModel):
+    Event_1: Annotated[Event, Field(alias="Event")]
+
+
+class ScenarioEventMessage(
+    RootModel[ScenarioEventMessageEvent | Literal["FatalError"]]
+):
+    root: ScenarioEventMessageEvent | Literal["FatalError"]
 
 
 class ScenarioPatchForm(BaseModel):

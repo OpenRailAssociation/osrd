@@ -1,3 +1,5 @@
+pub mod events;
+
 use authz::ProjectPrivilege;
 use authz::Role;
 use authz::v2::project_privilege_check;
@@ -43,7 +45,7 @@ use models::timetable::TimetableSummary;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioIdParam {
-    pub(in crate::views) scenario_id: i64,
+    pub(in crate::views::operational_studies) scenario_id: i64,
 }
 
 /// This structure is used by the post endpoint to create a scenario
