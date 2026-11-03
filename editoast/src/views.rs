@@ -573,6 +573,13 @@ impl From<std::convert::Infallible> for OpenFgaError {
     }
 }
 
+#[derive(Debug, Error, ViewError)]
+#[error("File '{file}' not found")]
+#[view_error(status = NOT_FOUND, context)]
+struct FileNotFoundError {
+    file: String,
+}
+
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
