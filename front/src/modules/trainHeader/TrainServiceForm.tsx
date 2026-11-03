@@ -48,7 +48,7 @@ type TrainServiceFormProps = {
   ) => void;
   onPersistTrain: ExpandedTrainFormProps['onPersistTrain'];
   revertServiceChange: () => void;
-  hasLinkings: boolean;
+  linkingsCount: number;
 };
 
 export default function TrainServiceForm({
@@ -61,7 +61,7 @@ export default function TrainServiceForm({
   onFieldImmediateChange,
   onPersistTrain,
   revertServiceChange,
-  hasLinkings,
+  linkingsCount,
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
@@ -272,7 +272,7 @@ export default function TrainServiceForm({
       {isServiceChangeWarningDialogVisible && (
         <ServiceChangeWarningDialog
           exceptionsCount={train.paced!.exceptions.length}
-          hasLinkings={hasLinkings}
+          linkingsCount={linkingsCount}
           onCancel={revertServiceChange}
           onConfirm={confirmServiceChange}
         />

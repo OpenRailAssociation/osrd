@@ -108,7 +108,7 @@ function getFieldsFromTrain(
   train: Train,
   rollingStocks: LightRollingStockWithLiveries[],
   timetableType: TimetableType,
-  hasLinkings: boolean
+  linkingsCount: number
 ): TrainFieldsState {
   const rollingStock = rollingStocks.find((rs) => rs.name === train.rolling_stock_name);
   const startTime = parseStartTime(train.start_time, timetableType);
@@ -130,7 +130,7 @@ function getFieldsFromTrain(
     initial_speed:
       train.initial_speed === undefined ? null : String(Math.round(train.initial_speed * 36) / 10),
     service_changed_confirmed:
-      !train.paced || (train.paced.exceptions.length === 0 && !hasLinkings),
+      !train.paced || (train.paced.exceptions.length === 0 && linkingsCount === 0),
   };
 }
 
@@ -284,11 +284,11 @@ const ExpandedTrainForm = ({
     },
     { skip: !linkingsEnabled || !train.paced, refetchOnMountOrArgChange: true }
   );
-  const hasLinkings = !!linkings?.length;
+  const linkingsCount = linkings?.length ?? 0;
 
   const fieldsFromTrain = useMemo(
-    () => getFieldsFromTrain(train, rollingStocks, timetableType, hasLinkings),
-    [train, rollingStocks, timetableType, hasLinkings]
+    () => getFieldsFromTrain(train, rollingStocks, timetableType, linkingsCount),
+    [train, rollingStocks, timetableType, linkingsCount]
   );
   const [fields, setFields] = useState<TrainFieldsState>(fieldsFromTrain);
 
@@ -465,7 +465,7 @@ const ExpandedTrainForm = ({
         onFieldImmediateChange={onFieldImmediateChange}
         onPersistTrain={onPersistTrain}
         revertServiceChange={revertServiceChange}
-        hasLinkings={hasLinkings}
+        linkingsCount={linkingsCount}
       />
       <div
         className={cx('train-form', {
