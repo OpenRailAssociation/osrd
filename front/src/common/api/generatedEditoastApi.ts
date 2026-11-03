@@ -685,6 +685,18 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getMacroNotesUpdates: build.query<
+        GetMacroNotesUpdatesApiResponse,
+        GetMacroNotesUpdatesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/macro_notes/updates`,
+          params: {
+            scenario_id: queryArg.scenarioId,
+          },
+        }),
+        providesTags: ['scenarios'],
+      }),
       getMacroNotesByNoteId: build.query<
         GetMacroNotesByNoteIdApiResponse,
         GetMacroNotesByNoteIdApiArg
@@ -2247,6 +2259,10 @@ export type PostMacroNotesApiResponse =
   /** status 201 Macro notes created */ MacroNoteBatchResponse;
 export type PostMacroNotesApiArg = {
   macroNoteBatchForm: MacroNoteBatchForm;
+};
+export type GetMacroNotesUpdatesApiResponse = unknown;
+export type GetMacroNotesUpdatesApiArg = {
+  scenarioId: number;
 };
 export type GetMacroNotesByNoteIdApiResponse =
   /** status 200 The requested macro note */ MacroNoteResponse;
@@ -4161,6 +4177,17 @@ export type MacroNoteForm = {
 export type MacroNoteBatchForm = {
   macro_notes: MacroNoteForm[];
   scenario_id: number;
+};
+export type LiveUpdateType = 'MacroNoteUpserted' | 'MacroNoteDeleted';
+export type LiveUpdateEvent = {
+  id: number;
+  note_state?: MacroNoteResponse;
+  type: LiveUpdateType;
+};
+export type LiveUpdateMessage = {
+  /** Unix timestamp in milliseconds. */
+  epoch: number;
+  events: LiveUpdateEvent[];
 };
 export type Project = {
   budget?: number | null;

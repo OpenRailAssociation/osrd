@@ -120,7 +120,7 @@ pub mod test {
         let mut notifications = std::pin::pin!(notifications);
 
         // Create note
-        let created = MacroNote::changeset()
+        let _created = MacroNote::changeset()
             .scenario_id(scenario.id)
             .x(10)
             .y(12)

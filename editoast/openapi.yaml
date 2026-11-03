@@ -2760,6 +2760,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNoteBatchResponse'
+  /macro_notes/updates:
+    get:
+      tags:
+      - scenarios
+      parameters:
+      - name: scenario_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '101':
+          description: WebSocket sending LiveUpdateMessage JSON messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveUpdateMessage'
   /macro_notes/{note_id}:
     get:
       tags:
@@ -12855,6 +12873,38 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StdcmRequest'
+    LiveUpdateEvent:
+      type: object
+      required:
+      - id
+      - type
+      properties:
+        id:
+          type: integer
+          format: int64
+        note_state:
+          $ref: '#/components/schemas/MacroNoteResponse'
+        type:
+          $ref: '#/components/schemas/LiveUpdateType'
+    LiveUpdateMessage:
+      type: object
+      required:
+      - epoch
+      - events
+      properties:
+        epoch:
+          type: integer
+          format: int64
+          description: Unix timestamp in milliseconds.
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveUpdateEvent'
+    LiveUpdateType:
+      type: string
+      enum:
+      - MacroNoteUpserted
+      - MacroNoteDeleted
     LoadingGaugeLimit:
       type: object
       required:

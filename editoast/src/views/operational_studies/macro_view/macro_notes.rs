@@ -5,8 +5,13 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::extract::WebSocketUpgrade;
+use axum::extract::ws::Message;
+use axum::extract::ws::WebSocket;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use chrono::DateTime;
+use chrono::Utc;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
@@ -87,7 +92,7 @@ impl MacroNoteForm {
     }
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Clone, Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub(in crate::views) struct MacroNoteResponse {
     id: i64,
@@ -115,6 +120,116 @@ impl From<MacroNote> for MacroNoteResponse {
             labels: note.labels,
         }
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct MacroNoteNotification {
+    epoch: DateTime<Utc>,
+    r#type: LiveUpdateType,
+    object: MacroNote,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub(in crate::views) struct LiveUpdateMessage {
+    /// Unix timestamp in milliseconds.
+    pub epoch: i64,
+    pub events: Vec<LiveUpdateEvent>,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, ToSchema)]
+pub(in crate::views) enum LiveUpdateType {
+    MacroNoteUpserted,
+    MacroNoteDeleted,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub(in crate::views) struct LiveUpdateEvent {
+    pub id: i64,
+    pub r#type: LiveUpdateType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(nullable = false)]
+    pub note_state: Option<MacroNoteResponse>,
+}
+
+impl From<MacroNoteNotification> for LiveUpdateMessage {
+    fn from(notification: MacroNoteNotification) -> Self {
+        LiveUpdateMessage {
+            epoch: notification.epoch.timestamp_millis(),
+            events: vec![LiveUpdateEvent {
+                id: notification.object.id,
+                r#type: notification.r#type,
+                note_state: match notification.r#type {
+                    LiveUpdateType::MacroNoteUpserted => {
+                        Some(MacroNoteResponse::from(notification.object))
+                    }
+                    LiveUpdateType::MacroNoteDeleted => None,
+                },
+            }],
+        }
+    }
+}
+
+pub(in crate::views) async fn listen_macro_note_changes(
+    conn: database::DbConnection,
+    mut socket: WebSocket,
+    scenario_id: i64,
+) -> anyhow::Result<()> {
+    use diesel_async::SimpleAsyncConnection as _;
+    use futures_util::StreamExt as _;
+
+    let mut conn = conn.write().await;
+    conn.batch_execute("LISTEN macro_note").await?;
+    let mut notifications = std::pin::pin!(conn.notifications_stream());
+
+    loop {
+        tokio::select! {
+            notification = notifications.next() => {
+                let Some(notification) = notification else {
+                    return Err(anyhow::anyhow!(
+                        "PostgreSQL notification stream closed"
+                    ));
+                };
+                let notification = notification?;
+
+                let update: MacroNoteNotification = serde_json::from_str(&notification.payload)?;
+                if update.object.scenario_id == scenario_id {
+                    let update_message = LiveUpdateMessage::from(update);
+                    let message = serde_json::to_string(&update_message)?;
+                    socket.send(Message::Text(message.into())).await?;
+                }
+            }
+            message = socket.recv() => {
+                match message {
+                    Some(Ok(Message::Close(_))) | None => return Ok(()),
+                    Some(Err(error)) => return Err(error.into()),
+                    Some(Ok(_)) => {}
+                }
+            }
+        }
+    }
+}
+
+#[editoast_derive::route(Role::OperationalStudies)]
+#[utoipa::path(
+    get, path = "",
+    tag = "scenarios",
+    params(ListMacroNotesQueryParams),
+    responses(
+        (status = 101, body = LiveUpdateMessage, description = "WebSocket sending LiveUpdateMessage JSON messages"),
+    )
+)]
+pub(in crate::views) async fn updates(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Query(ListMacroNotesQueryParams { scenario_id }): Query<ListMacroNotesQueryParams>,
+    websocket: WebSocketUpgrade,
+) -> Result<impl IntoResponse> {
+    let conn = db_pool.get().await?;
+
+    Ok(websocket.on_upgrade(move |socket| async move {
+        if let Err(error) = listen_macro_note_changes(conn, socket, scenario_id).await {
+            tracing::warn!(scenario_id, %error, "Macro note WebSocket closed");
+        }
+    }))
 }
 
 #[derive(Debug, Serialize, ToSchema)]
