@@ -84,13 +84,15 @@ export default function useSearchJourney() {
       return request.unwrap();
     };
     try {
-      let { journeys: result } = await searchJourney(false);
+      let isWholeStationSearch = false;
+      let { journeys } = await searchJourney(isWholeStationSearch);
       // If there is no result with the given secondary code,
       // try to find a journey between the two stations whatever the secondary code.
-      if (result.length === 0) {
-        ({ journeys: result } = await searchJourney(true));
+      if (journeys.length === 0) {
+        isWholeStationSearch = true;
+        ({ journeys } = await searchJourney(isWholeStationSearch));
       }
-      dispatch(setSearchJourneyResults(result));
+      dispatch(setSearchJourneyResults({ isWholeStationSearch, journeys }));
       setRequestStatus(SEARCH_JOURNEY_REQUEST_STATUS.success);
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
