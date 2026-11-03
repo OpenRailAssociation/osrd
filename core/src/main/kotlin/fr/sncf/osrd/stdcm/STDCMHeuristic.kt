@@ -24,6 +24,26 @@ import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+/**
+ * ```
+ * Remaining time at block start: 6
+ *
+ *        t(block start -> P) = 3.5
+ *  ---------------------------------->|   H = 6 - 3.5 = 2.5
+ *                                     |------------------------>
+ *                                     |
+ *  +---------+---------+------|--+----|----+---------+---------|>
+ *  0         1         2         3         4         5         6
+ *                             ^       ^                        ^
+ *                         departure   ^                     arrival
+ *                              queried point P
+ *
+ * Remaining time at block start = 6
+ * Heuristic = remaining travel time at block start - travel time from block start to P
+ *           = 6 - 3.5 = 2.5
+ * Note that the departure point doesn't appear in the calculation
+ * ```
+ */
 data class STDCMAStarHeuristic(
     val blockInfra: BlockInfra,
     val remainingTimeEstimations: List<MutableMap<BlockId, Double>>,
@@ -229,7 +249,19 @@ class STDCMHeuristicBuilder(
                     BlockLocation(block, blockInfra.getBlockLength(block)),
                     pendingBlock.stepIndex,
                 )
-            if (newStep == null || !steps[newStep.stepIndex].canBacktrack) {
+            if (newStep != null && newStep.stepIndex == 0) {
+                // We're at the start of the path: start offset should be the exact value.
+                val newBlock =
+                    makePendingBlock(
+                        block,
+                        newStep.blockLocation.offset,
+                        blockInfra.getBlockLength(block),
+                        0,
+                        pendingBlock.remainingTimeAtBlockStart,
+                        predecessorEndSpeed,
+                    )
+                newBlock?.let { res.add(it) }
+            } else if (newStep == null || !steps[newStep.stepIndex].canBacktrack) {
                 // The step is unchanged or does not backtrack: the path goes through the whole
                 // block.
                 val newBlock =
@@ -238,18 +270,6 @@ class STDCMHeuristicBuilder(
                         Offset.zero(),
                         blockInfra.getBlockLength(block),
                         newStep?.stepIndex ?: pendingBlock.stepIndex,
-                        pendingBlock.remainingTimeAtBlockStart,
-                        predecessorEndSpeed,
-                    )
-                newBlock?.let { res.add(it) }
-            } else if (newStep.stepIndex == 0) {
-                // We're at the start of the path: start offset should be the exact value.
-                val newBlock =
-                    makePendingBlock(
-                        block,
-                        newStep.blockLocation.offset,
-                        blockInfra.getBlockLength(block),
-                        0,
                         pendingBlock.remainingTimeAtBlockStart,
                         predecessorEndSpeed,
                     )
@@ -269,6 +289,17 @@ class STDCMHeuristicBuilder(
                     )
                 if (newBlock != null) {
                     res.add(newBlock)
+                    // The opposite blocks end at the backtrack location: their remaining time
+                    // starts from there instead of the current block start
+                    val remainingTimeAtBacktrack =
+                        newBlock.remainingTimeAtBlockStart -
+                            maxSpeedEnvBuilder.getBlockTime(
+                                block,
+                                newStep.stepIndex,
+                                predecessorEndSpeed,
+                                allowance,
+                                newStep.blockLocation.offset,
+                            )
                     // Generate the opposing blocks for the backtracking.
                     val oppositeBlockLocations =
                         getOppositeBlockLocations(newStep.blockLocation, blockInfra, rawInfra)
@@ -279,7 +310,7 @@ class STDCMHeuristicBuilder(
                                 Offset.zero(),
                                 oppositeBlock.offset,
                                 newStep.stepIndex,
-                                newBlock.remainingTimeAtBlockStart,
+                                remainingTimeAtBacktrack,
                                 0.0,
                             )
                         oppositeBlock?.let { res.add(it) }
@@ -296,9 +327,12 @@ class STDCMHeuristicBuilder(
         val stepCount = steps.size
         for (wp in steps[stepCount - 1].locations) {
             val newStep = getNewBlockStep(wp, stepCount - 1)
+            val startOffset =
+                if (newStep != null && newStep.stepIndex == 0) newStep.blockLocation.offset
+                else Offset.zero()
             makePendingBlock(
                     wp.edge,
-                    Offset.zero(),
+                    startOffset,
                     wp.offset,
                     (newStep?.stepIndex) ?: (stepCount - 1),
                     0.0,
@@ -358,7 +392,7 @@ class STDCMHeuristicBuilder(
                     endSpeed,
                     allowance,
                     endOffset,
-                    startOffset,
+                    Offset.zero(),
                 ),
             endSpeed,
         )
