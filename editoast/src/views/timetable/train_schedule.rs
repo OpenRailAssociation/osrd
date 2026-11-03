@@ -1528,7 +1528,7 @@ pub(in crate::views) async fn project_path_op(
 }
 
 /// Occupancy blocks output is described by blocks (signal updates)
-#[derive(Debug, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Deserialize, Serialize, ToSchema, PartialEq)]
 pub struct OccupancyBlocksTrainScheduleResult {
     /// Train schedule
     #[schema(value_type = Vec<SignalUpdate>)]
@@ -1800,7 +1800,7 @@ pub(in crate::views) struct TrackOccupancy {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(Deserialize))]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub(in crate::views) struct TrackSectionOccupancy {
     /// Local track name. Unset if trains occupy the operational point but the specific track is unknown.
     #[schema(inline)]
@@ -2545,7 +2545,10 @@ mod tests {
             .await
             .expect("Failed to fetch linkings");
 
-        assert!(linkings.is_empty());
+        assert!(
+            linkings.is_empty(),
+            "Expected linking to be empty, got {linkings:?}"
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -4228,8 +4231,16 @@ mod tests {
         let projection = response
             .get(&paced_train.id)
             .expect("the train should be projected");
-        assert!(projection.train_schedule.is_empty());
-        assert!(projection.exceptions.is_empty());
+        assert!(
+            projection.train_schedule.is_empty(),
+            "Expected projection.train_schedule to be empty, got {:?}",
+            projection.train_schedule
+        );
+        assert!(
+            projection.exceptions.is_empty(),
+            "Expected projection.exceptions to be empty, got {:?}",
+            projection.exceptions
+        );
     }
 
     /// Even with a simulation, a train whose rolling stock the user cannot read is projected: like
@@ -4408,7 +4419,11 @@ mod tests {
         let simulated = project(&authorized_user.info).await;
 
         // The unreadable train isn't simulated: its projection is empty
-        assert!(response[&unreadable_train.id].train_schedule.is_empty());
+        assert!(
+            response[&unreadable_train.id].train_schedule.is_empty(),
+            "Expected unreadable_train's train_schedule to be empty, got {:?}",
+            response[&unreadable_train.id].train_schedule
+        );
         // The readable train is simulated all the same
         assert_eq!(
             serde_json::to_value(&response[&readable_train.id]).unwrap(),
@@ -4416,7 +4431,11 @@ mod tests {
             "the readable train should be simulated"
         );
         // Otherwise the assertion above holds no matter how the projections are assembled
-        assert!(!simulated[&unreadable_train.id].train_schedule.is_empty());
+        assert!(
+            !simulated[&unreadable_train.id].train_schedule.is_empty(),
+            "Expected simulated unreadable_train's train_schedule to be non-empty, got {:?}",
+            simulated[&unreadable_train.id].train_schedule
+        );
     }
 
     /// Trains whose rolling stock the user cannot read don't prevent the other trains of the
@@ -4614,7 +4633,7 @@ mod tests {
             .await
             .assert_status_ok()
             .json();
-        assert!(response_unauthorized.is_empty());
+        assert_eq!(response_unauthorized, HashMap::new());
     }
 
     fn pathfinding_result_success() -> PathfindingResultSuccess {
@@ -4850,7 +4869,7 @@ mod tests {
         let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status_ok().json();
 
-        assert!(track_occupancies.is_empty());
+        assert_eq!(track_occupancies, []);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -5016,7 +5035,7 @@ mod tests {
         let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status_ok().json();
 
-        assert!(track_occupancies.is_empty());
+        assert_eq!(track_occupancies, []);
     }
 
     #[test]
@@ -5097,7 +5116,7 @@ mod tests {
             &op_ref,
         );
 
-        assert!(result.is_empty());
+        assert_eq!(result, []);
     }
 
     #[test]
@@ -5161,6 +5180,6 @@ mod tests {
         );
         let track_occupancies: Vec<TrackSectionOccupancy> =
             response.await.assert_status_ok().json();
-        assert!(!track_occupancies.is_empty());
+        assert_ne!(track_occupancies, []);
     }
 }

@@ -1053,7 +1053,7 @@ pub mod tests {
                 .await
                 .assert_status_ok()
                 .json();
-            assert!(related_schedules.is_empty());
+            assert_eq!(related_schedules, []);
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
