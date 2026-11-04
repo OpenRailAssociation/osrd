@@ -144,7 +144,10 @@ impl ProjectWithStudyCount {
 )]
 pub(in crate::views) async fn create(
     State(AppState {
-        db_pool, openfga, ..
+        db_pool,
+        openfga,
+        config,
+        ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Json(project_create_form): Json<ProjectCreateForm>,
@@ -159,7 +162,9 @@ pub(in crate::views) async fn create(
         .await
         .map_err(ProjectError::from)?;
 
-    if let Some(user) = authn_state.user() {
+    if config.enable_project_permissions
+        && let Some(user) = authn_state.user()
+    {
         let Ok(()) =
             authz::v2::project_set_grant(authz::Subject::User(user), authz::Project(project.id))
                 .authorize(&SystemAuthorizer::new_infallible(&openfga))
