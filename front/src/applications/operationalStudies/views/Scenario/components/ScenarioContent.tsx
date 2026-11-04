@@ -148,17 +148,17 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   }, [dispatch, infraId, scenario.id, timetableSummary, activeBoards, t]);
 
   const upsertTrainSchedulesWithNge = useCallback(
-    async (updatedTrainSchedules: TrainScheduleResponse[]) => {
+    (updatedTrainSchedules: TrainScheduleResponse[]) => {
       upsertTrainSchedules(updatedTrainSchedules);
-      await refreshNge();
+      void refreshNge();
     },
     [upsertTrainSchedules, refreshNge]
   );
 
   const removeTrainSchedulesWithNge = useCallback(
-    async (trainScheduleIds: number[]) => {
+    (trainScheduleIds: number[]) => {
       removeTrainSchedules(trainScheduleIds);
-      await refreshNge();
+      void refreshNge();
     },
     [removeTrainSchedules, refreshNge]
   );
@@ -170,7 +170,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
       panelSelectionMode?: PanelSelectionMode
     ) => {
       await updateTrainScheduleDepartureTime(draggedTrainId, newDeparture, panelSelectionMode);
-      await refreshNge();
+      void refreshNge();
     },
     [updateTrainScheduleDepartureTime, refreshNge]
   );

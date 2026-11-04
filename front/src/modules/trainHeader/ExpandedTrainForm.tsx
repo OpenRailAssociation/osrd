@@ -322,7 +322,7 @@ const ExpandedTrainForm = ({
    * anymore (e.g. after the interval was lowered), it is brought back into it with a modulo.
    */
   const persistTrainIfNeeded = useCallback(
-    async (newFields: TrainFieldsState): Promise<TrainFieldsState> => {
+    (newFields: TrainFieldsState): TrainFieldsState => {
       let persistedFields = newFields;
       let updatedTrain = applyFieldsToTrain(newFields, train, timetableType);
 
@@ -344,7 +344,7 @@ const ExpandedTrainForm = ({
       }
 
       if (trainPayloadChanged(updatedTrain, train)) {
-        await onPersistTrain(updatedTrain);
+        void onPersistTrain(updatedTrain);
       }
       return persistedFields;
     },
@@ -359,17 +359,17 @@ const ExpandedTrainForm = ({
   );
 
   const onFieldBlur = useCallback(
-    async (_fieldName: keyof TrainFieldsState) => {
-      await persistTrainIfNeeded(fields);
+    (_fieldName: keyof TrainFieldsState) => {
+      persistTrainIfNeeded(fields);
     },
     [fields, persistTrainIfNeeded]
   );
 
   const onFieldImmediateChange = useCallback(
-    async (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
+    (fieldName: keyof TrainFieldsState, newValue: TrainFieldsState[typeof fieldName]) => {
       const newFields = { ...fields, [fieldName]: newValue };
 
-      setFields(await persistTrainIfNeeded(newFields));
+      setFields(persistTrainIfNeeded(newFields));
     },
     [fields, persistTrainIfNeeded]
   );
@@ -477,7 +477,7 @@ const ExpandedTrainForm = ({
           data-testid="train-name"
           onSubmit={async (e) => {
             e.preventDefault();
-            await onFieldBlur('train_name');
+            onFieldBlur('train_name');
           }}
         >
           <Input
@@ -517,7 +517,7 @@ const ExpandedTrainForm = ({
                   startTimeDate.getMinutes(),
                   startTimeDate.getSeconds()
                 );
-                await onFieldImmediateChange('departure_date', departureDate);
+                onFieldImmediateChange('departure_date', departureDate);
               }}
               selectableSlot={ANY_DATE_SLOT}
               calendarPickerProps={{ locale: i18n.language }}
@@ -529,7 +529,7 @@ const ExpandedTrainForm = ({
           data-testid="train-header-initial-velocity-field"
           onSubmit={async (e) => {
             e.preventDefault();
-            await onFieldBlur('initial_speed');
+            onFieldBlur('initial_speed');
           }}
         >
           <Input
@@ -577,8 +577,8 @@ const ExpandedTrainForm = ({
             options={categoryOptions}
             getOptionLabel={(option) => option?.label ?? ''}
             getOptionValue={(option) => option?.id ?? ''}
-            onChange={async (value) => {
-              await onFieldImmediateChange('category', value?.category ?? null);
+            onChange={(value) => {
+              onFieldImmediateChange('category', value?.category ?? null);
             }}
           />
         </div>
@@ -599,7 +599,7 @@ const ExpandedTrainForm = ({
             value={fields.speed_limit_tag ?? ''}
             {...createStandardSelectOptions(speedLimitTags)}
             onChange={async (value) => {
-              await onFieldImmediateChange('speed_limit_tag', value ?? null);
+              onFieldImmediateChange('speed_limit_tag', value ?? null);
             }}
           />
         </div>
@@ -613,7 +613,7 @@ const ExpandedTrainForm = ({
             {...createFixedSelectOptions(constraintDistributionsOptions)}
             onChange={async (value) => {
               if (value) {
-                await onFieldImmediateChange('constraint_distribution', value.id);
+                onFieldImmediateChange('constraint_distribution', value.id);
               }
             }}
           />
@@ -626,8 +626,8 @@ const ExpandedTrainForm = ({
             small
             value={selectedComfortOption}
             {...createFixedSelectOptions(comfortOptions)}
-            onChange={async (value) => {
-              await onFieldImmediateChange('comfort', value?.id ?? null);
+            onChange={(value) => {
+              onFieldImmediateChange('comfort', value?.id ?? null);
             }}
           />
         </div>
@@ -637,8 +637,8 @@ const ExpandedTrainForm = ({
             dataTestId="train-header-electric-profile-checkbox"
             checked={fields.use_electrical_profiles ?? false}
             label={t('manageTrainSchedule.trainHeader.form.electricalProfiles')}
-            onChange={async (event) => {
-              await onFieldImmediateChange('use_electrical_profiles', event.target.checked);
+            onChange={(event) => {
+              onFieldImmediateChange('use_electrical_profiles', event.target.checked);
             }}
           />
         </div>
@@ -648,8 +648,8 @@ const ExpandedTrainForm = ({
             dataTestId="train-header-tags"
             label={t('manageTrainSchedule.trainHeader.form.tags')}
             tokens={fields.labels}
-            onChange={async (tokens) => {
-              await onFieldImmediateChange('labels', tokens);
+            onChange={(tokens) => {
+              onFieldImmediateChange('labels', tokens);
             }}
           />
         </div>

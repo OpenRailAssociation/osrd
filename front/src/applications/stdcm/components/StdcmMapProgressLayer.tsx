@@ -188,7 +188,7 @@ const StdcmMapProgressLayer = ({
     const map = mapRef.current?.getMap();
 
     let timeoutId: null | number = null;
-    const animate = async () => {
+    const animate = () => {
       if (!map) return;
       const source = map.getSource<GeoJSONSource>('stdcm-algo-progress');
       if (!source) return;

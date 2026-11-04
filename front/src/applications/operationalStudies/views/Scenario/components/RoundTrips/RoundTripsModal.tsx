@@ -145,7 +145,7 @@ const RoundTripsModal = ({
     }
     await Promise.all(apiCalls);
 
-    await refreshNge();
+    void refreshNge();
 
     closeModal();
   };

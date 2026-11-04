@@ -58,7 +58,7 @@ const Languages = () => {
           className="btn btn-secondary btn-block language-choice-btn"
           key={`language-btn-${languageCode}`}
           disabled={i18n.language === languageCode}
-          onClick={() => changeLanguage(languageCode)}
+          onClick={async () => await changeLanguage(languageCode)}
         >
           {languageSvgFlag(languageCode)}
           {languageName(languageCode)}

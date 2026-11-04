@@ -113,13 +113,16 @@ const TypeAndPath = ({ onSubmit }: TypeAndPathProps) => {
       const results = await postSearch(payload).unwrap();
 
       const operationalPoints = [...results] as SearchResultItemOperationalPoint[];
+
+      // TODO: the cast into SearchResultItemOperationalPoint is suspicious, as it's missing mandatory fields
       setOpList(
         opMainCodes.map(
           (mainCode) =>
-            operationalPoints.find((op) => op.main_code === mainCode) || {
+            operationalPoints.find((op) => op.main_code === mainCode) ||
+            ({
               main_code: mainCode,
-            }
-        ) as SearchResultItemOperationalPoint[]
+            } as SearchResultItemOperationalPoint)
+        )
       );
     }
   }

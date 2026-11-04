@@ -61,9 +61,9 @@ const UserSettings = () => {
   const userComboBoxDefaultProps = useDefaultComboBox(userList, getSubjectName);
 
   const handleSubjectSelection = useCallback(
-    async (subject: SearchResultItemUser | undefined) => {
+    (subject: SearchResultItemUser | undefined) => {
       if (subject) {
-        await impersonate(subject);
+        void impersonate(subject);
         closeModal();
       }
     },

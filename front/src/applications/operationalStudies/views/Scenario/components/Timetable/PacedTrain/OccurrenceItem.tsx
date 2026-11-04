@@ -156,8 +156,9 @@ const OccurrenceItem = ({
         title: t('occurrenceMenu.restore'),
         icon: <Reverse />,
         onClick: async () => {
-          await resetOccurrenceExceptions(occurrence.id);
           closeMenu();
+          // TODO: handle errors gracefully with a toast
+          await resetOccurrenceExceptions(occurrence.id);
         },
         dataTestID: 'occurrence-restore-button',
       },
@@ -174,8 +175,9 @@ const OccurrenceItem = ({
         title: t('occurrenceMenu.delete'),
         icon: <Trash />,
         onClick: async () => {
-          await deleteAddedException(occurrence.id);
           closeMenu();
+          // TODO: handle errors gracefully with a toast
+          await deleteAddedException(occurrence.id);
         },
         dataTestID: 'occurrence-delete-button',
       },

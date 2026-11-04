@@ -105,8 +105,8 @@ const StudyView = () => {
     setItems: setScenariosList,
     toggleSelection: toggleScenarioSelection,
     deleteItems,
-  } = useMultiSelection<ScenarioCardDetails>((scenarioId) => {
-    void deleteScenario({ scenarioId });
+  } = useMultiSelection<ScenarioCardDetails>(async (scenarioId) => {
+    await deleteScenario({ scenarioId });
 
     // For each scenarios, clean the local storage if a manchette is saved
     const deletedScenario = scenarios!.results.find((scenario) => scenario.id === scenarioId);
