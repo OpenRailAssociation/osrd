@@ -1148,6 +1148,14 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetable'],
       }),
+      patchTimetableById: build.mutation<PatchTimetableByIdApiResponse, PatchTimetableByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}`,
+          method: 'PATCH',
+          body: queryArg.timetablePatchForm,
+        }),
+        invalidatesTags: ['timetable'],
+      }),
       getTimetableByIdConflicts: build.query<
         GetTimetableByIdConflictsApiResponse,
         GetTimetableByIdConflictsApiArg
@@ -2552,6 +2560,13 @@ export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
+};
+export type PatchTimetableByIdApiResponse =
+  /** status 201 Timetable with train schedule ids */ TimetableResult;
+export type PatchTimetableByIdApiArg = {
+  /** A timetable ID */
+  id: number;
+  timetablePatchForm: TimetablePatchForm;
 };
 export type GetTimetableByIdConflictsApiResponse = /** status 200 List of conflicts */ Conflict[];
 export type GetTimetableByIdConflictsApiArg = {
@@ -5014,6 +5029,9 @@ export type TimetableResult = {
 export type TimetableForm = {
   timetable_name?: string | null;
   timetable_type: TimetableType;
+};
+export type TimetablePatchForm = {
+  name?: string | null;
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
 export type CoreConflictRequirement = {
