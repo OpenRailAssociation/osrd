@@ -151,7 +151,7 @@ impl Timetable {
             let _: Vec<_> = TimetableTrainScheduleSet::create_batch(&mut conn, changesets).await?;
             Ok(())
         })
-        .await
+        .await?
     }
 
     /// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment

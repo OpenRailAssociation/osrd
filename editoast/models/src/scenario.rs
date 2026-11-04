@@ -144,7 +144,7 @@ impl Scenario {
 
             Ok(Ok(t))
         })
-        .await
+        .await?
     }
 }
 

@@ -301,7 +301,7 @@ pub(in crate::views) async fn delete(
             project.delete_and_prune_document(&mut conn).await?;
             Ok::<_, ProjectError>(())
         })
-        .await?;
+        .await??;
 
     Ok(StatusCode::NO_CONTENT)
 }

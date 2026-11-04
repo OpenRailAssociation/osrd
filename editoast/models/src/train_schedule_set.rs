@@ -134,7 +134,7 @@ impl TrainScheduleSet {
                 timetable_id: timetable.id,
             })
         })
-        .await
+        .await?
     }
 
     pub async fn train_schedule_count(
@@ -192,7 +192,7 @@ impl TrainScheduleSet {
 
                     Ok(count)
                 })
-                .await?;
+                .await??;
 
             if deleted_count == 0 {
                 break;

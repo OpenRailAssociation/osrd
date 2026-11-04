@@ -105,7 +105,7 @@ impl Study {
 
             Ok(Ok(t))
         })
-        .await
+        .await?
     }
 }
 

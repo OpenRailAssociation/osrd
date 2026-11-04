@@ -378,7 +378,7 @@ pub(in crate::views) async fn put_in_group(
             Ok(Json(work_schedules))
         })
     })
-    .await
+    .await?
 }
 
 #[derive(Serialize, ToSchema)]

@@ -133,7 +133,7 @@ pub(in crate::views) async fn upsert(
                 .await?;
             Ok(())
         })
-        .await?;
+        .await??;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
 }

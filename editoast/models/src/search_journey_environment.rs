@@ -41,7 +41,7 @@ impl SearchJourneyEnvironment {
             }
             Ok(env)
         })
-        .await
+        .await?
     }
 }
 

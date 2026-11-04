@@ -252,7 +252,7 @@ pub(in crate::views) async fn delete(
 
         Ok::<_, ScenarioError>(())
     })
-    .await?;
+    .await??;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -367,7 +367,7 @@ pub(in crate::views) async fn get(
                 study,
             ))
         })
-        .await?;
+        .await??;
 
     project_privilege_check(authz::Project(project.id), ProjectPrivilege::HasAccess)
         .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))

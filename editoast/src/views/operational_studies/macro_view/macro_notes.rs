@@ -273,7 +273,7 @@ pub(in crate::views) async fn update(
 
             Ok::<_, MacroNoteError>(updated_macro_note)
         })
-        .await?;
+        .await??;
 
     Ok(Json(MacroNoteResponse::from(updated_macro_note)))
 }
@@ -313,7 +313,7 @@ pub(in crate::views) async fn delete(
 
         Ok::<_, MacroNoteError>(())
     })
-    .await?;
+    .await??;
 
     Ok(StatusCode::NO_CONTENT)
 }
