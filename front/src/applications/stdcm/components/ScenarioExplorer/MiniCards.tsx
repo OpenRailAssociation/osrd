@@ -86,12 +86,16 @@ export const ScenarioMiniCard = ({
   const [getSpeedLimitTags] =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useLazyQuery();
 
+  // TODO(#18904): use the selected timetable instead of the first one
+  const currentTimetable = scenario.timetable_summaries.at(0);
+
   const selectScenario = async () => {
+    // STDCM (debug mode)needs a timetable to search a path between existing trains
+    if (!currentTimetable) return;
+
     const speedLimitTags = await getSpeedLimitTags({ infraId: scenario.infra_id }).unwrap();
-    // TODO: adapt once the front handles multiple timetable per scenario
-    const timetableId = scenario.timetable_summaries[0].id;
     const trainSchedules = await getTrainSchedules({
-      timetableId,
+      timetableId: currentTimetable.id,
     }).unwrap();
 
     const scenarioDateTimeWindow = getScenarioDatetimeWindow(trainSchedules);
@@ -100,7 +104,7 @@ export const ScenarioMiniCard = ({
     dispatch(
       updateStdcmEnvironment({
         infraID: scenario.infra_id,
-        timetableID: timetableId,
+        timetableID: currentTimetable.id,
         electricalProfileSetId: scenario.electrical_profile_set_id,
         searchDatetimeWindow: scenarioDateTimeWindow,
         projectID,
@@ -122,6 +126,7 @@ export const ScenarioMiniCard = ({
     <div
       className={cx('minicard', 'scenario', {
         selected: isSelected,
+        empty: !currentTimetable,
       })}
       role="button"
       tabIndex={0}
