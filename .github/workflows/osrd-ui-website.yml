@@ -19,10 +19,10 @@ on:
       - synchronize
       - closed
 
-# Allow only one concurrent deployment. However, do NOT cancel in-progress runs as we want to allow
+# Allow only one concurrent deployment per reference (e.g., PR). However, do NOT cancel in-progress runs as we want to allow
 # especially production deployments to complete.
 concurrency:
-  group: "pages"
+  group: pages-${{ github.ref_name }}
   cancel-in-progress: false
 
 # Set environment variables, used multile times in the workflow
