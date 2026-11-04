@@ -23,42 +23,30 @@ AS $$
 BEGIN
     IF EXISTS (
         SELECT 1
-        FROM timetable AS outer_timetable, timetable AS inner_timetable
-        WHERE outer_timetable.id = NEW.outer_timetable_id
-            AND inner_timetable.id = NEW.inner_timetable_id
-            AND outer_timetable.is_train_schedule_set
+        FROM timetable
+        WHERE id = NEW.outer_timetable_id
+            AND is_train_schedule_set
     ) THEN
-        RAISE EXCEPTION 'A train schedule set cannot include another timetable';
+        RAISE EXCEPTION 'Invalid timetable_inheritance: a timetable set cannot include a timetable';
     END IF;
-    IF EXISTS (
+
+    IF NOT EXISTS (
         SELECT 1
         FROM timetable AS outer_timetable, timetable AS inner_timetable
         WHERE outer_timetable.id = NEW.outer_timetable_id
             AND inner_timetable.id = NEW.inner_timetable_id
             AND inner_timetable.is_train_schedule_set
-            AND outer_timetable.timetable_type != inner_timetable.timetable_type
+            AND inner_timetable.timetable_type = outer_timetable.timetable_type
+            AND NEW.ranges IS NULL
     ) THEN
-        RAISE EXCEPTION 'A train schedule set can only be included in a timetable of the same type';
+        RAISE EXCEPTION 'Invalid timetable_inheritance: only a train schedule set of the same type can be included';
     END IF;
-    -- The included timetable must not already include, directly or not, the including one
-    IF EXISTS (
-        WITH RECURSIVE included_timetable(id) AS (
-            SELECT NEW.inner_timetable_id
-            UNION
-            SELECT timetable_inheritance.inner_timetable_id
-            FROM timetable_inheritance
-            INNER JOIN included_timetable
-                ON timetable_inheritance.outer_timetable_id = included_timetable.id
-        )
-        SELECT 1 FROM included_timetable WHERE id = NEW.outer_timetable_id
-    ) THEN
-        RAISE EXCEPTION 'Cannot insert or update timetable_inheritance as it would create a cycle';
-    END IF;
+
     RETURN NEW;
 END;
 $$;
 CREATE OR REPLACE TRIGGER trigger_check_timetable_inheritance
-BEFORE INSERT OR UPDATE OF outer_timetable_id, inner_timetable_id ON timetable_inheritance
+BEFORE INSERT OR UPDATE OF outer_timetable_id, inner_timetable_id, ranges ON timetable_inheritance
 FOR EACH ROW EXECUTE FUNCTION check_timetable_inheritance();
 
 -- Drops along its trigger, constraints and indexes
