@@ -28,7 +28,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData, isFetching, refetchData } = useStdcmRequestsSent();
+  const { requestsSentData, isFetching, refetchData, lastRefresh } = useStdcmRequestsSent();
 
   const requestsSentRows = () =>
     requestsSentData.map((request, index) => {
@@ -111,14 +111,19 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
             )}
           </div>
           <div className="stdcm-requests-sent-modal-header-section">
-            <button
-              className={cx('stdcm-requests-sent-sync-button', { spinning: isFetching })}
-              type="button"
-              onClick={refetchData}
-              disabled={isFetching}
-            >
-              <Sync />
-            </button>
+            <div className="stdcm-requests-sent-modal-refresh-wrapper">
+              <div className="stdcm-requests-sent-modal-updated-at">
+                {t('requestsSentModal.updatedAt')} {dayjs(lastRefresh).format('HH:mm')}
+              </div>
+              <button
+                className={cx('stdcm-requests-sent-sync-button', { spinning: isFetching })}
+                type="button"
+                onClick={refetchData}
+                disabled={isFetching}
+              >
+                <Sync />
+              </button>
+            </div>
             <div className="stdcm-requests-my-requests">{t('requestsSentModal.myRequests')}</div>
             <button type="button" onClick={onClose}>
               <X size="lg" />
