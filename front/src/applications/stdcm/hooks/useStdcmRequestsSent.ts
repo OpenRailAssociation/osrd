@@ -24,6 +24,7 @@ const useStdcmRequestsSent = () => {
     data: statusesById,
     isFetching: statusFetching,
     refetch: refetchStatuses,
+    fulfilledTimeStamp: lastRefresh,
   } = osrdRailwayManagerApi.endpoints.postSendLastMinuteRequestStatuses.useQuery(
     stdcmRequests ? { body: stdcmRequests.requests.map((request) => request.rmi_id) } : skipToken
   );
@@ -64,6 +65,7 @@ const useStdcmRequestsSent = () => {
     requestsSentData,
     isFetching: statusFetching || matchFetching || idsFetching,
     refetchData,
+    lastRefresh,
   };
 };
 
