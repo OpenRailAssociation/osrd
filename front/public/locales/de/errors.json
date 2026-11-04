@@ -58,8 +58,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} konnte nirgends im Infrastruktur-Cache gefunden werden"
     },
     "catalog_entry": {
-      "Database": "Interner Fehler (Datenbank)",
-      "NotFound": "Katalogeintrag '{{catalog_entry_id}}' nicht gefunden"
+      "not_found": "Katalogeintrag '{{catalog_entry_id}}' nicht gefunden"
     },
     "core": {
       "pathfinding": {

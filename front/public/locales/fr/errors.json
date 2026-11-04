@@ -69,8 +69,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} n'a pu être trouvé nulle part dans le cache de l'infrastructure"
     },
     "catalog_entry": {
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Entrée de catalogue '{{catalog_entry_id}}' non trouvée"
+      "not_found": "Entrée de catalogue '{{catalog_entry_id}}' non trouvée"
     },
     "core": {
       "pathfinding": {
