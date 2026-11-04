@@ -35,10 +35,13 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
         .locale(i18n.language)
         .calendar(null, calendarDays);
 
-      const endStartTime: string =
-        request.end_time && request.end_time !== 'dqp'
-          ? request.end_time.slice(0, 5)
-          : t('requestsSentModal.asap');
+      const beginTime: string = request.begin_time
+        ? request.begin_time.slice(0, 5)
+        : t('requestsSentModal.dest');
+
+      const endTime: string = request.end_time
+        ? request.end_time.slice(0, 5)
+        : t('requestsSentModal.asap');
 
       const applicationDate = dayjs(request.train_start)
         .locale(i18n.language)
@@ -55,7 +58,14 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <td>
             <div className="stdcm-requests-start-time-wrapper">
               <div className="stdcm-requests-start-time-left">
-                <span className="stdcm-requests-start-time">{request.begin_time?.slice(0, 5)}</span>
+                <span
+                  className="stdcm-requests-start-time"
+                  title={
+                    request.begin_time ? '' : t('requestsSentModal.respectDestinationSchedule')
+                  }
+                >
+                  {beginTime}
+                </span>
                 <span className="stdcm-requests-op-name">{request.matchedBeginOp?.name}</span>
               </div>
               <div className="stdcm-requests-main-code">{request.matchedBeginOp?.main_code}</div>
@@ -64,7 +74,12 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           <td>
             <div className="stdcm-requests-start-time-wrapper">
               <div className="stdcm-requests-start-time-left">
-                <span className="stdcm-requests-start-time">{endStartTime}</span>
+                <span
+                  className="stdcm-requests-start-time"
+                  title={request.end_time ? '' : t('requestsSentModal.asSoonAsPossible')}
+                >
+                  {endTime}
+                </span>
                 <span className="stdcm-requests-op-name">{request.matchedEndOp?.name}</span>
               </div>
               <div className="stdcm-requests-main-code">{request.matchedEndOp?.main_code}</div>
