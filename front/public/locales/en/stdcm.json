@@ -148,7 +148,8 @@
       "REFUSED": "Non allocated"
     },
     "title": "GESICO requests",
-    "updateDate": "Updated"
+    "updateDate": "Updated",
+    "updatedAt": "updated at"
   },
   "scenario": "Scenario",
   "scenarioExplorer": {

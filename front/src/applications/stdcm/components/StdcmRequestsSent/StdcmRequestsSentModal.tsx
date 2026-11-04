@@ -34,7 +34,8 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData, isRefreshing, refetchData, isLoading } = useStdcmRequestsSent();
+  const { requestsSentData, isRefreshing, refetchData, isLoading, lastRefresh } =
+    useStdcmRequestsSent();
 
   const openRequestsFolder = async () => {
     try {
@@ -121,14 +122,19 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
             )}
           </div>
           <div className="stdcm-requests-sent-modal-header-section">
-            <button
-              className={cx('stdcm-requests-sent-sync-button', { spinning: isRefreshing })}
-              type="button"
-              onClick={refetchData}
-              disabled={isRefreshing}
-            >
-              <Sync />
-            </button>
+            <div className="stdcm-requests-sent-modal-refresh-wrapper">
+              <div className="stdcm-requests-sent-modal-updated-at">
+                {t('requestsSentModal.updatedAt')} {dayjs(lastRefresh).format('HH:mm')}
+              </div>
+              <button
+                className={cx('stdcm-requests-sent-sync-button', { spinning: isRefreshing })}
+                type="button"
+                onClick={refetchData}
+                disabled={isRefreshing}
+              >
+                <Sync />
+              </button>
+            </div>
             <SegmentedControl
               options={segmentedControlOptions}
               getOptionLabel={(option: SegmentedControlOption) => option.label}

@@ -148,7 +148,8 @@
       "REFUSED": "Non allouée"
     },
     "title": "Demandes GESICO",
-    "updateDate": "Mise à jour"
+    "updateDate": "Mise à jour",
+    "updatedAt": "mise à jour à"
   },
   "scenario": "Scénario",
   "scenarioExplorer": {
