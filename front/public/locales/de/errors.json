@@ -255,8 +255,7 @@
       "TrainSimulationFail": "Zugsimulation fehlgeschlagen"
     },
     "stdcm_search_env": {
-      "Database": "Interner Fehler (Datenbank)",
-      "NotFound": "STDCM-Suchumgebung '{{env_id}}' nicht gefunden"
+      "not_found": "STDCM-Suchumgebung '{{env_id}}' nicht gefunden"
     },
     "study": {
       "Database": "Interner Fehler (Datenbank)",
