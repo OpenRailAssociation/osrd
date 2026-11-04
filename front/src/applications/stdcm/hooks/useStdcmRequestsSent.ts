@@ -36,12 +36,12 @@ const useStdcmRequestsSent = () => {
         : skipToken
     );
 
-  // related_operational_points is ordered like operationalPointReferences: [begin0, end0, begin1, end1, ...]
   const requestsSentData = statuses
     .map((status, index) => ({
       ...status,
-      matchedBeginOp: matchedOps?.related_operational_points[2 * index] ?? null,
-      matchedEndOp: matchedOps?.related_operational_points[2 * index + 1] ?? null,
+      // related_operational_points is ordered like operationalPointReferences: [begin0, end0, begin1, end1, ...]
+      matchedBeginOp: matchedOps?.related_operational_points[2 * index],
+      matchedEndOp: matchedOps?.related_operational_points[2 * index + 1],
     }))
     .toSorted((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
