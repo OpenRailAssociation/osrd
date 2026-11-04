@@ -4488,6 +4488,16 @@ class TestOperation(BaseModel):
     """
 
 
+class TimetablePatchForm(BaseModel):
+    """
+    This structure is used by the patch endpoint to patch a timetable
+
+    The type of a timetable cannot be changed after its creation
+    """
+
+    name: StrictStr | None = None
+
+
 class TimetableType(Enum):
     CALENDAR = "CALENDAR"
     HOURLY = "HOURLY"
