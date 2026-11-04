@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { RoundTrips, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { SimulatedException } from 'modules/trainSchedule/types';
 import { Duration } from 'utils/duration';
 import { mapBy } from 'utils/types';
 
@@ -45,6 +46,23 @@ describe('buildTimetableExportPayload', () => {
     });
 
     expect(payload.round_trips).toEqual([[0, null]]);
+  });
+
+  it('does not include simulation summaries', () => {
+    const exception: SimulatedException = {
+      key: 'exception',
+      disabled: true,
+      summary: { isValid: false, invalidReason: 'rolling_stock_not_found' },
+    };
+    const trainSchedule: TrainScheduleResponse = {
+      ...buildTrainSchedule(1),
+      paced: { interval: 'PT10M', time_window: 'PT1H', exceptions: [exception] },
+    };
+
+    const payload = buildTimetableExportPayload(mapBy([trainSchedule], 'id'), [1]);
+
+    expect(payload.train_schedules[0].paced?.exceptions[0]).not.toHaveProperty('summary');
+    expect(JSON.stringify(payload)).not.toContain('"summary"');
   });
 });
 

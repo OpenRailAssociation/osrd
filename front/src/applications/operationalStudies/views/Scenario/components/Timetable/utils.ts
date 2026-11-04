@@ -14,6 +14,7 @@ import type {
   TimetableType,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { stripExceptionSummaries } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import { Duration } from 'utils/duration';
 
@@ -56,7 +57,15 @@ const formatTrainSchedulesForExport = (
     .map((id) => trainSchedules.get(id)!)
     .reduce<TrainSchedule[]>((acc, trainSchedule) => {
       trainScheduleIndexByEditoastId.set(trainSchedule.id, acc.length);
-      acc.push(omit(trainSchedule, ['id', 'train_schedule_set_id']));
+      acc.push({
+        ...omit(trainSchedule, ['id', 'train_schedule_set_id']),
+        paced: trainSchedule.paced
+          ? {
+              ...trainSchedule.paced,
+              exceptions: stripExceptionSummaries(trainSchedule.paced.exceptions),
+            }
+          : trainSchedule.paced,
+      });
       return acc;
     }, []);
 
