@@ -177,11 +177,11 @@ const StdcmResults = ({
         setRailwayRequestUrl(railwayResponse.created_request_url);
 
         postStdcmRequests({
-          stdcmRequestForm: { rmi_id: railwayResponse.request_identifier },
+          stdcmRequestForm: { rmi_id: railwayResponse.request_identifier, trace_id: traceId },
         });
       }
     },
-    [postStdcmRequests]
+    [postStdcmRequests, traceId]
   );
 
   useEffect(() => {
