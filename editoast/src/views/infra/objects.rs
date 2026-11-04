@@ -26,8 +26,6 @@ use models::prelude::*;
 enum GetObjectsErrors {
     #[error("Duplicate object ids provided")]
     DuplicateIdsProvided,
-    #[error("Object id '{object_id}' not found")]
-    ObjectIdNotFound { object_id: String },
 }
 
 /// Return whether the list of ids contains unique values or has duplicate
@@ -40,7 +38,15 @@ pub(in crate::views) struct ObjectTypeParam {
     object_type: ObjectType,
 }
 
+/// An infra object, `null` if it is not in the infra
+// A newtype is needed since utoipa can't generate a map of `Option<T>` when `T` is a schema reference
+#[derive(serde::Serialize, utoipa::ToSchema)]
+#[serde(transparent)]
+pub(in crate::views) struct NullableInfraObject(Option<ObjectQueryable>);
+
 /// Retrieves specific infra objects
+///
+/// The objects are returned indexed by their id, with `null` for each id that is not in the infra.
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -48,9 +54,9 @@ pub(in crate::views) struct ObjectTypeParam {
     params(InfraIdParam, ObjectTypeParam),
     request_body = Vec<String>,
     responses(
-        (status = 200, description = "The list of objects", body = Vec<ObjectQueryable>),
+        (status = 200, description = "The objects indexed by their id", body = HashMap<String, NullableInfraObject>),
         (status = 400, description = "Duplicate object ids provided"),
-        (status = 404, description = "Object ID or infra ID invalid")
+        (status = 404, description = "Infra ID invalid")
     )
 )]
 pub(in crate::views) async fn get_objects(
@@ -61,7 +67,7 @@ pub(in crate::views) async fn get_objects(
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Json(obj_ids): Json<Vec<String>>,
-) -> Result<Json<Vec<ObjectQueryable>>> {
+) -> Result<Json<HashMap<String, NullableInfraObject>>> {
     if !has_unique_ids(&obj_ids) {
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
@@ -86,29 +92,16 @@ pub(in crate::views) async fn get_objects(
         )
         .await?;
 
-    // Build a cache to reorder the result
-    let mut objects: HashMap<_, _> = objects
+    // Unknown ids give `null`
+    let mut result: HashMap<_, _> = obj_ids
         .into_iter()
-        .map(|obj| (obj.obj_id.clone(), obj))
+        .map(|obj_id| (obj_id, NullableInfraObject(None)))
         .collect();
-
-    // Check all objects exist
-    if objects.len() != obj_ids.len() {
-        let not_found_id = obj_ids
-            .iter()
-            .find(|obj_id| !objects.contains_key(*obj_id))
-            .unwrap();
-        return Err(GetObjectsErrors::ObjectIdNotFound {
-            object_id: not_found_id.clone(),
-        }
-        .into());
-    }
-
-    // Reorder the result to match the order of the input
-    let mut result = vec![];
-    obj_ids.iter().for_each(|obj_id| {
-        result.push(objects.remove(obj_id).unwrap());
-    });
+    result.extend(
+        objects
+            .into_iter()
+            .map(|obj| (obj.obj_id.clone(), NullableInfraObject(Some(obj)))),
+    );
 
     Ok(Json(result))
 }
@@ -156,6 +149,8 @@ pub(in crate::views) async fn list_objects_ids(
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use authz::InfraGrant;
     use pretty_assertions::assert_eq;
 
@@ -173,7 +168,7 @@ mod tests {
     use schemas::primitives::OSRDIdentified as _;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn check_invalid_ids() {
+    async fn get_objects_unknown_ids() {
         let app = test_app!().build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -183,11 +178,39 @@ mod tests {
             .create()
             .await;
 
-        app.post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+        let switch_type = SwitchType::default();
+        apply_create_operation(
+            &switch_type.clone().into(),
+            empty_infra.id,
+            &mut db_pool.get_ok(),
+        )
+        .await
+        .expect("Failed to create switch type object");
+
+        let objects: HashMap<String, Option<ObjectQueryable>> = app
+            .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
             .by_user(user.as_ref())
-            .json(&["invalid_id"])
+            .json(&["unknown_a", switch_type.get_id().as_str(), "unknown_b"])
             .await
-            .assert_status_bad_request();
+            .assert_status_ok()
+            .json();
+
+        let obj_ids: HashMap<_, _> = objects
+            .iter()
+            .map(|(id, object)| {
+                let obj_id = object.as_ref().map(|object| object.obj_id.as_str());
+                (id.as_str(), obj_id)
+            })
+            .collect();
+        let switch_type_id = switch_type.get_id().as_str();
+        assert_eq!(
+            obj_ids,
+            HashMap::from([
+                ("unknown_a", None),
+                (switch_type_id, Some(switch_type_id)),
+                ("unknown_b", None),
+            ])
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -236,26 +259,29 @@ mod tests {
         // WHEN
 
         // THEN
-        let switch_object: Vec<ObjectQueryable> = app
+        let switch_object: HashMap<String, Option<ObjectQueryable>> = app
             .post(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
             .by_user(user.as_ref())
             .json(&vec!["switch_001"])
             .await
             .assert_status_ok()
             .json();
-        let expected_switch_object = vec![ObjectQueryable {
-            obj_id: switch.get_id().to_string(),
-            railjson: json!({
-                "extensions": {
-                    "sncf": JsonValue::Null
-                },
-                "group_change_delay": 0.0,
-                "id": switch.get_id().to_string(),
-                "ports": {},
-                "switch_type": switch.switch_type
+        let expected_switch_object = HashMap::from([(
+            switch.get_id().to_string(),
+            Some(ObjectQueryable {
+                obj_id: switch.get_id().to_string(),
+                railjson: json!({
+                    "extensions": {
+                        "sncf": JsonValue::Null
+                    },
+                    "group_change_delay": 0.0,
+                    "id": switch.get_id().to_string(),
+                    "ports": {},
+                    "switch_type": switch.switch_type
+                }),
+                geographic: None,
             }),
-            geographic: None,
-        }];
+        )]);
         assert_eq!(switch_object, expected_switch_object);
     }
 
@@ -298,22 +324,25 @@ mod tests {
         .await
         .expect("Failed to create switch type object");
 
-        let switch_type_object: Vec<ObjectQueryable> = app
+        let switch_type_object: HashMap<String, Option<ObjectQueryable>> = app
             .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
             .by_user(user.as_ref())
             .json(&vec![switch_type.id.clone()])
             .await
             .assert_status_ok()
             .json();
-        let expected_switch_type_object = vec![ObjectQueryable {
-            obj_id: switch_type.get_id().to_string(),
-            railjson: json!({
-                "id": switch_type.get_id().to_string(),
-                "ports": [],
-                "groups": {}
+        let expected_switch_type_object = HashMap::from([(
+            switch_type.get_id().to_string(),
+            Some(ObjectQueryable {
+                obj_id: switch_type.get_id().to_string(),
+                railjson: json!({
+                    "id": switch_type.get_id().to_string(),
+                    "ports": [],
+                    "groups": {}
+                }),
+                geographic: None,
             }),
-            geographic: None,
-        }];
+        )]);
         assert_eq!(switch_type_object, expected_switch_type_object);
     }
 

@@ -23,7 +23,9 @@ export default function useCachedTrackSections(infraId: number) {
           }).unwrap();
 
           uniqueNewIds.forEach((id) => trackIdsRef.current.add(id));
-          fetchedSections.forEach((rawSection) => {
+          Object.values(fetchedSections).forEach((rawSection) => {
+            // Track sections that are not in the infra are null
+            if (!rawSection) return;
             const trackSection = rawSection.railjson as TrackSection;
             trackSectionsRef.current[trackSection.id] = trackSection;
           });

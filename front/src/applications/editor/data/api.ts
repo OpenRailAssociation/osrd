@@ -2,14 +2,11 @@ import { groupBy, uniq, toPairs } from 'lodash';
 
 import type { EditoastType } from 'applications/editor/consts';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import {
-  type PostInfraByInfraIdObjectsAndObjectTypeApiResponse,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { type InfraObjectWithGeometry, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
-  entity: PostInfraByInfraIdObjectsAndObjectTypeApiResponse[0],
+  entity: InfraObjectWithGeometry,
   type: T['objType']
 ): T {
   return {
@@ -22,6 +19,7 @@ export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
 
 /**
  * Returns a list of entities from editoast
+ * Ids that are not found in the infra are not in the result.
  */
 export async function getEntities<T extends EditorEntity = EditorEntity>(
   infraId: number,
@@ -38,13 +36,10 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
     })
   ).unwrap();
 
-  return results.reduce(
-    (iter, entry, i) => ({
-      ...iter,
-      [uniqIDs[i]]: editoastToEditorEntity<T>(entry, type),
-    }),
-    {}
-  );
+  return Object.entries(results).reduce<Record<string, T>>((iter, [id, entry]) => {
+    if (!entry) return iter;
+    return { ...iter, [id]: editoastToEditorEntity<T>(entry, type) };
+  }, {});
 }
 
 /**

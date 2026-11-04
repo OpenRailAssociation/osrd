@@ -29,9 +29,13 @@ const useMapTrackSelection = (infraId: number | undefined) => {
           body: [objectId],
         }).unwrap();
 
-        if (!result.length) return null;
+        const trackSection = result[objectId];
+        if (!trackSection) return null;
 
-        const trackEntity = editoastToEditorEntity<TrackSectionEntity>(result[0], 'TrackSection');
+        const trackEntity = editoastToEditorEntity<TrackSectionEntity>(
+          trackSection,
+          'TrackSection'
+        );
         const offset = mToMm(
           calculateDistanceAlongTrack(
             trackEntity,

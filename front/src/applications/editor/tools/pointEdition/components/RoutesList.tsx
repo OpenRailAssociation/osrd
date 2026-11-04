@@ -53,8 +53,12 @@ const RoutesList = ({ type, id }: RoutesListProps) => {
                 .then((entities) => {
                   setRoutesState({
                     type: 'ready',
-                    starting: starting.map((routeId) => entities[routeId]),
-                    ending: ending.map((routeId) => entities[routeId]),
+                    starting: starting
+                      .filter((routeId) => routeId in entities)
+                      .map((routeId) => entities[routeId]),
+                    ending: ending
+                      .filter((routeId) => routeId in entities)
+                      .map((routeId) => entities[routeId]),
                   });
                 })
                 .catch((err) => {
