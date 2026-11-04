@@ -74,6 +74,7 @@ const AddOrEditScenarioModal = ({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const hourlyTimetableActivated = useSelector(getFeatureFlag('hourlyTimetables'));
+  const multipleTimetablesActivated = useSelector(getFeatureFlag('multipleTimetables'));
 
   const { data: infrasList } = osrdEditoastApi.endpoints.getInfra.useQuery({ pageSize: 1000 });
   const infras = infrasList?.results ?? [];
@@ -155,23 +156,28 @@ const AddOrEditScenarioModal = ({
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario.infra_id && currentScenario.name) {
       try {
-        const timetable_type = currentScenario.timetable_type || 'CALENDAR';
-        // Creating a scenario requires to: create a sandbox, a timetable, link both and finally create the scenario
-        const sandbox = await postTrainScheduleSets({
-          trainScheduleSetForm: {
-            name: null, // sandbox never has a name
-            description: '',
-            published: false,
-            timetable_type,
-          },
-        }).unwrap();
-        const timetable = await postTimetable({
-          timetableForm: { timetable_type },
-        }).unwrap();
-        await linkTrainScheduleSetToTimetable({
-          id: timetable.timetable_id,
-          body: { train_schedule_set_ids: [sandbox.id] },
-        }).unwrap();
+        // With multiple timetables, the scenario is created without timetable:
+        let timetableIds: number[] = [];
+        if (!multipleTimetablesActivated) {
+          const timetable_type = currentScenario.timetable_type || 'CALENDAR';
+          // Creating a scenario requires to: create a sandbox, a timetable, link both and finally create the scenario
+          const sandbox = await postTrainScheduleSets({
+            trainScheduleSetForm: {
+              name: null, // sandbox never has a name
+              description: '',
+              published: false,
+              timetable_type,
+            },
+          }).unwrap();
+          const timetable = await postTimetable({
+            timetableForm: { timetable_type },
+          }).unwrap();
+          await linkTrainScheduleSetToTimetable({
+            id: timetable.timetable_id,
+            body: { train_schedule_set_ids: [sandbox.id] },
+          }).unwrap();
+          timetableIds = [timetable.timetable_id];
+        }
         const newScenario = await postScenario({
           scenarioCreateForm: {
             description: currentScenario.description || '',
@@ -179,7 +185,7 @@ const AddOrEditScenarioModal = ({
             name: currentScenario.name,
             study_id: studyId,
             tags: currentScenario.tags || [],
-            timetable_ids: [timetable.timetable_id],
+            timetable_ids: timetableIds,
             electrical_profile_set_id: currentScenario.electrical_profile_set_id,
           },
         }).unwrap();
@@ -384,7 +390,7 @@ const AddOrEditScenarioModal = ({
           />
         </div>
 
-        {hourlyTimetableActivated && !editionMode ? (
+        {hourlyTimetableActivated && !multipleTimetablesActivated && !editionMode ? (
           <div className="scenario-add-or-edit-modal-system-hour-section">
             <RadioGroup
               value={currentScenario.timetable_type}
