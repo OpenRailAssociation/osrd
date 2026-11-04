@@ -60,16 +60,16 @@ const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps)
                 if (itemType === 'SpeedSection') {
                   setItemsState({
                     type: 'ready',
-                    itemEntities: (res[itemType] || []).map(
-                      (s) => entities[s] as SpeedSectionEntity
-                    ),
+                    itemEntities: (res[itemType] || [])
+                      .filter((s) => s in entities)
+                      .map((s) => entities[s] as SpeedSectionEntity),
                   });
                 } else {
                   setItemsState({
                     type: 'ready',
-                    itemEntities: (res[itemType] || []).map(
-                      (s) => entities[s] as ElectrificationEntity
-                    ),
+                    itemEntities: (res[itemType] || [])
+                      .filter((s) => s in entities)
+                      .map((s) => entities[s] as ElectrificationEntity),
                   });
                 }
               })

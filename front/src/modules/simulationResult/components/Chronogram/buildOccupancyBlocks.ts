@@ -1,8 +1,8 @@
 import type { LevelCrossingData, LevelCrossingOccupancies } from '@osrd-project/ui-charts';
 
 import type {
-  InfraObjectWithGeometry,
   LevelCrossing,
+  PostInfraByInfraIdObjectsAndObjectTypeApiResponse,
   PostLevelCrossingOccupancyApiResponse,
 } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
@@ -47,22 +47,25 @@ function computeOccupanciesBlocks(
   return result;
 }
 
+/**
+ * Level crossings without metadata (unknown ids are returned as null by editoast) are ignored.
+ */
 export function formatLevelCrossingOccupanciesForChronogram(
   levelCrossingOccupancies: PostLevelCrossingOccupancyApiResponse,
-  levelCrossingsMetadata: InfraObjectWithGeometry[],
+  levelCrossingsMetadata: PostInfraByInfraIdObjectsAndObjectTypeApiResponse,
   trainNameById: Map<number, string>
 ): LevelCrossingData[] {
-  const levelCrossingsRailJsonById = levelCrossingsMetadata.reduce<Record<string, LevelCrossing>>(
-    (acc, metadata) => {
-      acc[metadata.obj_id] = metadata.railjson as LevelCrossing;
-      return acc;
-    },
-    {}
-  );
   return Object.entries(levelCrossingOccupancies)
-    .map(([levelCrossingId, occupancies]) => ({
-      name: levelCrossingsRailJsonById[levelCrossingId].name,
-      occupancies: computeOccupanciesBlocks(occupancies, trainNameById),
-    }))
+    .flatMap(([levelCrossingId, occupancies]) => {
+      const metadata = levelCrossingsMetadata[levelCrossingId];
+      if (!metadata) return [];
+      const levelCrossing = metadata.railjson as LevelCrossing;
+      return [
+        {
+          name: levelCrossing.name,
+          occupancies: computeOccupanciesBlocks(occupancies, trainNameById),
+        },
+      ];
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 }

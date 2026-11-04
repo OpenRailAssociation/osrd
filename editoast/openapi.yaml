@@ -2546,6 +2546,7 @@ paths:
       tags:
       - infra
       summary: Retrieves specific infra objects
+      description: The objects are returned indexed by their id, with `null` for each id that is not in the infra.
       parameters:
       - name: infra_id
         in: path
@@ -2569,17 +2570,19 @@ paths:
         required: true
       responses:
         '200':
-          description: The list of objects
+          description: The objects indexed by their id
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/InfraObjectWithGeometry'
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/NullableInfraObject'
+                propertyNames:
+                  type: string
         '400':
           description: Duplicate object ids provided
         '404':
-          description: Object ID or infra ID invalid
+          description: Infra ID invalid
   /infra/{infra_id}/objects/{object_type}/ids:
     get:
       tags:
@@ -9114,7 +9117,6 @@ components:
       - $ref: '#/components/schemas/EditoastErrorInvalidInput'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
-      - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
       - $ref: '#/components/schemas/EditoastIconErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastInfraApiErrorDatabase'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
@@ -9368,31 +9370,6 @@ components:
           type: string
           enum:
           - editoast:infra:objects:DuplicateIdsProvided
-    EditoastGetObjectsErrorsObjectIdNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastGetObjectsErrorsObjectIdNotFoundContext
-          required:
-          - object_id
-          properties:
-            object_id:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:infra:objects:ObjectIdNotFound
     EditoastIconErrorsFileNotFound:
       type: object
       required:
@@ -14103,6 +14080,11 @@ components:
     NonBlankString:
       type: string
       minLength: 1
+    NullableInfraObject:
+      oneOf:
+      - type: 'null'
+      - $ref: '#/components/schemas/InfraObjectWithGeometry'
+        description: An infra object, `null` if it is not in the infra
     ObjectRef:
       type: object
       required:

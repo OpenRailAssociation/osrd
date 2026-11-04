@@ -120,8 +120,7 @@
         "LineNotFound": "No line with code {{line_code}} found"
       },
       "objects": {
-        "DuplicateIdsProvided": "Duplicate object ids provided",
-        "ObjectIdNotFound": "Object '{{object_id}}' not found"
+        "DuplicateIdsProvided": "Duplicate object ids provided"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "Ending track location was not found",

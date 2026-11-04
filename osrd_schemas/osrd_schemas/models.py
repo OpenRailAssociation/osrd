@@ -1028,22 +1028,6 @@ class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
     )
 
 
-class EditoastGetObjectsErrorsObjectIdNotFoundContext(BaseModel):
-    object_id: StrictStr
-
-
-class EditoastGetObjectsErrorsObjectIdNotFound(BaseModel):
-    context: Annotated[
-        EditoastGetObjectsErrorsObjectIdNotFoundContext | None,
-        Field(title="EditoastGetObjectsErrorsObjectIdNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[400] = 400
-    type: Literal["editoast:infra:objects:ObjectIdNotFound"] = (
-        "editoast:infra:objects:ObjectIdNotFound"
-    )
-
-
 class EditoastIconErrorsFileNotFoundContext(BaseModel):
     file: StrictStr
 
@@ -5152,7 +5136,6 @@ class EditoastError(
         | EditoastErrorInvalidInput
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
-        | EditoastGetObjectsErrorsObjectIdNotFound
         | EditoastIconErrorsFileNotFound
         | EditoastInfraApiErrorDatabase
         | EditoastInfraApiErrorNotFound
@@ -5327,7 +5310,6 @@ class EditoastError(
         | EditoastErrorInvalidInput
         | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
-        | EditoastGetObjectsErrorsObjectIdNotFound
         | EditoastIconErrorsFileNotFound
         | EditoastInfraApiErrorDatabase
         | EditoastInfraApiErrorNotFound
@@ -7862,6 +7844,10 @@ class InfraObjectWithGeometry(BaseModel):
     """
     obj_id: StrictStr
     railjson: dict[str, Any]
+
+
+class NullableInfraObject(RootModel[InfraObjectWithGeometry | None]):
+    root: InfraObjectWithGeometry | None
 
 
 class OperationCreate11(InfraObjectOperationalPoint, OperationCreate1):

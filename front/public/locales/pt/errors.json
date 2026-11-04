@@ -113,8 +113,7 @@
         "LineNotFound": "Nenhuma linha encontrada com o código {{line_code}}"
       },
       "objects": {
-        "DuplicateIdsProvided": "Identificadores de objeto duplicados fornecidos",
-        "ObjectIdNotFound": "Objeto '{{object_id}}' não encontrado"
+        "DuplicateIdsProvided": "Identificadores de objeto duplicados fornecidos"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "Localização do fim da secção de via não encontrada",

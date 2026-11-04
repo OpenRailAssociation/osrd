@@ -111,8 +111,7 @@
         "LineNotFound": "Keine Strecke mit Code {{line_code}} gefunden"
       },
       "objects": {
-        "DuplicateIdsProvided": "Doppelte Objekt-IDs angegeben",
-        "ObjectIdNotFound": "Objekt '{{object_id}}' nicht gefunden"
+        "DuplicateIdsProvided": "Doppelte Objekt-IDs angegeben"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "Position des Gleisabschnitt-Ende nicht gefunden",
