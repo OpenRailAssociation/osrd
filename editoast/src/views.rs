@@ -222,6 +222,7 @@ fn service_router() -> server::router::DocumentedRouter {
                                 path.route("/", post!(timetable::linkings::create))
                             })
                     })
+                    .route("/{id}", patch!(timetable::patch))
             })
             //
             // train schedule exception
