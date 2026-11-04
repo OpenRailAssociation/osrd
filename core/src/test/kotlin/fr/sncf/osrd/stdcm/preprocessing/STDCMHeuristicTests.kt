@@ -17,6 +17,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelopeImpl
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
+import fr.sncf.osrd.train.TestTrains.VERY_SHORT_FAST_TRAIN
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Distance
@@ -263,6 +264,97 @@ class STDCMHeuristicTests {
         assertEquals(
             Double.POSITIVE_INFINITY,
             getLocationRemainingTime(infra, wrongPathExplorer, 50.meters, heuristics),
+        )
+    }
+
+    @Test
+    fun backtrackTest() {
+        /*
+        a ------> b ------> c
+           ^           ^
+           0           1 (backtrack)
+        a2 <----- b2 <----- c2
+               ^
+               2
+         */
+        val infra = DummyInfra()
+        val ab = infra.addBlock("a", "b", allowedSpeed = 1.0)
+        val bc = infra.addBlock("b", "c", allowedSpeed = 1.0)
+        val cb = infra.addBlock("c2", "b2", allowedSpeed = 1.0, oppositeOf = bc)
+        val ba = infra.addBlock("b2", "a2", allowedSpeed = 1.0, oppositeOf = ab)
+
+        val steps =
+            listOf(
+                ExplorerStep(listOf(BlockLocation(ab, Offset(30.meters)))),
+                ExplorerStep(
+                    listOf(
+                        BlockLocation(bc, Offset(50.meters)),
+                        BlockLocation(cb, Offset(50.meters)),
+                    ),
+                    duration = 0.0,
+                    stop = true,
+                    canBacktrack = true,
+                ),
+                ExplorerStep(listOf(BlockLocation(ba, Offset(20.meters))), 1.0, true),
+            )
+
+        val consistSchedule = ConsistSchedule(List(3) { VERY_SHORT_FAST_TRAIN }, null)
+        val heuristic =
+            STDCMHeuristicBuilder(
+                    infra,
+                    infra,
+                    steps,
+                    Double.POSITIVE_INFINITY,
+                    maxSpeedEnvBuilder =
+                        CachedBlockMaxSpeedEnvBuilder(infra, infra, consistSchedule, steps, 2.0),
+                    allowance = null,
+                )
+                .build()
+
+        val trainLength = VERY_SHORT_FAST_TRAIN.length.meters
+        var explorers =
+            initInfraExplorers(
+                infra,
+                infra,
+                trainLength,
+                steps.first().locations.first(),
+                steps,
+            )
+        while (true) {
+            // Extend until the end
+            val next = explorers.flatMap { it.cloneAndExtendLookahead() }
+            if (next.isEmpty()) break
+            explorers = next
+        }
+        val explorer = explorers.single()
+        val fullTrainPath = explorer.buildFullPath(infra, infra)
+
+        val expectedTrainPathLength = (70 + 50 + 50 + 20 - trainLength.meters).meters
+        assertEquals(expectedTrainPathLength, fullTrainPath.length.meters)
+
+        val stopDelta = 1
+        val expectedTotalTravelTime = expectedTrainPathLength.meters + 2 * stopDelta
+        assertEquals(expectedTotalTravelTime, heuristic.bestTravelTime)
+
+        // Current block = 0
+        assertEquals(
+            expectedTotalTravelTime - 20.0,
+            getLocationRemainingTime(infra, explorer, 50.meters, heuristic),
+        )
+        explorer.moveForward() // Block = 1
+        assertEquals(
+            expectedTotalTravelTime - 70.0 - 10.0,
+            getLocationRemainingTime(infra, explorer, 10.meters, heuristic),
+        )
+        explorer.moveForward() // Block = 2
+        assertEquals(
+            40.0 + 20.0 + stopDelta,
+            getLocationRemainingTime(infra, explorer, 60.meters, heuristic),
+        )
+        explorer.moveForward() // Block = 3
+        assertEquals(
+            15.0 + stopDelta,
+            getLocationRemainingTime(infra, explorer, 5.meters, heuristic),
         )
     }
 
