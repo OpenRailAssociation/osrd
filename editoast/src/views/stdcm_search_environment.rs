@@ -1,3 +1,4 @@
+use crate::views::DatabaseError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -12,7 +13,8 @@ use axum::response::Response;
 use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPool;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use itertools::Itertools as _;
 use models::prelude::*;
 use models::stdcm_search_environment::StdcmSearchEnvironment;
@@ -30,17 +32,24 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "stdcm_search_env")]
-enum StdcmSearchEnvError {
-    /// Could not find the stdcm search env with the given ID
-    #[error("Stdcm search environment '{env_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { env_id: i64 },
+#[derive(Debug, Error, ViewError)]
+#[error("Stdcm search environment '{env_id}', could not be found")]
+#[view_error(status = NOT_FOUND, context, path = stdcm_search_env::not_found)]
+pub(in crate::views) struct StdcmSearchEnvNotFound {
+    env_id: i64,
+}
 
+#[derive(Debug, Error, ViewError, From)]
+pub(in crate::views) enum StdcmSearchEnvError {
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] models::Error),
+    NotFound(
+        #[from]
+        #[view_error]
+        StdcmSearchEnvNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Default, Deserialize, Serialize, ToSchema)]
@@ -204,12 +213,13 @@ impl From<models::stdcm_search_environment::StdcmSearchEnvironment>
     request_body = StdcmSearchEnvironmentCreateForm,
     responses(
         (status = 201, body = StdcmSearchEnvironment),
+        DatabaseError,
     )
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let conn = &mut db_pool.get().await?;
     let changeset: Changeset<StdcmSearchEnvironment> = form.into();
     Ok((StatusCode::CREATED, Json(changeset.create(conn).await?)))
@@ -221,12 +231,13 @@ pub(in crate::views) async fn create(
     tag = "stdcm_search_environment",
     responses(
         (status = 200, body = StdcmSearchEnvironmentResponse),
-        (status = 204, description = "No search environment was created")
+        (status = 204, description = "No search environment was created"),
+        DatabaseError,
     )
 )]
 pub(in crate::views) async fn retrieve_latest(
     State(db_pool): State<Arc<DbConnectionPool>>,
-) -> Result<Response> {
+) -> Result<Response, DatabaseError> {
     let conn = &mut db_pool.get().await?;
     let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
     if let Some(search_env) = search_env {
@@ -250,15 +261,16 @@ pub(in crate::views) struct StdcmSearchEnvIdParam {
     params(StdcmSearchEnvIdParam),
     responses(
         (status = 204, description = "The stdcm search environment was deleted successfully"),
+        StdcmSearchEnvError,
     )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(StdcmSearchEnvIdParam { env_id }): Path<StdcmSearchEnvIdParam>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, StdcmSearchEnvError> {
     let conn = &mut db_pool.get().await?;
-    StdcmSearchEnvironment::delete_static_or_fail(conn, env_id, || StdcmSearchEnvError::NotFound {
-        env_id,
+    StdcmSearchEnvironment::delete_static_or_fail(conn, env_id, || {
+        StdcmSearchEnvError::NotFound(StdcmSearchEnvNotFound { env_id })
     })
     .await?;
 
@@ -281,12 +293,13 @@ pub(in crate::views) struct StdcmSearchEnvListResponse {
     params(PaginationQueryParams<1000>),
     responses(
         (status = 200, body = inline(StdcmSearchEnvListResponse), description = "The paginated list of all existing stdcm search environments"),
+        DatabaseError,
     )
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
-) -> Result<Json<StdcmSearchEnvListResponse>> {
+) -> Result<Json<StdcmSearchEnvListResponse>, DatabaseError> {
     let mut conn = db_pool.get().await?;
     let settings = page_settings
         .into_selection_settings()
@@ -467,7 +480,7 @@ pub mod tests {
             .assert_status_internal_server_error()
             .json();
 
-        assert_eq!(&response.error_type, "editoast:ModelError")
+        assert_eq!(&response.error_type, "editoast:database:internal")
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

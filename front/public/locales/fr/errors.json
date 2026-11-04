@@ -284,8 +284,7 @@
       "NotUser": "La création d'une requête nécessite un utilisateur authentifié"
     },
     "stdcm_search_env": {
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Environnement de recherche stdcm '{{env_id}}' non trouvé"
+      "not_found": "Environnement de recherche stdcm '{{env_id}}' non trouvé"
     },
     "study": {
       "Database": "Erreur interne (base de données)",

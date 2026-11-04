@@ -2226,33 +2226,6 @@ class EditoastStdcmRequestPostErrorNotUser(BaseModel):
     )
 
 
-class EditoastStdcmSearchEnvErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmSearchEnvErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_search_env:Database"] = (
-        "editoast:stdcm_search_env:Database"
-    )
-
-
-class EditoastStdcmSearchEnvErrorNotFoundContext(BaseModel):
-    env_id: StrictInt
-
-
-class EditoastStdcmSearchEnvErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastStdcmSearchEnvErrorNotFoundContext | None,
-        Field(title="EditoastStdcmSearchEnvErrorNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:stdcm_search_env:NotFound"] = (
-        "editoast:stdcm_search_env:NotFound"
-    )
-
-
 class EditoastStudyErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStudyErrorDatabaseContext")
@@ -5267,8 +5240,6 @@ class EditoastError(
         | EditoastStdcmRequestDeleteErrorNotFound
         | EditoastStdcmRequestPostErrorDatabase
         | EditoastStdcmRequestPostErrorNotUser
-        | EditoastStdcmSearchEnvErrorDatabase
-        | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
         | EditoastStudyErrorNotFound
         | EditoastStudyErrorProjectNotFound
@@ -5446,8 +5417,6 @@ class EditoastError(
         | EditoastStdcmRequestDeleteErrorNotFound
         | EditoastStdcmRequestPostErrorDatabase
         | EditoastStdcmRequestPostErrorNotUser
-        | EditoastStdcmSearchEnvErrorDatabase
-        | EditoastStdcmSearchEnvErrorNotFound
         | EditoastStudyErrorDatabase
         | EditoastStudyErrorNotFound
         | EditoastStudyErrorProjectNotFound
