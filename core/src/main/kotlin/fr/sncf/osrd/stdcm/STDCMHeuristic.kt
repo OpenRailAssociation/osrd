@@ -15,6 +15,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.stdcm.infra_exploration.getOppositeBlockLocations
 import fr.sncf.osrd.utils.TIME_EPSILON
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -289,8 +290,15 @@ class STDCMHeuristicBuilder(
                     )
                 if (newBlock != null) {
                     res.add(newBlock)
-                    // The opposite blocks end at the backtrack location: their remaining time
-                    // starts from there instead of the current block start
+                    // The opposite blocks end at the backtrack location. The head of the train
+                    // then restarts at the former tail location, one train length further.
+                    val trainLength =
+                        maxSpeedEnvBuilder.consistSchedule.rollingStocks.first().length.meters
+                    val restartOffset =
+                        Offset.min(
+                            newStep.blockLocation.offset + trainLength,
+                            blockInfra.getBlockLength(block),
+                        )
                     val remainingTimeAtBacktrack =
                         newBlock.remainingTimeAtBlockStart -
                             maxSpeedEnvBuilder.getBlockTime(
@@ -298,7 +306,7 @@ class STDCMHeuristicBuilder(
                                 newStep.stepIndex,
                                 predecessorEndSpeed,
                                 allowance,
-                                newStep.blockLocation.offset,
+                                restartOffset,
                             )
                     // Generate the opposing blocks for the backtracking.
                     val oppositeBlockLocations =
