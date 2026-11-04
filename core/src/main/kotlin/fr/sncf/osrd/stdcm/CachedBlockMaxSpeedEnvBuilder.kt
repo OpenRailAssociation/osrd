@@ -132,8 +132,8 @@ data class CachedBlockMaxSpeedEnvBuilder(
         step: Int,
         endSpeed: Double?,
         allowanceValue: AllowanceValue? = null,
-        endOffset: Offset<Block> = blockInfra.getBlockLength(block),
         startOffset: Offset<Block> = Offset.zero(),
+        endOffset: Offset<Block> = blockInfra.getBlockLength(block),
     ): Double {
         if (endOffset.distance == 0.meters) return 0.0
         if (startOffset >= endOffset) return 0.0

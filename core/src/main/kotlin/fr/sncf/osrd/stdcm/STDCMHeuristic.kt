@@ -66,31 +66,51 @@ data class STDCMAStarHeuristic(
         val lookahead = edge.infraExplorer.getLookahead()
         val currentBlock = edge.block
 
-        val currentAndLookaheadBlocksExceptLast = mutableListOf(currentBlock)
-        for (blockRange in lookahead) currentAndLookaheadBlocksExceptLast.add(blockRange.value)
+        val currentRange = edge.infraExplorer.getCurrentBlockRange()
+        val currentAndLookaheadRangesExceptLast = mutableListOf(currentRange)
+        currentAndLookaheadRangesExceptLast.addAll(lookahead)
         // We don't consider the time of the last lookahead block to avoid issues
         // if it contains the destination, and we don't need it (the destination is
         // already locked-in).
-        val lastBlock = currentAndLookaheadBlocksExceptLast.removeLast()
+        val lastRange = currentAndLookaheadRangesExceptLast.removeLast()
+        val lastBlock = lastRange.value
 
         // Account for the steps that will be passed in the lookahead
-        val expectedIndex = getExpectedStepIndex(currentAndLookaheadBlocksExceptLast, stepTracker)
+        val expectedIndex =
+            getExpectedStepIndex(currentAndLookaheadRangesExceptLast.map { it.value }, stepTracker)
         if (expectedIndex >= remainingTimeEstimations.size) return 0.0
 
         val estimatedTimeAfterLastBlockStart =
             remainingTimeEstimations[expectedIndex][lastBlock] ?: return Double.POSITIVE_INFINITY
+        val estimatedTimeAfterLastRangeStart =
+            estimatedTimeAfterLastBlockStart -
+                maxSpeedEnvBuilder.getBlockTime(
+                    lastBlock,
+                    expectedIndex,
+                    null,
+                    allowanceValue,
+                    endOffset = lastRange.objectBegin,
+                )
 
         // Compute the time it takes from the current point until the start
-        // of the last block of the lookahead, then from that point to the destination.
+        // of the last range of the lookahead, then from that point to the destination.
         var startTimeOfLastLookaheadBlock = 0.0
         // If we're at the destination, endSpeed should be 0.0 rather than null. However, if we are
         // at the destination, there'll be a stop which is taken into account in MaxSpeedEnvBuilder,
         // so it's fine as is.
         var endSpeed =
             maxSpeedEnvBuilder.getMaxSpeedEnvelope(lastBlock, expectedIndex, null).beginSpeed
-        for (block in currentAndLookaheadBlocksExceptLast.asReversed()) {
+        for (range in currentAndLookaheadRangesExceptLast.asReversed()) {
+            val block = range.value
             startTimeOfLastLookaheadBlock +=
-                maxSpeedEnvBuilder.getBlockTime(block, expectedIndex, endSpeed, allowanceValue)
+                maxSpeedEnvBuilder.getBlockTime(
+                    block,
+                    expectedIndex,
+                    endSpeed,
+                    allowanceValue,
+                    startOffset = range.objectBegin,
+                    endOffset = range.objectEnd,
+                )
             endSpeed =
                 maxSpeedEnvBuilder.getMaxSpeedEnvelope(block, expectedIndex, endSpeed).beginSpeed
         }
@@ -100,11 +120,12 @@ data class STDCMAStarHeuristic(
                 expectedIndex,
                 null,
                 allowanceValue,
-                offset ?: blockInfra.getBlockLength(currentBlock),
+                startOffset = currentRange.objectBegin,
+                endOffset = offset ?: blockInfra.getBlockLength(currentBlock),
             )
 
         val remainingTime =
-            startTimeOfLastLookaheadBlock - timeAtCurrentOffset + estimatedTimeAfterLastBlockStart
+            startTimeOfLastLookaheadBlock - timeAtCurrentOffset + estimatedTimeAfterLastRangeStart
 
         // If remaining travel time is < 0, end is before start (probably on the same block), so
         // it's not reachable (current path processing excludes loops)
@@ -190,7 +211,13 @@ class STDCMHeuristicBuilder(
                 val remainingTimeSinceBlockStart =
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
                 val timeSinceBlockStart =
-                    maxSpeedEnvBuilder.getBlockTime(it.edge, 0, null, allowance, it.offset)
+                    maxSpeedEnvBuilder.getBlockTime(
+                        it.edge,
+                        0,
+                        null,
+                        allowance,
+                        endOffset = it.offset,
+                    )
                 val remainingTravelTime = remainingTimeSinceBlockStart - timeSinceBlockStart
                 // If remaining travel time is < 0, end is before start (probably on the same
                 // block), so it's not reachable (current path processing excludes loops)
@@ -292,6 +319,8 @@ class STDCMHeuristicBuilder(
                     res.add(newBlock)
                     // The opposite blocks end at the backtrack location. The head of the train
                     // then restarts at the former tail location, one train length further.
+                    // TODO: this is still pessimistic if the train covers more than a single block
+                    // during the backtrack
                     val trainLength =
                         maxSpeedEnvBuilder.consistSchedule.rollingStocks.first().length.meters
                     val restartOffset =
@@ -306,9 +335,11 @@ class STDCMHeuristicBuilder(
                                 newStep.stepIndex,
                                 predecessorEndSpeed,
                                 allowance,
-                                restartOffset,
+                                endOffset = restartOffset,
                             )
                     // Generate the opposing blocks for the backtracking.
+                    // TODO: this is pessimistic if the train covers more than a single block during
+                    // the backtrack
                     val oppositeBlockLocations =
                         getOppositeBlockLocations(newStep.blockLocation, blockInfra, rawInfra)
                     for (oppositeBlock in oppositeBlockLocations) {
@@ -399,8 +430,8 @@ class STDCMHeuristicBuilder(
                     index,
                     endSpeed,
                     allowance,
-                    endOffset,
-                    Offset.zero(),
+                    startOffset = Offset.zero(),
+                    endOffset = endOffset,
                 ),
             endSpeed,
         )
