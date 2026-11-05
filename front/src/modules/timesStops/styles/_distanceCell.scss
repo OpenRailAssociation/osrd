@@ -1,0 +1,66 @@
+.distance-cell {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  font-family: inherit, monospace;
+  border-radius: 4px;
+
+  .input,
+  .display {
+    color: var(--primary60);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    padding-bottom: 11px;
+    transform: translate(-50%, -50%);
+    width: 84px;
+    text-align: center;
+  }
+
+  .input {
+    z-index: 2;
+    background: transparent;
+    caret-color: transparent;
+    color: transparent;
+    cursor: pointer;
+    padding-right: calc(2ch + 3px);
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .display {
+    color: var(--primary60);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .value {
+      min-width: 1ch;
+
+      .custom-caret {
+        width: 1px;
+        margin-right: -1px;
+        padding: 0;
+        height: 18px;
+        z-index: 3;
+        background-color: #006dff;
+      }
+    }
+
+    .value,
+    .unit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .input-cell-placeholder {
+    position: relative;
+    z-index: 3;
+  }
+}

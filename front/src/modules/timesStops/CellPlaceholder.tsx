@@ -1,7 +1,7 @@
 import { Plus } from '@osrd-project/ui-icons';
 
 type CellPlaceholderProps = {
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 const CellPlaceholder = ({ onClick }: CellPlaceholderProps) => (
