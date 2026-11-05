@@ -1,8 +1,9 @@
-import { Dialog } from '@osrd-project/ui-core';
-import { LinkExternal, X } from '@osrd-project/ui-icons';
+import { Dialog, SegmentedControl } from '@osrd-project/ui-core';
+import { LinkExternal, Sync, X } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import dayjs from 'dayjs';
-import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
+import calendar from 'dayjs/plugin/calendar';
 import { useTranslation } from 'react-i18next';
 
 import useStdcmRequestsSent from 'applications/stdcm/hooks/useStdcmRequestsSent';
@@ -12,6 +13,8 @@ dayjs.extend(calendar);
 type StdcmRequestsSentModalProps = {
   onClose: () => void;
 };
+
+type SegmentedControlOption = { value: string; label: string };
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
@@ -27,7 +30,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData } = useStdcmRequestsSent();
+  const { requestsSentData, isFetching, refetchData } = useStdcmRequestsSent();
 
   const requestsSentRows = () =>
     requestsSentData.map((request, index) => {
@@ -96,7 +99,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
         <>
-          <div className="stdcm-requests-sent-modal-header-left">
+          <div className="stdcm-requests-sent-modal-header-section">
             <h5>{t('requestsSentModal.title')}</h5>
             {requestsSentData.length !== 0 && (
               <a
@@ -109,9 +112,20 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
               </a>
             )}
           </div>
-          <button type="button" onClick={onClose}>
-            <X size="lg" />
-          </button>
+          <div className="stdcm-requests-sent-modal-header-section">
+            <button
+              className={cx('stdcm-requests-sent-sync-button', { spinning: isFetching })}
+              type="button"
+              onClick={refetchData}
+              disabled={isFetching}
+            >
+              <Sync />
+            </button>
+            <div className="stdcm-requests-my-requests">{t('requestsSentModal.myRequests')}</div>
+            <button type="button" onClick={onClose}>
+              <X size="lg" />
+            </button>
+          </div>
         </>
       }
       footer={null}
