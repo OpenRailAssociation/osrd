@@ -1,0 +1,68 @@
+body:has(.admin-dashboard) {
+  background-color: rgb(235, 235, 234);
+}
+
+.admin-dashboard {
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.admin-dashboard-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  font-size: 0.875rem;
+
+  .osrd-brand-name {
+    margin: 6px 24px;
+    color: var(--black25);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.22px;
+  }
+
+  .header-tools {
+    display: flex;
+    align-items: center;
+  }
+
+  .help-button {
+    width: 18px;
+    height: 18px;
+    box-shadow: 0 0 0 3px rgb(185 199 196 / 0.5);
+    border-radius: 50%;
+    background-color: white;
+    color: #b9c7c4; /* TODO: check with @tsailly to see if we have a color from the design system here */
+    font-weight: 600;
+    display: grid;
+    place-content: center;
+  }
+
+  .header-username {
+    margin: 9px 16px;
+    color: var(--black25);
+  }
+}
+
+div:has(> .admin-dashboard-users-table) {
+  width: 60%;
+  margin: 48px auto;
+  background-color: rgba(255, 255, 255, 1);
+  overflow: hidden;
+}
+
+.admin-dashboard-page {
+  padding: 20px;
+}
+
+.admin-user-list {
+  width: 100%;
+  max-width: 1024px;
+  margin-inline: auto;
+  border-radius: 8px;
+  box-shadow:
+    0 2px 4px 0 rgba(0, 0, 0, 0.16),
+    0 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0 1px 0 0 inset rgba(255, 255, 255, 1);
+  padding-bottom: 24px;
+  background-color: rgba(235, 235, 234, 1);
+}
