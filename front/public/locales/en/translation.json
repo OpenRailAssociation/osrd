@@ -878,6 +878,7 @@
     "calculatedArrivalTime": "calculated arrival time",
     "calculatedBaseArrival": "calculated base arrival",
     "calculatedDepartureTime": "calculated departure time",
+    "calculatedPosition": "calculated distance",
     "clearRequestedArrivalTime": "Clear the requested arrival time",
     "clearRequestedBaseArrival": "Clear requested base arrival",
     "clearRequestedDepartureTime": "Clear the requested departure time",
@@ -928,6 +929,7 @@
     "requestedArrival": "requested arrival time",
     "requestedBaseArrival": "requested base arrival",
     "requestedDeparture": "requested depart. time",
+    "requestedPosition": "requested distance",
     "requestedTheoreticalMargin": "requested theoretical margin",
     "shortSlipDistance": "short slip distance",
     "statusMessage": {
