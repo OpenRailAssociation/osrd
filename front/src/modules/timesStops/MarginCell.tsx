@@ -216,7 +216,7 @@ const MarginCellReadOnly = ({
   const polarity = marginInSeconds >= 0 ? '+' : '-';
   const abs = Math.abs(marginInSeconds);
   const minutes = String(Math.floor(abs / 60)).padStart(2, '0');
-  const seconds = String(Math.floor(abs % 60)).padStart(2, '0');
+  const seconds = String(Math.round(abs % 60)).padStart(2, '0');
 
   return (
     <div className="mono margin-cell" data-testid={dataTestId}>
