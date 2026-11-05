@@ -6,7 +6,7 @@ import { isNil, toInteger } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
 import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
@@ -21,6 +21,7 @@ import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
+import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles';
 import useCheckUserPrivileges from 'common/authorization/hooks/useCheckUserPrivileges';
 import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -409,6 +410,9 @@ const Editor = () => {
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [infra]);
+
+  const { infraEditorAllowed } = useAllowedUserRoles();
+  if (!infraEditorAllowed) return <Navigate to="/403" replace />;
 
   return (
     <EditorContext.Provider value={extendedContext}>
