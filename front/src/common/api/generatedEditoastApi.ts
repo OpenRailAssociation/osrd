@@ -108,6 +108,10 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
+      getAuthzUsers: build.query<GetAuthzUsersApiResponse, GetAuthzUsersApiArg>({
+        query: () => ({ url: `/authz/users` }),
+        providesTags: ['authz'],
+      }),
       postAuthzUsers: build.mutation<PostAuthzUsersApiResponse, PostAuthzUsersApiArg>({
         query: (queryArg) => ({
           url: `/authz/users`,
@@ -1801,6 +1805,18 @@ export type PostAuthzUserInfoApiArg = {
     ids?: number[];
   };
 };
+export type GetAuthzUsersApiResponse =
+  /** status 200 List all the users with their identities, roles and groups */ {
+    groups: {
+      id: number;
+      name: string;
+    }[];
+    id: number;
+    identities: string[];
+    name: string;
+    roles: Role[];
+  }[];
+export type GetAuthzUsersApiArg = void;
 export type PostAuthzUsersApiResponse = /** status 201 User created */ {
   groups: {
     id: number;
