@@ -26,3 +26,7 @@ export const HOME_URLS = {
 };
 
 export const INFRA_EDITOR_URL = '/editor';
+
+export const MAP_URL = '/map/';
+
+export const ROLLING_STOCK_EDITOR_URL = '/rolling-stock-editor/';

@@ -1,7 +1,7 @@
 import { type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-import { HOME_URLS } from '../assets/constants/homepage-const';
+import { HOME_URLS, INFRA_EDITOR_URL, MAP_URL } from '../assets/constants/homepage-const';
 import CommonPage from './common-page';
 
 class HomePage extends CommonPage {
@@ -14,6 +14,8 @@ class HomePage extends CommonPage {
   private readonly impersonationSuggestions: Locator;
   private readonly stopImpersonationButton: Locator;
   private readonly notAuthorizedWarning: Locator;
+  private readonly mapInfrasButton: Locator;
+  private readonly infraList: Locator;
   readonly operationalStudiesTile: Locator;
   readonly infraEditorTile: Locator;
   readonly rollingStockEditorTile: Locator;
@@ -36,6 +38,8 @@ class HomePage extends CommonPage {
     this.impersonationSuggestions = page.getByTestId('impersonation-item');
     this.stopImpersonationButton = page.getByTestId('stop-impersonation-btn');
     this.notAuthorizedWarning = page.getByTestId('not-authorized-warning');
+    this.mapInfrasButton = page.getByTestId('map-infras-button');
+    this.infraList = page.getByTestId('infra-list');
   }
 
   get appTiles(): Locator[] {
@@ -70,6 +74,20 @@ class HomePage extends CommonPage {
   async expectTileEnabled(tile: Locator): Promise<void> {
     await expect(tile).not.toHaveAttribute('aria-disabled');
     await expect(tile.locator(this.notAuthorizedWarning)).toHaveCount(0);
+  }
+
+  async openInfraEditorAndCheckInfraListIsDisplayed(): Promise<void> {
+    await this.page.goto(INFRA_EDITOR_URL);
+    await expect(this.page).toHaveURL(INFRA_EDITOR_URL);
+    await this.mapInfrasButton.click();
+    await expect(this.infraList).toBeVisible();
+  }
+
+  async openMapAndCheckInfraListIsDisplayed(): Promise<void> {
+    await this.page.goto(MAP_URL);
+    await expect(this.page).toHaveURL(HOME_URLS.map);
+    await this.mapInfrasButton.click();
+    await expect(this.infraList).toBeVisible();
   }
 
   async goToHomePage(): Promise<void> {

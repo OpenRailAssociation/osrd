@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 
-import { HOME_URLS, INFRA_EDITOR_URL } from '../assets/constants/homepage-const';
+import { HOME_URLS, INFRA_EDITOR_URL, MAP_URL } from '../assets/constants/homepage-const';
 import { E2E_USERS } from '../assets/constants/permission-const';
 import { STDCM_URL } from '../assets/constants/stdcm/stdcm-const';
 import { PROJECT_URLS } from '../assets/operation-studies/project-const';
@@ -33,7 +33,7 @@ test.describe('Role gating', { tag: ['@home', '@permissions'] }, () => {
 
   /** *************** Test 3 **************** */
   // Waiting for confirmation whether #19395 is a bug or not
-  test.fixme('A Stdcm only user cannot open the rolling stock and infrastructure editors', async ({
+  test.fixme('A Stdcm only user cannot open the rolling stock editor, the infrastructure editor and the map', async ({
     page,
     homePage,
     rollingStockEditorPage,
@@ -45,16 +45,29 @@ test.describe('Role gating', { tag: ['@home', '@permissions'] }, () => {
 
     await page.goto(INFRA_EDITOR_URL);
     await homePage.expectAccessDeniedPage();
+
+    await page.goto(MAP_URL);
+    await homePage.expectAccessDeniedPage();
   });
 
   /** *************** Test 4 **************** */
-  test('An Operational Studies only user has STDCM greyed out', async ({ page, homePage }) => {
+  test('An Operational Studies only user can open its applications but not STDCM', async ({
+    page,
+    homePage,
+    projectPage,
+    rollingStockEditorPage,
+  }) => {
     await homePage.impersonateUser(E2E_USERS.projectOutsider);
 
     await homePage.expectTileDisabled(homePage.stdcmTile);
     for (const tile of homePage.appTiles.filter((appTile) => appTile !== homePage.stdcmTile)) {
       await homePage.expectTileEnabled(tile);
     }
+
+    await projectPage.openProjectListAndCheckItIsDisplayed();
+    await rollingStockEditorPage.openRollingStockEditorAndCheckListIsDisplayed();
+    await homePage.openInfraEditorAndCheckInfraListIsDisplayed();
+    await homePage.openMapAndCheckInfraListIsDisplayed();
 
     await page.goto(STDCM_URL);
     await homePage.expectAccessDeniedPage();
