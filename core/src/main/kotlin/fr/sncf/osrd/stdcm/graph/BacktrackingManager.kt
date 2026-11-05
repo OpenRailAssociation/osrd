@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.utils.areDoublesEqual
 import fr.sncf.osrd.utils.round
@@ -80,7 +81,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                     old.infraExplorer.getCurrentBlock(),
                     old.beginSpeed,
                     old.infraExplorer.getStepTracker().iterateReachedStepsBackwards().count {
-                        it.isPlanned
+                        it.stopType == null || it.stopType == StopType.INPUT_STOP
                     },
                     old.envelopeStartOffset,
                     getNextStopOffsetOnCurrentBlock(old.infraExplorer),

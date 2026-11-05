@@ -142,7 +142,7 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
-            val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops)
+            val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops).toList()
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val consistConfigurations =
@@ -685,11 +685,13 @@ fun parseTrackSectionIds(infra: FullInfra, trackSectionNames: Set<String>): Set<
 fun parseForcedOpStops(
     infra: FullInfra,
     forcedOpStops: Set<OperationalPointStop>,
-): List<ExplorerStep> {
+): Collection<ExplorerStep> {
     val res = mutableSetOf<ExplorerStep>()
 
     for (forcedOpStop in forcedOpStops) {
         val opPartIds = infra.rawInfra.getOperationalPointParts(forcedOpStop.id)
+        if (opPartIds.isEmpty())
+            logger.warn("Unknown Operational Point Stop ID {}", forcedOpStop.id)
         for (opPartId in opPartIds) {
             val chunkLocation =
                 ChunkLocation(
@@ -702,9 +704,9 @@ fun parseForcedOpStops(
                         .findChunkLocationBlocks(infra.rawInfra, chunkLocation, direction)
                         .map {
                             ExplorerStep(
-                                setOf(it),
-                                FORCED_OP_STOP_TIME,
-                                true,
+                                locations = setOf(it),
+                                duration = FORCED_OP_STOP_TIME,
+                                stop = true,
                                 stopType =
                                     if (forcedOpStop.stop_type == ForcedStopType.GENERAL_STOP)
                                         StopType.GENERAL_STOP
@@ -715,7 +717,7 @@ fun parseForcedOpStops(
             }
         }
     }
-    return res.toList()
+    return res
 }
 
 private fun progressCallback(

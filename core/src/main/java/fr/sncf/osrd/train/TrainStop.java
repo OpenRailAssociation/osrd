@@ -10,7 +10,7 @@ public class TrainStop {
     public double position;
     public double duration;
     public RJSReceptionSignal receptionSignal;
-    // This field is used for the tests
+
     @SuppressFBWarnings
     public StopType stopType;
 

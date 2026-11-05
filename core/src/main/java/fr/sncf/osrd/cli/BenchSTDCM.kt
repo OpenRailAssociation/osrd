@@ -197,7 +197,7 @@ class BenchSTDCM : CliCommand {
                         request.consistSchedule.copy(values = consistConfigurations)
                     val allowedTrackSections =
                         parseTrackSectionIds(infra, request.allowedTrackSections)
-                    val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops)
+                    val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops).toList()
                     val consistSchedules =
                         ConsistSchedule(
                             requestConsistSchedule,
