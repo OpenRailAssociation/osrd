@@ -34,7 +34,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData, isRefreshing, refetchData } = useStdcmRequestsSent();
+  const { requestsSentData, isRefreshing, refetchData, isLoading } = useStdcmRequestsSent();
 
   const openRequestsFolder = async () => {
     try {
@@ -52,6 +52,8 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
       );
     }
   };
+
+  const showLoader = isLoading || isRefreshing;
 
   // TODO: add a all requests section
   const segmentedControlOptions: SegmentedControlOption[] = [
@@ -171,11 +173,19 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
               <th>{t('requestsSentModal.applicationDate')}</th>
             </tr>
           </thead>
-          <tbody>{requestsSentRows()}</tbody>
+          <tbody>{showLoader ? null : requestsSentRows()}</tbody>
         </table>
       </div>
-      {requestsSentData.length === 0 && (
+      {!showLoader && requestsSentData.length === 0 && (
         <div className="stdcm-requests-sent-no-requests">{t('requestsSentModal.noRequests')}</div>
+      )}
+      {showLoader && (
+        <div className="stdcm-requests-sent-loading">
+          <div className="stdcm-requests-sent-loader" />
+          <div className="stdcm-requests-sent-loading-message">
+            {t('requestsSentModal.loading')}
+          </div>
+        </div>
       )}
     </Dialog>
   );
