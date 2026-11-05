@@ -25,6 +25,7 @@ import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, startTimeToMs, subtractStartTime } from 'utils/duration';
 
+import DistanceCell, { formatDisplayedDistance } from './DistanceCell';
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
@@ -77,6 +78,7 @@ declare module '@tanstack/react-table' {
     onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
     onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
     onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
+    onReferencePositionChange: (row: TimesStopsRow, position: number | null) => void;
   }
 }
 
@@ -164,6 +166,7 @@ type TimesStopsTableProps = {
   rows: TimesStopsRow[];
   startTime: StartTime;
   isValid: boolean;
+  pathFound: boolean;
   isComputedDataPending?: boolean;
   availablePowerRestrictions: string[];
   powerRestrictionWarningCount?: number;
@@ -188,13 +191,14 @@ type TimesStopsTableProps = {
   onPowerRestrictionChange: (row: TimesStopsRow, value: string | null) => void;
   onApplyTimesFromSimulation: (field: RequestedTimeField, mode: TimeFillMode) => void;
   onReferenceBaseArrivalChange: (row: TimesStopsRow, arrival: StartTime | null) => void;
+  onReferencePositionChange: (row: TimesStopsRow, position: number | null) => void;
 };
 
 const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
 export type TimesStopsTableFeatures = typeof tableFeatureSet;
 const columnHelper = createColumnHelper<TimesStopsTableFeatures, TimesStopsRow>();
 const getTimeCellKey = (rowIndex: number, columnId: string) => `${rowIndex}-${columnId}`;
-type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture';
+type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture' | 'position';
 type TabbableCellHandle = TimeCellHandle | DurationCellHandle;
 type TimeCellTabEntry = {
   next: string | null;
@@ -215,6 +219,7 @@ const TimesStopsTable = ({
   rows,
   startTime,
   isValid,
+  pathFound,
   isComputedDataPending,
   availablePowerRestrictions,
   powerRestrictionWarningCount = 0,
@@ -227,6 +232,7 @@ const TimesStopsTable = ({
   onPowerRestrictionChange,
   onApplyTimesFromSimulation,
   onReferenceBaseArrivalChange,
+  onReferencePositionChange,
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
@@ -680,7 +686,15 @@ const TimesStopsTable = ({
       const { allRows } = info.table.options.meta!;
       const isFirstRow = info.row.index === 0;
 
-      if (!isValid && !isFirstRow) {
+      if (isFirstRow) {
+        return (
+          <span data-testid="first-base-arrival">
+            {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
+          </span>
+        );
+      }
+
+      if (!isValid) {
         return (
           <StartTimeCell
             type={startTimeCellType}
@@ -695,14 +709,6 @@ const TimesStopsTable = ({
         );
       }
 
-      if (isFirstRow) {
-        return (
-          <span data-testid="first-base-arrival">
-            {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
-          </span>
-        );
-      }
-
       const value = info.getValue();
       return (
         <span data-testid="computed-base-arrival">
@@ -711,6 +717,45 @@ const TimesStopsTable = ({
       );
     },
     [startTime, registerTimeCellRef, dateTimeLocale, focusCellBelow, t, startTimeCellType, isValid]
+  );
+
+  const returnPositionCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, number | null>) => {
+      const isFirstRow = info.row.index === 0;
+      const value = info.getValue();
+
+      if (isFirstRow) {
+        return (
+          <span data-testid="first-position" className="distance-cell">
+            <span className="value">0</span>
+            <span className="unit">km</span>
+          </span>
+        );
+      }
+
+      if (!pathFound && !isFirstRow) {
+        return (
+          <DistanceCell
+            ref={registerTimeCellRef(info.row.index, 'position')}
+            distanceValue={value ?? undefined}
+            onCommit={(v) => {
+              info.table.options.meta!.onReferencePositionChange(info.row.original, v);
+            }}
+            onEnterKeyDown={() => focusCellBelow(info.row.index, 'position')}
+            onTabKeyDown={(direction) =>
+              focusRequestedCellOnTab(info.row.index, 'position', direction)
+            }
+          />
+        );
+      }
+
+      return (
+        <span data-testid="computed-position" title={value !== null ? `${value}km` : '-'}>
+          {value !== null ? formatDisplayedDistance(value) + 'km' : '-'}
+        </span>
+      );
+    },
+    [pathFound, focusCellBelow, focusRequestedCellOnTab, registerTimeCellRef]
   );
 
   const columns = useMemo(
@@ -879,6 +924,16 @@ const TimesStopsTable = ({
             'data-testid': 'reference-base-arrival-cell',
           },
         }),
+        columnHelper.accessor('position', {
+          header: () => t(pathFound ? 'calculatedPosition' : 'requestedPosition'),
+          cell: returnPositionCell,
+          meta: {
+            className: cx('col-reference-position col-with-distance', { computed: pathFound }),
+            tabbable: true,
+            title: t(pathFound ? 'calculatedPosition' : 'requestedPosition'),
+            'data-testid': 'reference-position',
+          },
+        }),
       ]),
     [
       returnDepartureTimeCell,
@@ -891,7 +946,9 @@ const TimesStopsTable = ({
       returnRequestTheoreticalMarginCell,
       returnBaseArrivalCell,
       returnStepStatusCell,
+      returnPositionCell,
       isValid,
+      pathFound,
       t,
     ]
   );
@@ -914,6 +971,7 @@ const TimesStopsTable = ({
       onPowerRestrictionChange,
       onApplyTimesFromSimulation,
       onReferenceBaseArrivalChange,
+      onReferencePositionChange,
     },
   });
 
