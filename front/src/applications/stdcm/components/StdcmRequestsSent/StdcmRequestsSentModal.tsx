@@ -34,7 +34,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData, isRefreshing, refetchData } = useStdcmRequestsSent();
+  const { requestsSentData, isFetching, refetchData } = useStdcmRequestsSent();
 
   const openRequestsFolder = async () => {
     try {
@@ -115,10 +115,10 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
           </div>
           <div className="stdcm-requests-sent-modal-header-section">
             <button
-              className={cx('stdcm-requests-sent-sync-button', { spinning: isRefreshing })}
+              className={cx('stdcm-requests-sent-sync-button', { spinning: isFetching })}
               type="button"
               onClick={refetchData}
-              disabled={isRefreshing}
+              disabled={isFetching}
             >
               <Sync />
             </button>

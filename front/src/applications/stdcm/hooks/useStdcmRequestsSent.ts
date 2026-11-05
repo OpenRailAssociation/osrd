@@ -16,7 +16,7 @@ const useStdcmRequestsSent = () => {
   // 1. Get sent requests IDs from editoast
   const {
     data: stdcmRequests,
-    isLoading: idsLoading,
+    isFetching: idsFetching,
     refetch: refetchIDs,
   } = osrdEditoastApi.endpoints.getStdcmRequests.useQuery({
     by: 'user',
@@ -25,7 +25,7 @@ const useStdcmRequestsSent = () => {
   // 2. Get requests statuses from railway manager interface
   const {
     data: statusesById,
-    isLoading: statusLoading,
+    isFetching: statusFetching,
     refetch: refetchStatuses,
   } = osrdRailwayManagerApi.endpoints.postSendLastMinuteRequestStatuses.useQuery(
     stdcmRequests ? { body: stdcmRequests.requests.map((request) => request.rmi_id) } : skipToken
@@ -37,7 +37,7 @@ const useStdcmRequestsSent = () => {
   // 3. Match ops from railway manager interface with ops from infra to get name and main_code
   const {
     data: matchedOps,
-    isLoading: matchLoading,
+    isFetching: matchFetching,
     refetch: refetchOps,
   } = osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
     infraId && operationalPointReferences.length > 0
@@ -70,7 +70,7 @@ const useStdcmRequestsSent = () => {
 
   return {
     requestsSentData,
-    isLoading: statusLoading || matchLoading || idsLoading,
+    isFetching: statusFetching || matchFetching || idsFetching,
     isRefreshing,
     refetchData,
   };
