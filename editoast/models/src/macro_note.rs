@@ -90,11 +90,6 @@ pub mod test {
             .await
             .expect("Failed to create empty infra");
 
-        let timetable = Timetable::changeset()
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create timetable");
-
         let project = Project::fake("test_project")
             .create(&mut db_pool.get_ok())
             .await
@@ -103,7 +98,7 @@ pub mod test {
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create study");
-        let scenario = Scenario::fake("test_scenario_name", study.id, infra.id, timetable.id)
+        let scenario = Scenario::fake("test_scenario_name", study.id, infra.id)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create scenario");
@@ -120,7 +115,7 @@ pub mod test {
         let mut notifications = std::pin::pin!(notifications);
 
         // Create note
-        let _created = MacroNote::changeset()
+        let created = MacroNote::changeset()
             .scenario_id(scenario.id)
             .x(10)
             .y(12)
@@ -141,12 +136,12 @@ pub mod test {
             serde_json::from_str::<serde_json::Value>(&notif.payload).unwrap()["object"],
             serde_json::json!({
                 "scenario_id": scenario.id,
-                "macro_note_id": 1,
-                "x": 10,
-                "y": 12,
-                "title": "New note",
-                "text": "Note content",
-                "labels": ["A", "B"],
+                "id": created.id,
+                "x": created.x,
+                "y": created.y,
+                "title": created.title,
+                "text": created.text,
+                "labels": created.labels,
             })
         );
     }
