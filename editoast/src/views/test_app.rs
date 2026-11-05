@@ -602,6 +602,11 @@ impl<'a> GroupBuilder<'a> {
         self
     }
 
+    pub fn with_roles(mut self, roles: impl IntoIterator<Item = Role>) -> Self {
+        self.roles = roles.into_iter().collect();
+        self
+    }
+
     pub fn with_infra_grant(mut self, infra_id: i64, grant: InfraGrant) -> Self {
         self.infras_grant.insert(infra_id, grant);
         self
