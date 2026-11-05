@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -205,6 +206,17 @@ pub(in crate::views) struct UserInfo {
     roles: HashSet<Role>,
     #[schema(inline)]
     groups: HashSet<Group>,
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Debug, Deserialize, PartialEq, Eq))]
+pub(in crate::views) struct UserInfoWithDirectRoles {
+    id: i64,
+    name: String,
+    identities: Vec<String>,
+    direct_roles: HashSet<Role>,
+    effective_roles: Vec<Role>,
+    groups: Vec<Group>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -1240,6 +1252,85 @@ pub(in crate::views) async fn create_group(
         })
         .await?;
     Ok((StatusCode::CREATED, Json(group_info)))
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "List all the users with their identities, roles and groups",
+        body = inline(Vec<UserInfo>),
+    ))
+)]
+pub(in crate::views) async fn list_users(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Extension(authn_state): Extension<crate::authentication::State>,
+) -> Result<Json<Vec<UserInfoWithDirectRoles>>> {
+    let user_with_identities = UserWithIdentities::stream(db_pool.get().await?)
+        .await?
+        .try_collect::<Vec<_>>()
+        .await?;
+
+    // Fetch roles and groups for each user in parallel using OpenFGA
+    let protected_list = user_with_identities
+        .iter()
+        .map(|UserWithIdentities { user, .. }| {
+            let list_roles = authz::v2::subject_roles(authz::Subject::user(user.id));
+            let list_groups = authz::v2::user_groups(authz::User(user.id));
+            let direct_roles = authz::v2::user_direct_roles(authz::User(user.id));
+            list_roles.zip(list_groups).zip(direct_roles)
+        })
+        .collect_vec();
+
+    let protected = v2::Protected::from_iter(protected_list);
+
+    let all_users_roles_and_groups = protected
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
+
+    // Fetch groups from the database to get their names
+    // let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
+    let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
+        &mut db_pool.get().await?,
+        all_users_roles_and_groups
+            .iter()
+            .flat_map(|((_, groups), _)| groups.iter().map(|g| **g))
+            .collect_vec(),
+    )
+    .await?;
+
+    // Build the final response by combining user info, roles, and groups
+    let users = all_users_roles_and_groups
+        .into_iter()
+        .zip(user_with_identities)
+        .map(
+            |(
+                ((effective_roles, groups), direct_roles),
+                UserWithIdentities { user, identities },
+            )| {
+                let groups = groups_from_db
+                    .iter()
+                    .filter(|g| groups.binary_search(&authz::Group(*g.0)).is_ok())
+                    .map(|(_, g)| g.clone())
+                    .collect::<Vec<_>>();
+                UserInfoWithDirectRoles {
+                    id: user.id,
+                    name: user.name,
+                    identities,
+                    direct_roles,
+                    effective_roles,
+                    groups,
+                }
+            },
+        )
+        .collect::<Vec<_>>();
+
+    Ok(Json(users))
 }
 
 #[cfg(test)]
@@ -4339,6 +4430,119 @@ mod tests {
 
         // Try to list groups as non-admin
         app.get("/authz/groups")
+            .by_user(user.as_ref())
+            .await
+            .assert_status_forbidden();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_users() {
+        let app = test_app!().build();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let user_1 = app
+            .user("user1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_2 = app
+            .user("user2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let group = app
+            .group("Group")
+            .with_members([&user_1, &user_2])
+            .create()
+            .await;
+        let group_2 = app
+            .group("Group 2")
+            .with_roles([Role::OperationalStudies])
+            .with_members([&user_2])
+            .create()
+            .await;
+
+        // List all users as admin
+        let users = app
+            .get("/authz/users")
+            .by_user(admin.as_ref())
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfoWithDirectRoles>>();
+
+        // Verify all users are returned
+        let expected_users = [
+            UserInfoWithDirectRoles {
+                id: admin.id,
+                name: "Admin".to_string(),
+                identities: admin.info.identities.clone(),
+                direct_roles: HashSet::from([Role::Admin]),
+                effective_roles: vec![Role::Admin],
+                groups: Vec::new(),
+            },
+            UserInfoWithDirectRoles {
+                id: user_1.id,
+                name: "User 1".to_string(),
+                identities: user_1.info.identities.clone(),
+                direct_roles: HashSet::from([Role::OperationalStudies]),
+                effective_roles: vec![Role::OperationalStudies],
+                groups: vec![Group {
+                    id: group.id,
+                    name: group.info.name.clone(),
+                }],
+            },
+            UserInfoWithDirectRoles {
+                id: user_2.id,
+                name: "User 2".to_string(),
+                identities: user_2.info.identities.clone(),
+                direct_roles: HashSet::from([Role::Stdcm]),
+                effective_roles: vec![Role::Stdcm, Role::OperationalStudies],
+                groups: vec![
+                    Group {
+                        id: group.id,
+                        name: group.info.name.clone(),
+                    },
+                    Group {
+                        id: group_2.id,
+                        name: group_2.info.name.clone(),
+                    },
+                ],
+            },
+        ];
+
+        assert!(admin.id < user_1.id && user_1.id < user_2.id);
+        for (user, expected_user) in users.iter().zip(expected_users.iter()) {
+            assert_eq!(user.id, expected_user.id);
+            assert_eq!(user.name, expected_user.name);
+            assert_eq!(user.identities, expected_user.identities);
+            assert_eq!(user.direct_roles, expected_user.direct_roles);
+            assert_eq!(user.effective_roles, expected_user.effective_roles);
+            assert_eq!(user.groups.len(), expected_user.groups.len());
+            for (group, expected_group) in user.groups.iter().zip(expected_user.groups.iter()) {
+                assert_eq!(group.id, expected_group.id);
+                assert_eq!(group.name, expected_group.name);
+            }
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_users_forbidden_non_admin() {
+        let app = test_app!().build();
+
+        // Create a non-admin user
+        let user = app
+            .user("user", "User")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+
+        // Try to list users as non-admin
+        app.get("/authz/users")
             .by_user(user.as_ref())
             .await
             .assert_status_forbidden();
