@@ -41,6 +41,7 @@ use crate::v2::rolling_stock_privileges;
 use crate::v2::rolling_stock_revoke_grant;
 use crate::v2::rolling_stock_set_grant;
 use crate::v2::special_authorizers;
+use crate::v2::user_direct_roles;
 use crate::v2::user_groups;
 
 pub trait TestClientExt {
@@ -50,6 +51,7 @@ pub trait TestClientExt {
 
     async fn group_members(&self, group: &Group) -> HashSet<User>;
     async fn user_groups(&self, user: User) -> HashSet<Group>;
+    async fn user_direct_roles(&self, user: User) -> HashSet<Role>;
     async fn add_members(&self, group: Group, members: HashSet<User>);
     async fn remove_members(&self, group: Group, members: HashSet<User>);
 
@@ -161,6 +163,16 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(user_groups(user))
+            .await
+            .unwrap()
+            .into_iter()
+            .collect()
+    }
+
+    async fn user_direct_roles(&self, user: User) -> HashSet<Role> {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(user_direct_roles(user))
             .await
             .unwrap()
             .into_iter()
