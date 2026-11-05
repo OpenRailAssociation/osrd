@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph.visited_node_tracking
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockLocation
@@ -124,7 +125,7 @@ data class VisitedNodes(
                 val stepIndex =
                     max(
                         parameters.explorer.getStepTracker().iterateSeenStepsBackwards().count {
-                            it.isPlanned
+                            it.stopType == null || it.stopType == StopType.INPUT_STOP
                         } - 1,
                         0,
                     )

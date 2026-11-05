@@ -10,23 +10,20 @@ import fr.sncf.osrd.utils.units.Offset
  */
 fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: BlockId): LocatedStep? {
     val step =
-        infraExplorer
-            .getStepTracker()
-            .iterateStepsInLookaheadBackwards()
-            .filter { it.location.edge == currentBlockId }
-            .lastOrNull { it.originalStep.stop }
+        infraExplorer.getStepTracker().iterateStepsInLookaheadBackwards().lastOrNull {
+            it.location.edge == currentBlockId && it.originalStep.stop
+        }
     val forcedOpStop =
-        infraExplorer
-            .getStepTracker()
-            .iterateForcedOpStopsInLookaheadBackwards()
-            .filter { it.location.edge == currentBlockId }
-            .lastOrNull { it.originalStep.stop }
+        infraExplorer.getStepTracker().iterateForcedOpStopsInLookaheadBackwards().lastOrNull {
+            it.location.edge == currentBlockId && it.originalStep.stop
+        }
     if (step == null && forcedOpStop == null) return null
-    val stepOffset = step?.location?.offset?.meters ?: Double.POSITIVE_INFINITY
-    val forcedOpStopOffset = forcedOpStop?.location?.offset?.meters ?: Double.POSITIVE_INFINITY
+    if (step == null || forcedOpStop == null) return step ?: forcedOpStop
+    val stepOffset = step.location.offset.meters
+    val forcedOpStopOffset = forcedOpStop.location.offset.meters
 
-    val stepDuration = step?.originalStep?.duration ?: Double.POSITIVE_INFINITY
-    val forcedOpStopDuration = forcedOpStop?.originalStep?.duration ?: Double.POSITIVE_INFINITY
+    val stepDuration = step.originalStep.duration ?: Double.POSITIVE_INFINITY
+    val forcedOpStopDuration = forcedOpStop.originalStep.duration ?: Double.POSITIVE_INFINITY
 
     return when {
         stepOffset < forcedOpStopOffset -> step
@@ -35,8 +32,12 @@ fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: Bloc
         // at the same offset, we want to keep the max stop time but still know that it was an input
         // stop
         stepDuration < forcedOpStopDuration -> {
-            forcedOpStop?.stopType = step?.stopType
-            forcedOpStop
+            LocatedStep(
+                travelledPathOffset = forcedOpStop.travelledPathOffset,
+                location = forcedOpStop.location,
+                originalStep = forcedOpStop.originalStep,
+                stopType = step.stopType,
+            )
         }
         else -> step
     }

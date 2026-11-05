@@ -283,7 +283,7 @@ private fun makeConsistChanges(
                     .toList()
                     .reversed()
                     .filter { it.travelledPathOffset.distance != 0.meters }
-                    .filter { it.isPlanned }
+                    .filter { it.stopType == null || it.stopType == StopType.INPUT_STOP }
                     .elementAt(index)
                     .travelledPathOffset,
             )

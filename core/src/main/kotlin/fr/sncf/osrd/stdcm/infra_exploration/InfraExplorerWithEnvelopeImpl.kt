@@ -151,7 +151,10 @@ data class InfraExplorerWithEnvelopeImpl(
                 .toList()
                 .asSequence()
                 .mapIndexedNotNull { stepIndex, step ->
-                    if (!step.isPlanned) return@mapIndexedNotNull null
+                    if (
+                        step.stopType == StopType.GENERAL_STOP || step.stopType == StopType.OVERTAKE
+                    )
+                        return@mapIndexedNotNull null
                     val rollingStock: PhysicsRollingStock = consistSchedule.rollingStocks[stepIndex]
                     val stepPos = step.travelledPathOffset.distance
                     val res = DistanceRangeMap.RangeMapEntry(previousStepPos, stepPos, rollingStock)
@@ -162,7 +165,7 @@ data class InfraExplorerWithEnvelopeImpl(
                     run {
                         val lastStep =
                             getStepTracker().iterateSeenStepsBackwards().firstOrNull {
-                                it.isPlanned
+                                it.stopType == null || it.stopType == StopType.INPUT_STOP
                             }
                         val rollingStock = getCurrentRollingStock()
                         val lookaheadEndOffset = getAllBlocks().last().pathEnd.distance

@@ -27,7 +27,7 @@ data class STDCMEdge(
     // True if the edge end is a stop
     val endAtStop: Boolean,
     // Type at the end of the edge if there is a stop
-    val endEdgeType: StopType?,
+    val endStopType: StopType?,
     // Speed at the beginning of the edge
     val beginSpeed: Double,
     // Speed at the end of the edge
