@@ -7620,15 +7620,11 @@ class PathProperties(BaseModel):
     """
     Electrification modes and neutral section along the path
     """
-<<<<<<< HEAD
     geom_projection: CorePropertyGeometryProjection
     """
     Curve to map topological offset to geometric offset on the path
     """
-    geometry: GeoJsonLineString
-=======
     geometry: GeoJsonMultiLineString
->>>>>>> 82b3bf290f (core: change geometry type from LineString to MultiLineString in path properties)
     """
     Geometry of the path
     """

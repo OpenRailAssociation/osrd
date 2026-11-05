@@ -457,6 +457,7 @@ const ItineraryModal = ({
       // Sample the path geometry at the op position so the prefilled marker has
       // coordinates:
       const geometry = pathProperties?.geometry;
+      // const coordinates = geometry ? getPointOnTracksCoordinates(geometry, pathProperties?.length, op.position) : undefined
       const coordinates = geometry
         ? geometry.coordinates.map(
             (gc) =>

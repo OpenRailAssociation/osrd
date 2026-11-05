@@ -4,7 +4,7 @@ import { Info } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import { featureCollection, lineString } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
-import type { LineString } from 'geojson';
+import type { FeatureCollection, LineString } from 'geojson';
 import { isArray } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
@@ -203,7 +203,7 @@ const IncompatibleConstraints = ({
     [constraints, filtersConstraintState]
   );
 
-  const filteredFeatureCollections = useMemo(() => {
+  const filteredFeatureCollections = useMemo<FeatureCollection<LineString, { ids: string[], types?: string[] }>[]> (() => {
     if (!geometry || filteredConstraints.length === 0)
       return [featureCollection<LineString, { ids: string[] }>([])];
     return lineStrings.map((ls) => getSegmentsConstraints(ls.geometry, filteredConstraints));

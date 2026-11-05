@@ -60,7 +60,7 @@ data class OperationalPointPartSncfExtension(val kp: String)
 
 data class GeometricProjection(
     @Json(name = "topo_offsets") val topoOffsets: List<Offset<PhysicsPath>>,
-    @Json(name = "geom_offsets") val geomOffsets: List<Offset<RJSLineString>>,
+    @Json(name = "geom_offsets") val geomOffsets: List<Offset<RJSMultiLineString>>,
 ) {
     init {
         // There must be the same number of topological boundaries and geometric boundaries
