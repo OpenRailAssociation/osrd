@@ -15,7 +15,7 @@
   display: none !important;
 }
 
-.stdcm-requests-sent-modal-header-left {
+.stdcm-requests-sent-modal-header-section {
   display: flex;
   gap: 20px;
 }
@@ -25,6 +25,24 @@
   background-color: var(--black5);
   border-radius: 5px;
   padding: 3px 10px;
+}
+
+.stdcm-requests-sent-sync-button {
+  color: var(--primary40);
+
+  &.spinning svg {
+    animation: stdcm-requests-sent-spin 1s linear infinite;
+  }
+}
+
+@keyframes stdcm-requests-sent-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.segmented-control-option-content {
+  font-size: 12px;
 }
 
 .stdcm-requests-sent-no-requests {

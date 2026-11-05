@@ -1,8 +1,9 @@
-import { Dialog } from '@osrd-project/ui-core';
-import { LinkExternal, X } from '@osrd-project/ui-icons';
+import { Dialog, SegmentedControl } from '@osrd-project/ui-core';
+import { LinkExternal, Sync, X } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import dayjs from 'dayjs';
-import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
+import calendar from 'dayjs/plugin/calendar';
 import { useTranslation } from 'react-i18next';
 
 import useStdcmRequestsSent from 'applications/stdcm/hooks/useStdcmRequestsSent';
@@ -15,6 +16,8 @@ dayjs.extend(calendar);
 type StdcmRequestsSentModalProps = {
   onClose: () => void;
 };
+
+type SegmentedControlOption = { value: string; label: string };
 
 const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   'use memo';
@@ -31,7 +34,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
     sameElse: t('requestsSentModal.calendar.sameElse'),
   };
 
-  const { requestsSentData } = useStdcmRequestsSent();
+  const { requestsSentData, isRefreshing, refetchData } = useStdcmRequestsSent();
 
   const openRequestsFolder = async () => {
     try {
@@ -49,6 +52,11 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
       );
     }
   };
+
+  // TODO: add a all requests section
+  const segmentedControlOptions: SegmentedControlOption[] = [
+    { value: 'myRequests', label: t('requestsSentModal.myRequests') },
+  ];
 
   const requestsSentRows = () =>
     requestsSentData.map((request, index) => {
@@ -117,7 +125,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
         <>
-          <div className="stdcm-requests-sent-modal-header-left">
+          <div className="stdcm-requests-sent-modal-header-section">
             <h5>{t('requestsSentModal.title')}</h5>
             {requestsSentData.length !== 0 && (
               <button className="stdcm-requests-sent-folder-button" onClick={openRequestsFolder}>
@@ -125,9 +133,26 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
               </button>
             )}
           </div>
-          <button type="button" onClick={onClose}>
-            <X size="lg" />
-          </button>
+          <div className="stdcm-requests-sent-modal-header-section">
+            <button
+              className={cx('stdcm-requests-sent-sync-button', { spinning: isRefreshing })}
+              type="button"
+              onClick={refetchData}
+              disabled={isRefreshing}
+            >
+              <Sync />
+            </button>
+            <SegmentedControl
+              options={segmentedControlOptions}
+              getOptionLabel={(option: SegmentedControlOption) => option.label}
+              getOptionValue={(option: SegmentedControlOption) => option.value}
+              value={segmentedControlOptions[0]}
+              onChange={() => {}}
+            />
+            <button type="button" onClick={onClose}>
+              <X size="lg" />
+            </button>
+          </div>
         </>
       }
       footer={null}
