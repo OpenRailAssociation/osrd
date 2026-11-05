@@ -1,5 +1,5 @@
 import { Dialog } from '@osrd-project/ui-core';
-import { X } from '@osrd-project/ui-icons';
+import { LinkExternal, X } from '@osrd-project/ui-icons';
 import dayjs from 'dayjs';
 import calendar from 'dayjs/plugin/calendar';
 import 'dayjs/locale/fr';
@@ -92,11 +92,23 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
   return (
     <Dialog
-      headerClassname="flex justify-between items-center"
+      headerClassname="stdcm-requests-sent-modal-header"
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
         <>
-          <h5>{t('requestsSentModal.title')}</h5>
+          <div className="stdcm-requests-sent-modal-header-left">
+            <h5>{t('requestsSentModal.title')}</h5>
+            {requestsSentData.length !== 0 && (
+              <a
+                className="stdcm-requests-sent-folder-button"
+                href={requestsSentData[0].created_request_url}
+                target="_blank"
+                rel="noopener,noreferrer"
+              >
+                <LinkExternal /> {t('requestsSentModal.folder')}
+              </a>
+            )}
+          </div>
           <button type="button" onClick={onClose}>
             <X size="lg" />
           </button>
