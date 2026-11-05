@@ -5,11 +5,19 @@ import type { Grant, Privilege } from 'common/authorization/types';
 import generateGrantSelectProps from 'common/authorization/utils/generateGrantSelectProps';
 
 const GRANTS = {
-  RESTRICTED_READER: ['can_restricted_read'],
-  READER: ['can_restricted_read', 'can_read', 'can_share_read'],
-  WRITER: ['can_restricted_read', 'can_read', 'can_share_read', 'can_write', 'can_share_write'],
+  RESTRICTED_READER: ['can_restricted_read', 'can_share_restricted_read'],
+  READER: ['can_restricted_read', 'can_share_restricted_read', 'can_read', 'can_share_read'],
+  WRITER: [
+    'can_restricted_read',
+    'can_share_restricted_read',
+    'can_read',
+    'can_share_read',
+    'can_write',
+    'can_share_write',
+  ],
   OWNER: [
     'can_restricted_read',
+    'can_share_restricted_read',
     'can_read',
     'can_share_read',
     'can_write',

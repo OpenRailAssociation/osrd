@@ -3055,6 +3055,7 @@ export type RevokeBody = {
 export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type StandardPrivilege =
   | 'can_restricted_read'
+  | 'can_share_restricted_read'
   | 'can_read'
   | 'can_share_read'
   | 'can_write'

@@ -15,7 +15,7 @@ function getRequiredPrivilegesToAddGrant(
 ): Privilege[] {
   switch (grant) {
     case 'RESTRICTED_READER':
-      return ['can_share_read'];
+      return ['can_share_restricted_read'];
     case 'READER':
       return ['can_share_read'];
     case 'WRITER':

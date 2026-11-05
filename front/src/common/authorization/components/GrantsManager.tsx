@@ -36,8 +36,8 @@ const GrantsManager = ({
   const [displayGrantSection, setDisplayGrantSection] = useState(false);
 
   const grantLabel = getGrantLabel(userPrivileges);
-  const canRead = userPrivileges.has('can_read') || userPrivileges.has('has_access');
-
+  // for standard privileges the default is `can_restricted_read`, but on project it's `has_access`
+  const canRead = userPrivileges.has('can_restricted_read') || userPrivileges.has('has_access');
   return (
     <div className="grant-manager">
       <div className="grant-manager-header">

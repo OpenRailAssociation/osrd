@@ -55,6 +55,7 @@ pub(super) enum StandardGrant {
 #[strum(serialize_all = "snake_case")]
 pub(super) enum StandardPrivilege {
     CanRestrictedRead,
+    CanShareRestrictedRead,
     CanRead,
     CanShareRead,
     CanWrite,
@@ -71,6 +72,7 @@ macro_rules! impl_standard_privilege_from_into {
             fn from(privilege: $ty) -> Self {
                 match privilege {
                     <$ty>::CanRestrictedRead => Self::CanRestrictedRead,
+                    <$ty>::CanShareRestrictedRead => Self::CanShareRestrictedRead,
                     <$ty>::CanRead => Self::CanRead,
                     <$ty>::CanShareRead => Self::CanShareRead,
                     <$ty>::CanWrite => Self::CanWrite,

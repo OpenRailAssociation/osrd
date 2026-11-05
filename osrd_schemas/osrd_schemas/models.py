@@ -4262,6 +4262,7 @@ class StandardGrant(Enum):
 
 class StandardPrivilege(Enum):
     can_restricted_read = "can_restricted_read"
+    can_share_restricted_read = "can_share_restricted_read"
     can_read = "can_read"
     can_share_read = "can_share_read"
     can_write = "can_write"

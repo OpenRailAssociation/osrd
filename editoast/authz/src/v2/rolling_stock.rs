@@ -28,6 +28,7 @@ pub fn rolling_stock_privileges(
             let (
                 admin,
                 can_restricted_read,
+                can_share_restricted_read,
                 can_read,
                 can_share_read,
                 can_write,
@@ -39,6 +40,7 @@ pub fn rolling_stock_privileges(
                 .checks((
                     User::role().check(&Role::Admin, &user),
                     RollingStock::can_restricted_read().check(&user, &rolling_stock),
+                    RollingStock::can_share_restricted_read().check(&user, &rolling_stock),
                     RollingStock::can_read().check(&user, &rolling_stock),
                     RollingStock::can_share_read().check(&user, &rolling_stock),
                     RollingStock::can_write().check(&user, &rolling_stock),
@@ -51,6 +53,10 @@ pub fn rolling_stock_privileges(
             let mut privileges = HashSet::new();
             privileges.extend(
                 (admin || can_restricted_read).then_some(RollingStockPrivilege::CanRestrictedRead),
+            );
+            privileges.extend(
+                (admin || can_share_restricted_read)
+                    .then_some(RollingStockPrivilege::CanShareRestrictedRead),
             );
             privileges.extend((admin || can_read).then_some(RollingStockPrivilege::CanRead));
             privileges
@@ -355,7 +361,7 @@ pub fn rolling_stock_granted_subjects(
         })
         .with_check(Check::HasRollingStockPrivilege(
             Actor::Issuer,
-            RollingStockPrivilege::CanRead,
+            RollingStockPrivilege::CanRestrictedRead,
             rolling_stock,
         ))
 }
@@ -490,6 +496,13 @@ pub fn rolling_stock_list(
                         .list_objects(RollingStock::can_restricted_read().query_objects(&user))
                         .await?
                 }
+                RollingStockPrivilege::CanShareRestrictedRead => {
+                    openfga
+                        .list_objects(
+                            RollingStock::can_share_restricted_read().query_objects(&user),
+                        )
+                        .await?
+                }
                 RollingStockPrivilege::CanRead => {
                     openfga
                         .list_objects(RollingStock::can_read().query_objects(&user))
@@ -569,6 +582,7 @@ mod tests {
                 .await,
             HashSet::from_iter([
                 RollingStockPrivilege::CanRestrictedRead,
+                RollingStockPrivilege::CanShareRestrictedRead,
                 RollingStockPrivilege::CanRead,
                 RollingStockPrivilege::CanShareRead,
                 RollingStockPrivilege::CanWrite,
@@ -595,6 +609,7 @@ mod tests {
                 .await,
             HashSet::from_iter([
                 RollingStockPrivilege::CanRestrictedRead,
+                RollingStockPrivilege::CanShareRestrictedRead,
                 RollingStockPrivilege::CanRead,
                 RollingStockPrivilege::CanShareRead,
                 RollingStockPrivilege::CanWrite,
@@ -1006,12 +1021,12 @@ mod tests {
     #[case::rolling_stock_granted_subjects(
         rolling_stock_granted_subjects(RollingStock(1), RollingStockGrant::Writer, GrantType::Effective).checks,
         &[
-           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRead, RollingStock(1))
+           Check::HasRollingStockPrivilege(Actor::Issuer, RollingStockPrivilege::CanRestrictedRead, RollingStock(1))
         ]
     )]
     #[rstest]
     #[case::rolling_stock_list(
-        rolling_stock_list(User(1), RollingStockPrivilege::CanRead).checks,
+        rolling_stock_list(User(1), RollingStockPrivilege::CanRestrictedRead).checks,
         &[]
     )]
     fn protected_contains_expected_checks(
