@@ -31,6 +31,11 @@ export function mmToKm(length: number) {
   return length / 1000000;
 }
 
+/** Convert millimeters to kilometers */
+export function kmToMm(length: number) {
+  return length * 1000000;
+}
+
 /** converts any unit to milli
  *  for example seconds to milliseconds
  */

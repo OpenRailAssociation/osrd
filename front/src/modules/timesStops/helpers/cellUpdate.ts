@@ -217,6 +217,7 @@ export const computeOptimisticRow = (
     | 'requestedTheoreticalMargin'
     | 'powerRestriction'
     | 'baseArrival'
+    | 'position'
   >
 > => {
   if (edit.field === 'powerRestriction') return { powerRestriction: edit.value };
@@ -230,6 +231,10 @@ export const computeOptimisticRow = (
 
   if (edit.field === 'referenceBaseArrival') {
     return { baseArrival: edit.value };
+  }
+
+  if (edit.field === 'referencePosition') {
+    return { position: edit.value };
   }
 
   const { arrival, stop, departure } = applyScheduleEdit(
