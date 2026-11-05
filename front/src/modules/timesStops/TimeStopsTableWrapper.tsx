@@ -241,6 +241,10 @@ const TimeStopsTableWrapper = ({
     commitUpdate({ row, field: 'referenceBaseArrival', value });
   };
 
+  const handleReferencePositionChange = (row: TimesStopsRow, value: number | null) => {
+    commitUpdate({ row, field: 'referencePosition', value });
+  };
+
   return (
     <TimesStopsTable
       rows={optimisticRows}
@@ -258,6 +262,7 @@ const TimeStopsTableWrapper = ({
       onPowerRestrictionChange={handlePowerRestrictionChange}
       onApplyTimesFromSimulation={handleApplyTimesFromSimulation}
       onReferenceBaseArrivalChange={handleReferenceBaseArrivalChange}
+      onReferencePositionChange={handleReferencePositionChange}
     />
   );
 };
