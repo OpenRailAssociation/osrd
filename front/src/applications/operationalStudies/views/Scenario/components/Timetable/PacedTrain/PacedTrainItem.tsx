@@ -18,7 +18,10 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import { findSubCategory } from 'modules/rollingStock/helpers/category';
-import { getOccurrencesWorstStatus } from 'modules/trainSchedule/helpers/pacedTrain';
+import {
+  getOccurrencesWorstStatus,
+  stripExceptionSummaries,
+} from 'modules/trainSchedule/helpers/pacedTrain';
 import {
   createExceptions,
   createTrainSchedules,
@@ -239,10 +242,7 @@ const PacedTrainItem = ({
     };
 
     // We don't want to send summary to create exceptions
-    const payloadExceptions = pacedTrain.paced?.exceptions.map((exception) => {
-      const { summary: _summary, ...changeGroups } = exception;
-      return changeGroups;
-    });
+    const payloadExceptions = stripExceptionSummaries(pacedTrain.paced.exceptions);
 
     const formattedPacedTrainResponse: TrainScheduleResponse = (
       await createTrainSchedules(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
