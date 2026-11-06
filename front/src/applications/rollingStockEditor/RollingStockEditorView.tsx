@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Upload } from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
+import { Navigate } from 'react-router-dom';
 
 import {
   osrdEditoastApi,
@@ -10,6 +11,7 @@ import {
   type RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import GrantsManager from 'common/authorization/components/GrantsManager';
+import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -187,6 +189,9 @@ const RollingStockEditor = () => {
     }
     return rollingStock;
   };
+
+  const { rollingStockEditorAllowed } = useAllowedUserRoles();
+  if (!rollingStockEditorAllowed) return <Navigate to="/403" replace />;
 
   return (
     <>

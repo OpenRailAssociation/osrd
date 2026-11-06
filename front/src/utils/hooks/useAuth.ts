@@ -6,13 +6,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { osrdEditoastApi, type SearchResultItemUser } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 import { setImpersonatedUser, updateAuthzUser } from 'reducers/user';
-import { getIsUserLogged, getImpersonatedUser, getUsername } from 'reducers/user/userSelectors';
+import {
+  getIsUserLogged,
+  getImpersonatedUser,
+  getUserId,
+  getUsername,
+} from 'reducers/user/userSelectors';
 
 function useAuth() {
   const dispatch = useDispatch();
   const isUserLogged = useSelector(getIsUserLogged);
   const username = useSelector(getUsername);
   const impersonatedUser = useSelector(getImpersonatedUser);
+  const userId = useSelector(getUserId);
 
   const [login, { isLoading: isAuthenticateLoading }] =
     osrdGatewayApi.endpoints.login.useMutation();
@@ -64,7 +70,7 @@ function useAuth() {
     username: user.data?.name ?? username,
     isUserLogged,
     impersonatedUser,
-    isLoading: isAuthenticateLoading || !data,
+    isLoading: isAuthenticateLoading || !data || userId === -1,
     logout,
     impersonate,
   };
