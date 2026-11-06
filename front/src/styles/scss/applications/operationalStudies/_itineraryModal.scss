@@ -486,6 +486,28 @@
               &.invalid {
                 border-radius: 3px;
               }
+
+              .leading-content-wrapper {
+                padding: 0 4px;
+                border-radius: 6px 0 0 6px;
+                box-shadow: 0 0 0 0.063rem var(--black25) inset;
+
+                &:has(.path-step-op-status-icon.valid) {
+                  background-color: var(--success5);
+                }
+
+                &:has(.path-step-op-status-icon.invalid) {
+                  background-color: var(--warning5);
+                }
+
+                &:has(.path-step-op-status-icon.placeholder) {
+                  background-color: var(--black5);
+                }
+
+                .path-step-op-status-icon {
+                  color: var(--black50);
+                }
+              }
             }
 
             .invalid-step-message {
