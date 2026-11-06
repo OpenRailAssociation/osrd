@@ -114,6 +114,7 @@
       "lines": {
         "LineNotFound": "找不到代碼為 {{line_code}} 的路線"
       },
+      "not_found": "未找到設施'{{infra_id}}'",
       "objects": {
         "DuplicateIdsProvided": "提供了重複的物件編號"
       },

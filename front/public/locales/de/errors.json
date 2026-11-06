@@ -105,6 +105,7 @@
       "lines": {
         "LineNotFound": "Keine Strecke mit Code {{line_code}} gefunden"
       },
+      "not_found": "Infrastruktur '{{infra_id}}' existiert nicht",
       "objects": {
         "DuplicateIdsProvided": "Doppelte Objekt-IDs angegeben"
       },
