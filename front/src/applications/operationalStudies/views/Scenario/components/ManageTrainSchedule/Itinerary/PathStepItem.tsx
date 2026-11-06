@@ -12,6 +12,8 @@ import {
   KebabHorizontal,
   Square,
   TrackOffset,
+  TriangleRight,
+  TriangleDown,
   X,
 } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
@@ -31,6 +33,7 @@ import {
   ListElementComponent,
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
+import PathStepSubForm from './PathStepSubForm';
 import { computePathStepCoordinates, formatOpLabel, isOpRefMetadata } from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
@@ -93,6 +96,9 @@ type PathStepProps = {
   onOpClear: () => void;
   isTrailingPlaceHolder: boolean;
   isOnlyStep: boolean;
+  isSubFormExpanded: boolean;
+  isPreviousSubFormExpanded: boolean;
+  onSubFormToggled: () => void;
   isMapSelectionMode?: boolean;
   isDestination?: boolean;
   onStartMapSelection?: () => void;
@@ -123,6 +129,9 @@ const PathStepItem = ({
   onOpClear,
   isTrailingPlaceHolder,
   isOnlyStep,
+  isSubFormExpanded,
+  isPreviousSubFormExpanded,
+  onSubFormToggled,
   isMapSelectionMode,
   isDestination,
   onStartMapSelection,
@@ -357,7 +366,17 @@ const PathStepItem = ({
     blurActiveElement();
   };
 
+  // TODO: find a better way to handle the counter link so its length is inherited from the elements height
+  const counterLinkSize = isPreviousSubFormExpanded
+    ? connectorLong
+      ? '214px'
+      : '194px'
+    : connectorLong
+      ? '44px'
+      : '24px';
+
   return (
+    <>
       <div
         className={cx('path-step-wrapper', {
           'is-placeholder': isTrailingPlaceHolder,
@@ -371,6 +390,7 @@ const PathStepItem = ({
           className={cx('path-step', {
             'requested-point': isTrackOffset,
             'map-selection-mode': isMapSelectionMode,
+            'unrecognized-waypoints-activated': unrecognizedWaypointsActivated,
           })}
         >
           <button
@@ -392,7 +412,7 @@ const PathStepItem = ({
                 : '',
               // @ts-expect-error: variable CSS custom property to be used to style ::before
               '--pathBackground': isTrailingPlaceHolder ? 'var(--black20)' : categoryColors.base,
-              '--counterLink': connectorLong ? '48px' : '28px',
+              '--counterLink': counterLinkSize,
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -427,6 +447,21 @@ const PathStepItem = ({
             </div>
           ) : (
             <>
+              {unrecognizedWaypointsActivated && (
+                <button
+                  type="button"
+                  className="path-step-subform-toggle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSubFormToggled();
+                  }}
+                  aria-expanded={isSubFormExpanded}
+                  aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+                  data-testid="path-step-subform-toggle"
+                >
+                  {isSubFormExpanded ? <TriangleDown size="lg" /> : <TriangleRight size="lg" />}
+                </button>
+              )}
               <div
                 role="button"
                 tabIndex={0}
@@ -619,6 +654,13 @@ const PathStepItem = ({
           )}
         </div>
       </div>
+      <PathStepSubForm
+        pathStep={pathStep}
+        pathStepMetadata={pathStepMetadata}
+        isSubFormExpanded={isSubFormExpanded}
+        isOpValid={isOpValid}
+      />
+    </>
   );
 };
 
