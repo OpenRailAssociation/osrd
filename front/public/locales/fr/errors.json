@@ -115,6 +115,7 @@
       "lines": {
         "LineNotFound": "Aucune ligne trouvée avec le code {{line_code}}"
       },
+      "not_found": "Infrastructure '{{infra_id}}' n'existe pas",
       "objects": {
         "DuplicateIdsProvided": "Identifiants d'objet fournis en double"
       },
