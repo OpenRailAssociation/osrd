@@ -429,16 +429,24 @@ impl InfraPatchForm {
     ),
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<Arc<DbConnectionPool>>,
-    Path(infra): Path<i64>,
+    Extension(authn_state): Extension<authentication::State>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Path(infra_id): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
     let infra_cs: Changeset<Infra> = patch.into_changeset();
     let infra = infra_cs
-        .update_or_fail(&mut db_pool.get().await?, infra, || {
-            InfraApiError::NotFound { infra_id: infra }
+        .update_or_fail(&mut db_pool.get().await?, infra_id, || {
+            InfraApiError::NotFound { infra_id }
         })
         .await?;
+
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanWrite)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
+
     Ok(Json(infra))
 }
 
