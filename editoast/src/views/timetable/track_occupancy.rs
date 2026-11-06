@@ -322,6 +322,7 @@ pub mod tests {
     use crate::error::InternalError;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
+    use axum::http::StatusCode;
     use chrono::Duration;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
@@ -329,7 +330,6 @@ pub mod tests {
     use core_client::simulation::ReportTrain;
     use models::OperationalPointModel;
     use pretty_assertions::assert_eq;
-    use reqwest::StatusCode;
     use rstest::rstest;
     use schemas::fixtures::ms_since_epoch;
     use schemas::infra::Direction;

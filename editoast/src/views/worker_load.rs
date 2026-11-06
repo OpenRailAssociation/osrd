@@ -136,10 +136,10 @@ mod tests {
     use super::*;
     use crate::fixtures::create_empty_infra;
 
+    use axum::http::StatusCode;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
     use database::DbConnectionPool;
-    use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
 

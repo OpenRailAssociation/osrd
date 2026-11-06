@@ -257,7 +257,6 @@ profile_connection_scan = { path = "./profile_connection_scan" }
 proptest.workspace = true
 rand.workspace = true
 rangemap.workspace = true
-reqwest.workspace = true
 schemas.workspace = true
 search = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

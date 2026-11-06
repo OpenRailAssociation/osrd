@@ -357,6 +357,7 @@ mod tests {
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use crate::views::train_schedule_set::TrainScheduleSetUpdateForm;
+    use axum::http::StatusCode;
     use chrono::Duration;
     use database::DbConnection;
     use models::CatalogEntry;
@@ -364,7 +365,6 @@ mod tests {
     use models::TrainScheduleSet;
     use models::TrainScheduleSetWithTimetable;
     use models::prelude::*;
-    use reqwest::StatusCode;
     use unit_system::units::second;
 
     async fn create_train_schedule_set_linked_to_catalog_entry(
