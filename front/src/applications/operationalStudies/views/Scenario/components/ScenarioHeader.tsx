@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { OptionGroup, type OptionGroupSection } from '@osrd-project/ui-core';
+import { OptionGroup } from '@osrd-project/ui-core';
 import {
   X,
   ChevronDown,
@@ -83,11 +83,12 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     timetableType === 'HOURLY'
       ? t('main.scenarioTimetableTypeHourly')
       : t('main.scenarioTimetableTypeCalendar');
-  const timetableSections: OptionGroupSection<number>[] = [
+  // The timetable name is optional, so we use its type as a fallback label
+  const timetableLabel = scenario.timetable_summaries[0].name ?? timetableTypeLabel;
+  const timetableSections = [
     {
       title: timetableTypeLabel,
-      icon: timetableTypeIcon,
-      items: [{ value: timetableId, label: timetableTypeLabel }],
+      items: [{ value: timetableId, label: timetableLabel }],
     },
   ];
 
@@ -188,9 +189,9 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                 <span
                   ref={timetableNameRef}
                   className="timetable-name-label"
-                  title={isTruncated.timetableName ? timetableTypeLabel : undefined}
+                  title={isTruncated.timetableName ? timetableLabel : undefined}
                 >
-                  {timetableTypeLabel}
+                  {timetableLabel}
                 </span>
                 <ChevronDown size="sm" />
               </button>
