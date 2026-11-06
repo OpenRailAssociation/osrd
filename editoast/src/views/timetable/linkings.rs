@@ -2,6 +2,7 @@ use super::AppState;
 use axum::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
@@ -9,7 +10,6 @@ use models::Timetable;
 use models::TrainScheduleLinking;
 use models::prelude::*;
 use models::train_schedule_linking::TrainScheduleLinkingChangeset;
-use reqwest::StatusCode;
 use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -346,7 +346,7 @@ mod tests {
     use std::collections::HashSet;
 
     use authz::Role;
-    use reqwest::StatusCode;
+    use axum::http::StatusCode;
     use serde_json::json;
 
     use crate::error::InternalError;

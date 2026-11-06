@@ -1548,7 +1548,6 @@ dependencies = [
  "proptest",
  "rand 0.10.3",
  "rangemap",
- "reqwest",
  "rstest",
  "schemas",
  "search",
