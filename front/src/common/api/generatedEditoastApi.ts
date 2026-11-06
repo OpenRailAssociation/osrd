@@ -4178,11 +4178,16 @@ export type MacroNoteBatchForm = {
   macro_notes: MacroNoteForm[];
   scenario_id: number;
 };
-export type LiveUpdateType = 'MacroNoteUpserted' | 'MacroNoteDeleted';
-export type LiveUpdateEvent = {
+export type LiveUpdateType =
+  | {
+      note_state: MacroNoteResponse;
+      type: 'MacroNoteUpserted';
+    }
+  | {
+      type: 'MacroNoteDeleted';
+    };
+export type LiveUpdateEvent = LiveUpdateType & {
   id: number;
-  note_state?: MacroNoteResponse;
-  type: LiveUpdateType;
 };
 export type LiveUpdateMessage = {
   /** Unix timestamp in milliseconds. */

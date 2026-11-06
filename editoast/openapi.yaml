@@ -12874,18 +12874,15 @@ components:
           items:
             $ref: '#/components/schemas/StdcmRequest'
     LiveUpdateEvent:
-      type: object
-      required:
-      - id
-      - type
-      properties:
-        id:
-          type: integer
-          format: int64
-        note_state:
-          $ref: '#/components/schemas/MacroNoteResponse'
-        type:
-          $ref: '#/components/schemas/LiveUpdateType'
+      allOf:
+      - $ref: '#/components/schemas/LiveUpdateType'
+      - type: object
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+            format: int64
     LiveUpdateMessage:
       type: object
       required:
@@ -12901,10 +12898,28 @@ components:
           items:
             $ref: '#/components/schemas/LiveUpdateEvent'
     LiveUpdateType:
-      type: string
-      enum:
-      - MacroNoteUpserted
-      - MacroNoteDeleted
+      oneOf:
+      - type: object
+        title: LiveUpdateTypeMacroNoteUpserted
+        required:
+        - note_state
+        - type
+        properties:
+          note_state:
+            $ref: '#/components/schemas/MacroNoteResponse'
+          type:
+            type: string
+            enum:
+            - MacroNoteUpserted
+      - type: object
+        title: LiveUpdateTypeMacroNoteDeleted
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - MacroNoteDeleted
     LoadingGaugeLimit:
       type: object
       required:
