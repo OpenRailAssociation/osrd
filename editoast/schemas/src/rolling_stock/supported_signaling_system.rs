@@ -10,6 +10,7 @@ use utoipa::ToSchema;
 
 use crate::rolling_stock::EtcsBrakeParams;
 
+#[editoast_derive::title_variants]
 #[derive(
     Clone,
     Debug,
@@ -23,7 +24,6 @@ use crate::rolling_stock::EtcsBrakeParams;
 )]
 #[educe(Hash, Eq, PartialEq)]
 #[serde(tag = "type")]
-#[schema(title_variants)]
 #[expect(
     clippy::large_enum_variant,
     reason = "we could `Box`, but API will be harder to use, compared to the lost memory, which is related to Rolling Stocks, not a lot of them."

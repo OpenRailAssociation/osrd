@@ -402,9 +402,9 @@ pub enum BaseTrainOrOccurrenceId {
     Base(i64),
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(tag = "type", rename_all = "snake_case")]
-#[schema(title_variants)]
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 pub enum OccurrenceId {
     Base {

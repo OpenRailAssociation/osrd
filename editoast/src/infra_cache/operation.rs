@@ -64,10 +64,10 @@ impl utoipa::PartialSchema for Operation {
             Delete,
         }
 
+        #[editoast_derive::title_variants]
         #[derive(ToSchema, Serialize)]
         #[serde(untagged)]
         #[expect(unused, reason = "only used as an OpenAPI schema")]
-        #[schema(title_variants)]
         enum Operation {
             Create {
                 #[schema(inline)]

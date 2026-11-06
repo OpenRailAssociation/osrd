@@ -5,9 +5,9 @@ use utoipa::ToSchema;
 // Energy sources schema
 
 /// energy source of a rolling stock
+#[editoast_derive::title_variants]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "energy_source_type", deny_unknown_fields)]
-#[schema(title_variants)]
 pub enum EnergySource {
     /// energy source for a rolling stock representing a electrification
     Electrification {
