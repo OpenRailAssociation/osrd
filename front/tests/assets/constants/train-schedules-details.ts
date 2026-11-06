@@ -33,7 +33,7 @@ export const PACED_DETAILS: DetailRow[] = [
   {
     stopsCount: itemStopSingular,
     pathLength: '47.7 km',
-    energyConsumed: '558 kWh',
+    energyConsumed: '557 kWh',
     durationTime: '00h21',
   },
 ];
@@ -48,7 +48,7 @@ export const UNIQUE_TRAIN_DETAILS: DetailRow[] = [
   {
     stopsCount: itemStopSingular,
     pathLength: '45.9 km',
-    energyConsumed: '1390 kWh',
+    energyConsumed: '1389 kWh',
     durationTime: '00h18',
   },
   {
@@ -60,7 +60,7 @@ export const UNIQUE_TRAIN_DETAILS: DetailRow[] = [
   {
     stopsCount: itemStops('2'),
     pathLength: '47.5 km',
-    energyConsumed: '912 kWh',
+    energyConsumed: '922 kWh',
     durationTime: '03h11',
   },
 ];
