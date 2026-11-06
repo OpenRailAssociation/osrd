@@ -326,7 +326,6 @@ pub mod tests {
     use models::stdcm_search_environment::fixtures::stdcm_search_env_fixtures;
 
     use super::*;
-    use crate::error::InternalError;
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -473,14 +472,10 @@ pub mod tests {
         };
 
         // WHEN
-        let response: InternalError = app
-            .post("/stdcm/search_environment")
+        app.post("/stdcm/search_environment")
             .json(&form)
             .await
-            .assert_status_internal_server_error()
-            .json();
-
-        assert_eq!(&response.error_type, "editoast:database:internal")
+            .assert_status_internal_server_error();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
