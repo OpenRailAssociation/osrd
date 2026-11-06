@@ -325,6 +325,10 @@ object EnvelopePhysics {
             pos = nextPos
             speed = nextSpeed
         }
+
+        assert(res.first().beginPos == part.beginPos)
+        assert(res.last().endPos == part.endPos)
+        assert(res.zipWithNext().all { it.first.endPos == it.second.beginPos })
         return res
     }
 }
