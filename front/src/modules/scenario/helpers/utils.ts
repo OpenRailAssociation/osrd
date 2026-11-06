@@ -45,7 +45,8 @@ export const cleanScenarioLocalStorage = (
 ) => {
   scenario.timetable_summaries.forEach(({ id: timetableId }) => {
     Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith(timetableId.toString())) {
+      // Keys built by getWaypointsLocalStorageKey
+      if (key.startsWith(`PathOperationalPoints-${timetableId}-`)) {
         localStorage.removeItem(key);
       }
     });
