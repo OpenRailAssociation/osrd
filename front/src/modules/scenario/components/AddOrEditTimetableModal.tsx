@@ -4,7 +4,11 @@ import { Button, Dialog, Input } from '@osrd-project/ui-core';
 import { noop } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { TimetableType } from 'common/api/osrdEditoastApi';
+import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 type AddOrEditTimetableModalProps = {
   timetableType: TimetableType;
@@ -15,6 +19,10 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
   'use memo';
 
   const { t } = useTranslation(['operational-studies', 'translation']);
+  const dispatch = useAppDispatch();
+  const { scenario } = useScenarioContextWithOptionalTimetable();
+  const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation();
+  const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
   const [name, setName] = useState('');
   const [displayError, setDisplayError] = useState(false);
 
@@ -25,15 +33,31 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
 
   const isNameInvalid = !name.trim();
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isNameInvalid) {
       setDisplayError(true);
       return;
     }
-    // TODO(#18904): create the timetable and attach it to the scenario once editoast
-    // supports linking several timetables to a scenario (#18863/#18857).
-    onCancel();
+    try {
+      const timetable = await postTimetable({
+        timetableForm: { timetable_type: timetableType, timetable_name: name.trim() },
+      }).unwrap();
+      // No need to create the sandbox here, useScenario creates it once the scenario is refetched
+      // The patch replaces all the timetables of the scenario, so we keep the existing ones
+      await patchScenario({
+        scenarioId: scenario.id,
+        scenarioPatchForm: {
+          timetable_ids: [
+            ...scenario.timetable_summaries.map(({ id }) => id),
+            timetable.timetable_id,
+          ],
+        },
+      }).unwrap();
+      onCancel();
+    } catch (error) {
+      dispatch(setFailure(castErrorToFailure(error)));
+    }
   };
 
   return (

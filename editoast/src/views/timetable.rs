@@ -114,6 +114,7 @@ pub(in crate::views) struct TimetableResult {
     pub timetable_id: i64,
     pub timetable_type: TimetableType,
     pub is_train_schedule_set: bool,
+    pub timetable_name: Option<String>,
 }
 
 impl From<Timetable> for TimetableResult {
@@ -122,6 +123,7 @@ impl From<Timetable> for TimetableResult {
             timetable_id: timetable.id,
             timetable_type: timetable.timetable_type.0,
             is_train_schedule_set: timetable.is_train_schedule_set,
+            timetable_name: timetable.name,
         }
     }
 }
@@ -135,12 +137,14 @@ pub struct TimetableIdParam {
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TimetableForm {
     timetable_type: schemas::timetable_type::TimetableType,
+    timetable_name: Option<String>,
 }
 
 impl TimetableForm {
     pub fn into_changeset(self) -> Changeset<Timetable> {
         Timetable::changeset()
             .timetable_type(models::timetable_type::TimetableType(self.timetable_type))
+            .name(self.timetable_name)
     }
 }
 
@@ -164,6 +168,47 @@ pub(in crate::views) async fn post(
     let response: TimetableResult = timetable.into();
 
     Ok((StatusCode::CREATED, Json(response)))
+}
+
+/// This structure is used by the patch endpoint to patch a timetable
+///
+/// The type of a timetable cannot be changed after its creation
+#[derive(Serialize, Deserialize, Default, ToSchema)]
+pub(in crate::views) struct TimetablePatchForm {
+    pub name: Option<String>,
+}
+
+impl TimetablePatchForm {
+    pub fn into_changeset(self) -> Changeset<Timetable> {
+        Timetable::changeset().name(self.name)
+    }
+}
+
+/// Update a timetable
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    patch, path = "",
+    tag = "timetable",
+    params(TimetableIdParam),
+    request_body = TimetablePatchForm,
+    responses(
+        (status = 201, description = "Timetable with train schedule ids", body = TimetableResult),
+    ),
+)]
+pub(in crate::views) async fn patch(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Path(TimetableIdParam { id }): Path<TimetableIdParam>,
+    Json(timetable_form): Json<TimetablePatchForm>,
+) -> Result<impl IntoResponse> {
+    let timetable = timetable_form
+        .into_changeset()
+        .update_or_fail(&mut db_pool.get().await?, id, || TimetableError::NotFound {
+            timetable_id: id,
+        })
+        .await?;
+    let response: TimetableResult = timetable.into();
+
+    Ok(Json(response))
 }
 
 /// Delete a timetable
@@ -1006,6 +1051,7 @@ mod tests {
     use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
+    use serde_json::json;
     use unit_system::units;
 
     use super::*;
@@ -1038,6 +1084,7 @@ mod tests {
             .post("/timetable")
             .json(&TimetableForm {
                 timetable_type: schemas::timetable_type::TimetableType::Hourly,
+                timetable_name: Some("Name".into()),
             })
             .await
             .assert_status(StatusCode::CREATED)
@@ -1050,6 +1097,28 @@ mod tests {
                 .expect("Timetable not found");
 
         assert_eq!(created_timetable, retrieved_timetable.into());
+        assert_eq!(created_timetable.timetable_name, Some("Name".into()));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn timetable_update() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+
+        let _ = app
+            .patch(format!("/timetable/{}", timetable.id).as_str())
+            .json(&json!({
+                "name": "updated name",
+            }))
+            .await
+            .assert_status(StatusCode::OK);
+
+        let timetable = Timetable::retrieve(pool.get_ok(), timetable.id)
+            .await
+            .unwrap();
+        assert_eq!(timetable.unwrap().name, Some("updated name".to_owned()));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

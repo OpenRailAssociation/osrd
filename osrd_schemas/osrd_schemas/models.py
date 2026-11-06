@@ -4475,6 +4475,16 @@ class TestOperation(BaseModel):
     """
 
 
+class TimetablePatchForm(BaseModel):
+    """
+    This structure is used by the patch endpoint to patch a timetable
+
+    The type of a timetable cannot be changed after its creation
+    """
+
+    name: StrictStr | None = None
+
+
 class TimetableType(Enum):
     CALENDAR = "CALENDAR"
     HOURLY = "HOURLY"
@@ -6075,6 +6085,7 @@ class ScenarioPatchForm(BaseModel):
     infra_id: StrictInt | None = None
     name: StrictStr | None = None
     tags: list[StrictStr] | None = None
+    timetable_ids: list[StrictInt] | None = None
 
 
 class SearchPayload(BaseModel):
@@ -6417,6 +6428,7 @@ class SwitchExtensions(BaseModel):
 
 
 class TimetableForm(BaseModel):
+    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 
@@ -6427,6 +6439,7 @@ class TimetableResult(BaseModel):
 
     is_train_schedule_set: StrictBool
     timetable_id: StrictInt
+    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 

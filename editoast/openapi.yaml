@@ -4142,6 +4142,31 @@ paths:
           description: No content
         '404':
           description: Timetable not found
+    patch:
+      tags:
+      - timetable
+      summary: Update a timetable
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimetablePatchForm'
+        required: true
+      responses:
+        '201':
+          description: Timetable with train schedule ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimetableResult'
   /timetable/{id}/conflicts:
     get:
       tags:
@@ -15199,6 +15224,13 @@ components:
           oneOf:
           - type: 'null'
           - $ref: '#/components/schemas/Tags'
+        timetable_ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: integer
+            format: int64
     ScenarioReference:
       type: object
       required:
@@ -17456,8 +17488,23 @@ components:
       required:
       - timetable_type
       properties:
+        timetable_name:
+          type:
+          - string
+          - 'null'
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
+    TimetablePatchForm:
+      type: object
+      description: |-
+        This structure is used by the patch endpoint to patch a timetable
+
+        The type of a timetable cannot be changed after its creation
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
     TimetableResult:
       type: object
       description: Creation result for a Timetable
@@ -17471,6 +17518,10 @@ components:
         timetable_id:
           type: integer
           format: int64
+        timetable_name:
+          type:
+          - string
+          - 'null'
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
     TimetableSummary:
