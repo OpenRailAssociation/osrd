@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use authz::InfraPrivilege;
+use authz::v2;
+use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -19,9 +22,11 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
+use crate::authentication;
 use crate::error::Result;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
+use crate::views::AuthorizationError;
 use models::map::ALLOWED_VIEWS;
 use models::map::GeoJsonAndData;
 use models::map::MAP_LAYER_NAMES;
@@ -161,17 +166,24 @@ struct TileParams {
 pub(in crate::views) async fn cache_and_get_mvt_tile(
     State(AppState {
         db_pool,
+        openfga,
         valkey_client,
         config,
         ..
     }): State<AppState>,
     Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
+    Extension(authn_state): Extension<authentication::State>,
 ) -> Result<impl IntoResponse> {
     let layer = match MAP_LAYERS.layers.get(layer_slug.as_str()) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug).into()),
     };
+
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
+
     let view = layer
         .get_view(view_slug.as_str())
         .ok_or_else(|| LayersError::new_view_not_found(view_slug.clone()))?;
