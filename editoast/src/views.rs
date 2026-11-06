@@ -538,6 +538,11 @@ enum DatabaseError {
 }
 
 #[derive(Debug, thiserror::Error, ViewError)]
+#[error("core error: {0}")]
+#[view_error(status = INTERNAL_SERVER_ERROR)]
+struct CoreError(#[from] core_client::Error);
+
+#[derive(Debug, thiserror::Error, ViewError)]
 #[error("openfga error: {0}")]
 #[view_error(status = INTERNAL_SERVER_ERROR, path = authorization::OpenFga)]
 struct OpenFgaError(#[from] ::authz::authorizers::Error);
