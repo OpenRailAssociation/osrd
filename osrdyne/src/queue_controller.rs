@@ -7,7 +7,7 @@ use lapin::Channel;
 use lapin::options::QueueBindOptions;
 use lapin::options::QueueDeclareOptions;
 use lapin::options::QueueDeleteOptions;
-use lapin::types::FieldTable;
+use lapin::types::{AMQPValue, FieldTable};
 use tokio::select;
 use tokio::sync::oneshot;
 use tokio::sync::watch;
@@ -181,6 +181,11 @@ async fn update_queue(
     new_state: Option<QueueStatus>,
 ) -> Result<(Key, Option<QueueStatus>), QueueUpdateError> {
     let queue_name = pool.key_queue_name(&key);
+    let mut queue_arguments = FieldTable::default();
+    queue_arguments.insert(
+        "x-queue-type".into(),
+        AMQPValue::LongString("quorum".into()),
+    );
     match new_state {
         Some(QueueStatus::Active) => {
             debug!(?key, "declaring and binding queue");
@@ -191,7 +196,7 @@ async fn update_queue(
                     durable: true,
                     ..Default::default()
                 },
-                FieldTable::default(),
+                queue_arguments.clone(),
             )
             .await?;
             chan.queue_bind(
@@ -212,7 +217,7 @@ async fn update_queue(
                     durable: true,
                     ..Default::default()
                 },
-                FieldTable::default(),
+                queue_arguments.clone(),
             )
             .await?;
             chan.queue_unbind(
