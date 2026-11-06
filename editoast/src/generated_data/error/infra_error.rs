@@ -20,6 +20,7 @@ pub struct InfraError {
     pub sub_type: InfraErrorType,
 }
 
+#[editoast_derive::title_variants]
 #[derive(Serialize, Deserialize, PartialEq, Debug, EnumDiscriminants, Clone, ToSchema)]
 #[strum(serialize_all = "snake_case")]
 #[strum_discriminants(derive(ToSchema, Deserialize, EnumString, AsRefStr))]
@@ -27,7 +28,6 @@ pub struct InfraError {
 #[strum_discriminants(serde(rename_all = "snake_case", deny_unknown_fields))]
 #[strum_discriminants(strum(serialize_all = "snake_case"))]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
-#[schema(title_variants)]
 pub enum InfraErrorType {
     DuplicatedGroup {
         original_group_path: String,

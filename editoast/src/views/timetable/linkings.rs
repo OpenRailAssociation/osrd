@@ -26,9 +26,9 @@ pub struct LinkingResponse {
     pub target: LinkingOccurrenceId,
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
-#[schema(title_variants)]
 pub enum LinkingOccurrenceId {
     Unique {
         train_schedule_id: i64,

@@ -78,8 +78,9 @@ impl PropertyElectrificationValues {
     }
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as = CorePropertyElectrificationValue, title_variants)]
+#[schema(as = CorePropertyElectrificationValue)]
 #[derive(PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PropertyElectrificationValue {

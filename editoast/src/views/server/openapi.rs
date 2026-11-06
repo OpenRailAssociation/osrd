@@ -283,7 +283,7 @@ fn get_one_of_schema_mut<'a>(
 }
 
 // Sets titles on `PatchOperation`'s oneOf variants.
-// `PatchOperation` is from the `json_patch` crate so we can't use `#[schema(title_variants)]`.
+// `PatchOperation` is from the `json_patch` crate so we can't use `#[editoast_derive::title_variants]`.
 fn set_patch_operation_titles(openapi: &mut utoipa::openapi::OpenApi) {
     let one_of = get_one_of_schema_mut(openapi, "PatchOperation");
     for item in &mut one_of.items {
@@ -400,7 +400,7 @@ fn check_item_titles<'a>(
     if titled.len() + untitled.len() >= 2 && !untitled.is_empty() {
         panic!(
             "openapi: a oneOf/anyOf item inside schema '{component_schema_name}' has no title. \
-            Add #[schema(title_variants)] on the enum or \
+            Add #[editoast_derive::title_variants] above the enum's first derive or \
             #[schema(title = \"...\")] on the specific variant."
         );
     }
