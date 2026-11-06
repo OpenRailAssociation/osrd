@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope_utils.DoubleUtils
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.areAccelerationsEqual
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.assert
 import kotlin.math.abs
@@ -284,7 +285,7 @@ object EnvelopePhysics {
         part: EnvelopePart,
         path: PhysicsPath,
         rollingStock: PhysicsRollingStock,
-        stepSize: Double = 10.0,
+        stepSize: Distance = 10.meters,
     ): List<MechanicalEnergyStep> {
         if (part.getAttr(EnvelopeProfile::class.java) == EnvelopeProfile.COASTING) {
             // Special case for coasting, avoids inaccuracies building up
@@ -299,7 +300,7 @@ object EnvelopePhysics {
         var pos = part.beginPos
         var speed = part.beginSpeed
         while (pos < part.endPos) {
-            val nextPos = min(part.endPos, pos + stepSize)
+            val nextPos = min(part.endPos, pos + stepSize.meters)
             val nextSpeed = part.interpolateSpeed(nextPos)
             val positionDelta = nextPos - pos
 
