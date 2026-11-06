@@ -23,9 +23,11 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
       ? t('main.scenarioAddHourlyPatternModalTitle')
       : t('main.scenarioAddCalendarModalTitle');
 
+  const isNameInvalid = !name.trim();
+
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name.trim()) {
+    if (isNameInvalid) {
       setDisplayError(true);
       return;
     }
@@ -69,7 +71,7 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
           value={name}
           onChange={(e) => setName(e.target.value)}
           statusWithMessage={
-            displayError
+            displayError && isNameInvalid
               ? {
                   message: t('main.scenarioTimetableNameInvalid'),
                   status: 'error',
