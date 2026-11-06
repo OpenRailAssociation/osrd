@@ -984,7 +984,7 @@ dependencies = [
 requires-dist = [
     { name = "osrd-schemas", editable = "../osrd_schemas" },
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.410" },
-    { name = "pytest", marker = "extra == 'check'", specifier = "~=9.1.1" },
+    { name = "pytest", marker = "extra == 'check'", specifier = ">=9.1.1,<9.3.0" },
     { name = "pytest-cov", marker = "extra == 'check'", specifier = "~=7.1.0" },
     { name = "ruff", marker = "extra == 'check'", specifier = ">=0.16.1,<0.18.0" },
 ]
