@@ -22,4 +22,11 @@ export const HOME_URLS = {
   editor: /.*\/editor\/*/,
   stdcm: /.*\/stdcm/,
   rollingStockEditor: /.*\/rolling-stock-editor/,
+  error403: /.*\/403/,
 };
+
+export const INFRA_EDITOR_URL = '/editor';
+
+export const MAP_URL = '/map/';
+
+export const ROLLING_STOCK_EDITOR_URL = '/rolling-stock-editor/';

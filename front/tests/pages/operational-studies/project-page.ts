@@ -69,6 +69,12 @@ class ProjectPage extends HomePage {
       .toContain(cleanText(expectedObjectives));
   }
 
+  async openProjectListAndCheckItIsDisplayed() {
+    await this.page.goto(PROJECT_URLS.list);
+    await expect(this.page).toHaveURL(PROJECT_URLS.list);
+    await expect(this.addProjectButton).toBeVisible();
+  }
+
   async createProject(details: ProjectDetails) {
     await this.waitForSpinnerToDisappear();
     await expect(this.addProjectButton).toBeVisible();

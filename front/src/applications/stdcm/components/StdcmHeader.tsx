@@ -132,6 +132,7 @@ const StdcmHeader = ({
           <button
             type="button"
             aria-label="stdcm-impersonated"
+            data-testid="stop-impersonation-btn"
             className="impersonated ml-4"
             onClick={() => impersonate(undefined)}
           >
