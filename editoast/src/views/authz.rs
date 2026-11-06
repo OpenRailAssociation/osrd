@@ -1243,6 +1243,39 @@ pub(in crate::views) async fn create_group(
     Ok((StatusCode::CREATED, Json(group_info)))
 }
 
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum DeleteGroupError {
+    #[error(transparent)]
+    GroupNotFound(
+        #[from]
+        #[view_error]
+        GroupNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    delete,
+    path = "",
+    tag = "authz",
+    params(("id" = i64, Path, description = "The group id")),
+    responses((status = 204, description = "Delete a group"), DeleteGroupError),
+)]
+pub(in crate::views) async fn delete_group(
+    State(AppState { db_pool, .. }): State<AppState>,
+    Path(group_id): Path<i64>,
+) -> Result<impl IntoResponse, DeleteGroupError> {
+    let mut conn = db_pool.get().await?;
+    if models::Group::delete_static(&mut conn, group_id).await? {
+        Ok(StatusCode::NO_CONTENT)
+    } else {
+        Err(DeleteGroupError::GroupNotFound(GroupNotFound { group_id }))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use authz::ProjectGrant;
@@ -4294,6 +4327,72 @@ mod tests {
             name: created_group.name,
         };
         assert_eq!(registered_group, expected_group);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_group() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let group = app.group("Antimemetics Division").create().await;
+
+        app.delete(&format!("/authz/groups/{}", group.id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        // Check that the group has been correctly deleted from the database:
+        let group_from_db = models::Group::retrieve(conn, group.id)
+            .await
+            .expect("database error while retrieving the created group");
+        assert!(group_from_db.is_none());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_group_requires_admin_role() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let regular_user = app.user("John Smith", "regular_joe").create().await;
+        let group = app.group("Antimemetics Division").create().await;
+
+        // A regular user should not be able to delete the group:
+
+        app.delete(&format!("/authz/groups/{}", group.id))
+            .by_user(regular_user.as_ref())
+            .await
+            .assert_status_forbidden();
+
+        let group_from_db = models::Group::retrieve(conn.clone(), group.id)
+            .await
+            .expect("database error while retrieving the created group");
+        assert_eq!(
+            group_from_db,
+            Some(Group {
+                id: group.id,
+                name: group.info.name
+            })
+        );
+
+        // But an admin can:
+
+        app.delete(&format!("/authz/groups/{}", group.id))
+            .by_user(admin.as_ref())
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
+
+        let group_from_db = models::Group::retrieve(conn, group.id)
+            .await
+            .expect("database error while retrieving the created group");
+        assert!(group_from_db.is_none());
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
