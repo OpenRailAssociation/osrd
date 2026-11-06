@@ -859,7 +859,7 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
 /// Set links between a timetable and train schedule sets
 /// If a link already exists, it is ignored
 /// If a link exists and is not in the new list, it is removed
-#[editoast_derive::route]
+#[editoast_derive::route(authz::Role::OperationalStudies)]
 #[utoipa::path(
     post, path = "",
     tags = ["timetable", "train_schedule_set"],
