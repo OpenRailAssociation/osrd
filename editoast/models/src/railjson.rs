@@ -133,7 +133,7 @@ pub async fn persist_railjson(
                 Ok(())
             })
         })
-        .await
+        .await?
 }
 
 pub async fn find_all_schemas<T, C>(

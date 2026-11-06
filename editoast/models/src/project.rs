@@ -46,7 +46,7 @@ async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), cra
                 Err(e) => Err(e),
             }
         })
-        .await;
+        .await?;
     match res {
         Ok(_) => Ok(()),
         Err(crate::Error::ForeignKeyViolation { constraint })
@@ -104,7 +104,7 @@ impl Project {
             }
             Ok::<_, crate::Error>(())
         })
-        .await?;
+        .await??;
         Ok(())
     }
 
@@ -126,7 +126,7 @@ impl Project {
             }
             Ok(())
         })
-        .await
+        .await?
     }
 
     /// Opens a transaction querying a [Project] and calls the provided function with it
@@ -161,7 +161,7 @@ impl Project {
 
             Ok(Ok(res))
         })
-        .await
+        .await?
     }
 }
 

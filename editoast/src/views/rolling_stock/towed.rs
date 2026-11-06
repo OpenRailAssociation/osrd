@@ -187,7 +187,7 @@ pub(in crate::views) async fn put_by_id(
                 Ok(existing_rolling_stock)
             }
         })
-        .await?;
+        .await??;
 
     Ok(Json(new_towed_rolling_stock))
 }

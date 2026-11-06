@@ -153,11 +153,14 @@ impl DbConnection {
     //
     // :WARNING: If you ever need to modify this function, please take a look at the
     // original `diesel` function, they probably do it right more than us.
-    pub async fn transaction<R, E, F, Fut>(&self, callback: F) -> std::result::Result<R, E>
+    pub async fn transaction<R, E, F, Fut>(
+        &self,
+        callback: F,
+    ) -> std::result::Result<Result<R, E>, DatabaseError>
     where
         F: FnOnce(Self) -> Fut,
         Fut: Future<Output = std::result::Result<R, E>>,
-        E: From<DatabaseError>,
+        E: std::error::Error + From<DatabaseError>,
     {
         use diesel_async::TransactionManager as _;
 
@@ -176,15 +179,15 @@ impl DbConnection {
                 TxManager::commit_transaction(handle.deref_mut())
                     .await
                     .map_err(DatabaseError)?;
-                Ok(result)
+                Ok(Ok(result))
             }
             Err(callback_error) => {
                 let mut handle = self.write().await;
                 match TxManager::rollback_transaction(handle.deref_mut()).await {
                     Ok(()) | Err(diesel::result::Error::BrokenTransactionManager) => {
-                        Err(callback_error)
+                        Ok(Err(callback_error))
                     }
-                    Err(rollback_error) => Err(E::from(DatabaseError(rollback_error))),
+                    Err(rollback_error) => Err(DatabaseError(rollback_error)),
                 }
             }
         }

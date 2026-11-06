@@ -942,7 +942,7 @@ async fn apply_edit(
                 Ok(railjsons)
             })
         })
-        .await
+        .await?
 }
 
 #[derive(Debug, Clone, Error, EditoastError)]

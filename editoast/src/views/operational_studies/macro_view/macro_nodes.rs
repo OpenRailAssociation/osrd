@@ -287,7 +287,7 @@ pub(in crate::views) async fn update(
 
             Ok::<_, MacroNodeError>(updated_macro_node)
         })
-        .await?;
+        .await??;
 
     Ok(Json(MacroNodeResponse::from(updated_macro_node)))
 }
@@ -327,7 +327,7 @@ pub(in crate::views) async fn delete(
 
         Ok::<_, MacroNodeError>(())
     })
-    .await?;
+    .await??;
 
     Ok(StatusCode::NO_CONTENT)
 }

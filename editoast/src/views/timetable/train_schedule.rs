@@ -240,7 +240,7 @@ pub(in crate::views) async fn update_train_schedule(
                 .await?;
             Ok::<_, TrainScheduleError>(())
         })
-        .await?;
+        .await??;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
 }

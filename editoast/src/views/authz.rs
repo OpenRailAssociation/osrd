@@ -795,7 +795,7 @@ pub(in crate::views) async fn resource_granted_users(
 
             Ok((users, groups))
         })
-        .await?;
+        .await??;
 
     // We have everything we need to build the response.
     let subjects_grant = subjects_id

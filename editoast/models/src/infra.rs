@@ -240,7 +240,7 @@ impl Infra {
             }
 
             Ok(cloned_infra)
-        })).await
+        })).await?
     }
 
     /// Delete efficiently all the data of the infra.
@@ -291,7 +291,7 @@ impl Infra {
                 Self::delete_static(&mut conn.clone(), infra_id).await
             })
         })
-        .await
+        .await?
     }
 }
 

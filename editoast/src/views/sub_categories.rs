@@ -132,7 +132,7 @@ pub(in crate::views) async fn delete_sub_category(
     conn.transaction(|mut tx| {
         Box::pin(async move { delete_sub_category_and_fallback_to_main(&mut tx, code).await })
     })
-    .await?;
+    .await??;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
 }

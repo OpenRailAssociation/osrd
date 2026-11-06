@@ -47,7 +47,7 @@ impl User {
             user.add_identities(conn, identities).await?;
             Ok(user)
         })
-        .await
+        .await?
     }
 
     /// Add one or more identity to this user

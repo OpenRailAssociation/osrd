@@ -151,7 +151,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
                     register_origin_user(conn.clone(), (identity, name)).await?
                 })
             })
-            .await?
+            .await??
         }
         crate::authentication::Mode::Impersonating {
             impersonator_identity,
@@ -184,7 +184,7 @@ pub(in crate::views) async fn authentication_validation_middleware(
                     )
                 }
             })
-            .await?
+            .await??
         }
         crate::authentication::Mode::Skip => (None, ::authz::v2::Protected::default()),
         crate::authentication::Mode::Unauthenticated => {

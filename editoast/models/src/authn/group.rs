@@ -25,7 +25,7 @@ impl Group {
                 Ok(group)
             }
         })
-        .await
+        .await?
     }
 }
 

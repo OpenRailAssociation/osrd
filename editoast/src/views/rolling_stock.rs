@@ -380,7 +380,7 @@ pub(in crate::views) async fn update(
                 Ok(previous_rolling_stock)
             }
         })
-        .await?;
+        .await??;
 
     let new_rolling_stock_with_liveries =
         RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, new_rolling_stock).await?;
