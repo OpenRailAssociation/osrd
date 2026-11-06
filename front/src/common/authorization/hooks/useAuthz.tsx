@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi, type Role } from 'common/api/osrdEditoastApi';
 import { getIsSuperUser, getUserRoles, getUserId } from 'reducers/user/userSelectors';
 import { getErrorMessage } from 'utils/error';
+import { unwrapRequestWithSignal } from 'utils/helpers';
 
 import type { Grant, Privilege, ResourceType } from '../types';
 
@@ -54,8 +55,14 @@ export default function useAuthz() {
    * Retrieve grants of the connected user for a list of resources.
    */
   const getUserGrants = useCallback(
-    async (resources: Partial<Record<ResourceType, number[]>>) => {
-      const result = await retrieveUserGrants({ body: resources }).unwrap();
+    async (
+      resources: Partial<Record<ResourceType, number[]>>,
+      opts: { signal?: AbortSignal } = {}
+    ) => {
+      const result = await unwrapRequestWithSignal(
+        () => retrieveUserGrants({ body: resources }),
+        opts
+      );
       return Object.keys(result).reduce(
         (accByType, resourceType) => {
           accByType[resourceType as ResourceType] = result[resourceType].reduce(
@@ -77,30 +84,27 @@ export default function useAuthz() {
    * Retrieve privileges of the connected user for a list of resources.
    */
   const getUserPrivileges = useCallback(
-    async (resources: Partial<Record<ResourceType, number[]>>, signal?: AbortSignal) => {
-      if (signal?.aborted) throw signal.reason ?? new Error('Aborted');
-      const request = retrieveUserPrivileges({ body: resources });
-      const abortRequest = () => request.abort();
-      signal?.addEventListener('abort', abortRequest, { once: true });
-
-      try {
-        const result = await request.unwrap();
-        return Object.keys(result).reduce(
-          (accByType, resourceType) => {
-            accByType[resourceType as ResourceType] = result[resourceType].reduce(
-              (accById, item) => {
-                accById[item.resource_id] = new Set(item.privileges);
-                return accById;
-              },
-              {} as { [id: number]: Set<Privilege> }
-            );
-            return accByType;
-          },
-          {} as Partial<Record<ResourceType, { [id: number]: Set<Privilege> }>>
-        );
-      } finally {
-        signal?.removeEventListener('abort', abortRequest);
-      }
+    async (
+      resources: Partial<Record<ResourceType, number[]>>,
+      opts: { signal?: AbortSignal } = {}
+    ) => {
+      const result = await unwrapRequestWithSignal(
+        () => retrieveUserPrivileges({ body: resources }),
+        opts
+      );
+      return Object.keys(result).reduce(
+        (accByType, resourceType) => {
+          accByType[resourceType as ResourceType] = result[resourceType].reduce(
+            (accById, item) => {
+              accById[item.resource_id] = new Set(item.privileges);
+              return accById;
+            },
+            {} as { [id: number]: Set<Privilege> }
+          );
+          return accByType;
+        },
+        {} as Partial<Record<ResourceType, { [id: number]: Set<Privilege> }>>
+      );
     },
     [retrieveUserPrivileges]
   );
@@ -109,8 +113,13 @@ export default function useAuthz() {
    *  Check if the connected user has the specified privileges.
    */
   const checkUserPrivileges = useCallback(
-    async (resourceType: ResourceType, resourceId: number, privileges: Privilege[]) => {
-      const result = await getUserPrivileges({ [resourceType]: [resourceId] });
+    async (
+      resourceType: ResourceType,
+      resourceId: number,
+      privileges: Privilege[],
+      opts: { signal?: AbortSignal } = {}
+    ) => {
+      const result = await getUserPrivileges({ [resourceType]: [resourceId] }, opts);
       const userPrivileges = result[resourceType]?.[resourceId] ?? new Set();
       return privileges.every((privilege) => userPrivileges.has(privilege));
     },

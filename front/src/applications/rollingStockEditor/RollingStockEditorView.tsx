@@ -70,7 +70,7 @@ const RollingStockEditor = () => {
         if (selectedRollingStockId === undefined) return undefined;
         const data = await getUserPrivileges(
           { rolling_stock: [selectedRollingStockId] },
-          controller.signal
+          { signal: controller.signal }
         );
         return {
           id: selectedRollingStockId,

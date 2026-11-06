@@ -52,13 +52,19 @@ const InfraSelectorModalBodyEdition = ({
 
   // Get the user privileges for infras
   const { getUserPrivileges } = useAuthz();
-  const userPrivilegesByInfraId = useAsyncMemo(async () => {
-    const data = await getUserPrivileges({
-      infra: infrasList.map((infra) => infra.id),
-    });
-    return data.infra || {};
-    // redraw is in the deps to force the reload of the privileges when the user changes his own grant
-  }, [getUserPrivileges, JSON.stringify(infrasList.map((infra) => infra.id))]);
+  const userPrivilegesByInfraId = useAsyncMemo(
+    async (controller) => {
+      const data = await getUserPrivileges(
+        {
+          infra: infrasList.map((infra) => infra.id),
+        },
+        { signal: controller.signal }
+      );
+      return data.infra || {};
+      // redraw is in the deps to force the reload of the privileges when the user changes his own grant
+    },
+    [getUserPrivileges, JSON.stringify(infrasList.map((infra) => infra.id))]
+  );
 
   const validateFile = async (fileToValidate: File): Promise<string | undefined> => {
     if (fileToValidate.size === 0) {
