@@ -2008,7 +2008,9 @@ export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   };
 };
 export type PostInfraByInfraIdObjectsAndObjectTypeApiResponse =
-  /** status 200 The list of objects */ InfraObjectWithGeometry[];
+  /** status 200 The objects indexed by their id */ {
+    [key: string]: NullableInfraObject;
+  };
 export type PostInfraByInfraIdObjectsAndObjectTypeApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -3715,6 +3717,7 @@ export type InfraObjectWithGeometry = {
   obj_id: string;
   railjson: object;
 };
+export type NullableInfraObject = null | InfraObjectWithGeometry;
 export type CorePropertyGeometryProjection = {
   /** Geometric offsets in millimeters, processed using haversine formula.
     Starts with 0 and is increasing. */

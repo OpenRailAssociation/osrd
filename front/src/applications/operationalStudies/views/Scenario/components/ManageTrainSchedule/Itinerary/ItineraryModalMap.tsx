@@ -214,9 +214,10 @@ const ItineraryModalMap = ({
           body: [objectId],
         }).unwrap();
 
-        if (!result.length) return;
+        const opObject = result[objectId];
+        if (!opObject) return;
 
-        const op = result[0].railjson as OperationalPoint;
+        const op = opObject.railjson as OperationalPoint;
         const clickedTrackName = feature.properties?.local_track_name ?? null;
 
         setPendingOpClick({

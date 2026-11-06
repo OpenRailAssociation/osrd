@@ -45,7 +45,7 @@ describe('useCachedTrackSections', () => {
 
   it('should return some track sections', async () => {
     postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
-      data: [trackVAInfraObject, trackVBInfraObject],
+      data: { VA: trackVAInfraObject, VB: trackVBInfraObject },
     });
 
     const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
@@ -66,7 +66,7 @@ describe('useCachedTrackSections', () => {
 
   it('should always return the full cache even if we only request a subset later', async () => {
     postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
-      data: [trackVAInfraObject, trackVBInfraObject],
+      data: { VA: trackVAInfraObject, VB: trackVBInfraObject },
     });
 
     const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
@@ -85,7 +85,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should deduplicate track IDs to only fetch those that are not in cache', async () => {
-    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: [trackVAInfraObject] });
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: { VA: trackVAInfraObject } });
 
     const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
 
@@ -102,7 +102,7 @@ describe('useCachedTrackSections', () => {
     });
 
     postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
-      data: [trackVAInfraObject, trackVBInfraObject],
+      data: { VA: trackVAInfraObject, VB: trackVBInfraObject },
     });
 
     const trackSections2 = await result.current.getTrackSectionsByIds(['VA', 'VB']);
@@ -118,7 +118,7 @@ describe('useCachedTrackSections', () => {
 
   it('should not call the API at all once the result is cached', async () => {
     postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
-      data: [trackVAInfraObject, trackVBInfraObject],
+      data: { VA: trackVAInfraObject, VB: trackVBInfraObject },
     });
 
     const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
@@ -133,6 +133,21 @@ describe('useCachedTrackSections', () => {
     await result.current.getTrackSectionsByIds(['VC']);
 
     expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledTimes(2);
+  });
+
+  it('should keep the known track sections when some are not in the infra', async () => {
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({
+      data: { VA: trackVAInfraObject, VC: null },
+    });
+
+    const { result } = renderHookWithStore(() => useCachedTrackSections(infraId));
+
+    const trackSections = await result.current.getTrackSectionsByIds(['VA', 'VC']);
+    expect(trackSections).toEqual({ VA: trackVA });
+
+    // The unknown track section is cached as missing, it is not requested again
+    await result.current.getTrackSectionsByIds(['VC']);
+    expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledTimes(1);
   });
 
   it('should emit errors in the console if the call fails', async () => {
@@ -157,7 +172,7 @@ describe('useCachedTrackSections', () => {
   });
 
   it('should change infraId parameter in queries if changed', async () => {
-    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: [trackVAInfraObject] });
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: { VA: trackVAInfraObject } });
 
     const { result, rerender } = renderHookWithStore(
       (hookInfraId: number) => useCachedTrackSections(hookInfraId),
@@ -175,7 +190,7 @@ describe('useCachedTrackSections', () => {
 
     rerender(5678);
 
-    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: [trackVBInfraObject] });
+    postInfraByInfraIdObjectsAndObjectType.mockResolvedValue({ data: { VB: trackVBInfraObject } });
     await result.current.getTrackSectionsByIds(['VB']);
     expect(postInfraByInfraIdObjectsAndObjectType).toHaveBeenCalledWith({
       infraId: 5678,
