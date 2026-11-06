@@ -1,1 +1,225 @@
-{}
+{
+  "401": "Utente non autenticato",
+  "403": "Accesso rifiutato",
+  "404": "Risorsa non trovata",
+  "500": "Errori del server",
+  "502": "Errori del server",
+  "503": "Errori del server",
+  "504": "Il server non risponde.",
+  "core": {
+    "assert_error": "Controllare errore in {{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "Richieste STDCM che non finiscono con uno stop non sono ancora supportate"
+  },
+  "default": "Si è verificato un errore.",
+  "editoast": {
+    "DatabaseAccessError": "Errore fatale di accesso al database",
+    "JoinError": {
+      "cancelled": "Lavoro annullato",
+      "panic": "Panico",
+      "unhandled_add_case_here": "JoinError inaspettato"
+    },
+    "app_health": {
+      "Core": "Errore nel Core",
+      "Database": "Errore nel database",
+      "Openfga": "Errore in OpenFGA",
+      "Timeout": "Il servizio non ha risposto in tempo",
+      "Valkey": "Errore in Valkey"
+    },
+    "attached": {
+      "TrackNotFound": "Binario {{track_id}} non trovato"
+    },
+    "authorization": {
+      "DbError": "Errore fatale di accesso al database",
+      "Forbidden": "Accesso rifiutato",
+      "ForbiddenImpersonation": "Impersonificazione rifiutata",
+      "ImpersonatedUserNotFound": "Utente impersonato sconosciuto",
+      "OpenFga": "Errore di autenticazione/autorizzazione, riprova o contatta il supporto",
+      "Unauthenticated": "Utente non autenticato"
+    },
+    "authz": {
+      "Authorizer": "Errore interno",
+      "Authz": "Errore interno di autenticazione/autorizzazione, riprova o contatta il supporto",
+      "Database": "Errore interno (database)",
+      "Driver": "Errore interno di autenticazione/autorizzazione, riprova o contatta il supporto",
+      "GrantsApiMisuse": "Utilizzo improprio dell'API",
+      "IncompatibleGrant": "Autorizzazione incompatibile con il tipo di risorsa fornito",
+      "NoSuchUser": "Utente sconosciuto",
+      "UnknownIdentities": "Identità sconosciute '{{identities}}'",
+      "UnknownResource": "Risorsa sconosciuta",
+      "UnknownResourceType": "Tipo di risorsa sconosciuto",
+      "UnknownSubject": "Soggetto sconosciuto",
+      "UnknownUser": "Utente '{{id}}' sconosciuto"
+    },
+    "authz_legacy": {
+      "Openfga": "Errore interno",
+      "Storage": "Errore interno",
+      "UnknownResource": "Risorsa sconosciuta",
+      "UnknownSubject": "Soggetto sconosciuto",
+      "UnknownUser": "Utente '{{id}}' sconosciuto"
+    },
+    "auto_fixes": {
+      "ConflictingFixesOnSameObject": "Correzioni in conflitto per lo stesso oggetto nella stessa iterazione di correzioni",
+      "FixTrialFailure": "Fallito mentre provavo ad applicare le correzioni",
+      "MaximumIterationReached": "Raggiunto il massimo numero di iterazioni per correggere l'infrastruttura senza riuscire ad applicare ogni possibile correzione",
+      "MissingErrorObject": "Fallito nel trovare l'oggetto dell'errore"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {obj_id}}: esiste di già un duplicato",
+      "ObjectNotFound": "{{obj_type}} {{obj_id}} non è stato trovato da nessuna parte nella cache dell'infrastruttura"
+    },
+    "catalog_entry": {
+      "Database": "Errore interno (database)",
+      "NotFound": "Voce '{{catalog_entry_id}}' del catalogo non è stata trovata"
+    },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "La lunghezza di un percorso non può essere nulla."
+      }
+    },
+    "coreclient": {
+      "BrokenPipe": "Connessione fondamentale col Core rotta. Riprova.",
+      "CannotExtractResponseBody": "Impossibile estrarre il corpo della risposta dal Core: {{msg}}",
+      "CoreResponseFormatError": "Impossibile analizzare la risposta del Core: {{msg}}",
+      "MqClientError": "Core: errore del client MQ",
+      "UnparsableErrorOutput": "Core ha restituito un errore in un formato sconosciuto"
+    },
+    "database": {
+      "internal": "Errore interno (database)"
+    },
+    "delimited_area": {
+      "InvalidLocations": "Alcuni luoghi sono invalidi"
+    },
+    "document": {
+      "not_found": "Documento '{{document_key}}' non trovato"
+    },
+    "electrical_profiles": {
+      "Database": "Errore interno (database)",
+      "NotFound": "Set Profilo Elettrico '{{electrical_profile_set_id}}' non trovato"
+    },
+    "fonts": {
+      "file_not_found": "File per il font richiesto non trovato"
+    },
+    "geometry": {
+      "UnexpectedGeometry": "Geometria {{expected}} attesa, ma ottenuto {{actual}}"
+    },
+    "icons": {
+      "FileNotFound": "File non trovato"
+    },
+    "infra": {
+      "Database": "Errore interno",
+      "NotFound": "Infrastruttura '{{infra_id}}' non trovata",
+      "edition": {
+        "InfraIsLocked": "Infrastruttura bloccata",
+        "SplitTrackSectionBadOffset": "Distanza per dividere la sezione '{{tracksection_id}}' del binario nell'infrastruttura '{{infra_id}}' invalida. Deve essere compresa tra 0 e {{tracksection__length}} metri."
+      },
+      "errors": {
+        "WrongErrorTypeProvided": "Tipo di errore fornito errato"
+      },
+      "lines": {
+        "LineNotFound": "No linea con codice {{line_code}} trovata"
+      },
+      "objects": {
+        "DuplicateIdsProvided": "Oggetti con id duplicati forniti",
+        "ObjectIdNotFound": "Oggetto '{{object_id}}' non trovato"
+      },
+      "pathfinding": {
+        "EndingTrackLocationNotFound": "Posizione del termine della rotaia non trovato",
+        "InvalidNumberOfPaths": "Il ricercatore del sentiero non può restituire 5 sentieri (attesi: [1-5])",
+        "StartingTrackLocationNotFound": "La posizione della rotaia di partenza non è stata trovata"
+      }
+    },
+    "infra_cache": {
+      "ObjectNotFound": "{{obj_type}} '{{obj_id}}' non è stato trovato da nessuna parte nella cache dell'infrastruttura"
+    },
+    "infra_state": {
+      "FetchError": "Errore durante il recupero dello status di caricamento dell'infrastruttura"
+    },
+    "layers": {
+      "LayerNotFound": "Livello {{layer_name}} non trovato.",
+      "ViewNotFound": "Vista {{view_name}} non trovata."
+    },
+    "level_crossing": {
+      "Database": "Errore interno (database)",
+      "InfraNotFound": "Infrastruttura '{{infra_id}}' non trovata.",
+      "LevelCrossingBatchNotFound": "'{{count}}' passaggio/i a livello non trovati.",
+      "TimetableNotFound": "Tabella oraria '{{timetable_id}}' non trovata.",
+      "TrainBatchNotFound": "'{{count}}' treno/i cadenzati non trovati.",
+      "UnsupportedTimetableType": "Tabelle orarie per ogni ora non supportate."
+    },
+    "macro_node": {
+      "Database": "Errore interno",
+      "NotFound": "Nodo {{node_id}} non trovato.",
+      "ScenarioNotFound": "Scenario '{{scenario_id}}' non trovato"
+    },
+    "macro_note": {
+      "Database": "Errore interno (database)",
+      "NotFound": "Nota '{{note_id}}' non trovata.",
+      "ScenarioNotFound": "Scenario '{{scenario_id}}' non trovato",
+      "WrongScenario": "Nota '{note_id}' non appartiene allo scenario '{scenario_id}'"
+    },
+    "model": {
+      "ModelError": "Errore interno (richiesta al database)"
+    },
+    "operation": {
+      "EmptyId": "Id stringa vuoto è vietato",
+      "InvalidPatch": "È avvenuto un errore in una Patch Json",
+      "ModifyId": "Un'operazione di aggiornamento ha provato a modificare l'id di un oggetto; è un'operazione vietata",
+      "ObjectNotFound": "L'Oggetto '{{obj_id}}' non è stato trovato nell'infrastruttura '{{infra_id}}'"
+    },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "Attese {{expected}} distanze, ma ottenute {{found}}",
+      "InvalidNumberOfRefs": "Attesi almeno due punti di riferimento operativi"
+    },
+    "pathfinding": {
+      "Database": "Errore interno (database)",
+      "ElectricalProfilesOverlap": "Il Profilo Elettrico si sovrappone con altri",
+      "ElectrificationOverlap": "Elettrificazione '{{electrification_id}}' si sovrappone con altre elettrificazioni",
+      "InfraNotFound": "Infrastruttura '{{infra_id}}' non esiste",
+      "NotFound": "Percorso {{pathfinding_id}} non esiste",
+      "OperationalPointsNotFound": "Punti operazionali non esistono: {{operational_points}}",
+      "RollingStockNotFound": "Materiale rotabile con id '{{rolling_stock_id}}' non esiste",
+      "TrackSectionsNotFound": "Sezioni di rotaia non esistono: {{track_sections}}"
+    },
+    "postgres": {
+      "Host": "Host invalido '{{hostname}}'",
+      "Password": "Password invalida",
+      "Port": "Porta invalida '{{port}}'",
+      "Username": "Username invalido"
+    },
+    "project": {
+      "Database": "Errore interno",
+      "ImageError": "L'immagine fornita è invalida",
+      "ImageNotFound": "L'immagine '{{document_key}}' non è stata trovata",
+      "NotFound": "Il progetto '{{project_id}}' non è stato trovato"
+    },
+    "railjson": {
+      "UnsupportedVersion": "Versione railjson non supportata"
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "La classe di potenza base è una stringa vuota",
+      "CannotCreateCompoundImage": "Impossibile copiare l'immagine separata su un'immagine composta",
+      "CannotReadImage": "Impossibile leggere l'immagine separata",
+      "Database": "Errore interno (database)",
+      "IsLocked": "Materiale rotabile '{{rolling_stock_id}}' è bloccato",
+      "IsUsed": "Materiale rotabile '{{rolling_stock_id}}' è utilizzato",
+      "KeyNotFound": "Materiale rotabile '{{rolling_stock_key.key}}' non trovato",
+      "LiveryMultipartError": "Richiesta multiparte invalida durante il caricamento di una livrea",
+      "NameAlreadyUsed": "Nome '{{name}}' già utilizzato"
+    },
+    "round_trips": {
+      "Database": "Errore interno (database)",
+      "DuplicateTrainIds": "Il payload contiene ID di treni duplicati, che non è autorizzato",
+      "TimetableNotFound": "Tabella oraria '{{timetable_id}}' non trovata"
+    },
+    "scenario": {
+      "Database": "Errore interno (database)",
+      "InfraNotFound": "Infrastruttura '{{infra_id}}' non trovata",
+      "NotFound": "Scenario non trovato",
+      "StudyNotFound": "Studio '{{study_id}}' non trovato",
+      "TimetableNotFound": "Tabella oraria '{{timetable_id}}' non trovata"
+    },
+    "search": {
+      "ArgMissing": "Argomento di tipo {{expected}} alla posizione {{arg_pos}} mancante"
+    }
+  }
+}
