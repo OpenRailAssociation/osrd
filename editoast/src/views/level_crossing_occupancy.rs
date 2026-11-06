@@ -386,11 +386,11 @@ mod tests {
     use authz::InfraGrant;
     use authz::Role;
     use authz::RollingStockGrant;
+    use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use diesel::data_types::PgInterval;
-    use reqwest::StatusCode;
     use schemas::infra::LevelCrossingPart;
     use schemas::train_schedule::PathItem;
 

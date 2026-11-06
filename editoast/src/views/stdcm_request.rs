@@ -7,6 +7,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use editoast_derive::ViewError;
@@ -16,7 +17,6 @@ use models::prelude::Create as _;
 use models::prelude::DeleteStatic as _;
 use models::stdcm_request::PaginatedList;
 use models::stdcm_request::SelectionSettings;
-use reqwest::StatusCode;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -271,10 +271,10 @@ pub mod tests {
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
     use authz::Role;
+    use axum::http::StatusCode;
     use database::DbConnection;
     use models::prelude::Changeset;
     use models::prelude::Create as _;
-    use reqwest::StatusCode;
 
     async fn request_fixture(conn: &mut DbConnection, rmi_id: &str, user_id: i64) -> StdcmRequest {
         Changeset::<StdcmRequest>::default()

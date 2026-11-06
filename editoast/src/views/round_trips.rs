@@ -210,9 +210,9 @@ pub(in crate::views) async fn list(
 mod tests {
     use super::*;
 
+    use axum::http::StatusCode;
     use database::DbConnection;
     use pretty_assertions::assert_eq;
-    use reqwest::StatusCode;
 
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_timetable_with_train_schedule_set;
