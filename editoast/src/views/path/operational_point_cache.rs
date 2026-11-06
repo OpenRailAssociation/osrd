@@ -223,6 +223,21 @@ impl OperationalPointCache {
         }
     }
 
+    /// Retrieve IDs of the operational points that are sharing the same country code + main code as a given reference
+    pub fn get_station_op_ids(&self, op_ref: &OperationalPointReference) -> Vec<String> {
+        let Some(reference_op) = self.get_reference(op_ref.clone()) else {
+            return Vec::new();
+        };
+        self.ops
+            .iter()
+            .filter(|op| {
+                op.country_code == reference_op.country_code
+                    && op.main_code == reference_op.main_code
+            })
+            .map(|op| op.obj_id.clone())
+            .collect()
+    }
+
     /// Extract locations from path items
     pub fn extract_location_from_path_items<L: Borrow<PathItemLocation>>(
         &self,

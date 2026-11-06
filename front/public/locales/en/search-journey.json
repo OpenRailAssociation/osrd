@@ -15,7 +15,8 @@
     "title": "Origin"
   },
   "results": {
-    "noResult": "No result",
+    "extendedSearchWarning": "No results for the requested CH: the proposed solutions include other CH of the same stations.",
+    "noResult": "No results",
     "solution": "Solution {{number}}",
     "solutionTitles": {
       "closestDeparture": "Closest to requested departure time",

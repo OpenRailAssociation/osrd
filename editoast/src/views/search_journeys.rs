@@ -68,6 +68,11 @@ pub(in crate::views) struct JourneySearchQuery {
     origin: OperationalPointPartReference,
     destination: OperationalPointPartReference,
 
+    /// If true, the search is made on the whole stations of origin and destination:
+    /// all the op sharing the country code + main code with the given ones are considered.
+    #[serde(default)]
+    search_whole_stations: bool,
+
     /// Constant time for a transfer/footpath in the same stop in milliseconds.
     ///
     /// The algorithm assumes that changing from one train to another in a stop
@@ -160,6 +165,7 @@ pub(in crate::views) async fn search_journeys(
         start_tolerance,
         origin,
         destination,
+        search_whole_stations,
         transfer_ms,
     }): Json<JourneySearchQuery>,
 ) -> Result<Json<JourneyProposals>> {
@@ -239,17 +245,26 @@ pub(in crate::views) async fn search_journeys(
         .map(|(index, op_id)| (op_id, index))
         .collect();
 
-    let Some(origin_index) = find_op_index(&op_cache, &op_index_by_id, &origin.operational_point)
-    else {
-        return Err(Error::InvalidInput {
+    let origin_indices = find_op_indices(
+        &op_cache,
+        &op_index_by_id,
+        &origin.operational_point,
+        search_whole_stations,
+    );
+    let destination_indices = find_op_indices(
+        &op_cache,
+        &op_index_by_id,
+        &destination.operational_point,
+        search_whole_stations,
+    );
+
+    if origin_indices.is_empty() {
+        Err(Error::InvalidInput {
             message: "origin not found in the infra",
         })?;
     };
-
-    let Some(destination_index) =
-        find_op_index(&op_cache, &op_index_by_id, &destination.operational_point)
-    else {
-        return Err(Error::InvalidInput {
+    if destination_indices.is_empty() {
+        Err(Error::InvalidInput {
             message: "destination not found in the infra",
         })?;
     };
@@ -325,20 +340,10 @@ pub(in crate::views) async fn search_journeys(
                         arrival_path_index: arrival.path_index,
                     })
                     .filter(|path_indexed_connection| {
-                        // Simple filters to reduce the size of the problem.
-
+                        // Simple filter to reduce the size of the problem.
                         // The connection isn't too early for the traveler to take it
-                        let departs_late_enough = (start_ms as i64 - start_tolerance as i64)
-                            <= path_indexed_connection.connection.departure_ms as i64;
-
-                        // If the connection departs from the source OP, it
-                        // doesn't depart too late for the traveler to take it
-                        let departs_early_enough = path_indexed_connection.connection.departure
-                            != origin_index
-                            || path_indexed_connection.connection.departure_ms
-                                <= start_ms + start_tolerance;
-
-                        departs_early_enough && departs_late_enough
+                        (start_ms as i64 - start_tolerance as i64)
+                            <= path_indexed_connection.connection.departure_ms as i64
                     })
             })
             .collect();
@@ -360,8 +365,8 @@ pub(in crate::views) async fn search_journeys(
                 connections,
                 start_ms,
                 start_tolerance,
-                start: origin_index,
-                end: destination_index,
+                start: origin_indices,
+                end: destination_indices,
                 transfer_ms,
             });
 
@@ -406,4 +411,24 @@ fn find_op_index(
 ) -> Option<usize> {
     let op_ref_id = op_cache.get_op_ref_id(op_ref)?;
     op_index_by_id.get(&op_ref_id).copied()
+}
+
+/// Find the indices of the op matching `op_ref`, or of all the op of its station if `search_whole_stations` is enabled.
+fn find_op_indices(
+    op_cache: &OperationalPointCache,
+    op_index_by_id: &HashMap<String, usize>,
+    op_ref: &OperationalPointReference,
+    search_whole_stations: bool,
+) -> Vec<usize> {
+    if search_whole_stations {
+        op_cache
+            .get_station_op_ids(op_ref)
+            .iter()
+            .filter_map(|op_id| op_index_by_id.get(op_id).copied())
+            .collect()
+    } else {
+        find_op_index(op_cache, op_index_by_id, op_ref)
+            .into_iter()
+            .collect()
+    }
 }

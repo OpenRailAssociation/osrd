@@ -15,12 +15,13 @@
     "title": "Origine"
   },
   "results": {
+    "extendedSearchWarning": "Aucun résultat pour les CH demandés: les solutions proposées incluent d'autres CH des mêmes gares.",
     "noResult": "Aucun résultat",
     "solution": "Solution {{number}}",
     "solutionTitles": {
       "closestDeparture": "Horaire le plus proche",
       "fastest": "Plus rapide",
-      "fewestTransfers": "Moins de transfert"
+      "fewestTransfers": "Moins de transferts"
     },
     "trainPathPrefix": "Sillon n° "
   },

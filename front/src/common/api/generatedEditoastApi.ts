@@ -4662,6 +4662,9 @@ export type JourneySearchQuery = {
   destination: OperationalPointPartReference;
   infra_id: number;
   origin: OperationalPointPartReference;
+  /** If true, the search is made on the whole stations of origin and destination:
+    all the op sharing the country code + main code with the given ones are considered. */
+  search_whole_stations?: boolean;
   /** Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
     
     The start window is defined as the time between
