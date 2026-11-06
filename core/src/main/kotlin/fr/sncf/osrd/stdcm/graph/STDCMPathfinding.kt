@@ -57,6 +57,7 @@ fun findPath(
     comfort: Comfort?,
     startTime: Double,
     steps: List<ExplorerStep>,
+    forcedOpStops: List<ExplorerStep>,
     blockAvailability: BlockAvailabilityInterface,
     timeStep: Double,
     maxDepartureDelay: Double,
@@ -75,6 +76,7 @@ fun findPath(
             comfort,
             startTime,
             steps,
+            forcedOpStops,
             blockAvailability,
             timeStep,
             maxDepartureDelay,
@@ -96,6 +98,7 @@ class STDCMPathfinding(
     private val comfort: Comfort?,
     private val startTime: Double,
     private val steps: List<ExplorerStep>,
+    private val forcedOpStops: List<ExplorerStep>,
     private val blockAvailability: BlockAvailabilityInterface,
     private val timeStep: Double,
     private val maxDepartureDelay: Double,
@@ -133,7 +136,7 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        starts = getStartNodes(graph, consistSchedule)
+        starts = getStartNodes(graph, consistSchedule, forcedOpStops)
 
         // If we are in a dead end, and the destination is not reached, the pathfinding should fail
         if (starts.isEmpty()) return null
@@ -283,13 +286,23 @@ class STDCMPathfinding(
     }
 
     /** Converts start locations into starting nodes. */
-    private fun getStartNodes(graph: STDCMGraph, consistSchedule: ConsistSchedule): Set<STDCMNode> {
+    private fun getStartNodes(
+        graph: STDCMGraph,
+        consistSchedule: ConsistSchedule,
+        forcedOpStops: List<ExplorerStep>,
+    ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)
         for (location in firstStep.locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(fullInfra, location, consistSchedule, steps)
+                initInfraExplorerWithEnvelope(
+                    fullInfra,
+                    location,
+                    consistSchedule,
+                    steps,
+                    forcedOpStops,
+                )
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
                 val node =
@@ -307,6 +320,7 @@ class STDCMPathfinding(
                         explorer as InfraExplorerWithEnvelope,
                         null,
                         location.offset,
+                        null,
                         null,
                         firstStep.plannedTimingData,
                         null,

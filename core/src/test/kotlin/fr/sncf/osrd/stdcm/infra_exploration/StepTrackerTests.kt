@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
@@ -34,33 +35,80 @@ class StepTrackerTests {
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
                 ExplorerStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
             )
-        val tracker = StepTracker(steps)
+        val tracker = StepTracker(steps, emptyList())
 
-        val firstSteps =
-            tracker.exploreBlockRange(blocks[0], Offset(25.meters), Offset(100.meters), false)
+        val firstBlockRange =
+            BlockRange(
+                value = blocks[0],
+                objectBegin = Offset(25.meters),
+                objectEnd = Offset(100.meters),
+                pathBegin = Offset(0.meters),
+                pathEnd = Offset(75.meters),
+                objectLength = Offset(100.meters),
+            )
+        val firstSteps = tracker.exploreBlockRange(firstBlockRange, false)
         val expectedFirstSteps =
             listOf(
-                LocatedStep(Offset(25.meters), steps[0].locations.single(), steps[0]),
+                LocatedStep(
+                    Offset(25.meters),
+                    steps[0].locations.single(),
+                    steps[0],
+                    stopType = null,
+                ),
                 LocatedStep(
                     Offset(26.meters),
                     BlockLocation(blocks[0], Offset(51.meters)),
                     steps[1],
+                    stopType = null,
                 ),
             )
         assertEquals(expectedFirstSteps, firstSteps)
-        val second =
-            tracker.exploreBlockRange(blocks[1], Offset(0.meters), Offset(100.meters), false)
+        val secondBlockRange =
+            BlockRange(
+                value = blocks[1],
+                objectBegin = Offset(0.meters),
+                objectEnd = Offset(100.meters),
+                pathBegin = Offset(75.meters),
+                pathEnd = Offset(175.meters),
+                objectLength = Offset(100.meters),
+            )
+        val second = tracker.exploreBlockRange(secondBlockRange, false)
         val expectedSecond =
             listOf(
-                LocatedStep(Offset(75.meters), steps[2].locations.single(), steps[2]),
-                LocatedStep(Offset(175.meters), steps[3].locations.single(), steps[3]),
+                LocatedStep(
+                    Offset(75.meters),
+                    steps[2].locations.single(),
+                    steps[2],
+                    stopType = null,
+                ),
+                LocatedStep(
+                    Offset(175.meters),
+                    steps[3].locations.single(),
+                    steps[3],
+                    stopType = null,
+                ),
             )
         assertEquals(expectedSecond, second)
         assertFalse { tracker.hasSeenDestination() }
-        val third =
-            tracker.exploreBlockRange(blocks[2], Offset(0.meters), Offset(100.meters), false)
+        val thirdBlockRange =
+            BlockRange(
+                value = blocks[2],
+                objectBegin = Offset(0.meters),
+                objectEnd = Offset(100.meters),
+                pathBegin = Offset(175.meters),
+                pathEnd = Offset(275.meters),
+                objectLength = Offset(100.meters),
+            )
+        val third = tracker.exploreBlockRange(thirdBlockRange, false)
         val expectedThird =
-            listOf(LocatedStep(Offset(275.meters), steps[4].locations.single(), steps[4]))
+            listOf(
+                LocatedStep(
+                    Offset(275.meters),
+                    steps[4].locations.single(),
+                    steps[4],
+                    stopType = null,
+                ),
+            )
         assertEquals(expectedThird, third)
         assertTrue { tracker.hasSeenDestination() }
         assertEquals(

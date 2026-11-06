@@ -47,6 +47,7 @@ data class STDCMPathfindingBuilder(
     var standardAllowance: AllowanceValue? = null,
     var blockAvailability: BlockAvailabilityInterface? = null,
     var temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+    var forcedOpStops: MutableList<ExplorerStep> = ArrayList(),
 ) {
     // endregion OPTIONAL
     // region SETTERS
@@ -118,6 +119,11 @@ data class STDCMPathfindingBuilder(
     /** Add a step to the path */
     fun addStep(step: ExplorerStep): STDCMPathfindingBuilder {
         steps.add(step)
+        return this
+    }
+
+    fun addForcedOpStop(forcedOpStop: ExplorerStep): STDCMPathfindingBuilder {
+        forcedOpStops.add(forcedOpStop)
         return this
     }
 
@@ -203,6 +209,7 @@ data class STDCMPathfindingBuilder(
             comfort,
             startTime,
             steps,
+            forcedOpStops,
             blockAvailabilityAdapter,
             timeStep,
             maxDepartureDelay,
