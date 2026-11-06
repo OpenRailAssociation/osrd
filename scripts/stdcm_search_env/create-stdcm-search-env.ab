@@ -1,0 +1,90 @@
+#!/usr/bin/env amber
+
+// Reproduces locally the STDCM search environment of an OSRD env for a given date.
+//
+// Usage: amber create-stdcm-search-env.ab <date YYYY-MM-DD> <env: dev|rec|prod>
+// Run from the current directory containing `.env` (see .env_example)
+// The script takes 25-30 min
+//
+// Steps:
+//   1. Find the last search env whose search window includes the date
+//   2. Copy its infra (railjson) locally
+//   3. Create a local timetable and copy the train schedules starting that day (UTC)
+//   4. Download the timetable cache from S3 as development-<infra>-<version>-<timetable>.json.gz
+//   5. Create a local work schedule group and copy the work schedules overlapping that day (UTC)
+//   6. Create the local search env, pointing to the local copies, valid for one year
+//
+// Requires: Amber 0.6, curl >= 7.82, jq, AWS CLI (SSO profiles named after the envs),
+// Docker with editoast running, and a `.env` with GATEWAY_COOKIE_<ENV> and CURL_CA_BUNDLE.
+
+import { array_contains } from "std/array"
+import { parse_int } from "std/text"
+import { log_info, log_error } from "./logger.ab"
+import { is_valid_date } from "./dates.ab"
+import { api_url, load_gateway_cookie, editoast_auth, json_field } from "./editoast.ab"
+import { find_remote_stdcm_search_env, copy_infra, copy_train_schedules, copy_timetable_cache, copy_work_schedules, create_local_search_env } from "./steps.ab"
+
+const VALID_ENVS = ["dev", "rec", "prod"]
+
+fun usage() {
+    echo("Usage: amber create-stdcm-search-env.ab <date YYYY-MM-DD> <env> [local_infra_id]")
+    echo("  env: one of {VALID_ENVS}")
+    echo("  local_infra_id: existing local infra to use instead of copying the remote one")
+}
+
+fun exit_with_usage(message: Text): Null {
+    log_error(message)
+    usage()
+    exit(1)
+}
+
+main(args) {
+    if len(args) < 3 or len(args) > 4 {
+        usage()
+        exit(1)
+    }
+    const date = args[1]
+    const env = args[2]
+    if not is_valid_date(date) {
+        exit_with_usage("Invalid date '{date}', expected YYYY-MM-DD")
+    }
+    if not array_contains(VALID_ENVS, env) {
+        exit_with_usage("Invalid env '{env}'")
+    }
+
+    // If local_infra_id not given, the remote infra is copied
+    let local_infra_id = 0
+    if len(args) == 4 {
+        local_infra_id = parse_int(args[3])?
+    }
+
+    log_info("Creating STDCM search env from '{env}' for date {date}")
+
+    const remote_url = api_url(env)?
+    const remote_auth = editoast_auth(load_gateway_cookie(env)?, false)
+    const local_url = api_url("local")?
+    const local_auth = editoast_auth(load_gateway_cookie("local", false)?, true)
+
+    // Every temporary file goes here, will be removed when the script exits
+    const work_dir = $ mktemp -d $?
+    trust $ trap "rm -rf '{work_dir}'" EXIT $
+
+    const search_env = find_remote_stdcm_search_env(remote_url, remote_auth, date, work_dir)?
+    const search_env_id = json_field(search_env, "id")?
+    const infra_id = json_field(search_env, "infra_id")?
+    const timetable_id = json_field(search_env, "timetable_id")?
+    const work_schedule_group_id = json_field(search_env, "work_schedule_group_id")?
+    log_info("✅ Found STDCM search env: id={search_env_id}, infra_id={infra_id}, timetable_id={timetable_id}, work_schedule_group_id={work_schedule_group_id}")
+
+    if local_infra_id == 0 {
+        local_infra_id = copy_infra(remote_url, remote_auth, env, infra_id, work_dir)?
+    } else {
+        log_info("--------- 2. Use the existing local infra {local_infra_id} (railjson copy skipped) ---------")
+    }
+    const local_timetable_id = copy_train_schedules(remote_url, remote_auth, timetable_id, local_url, local_auth, env, date, work_dir)?
+    copy_timetable_cache(env, timetable_id, local_infra_id, local_timetable_id)?
+    const local_work_schedule_group_id = copy_work_schedules(remote_url, remote_auth, work_schedule_group_id, local_url, local_auth, env, date, work_dir)?
+    create_local_search_env(local_url, local_auth, search_env, date, local_infra_id, local_timetable_id, local_work_schedule_group_id, work_dir)?
+
+    log_info("✅ STDCM search env created locally from '{env}' for date {date}")
+}
