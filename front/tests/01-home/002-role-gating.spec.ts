@@ -5,6 +5,8 @@ import { E2E_USERS } from '../assets/constants/permission-const';
 import { STDCM_URL } from '../assets/constants/stdcm/stdcm-const';
 import { PROJECT_URLS } from '../assets/operation-studies/project-const';
 import test from '../page-object-fixture';
+import { waitForInfraStateToBeCached } from '../utils';
+import { getInfra } from '../utils/api-utils';
 
 test.describe('Role gating', { tag: ['@home', '@permissions'] }, () => {
   test.afterEach('Stop the impersonation', async ({ homePage }) => {
@@ -25,6 +27,7 @@ test.describe('Role gating', { tag: ['@home', '@permissions'] }, () => {
   test('A Stdcm only user is only offered STDCM', async ({ page, homePage, stdcmPage }) => {
     await homePage.impersonateUser(E2E_USERS.stdcmOnly);
     await expect(page).toHaveURL(HOME_URLS.stdcm);
+    await waitForInfraStateToBeCached((await getInfra()).id);
     await expect(stdcmPage.helpButton).toBeVisible();
 
     await page.goto(PROJECT_URLS.list);

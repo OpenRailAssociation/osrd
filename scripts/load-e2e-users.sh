@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Create the users impersonated by the front end-to-end permission tests.
-# Their names are declared in front/tests/assets/constants/permission-const.ts.
+# Their names and identities are declared in front/tests/assets/constants/permission-const.ts.
 # The script can be run several times: existing users are skipped.
 #
 
