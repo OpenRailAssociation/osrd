@@ -1545,6 +1545,7 @@ dependencies = [
  "postgis_diesel",
  "pretty_assertions",
  "profile_connection_scan",
+ "proptest",
  "rand 0.10.3",
  "rangemap",
  "reqwest",

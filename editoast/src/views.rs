@@ -104,6 +104,9 @@ fn service_router() -> server::router::DocumentedRouter {
                     .nests("/user", |path| {
                         path.route("/info", post!(authz::users_info))
                     })
+                    .nests("/users", |path| {
+                        path.route("/", post!(authz::create_user))
+                    })
                     .route("/groups", get!(authz::list_groups))
             })
             //
@@ -527,11 +530,12 @@ where
     }
 }
 
-#[derive(Debug, thiserror::Error, ViewError)]
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
 enum DatabaseError {
     #[error("database error: {0}")]
+    #[from(database::DatabaseError, models::Error)]
     #[view_error(status = INTERNAL_SERVER_ERROR)]
-    Internal(#[from] models::Error),
+    Internal(models::Error),
     #[error("database unavailable: {0}")]
     #[view_error(status = SERVICE_UNAVAILABLE)]
     Unavailable(#[from] database::DatabasePoolError),

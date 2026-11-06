@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::error::Result;
+use crate::views::DatabaseError;
+use crate::views::OpenFgaError;
 use crate::views::authz::resources::IncompatibleGrant;
 use crate::views::authz::resources::Resource;
 use crate::views::authz::resources::StandardGrant;
@@ -31,6 +33,7 @@ use axum::response::Json;
 use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use futures::TryStreamExt as _;
 use itertools::Itertools as _;
 use models::Group;
@@ -1051,6 +1054,133 @@ pub(in crate::views) async fn list_groups(
     groups.sort_by_key(|g| g.id);
 
     Ok(Json(groups))
+}
+
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub(in crate::views) struct CreateUserForm {
+    name: String,
+    identities: Vec<String>,
+    groups: HashSet<i64>,
+    roles: HashSet<Role>,
+}
+
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("The group `{group_id}` does not exist")]
+#[view_error(status = NOT_FOUND, context, path = group::not_found)]
+pub(in crate::views) struct GroupNotFound {
+    group_id: i64,
+}
+
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum CreateUserError {
+    #[error("no identity provided for the new user")]
+    #[view_error(status = UNPROCESSABLE_ENTITY)]
+    NoIdentityProvided,
+    #[error(transparent)]
+    GroupNotFound(
+        #[from]
+        #[view_error]
+        GroupNotFound,
+    ),
+    #[error("the provided identity `{identity:?}` is already associated with another user")]
+    #[view_error(status = CONFLICT)]
+    IdentityAlreadyExists { identity: String },
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    OpenFgaError(
+        #[from]
+        #[view_error]
+        OpenFgaError,
+    ),
+}
+
+impl From<models::authn::user::AddIdentitiesError> for CreateUserError {
+    fn from(value: models::authn::user::AddIdentitiesError) -> Self {
+        match value {
+            models::authn::user::AddIdentitiesError::DuplicateIdentity(identity) => {
+                CreateUserError::IdentityAlreadyExists { identity }
+            }
+            models::authn::user::AddIdentitiesError::Error(error) => {
+                CreateUserError::Database(DatabaseError::from(error))
+            }
+        }
+    }
+}
+
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    post,
+    path = "",
+    tag = "authz",
+    request_body(
+        content = inline(CreateUserForm),
+        description = "User to create, with its identities, groups, and roles",
+    ),
+    responses((status = 201, description = "User created", body = inline(UserInfo)), CreateUserError),
+)]
+pub(in crate::views) async fn create_user(
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Json(CreateUserForm {
+        name,
+        identities,
+        groups,
+        roles,
+    }): Json<CreateUserForm>,
+) -> Result<(StatusCode, Json<UserInfo>), CreateUserError> {
+    let mut conn = db_pool.get().await.map_err(DatabaseError::from)?;
+
+    if identities.is_empty() {
+        return Err(CreateUserError::NoIdentityProvided);
+    }
+
+    // Check that the input groups all exist:
+    let (groups, missing): (HashSet<Group>, _) = Group::retrieve_batch(&mut conn, groups)
+        .await
+        .map_err(DatabaseError::from)?;
+    if let Some(subject_id) = missing.into_iter().next() {
+        return Err(CreateUserError::GroupNotFound(GroupNotFound {
+            group_id: subject_id,
+        }));
+    }
+
+    // Persist the user and its roles or rollback if anything fails:
+    let created_user = conn
+        .transaction::<models::User, CreateUserError, _, _>(async |conn| {
+            // Persist the user in the database:
+            let new_user = User::register(conn.clone(), identities.clone(), name.clone()).await?;
+
+            // Persist the user groups and roles in OpenFGA:
+            let authz_user = authz::User(new_user.id);
+            let add_groups_op =
+                v2::Protected::from_iter(groups.iter().map(|group| {
+                    v2::add_members(authz::Group(group.id), HashSet::from([authz_user]))
+                }));
+            let add_roles_op = v2::add_roles(authz::Subject::user(authz_user), roles.clone());
+            let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+            add_roles_op
+                .zip(add_groups_op)
+                .run::<OpenFgaError, _>(&system_authorizer)
+                .await?;
+
+            Ok(new_user)
+        })
+        .await?;
+
+    Ok((
+        StatusCode::CREATED,
+        Json(UserInfo {
+            id: created_user.id,
+            name,
+            identities,
+            roles,
+            groups,
+        }),
+    ))
 }
 
 #[cfg(test)]
@@ -3881,6 +4011,185 @@ mod tests {
             .skip_authz()
             .await
             .assert_status_unauthorized();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_user() {
+        let app = test_app!().build();
+        let conn = app.db_pool().get_ok();
+
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let groups = HashSet::from([
+            app.group("group_1").create().await,
+            app.group("group_2").create().await,
+        ]);
+
+        let create_user_form = CreateUserForm {
+            name: "alice".to_string(),
+            identities: vec!["identity_1".to_string(), "identity_2".to_string()],
+            groups: groups.iter().map(|group| group.id).collect::<HashSet<_>>(),
+            roles: HashSet::from([Role::Stdcm, Role::OperationalStudies]),
+        };
+
+        let created_user = app
+            .post("/authz/users")
+            .by_user(admin.as_ref())
+            .json(&create_user_form)
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json::<UserInfo>();
+
+        let expected_user_info = UserInfo {
+            id: created_user.id, // we don't care about this field in the comparison
+            name: create_user_form.name.clone(),
+            identities: create_user_form.identities.clone(),
+            roles: create_user_form.roles.clone(),
+            groups: HashSet::from_iter(groups.iter().map(|group| models::Group {
+                id: group.id,
+                name: group.info.name.clone(),
+            })),
+        };
+        assert_eq!(created_user, expected_user_info);
+
+        // Check that the tuples of the user groups and roles have been created in openfga:
+
+        let openfga = app.openfga();
+        let user_roles = openfga
+            .subject_roles(&authz::Subject::user(created_user.id))
+            .await;
+        assert_eq!(
+            user_roles,
+            HashSet::from([Role::Stdcm, Role::OperationalStudies])
+        );
+
+        let user_groups = openfga.user_groups(authz::User(created_user.id)).await;
+        assert_eq!(
+            user_groups,
+            create_user_form
+                .groups
+                .into_iter()
+                .map(authz::Group)
+                .collect::<HashSet<_>>()
+        );
+
+        // Check that the created user is persisted matches all the identities that we gave him:
+
+        let users = UserWithIdentities::retrieve_by_identity(
+            conn.clone(),
+            &created_user
+                .identities
+                .first()
+                .expect("returned user contains no identities"),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            users,
+            Some(UserWithIdentities {
+                user: models::User {
+                    id: created_user.id,
+                    name: created_user.name
+                },
+                identities: created_user.identities
+            })
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_user_requires_admin_role() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let regular_user = app.user("alice", "identity").create().await;
+
+        app.post("/authz/users")
+            .by_user(regular_user.as_ref())
+            .json(&json!({
+                "name": "bob",
+                "identities": ["ross"],
+                "groups": [],
+                "roles": [],
+            }))
+            .await
+            .assert_status_forbidden();
+
+        app.post("/authz/users")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "name": "bob",
+                "identities": ["ross"],
+                "groups": [],
+                "roles": [],
+            }))
+            .await
+            .assert_status(StatusCode::CREATED);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_user_nonexistent_group() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let group = app.group("CHOAM").create().await;
+
+        // nonexistent group
+        app.post("/authz/users")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "name": "bob",
+                "identities": ["ross"],
+                "groups": [group.id, i64::MAX],
+                "roles": [Role::OperationalStudies],
+            }))
+            .await
+            .assert_status_not_found();
+
+        // valid groups
+        app.post("/authz/users")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "name": "bob",
+                "identities": ["ross"],
+                "groups": [group.id],
+                "roles": [Role::OperationalStudies, Role::Stdcm],
+            }))
+            .await
+            .assert_status(StatusCode::CREATED);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_user_duplicate_identity() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+
+        let alice = app.user("alice", "identity").create().await;
+
+        app.post("/authz/users")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "name": "bob",
+                "identities": [alice.info.identities.first().unwrap()],
+                "groups": [],
+                "roles": [],
+            }))
+            .await
+            .assert_status_conflict();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
