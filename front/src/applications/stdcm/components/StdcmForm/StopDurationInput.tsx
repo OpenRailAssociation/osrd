@@ -66,9 +66,13 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
         id="stdcm-via-stop-time"
         testIdPrefix="stdcm-via-stop-time"
         type="text"
+        inputMode="numeric"
         label={t('trainPath.stopFor')}
         onChange={(e) => {
-          setStopDuration(e.target.value);
+          // The API only takes whole minutes, so ignore anything that isn't a digit
+          if (/^\d*$/.test(e.target.value)) {
+            setStopDuration(e.target.value);
+          }
         }}
         value={stopDuration}
         trailingContent="minutes"
