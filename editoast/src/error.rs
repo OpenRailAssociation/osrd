@@ -190,16 +190,6 @@ impl EditoastError for diesel_async::pooled_connection::deadpool::PoolError {
     }
 }
 
-impl EditoastError for reqwest::Error {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
-
-    fn get_type(&self) -> &str {
-        "editoast:ReqwestError"
-    }
-}
-
 impl EditoastError for serde_json::Error {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR

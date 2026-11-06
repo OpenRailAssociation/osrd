@@ -774,6 +774,7 @@ mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use authz::InfraGrant;
     use authz::RollingStockGrant;
+    use axum::http::StatusCode;
     use core_client::conflict_detection::ConflictDetectionResponse;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingResultSuccess;
@@ -786,7 +787,6 @@ mod tests {
     use core_client::simulation::SpacingRequirement;
     use core_client::simulation::SpeedLimitProperties;
     use models::train_schedule::TrainScheduleChangeset;
-    use reqwest::StatusCode;
     use rstest::rstest;
     use schemas::TrainScheduleExceptionChangeGroups;
     use schemas::infra::Direction;
