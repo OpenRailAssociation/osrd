@@ -4,9 +4,9 @@ use utoipa::ToSchema;
 
 use crate::rolling_stock::TrainMainCategory;
 
+#[editoast_derive::title_variants]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(untagged)]
-#[schema(title_variants)]
 pub enum TrainCategory {
     #[schema(title = "TrainCategoryMain")]
     Main { main_category: TrainMainCategory },

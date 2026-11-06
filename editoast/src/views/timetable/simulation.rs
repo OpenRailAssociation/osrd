@@ -208,13 +208,14 @@ pub fn path_item_respect_margins<T: TrainScheduleLike>(
     res
 }
 
+#[editoast_derive::title_variants]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema, strum::EnumDiscriminants)]
 #[serde(tag = "status", rename_all = "snake_case")]
 #[expect(
     clippy::large_enum_variant,
     reason = "We accepted the difference of memory size taken by variants since there is only one success and others are error cases"
 )]
-#[schema(as = SimulationResponse, title_variants)]
+#[schema(as = SimulationResponse)]
 #[strum_discriminants(name(ResponseVariant), derive(Serialize))]
 pub enum Response {
     Success(SimulationResponseSuccess),
@@ -268,10 +269,11 @@ impl From<core_client::simulation::Response> for Response {
     }
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
 #[serde(tag = "status", rename_all = "snake_case")]
-#[schema(as = SimulationSummaryResult, title_variants)]
+#[schema(as = SimulationSummaryResult)]
 pub enum SummaryResponse {
     /// Minimal information on a simulation's result
     Success {

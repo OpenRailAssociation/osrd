@@ -52,10 +52,10 @@ pub struct OperationalPointPartReference {
     pub local_track_name: Option<NonBlankString>,
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "lowercase")]
-#[schema(title_variants)]
 pub enum OperationalPointReference {
     #[schema(title = "OperationalPointReferenceId")]
     Id {
