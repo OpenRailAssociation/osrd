@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, type ReactNode } from 'react';
 
 import { OptionGroup, type OptionGroupSection } from '@osrd-project/ui-core';
 import {
@@ -14,7 +14,10 @@ import '@osrd-project/ui-core/dist/theme.css';
 
 type Timetable = { id: string; name: string };
 
-const sections: OptionGroupSection<Timetable>[] = [
+// The icon is only used to display the selected section on the trigger button
+type SectionWithIcon = OptionGroupSection<Timetable> & { icon: ReactNode };
+
+const sections: SectionWithIcon[] = [
   {
     title: 'Hourly patterns',
     icon: <PatternHourly size="lg" />,
