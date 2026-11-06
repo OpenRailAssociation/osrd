@@ -589,8 +589,7 @@ class StandaloneSimulationTest {
                 .toList()
 
         // Expected: traction up to 10km, braking up to 11km (second block with high negative
-        // gradient), traction, then one last braking curve. Distances are approximate there
-        // (average grade below the train, discrete step)
+        // gradient), traction, then one last braking curve up to 22km.
         assertEquals(
             listOf(
                 DriverAction.TRACTING,
@@ -600,8 +599,12 @@ class StandaloneSimulationTest {
             ),
             driverActions.map { it.value },
         )
+        // Distances are approximate on the constant speed part
+        // (average grade below the train, discrete step)
+        assertEquals(0.meters, driverActions.first().lower)
         assertEquals(10_000.0, driverActions[1].lower.meters, 10.0)
         assertEquals(11_000.0, driverActions[1].upper.meters, 10.0)
+        assertEquals(22_000.meters, driverActions.last().upper)
     }
 
     private fun testThroughDuplicateOP(): Stream<Arguments> =
