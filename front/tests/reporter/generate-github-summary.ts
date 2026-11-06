@@ -1,7 +1,12 @@
 import fs from 'fs';
 
 import { formatDuration } from './index.ts';
-import type { Artifact, GithubSummaryReport, ArtifactResponse } from './playwright-report-types';
+import type {
+  Artifact,
+  ArtifactResponse,
+  GithubSummaryReport,
+  GithubTestSummary,
+} from './playwright-report-types';
 
 const reportPath = process.argv[2];
 const outputPath = process.argv[3];
@@ -84,6 +89,29 @@ function formatStatus(status: string): string {
       return status;
   }
 }
+
+// Error cell shared by the failed and flaky tests tables
+function formatError(t: GithubTestSummary): string {
+  const raw =
+    t.message && t.trace ? `${t.message}\n${t.trace}` : t.message || t.trace || 'No message';
+  const clean = raw.replace(/\n/g, '<br>');
+
+  if (clean.length > 1000) {
+    // Find last space before index 1000
+    const cutIndex = clean.lastIndexOf(' ', 1000);
+
+    // If no space was found, fallback to 1000
+    const splitAt = cutIndex > 0 ? cutIndex : 1000;
+
+    const preview = clean.slice(0, splitAt);
+    const rest = clean.slice(splitAt);
+
+    return `${preview} <details><summary>Show more</summary>${rest}</details>`;
+  }
+
+  return clean;
+}
+
 await (async () => {
   const report: GithubSummaryReport = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
 
@@ -132,31 +160,7 @@ await (async () => {
 
 | Test Suite | Failed Test | Status | Error |
 |------------|-------------|:------:|-------|
-${failedTests
-  .map((t) => {
-    const message = String(t.message ?? '');
-    const trace = String(t.trace ?? '');
-    const raw = message && trace ? `${message}\n${trace}` : message || trace || 'No message';
-    const clean = raw.replace(/\n/g, '<br>');
-
-    if (clean.length > 1000) {
-      // Find last space before index 1000
-      const cutIndex = clean.lastIndexOf(' ', 1000);
-
-      // If no space was found, fallback to 1000
-      const splitAt = cutIndex > 0 ? cutIndex : 1000;
-
-      const preview = clean.slice(0, splitAt);
-      const rest = clean.slice(splitAt);
-
-      const details = `${preview} <details><summary>Show more</summary>${rest}</details>`;
-
-      return `| ${t.suite} | ${t.name} | ❌ failed | ${details} |`;
-    }
-
-    return `| ${t.suite} | ${t.name} | ❌ failed | ${clean} |`;
-  })
-  .join('\n')}
+${failedTests.map((t) => `| ${t.suite} | ${t.name} | ❌ failed | ${formatError(t)} |`).join('\n')}
 `;
   }
 
@@ -167,11 +171,16 @@ ${failedTests
 
 **Total Flaky Tests:** ${flakyTests.length}
 
-| Flaky Test | Status | Error |
-|------------|--------|-------|
-${flakyTests
-  .map((t) => `| ${t.name} | 🍂 flaky | ${(t.message ?? 'No message').replace(/\n/g, ' ')} |`)
-  .join('\n')}
+💡 **Inspecting Traces**
+
+> The trace of the failed attempt is kept even though the retry passed.
+> To view it, extract the archive and upload it to the 🎯 [Playwright Trace Viewer](https://trace.playwright.dev/)
+- 📦 Download Traces: ${traceUrls}
+- 🎥 Download Videos and screenshots: ${mediaUrls}
+
+| Test Suite | Flaky Test | Status | Error |
+|------------|------------|:------:|-------|
+${flakyTests.map((t) => `| ${t.suite} | ${t.name} | 🍂 flaky | ${formatError(t)} |`).join('\n')}
 `;
   }
 

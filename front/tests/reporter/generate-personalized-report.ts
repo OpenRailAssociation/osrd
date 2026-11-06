@@ -159,7 +159,11 @@ class GenerateReport implements Reporter {
     test.flaky = result.status === 'passed' && result.retry > 0;
     test.steps = [];
 
-    const failure = GenerateReport.extractFailureDetails(result);
+    // A flaky test ends with a passed retry, so its error comes from the attempt that failed
+    const failedResult = test.flaky
+      ? testCase.results.find((attempt) => GenerateReport.isFailure(attempt))
+      : result;
+    const failure = failedResult ? GenerateReport.extractFailureDetails(failedResult) : {};
     test.message = failure.message;
     test.trace = failure.trace;
 
@@ -263,8 +267,12 @@ class GenerateReport implements Reporter {
     return segments.join(' > ');
   }
 
+  private static isFailure(result: TestResult): boolean {
+    return ['failed', 'timedOut', 'interrupted'].includes(result.status);
+  }
+
   private static extractFailureDetails(result: TestResult): Partial<PersonalizedTest> {
-    if (['failed', 'timedOut', 'interrupted'].includes(result.status) && result.error) {
+    if (GenerateReport.isFailure(result) && result.error) {
       return {
         message: formatAnsiMessageToHtml(result.error.message ?? 'No failure message'),
         trace: formatAnsiMessageToHtml(result.error.stack ?? 'No failure trace'),
