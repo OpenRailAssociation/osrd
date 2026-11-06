@@ -10,3 +10,10 @@ export const E2E_USERS = {
   /** No role */
   noRole: 'E2E No Role',
 } as const;
+
+/** Identities of the e2e test users, as created by `scripts/load-e2e-users.sh`. */
+export const E2E_USER_IDENTITIES = {
+  projectOutsider: 'e2e/project-outsider',
+  stdcmOnly: 'e2e/stdcm-only',
+  noRole: 'e2e/no-role',
+} as const;
