@@ -258,8 +258,9 @@ enum SearchApiError {
 }
 
 /// A search query
+#[editoast_derive::title_variants]
 #[derive(ToSchema, Serialize)]
-#[schema(example = json!(["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]), title_variants)]
+#[schema(example = json!(["and", ["like", ["to_string", ["infra_id"]], 2], ["search", ["name"], "plop"]]))]
 #[serde(untagged)]
 #[expect(unused, reason = "only used as an OpenAPI schema")]
 enum SearchQuery {

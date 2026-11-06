@@ -97,9 +97,9 @@ pub struct StdcmConflictingWorkSchedule {
     pub last_op: OperationalPoint,
 }
 
+#[editoast_derive::title_variants]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-#[schema(title_variants)]
 pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,

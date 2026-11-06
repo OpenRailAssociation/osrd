@@ -284,8 +284,9 @@ pub struct ElectricalProfiles {
     pub values: Vec<ElectricalProfileValue>,
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = CoreElectricalProfileValue, title_variants)]
+#[schema(as = CoreElectricalProfileValue)]
 #[serde(tag = "electrical_profile_type", rename_all = "snake_case")]
 pub enum ElectricalProfileValue {
     NoProfile,
@@ -295,8 +296,9 @@ pub enum ElectricalProfileValue {
     },
 }
 
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[schema(as = CoreSpeedLimitSource, title_variants)]
+#[schema(as = CoreSpeedLimitSource)]
 #[serde(tag = "speed_limit_source_type", rename_all = "snake_case")]
 pub enum SpeedLimitSource {
     GivenTrainTag { tag: String },

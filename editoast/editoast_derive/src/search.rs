@@ -361,9 +361,9 @@ pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
             }
         }
 
+        #[editoast_derive::title_variants]
         #[derive(Serialize, ToSchema)]
         #[serde(untagged)]
-        #[schema(title_variants)]
         #[allow(unused, clippy::enum_variant_names)]
         /// A search result item that depends on the query's `object`
         pub(super) enum SearchResultItem {

@@ -145,8 +145,9 @@ pub struct PathfindingResultSuccess {
 }
 
 // Enum for input-related errors
+#[editoast_derive::title_variants]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
-#[schema(as = CorePathfindingInputError, title_variants)]
+#[schema(as = CorePathfindingInputError)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingInputError {
     InvalidPathItems {
@@ -164,8 +165,9 @@ pub enum PathfindingInputError {
 }
 
 // Enum for not-found results and incompatible constraints
+#[editoast_derive::title_variants]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Default)]
-#[schema(as = CorePathfindingNotFound, title_variants)]
+#[schema(as = CorePathfindingNotFound)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
     NotFoundInBlocks {

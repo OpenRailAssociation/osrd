@@ -36,9 +36,9 @@ struct OccupancyContext<'a> {
 /// Position of an operational point on a path, relative to the input path items.
 /// If the OP matches an input path item, it is located using this path item's key,
 /// else, if the path just passes by the OP, it is located using its previous and following path items keys
+#[editoast_derive::title_variants]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
-#[schema(title_variants)]
 pub(super) enum PathItemRelativeLocation {
     ExactPathItem {
         /// Path item key, when the operational point matches an item in the input path

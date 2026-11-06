@@ -9,6 +9,7 @@ mod error;
 mod model;
 mod route;
 mod search;
+mod title_variants;
 mod view_error;
 
 use proc_macro::TokenStream;
@@ -268,6 +269,20 @@ pub fn annotate_units(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     annotate_units::annotate_units(&mut input)
         .unwrap_or_else(darling::Error::write_errors)
+        .into()
+}
+
+/// Adds `#[schema(title = "EnumNameVariantName")]` to each enum variant.
+///
+/// Place this attribute above the first `#[derive(...)]` so `utoipa::ToSchema`
+/// sees the generated titles. An enum's explicit `#[schema(title = "...")]`
+/// replaces the enum name as the prefix; explicit variant titles are preserved.
+#[proc_macro_attribute]
+pub fn title_variants(attr: TokenStream, input: TokenStream) -> TokenStream {
+    parse_macro_input!(attr as syn::parse::Nothing);
+    let input = parse_macro_input!(input as syn::ItemEnum);
+    title_variants::expand_title_variants(input)
+        .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }
 
