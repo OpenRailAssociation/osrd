@@ -8,7 +8,8 @@ import {
   type StdcmSuccessResponse,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
-import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import { stripFakeOvertakePrefix } from 'applications/stdcm/utils';
+import type { OperationalPointStop, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { ConsistChange, RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
@@ -153,9 +154,13 @@ function formatOperationalPointWithTimesAndWeight(
   suggestedOp: Omit<SuggestedOP, 'track' | 'offsetOnTrack'>,
   operationalPoints: StdcmPathProperties['operational_points'],
   train: TrainSimulation,
-  simulationPathSteps: StdcmPathStep[]
+  simulationPathSteps: StdcmPathStep[],
+  forcedOpStops: OperationalPointStop[]
 ): StdcmResultsOperationalPoint {
   const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(suggestedOp, train);
+  const isOvertake = forcedOpStops.some(
+    ({ id, stop_type }) => id === suggestedOp.opId && stop_type === 'OVERTAKE'
+  );
   // Find the corresponding stopType from pathSteps
   const correspondingStep =
     suggestedOp.pathItemIndex !== undefined
@@ -163,7 +168,9 @@ function formatOperationalPointWithTimesAndWeight(
       : undefined;
   let stopType;
   let consistChange;
-  if (correspondingStep) {
+  if (isOvertake) {
+    stopType = StdcmStopTypes.OVERTAKE;
+  } else if (correspondingStep) {
     if (correspondingStep.isVia) {
       stopType = correspondingStep.consistChange
         ? StdcmStopTypes.CONSIST_CHANGE
@@ -181,7 +188,7 @@ function formatOperationalPointWithTimesAndWeight(
   return {
     ...partiallyFormattedOp,
     pathItemIndex: suggestedOp.pathItemIndex,
-    name: suggestedOp.name,
+    name: suggestedOp.name ? stripFakeOvertakePrefix(suggestedOp.name) : undefined,
     secondaryCode: suggestedOp.secondaryCode,
     trackName: suggestedOp.metadata?.trackName,
     consistChange,
@@ -298,38 +305,6 @@ export function insertMissingStopsInOperationalPointsWithTimes(
   return formatedOpsWithAllStops;
 }
 
-// TODO : Remove this function as soon as fake takeover tracks cease to be used
-// It serves to consolidate steps of the form OVERTAKE_n_A;X, OVERTAKE_n_B;X in a single step X
-function consolidateOvertakesToSingleSteps(
-  steps: StdcmResultsOperationalPoint[]
-): StdcmResultsOperationalPoint[] {
-  const consolidatedSteps: StdcmResultsOperationalPoint[] = [];
-  for (let i = 0; i < steps.length - 1; i += 1) {
-    const [step, nextStep] = [steps[i], steps[i + 1]];
-    const overtakenStepMatch = step.name?.match(/OVERTAKE[^;]*;(.*)$/);
-    if (overtakenStepMatch) {
-      const consolidatedStep: StdcmResultsOperationalPoint = {
-        ...step,
-        name: overtakenStepMatch[1],
-        stopDuration: Duration.subtractDate(nextStep.time, step.time),
-        stopEndTime: nextStep.time,
-        stopType: StdcmStopTypes.OVERTAKE,
-        secondaryCodeLabel: 'O', // indicating an overtake
-      };
-      consolidatedSteps.push(consolidatedStep);
-      i += 1; // to skip the next step, as we consolidated two overtake steps in one
-    } else {
-      consolidatedSteps.push({
-        ...step,
-        secondaryCodeLabel: step.secondaryCode,
-      });
-    }
-  }
-  const lastStep = steps[steps.length - 1];
-  consolidatedSteps.push({ ...lastStep, secondaryCodeLabel: lastStep.secondaryCode });
-  return consolidatedSteps;
-}
-
 function consolidateBacktrackSteps(
   steps: StdcmResultsOperationalPoint[],
   pathfindingResult: StdcmSuccessResponse['pathfinding_result']
@@ -350,13 +325,17 @@ function consolidateBacktrackSteps(
   });
 }
 
-/** Ensure stops with no durations do not report a consist change or a stop type other than PASSAGE_TIME. */
+/** Normalize non-overtake stops without durations to passage times and remove invalid consist changes. */
 function normalizeStopsWithoutDuration(ops: StdcmResultsOperationalPoint[]) {
   return ops.map((op, index) => ({
     ...op,
     stopType:
       // stops without a duration but with a stop type and not at an extremity should be made PASSAGE_TIME
-      op.stopDuration || !op.stopType || index === 0 || index === ops.length - 1
+      op.stopDuration ||
+      !op.stopType ||
+      index === 0 ||
+      index === ops.length - 1 ||
+      op.stopType === StdcmStopTypes.OVERTAKE
         ? op.stopType
         : StdcmStopTypes.PASSAGE_TIME,
     consistChange: op.stopDuration ? op.consistChange : undefined,
@@ -382,6 +361,7 @@ export function getOperationalPointsWithTimes({
   departureTime,
   pathfindingResult,
   trainLength,
+  forcedOpStops,
 }: {
   operationalPoints: StdcmPathProperties['operational_points'];
   suggestedOperationalPoints: SuggestedOP[];
@@ -391,6 +371,7 @@ export function getOperationalPointsWithTimes({
   departureTime: Date;
   pathfindingResult: StdcmSuccessResponse['pathfinding_result'];
   trainLength: number;
+  forcedOpStops: OperationalPointStop[];
 }): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
@@ -404,10 +385,14 @@ export function getOperationalPointsWithTimes({
       // Keep if the OP is not in the exclusion list
       if (!suggestedOp.opId || !opIdsToExclude.includes(suggestedOp.opId)) return true;
 
-      // Keep if explicitly requested by the user (origin, destination, via point or stop)
-      const isRequestedPoint = simulationPathSteps.some(
-        (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
-      );
+      // Keep explicitly requested points and overtake points even when filtered by weight.
+      const isRequestedPoint =
+        simulationPathSteps.some(
+          (step) => step.operationalPoint && step.operationalPoint.id === suggestedOp.opId
+        ) ||
+        forcedOpStops.some(
+          ({ id, stop_type }) => id === suggestedOp.opId && stop_type === 'OVERTAKE'
+        );
       return isRequestedPoint;
     })
     // Map operational points with their positions, times, and stop durations
@@ -416,7 +401,8 @@ export function getOperationalPointsWithTimes({
         suggestedOp,
         operationalPoints,
         { positions, times, speeds, departureTime },
-        simulationPathSteps
+        simulationPathSteps,
+        forcedOpStops
       )
     );
 
@@ -426,12 +412,16 @@ export function getOperationalPointsWithTimes({
     stopPositions,
     { positions, times, speeds, departureTime }
   );
-  const formattedConsolidatedOps = consolidateBacktrackSteps(
-    consolidateOvertakesToSingleSteps(formattedOpsWithAllStops),
+  const formattedOpsWithSecondaryCodeLabels = formattedOpsWithAllStops.map((op) => ({
+    ...op,
+    secondaryCodeLabel: op.stopType === StdcmStopTypes.OVERTAKE ? 'O' : op.secondaryCode,
+  }));
+  const formattedOpsWithBacktracks = consolidateBacktrackSteps(
+    formattedOpsWithSecondaryCodeLabels,
     pathfindingResult
   );
 
-  return normalizeStopsWithoutDuration(formattedConsolidatedOps);
+  return normalizeStopsWithoutDuration(formattedOpsWithBacktracks);
 }
 
 export const getArrivalTimes = (

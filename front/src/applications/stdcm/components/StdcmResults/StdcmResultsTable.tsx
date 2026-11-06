@@ -12,6 +12,7 @@ import type {
   StdcmSimulationInputs,
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
+import { StdcmStopTypes } from 'applications/stdcm/types';
 import {
   dateToHHMM,
   getStopDurationTime,
@@ -64,7 +65,11 @@ const StdcmResultsTable = ({
       ({ operationalPoint }) => operationalPoint && operationalPoint.id === step.opId
     );
     const shouldRenderRow =
-      isFirstStep || isRequestedPathStep || isLastStep || step.stopDuration !== null;
+      isFirstStep ||
+      isRequestedPathStep ||
+      isLastStep ||
+      step.stopDuration !== null ||
+      step.stopType === StdcmStopTypes.OVERTAKE;
     const isPathStep = isFirstStep || isLastStep || isRequestedPathStep;
     const isNotExtremity = !isFirstStep && !isLastStep;
 
