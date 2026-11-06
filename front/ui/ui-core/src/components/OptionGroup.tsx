@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import React, { useEffect, useRef, type RefObject } from 'react';
 
 import cx from 'classnames';
 
@@ -13,7 +13,6 @@ export type OptionGroupItem<T> = {
 export type OptionGroupSection<T> = {
   title: string;
   items: OptionGroupItem<T>[];
-  icon?: ReactNode;
 };
 
 export type OptionGroupProps<T> = {

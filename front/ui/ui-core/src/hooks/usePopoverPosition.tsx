@@ -20,20 +20,16 @@ export const usePopoverPosition = (
       const anchorY = verticalAnchor === 'top' ? inputRect.top : inputRect.bottom;
       const top = anchorY + window.scrollY + verticalOffset;
 
-      if (align === 'start') {
-        const popoverViewportLeft = inputRect.left + window.scrollX;
-        const left = Math.max(0, Math.min(popoverViewportLeft, window.innerWidth - popoverWidth));
-        setPopoverPosition({ top, left });
-        return;
-      }
-
-      // Center the popover horizontally relative to the input
-      const popoverViewportLeft = inputRect.left + window.scrollX + inputRect.width / 2;
+      const isCentered = align === 'center';
+      const popoverViewportLeft =
+        inputRect.left + window.scrollX + (isCentered ? inputRect.width / 2 : 0);
+      // When centered, the popover is shifted by half its width
+      const offsetX = isCentered ? popoverWidth / 2 : 0;
 
       // Keep popover inside the viewport bounds horizontally
       const left = Math.max(
-        popoverWidth / 2,
-        Math.min(popoverViewportLeft, window.innerWidth - popoverWidth / 2)
+        offsetX,
+        Math.min(popoverViewportLeft, window.innerWidth - popoverWidth + offsetX)
       );
 
       setPopoverPosition({ top, left });

@@ -28,7 +28,7 @@
       0 1px 0 var(--color-grey-5) inset,
       0 -1px 0 var(--color-grey-20) inset;
 
-    @apply text-grey-80 bg-grey-5;
+    @apply text-grey-80 bg-grey-10;
   }
 
   .option-group-item {
@@ -36,7 +36,7 @@
     height: 38px;
     display: flex;
     align-items: center;
-    padding: 6px 12px 8px 12px;
+    padding: 6px 12px 8px;
     background-color: #fafafa;
     cursor: pointer;
     font-size: 16px;
