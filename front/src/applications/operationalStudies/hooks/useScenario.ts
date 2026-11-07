@@ -9,6 +9,8 @@ import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
+import useUrlOrStorageParam from './useUrlOrStorageParam';
+
 type SimulationParams = {
   scenarioId: string;
 };
@@ -23,6 +25,8 @@ const useScenario = () => {
 
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
 
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
+
   const {
     data: scenario,
     isError: isScenarioError,
@@ -35,11 +39,14 @@ const useScenario = () => {
       : skipToken
   );
 
+  // TODO(#18904): use the selected timetable instead of the first one
+  const currentTimetable = scenario?.timetable_summaries.at(0);
+
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery(
-      scenario
+      currentTimetable
         ? {
-            id: scenario.timetable_summaries[0].id, // TODO: adapt once the front handles multiple timetable per scenario
+            id: currentTimetable.id,
           }
         : skipToken
     );
@@ -56,6 +63,13 @@ const useScenario = () => {
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [scenario]);
+
+  // TODO(#18904): read the selected timetable from the URL instead of always using the first one.
+  useEffect(() => {
+    if (currentTimetable) {
+      setParamsInUrlAndStorage('timetable', currentTimetable.id.toString());
+    }
+  }, [currentTimetable, setParamsInUrlAndStorage]);
 
   useEffect(() => {
     if (isScenarioError && errorScenario) throw errorScenario;
@@ -87,7 +101,7 @@ const useScenario = () => {
       }).unwrap();
     };
 
-    if (!trainScheduleSets || !scenario) return;
+    if (!trainScheduleSets || !currentTimetable) return;
 
     const sandbox = trainScheduleSets.find((tss) => !tss.name);
 
@@ -96,10 +110,9 @@ const useScenario = () => {
       return;
     }
 
-    // TODO: adapt once the front handles multiple timetable per scenario
-    checkAndCreateSandbox(scenario.timetable_summaries[0].id, scenario.timetable_summaries[0].type);
+    checkAndCreateSandbox(currentTimetable.id, currentTimetable.type);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [trainScheduleSets, scenario?.timetable_summaries]);
+  }, [trainScheduleSets, currentTimetable?.id, currentTimetable?.type]);
 
   return { scenario, sandboxId };
 };

@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
@@ -33,19 +34,20 @@ type ScenarioHeaderProps = {
 const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, impersonate } = useAuth();
   const navigate = useNavigate();
-  const { scenario, timetableId, infraId } = useScenarioContext();
+  const { scenario, timetableId, infraId } = useScenarioContextWithOptionalTimetable();
   const { t } = useTranslation('operational-studies');
 
+  // TODO(#18904): use the selected timetable instead of the first one
+  const timetableType = scenario.timetable_summaries.at(0)?.type;
+
   // The chronogram is not supported by hourly timetables yet.
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
   const boards = useMemo(
     () => (timetableType === 'HOURLY' ? BOARDS.filter((board) => board !== 'chronogram') : BOARDS),
     [timetableType]
   );
 
   const { totalConflictsCount } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQueryState(
-    { id: timetableId, infraId },
+    timetableId !== undefined ? { id: timetableId, infraId } : skipToken,
     { selectFromResult: ({ data }) => ({ totalConflictsCount: data?.length ?? 0 }) }
   );
 

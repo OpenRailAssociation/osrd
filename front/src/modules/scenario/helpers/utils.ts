@@ -1,5 +1,5 @@
 import { isInvalidName } from 'applications/operationalStudies/utils';
-import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
+import type { ScenarioWithDetails, TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';
 
 import type { ScenarioForm } from '../components/AddOrEditScenarioModal';
@@ -40,10 +40,15 @@ export const checkScenarioFields = (
 /**
  * Clean the local storage for potential store manchette
  */
-export const cleanScenarioLocalStorage = (timetableId: number) => {
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith(timetableId.toString())) {
-      localStorage.removeItem(key);
-    }
+export const cleanScenarioLocalStorage = (
+  scenario: Pick<ScenarioWithDetails, 'timetable_summaries'>
+) => {
+  scenario.timetable_summaries.forEach(({ id: timetableId }) => {
+    Object.keys(localStorage).forEach((key) => {
+      // Keys built by getWaypointsLocalStorageKey
+      if (key.startsWith(`PathOperationalPoints-${timetableId}-`)) {
+        localStorage.removeItem(key);
+      }
+    });
   });
 };
