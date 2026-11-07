@@ -1,8 +1,9 @@
-import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { PacedTrainException, TimetableType, TrainSchedule } from 'common/api/osrdEditoastApi';
+import { wrapHourlyStartTime } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { isPacedTrainBase } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { LocatedPathStep, OccurrenceId } from 'reducers/osrdconf/types';
-import { startTimeToMs } from 'utils/duration';
+import { Duration, startTimeToMs } from 'utils/duration';
 import { kmhToMs } from 'utils/physics';
 import { extractOccurrenceIndexFromOccurrenceId, isIndexedOccurrenceId } from 'utils/trainId';
 
@@ -29,15 +30,29 @@ function normalizeFirstWaypointTimes(
     if (step.arrival) return { ...step, arrival: step.arrival.sub(firstArrival) };
     return step;
   });
-
   return { pathSteps: shiftedPathSteps, startTime: startTime + firstArrival.ms };
 }
 
-export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState): TrainSchedule {
+export function formatTrainSchedulePayload(
+  trainState: ItineraryModalTrainState,
+  timetableType: TimetableType = 'CALENDAR'
+): TrainSchedule {
   const { pathSteps, startTime } = normalizeFirstWaypointTimes(
     trainState.pathSteps,
     startTimeToMs(trainState.startTime)
   );
+
+  const isHourlyTimetable = timetableType === 'HOURLY';
+  const isOccurrence = trainState.editingTrainType === 'occurrence';
+  const startTimeForHourlyTimetable =
+    wrapHourlyStartTime(
+      new Duration({ milliseconds: startTime }),
+      {
+        interval: trainState.interval.toISOString(),
+        time_window: trainState.timeWindow.toISOString(),
+      },
+      isOccurrence
+    )?.ms ?? startTime;
 
   return {
     category: trainState.category,
@@ -66,7 +81,7 @@ export function formatTrainSchedulePayload(trainState: ItineraryModalTrainState)
     rolling_stock_name: trainState.rollingStockName,
     schedule: formatSchedule(pathSteps),
     speed_limit_tag: trainState.speedLimitByTag,
-    start_time: startTime,
+    start_time: isHourlyTimetable ? startTimeForHourlyTimetable : startTime,
     train_name: trainState.name,
   };
 }
