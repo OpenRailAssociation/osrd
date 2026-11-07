@@ -285,8 +285,7 @@
       "NotUser": "Creating a request requires an authenticated user"
     },
     "stdcm_search_env": {
-      "Database": "Internal error (database)",
-      "NotFound": "Stdcm search environment '{{env_id}}' could not be found"
+      "not_found": "Stdcm search environment '{{env_id}}' could not be found"
     },
     "study": {
       "Database": "Internal error (database)",
