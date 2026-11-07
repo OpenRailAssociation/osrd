@@ -11,6 +11,7 @@ export type TokenInputProps = {
   onBlur?: () => void;
   className?: string;
   dataTestId?: string;
+  autoFocus?: boolean;
 };
 
 const TokenInput = ({
@@ -21,6 +22,7 @@ const TokenInput = ({
   onBlur,
   className,
   dataTestId,
+  autoFocus,
 }: TokenInputProps) => {
   const [tokens, setTokens] = useState(initialTokens);
 
@@ -102,6 +104,8 @@ const TokenInput = ({
           className="token-input"
           ref={inputRef}
           data-testid={dataTestId ? `${dataTestId}-input` : undefined}
+          /* eslint-disable-next-line jsx-a11y/no-autofocus */
+          autoFocus={autoFocus}
         />
       </div>
     </div>
