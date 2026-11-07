@@ -14171,7 +14171,7 @@ components:
           $ref: '#/components/schemas/CorePropertyGeometryProjection'
           description: Curve to map topological offset to geometric offset on the path
         geometry:
-          $ref: '#/components/schemas/GeoJsonLineString'
+          $ref: '#/components/schemas/GeoJsonMultiLineString'
           description: Geometry of the path
         operational_points:
           type: array

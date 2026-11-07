@@ -7645,7 +7645,7 @@ class PathProperties(BaseModel):
     """
     Curve to map topological offset to geometric offset on the path
     """
-    geometry: GeoJsonLineString
+    geometry: GeoJsonMultiLineString
     """
     Geometry of the path
     """

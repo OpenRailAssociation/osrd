@@ -5,7 +5,7 @@ import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.toRangeValues
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.railjson.schema.geom.RJSLineString
+import fr.sncf.osrd.railjson.schema.geom.RJSMultiLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
@@ -13,6 +13,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.from
 import fr.sncf.osrd.utils.toRangeMap
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -53,11 +54,20 @@ private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electri
     return DistanceRangeMapImpl.from(mergedMap).toRangeValues()
 }
 
-private fun makeGeographic(path: TrainPath): RJSLineString {
-    val lineString = path.getGeo()
-    val coordinates = ArrayList<List<Double>>()
-    for (p in lineString.getPoints()) coordinates.add(listOf(p.lon, p.lat))
-    return RJSLineString("LineString", coordinates)
+private fun makeGeographic(path: TrainPath): RJSMultiLineString {
+    val coordinates = ArrayList<List<List<Double>>>()
+    val boundaries =
+        listOf(Offset<PhysicsPath>(Distance.ZERO)) +
+            path.getBacktrackLocations() +
+            listOf(path.getLength())
+
+    for ((from, to) in boundaries.zipWithNext()) {
+        val segment = path.subPath(from, to).getGeo()
+        val segmentCoord = ArrayList<List<Double>>()
+        for (p in segment.getPoints()) segmentCoord.add(listOf(p.lon, p.lat))
+        coordinates.add(segmentCoord)
+    }
+    return RJSMultiLineString("MultiLineString", coordinates)
 }
 
 private fun makeOperationalPoints(
@@ -149,16 +159,16 @@ private fun makeGeometricProjection(
 ): GeometricProjection {
     val trackRanges = pathProperties.getTrackRanges()
 
-    fun getTrackSectionGeometricLength(trackSection: TrackSectionId): Length<RJSLineString> {
+    fun getTrackSectionGeometricLength(trackSection: TrackSectionId): Length<RJSMultiLineString> {
         val chunks = rawInfra.getTrackSectionChunks(trackSection)
         return chunks
             .map {
-                Length<RJSLineString>(rawInfra.getTrackChunkGeom(it).length.meters)
+                Length<RJSMultiLineString>(rawInfra.getTrackChunkGeom(it).length.meters)
             }
             .reduce { acc, length -> acc + length.distance }
     }
 
-    val geomOffsets = mutableListOf<Offset<RJSLineString>>(Offset.zero())
+    val geomOffsets = mutableListOf<Offset<RJSMultiLineString>>(Offset.zero())
     val topoOffsets = mutableListOf<Offset<PhysicsPath>>(Offset.zero())
 
     trackRanges.forEachIndexed { i, range ->
