@@ -46,7 +46,7 @@ const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps)
           // closing the modal
           closeModal();
 
-          centerMapOnObject(infraID, [entity], dispatch, mapRef);
+          await centerMapOnObject(infraID, [entity], dispatch, mapRef);
         }}
       />,
       'lg'

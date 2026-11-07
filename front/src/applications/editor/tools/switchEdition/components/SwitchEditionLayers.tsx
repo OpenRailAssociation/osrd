@@ -137,7 +137,7 @@ const SwitchEditionLayers = () => {
       setGeometryState({ type: 'ready' });
     } else {
       setGeometryState({ type: 'loading' });
-      getEntity<TrackSectionEntity>(infraID!, port.track, 'TrackSection', dispatch).then(
+      void getEntity<TrackSectionEntity>(infraID!, port.track, 'TrackSection', dispatch).then(
         (track) => {
           if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
 

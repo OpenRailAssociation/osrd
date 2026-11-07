@@ -103,24 +103,19 @@ const InfraSelectorModalBodyEdition = ({
     }
 
     if (fileSelection.file) {
-      postInfraRailjson({
-        name: nameNewInfra,
-        railJson: JSON.parse(await fileSelection.file.text()),
-        generateData: true,
-      })
-        .unwrap()
-        .then(() => {
-          setFileSelection({ file: undefined, validating: false, errorMessage: undefined });
-        })
-        .catch(() => {
-          setErrorMessage(t('jsonUpload.uploadError'));
-        });
+      try {
+        await postInfraRailjson({
+          name: nameNewInfra,
+          railJson: JSON.parse(await fileSelection.file.text()),
+          generateData: true,
+        }).unwrap();
+        setFileSelection({ file: undefined, validating: false, errorMessage: undefined });
+      } catch {
+        setErrorMessage(t('jsonUpload.uploadError'));
+      }
     } else {
-      postInfra({ body: { name: nameNewInfra } })
-        .unwrap()
-        .then(() => {
-          setErrorMessage(undefined);
-        });
+      await postInfra({ body: { name: nameNewInfra } }).unwrap();
+      setErrorMessage(undefined);
     }
   };
 

@@ -249,7 +249,7 @@ const StdcmView = () => {
 
   useEffect(() => {
     if (!isDebugMode) {
-      loadStdcmEnvironment();
+      void loadStdcmEnvironment();
     }
   }, [isDebugMode, loadStdcmEnvironment]);
 

@@ -266,7 +266,7 @@ const ItineraryModal = ({
           category: train.category ?? undefined,
         });
       } else {
-        if (infraId) fitViewportToInfra(infraId);
+        if (infraId) void fitViewportToInfra(infraId);
         setTrainState(blankNewTrainState(defaultStartTime, timetableType));
         setModalFormState({
           name: '',
@@ -675,7 +675,7 @@ const ItineraryModal = ({
     );
 
     const controller = new AbortController();
-    launchPathfinding({
+    void launchPathfinding({
       pathSteps: pathfindingLocations,
       pathStepsMetadataByKey: metadataByPathStepKey,
       rollingStockId: modalFormState.rollingStockId,

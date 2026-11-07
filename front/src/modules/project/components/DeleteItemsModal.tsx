@@ -6,7 +6,7 @@ export default function DeleteItemsModal({
   handleDeleteItems,
   translationKey,
 }: {
-  handleDeleteItems: () => void;
+  handleDeleteItems: () => void | Promise<void>;
   translationKey: string;
 }) {
   const { t } = useTranslation('translation');
@@ -25,8 +25,8 @@ export default function DeleteItemsModal({
             data-testid="confirm-delete-button"
             className="btn btn-danger flex-grow-1 ml-1"
             type="button"
-            onClick={() => {
-              handleDeleteItems();
+            onClick={async () => {
+              await handleDeleteItems();
               closeModal();
             }}
           >

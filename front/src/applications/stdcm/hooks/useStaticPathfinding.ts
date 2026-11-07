@@ -168,7 +168,7 @@ const useStaticPathfinding = (
       }
     };
 
-    launchPathfinding();
+    void launchPathfinding();
 
     return () => {
       dependenciesUpToDate = false;

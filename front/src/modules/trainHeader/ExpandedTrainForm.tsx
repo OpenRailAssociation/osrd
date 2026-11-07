@@ -344,7 +344,7 @@ const ExpandedTrainForm = ({
       }
 
       if (trainPayloadChanged(updatedTrain, train)) {
-        onPersistTrain(updatedTrain);
+        void onPersistTrain(updatedTrain);
       }
       return persistedFields;
     },
@@ -475,7 +475,7 @@ const ExpandedTrainForm = ({
         <form
           className="train-name"
           data-testid="train-name"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             onFieldBlur('train_name');
           }}
@@ -509,7 +509,7 @@ const ExpandedTrainForm = ({
                 label: t('manageTrainSchedule.trainHeader.form.departureDate'),
                 small: true,
               }}
-              onDateChange={(departureDate) => {
+              onDateChange={async (departureDate) => {
                 if (!departureDate) return;
                 const startTimeDate = new Date(train.start_time);
                 departureDate?.setHours(
@@ -527,7 +527,7 @@ const ExpandedTrainForm = ({
         <form
           className="train-initial-velocity"
           data-testid="train-header-initial-velocity-field"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             onFieldBlur('initial_speed');
           }}
@@ -598,7 +598,7 @@ const ExpandedTrainForm = ({
             placeholder={t('manageTrainSchedule.noSpeedLimitByTag')}
             value={fields.speed_limit_tag ?? ''}
             {...createStandardSelectOptions(speedLimitTags)}
-            onChange={(value) => {
+            onChange={async (value) => {
               onFieldImmediateChange('speed_limit_tag', value ?? null);
             }}
           />
@@ -611,7 +611,7 @@ const ExpandedTrainForm = ({
             small
             value={selectedConstraintDistributionOption}
             {...createFixedSelectOptions(constraintDistributionsOptions)}
-            onChange={(value) => {
+            onChange={async (value) => {
               if (value) {
                 onFieldImmediateChange('constraint_distribution', value.id);
               }

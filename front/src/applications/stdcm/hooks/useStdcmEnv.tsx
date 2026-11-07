@@ -51,7 +51,7 @@ export default function useStdcmEnvironment() {
 
   useEffect(() => {
     /* eslint-disable-next-line react/set-state-in-effect */
-    loadStdcmEnvironment();
+    void loadStdcmEnvironment();
   }, [loadStdcmEnvironment]);
 
   return { loading, error, loadStdcmEnvironment };
