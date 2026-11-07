@@ -358,12 +358,15 @@ impl DbConnectionPool {
     }
 
     #[cfg(any(test, feature = "testing"))]
-    async fn new_test(test_name: String) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    async fn new_test(
+        test_name: String,
+        connections: usize,
+    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let osrd_pool = Arc::new(create_connection_pool(
             "postgresql://postgres:password@localhost/osrd"
                 .parse()
                 .unwrap(),
-            1,
+            connections,
         )?);
         let osrd_conn = osrd_pool.get().await?;
         let osrd_conn = DbConnection::new(Arc::new(RwLock::new(osrd_conn)));
@@ -383,7 +386,7 @@ impl DbConnectionPool {
     pub fn for_tests() -> Self {
         let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
         let test_name = format!("test_{uuid_str}");
-        futures::executor::block_on(Self::new_test(test_name))
+        futures::executor::block_on(Self::new_test(test_name, 1))
             .expect("Failed to create test database")
     }
 }
@@ -478,14 +481,7 @@ fn establish_connection(config: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgC
         let (client, conn) = tokio_postgres::connect(config, tls)
             .await
             .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        // The connection object performs the actual communication with the database,
-        // so spawn it off to run on its own.
-        tokio::spawn(async move {
-            if let Err(e) = conn.await {
-                tracing::error!("connection error: {}", e);
-            }
-        });
-        AsyncPgConnection::try_from(client).await
+        AsyncPgConnection::try_from_client_and_connection(client, conn).await
     };
     fut.boxed()
 }
@@ -498,7 +494,7 @@ mod tests {
     async fn connection_pool() {
         let uuid_str = uuid::Uuid::new_v4().to_string().replace('-', "_");
         let test_name = format!("test_{uuid_str}");
-        let db = DbConnectionPool::new_test(test_name).await.unwrap();
+        let db = DbConnectionPool::new_test(test_name, 1).await.unwrap();
 
         let osrd_conn = db.osrd_pool.get().await.expect("Failed to get connection");
         let osrd_conn = DbConnection::new(Arc::new(RwLock::new(osrd_conn)));

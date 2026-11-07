@@ -3,6 +3,7 @@ pub mod catalog_entry;
 pub mod civil_date;
 pub mod document;
 pub mod electrical_profiles;
+pub mod history;
 pub mod infra;
 pub mod infra_objects;
 pub mod macro_node;
