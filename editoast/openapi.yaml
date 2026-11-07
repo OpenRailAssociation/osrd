@@ -600,6 +600,60 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/CatalogEntry'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
     post:
       tags:
       - catalog_entry
@@ -616,6 +670,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CatalogEntry'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /catalog_entries/{id}:
     put:
       tags:
@@ -642,7 +750,92 @@ paths:
               schema:
                 $ref: '#/components/schemas/CatalogEntry'
         '404':
-          description: Catalog entry not found
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Catalog entry '{catalog_entry_id}' could not be found
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - catalog_entry_id
+                      properties:
+                        catalog_entry_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:catalog_entry:not_found
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
     delete:
       tags:
       - catalog_entry
@@ -658,7 +851,92 @@ paths:
         '204':
           description: The catalog entry was deleted
         '404':
-          description: Catalog entry not found
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Catalog entry '{catalog_entry_id}' could not be found
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - catalog_entry_id
+                      properties:
+                        catalog_entry_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:catalog_entry:not_found
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /documents:
     post:
       tags:
@@ -8116,51 +8394,6 @@ components:
           type: string
           enum:
           - editoast:cache_operation:ObjectNotFound
-    EditoastCatalogEntryErrorDatabase:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastCatalogEntryErrorDatabaseContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:catalog_entry:Database
-    EditoastCatalogEntryErrorNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastCatalogEntryErrorNotFoundContext
-          required:
-          - catalog_entry_id
-          properties:
-            catalog_entry_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:catalog_entry:NotFound
     EditoastCoreErrorBrokenPipe:
       type: object
       required:
@@ -8375,8 +8608,6 @@ components:
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMissingErrorObject'
       - $ref: '#/components/schemas/EditoastCacheOperationErrorDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastCacheOperationErrorObjectNotFound'
-      - $ref: '#/components/schemas/EditoastCatalogEntryErrorDatabase'
-      - $ref: '#/components/schemas/EditoastCatalogEntryErrorNotFound'
       - $ref: '#/components/schemas/EditoastCoreErrorBrokenPipe'
       - $ref: '#/components/schemas/EditoastCoreErrorCoreResponseFormatError'
       - $ref: '#/components/schemas/EditoastCoreErrorMqClientError'
