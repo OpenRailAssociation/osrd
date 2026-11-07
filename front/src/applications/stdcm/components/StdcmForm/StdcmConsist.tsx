@@ -13,11 +13,7 @@ import useFilterTowedRollingStock from 'applications/stdcm/hooks/useFilterTowedR
 import type { ConsistData, ConsistErrors } from 'applications/stdcm/types';
 import calculateConsistMaxSpeed from 'applications/stdcm/utils/calculateConsistMaxSpeed';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type {
-  LightRollingStockWithLiveries,
-  TowedRollingStock,
-  LoadingGaugeType,
-} from 'common/api/osrdEditoastApi';
+import type { LightRollingStockWithLiveries, LoadingGaugeType } from 'common/api/osrdEditoastApi';
 import SpeedLimitTagSelector from 'common/SpeedLimitTagSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
@@ -154,9 +150,15 @@ const StdcmConsist = ({
   }, []);
 
   const rollingStockComboBoxDefaultProps = useDefaultComboBox(rollingStocks, getLabel);
-  const getTowedRollingStockName = useCallback((trs: TowedRollingStock) => trs.name, []);
+
+  // "NoTowedRollingstock" is added on top of the list.
+  const towedRollingStockOptions = useMemo(
+    () => [{ id: null, name: t('consist.noTowedRollingStock') }, ...towedRollingStocks],
+    [t, towedRollingStocks]
+  );
+  const getTowedRollingStockName = useCallback((trs: { name: string }) => trs.name, []);
   const towedRollingStockComboBoxDefaultProps = useDefaultComboBox(
-    towedRollingStocks,
+    towedRollingStockOptions,
     getTowedRollingStockName
   );
 
@@ -231,11 +233,13 @@ const StdcmConsist = ({
             id="towedRollingStock"
             label={t('consist.towedRollingStock')}
             value={towedRollingStock}
-            getSuggestionLabel={(suggestion: TowedRollingStock) => suggestion.name}
+            emptyValue={towedRollingStockOptions[0]}
+            getSuggestionLabel={getTowedRollingStockName}
             onSelectSuggestion={(towed) => {
-              prefillConsist(isConsistChange, rollingStock, towed, consist.speedLimitByTag, {
-                towedRollingStockID: towed?.id,
-                towedRollingStockName: towed?.name,
+              const selected = towed?.id !== null ? towed : undefined;
+              prefillConsist(isConsistChange, rollingStock, selected, consist.speedLimitByTag, {
+                towedRollingStockID: selected?.id,
+                towedRollingStockName: selected?.name,
               });
             }}
             {...towedRollingStockComboBoxDefaultProps}
