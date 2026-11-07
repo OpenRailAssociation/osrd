@@ -208,6 +208,7 @@
       --col-confortable-padding-inline: 4px;
     }
 
+    .col-with-distance,
     .col-with-clock-time {
       --col-width: 68px;
       --col-confortable-width: 85px;
@@ -356,6 +357,7 @@
       font-size: 0.75rem;
     }
 
+    td.col-with-distance,
     td.col-with-clock-time {
       font-size: 0.875rem;
     }
