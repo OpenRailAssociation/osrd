@@ -160,6 +160,9 @@
       "ScenarioNotFound": "Scénario '{{scenario_id}}' non trouvé",
       "WrongScenario": "La note '{note_id}' n'appartient pas au scénario '{scenario_id}'"
     },
+    "match_macro_nodes": {
+      "scenario_not_found": "Scénario '{{scenario_id}}' non trouvé"
+    },
     "model": {
       "ModelError": "Erreur interne (requêtage base de données)"
     },

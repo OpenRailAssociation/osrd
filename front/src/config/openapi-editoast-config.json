@@ -13,6 +13,7 @@
         "postAuthzUserInfo",
         "postWorkerLoad",
         "postInfraByInfraIdMatchOperationalPoints",
+        "postScenariosByScenarioIdMatchMacroNodes",
         "postInfraByInfraIdObjectsAndObjectType",
         "postInfraByInfraIdPathfinding",
         "postInfraByInfraIdPathfindingBlocks",
