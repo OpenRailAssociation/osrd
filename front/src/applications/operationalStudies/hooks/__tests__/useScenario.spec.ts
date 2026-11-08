@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   useGetTrainScheduleSets: vi.fn(),
   postTrainScheduleSets: vi.fn(),
   linkTrainScheduleSets: vi.fn(),
+  getParamFromUrlOrStorage: vi.fn(),
   setParamsInUrlAndStorage: vi.fn(),
 }));
 
@@ -26,7 +27,10 @@ vi.mock('react-router-dom', () => ({
 }));
 
 vi.mock('../useUrlOrStorageParam', () => ({
-  default: () => ({ setParamsInUrlAndStorage: mocks.setParamsInUrlAndStorage }),
+  default: () => ({
+    getParamFromUrlOrStorage: mocks.getParamFromUrlOrStorage,
+    setParamsInUrlAndStorage: mocks.setParamsInUrlAndStorage,
+  }),
 }));
 
 vi.mock('store', () => ({
