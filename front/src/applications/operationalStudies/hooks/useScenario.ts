@@ -25,7 +25,7 @@ const useScenario = () => {
 
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
 
-  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
+  const { getParamFromUrlOrStorage, setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   const {
     data: scenario,
@@ -39,8 +39,11 @@ const useScenario = () => {
       : skipToken
   );
 
-  // TODO(#18904): use the selected timetable instead of the first one
-  const currentTimetable = scenario?.timetable_summaries.at(0);
+  // The active timetable is the one from the URL, or else from the local storage, or else the first one.
+  const savedTimetableId = getParamFromUrlOrStorage('timetable');
+  const currentTimetable =
+    scenario?.timetable_summaries.find(({ id }) => id.toString() === savedTimetableId) ??
+    scenario?.timetable_summaries.at(0);
 
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery(
@@ -64,7 +67,6 @@ const useScenario = () => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [scenario]);
 
-  // TODO(#18904): read the selected timetable from the URL instead of always using the first one.
   useEffect(() => {
     if (currentTimetable) {
       setParamsInUrlAndStorage('timetable', currentTimetable.id.toString());
@@ -114,7 +116,7 @@ const useScenario = () => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleSets, currentTimetable?.id, currentTimetable?.type]);
 
-  return { scenario, sandboxId };
+  return { scenario, timetable: currentTimetable, sandboxId };
 };
 
 export default useScenario;
