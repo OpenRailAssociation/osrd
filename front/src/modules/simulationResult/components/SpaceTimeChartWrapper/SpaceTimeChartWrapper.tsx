@@ -31,7 +31,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useScenario from 'applications/operationalStudies/hooks/useScenario';
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -243,9 +243,7 @@ const SpaceTimeChartWrapper = ({
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
-  const { scenario: { timetable_summaries } = {} } = useScenario();
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = timetable_summaries !== undefined ? timetable_summaries[0].type : undefined;
+  const { timetableType } = useScenarioContext();
   const selection = useSelector(getSelectedTrain);
   const { id: selectedTrainId, by: selectedTrainBy } = selection ?? {};
 

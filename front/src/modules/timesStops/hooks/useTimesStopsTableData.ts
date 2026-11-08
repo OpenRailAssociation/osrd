@@ -216,7 +216,7 @@ const useTimesStopsTableData = (
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
 ): { allRows: TimesStopsRow[]; rows: TimesStopsRow[]; stableIsValid: boolean } => {
   const { t } = useTranslation('operational-studies');
-  const { scenario, getTrackSectionsByIds } = useScenarioContext();
+  const { timetableType, getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
 
   // Stale-while-revalidate: keep the last known-good simulation props in a ref so the table
@@ -286,8 +286,6 @@ const useTimesStopsTableData = (
     fetchTrackSections();
   }, [trackIds, getTrackSectionsByIds]);
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
   const allRows = useMemo(() => {
     const startDate = getTruncatedToSecondStartTime(selectedTrain, timetableType);
     const scheduleByAt = keyBy(selectedTrain.schedule, 'at');

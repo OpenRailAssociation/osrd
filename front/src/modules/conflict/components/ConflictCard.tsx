@@ -44,9 +44,7 @@ const fitsWithinRows = (widths: number[], availableWidth: number, gap: number) =
 const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
-  const { scenario } = useScenarioContext();
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
+  const { timetableType } = useScenarioContext();
   const isHourlyTimetable = timetableType === 'HOURLY';
 
   const startTime = timeToLocaleString(

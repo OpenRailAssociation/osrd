@@ -32,7 +32,7 @@ const CollapsedTrainOverview = ({
   onItineraryOpened,
 }: CollapsedTrainOverviewProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
-  const { scenario } = useScenarioContext();
+  const { timetableType } = useScenarioContext();
   const dateTimeLocale = useDateTimeLocale();
 
   const pacedTrain = train.paced ? (train as PacedTrain) : null;
@@ -60,8 +60,7 @@ const CollapsedTrainOverview = ({
           </div>
         )}
 
-        {/* TODO: adapt once the front handles multiple timetable per scenario */}
-        {scenario.timetable_summaries[0].type === 'CALENDAR' && (
+        {timetableType === 'CALENDAR' && (
           <div className="train-departure-date" data-testid="train-departure-date">
             {getShortDepartureDate(train, dateTimeLocale)}
           </div>

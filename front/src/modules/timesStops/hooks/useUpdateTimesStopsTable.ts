@@ -143,7 +143,7 @@ const useUpdateTimesStopsTable = (
   trainSchedulesWithDetails: TrainScheduleWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
-  const { timetableId, scenario } = useScenarioContext();
+  const { timetableId, timetableType } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
@@ -207,7 +207,6 @@ const useUpdateTimesStopsTable = (
     [selectedTrain, allRows]
   );
 
-  const timetableType = scenario.timetable_summaries[0].type;
   const computeTimesUpdate = useCallback(
     (originalUpdate: ArrivalUpdate | DepartureUpdate | StopDurationUpdate): ComputedUpdate => {
       // The origin arrival is the start time: an entered value out of the interval is replaced by
@@ -219,7 +218,6 @@ const useUpdateTimesStopsTable = (
         if (wrappedOriginArrival) update = { ...update, value: wrappedOriginArrival };
       }
 
-      // TODO: adapt once the front handles multiple timetable per scenario
       const propagatedResult =
         update.field === 'stopDuration'
           ? propagateStopDuration(update, selectedTrain, timetableType)

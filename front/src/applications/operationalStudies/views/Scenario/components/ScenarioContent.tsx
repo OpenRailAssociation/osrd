@@ -58,7 +58,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   const dispatch = useAppDispatch();
   const { scenario, sandboxId } = useScenarioContext();
 
-  const { infraId, timetableId, isInfraLoaded } = useScenarioContext();
+  const { infraId, timetableId, timetableType, isInfraLoaded } = useScenarioContext();
 
   const [trainScheduleToEditData, setTrainScheduleToEditData] = useState<TrainScheduleToEditData>();
   const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
@@ -130,22 +130,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     setIsScrollingToTimeStopsTable(true);
   }, [activeBoards, toggleBoard]);
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableSummary = scenario.timetable_summaries[0];
-
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
-    const state = new MacroEditorState(
-      infraId,
-      scenario.id,
-      timetableSummary.id,
-      timetableSummary.type
-    );
+    const state = new MacroEditorState(infraId, scenario.id, timetableId, timetableType);
 
-    const dto = await loadNgeDto(state, timetableSummary.id, dispatch, t);
+    const dto = await loadNgeDto(state, timetableId, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
-  }, [dispatch, infraId, scenario.id, timetableSummary, activeBoards, t]);
+  }, [dispatch, infraId, scenario.id, timetableId, timetableType, activeBoards, t]);
 
   const upsertTrainSchedulesWithNge = useCallback(
     (updatedTrainSchedules: TrainScheduleResponse[]) => {
@@ -230,10 +222,10 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
 
   const defaultStartTime = useMemo(
     () =>
-      timetableSummary.type === 'CALENDAR'
+      timetableType === 'CALENDAR'
         ? computeLatestMidnight([...trainSchedulesById.values()], now)
         : Duration.zero,
-    [timetableSummary.type, trainSchedulesById]
+    [timetableType, trainSchedulesById]
   );
 
   return (
@@ -317,7 +309,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
                 </BoardWrapper>
               )}
               {/* CHRONOGRAM */}
-              {timetableSummary.type === 'CALENDAR' &&
+              {timetableType === 'CALENDAR' &&
                 isInfraLoaded &&
                 trainSchedulesWithDetails.length > 0 && (
                   <BoardWrapper

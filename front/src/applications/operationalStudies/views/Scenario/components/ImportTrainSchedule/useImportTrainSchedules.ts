@@ -22,7 +22,7 @@ import { postFullImportPayload } from './helpers/postPayloads';
 const useImportTrainSchedules = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
-  const { scenario, sandboxId } = useScenarioContext();
+  const { scenario, timetableId, timetableType, sandboxId } = useScenarioContext();
   const { upsertTrainSchedules, trainSchedules } = useTimetableContext();
 
   const subCategories = useSubCategoryContext();
@@ -49,10 +49,6 @@ const useImportTrainSchedules = () => {
       throw error;
     }
   };
-
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableId = scenario.timetable_summaries[0].id;
-  const timetableType = scenario.timetable_summaries[0].type;
 
   const processFile = async (file: File): Promise<TimetableJsonPayload> => {
     const fileContent = await file.text();

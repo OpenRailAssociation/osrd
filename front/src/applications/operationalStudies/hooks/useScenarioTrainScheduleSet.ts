@@ -53,7 +53,7 @@ export default function useScenarioTrainScheduleSet(
     keyPrefix: 'main.timetable.trainScheduleSets.error',
   });
 
-  const { timetableId, scenario } = useScenarioContext();
+  const { timetableId, timetableType } = useScenarioContext();
   const { trainSchedules, upsertTrainSchedules, removeTrainSchedules } = useTimetableContext();
 
   const { currentData: trainScheduleSets } =
@@ -79,8 +79,6 @@ export default function useScenarioTrainScheduleSet(
   const [getTrainScheduleSetTrainSchedules] =
     osrdEditoastApi.endpoints.getTrainScheduleSetsByIdTrainSchedules.useLazyQuery();
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
   const createTrainScheduleSet = useCallback(
     async (data: TrainScheduleSetFormData): Promise<void> => {
       let catalogEntryId: number | undefined;

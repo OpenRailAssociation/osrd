@@ -230,13 +230,11 @@ const TimesStopsTable = ({
 }: TimesStopsTableProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
   const dateTimeLocale = useDateTimeLocale();
-  const { scenario } = useScenarioContext();
+  const { timetableType } = useScenarioContext();
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
   const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const startTimeCellType: 'time' | 'duration' =
-    scenario.timetable_summaries[0].type === 'CALENDAR' ? 'time' : 'duration';
+  const startTimeCellType: 'time' | 'duration' = timetableType === 'CALENDAR' ? 'time' : 'duration';
 
   const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
   const [mouseOverTimeField, setMouseOverTimeField] = useState<RequestedTimeField>();

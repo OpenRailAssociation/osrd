@@ -265,10 +265,7 @@ const ExpandedTrainForm = ({
   const { t, i18n } = useTranslation(['operational-studies', 'translation']);
   const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
   const infraID = useInfraID();
-  const { scenario } = useScenarioContext();
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableId = scenario.timetable_summaries[0].id;
-  const timetableType = scenario.timetable_summaries[0].type;
+  const { timetableId, timetableType } = useScenarioContext();
   const speedLimitTags = useSpeedLimitTags(infraID);
   const categoryOptions = useCategoryOptions(false);
 

@@ -217,14 +217,12 @@ const ItineraryModal = ({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
-  const { workerStatus, scenario } = useScenarioContext();
+  const { workerStatus, timetableType } = useScenarioContext();
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
   const fitViewportToInfra = useFitViewportToInfra();
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
   const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
     blankNewTrainState(defaultStartTime, timetableType)
   );

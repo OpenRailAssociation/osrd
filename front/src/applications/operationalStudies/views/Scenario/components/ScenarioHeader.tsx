@@ -39,12 +39,10 @@ type ScenarioHeaderProps = {
 const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, impersonate } = useAuth();
   const navigate = useNavigate();
-  const { scenario, timetableId, infraId } = useScenarioContextWithOptionalTimetable();
+  const { scenario, timetableId, timetableType, infraId } =
+    useScenarioContextWithOptionalTimetable();
   const { t } = useTranslation('operational-studies');
   const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
-
-  // TODO(#18904): use the selected timetable instead of the first one
-  const timetableType = scenario.timetable_summaries.at(0)?.type;
 
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
