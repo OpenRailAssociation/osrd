@@ -24,7 +24,7 @@ export default function ItineraryModalFooter({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
-  const { scenario } = useScenarioContext();
+  const { timetableType } = useScenarioContext();
   const [submittingType, setSubmittingType] = useState<EditingTrainType>();
 
   const handleSubmit = (type: EditingTrainType) => {
@@ -43,7 +43,7 @@ export default function ItineraryModalFooter({
       />
       {mode === 'new' ? (
         <div className="itinerary-modal-submit-buttons">
-          {scenario.timetable_summaries[0].type !== 'HOURLY' && (
+          {timetableType !== 'HOURLY' && (
             <Button
               label={t('submit.addSingleTrain')}
               variant="Normal"

@@ -63,7 +63,7 @@ const TimeStopsTableWrapper = ({
   rollingStock,
 }: TimeStopsTableWrapperProps) => {
   const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
-  const { scenario } = useScenarioContext();
+  const { timetableType } = useScenarioContext();
 
   // Refs used to track simulation refresh after a user edit (see isAwaitingSimulation):
   //   - preEditPathItemTimesRef: batch summary (simulatedPathItemTimes reference)
@@ -121,8 +121,6 @@ const TimeStopsTableWrapper = ({
     });
   }, [rows, optimisticEdits]);
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
   const startTime = useMemo(
     () => getTruncatedToSecondStartTime(selectedTrain, timetableType),
     [selectedTrain, timetableType]

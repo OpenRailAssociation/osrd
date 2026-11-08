@@ -65,9 +65,7 @@ export default function TrainServiceForm({
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
-  const { scenario } = useScenarioContext();
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
+  const { timetableType } = useScenarioContext();
 
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
 

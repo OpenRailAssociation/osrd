@@ -124,8 +124,8 @@ function computeMovedTrainSchedule(
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const isHourlyTimetable = scenario.timetable_summaries[0].type === 'HOURLY';
+  const { workerStatus, timetableType } = useScenarioContext();
+  const isHourlyTimetable = timetableType === 'HOURLY';
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
   const [isTrainSchedulesLoading, setIsTrainSchedulesLoading] = useState(true);
@@ -134,18 +134,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
 
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
-  const { workerStatus } = useScenarioContext();
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infraId, trainSchedulesById);
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const scenarioTimetableId = scenario.timetable_summaries[0].id;
-  const timetableType = scenario.timetable_summaries[0].type;
 
   useEffect(() => {
     const trainSchedulesResult = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
-        timetableId: scenarioTimetableId,
+        timetableId,
       })
     );
 
@@ -165,7 +161,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     return () => {
       trainSchedulesResult.unsubscribe();
     };
-  }, [scenarioTimetableId, dispatch]);
+  }, [timetableId, dispatch]);
 
   const {
     projectedTrainsById,
@@ -176,7 +172,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     updateProjectedTrainExceptions,
   } = useLazyProjectTrains({
     infraId,
-    timetableId: scenarioTimetableId,
+    timetableId,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     path:
       projectionPath?.pathfindingStatus === 'succeeded'
@@ -215,7 +211,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     isUninitialized,
     isFetching,
   } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    isReadyToFetchConflicts ? { id: scenarioTimetableId, infraId: scenario.infra_id } : skipToken
+    isReadyToFetchConflicts ? { id: timetableId, infraId: scenario.infra_id } : skipToken
   );
   const conflicts = useMemo(() => conflictsData ?? [], [conflictsData]);
 

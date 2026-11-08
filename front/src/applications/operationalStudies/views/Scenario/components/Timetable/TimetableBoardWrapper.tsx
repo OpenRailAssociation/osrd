@@ -44,7 +44,7 @@ const TimetableBoardWrapper = ({
 }: TimetableBoardWrapperProps) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const { scenario, sandboxId, timetableId } = useScenarioContext();
+  const { scenario, sandboxId, timetableId, timetableType } = useScenarioContext();
   const { trainSchedules, removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [getTimetableRoundTrips] =
@@ -169,8 +169,6 @@ const TimetableBoardWrapper = ({
 
   // --- END BOARD WRAPPER MENU ITEMS CONFIGURATION ---
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetableType = scenario.timetable_summaries[0].type;
   const handleCopy = useCallback(async () => {
     const selectedText = document.getSelection()?.toString();
     if (selectedText !== undefined && selectedText.length > 0) return;

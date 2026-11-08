@@ -22,18 +22,14 @@ export default function useLoadCatalog() {
     trainScheduleSets: TrainScheduleSetById;
   } | null>(null);
 
-  const { scenario } = useScenarioContext();
+  const { timetableId, timetableType } = useScenarioContext();
 
   const { currentData: catalogData } = osrdEditoastApi.endpoints.getAllCatalogEntries.useQuery({});
 
   const [getTrainScheduleSets] = osrdEditoastApi.endpoints.getTrainScheduleSets.useLazyQuery();
 
-  // TODO: adapt once the front handles multiple timetable per scenario
-  const timetable_id = scenario.timetable_summaries[0].id;
-  const timetable_type = scenario.timetable_summaries[0].type;
-
   const { data: tsss = [] } = osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({
-    id: timetable_id,
+    id: timetableId,
   });
 
   const trainScheduleSetsAlreadyImported = new Set(
@@ -53,7 +49,7 @@ export default function useLoadCatalog() {
           getTrainScheduleSets({
             catalogEntryId: catalogEntry.id,
             published: true,
-            timetableType: timetable_type,
+            timetableType,
           }).unwrap()
         )
       );
@@ -82,7 +78,7 @@ export default function useLoadCatalog() {
     } finally {
       setLoading(false);
     }
-  }, [catalogData, getTrainScheduleSets, timetable_type]);
+  }, [catalogData, getTrainScheduleSets, timetableType]);
 
   /**
    * When hook is mounted
