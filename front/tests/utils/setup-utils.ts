@@ -11,7 +11,7 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { E2E_USER_IDENTITIES } from '../assets/constants/permission-const';
+import { E2E_USERS } from '../assets/constants/permission-const';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -231,7 +231,7 @@ export async function createDataForTests(): Promise<void> {
     // Step 8: Grant the STDCM infrastructure and the rolling stocks to the STDCM only e2e user
     const allRollingStocks: LightRollingStock[] = await listApiRequest('/api/light_rolling_stock');
     await grantInfraAndRollingStocksToUser(
-      E2E_USER_IDENTITIES.stdcmOnly,
+      E2E_USERS.stdcmOnly.identity,
       mediumInfra.id,
       allRollingStocks.map(({ id }) => id)
     );

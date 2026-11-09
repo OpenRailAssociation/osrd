@@ -39,11 +39,13 @@ import { readJsonFile } from './file-utils';
 /**
  * Initialize a new API request context with the base URL.
  *
+ * @param impersonatedIdentity - Optional. Identity of the user the requests are sent on behalf of.
  * @returns {Promise<APIRequestContext>} - The API request context.
  */
-export const getApiContext = async (): Promise<APIRequestContext> =>
+export const getApiContext = async (impersonatedIdentity?: string): Promise<APIRequestContext> =>
   request.newContext({
     baseURL: BASE_URL,
+    extraHTTPHeaders: impersonatedIdentity ? { 'x-impersonate': impersonatedIdentity } : undefined,
   });
 
 /**

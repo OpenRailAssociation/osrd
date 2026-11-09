@@ -2,6 +2,7 @@ import { type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 import { HOME_URLS, INFRA_EDITOR_URL, MAP_URL } from '../assets/constants/homepage-const';
+import type { E2EUser } from '../assets/constants/permission-const';
 import CommonPage from './common-page';
 
 class HomePage extends CommonPage {
@@ -12,6 +13,7 @@ class HomePage extends CommonPage {
   private readonly userSettingsButton: Locator;
   private readonly impersonationInput: Locator;
   private readonly impersonationSuggestions: Locator;
+  private readonly impersonationSuggestion: (userName: string) => Locator;
   private readonly stopImpersonationButton: Locator;
   private readonly notAuthorizedWarning: Locator;
   private readonly mapInfrasButton: Locator;
@@ -35,7 +37,9 @@ class HomePage extends CommonPage {
     this.OSRDLanguage = page.getByTestId('language-info');
     this.userSettingsButton = page.getByTestId('user-settings-btn');
     this.impersonationInput = page.getByTestId('impersonation-input');
-    this.impersonationSuggestions = page.getByTestId('impersonation-item');
+    this.impersonationSuggestions = page.getByTestId('impersonation-list');
+    this.impersonationSuggestion = (userName) =>
+      this.impersonationSuggestions.getByTestId(`impersonation-user-${userName}`);
     this.stopImpersonationButton = page.getByTestId('stop-impersonation-btn');
     this.notAuthorizedWarning = page.getByTestId('not-authorized-warning');
     this.mapInfrasButton = page.getByTestId('map-infras-button');
@@ -52,12 +56,12 @@ class HomePage extends CommonPage {
     ];
   }
 
-  async impersonateUser(name: string): Promise<void> {
+  async impersonateUser({ name }: E2EUser): Promise<void> {
     await this.goToHomePage();
     await this.dropDown.click();
     await this.userSettingsButton.click();
     await this.impersonationInput.fill(name);
-    await this.impersonationSuggestions.filter({ hasText: name }).click();
+    await this.impersonationSuggestion(name).click();
     await expect(this.stopImpersonationButton).toBeVisible();
   }
 
