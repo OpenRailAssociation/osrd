@@ -69,6 +69,11 @@ impl Client {
     pub fn store(&self) -> &Store {
         &self.store
     }
+
+    /// Delete a store and all its authorization models and tuples.
+    pub async fn delete_store(&self, store_id: &str) -> Result<(), Error> {
+        self.delete_stores(store_id).await
+    }
 }
 
 #[cfg(test)]
