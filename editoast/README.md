@@ -49,6 +49,13 @@ $ curl -f -H 'x-osrd-skip-authz: true' http://localhost:8090/health
 cargo test --workspace -- --test-threads=4
 ```
 
+Tests create new databases and OpenFGA stores. While databases are usually discarded afterwards and stores reused, some can accumulate over time. That may
+lead to longer test execution time and sometimes to failures because of duplicate databases. To clean your evinronment, either start from a fresh database or dump, or run the following command to keep the existing `editoast` database intact:
+
+```sh
+cargo run clean-test-env
+```
+
 ## Useful tools
 
 Here a list of components to help you in your development (see CI jobs if necessary):
