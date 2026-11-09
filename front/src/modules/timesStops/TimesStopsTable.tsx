@@ -166,6 +166,7 @@ type TimesStopsTableProps = {
   rows: TimesStopsRow[];
   startTime: StartTime;
   isValid: boolean;
+  pathFound: boolean;
   isComputedDataPending?: boolean;
   availablePowerRestrictions: string[];
   powerRestrictionWarningCount?: number;
@@ -218,6 +219,7 @@ const TimesStopsTable = ({
   rows,
   startTime,
   isValid,
+  pathFound,
   isComputedDataPending,
   availablePowerRestrictions,
   powerRestrictionWarningCount = 0,
@@ -714,7 +716,7 @@ const TimesStopsTable = ({
         );
       }
 
-      if (!isValid && !isFirstRow) {
+      if (!pathFound && !isFirstRow) {
         return (
           <DistanceCell
             distanceValue={value ?? undefined}
@@ -731,7 +733,7 @@ const TimesStopsTable = ({
         </span>
       );
     },
-    [isValid]
+    [pathFound]
   );
 
   const columns = useMemo(
@@ -901,11 +903,11 @@ const TimesStopsTable = ({
           },
         }),
         columnHelper.accessor('position', {
-          header: () => t(isValid ? 'calculatedPosition' : 'requestedPosition'),
+          header: () => t(pathFound ? 'calculatedPosition' : 'requestedPosition'),
           cell: returnPositionCell,
           meta: {
-            className: cx('col-reference-position col-with-distance', { computed: isValid }),
-            title: t(isValid ? 'calculatedPosition' : 'requestedPosition'),
+            className: cx('col-reference-position col-with-distance', { computed: pathFound }),
+            title: t(pathFound ? 'calculatedPosition' : 'requestedPosition'),
             'data-testid': 'reference-position',
           },
         }),
@@ -922,6 +924,7 @@ const TimesStopsTable = ({
       returnBaseArrivalCell,
       returnPositionCell,
       isValid,
+      pathFound,
       t,
     ]
   );
