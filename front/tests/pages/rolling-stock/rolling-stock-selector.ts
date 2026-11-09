@@ -20,6 +20,8 @@ class RollingStockSelector extends CommonPage {
   readonly comfortACButton: Locator;
   readonly selectedRollingStockName: Locator;
   readonly rollingStockNameTab: Locator;
+  private readonly rollingStockModalCard: (rollingStockName: string) => Locator;
+  private readonly rollingStockSelectButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -42,14 +44,9 @@ class RollingStockSelector extends CommonPage {
     this.comfortACButton = page.getByTestId('comfort-ac-button');
     this.selectedRollingStockName = page.getByTestId('selected-rolling-stock-info');
     this.rollingStockNameTab = page.getByTestId('rolling-stock-name-tab');
-  }
-
-  getRollingstockCardByName(rollingstockName: string) {
-    return this.rollingStockSelectorModal.getByTestId(`rollingstock-${rollingstockName}`);
-  }
-
-  private getRollingStockSearchButton(locator: Locator) {
-    return locator.getByTestId('select-rolling-stock-button');
+    this.rollingStockModalCard = (rollingStockName) =>
+      this.rollingStockSelectorModal.getByTestId(`rollingstock-${rollingStockName}`);
+    this.rollingStockSelectButton = page.getByTestId('select-rolling-stock-button');
   }
 
   async searchRollingstock(rollingstockName: string) {
@@ -65,13 +62,13 @@ class RollingStockSelector extends CommonPage {
     selectComfort?: boolean;
     confirmSelection?: boolean;
   }): Promise<void> {
-    const rollingstockCard = this.getRollingstockCardByName(name);
+    const rollingstockCard = this.rollingStockModalCard(name);
     await expect(rollingstockCard).toBeVisible();
     await rollingstockCard.click();
     await expect(rollingstockCard).not.toHaveClass(/inactive/);
     if (selectComfort) await this.comfortACButton.click();
     if (confirmSelection) {
-      await this.getRollingStockSearchButton(rollingstockCard).click();
+      await rollingstockCard.locator(this.rollingStockSelectButton).click();
       await expect(this.rollingStockSelectorModal).toBeHidden();
     }
   }
