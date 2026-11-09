@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 
-import { Select, ComboBox } from '@osrd-project/ui-core';
+import { ComboBox, Select } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
@@ -20,7 +20,8 @@ type StdcmOperationalPointProps = {
   onItineraryChange: () => void;
 };
 
-const formatSecondaryCode = (secondaryCode?: string | null) => secondaryCode || 'BV';
+const formatSecondaryLabel = (op: StdcmOp) =>
+  (op.secondaryCode || 'BV') + (op.secondaryName ? ` - ${op.secondaryName}` : '');
 
 const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint): StdcmOp => {
   if (!searchResult.uic) throw new Error(`Operational point ${searchResult.obj_id} has no UIC`);
@@ -30,6 +31,7 @@ const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint)
     uic: searchResult.uic,
     mainCode: searchResult.main_code,
     secondaryCode: searchResult.secondary_code,
+    secondaryName: searchResult.secondary_name,
     name: searchResult.name,
     coordinates: searchResult.geographic!.coordinates as [number, number],
   };
@@ -187,7 +189,7 @@ const StdcmOperationalPoint = ({
           value={operationalPoint?.secondaryCode ? operationalPoint : undefined}
           onChange={handleChSelect}
           options={chSuggestions}
-          getOptionLabel={(option) => formatSecondaryCode(option.secondaryCode)}
+          getOptionLabel={(option) => formatSecondaryLabel(option)}
           getOptionValue={(option) => option.secondaryCode ?? ''}
           disabled={disabled}
           narrow
