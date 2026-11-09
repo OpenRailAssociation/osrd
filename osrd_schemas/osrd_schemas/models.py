@@ -1184,98 +1184,6 @@ class EditoastLinesErrorsLineNotFound(BaseModel):
     )
 
 
-class EditoastLinkingErrorBatchNotFoundContext(BaseModel):
-    count: StrictInt
-
-
-class EditoastLinkingErrorBatchNotFound(BaseModel):
-    context: Annotated[
-        EditoastLinkingErrorBatchNotFoundContext | None,
-        Field(title="EditoastLinkingErrorBatchNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:train_schedule_linking:BatchNotFound"] = (
-        "editoast:train_schedule_linking:BatchNotFound"
-    )
-
-
-class EditoastLinkingErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastLinkingErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[400] = 400
-    type: Literal["editoast:train_schedule_linking:Database"] = (
-        "editoast:train_schedule_linking:Database"
-    )
-
-
-class EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext(BaseModel):
-    timetable_id: StrictInt
-    timetable_type: dict[str, Any]
-
-
-class EditoastLinkingErrorRequestIncompatibleWithTimetableType(BaseModel):
-    context: Annotated[
-        EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext | None,
-        Field(title="EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[409] = 409
-    type: Literal[
-        "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
-    ] = "editoast:train_schedule_linking:RequestIncompatibleWithTimetableType"
-
-
-class EditoastLinkingErrorSourceAlreadyUsedContext(BaseModel):
-    occurrence: StrictStr
-
-
-class EditoastLinkingErrorSourceAlreadyUsed(BaseModel):
-    context: Annotated[
-        EditoastLinkingErrorSourceAlreadyUsedContext | None,
-        Field(title="EditoastLinkingErrorSourceAlreadyUsedContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[409] = 409
-    type: Literal["editoast:train_schedule_linking:SourceAlreadyUsed"] = (
-        "editoast:train_schedule_linking:SourceAlreadyUsed"
-    )
-
-
-class EditoastLinkingErrorTargetAlreadyUsedContext(BaseModel):
-    occurrence: StrictStr
-
-
-class EditoastLinkingErrorTargetAlreadyUsed(BaseModel):
-    context: Annotated[
-        EditoastLinkingErrorTargetAlreadyUsedContext | None,
-        Field(title="EditoastLinkingErrorTargetAlreadyUsedContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[409] = 409
-    type: Literal["editoast:train_schedule_linking:TargetAlreadyUsed"] = (
-        "editoast:train_schedule_linking:TargetAlreadyUsed"
-    )
-
-
-class EditoastLinkingErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: StrictInt
-
-
-class EditoastLinkingErrorTimetableNotFound(BaseModel):
-    context: Annotated[
-        EditoastLinkingErrorTimetableNotFoundContext | None,
-        Field(title="EditoastLinkingErrorTimetableNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:train_schedule_linking:TimetableNotFound"] = (
-        "editoast:train_schedule_linking:TimetableNotFound"
-    )
-
-
 class EditoastListErrorsErrorsWrongErrorTypeProvided(BaseModel):
     context: Annotated[
         dict[str, Any] | None,
@@ -5133,12 +5041,6 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
-        | EditoastLinkingErrorBatchNotFound
-        | EditoastLinkingErrorDatabase
-        | EditoastLinkingErrorRequestIncompatibleWithTimetableType
-        | EditoastLinkingErrorSourceAlreadyUsed
-        | EditoastLinkingErrorTargetAlreadyUsed
-        | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
         | EditoastMacroNodeErrorNotFound
@@ -5306,12 +5208,6 @@ class EditoastError(
         | EditoastLevelCrossingErrorTrainBatchNotFound
         | EditoastLevelCrossingErrorUnsupportedTimetableType
         | EditoastLinesErrorsLineNotFound
-        | EditoastLinkingErrorBatchNotFound
-        | EditoastLinkingErrorDatabase
-        | EditoastLinkingErrorRequestIncompatibleWithTimetableType
-        | EditoastLinkingErrorSourceAlreadyUsed
-        | EditoastLinkingErrorTargetAlreadyUsed
-        | EditoastLinkingErrorTimetableNotFound
         | EditoastListErrorsErrorsWrongErrorTypeProvided
         | EditoastMacroNodeErrorDatabase
         | EditoastMacroNodeErrorNotFound
