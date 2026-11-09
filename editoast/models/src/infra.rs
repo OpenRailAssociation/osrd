@@ -7,8 +7,6 @@ mod voltage;
 
 use std::ops::DerefMut as _;
 
-use chrono::DateTime;
-use chrono::Utc;
 use diesel::ExpressionMethods as _;
 use diesel::QueryDsl as _;
 use diesel::QueryableByName;
@@ -27,6 +25,7 @@ use tracing::debug;
 use tracing::error;
 use uuid::Uuid;
 
+use crate::Timestamp;
 use crate::infra_objects::get_geometry_layer_table;
 use crate::infra_objects::get_table;
 use crate::prelude::*;
@@ -60,9 +59,9 @@ pub struct Infra {
     #[schema(required)]
     pub generated_version: Option<i64>,
     pub locked: bool,
-    pub created: DateTime<Utc>,
-    #[educe(Default = Utc::now())]
-    pub modified: DateTime<Utc>,
+    pub created: Timestamp,
+    #[educe(Default = Timestamp::now())]
+    pub modified: Timestamp,
 }
 
 impl InfraChangeset {
@@ -92,7 +91,7 @@ impl InfraChangeset {
 impl Infra {
     pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), crate::Error> {
         self.version += 1;
-        self.modified = Utc::now();
+        self.modified = Timestamp::now();
         self.save(conn).await
     }
 
@@ -149,7 +148,7 @@ impl Infra {
     ) -> Result<Infra, crate::Error> {
         conn.clone().transaction(|conn| Box::pin(async move {
             // Duplicate infra shell
-            let now = Utc::now();
+            let now = Timestamp::now();
             let cloned_infra = <Self as Clone>::clone(self)
                 .into_changeset()
                 .name(new_name)
