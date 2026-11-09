@@ -160,7 +160,7 @@ const buildTableRow = ({
   const referencePosition = schedule?.reference_position ?? null;
   const computedPositionValue = computedPosition !== undefined ? computedPosition : null;
 
-  const positionValue = hasSimulation ? computedPositionValue : referencePosition;
+  const positionValue = computedPositionValue ?? referencePosition;
   const position = positionValue !== null ? mmToKm(positionValue) : null;
 
   const {
@@ -313,6 +313,11 @@ const useTimesStopsTableData = (
             ? stableOPs.find((op) => op.pathItemKey === pathStep.key)
             : undefined);
 
+        const matchingPosition =
+          pathStep.location.type === 'operational_point_part_reference' && operationalPointsOnPath
+            ? operationalPointsOnPath.find((op) => op.pathItemKey === pathStep.key)?.position
+            : undefined;
+
         const name = getOperationalPointName(
           matchingOp,
           pathStep.location,
@@ -387,6 +392,7 @@ const useTimesStopsTableData = (
           schedule,
           computedArrival,
           computedBaseArrival,
+          computedPosition: matchingPosition,
           invalidPathStep:
             (!matchingOp && pathStepLocation.type === 'operational_point_part_reference') ||
             isRequestedTrackUnknown,
@@ -475,6 +481,7 @@ const useTimesStopsTableData = (
 
     return formattedRows;
   }, [
+    operationalPointsOnPath,
     timetableType,
     selectedTrain,
     stableIsValid,

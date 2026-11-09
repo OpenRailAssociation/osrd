@@ -250,6 +250,7 @@ const TimeStopsTableWrapper = ({
       rows={optimisticRows}
       startTime={startTime}
       isValid={stableIsValid}
+      pathFound={!!operationalPointsOnPath}
       isComputedDataPending={isAwaitingSimulation}
       availablePowerRestrictions={availablePowerRestrictions}
       powerRestrictionWarningCount={powerRestrictionWarningCount}
