@@ -4,8 +4,8 @@ mod update;
 
 use std::ops::Deref as _;
 
-use chrono::Utc;
 use json_patch::Patch;
+use models::Timestamp;
 use schemas::primitives::OSRDObject as _;
 use serde::Deserialize;
 use serde::Serialize;
@@ -149,7 +149,7 @@ impl Operation {
             }
         };
         Infra::changeset()
-            .modified(Utc::now())
+            .modified(Timestamp::now())
             .update(conn, infra_id)
             .await?;
         Ok(res)
