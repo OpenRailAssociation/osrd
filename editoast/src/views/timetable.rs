@@ -31,6 +31,7 @@ use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use itertools::Itertools as _;
 use itertools::izip;
 use models::Infra;
@@ -125,6 +126,13 @@ enum TimetableError {
     )]
     #[editoast_error(status = 422)]
     InvalidOuter { timetable_id: i64 },
+}
+
+#[derive(Debug, Error, ViewError)]
+#[error("Timetable {timetable_id} could not be found")]
+#[view_error(status = NOT_FOUND, context)]
+pub(in crate::views) struct TimetableNotFound {
+    timetable_id: i64,
 }
 
 /// A timetable with its data
