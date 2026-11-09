@@ -16,6 +16,9 @@ mod trains_traffic;
 pub mod user;
 mod valkey_config;
 
+#[cfg(debug_assertions)]
+pub mod clean_test_env;
+
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
@@ -68,6 +71,11 @@ pub enum Color {
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Runserver(Box<RunserverArgs>), // suppresses clippy lint about variant size
+    /// Delete test databases, cached database templates, and test OpenFGA stores.
+    ///
+    /// Do not run while tests are running: connections to test databases are terminated.
+    #[cfg(debug_assertions)]
+    CleanTestEnv,
     #[command(
         subcommand,
         about,
@@ -98,7 +106,7 @@ pub enum Commands {
     Healthcheck(CoreArgs),
     #[command(
         about,
-        long_about = "Garbage collector.\nWarning: tuple deletions in OpenFGA are not idempotent, 
+        long_about = "Garbage collector.\nWarning: tuple deletions in OpenFGA are not idempotent,
         so do not run this command multiple times concurrently or setup some external locking."
     )]
     Gc,

@@ -137,6 +137,10 @@ async fn run() -> anyhow::Result<()> {
         .or_else(|| buildid::build_id().map(to_hex_string));
 
     match client.command {
+        #[cfg(debug_assertions)]
+        Commands::CleanTestEnv => {
+            client::clean_test_env::clean_test_env(&db_pool, openfga_config).await
+        }
         Commands::Runserver(args) => {
             runserver(*args, pg_config, valkey_config, openfga_config, app_version).await
         }
