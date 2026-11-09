@@ -10,7 +10,11 @@ export type GrantSubjectItemProps = HTMLAttributes<HTMLSpanElement> & {
 };
 
 export const GrantSubjectItem = ({ subject, ...props }: GrantSubjectItemProps) => (
-  <span {...props} className={cx('subject-item', props.className)}>
+  <span
+    data-testid={`grant-subject-${subject.name}`}
+    {...props}
+    className={cx('subject-item', props.className)}
+  >
     <span className="subject-item-icon">
       {subject.type === 'User' ? <Person size="lg" /> : <People size="lg" />}
     </span>

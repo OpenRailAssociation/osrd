@@ -187,7 +187,11 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           <div className="spacer" />
           <UserActionsDropdown className="dropdwon-position" titleContent={userDropdownTitle} />
           {impersonatedUser && (
-            <button type="button" onClick={() => impersonate(undefined)}>
+            <button
+              type="button"
+              data-testid="stop-impersonation-btn"
+              onClick={() => impersonate(undefined)}
+            >
               <SignOut className="ml-3 text-black" />
             </button>
           )}

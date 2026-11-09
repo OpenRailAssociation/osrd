@@ -131,6 +131,9 @@ const UserSettings = () => {
               getSuggestionLabel={(subject) => subject.name}
               onSelectSuggestion={handleSubjectSelection}
               {...userComboBoxDefaultProps}
+              renderListElementComponent={({ suggestion }) => (
+                <span data-testid={`impersonation-user-${suggestion.name}`}>{suggestion.name}</span>
+              )}
               autoComplete="off"
               narrow
               onChange={setInputValue}

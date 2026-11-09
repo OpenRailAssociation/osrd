@@ -219,6 +219,7 @@ const RollingStockEditor = () => {
               <button
                 type="button"
                 className="d-flex justify-content-start mb-2 py-1 px-2"
+                data-testid="import-rollingstock-button"
                 aria-label={t('rollingStock.importRollingStock')}
                 title={t('rollingStock.importRollingStock')}
                 onClick={openUploadFileModal}
