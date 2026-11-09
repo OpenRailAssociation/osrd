@@ -8,6 +8,7 @@ import {
   type ItineraryModalContextType,
   type TrainScheduleToEditData,
 } from 'applications/operationalStudies/hooks/useItineraryModalContext';
+import useMacroNoteLiveUpdates from 'applications/operationalStudies/hooks/useMacroNoteLiveUpdates';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import {
@@ -227,6 +228,14 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
   };
 
   const handleNGELoad = useCallback(() => setNGEIsLoading(false), []);
+
+  // TODO: replace these logs by the NGE createNote/updateNote/deleteNote calls to apply the macro
+  // notes changes made from other clients
+  useMacroNoteLiveUpdates({
+    enabled: activeBoards.has('macro'),
+    onUpsert: (note) => console.debug('note upserted', note),
+    onDelete: (noteId) => console.debug('note deleted', noteId),
+  });
 
   const defaultStartTime = useMemo(
     () =>
