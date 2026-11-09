@@ -1,21 +1,21 @@
 import type { Position } from 'geojson';
 
 import type {
-  ConsistData,
-  MarginType,
   ArrivalTimeTypes,
+  ConsistData,
   LinkedTrains,
+  MarginType,
   StdcmSearchDatetimeWindow,
   StdcmSimulation,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type {
   LoadingGaugeType,
-  RelatedOperationalPoint,
+  OperationalPointStop,
   PathItemLocation,
   ReceptionSignal,
+  RelatedOperationalPoint,
   TrainScheduleResponse,
-  OperationalPointStop,
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { MapSettings } from 'reducers/commonMap/types';
@@ -127,6 +127,7 @@ export type StdcmPathStep = {
     mainCode: string;
     uic: number;
     secondaryCode?: string | null;
+    secondaryName?: string | null;
     name: string;
     coordinates: [number, number];
     countryCode: string;
