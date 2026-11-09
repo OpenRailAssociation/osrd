@@ -409,7 +409,7 @@ jobs:
           exit $(docker wait core-test)
 
       - name: Report JUnit failures
-        uses: mikepenz/action-junit-report@v6.6.2
+        uses: mikepenz/action-junit-report@v6.7.0
         if: failure()
         with:
           report_paths: "./core/build/test-results/test/TEST-*.xml"
