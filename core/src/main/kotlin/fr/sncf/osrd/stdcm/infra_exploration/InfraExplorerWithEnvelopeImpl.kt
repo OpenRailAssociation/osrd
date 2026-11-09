@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.ConsistSchedule
-import fr.sncf.osrd.api.StopType
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
@@ -34,7 +34,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
     private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
-    override val forcedOpStops: List<ExplorerStep> = listOf(),
+    override val forcedOpStops: Collection<ExplorerStep> = listOf(),
     private var stopTimeData: List<StopTimeData> = listOf(),
     // Can't be a soft reference: spacingRequirementAutomaton is stateful and only generates new
     // requirements (result would be nothing on second identical call).
@@ -78,7 +78,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 .union(seenForcedOpStops)
                 .sortedWith(
                     compareBy<LocatedStep> { it.travelledPathOffset }
-                        .thenBy { it.stopType == StopType.INPUT_STOP },
+                        .thenBy { it.stepType == StepType.INPUT_STOP },
                 )
         val stopDurations = stopTimeData.map { it.currentDuration }
 
@@ -90,7 +90,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 it.first.travelledPathOffset.meters,
                 it.second,
                 SHORT_SLIP_STOP,
-                it.first.stopType,
+                it.first.stepType,
             )
         }
     }
@@ -151,10 +151,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 .toList()
                 .asSequence()
                 .mapIndexedNotNull { stepIndex, step ->
-                    if (
-                        step.stopType == StopType.GENERAL_STOP || step.stopType == StopType.OVERTAKE
-                    )
-                        return@mapIndexedNotNull null
+                    if (!step.isInput()) return@mapIndexedNotNull null
                     val rollingStock: PhysicsRollingStock = consistSchedule.rollingStocks[stepIndex]
                     val stepPos = step.travelledPathOffset.distance
                     val res = DistanceRangeMap.RangeMapEntry(previousStepPos, stepPos, rollingStock)
@@ -165,7 +162,7 @@ data class InfraExplorerWithEnvelopeImpl(
                     run {
                         val lastStep =
                             getStepTracker().iterateSeenStepsBackwards().firstOrNull {
-                                it.stopType == null || it.stopType == StopType.INPUT_STOP
+                                it.isInput()
                             }
                         val rollingStock = getCurrentRollingStock()
                         val lookaheadEndOffset = getAllBlocks().last().pathEnd.distance

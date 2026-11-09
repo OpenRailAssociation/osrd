@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.api.StopType
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.sim_infra.api.Block
@@ -11,9 +11,9 @@ import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.dropSeq
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.max
+import kotlin.time.Duration.Companion.seconds
 
-// in seconds
-const val FORCED_OP_STOP_TIME = 60.0
+val FORCED_OP_STOP_DURATION = 60.0.seconds
 
 /**
  * Component of `InfraExplorer` in charge of keeping track of anything related to the input steps.
@@ -29,7 +29,7 @@ const val FORCED_OP_STOP_TIME = 60.0
  */
 class StepTracker(
     private val inputSteps: List<ExplorerStep>,
-    private val forcedOpStops: List<ExplorerStep>,
+    private val forcedOpStopsByBlockIdSortedByOffset: Map<BlockId, List<ExplorerStep>>,
     private val seenSteps: AppendOnlyLinkedList<LocatedStep> = appendOnlyLinkedListOf(),
     private val seenForcedOpStops: AppendOnlyLinkedList<LocatedStep> = appendOnlyLinkedListOf(),
 ) {
@@ -38,15 +38,6 @@ class StepTracker(
 
     private val nSeenForcedOpStops: Int
         get() = seenForcedOpStops.size
-
-    private val forcedOpStopsByBlockId: Map<BlockId, List<ExplorerStep>> =
-        forcedOpStops
-            .flatMap { stop ->
-                stop.locations.map { location ->
-                    location.edge to stop
-                }
-            }
-            .groupBy({ it.first }, { it.second })
 
     var nStepsExcludingLookahead: Int = 0
         private set
@@ -88,20 +79,20 @@ class StepTracker(
         isBacktrackingAtEnd: Boolean,
     ): List<LocatedStep> {
         val res = mutableListOf<LocatedStep>()
+        assert(currentPathOffset == blockRange.pathBegin)
 
-        for (stop in forcedOpStopsByBlockId[blockRange.value].orEmpty()) {
-            val currentPathBlockOffset = blockRange.offsetFromTrainPath(currentPathOffset)
+        for (forcedStop in forcedOpStopsByBlockIdSortedByOffset[blockRange.value].orEmpty()) {
             val location =
-                stop.locations
-                    .filter { it.offset in currentPathBlockOffset..blockRange.objectEnd }
+                forcedStop.locations
+                    .filter { it.offset in blockRange.objectBegin..blockRange.objectEnd }
                     .minByOrNull { it.offset } ?: continue
 
             val newStep =
                 LocatedStep(
                     blockRange.offsetToTrainPath(location.offset),
                     location,
-                    stop,
-                    stopType = stop.stopType,
+                    forcedStop,
+                    stepType = forcedStop.stepType,
                 )
 
             val previous = seenForcedOpStops.lastOrNull()
@@ -110,11 +101,14 @@ class StepTracker(
         }
 
         for (step in inputSteps.dropSeq(nSeenSteps)) {
-            val currentPathBlockOffset = blockRange.offsetFromTrainPath(currentPathOffset)
+            // Position of this.currentPathOffset relative to block start
+            val currentPathOffsetPositionInBlock = blockRange.offsetFromTrainPath(currentPathOffset)
             val location =
                 step.locations
-                    .filter { it.edge == blockRange.value }
-                    .filter { it.offset in currentPathBlockOffset..blockRange.objectEnd }
+                    .filter {
+                        it.edge == blockRange.value &&
+                            it.offset in currentPathOffsetPositionInBlock..blockRange.objectEnd
+                    }
                     .minByOrNull { it.offset } ?: break
             currentPathOffset = blockRange.offsetToTrainPath(location.offset)
 
@@ -137,7 +131,7 @@ class StepTracker(
                     location,
                     explorerStep,
                     isBacktrackingStep,
-                    stopType = if (explorerStep.stop) StopType.INPUT_STOP else null,
+                    stepType = if (explorerStep.stop) StepType.INPUT_STOP else null,
                 )
             res.add(newStep)
             seenSteps.add(newStep)
@@ -200,7 +194,7 @@ class StepTracker(
         return max(
             0,
             iterateReachedStepsBackwards().count {
-                it.stopType == null || it.stopType == StopType.INPUT_STOP
+                it.isInput()
             } - 1,
         )
     }
@@ -209,7 +203,7 @@ class StepTracker(
         val res =
             StepTracker(
                 inputSteps,
-                forcedOpStops,
+                forcedOpStopsByBlockIdSortedByOffset,
                 seenSteps.shallowCopy(),
                 seenForcedOpStops.shallowCopy(),
             )
@@ -226,8 +220,14 @@ data class LocatedStep(
     val originalStep: ExplorerStep,
     // /!\ A step can allow backtracking but actually not backtrack /!\
     val isBacktracking: Boolean = false,
-    var stopType: StopType?,
+    // null means the step is a waypoint
+    var stepType: StepType?,
 ) {
+
+    fun isInput(): Boolean {
+        return stepType == null || stepType == StepType.INPUT_STOP
+    }
+
     init {
         assert(originalStep.locations.contains(location))
         // If the step is a backtracking location, it has to mark a stop.

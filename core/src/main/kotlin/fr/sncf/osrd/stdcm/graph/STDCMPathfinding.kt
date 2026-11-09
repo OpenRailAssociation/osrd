@@ -57,7 +57,7 @@ fun findPath(
     comfort: Comfort?,
     startTime: Double,
     steps: List<ExplorerStep>,
-    forcedOpStops: List<ExplorerStep>,
+    forcedOpStops: Collection<ExplorerStep>,
     blockAvailability: BlockAvailabilityInterface,
     timeStep: Double,
     maxDepartureDelay: Double,
@@ -98,7 +98,7 @@ class STDCMPathfinding(
     private val comfort: Comfort?,
     private val startTime: Double,
     private val steps: List<ExplorerStep>,
-    private val forcedOpStops: List<ExplorerStep>,
+    private val forcedOpStops: Collection<ExplorerStep>,
     private val blockAvailability: BlockAvailabilityInterface,
     private val timeStep: Double,
     private val maxDepartureDelay: Double,
@@ -289,7 +289,7 @@ class STDCMPathfinding(
     private fun getStartNodes(
         graph: STDCMGraph,
         consistSchedule: ConsistSchedule,
-        forcedOpStops: List<ExplorerStep>,
+        forcedOpStops: Collection<ExplorerStep>,
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]

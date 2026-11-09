@@ -35,7 +35,7 @@ class StepTrackerTests {
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
                 ExplorerStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
             )
-        val tracker = StepTracker(steps, emptyList())
+        val tracker = StepTracker(steps, emptyMap())
 
         val firstBlockRange =
             BlockRange(
@@ -53,13 +53,13 @@ class StepTrackerTests {
                     Offset(25.meters),
                     steps[0].locations.single(),
                     steps[0],
-                    stopType = null,
+                    stepType = null,
                 ),
                 LocatedStep(
                     Offset(26.meters),
                     BlockLocation(blocks[0], Offset(51.meters)),
                     steps[1],
-                    stopType = null,
+                    stepType = null,
                 ),
             )
         assertEquals(expectedFirstSteps, firstSteps)
@@ -79,13 +79,13 @@ class StepTrackerTests {
                     Offset(75.meters),
                     steps[2].locations.single(),
                     steps[2],
-                    stopType = null,
+                    stepType = null,
                 ),
                 LocatedStep(
                     Offset(175.meters),
                     steps[3].locations.single(),
                     steps[3],
-                    stopType = null,
+                    stepType = null,
                 ),
             )
         assertEquals(expectedSecond, second)
@@ -106,7 +106,7 @@ class StepTrackerTests {
                     Offset(275.meters),
                     steps[4].locations.single(),
                     steps[4],
-                    stopType = null,
+                    stepType = null,
                 ),
             )
         assertEquals(expectedThird, third)

@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.api.StopType;
+import fr.sncf.osrd.api.StepType;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Objects;
@@ -12,13 +12,13 @@ public class TrainStop {
     public RJSReceptionSignal receptionSignal;
 
     @SuppressFBWarnings
-    public StopType stopType;
+    public StepType stepType;
 
-    public TrainStop(double position, double duration, RJSReceptionSignal receptionSignal, StopType stopType) {
+    public TrainStop(double position, double duration, RJSReceptionSignal receptionSignal, StepType stepType) {
         this.position = position;
         this.duration = duration;
         this.receptionSignal = receptionSignal;
-        this.stopType = stopType;
+        this.stepType = stepType;
     }
 
     @Override

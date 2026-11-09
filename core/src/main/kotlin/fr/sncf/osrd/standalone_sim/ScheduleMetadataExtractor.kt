@@ -2,7 +2,6 @@ package fr.sncf.osrd.standalone_sim
 
 import com.google.common.collect.Comparators.min
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.api.StopType
 import fr.sncf.osrd.api.standalone_sim.CompleteReportTrain
 import fr.sncf.osrd.api.standalone_sim.DriverAction
 import fr.sncf.osrd.api.standalone_sim.ReportTrain
@@ -70,7 +69,7 @@ fun runScheduleMetadataExtractor(
                     it.pathOffset.meters,
                     it.stopDetails!!.duration.seconds,
                     it.stopDetails.receptionSignal,
-                    StopType.INPUT_STOP,
+                    StepType.INPUT_STOP,
                 )
             }
 
@@ -261,7 +260,7 @@ fun makeSimpleReportTrain(
                     it.pathOffset.meters,
                     it.stopDetails!!.duration.seconds,
                     it.stopDetails.receptionSignal,
-                    StopType.INPUT_STOP,
+                    StepType.INPUT_STOP,
                 )
             }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)

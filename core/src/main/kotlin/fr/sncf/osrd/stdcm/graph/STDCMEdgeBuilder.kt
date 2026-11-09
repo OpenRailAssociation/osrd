@@ -229,7 +229,7 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
-                nextStop?.stopType,
+                nextStop?.stepType,
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

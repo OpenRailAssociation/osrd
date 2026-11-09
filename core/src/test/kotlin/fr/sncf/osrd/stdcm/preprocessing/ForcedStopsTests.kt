@@ -3,7 +3,7 @@ package fr.sncf.osrd.stdcm.preprocessing
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.api.ForcedStopType
 import fr.sncf.osrd.api.OperationalPointStop
-import fr.sncf.osrd.api.StopType
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.api.stdcm.parseForcedOpStops
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -14,7 +14,7 @@ import fr.sncf.osrd.stdcm.STDCMPathfindingBuilder
 import fr.sncf.osrd.stdcm.StopTests.Companion.checkStop
 import fr.sncf.osrd.stdcm.infraExplorerFromBlock
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
-import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_TIME
+import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_DURATION
 import fr.sncf.osrd.stdcm.occupancyTest
 import fr.sncf.osrd.stdcm.simulateBlock
 import fr.sncf.osrd.train.TestTrains
@@ -25,22 +25,22 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.seconds
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-// in seconds
-private const val SHORT_STOP_TIME = 50.0
-private const val LONG_STOP_TIME = 50000.0
+private val SHORT_STOP_DURATION = 50.seconds
+private val LONG_STOP_DURATION = 50000.seconds
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ForcedStopsTests {
     data class ForcedOpStopLocation(
         val blockId: Int,
         val blockOffset: Offset<Block>,
-        val stopType: StopType = StopType.GENERAL_STOP,
+        val stepType: StepType = StepType.GENERAL_STOP,
     )
 
     data class StopScenario(
@@ -61,19 +61,19 @@ class ForcedStopsTests {
             listOf(
                 createForcedOpStopExplorerStep(
                     BlockLocation(infra.blockInfra.blocks[23], Offset(500.meters)),
-                    StopType.GENERAL_STOP,
+                    StepType.GENERAL_STOP,
                 ),
                 createForcedOpStopExplorerStep(
                     BlockLocation(infra.blockInfra.blocks[19], Offset(2730.meters)),
-                    StopType.GENERAL_STOP,
+                    StepType.GENERAL_STOP,
                 ),
                 createForcedOpStopExplorerStep(
                     BlockLocation(infra.blockInfra.blocks[96], Offset(2050.meters)),
-                    StopType.OVERTAKE,
+                    StepType.OVERTAKE,
                 ),
                 createForcedOpStopExplorerStep(
                     BlockLocation(infra.blockInfra.blocks[97], Offset(2200.meters)),
-                    StopType.OVERTAKE,
+                    StepType.OVERTAKE,
                 ),
             )
         assertEquals(expectedParseForcedOpStops, actualParseForcedOpStops)
@@ -98,7 +98,7 @@ class ForcedStopsTests {
             stdcmBuilder.addForcedOpStop(
                 createForcedOpStopExplorerStep(
                     BlockLocation(blocks[stop.blockId], stop.blockOffset),
-                    stop.stopType,
+                    stop.stepType,
                 ),
             )
         }
@@ -123,9 +123,9 @@ class ForcedStopsTests {
                         listOf(
                             TrainStop(
                                 40.0,
-                                FORCED_OP_STOP_TIME,
+                                FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                 SHORT_SLIP_STOP,
-                                StopType.GENERAL_STOP,
+                                StepType.GENERAL_STOP,
                             ),
                         ),
                 ),
@@ -139,9 +139,9 @@ class ForcedStopsTests {
                             listOf(
                                 TrainStop(
                                     140.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                             ),
                     ),
@@ -156,9 +156,9 @@ class ForcedStopsTests {
                             listOf(
                                 TrainStop(
                                     100.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                             ),
                     ),
@@ -173,9 +173,9 @@ class ForcedStopsTests {
                             listOf(
                                 TrainStop(
                                     100.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                             ),
                     ),
@@ -194,15 +194,15 @@ class ForcedStopsTests {
                             listOf(
                                 TrainStop(
                                     50.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                                 TrainStop(
                                     150.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                             ),
                     ),
@@ -221,15 +221,15 @@ class ForcedStopsTests {
                             listOf(
                                 TrainStop(
                                     50.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                                 TrainStop(
                                     80.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                             ),
                     ),
@@ -246,21 +246,21 @@ class ForcedStopsTests {
                                 ForcedOpStopLocation(
                                     0,
                                     Offset(50.0.meters),
-                                    stopType = StopType.GENERAL_STOP,
+                                    stepType = StepType.GENERAL_STOP,
                                 ),
                                 ForcedOpStopLocation(
                                     0,
                                     Offset(50.0.meters),
-                                    stopType = StopType.OVERTAKE,
+                                    stepType = StepType.OVERTAKE,
                                 ),
                             ),
                         expectedPathStops =
                             listOf(
                                 TrainStop(
                                     50.0,
-                                    FORCED_OP_STOP_TIME,
+                                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StopType.GENERAL_STOP,
+                                    StepType.GENERAL_STOP,
                                 ),
                             ),
                     ),
@@ -297,7 +297,7 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(50.meters)),
-                        StopType.GENERAL_STOP,
+                        StepType.GENERAL_STOP,
                     ),
                 )
                 .run()!!
@@ -305,18 +305,27 @@ class ForcedStopsTests {
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(50.0, expectedStopDuration, SHORT_SLIP_STOP, StopType.INPUT_STOP)),
+            listOf(TrainStop(50.0, expectedStopDuration, SHORT_SLIP_STOP, StepType.INPUT_STOP)),
         )
     }
 
     private fun forcedOpStopsAndInputStopAtSameOffsetParameters() =
         listOf(
             // (forced op stop > input stop)
-            Arguments.of(SHORT_STOP_TIME, FORCED_OP_STOP_TIME),
+            Arguments.of(
+                SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
+                FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+            ),
             // (forced op stop < input stop)
-            Arguments.of(LONG_STOP_TIME, LONG_STOP_TIME),
+            Arguments.of(
+                LONG_STOP_DURATION.inWholeSeconds.toDouble(),
+                LONG_STOP_DURATION.inWholeSeconds.toDouble(),
+            ),
             // (forced op stop == input stop)
-            Arguments.of(FORCED_OP_STOP_TIME, FORCED_OP_STOP_TIME),
+            Arguments.of(
+                FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+            ),
         )
 
     @Test
@@ -334,14 +343,14 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(80.meters))),
-                        LONG_STOP_TIME,
+                        LONG_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(secondBlock, Offset(60.meters))),
-                        SHORT_STOP_TIME,
+                        SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
@@ -351,7 +360,7 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(50.meters)),
-                        StopType.GENERAL_STOP,
+                        StepType.GENERAL_STOP,
                     ),
                 )
                 .run()!!
@@ -360,9 +369,24 @@ class ForcedStopsTests {
         checkStop(
             resSuccess,
             listOf(
-                TrainStop(50.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
-                TrainStop(80.0, LONG_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
-                TrainStop(160.0, SHORT_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(
+                    50.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.GENERAL_STOP,
+                ),
+                TrainStop(
+                    80.0,
+                    LONG_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
+                TrainStop(
+                    160.0,
+                    SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
             ),
         )
     }
@@ -382,14 +406,14 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(80.meters))),
-                        LONG_STOP_TIME,
+                        LONG_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(secondBlock, Offset(50.meters))),
-                        SHORT_STOP_TIME,
+                        SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
@@ -399,13 +423,13 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(50.meters)),
-                        StopType.GENERAL_STOP,
+                        StepType.GENERAL_STOP,
                     ),
                 )
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(secondBlock, Offset(60.meters)),
-                        StopType.OVERTAKE,
+                        StepType.OVERTAKE,
                     ),
                 )
                 .run()!!
@@ -414,10 +438,30 @@ class ForcedStopsTests {
         checkStop(
             resSuccess,
             listOf(
-                TrainStop(50.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.GENERAL_STOP),
-                TrainStop(80.0, LONG_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
-                TrainStop(150.0, SHORT_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
-                TrainStop(160.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.OVERTAKE),
+                TrainStop(
+                    50.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.GENERAL_STOP,
+                ),
+                TrainStop(
+                    80.0,
+                    LONG_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
+                TrainStop(
+                    150.0,
+                    SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
+                TrainStop(
+                    160.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.OVERTAKE,
+                ),
             ),
         )
     }
@@ -437,7 +481,7 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(60.meters))),
-                        FORCED_OP_STOP_TIME,
+                        FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
@@ -447,7 +491,7 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(60.meters)),
-                        StopType.OVERTAKE,
+                        StepType.OVERTAKE,
                     ),
                 )
                 .run()!!
@@ -456,7 +500,12 @@ class ForcedStopsTests {
         checkStop(
             resSuccess,
             listOf(
-                TrainStop(60.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(
+                    60.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
             ),
         )
     }
@@ -476,7 +525,7 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(60.meters))),
-                        FORCED_OP_STOP_TIME,
+                        FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
@@ -486,13 +535,13 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(60.meters)),
-                        StopType.OVERTAKE,
+                        StepType.OVERTAKE,
                     ),
                 )
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(60.meters)),
-                        StopType.GENERAL_STOP,
+                        StepType.GENERAL_STOP,
                     ),
                 )
                 .run()!!
@@ -501,7 +550,12 @@ class ForcedStopsTests {
         checkStop(
             resSuccess,
             listOf(
-                TrainStop(60.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(
+                    60.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
             ),
         )
     }
@@ -521,7 +575,7 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(60.meters))),
-                        SHORT_STOP_TIME,
+                        SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
@@ -531,7 +585,7 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(60.meters)),
-                        StopType.OVERTAKE,
+                        StepType.OVERTAKE,
                     ),
                 )
                 .run()!!
@@ -540,20 +594,25 @@ class ForcedStopsTests {
         checkStop(
             resSuccess,
             listOf(
-                TrainStop(60.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(
+                    60.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
             ),
         )
     }
 
     private fun createForcedOpStopExplorerStep(
         blockLocation: BlockLocation,
-        stopType: StopType = StopType.GENERAL_STOP,
+        stepType: StepType = StepType.GENERAL_STOP,
     ): ExplorerStep {
         return ExplorerStep(
             setOf(blockLocation),
-            FORCED_OP_STOP_TIME,
+            FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
             true,
-            stopType = stopType,
+            stepType = stepType,
         )
     }
 
@@ -589,7 +648,7 @@ class ForcedStopsTests {
             ImmutableMultimap.of(
                 firstBlock,
                 OccupancySegment(
-                    runTime + 30 + FORCED_OP_STOP_TIME,
+                    runTime + 30 + FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     Double.POSITIVE_INFINITY,
                     0.meters,
                     1000.meters,
@@ -603,7 +662,7 @@ class ForcedStopsTests {
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(firstBlock, Offset(60.meters))),
-                        SHORT_STOP_TIME,
+                        SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
                         true,
                     ),
                 )
@@ -613,7 +672,7 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(60.meters)),
-                        StopType.GENERAL_STOP,
+                        StepType.GENERAL_STOP,
                     ),
                 )
                 .run()!!
@@ -623,7 +682,12 @@ class ForcedStopsTests {
         checkStop(
             resSuccess,
             listOf(
-                TrainStop(60.0, FORCED_OP_STOP_TIME, SHORT_SLIP_STOP, StopType.INPUT_STOP),
+                TrainStop(
+                    60.0,
+                    FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
+                    SHORT_SLIP_STOP,
+                    StepType.INPUT_STOP,
+                ),
             ),
         )
     }

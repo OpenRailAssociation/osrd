@@ -136,7 +136,7 @@ enum class ForcedStopType {
     OVERTAKE,
 }
 
-enum class StopType {
+enum class StepType {
     INPUT_STOP,
     GENERAL_STOP,
     OVERTAKE,

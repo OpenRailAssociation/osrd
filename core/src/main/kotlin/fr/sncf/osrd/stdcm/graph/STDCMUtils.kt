@@ -36,7 +36,7 @@ fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: Bloc
                 travelledPathOffset = forcedOpStop.travelledPathOffset,
                 location = forcedOpStop.location,
                 originalStep = forcedOpStop.originalStep,
-                stopType = step.stopType,
+                stepType = step.stepType,
             )
         }
         else -> step

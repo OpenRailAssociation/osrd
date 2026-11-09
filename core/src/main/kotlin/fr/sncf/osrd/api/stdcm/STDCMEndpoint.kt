@@ -44,7 +44,7 @@ import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
-import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_TIME
+import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_DURATION
 import fr.sncf.osrd.stdcm.infra_exploration.PlannedTimingData
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.tracing.FailureCombiner
@@ -142,7 +142,7 @@ class STDCMEndpoint(
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
-            val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops).toList()
+            val forcedOpStops = parseForcedOpStops(infra, request.forcedOpStops)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val consistConfigurations =
@@ -705,12 +705,13 @@ fun parseForcedOpStops(
                         .map {
                             ExplorerStep(
                                 locations = setOf(it),
-                                duration = FORCED_OP_STOP_TIME,
+                                duration = FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                 stop = true,
-                                stopType =
-                                    if (forcedOpStop.stop_type == ForcedStopType.GENERAL_STOP)
-                                        StopType.GENERAL_STOP
-                                    else StopType.OVERTAKE,
+                                stepType =
+                                    when (forcedOpStop.stop_type) {
+                                        ForcedStopType.GENERAL_STOP -> StepType.GENERAL_STOP
+                                        ForcedStopType.OVERTAKE -> StepType.OVERTAKE
+                                    },
                             )
                         }
                 res.addAll(explorerStep)

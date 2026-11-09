@@ -1,6 +1,6 @@
 package fr.sncf.osrd.conflicts
 
-import fr.sncf.osrd.api.StopType
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
@@ -240,7 +240,7 @@ class SpacingResourceGeneratorTest {
         val zoneAfterStop = zoneRanges.first { it.pathBegin > stopOffset }.value
         val pathLength = blockRanges.last().pathEnd
         val stops =
-            listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP, StopType.INPUT_STOP))
+            listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP, StepType.INPUT_STOP))
 
         // Build path
         val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)
