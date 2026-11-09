@@ -35,15 +35,23 @@ const DistanceCell = ({
     }
   };
 
+  const normalizeInput = (input: string | undefined): string => {
+    const trimmed = (input ?? '').trim();
+    return trimmed.replaceAll(',', '.');
+  };
+
   const commit = () => {
     if (onCommit) {
-      const trimmed = (draft ?? '').trim();
-      if (trimmed === '') {
+      const normalized = normalizeInput(draft);
+      if (normalized === '') {
         if (distanceValue !== null && distanceValue !== undefined) onCommit(null);
       } else {
-        const parsed = Number(trimmed);
+        const parsed = Number(normalized);
         if (!Number.isNaN(parsed) && parsed !== distanceValue) {
           onCommit(parsed);
+          setDraft(String(parsed));
+        } else {
+          setDraft(String(distanceValue));
         }
       }
     }
