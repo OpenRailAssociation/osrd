@@ -21,7 +21,11 @@ const useScenario = () => {
 
   const { scenarioId: urlScenarioId } = useParams() as SimulationParams;
 
-  const [sandboxId, setSandboxId] = useState<number>();
+  // The sandbox is stored per timetable, so that we never use the sandbox of another timetable
+  // while the one of the active timetable is loading
+  const [sandboxIdByTimetableId, setSandboxIdByTimetableId] = useState<
+    Partial<Record<number, number>>
+  >({});
 
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
 
@@ -44,6 +48,7 @@ const useScenario = () => {
   const currentTimetable =
     scenario?.timetable_summaries.find(({ id }) => id.toString() === savedTimetableId) ??
     scenario?.timetable_summaries.at(0);
+  const sandboxId = currentTimetable ? sandboxIdByTimetableId[currentTimetable.id] : undefined;
 
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery(
@@ -85,6 +90,9 @@ const useScenario = () => {
 
   // Ensure a sandbox train schedule set exists and is linked to the timetable
   useEffect(() => {
+    const saveSandboxId = (timetableId: number, id: number) =>
+      setSandboxIdByTimetableId((prev) => ({ ...prev, [timetableId]: id }));
+
     const checkAndCreateSandbox = async (timetableId: number, timetableType: TimetableType) => {
       const sandbox = await postTrainScheduleSets({
         trainScheduleSetForm: {
@@ -95,7 +103,7 @@ const useScenario = () => {
         },
       }).unwrap();
 
-      setSandboxId(sandbox.id);
+      saveSandboxId(timetableId, sandbox.id);
 
       await linkTrainscheduleSetToTimetable({
         id: timetableId,
@@ -108,7 +116,7 @@ const useScenario = () => {
     const sandbox = trainScheduleSets.find((tss) => !tss.name);
 
     if (sandbox) {
-      setSandboxId(sandbox.id);
+      saveSandboxId(currentTimetable.id, sandbox.id);
       return;
     }
 
