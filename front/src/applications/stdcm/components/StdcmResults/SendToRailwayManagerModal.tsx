@@ -239,7 +239,6 @@ const SendToRailwayManagerModal = ({
     DEFAULT_TRAIN_CATEGORY,
     { value: 'A', label: 'A' },
     { value: 'B', label: 'B' },
-    { value: 'C', label: 'C' },
   ];
 
   const handleCsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
