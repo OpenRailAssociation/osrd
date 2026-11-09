@@ -27,8 +27,7 @@
 /front/src/common/api/osrdMiddlewareApi.ts
 /front/src/common/api/osrdRailwayManagerApi.ts
 /front/src/reducers/osrdconf/infra_schema.json
-/front/public/locales/en/errors.json                     @openrailassociation/OSRD-Editoast
-/front/public/locales/fr/errors.json                     @openrailassociation/OSRD-Editoast
+/front/public/locales/*/errors.json                      @openrailassociation/OSRD-Editoast
 
 # --- EDITOAST ---
 /editoast                                                @openrailassociation/OSRD-Editoast
