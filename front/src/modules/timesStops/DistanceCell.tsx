@@ -39,7 +39,7 @@ const DistanceCell = ({
     if (onCommit) {
       const trimmed = (draft ?? '').trim();
       if (trimmed === '') {
-        if (distanceValue !== null) onCommit(null);
+        if (distanceValue !== null && distanceValue !== undefined) onCommit(null);
       } else {
         const parsed = Number(trimmed);
         if (!Number.isNaN(parsed) && parsed !== distanceValue) {
