@@ -1,7 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import type { RollingStock } from 'common/api/osrdEditoastApi';
+
 import { ROLLING_STOCK_EDITOR_URL } from '../../assets/constants/homepage-const';
-import { fillAndCheckInputById } from '../../utils';
+import { type ExpectedListing, fillAndCheckInputById } from '../../utils';
 import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 import RollingStockSelector from './rolling-stock-selector';
@@ -36,6 +38,10 @@ class RollingstockEditorPage extends RollingStockSelector {
   private readonly editRollingStockButton: Locator;
   private readonly duplicateRollingStockButton: Locator;
   private readonly deleteRollingStockButton: Locator;
+  private readonly exportRollingStockButton: Locator;
+  private readonly importRollingStockButton: Locator;
+  private readonly uploadFileDropzone: Locator;
+  private readonly uploadFileSubmitButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -67,6 +73,10 @@ class RollingstockEditorPage extends RollingStockSelector {
     this.editRollingStockButton = page.getByTestId('rollingstock-edit-button');
     this.duplicateRollingStockButton = page.getByTestId('rollingstock-duplicate-button');
     this.deleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
+    this.exportRollingStockButton = page.getByTestId('rollingstock-export-button');
+    this.importRollingStockButton = page.getByTestId('import-rollingstock-button');
+    this.uploadFileDropzone = page.getByTestId('upload-file-modal-dropzone');
+    this.uploadFileSubmitButton = page.getByTestId('upload-file-modal-download-button');
   }
 
   async navigateToRollingStockPage() {
@@ -89,13 +99,20 @@ class RollingstockEditorPage extends RollingStockSelector {
   }
 
   async searchRollingStock(rollingStockName: string, shouldExist = true) {
-    await this.rollingStockSearchInput.fill(rollingStockName);
+    await this.searchRollingStockAndCheckResults(rollingStockName, {
+      listed: shouldExist ? [rollingStockName] : [],
+      notListed: shouldExist ? [] : [rollingStockName],
+    });
+  }
+
+  async searchRollingStockAndCheckResults(query: string, { listed, notListed }: ExpectedListing) {
+    await this.rollingStockSearchInput.fill(query);
     await this.waitForLoaderToDisappear();
-    const rollingStockCard = this.rollingStockCard(rollingStockName);
-    if (shouldExist) {
-      await expect(rollingStockCard).toBeVisible();
-    } else {
-      await expect(rollingStockCard).not.toBeVisible();
+    for (const name of listed) {
+      await expect(this.rollingStockCard(name)).toBeVisible();
+    }
+    for (const name of notListed) {
+      await expect(this.rollingStockCard(name)).toBeHidden();
     }
   }
 
@@ -296,6 +313,30 @@ class RollingstockEditorPage extends RollingStockSelector {
     await this.confirmModalButtonYes.click();
   }
 
+  async saveRollingStock() {
+    await this.confirmRollingStockCreation();
+    await expect(this.submitRollingstockButton).toBeHidden();
+  }
+
+  async importRollingStock(rollingStockJson: { name: string }): Promise<RollingStock> {
+    await this.importRollingStockButton.click();
+    await this.uploadFileDropzone.setInputFiles({
+      name: 'rolling-stock.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(rollingStockJson)),
+    });
+    const creationResponse = this.page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/rolling_stock' &&
+        response.request().method() === 'POST'
+    );
+    await this.uploadFileSubmitButton.click();
+    const response = await creationResponse;
+    expect(response.ok(), `Failed to import rolling stock "${rollingStockJson.name}"`).toBe(true);
+    await expect(this.rollingStockCard(rollingStockJson.name)).toBeVisible();
+    return (await response.json()) as RollingStock;
+  }
+
   async duplicateRollingStock() {
     await this.duplicateRollingStockButton.click();
   }
@@ -304,6 +345,24 @@ class RollingstockEditorPage extends RollingStockSelector {
     await this.selectRollingStock(rollingStockName);
     await this.deleteRollingStockButton.click();
     await this.confirmModalButtonYes.click();
+  }
+
+  async expectRollingStockActions({
+    canEdit,
+    canDuplicate,
+    canDelete,
+  }: {
+    canEdit: boolean;
+    canDuplicate: boolean;
+    canDelete: boolean;
+  }) {
+    await expect(this.editRollingStockButton).toBeEnabled({ enabled: canEdit });
+    await expect(this.duplicateRollingStockButton).toBeEnabled({ enabled: canDuplicate });
+    await expect(this.deleteRollingStockButton).toBeEnabled({ enabled: canDelete });
+  }
+
+  async expectFullInformationPanel(visible: boolean) {
+    await expect(this.exportRollingStockButton).toBeVisible({ visible });
   }
 
   async verifyRollingStockDetailsTable(
