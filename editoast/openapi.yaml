@@ -5597,6 +5597,184 @@ paths:
                       $ref: '#/components/schemas/LinkingOccurrenceId'
                     target:
                       $ref: '#/components/schemas/LinkingOccurrenceId'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Timetable {timetable_id} does not exist
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - timetable_id
+                      properties:
+                        timetable_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:timetable_not_found
+        '409':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Occurrence {occurrence} is already used as a source.
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - occurrence
+                      properties:
+                        occurrence:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '409'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:source_already_used
+                - type: object
+                  description: Occurrence {occurrence} is already used as a target.
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - occurrence
+                      properties:
+                        occurrence:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '409'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:target_already_used
+                - type: object
+                  description: Timetable {timetable_id} has type {timetable_type}, so it can't have occurrences with train_schedule_instance_index
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - timetable_id
+                      - timetable_type
+                      properties:
+                        timetable_id:
+                          type: integer
+                          format: int64
+                        timetable_type:
+                          type: string
+                          enum:
+                          - CALENDAR
+                          - HOURLY
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '409'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:request_incompatible_with_timetable_type
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /timetable/{id}/train_schedule_sets:
     get:
       tags:
@@ -6186,7 +6364,92 @@ paths:
                     target:
                       $ref: '#/components/schemas/LinkingOccurrenceId'
         '404':
-          description: Timetable doesn't exist.
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Timetable {timetable_id} does not exist
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - timetable_id
+                      properties:
+                        timetable_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:timetable_not_found
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /train_schedules/linkings/delete:
     post:
       tags:
@@ -6204,6 +6467,93 @@ paths:
       responses:
         '204':
           description: Linkings deleted
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: '{count} linking(s) could not be found'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - count
+                      properties:
+                        count:
+                          type: integer
+                          minimum: 0
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:batch_not_found
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /train_schedules/move:
     patch:
       tags:
@@ -9129,12 +9479,6 @@ components:
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorTrainBatchNotFound'
       - $ref: '#/components/schemas/EditoastLevelCrossingErrorUnsupportedTimetableType'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
-      - $ref: '#/components/schemas/EditoastLinkingErrorBatchNotFound'
-      - $ref: '#/components/schemas/EditoastLinkingErrorDatabase'
-      - $ref: '#/components/schemas/EditoastLinkingErrorRequestIncompatibleWithTimetableType'
-      - $ref: '#/components/schemas/EditoastLinkingErrorSourceAlreadyUsed'
-      - $ref: '#/components/schemas/EditoastLinkingErrorTargetAlreadyUsed'
-      - $ref: '#/components/schemas/EditoastLinkingErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
@@ -9661,154 +10005,6 @@ components:
           type: string
           enum:
           - editoast:infra:lines:LineNotFound
-    EditoastLinkingErrorBatchNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastLinkingErrorBatchNotFoundContext
-          required:
-          - count
-          properties:
-            count:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_linking:BatchNotFound
-    EditoastLinkingErrorDatabase:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastLinkingErrorDatabaseContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_linking:Database
-    EditoastLinkingErrorRequestIncompatibleWithTimetableType:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastLinkingErrorRequestIncompatibleWithTimetableTypeContext
-          required:
-          - timetable_id
-          - timetable_type
-          properties:
-            timetable_id:
-              type: integer
-            timetable_type:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 409
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_linking:RequestIncompatibleWithTimetableType
-    EditoastLinkingErrorSourceAlreadyUsed:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastLinkingErrorSourceAlreadyUsedContext
-          required:
-          - occurrence
-          properties:
-            occurrence:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 409
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_linking:SourceAlreadyUsed
-    EditoastLinkingErrorTargetAlreadyUsed:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastLinkingErrorTargetAlreadyUsedContext
-          required:
-          - occurrence
-          properties:
-            occurrence:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 409
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_linking:TargetAlreadyUsed
-    EditoastLinkingErrorTimetableNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastLinkingErrorTimetableNotFoundContext
-          required:
-          - timetable_id
-          properties:
-            timetable_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_linking:TimetableNotFound
     EditoastListErrorsErrorsWrongErrorTypeProvided:
       type: object
       required:
