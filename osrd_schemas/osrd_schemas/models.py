@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
+from datetime import time as time_aliased
+from datetime import timedelta
 from enum import Enum
 from typing import Annotated, Any, Literal
 
@@ -18,7 +20,7 @@ from pydantic import (
     StrictFloat,
     StrictInt,
     StrictStr,
-    constr,
+    StringConstraints,
 )
 from typing_extensions import TypeAliasType
 
@@ -844,29 +846,6 @@ class EditoastCacheOperationErrorObjectNotFound(BaseModel):
     type: Literal["editoast:cache_operation:ObjectNotFound"] = (
         "editoast:cache_operation:ObjectNotFound"
     )
-
-
-class EditoastCatalogEntryErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastCatalogEntryErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:catalog_entry:Database"] = "editoast:catalog_entry:Database"
-
-
-class EditoastCatalogEntryErrorNotFoundContext(BaseModel):
-    catalog_entry_id: StrictInt
-
-
-class EditoastCatalogEntryErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastCatalogEntryErrorNotFoundContext | None,
-        Field(title="EditoastCatalogEntryErrorNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:catalog_entry:NotFound"] = "editoast:catalog_entry:NotFound"
 
 
 class EditoastCoreErrorBrokenPipe(BaseModel):
@@ -1859,22 +1838,6 @@ class EditoastScenarioErrorStudyNotFound(BaseModel):
     type: Literal["editoast:scenario:StudyNotFound"] = "editoast:scenario:StudyNotFound"
 
 
-class EditoastScenarioErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: StrictInt
-
-
-class EditoastScenarioErrorTimetableNotFound(BaseModel):
-    context: Annotated[
-        EditoastScenarioErrorTimetableNotFoundContext | None,
-        Field(title="EditoastScenarioErrorTimetableNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:scenario:TimetableNotFound"] = (
-        "editoast:scenario:TimetableNotFound"
-    )
-
-
 class EditoastSearchApiErrorObjectTypeContext(BaseModel):
     object_type: StrictStr
 
@@ -2216,47 +2179,6 @@ class EditoastStdcmRequestDeleteErrorNotFound(BaseModel):
     type: Literal["editoast:stdcm_request_delete:NotFound"] = (
         "editoast:stdcm_request_delete:NotFound"
     )
-
-
-class EditoastStdcmRequestErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_request:Database"] = "editoast:stdcm_request:Database"
-
-
-class EditoastStdcmRequestErrorForbidden(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorForbiddenContext")
-    ] = None
-    message: StrictStr
-    status: Literal[403] = 403
-    type: Literal["editoast:stdcm_request:Forbidden"] = (
-        "editoast:stdcm_request:Forbidden"
-    )
-
-
-class EditoastStdcmRequestErrorMalformedParameters(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastStdcmRequestErrorMalformedParametersContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[422] = 422
-    type: Literal["editoast:stdcm_request:MalformedParameters"] = (
-        "editoast:stdcm_request:MalformedParameters"
-    )
-
-
-class EditoastStdcmRequestErrorNotUser(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastStdcmRequestErrorNotUserContext")
-    ] = None
-    message: StrictStr
-    status: Literal[401] = 401
-    type: Literal["editoast:stdcm_request:NotUser"] = "editoast:stdcm_request:NotUser"
 
 
 class EditoastStdcmRequestPostErrorDatabase(BaseModel):
@@ -3262,6 +3184,9 @@ class OperationCreate12(InfraObjectElectrification, OperationCreate1):
 
 
 class OperationDelete(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     obj_id: StrictStr
     obj_type: ObjectType
     operation_type: Literal["DELETE"] = "DELETE"
@@ -3579,7 +3504,7 @@ SwitchesDirectionsAdditionalProperty = TypeAliasType(
 class PathfindingOutput(BaseModel):
     detectors: list[Identifier]
     switches_directions: dict[
-        constr(min_length=1, max_length=255, strict=True),
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
         SwitchesDirectionsAdditionalProperty,
     ]
     track_ranges: list[DirectionalTrackRange]
@@ -4031,7 +3956,10 @@ ParametersAdditionalProperty = TypeAliasType(
 
 class ConditionalParameter(BaseModel):
     on_route: Annotated[StrictStr, Field(min_length=1)]
-    parameters: dict[constr(min_length=1, strict=True), ParametersAdditionalProperty]
+    parameters: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        ParametersAdditionalProperty,
+    ]
 
 
 DefaultParametersAdditionalProperty = TypeAliasType(
@@ -4047,10 +3975,14 @@ SettingsAdditionalProperty = TypeAliasType(
 class LogicalSignal(BaseModel):
     conditional_parameters: list[ConditionalParameter]
     default_parameters: dict[
-        constr(min_length=1, strict=True), DefaultParametersAdditionalProperty
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        DefaultParametersAdditionalProperty,
     ]
     next_signaling_systems: list[StrictStr]
-    settings: dict[constr(min_length=1, strict=True), SettingsAdditionalProperty]
+    settings: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        SettingsAdditionalProperty,
+    ]
     signaling_system: StrictStr
 
 
@@ -4510,7 +4442,8 @@ class SwitchType(BaseModel):
         extra="forbid",
     )
     groups: dict[
-        constr(min_length=1, max_length=255, strict=True), list[SwitchPortConnection]
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
+        list[SwitchPortConnection],
     ]
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     ports: list[Port]
@@ -4530,6 +4463,16 @@ class TestOperation(BaseModel):
     """
     Value to test against.
     """
+
+
+class TimetablePatchForm(BaseModel):
+    """
+    This structure is used by the patch endpoint to patch a timetable
+
+    The type of a timetable cannot be changed after its creation
+    """
+
+    name: StrictStr | None = None
 
 
 class TimetableType(Enum):
@@ -5223,8 +5166,6 @@ class EditoastError(
         | EditoastAutoFixesEditoastErrorMissingErrorObject
         | EditoastCacheOperationErrorDuplicateIdsProvided
         | EditoastCacheOperationErrorObjectNotFound
-        | EditoastCatalogEntryErrorDatabase
-        | EditoastCatalogEntryErrorNotFound
         | EditoastCoreErrorBrokenPipe
         | EditoastCoreErrorCoreResponseFormatError
         | EditoastCoreErrorMqClientError
@@ -5298,7 +5239,6 @@ class EditoastError(
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound
         | EditoastScenarioErrorStudyNotFound
-        | EditoastScenarioErrorTimetableNotFound
         | EditoastSearchApiErrorObjectType
         | EditoastSearchApiErrorSearchEngineError
         | EditoastSimilarTrainsErrorDatabase
@@ -5323,10 +5263,6 @@ class EditoastError(
         | EditoastStdcmErrorTrainSimulationFail
         | EditoastStdcmRequestDeleteErrorDatabase
         | EditoastStdcmRequestDeleteErrorNotFound
-        | EditoastStdcmRequestErrorDatabase
-        | EditoastStdcmRequestErrorForbidden
-        | EditoastStdcmRequestErrorMalformedParameters
-        | EditoastStdcmRequestErrorNotUser
         | EditoastStdcmRequestPostErrorDatabase
         | EditoastStdcmRequestPostErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
@@ -5407,8 +5343,6 @@ class EditoastError(
         | EditoastAutoFixesEditoastErrorMissingErrorObject
         | EditoastCacheOperationErrorDuplicateIdsProvided
         | EditoastCacheOperationErrorObjectNotFound
-        | EditoastCatalogEntryErrorDatabase
-        | EditoastCatalogEntryErrorNotFound
         | EditoastCoreErrorBrokenPipe
         | EditoastCoreErrorCoreResponseFormatError
         | EditoastCoreErrorMqClientError
@@ -5482,7 +5416,6 @@ class EditoastError(
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound
         | EditoastScenarioErrorStudyNotFound
-        | EditoastScenarioErrorTimetableNotFound
         | EditoastSearchApiErrorObjectType
         | EditoastSearchApiErrorSearchEngineError
         | EditoastSimilarTrainsErrorDatabase
@@ -5507,10 +5440,6 @@ class EditoastError(
         | EditoastStdcmErrorTrainSimulationFail
         | EditoastStdcmRequestDeleteErrorDatabase
         | EditoastStdcmRequestDeleteErrorNotFound
-        | EditoastStdcmRequestErrorDatabase
-        | EditoastStdcmRequestErrorForbidden
-        | EditoastStdcmRequestErrorMalformedParameters
-        | EditoastStdcmRequestErrorNotUser
         | EditoastStdcmRequestPostErrorDatabase
         | EditoastStdcmRequestPostErrorNotUser
         | EditoastStdcmSearchEnvErrorDatabase
@@ -6101,7 +6030,7 @@ class Route(BaseModel):
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     release_detectors: list[ReleaseDetector]
     switches_directions: dict[
-        constr(min_length=1, max_length=255, strict=True),
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
         SwitchesDirectionsAdditionalProperty,
     ]
 
@@ -6116,7 +6045,6 @@ class Scenario(BaseModel):
     name: StrictStr
     study_id: StrictInt
     tags: list[StrictStr]
-    timetable_id: StrictInt
 
 
 class ScenarioCreateForm(BaseModel):
@@ -6130,7 +6058,7 @@ class ScenarioCreateForm(BaseModel):
     name: StrictStr
     study_id: StrictInt
     tags: list[StrictStr] | None = None
-    timetable_id: StrictInt
+    timetable_ids: list[StrictInt] | None = None
 
 
 class ScenarioPatchForm(BaseModel):
@@ -6143,12 +6071,7 @@ class ScenarioPatchForm(BaseModel):
     infra_id: StrictInt | None = None
     name: StrictStr | None = None
     tags: list[StrictStr] | None = None
-
-
-class ScenarioWithDetails(Scenario):
-    infra_name: StrictStr
-    timetable_type: TimetableType
-    train_schedules_count: StrictInt
+    timetable_ids: list[StrictInt] | None = None
 
 
 class SearchPayload(BaseModel):
@@ -6491,6 +6414,7 @@ class SwitchExtensions(BaseModel):
 
 
 class TimetableForm(BaseModel):
+    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 
@@ -6501,7 +6425,14 @@ class TimetableResult(BaseModel):
 
     is_train_schedule_set: StrictBool
     timetable_id: StrictInt
+    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
+
+
+class TimetableSummary(BaseModel):
+    id: StrictInt
+    name: StrictStr | None = None
+    type: TimetableType
 
 
 class TrackSectionExtensions(BaseModel):
@@ -6605,13 +6536,13 @@ class RequestStatusItem(BaseModel):
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
-    begin_time: StrictFloat | None = None
+    begin_time: time_aliased | None = None
     end_op: (
         OperationalPointReferenceId
         | OperationalPointReferenceDomestic
         | OperationalPointReferenceUic
     )
-    end_time: StrictFloat | None = None
+    end_time: time_aliased | None = None
     updated_at: AwareDatetime
     created_at: AwareDatetime
     train_start: AwareDatetime
@@ -6955,6 +6886,9 @@ class OperationCreate10(InfraObjectRoute, OperationCreate1):
 
 
 class OperationUpdate(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
     obj_id: StrictStr
     obj_type: ObjectType
     railjson_patch: list[
@@ -7281,7 +7215,13 @@ class ScenarioResponse(Scenario):
     infra_name: StrictStr
     project: Project
     study: Study
-    timetable_type: TimetableType
+    timetable_summaries: list[TimetableSummary]
+    train_schedules_count: StrictInt
+
+
+class ScenarioWithDetails(Scenario):
+    infra_name: StrictStr
+    timetable_summaries: list[TimetableSummary]
     train_schedules_count: StrictInt
 
 
@@ -7407,7 +7347,9 @@ class SpeedSection(BaseModel):
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
     on_routes: list[OnRoute] | None = None
     speed_limit: StrictFloat | None = None
-    speed_limit_by_tag: dict[constr(min_length=1, strict=True), StrictFloat]
+    speed_limit_by_tag: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)], StrictFloat
+    ]
     track_ranges: list[ApplicableDirectionsTrackRange]
 
 
@@ -7430,7 +7372,10 @@ class Switch(BaseModel):
     extensions: SwitchExtensions | None = None
     group_change_delay: StrictFloat
     id: Annotated[StrictStr, Field(max_length=255, min_length=1)]
-    ports: dict[constr(min_length=1, max_length=255, strict=True), TrackEndpoint]
+    ports: dict[
+        Annotated[str, StringConstraints(min_length=1, max_length=255, strict=True)],
+        TrackEndpoint,
+    ]
     switch_type: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
 

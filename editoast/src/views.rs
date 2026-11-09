@@ -104,6 +104,9 @@ fn service_router() -> server::router::DocumentedRouter {
                     .nests("/user", |path| {
                         path.route("/info", post!(authz::users_info))
                     })
+                    .nests("/users", |path| {
+                        path.route("/", post!(authz::create_user))
+                    })
                     .route("/groups", get!(authz::list_groups))
             })
             //
@@ -222,6 +225,7 @@ fn service_router() -> server::router::DocumentedRouter {
                                 path.route("/", post!(timetable::linkings::create))
                             })
                     })
+                    .route("/{id}", patch!(timetable::patch))
             })
             //
             // train schedule exception
@@ -527,14 +531,36 @@ where
     }
 }
 
-#[derive(Debug, thiserror::Error, ViewError)]
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
 enum DatabaseError {
     #[error("database error: {0}")]
+    #[from(database::DatabaseError, models::Error)]
     #[view_error(status = INTERNAL_SERVER_ERROR)]
-    Internal(#[from] models::Error),
+    Internal(models::Error),
     #[error("database unavailable: {0}")]
     #[view_error(status = SERVICE_UNAVAILABLE)]
     Unavailable(#[from] database::DatabasePoolError),
+}
+
+#[derive(Debug, thiserror::Error, ViewError)]
+#[error("openfga error: {0}")]
+#[view_error(status = INTERNAL_SERVER_ERROR, path = authorization::OpenFga)]
+struct OpenFgaError(#[from] ::authz::authorizers::Error);
+
+impl From<::authz::v2::OpenFgaError> for OpenFgaError {
+    fn from(error: ::authz::v2::OpenFgaError) -> Self {
+        Self(error.into())
+    }
+}
+
+/// Convert an Infallible error into an OpenFgaError.
+/// Useful since the SystemAuthorizer uses Infallible as
+/// its rejection type, and using run() forces to handle
+/// the rejection type.
+impl From<std::convert::Infallible> for OpenFgaError {
+    fn from(_: std::convert::Infallible) -> Self {
+        unreachable!()
+    }
 }
 
 #[cfg(test)]

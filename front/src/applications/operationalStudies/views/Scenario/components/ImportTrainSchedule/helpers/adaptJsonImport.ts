@@ -9,7 +9,10 @@ import type {
   TimetableType,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
+import {
+  computeHourlyTimetableDuration,
+  getHourlyUniqueTrainPacedAttributes,
+} from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { getOccurrencesNb } from 'modules/trainSchedule/helpers/pacedTrain';
 import { Duration } from 'utils/duration';
 
@@ -81,11 +84,7 @@ function calendarToHourly(
       return {
         ...train,
         start_time: timeOfDayMs % hourlyTimetableDuration.ms,
-        paced: {
-          interval: hourlyTimetableDuration.toISOString(),
-          time_window: hourlyTimetableDuration.toISOString(),
-          exceptions: [],
-        },
+        paced: getHourlyUniqueTrainPacedAttributes(hourlyTimetableDuration),
       };
     }
 
@@ -142,7 +141,7 @@ function hourlyToCalendar(
   }));
 }
 
-/** Payloads without timetable type (older exports, NGE, XML…) are considered as calendar ones. */
+/** Payloads without timetable type (older exports, XML…) are considered as calendar ones. */
 export const getPayloadTimetableType = (payload: TimetableJsonPayload): TimetableType =>
   payload.timetable_type ?? 'CALENDAR';
 

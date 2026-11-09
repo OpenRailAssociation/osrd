@@ -8,7 +8,6 @@ use models::scenario::Scenario;
 use models::search_journey_environment::SearchJourneyEnvironment;
 use models::search_journey_environment::SearchJourneyEnvironmentWithTimetables;
 use models::timetable::Timetable;
-use std::collections::HashSet;
 
 #[derive(Subcommand, Debug)]
 pub enum SearchJourneyEnvCommands {
@@ -68,7 +67,7 @@ async fn set_search_journey_env_from_scenario(
 
     SearchJourneyEnvironment::create_with_timetables(
         scenario.infra_id,
-        HashSet::from([scenario.timetable_id]),
+        scenario.timetable_ids(conn).await?.into_iter().collect(),
         conn,
     )
     .await?;

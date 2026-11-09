@@ -1,6 +1,7 @@
 package fr.sncf.osrd.sim_infra_adapter
 
 import fr.sncf.osrd.api.InfraMetadata
+import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
@@ -278,6 +279,89 @@ class PathPropertiesTests {
             ),
             opIdsIdxWithOffsetBackward,
         )
+    }
+
+    @Test
+    fun testParseAndUseOperationalPointsWithNullOnOptionalAttributes() {
+        var rjsInfra = Helpers.getExampleInfra("y_infra/infra.json")
+
+        val operationalPoints =
+            mutableListOf(
+                RJSOperationalPoint(
+                    "point1",
+                    listOf(
+                        RJSOperationalPointPart(
+                            "t_a",
+                            5_000.0,
+                            "V1",
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp1"),
+                            ),
+                        ),
+                        RJSOperationalPointPart(
+                            "t_a",
+                            7_500.0,
+                            "V1",
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp2"),
+                            ),
+                        ),
+                    ),
+                    null,
+                    "point1",
+                    null,
+                    null,
+                    "FR",
+                    "TRI",
+                    null,
+                    false,
+                    null,
+                ),
+                RJSOperationalPoint(
+                    "point2",
+                    listOf(
+                        RJSOperationalPointPart(
+                            "t_center",
+                            0.0,
+                            "V1",
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp3"),
+                            ),
+                        ),
+                        RJSOperationalPointPart(
+                            "t_center",
+                            10_000.0,
+                            "V1",
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp4"),
+                            ),
+                        ),
+                    ),
+                    null,
+                    "point2",
+                    null,
+                    null,
+                    "FR",
+                    "TRI",
+                    null,
+                    false,
+                    null,
+                ),
+            )
+
+        rjsInfra = rjsInfra.copy(operationalPoints = operationalPoints)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_y_infra"))
+        val path =
+            pathFromTracks(
+                infra,
+                listOf("t_a", "t_center"),
+                Direction.INCREASING,
+                2_000.meters,
+                15_000.meters,
+            )
+
+        // parse and use are working OK even with null attributes
+        val pathProperties = makePathPropResponse(path, infra.rawInfra)
     }
 
     @Test

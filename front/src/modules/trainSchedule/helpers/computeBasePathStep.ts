@@ -29,6 +29,8 @@ const computeBasePathStep = (
     arrival,
     stop_for: stopFor,
     reception_signal: receptionSignal,
+    reference_base_arrival,
+    reference_position,
   } = correspondingSchedule || {};
 
   let theoreticalMargin;
@@ -46,6 +48,8 @@ const computeBasePathStep = (
     // with its default value)
     receptionSignal: receptionSignal ?? 'OPEN',
     theoreticalMargin: theoreticalMargin ?? null,
+    referenceBaseArrival: reference_base_arrival ? Duration.parse(reference_base_arrival) : null,
+    referencePosition: reference_position ?? null,
   };
 };
 

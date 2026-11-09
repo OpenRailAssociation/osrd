@@ -67,8 +67,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} não foi encontrado em nenhum lugar na cache da infraestrutura"
     },
     "catalog_entry": {
-      "Database": "Erro interno (base de dados)",
-      "NotFound": "Entrada do catálogo '{{catalog_entry_id}}' não encontrada"
+      "not_found": "Entrada do catálogo '{{catalog_entry_id}}' não encontrada"
     },
     "core": {
       "pathfinding": {
@@ -208,8 +207,7 @@
       "Database": "Erro interno (base de dados)",
       "InfraNotFound": "Infraestrutura '{{infra_id}}' não encontrada",
       "NotFound": "Cenário não encontrado",
-      "StudyNotFound": "Estudo '{{study_id}}' não encontrado",
-      "TimetableNotFound": "Horário '{{timetable_id}}' não encontrado"
+      "StudyNotFound": "Estudo '{{study_id}}' não encontrado"
     },
     "search": {
       "ArgMissing": "Argumento do tipo {{expected}} em falta na posição {{arg_pos}}",

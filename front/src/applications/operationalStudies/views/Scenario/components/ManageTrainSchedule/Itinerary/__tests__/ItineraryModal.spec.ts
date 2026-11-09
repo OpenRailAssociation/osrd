@@ -89,6 +89,8 @@ describe('setupStateWithTrainSchedule', () => {
             arrival: null,
             stopFor: null,
             receptionSignal: 'OPEN',
+            referenceBaseArrival: null,
+            referencePosition: null,
           },
           {
             key: 'id2',
@@ -100,6 +102,8 @@ describe('setupStateWithTrainSchedule', () => {
             arrival: null,
             stopFor: null,
             receptionSignal: 'OPEN',
+            referenceBaseArrival: null,
+            referencePosition: null,
           },
         ],
         startTime: new Date('2021-01-01T00:00:00+00:00'),
@@ -108,6 +112,12 @@ describe('setupStateWithTrainSchedule', () => {
         editingTrainType: 'pacedTrain',
       };
       expect(state).toEqual(expectedState);
+    });
+
+    it('keeps the departure offset of a paced train in an hourly timetable', () => {
+      const startTime = new Duration({ hours: 8, minutes: 37 });
+      const state = setupStateWithTrainSchedule({ ...pacedTrain, startTime }, 'HOURLY');
+      expect(state.startTime).toEqual(startTime);
     });
   });
 });

@@ -339,9 +339,9 @@ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
 name = "aws-lc-rs"
-version = "1.18.2"
+version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faac5829c2b74c28f830747e7818ccfb684261b5f48a1118b1e2a13d36dfab13"
+checksum = "048006790404103c488e6c5616b3e7e702a71292aadda08e8f7698a9e0d2eb53"
 dependencies = [
  "aws-lc-sys",
  "zeroize",
@@ -349,9 +349,9 @@ dependencies = [
 
 [[package]]
 name = "aws-lc-sys"
-version = "0.46.0"
+version = "0.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1622d8446a2d4b2ce0c7eefc73dd43a99779028d5ee5c2dd8073a658ba8a2bc"
+checksum = "8bfbe32ac36b3c428696ce315464181bc4029d689fd58e3f2a4e58c252242f52"
 dependencies = [
  "cc",
  "cmake",
@@ -617,9 +617,9 @@ dependencies = [
 
 [[package]]
 name = "buildid"
-version = "1.0.5"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b8e278b5bdc31756d01d65c17662e23692e0dbaa19e65adae9b58fc4683bc09"
+checksum = "d112c985702dc72085da9368d7f4348437d8b689a68fbd0b0a804589f0f19389"
 dependencies = [
  "cfg-if",
  "libc",
@@ -937,7 +937,6 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 name = "core_client"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "common",
  "dashmap",
  "deadpool",
@@ -949,6 +948,7 @@ dependencies = [
  "hostname",
  "http",
  "itertools 0.15.0",
+ "jiff",
  "lapin",
  "opentelemetry",
  "ordered-float",
@@ -1545,6 +1545,7 @@ dependencies = [
  "postgis_diesel",
  "pretty_assertions",
  "profile_connection_scan",
+ "proptest",
  "rand 0.10.3",
  "rangemap",
  "reqwest",
@@ -3553,9 +3554,9 @@ dependencies = [
 
 [[package]]
 name = "ordered-float"
-version = "5.5.0"
+version = "5.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c7c9e0d9b23589f26070720bac724174bfec1083e82f7854cdd0267518343c0"
+checksum = "7f59006ce1e204c30956638535b74d317bca99477b9356dfaec54c37f6f600ab"
 dependencies = [
  "num-traits",
  "rand 0.8.6",
@@ -4703,14 +4704,15 @@ dependencies = [
 name = "schemas"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "common",
+ "diesel",
  "editoast_derive",
  "educe 0.8.1",
  "enum-map",
  "geos",
  "iso8601",
  "itertools 0.15.0",
+ "jiff",
  "proptest",
  "rand 0.10.3",
  "regex",
@@ -5162,7 +5164,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
  "windows-sys 0.61.2",
@@ -5814,7 +5816,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 [[package]]
 name = "utoipa"
 version = "5.4.0"
-source = "git+https://github.com/osrd-project/utoipa.git?rev=5103a24a6d6#5103a24a6d61ef99baba6eacd6625734baff5dbc"
+source = "git+https://github.com/juhaku/utoipa.git?rev=7d0d0be2a0727f4d030ffcc49febbff7367d957b#7d0d0be2a0727f4d030ffcc49febbff7367d957b"
 dependencies = [
  "indexmap",
  "serde",
@@ -5825,7 +5827,7 @@ dependencies = [
 [[package]]
 name = "utoipa-gen"
 version = "5.4.0"
-source = "git+https://github.com/osrd-project/utoipa.git?rev=5103a24a6d6#5103a24a6d61ef99baba6eacd6625734baff5dbc"
+source = "git+https://github.com/juhaku/utoipa.git?rev=7d0d0be2a0727f4d030ffcc49febbff7367d957b#7d0d0be2a0727f4d030ffcc49febbff7367d957b"
 dependencies = [
  "proc-macro2",
  "quote",

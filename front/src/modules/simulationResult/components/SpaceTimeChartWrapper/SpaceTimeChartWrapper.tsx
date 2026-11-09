@@ -243,7 +243,9 @@ const SpaceTimeChartWrapper = ({
   const dispatch = useAppDispatch();
   const hoveredTrainId = useSelector(getHoveredTrainId);
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
-  const { scenario: { timetable_type: timetableType } = {} } = useScenario();
+  const { scenario: { timetable_summaries } = {} } = useScenario();
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = timetable_summaries !== undefined ? timetable_summaries[0].type : undefined;
   const selection = useSelector(getSelectedTrain);
   const { id: selectedTrainId, by: selectedTrainBy } = selection ?? {};
 
@@ -477,6 +479,7 @@ const SpaceTimeChartWrapper = ({
           showSuggestions: linkingMode,
         },
         repeatTimeRange,
+        hourlyTimetableDuration,
       }),
     [
       trackOccupancyDiagramsData,
@@ -497,6 +500,7 @@ const SpaceTimeChartWrapper = ({
       linkingMode,
       repeatTimeRange,
       activeWaypointId,
+      hourlyTimetableDuration,
     ]
   );
 

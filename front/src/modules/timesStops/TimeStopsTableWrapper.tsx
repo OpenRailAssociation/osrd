@@ -121,9 +121,11 @@ const TimeStopsTableWrapper = ({
     });
   }, [rows, optimisticEdits]);
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
   const startTime = useMemo(
-    () => getTruncatedToSecondStartTime(selectedTrain, scenario.timetable_type),
-    [selectedTrain, scenario.timetable_type]
+    () => getTruncatedToSecondStartTime(selectedTrain, timetableType),
+    [selectedTrain, timetableType]
   );
 
   const availablePowerRestrictions = useMemo(

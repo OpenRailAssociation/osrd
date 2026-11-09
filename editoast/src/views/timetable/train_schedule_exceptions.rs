@@ -14,6 +14,7 @@ use models::timetable::Timetable;
 use models::train_schedule_exception::TrainScheduleExceptionChangeset;
 use schemas::TrainScheduleException;
 use schemas::TrainScheduleExceptionChangeGroups;
+use schemas::primitives::duration::pg_interval_to_jiff_duration;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -161,11 +162,11 @@ pub(in crate::views) async fn create_train_schedule_exception(
             occurrence_index,
             time_window: train_schedule
                 .time_window
-                .map(|t| t.to_string())
+                .map(|t| pg_interval_to_jiff_duration(t).to_string())
                 .unwrap_or_else(|| "None".to_string()),
             interval: train_schedule
                 .interval
-                .map(|i| i.to_string())
+                .map(|i| pg_interval_to_jiff_duration(i).to_string())
                 .unwrap_or_else(|| "None".to_string()),
         }
         .into());
@@ -250,11 +251,11 @@ pub(in crate::views) async fn update(
             occurrence_index,
             time_window: train_schedule
                 .time_window
-                .map(|t| t.to_string())
+                .map(|t| pg_interval_to_jiff_duration(t).to_string())
                 .unwrap_or_else(|| "None".to_string()),
             interval: train_schedule
                 .interval
-                .map(|i| i.to_string())
+                .map(|i| pg_interval_to_jiff_duration(i).to_string())
                 .unwrap_or_else(|| "None".to_string()),
         }
         .into());

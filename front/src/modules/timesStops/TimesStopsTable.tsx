@@ -234,8 +234,9 @@ const TimesStopsTable = ({
   const scheduleNotHonored = rows.some((row) => row.stepStatus === 'scheduleNotHonored');
   const cellHandlesRef = useRef<Map<string, TabbableCellHandle>>(new Map());
   const cellTabOrderRef = useRef<Map<string, TimeCellTabEntry>>(new Map());
+  // TODO: adapt once the front handles multiple timetable per scenario
   const startTimeCellType: 'time' | 'duration' =
-    scenario.timetable_type === 'CALENDAR' ? 'time' : 'duration';
+    scenario.timetable_summaries[0].type === 'CALENDAR' ? 'time' : 'duration';
 
   const [highlightedRowIds, setHighlightedRowIds] = useState<Set<string>>(new Set());
   const [mouseOverTimeField, setMouseOverTimeField] = useState<RequestedTimeField>();
@@ -317,8 +318,8 @@ const TimesStopsTable = ({
           ? row.requestedTheoreticalMargin
           : null;
       const isSpecifiedMargin =
-        (isFirstRow || row.isTheoreticalMarginBoundary || !row.baseArrival) &&
-        row.requestedTheoreticalMargin;
+        (isFirstRow || row.isTheoreticalMarginBoundary) && !!row.requestedTheoreticalMargin;
+
       return (
         <div data-testid="requested-theoretical-margin">
           <MarginCell
@@ -327,13 +328,12 @@ const TimesStopsTable = ({
             editable={!isLastRow}
             isInherited={!isSpecifiedMargin}
             isFirstRow={isFirstRow}
-            showUnitToggle={isValid && !scheduleNotHonored}
             onCommit={(value) => info.table.options.meta!.onRequestedMarginChange(row, value)}
           />
         </div>
       );
     },
-    [scheduleNotHonored, isValid]
+    []
   );
 
   const returnShortSlipDistanceCell = (

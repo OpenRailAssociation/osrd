@@ -79,6 +79,8 @@ export default function useScenarioTrainScheduleSet(
   const [getTrainScheduleSetTrainSchedules] =
     osrdEditoastApi.endpoints.getTrainScheduleSetsByIdTrainSchedules.useLazyQuery();
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
   const createTrainScheduleSet = useCallback(
     async (data: TrainScheduleSetFormData): Promise<void> => {
       let catalogEntryId: number | undefined;
@@ -102,7 +104,7 @@ export default function useScenarioTrainScheduleSet(
         trainScheduleSetForm: {
           ...trainScheduleSetData,
           catalog_entry_id: catalogEntryId,
-          timetable_type: scenario.timetable_type,
+          timetable_type: timetableType,
         },
       }).unwrap();
 
@@ -121,7 +123,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       trainScheduleSets,
-      scenario.timetable_type,
+      timetableType,
     ]
   );
 
@@ -311,7 +313,7 @@ export default function useScenarioTrainScheduleSet(
               catalog_entry_id: item.trainScheduleSet.catalog_entry_id,
               published: false,
               description: item.trainScheduleSet.description,
-              timetable_type: scenario.timetable_type,
+              timetable_type: timetableType,
             },
           }).unwrap();
 
@@ -348,7 +350,7 @@ export default function useScenarioTrainScheduleSet(
       linkTrainScheduleSetToTimetable,
       timetableId,
       upsertTrainSchedules,
-      scenario.timetable_type,
+      timetableType,
       dispatch,
     ]
   );

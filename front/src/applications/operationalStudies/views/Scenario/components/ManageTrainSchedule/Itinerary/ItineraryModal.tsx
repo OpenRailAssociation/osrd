@@ -60,7 +60,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
-import { Duration, type StartTime, startTimeToDate } from 'utils/duration';
+import { Duration, type StartTime } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { msToKmh } from 'utils/physics';
 
@@ -160,8 +160,7 @@ export function setupStateWithTrainSchedule(
     rollingStockId: trainSchedule.rollingStock?.id,
     rollingStockComfort: trainSchedule.comfort ?? 'STANDARD',
     pathSteps: trainSchedule.path.map((_, index) => computeBasePathStep(trainSchedule, index)),
-    // TODO Hourly timetables: keep the Duration start time in the conf state instead of a fictive date
-    startTime: startTimeToDate(trainSchedule.startTime),
+    startTime: trainSchedule.startTime,
     name: trainSchedule.name,
     category: trainSchedule.category ?? null,
     initialSpeed: trainSchedule.initial_speed
@@ -224,9 +223,10 @@ const ItineraryModal = ({
   const { updateViewport } = useMapSettingsActions();
   const infraId = useInfraID();
   const fitViewportToInfra = useFitViewportToInfra();
-
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
   const [trainState, setTrainState] = useState<ItineraryModalTrainState>(
-    blankNewTrainState(defaultStartTime, scenario.timetable_type)
+    blankNewTrainState(defaultStartTime, timetableType)
   );
 
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -256,11 +256,7 @@ const ItineraryModal = ({
       if (trainScheduleToEditData) {
         const train = trainScheduleToEditData.trainSchedule;
         setTrainState(
-          setupStateWithTrainSchedule(
-            train,
-            scenario.timetable_type,
-            !!trainScheduleToEditData.occurrenceId
-          )
+          setupStateWithTrainSchedule(train, timetableType, !!trainScheduleToEditData.occurrenceId)
         );
         setModalFormState({
           name: train.name,
@@ -271,7 +267,7 @@ const ItineraryModal = ({
         });
       } else {
         if (infraId) fitViewportToInfra(infraId);
-        setTrainState(blankNewTrainState(defaultStartTime, scenario.timetable_type));
+        setTrainState(blankNewTrainState(defaultStartTime, timetableType));
         setModalFormState({
           name: '',
           rollingStockName: '',
@@ -284,13 +280,7 @@ const ItineraryModal = ({
       setWasInitialized(true);
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [
-    wasInitialized,
-    trainScheduleToEditData,
-    scenario.timetable_type,
-    infraId,
-    fitViewportToInfra,
-  ]);
+  }, [wasInitialized, trainScheduleToEditData, timetableType, infraId, fitViewportToInfra]);
 
   const { categoryColors, currentSubCategory } = useCategoryColors(modalFormState.category);
 
@@ -843,12 +833,25 @@ const ItineraryModal = ({
           />
         </div>
         <div className="itinerary-modal-form-body" data-testid="itinerary-modal-form-body">
-          {categoryWarning && <Banner message={categoryWarning} onClose={resetCategoryWarning} />}
-          {rollingStockMessage && <Banner type="info" message={rollingStockMessage} />}
+          {categoryWarning && (
+            <Banner
+              message={categoryWarning}
+              onClose={resetCategoryWarning}
+              dataTestId="category-warning-banner"
+            />
+          )}
+          {rollingStockMessage && (
+            <Banner
+              type="info"
+              message={rollingStockMessage}
+              dataTestId="rolling-stock-message-banner"
+            />
+          )}
           {(hasInvalidPathStepDisplay || invalidTrackSteps.length > 0) && (
             <div key={`invalid-op-${bannerWiggle}`}>
               <Banner
                 type="info"
+                dataTestId="invalid-op-banner"
                 message={
                   invalidTrackSteps.length > 0
                     ? `${t('unknownTrack', {
@@ -861,7 +864,11 @@ const ItineraryModal = ({
           )}
           {!hasInvalidPathStepDisplay && invalidTrackSteps.length === 0 && pathfindingError && (
             <div key={`pathfinding-${bannerWiggle}`}>
-              <Banner type="info" message={`${pathfindingError}. ${t('noComputation')}.`} />
+              <Banner
+                type="info"
+                message={`${pathfindingError}. ${t('noComputation')}.`}
+                dataTestId="pathfinding-error-banner"
+              />
             </div>
           )}
           {submitAttempted &&
@@ -870,6 +877,7 @@ const ItineraryModal = ({
               <div key={`missing-step-${bannerWiggle}`}>
                 <Banner
                   type="error"
+                  dataTestId="missing-step-banner"
                   message={t(
                     locatedStepsCount === 0
                       ? 'alertMissingRequestedPoint'

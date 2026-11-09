@@ -59,7 +59,9 @@ const CollapsedTrainOverview = ({
             {getServiceInterval(pacedTrain)}’ — {getServiceWindow(pacedTrain)}’
           </div>
         )}
-        {scenario.timetable_type === 'CALENDAR' && (
+
+        {/* TODO: adapt once the front handles multiple timetable per scenario */}
+        {scenario.timetable_summaries[0].type === 'CALENDAR' && (
           <div className="train-departure-date" data-testid="train-departure-date">
             {getShortDepartureDate(train, dateTimeLocale)}
           </div>

@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::str::FromStr as _;
 
-use chrono::DateTime;
-use chrono::Utc;
+use jiff::Timestamp;
 use unit_system;
 use unit_system::units;
 
@@ -97,5 +96,5 @@ pub fn small_infra() -> crate::infra::RailJson {
 }
 
 pub fn ms_since_epoch(s: &str) -> unit_system::quantities::Time {
-    units::millisecond::i64::new(DateTime::<Utc>::from_str(s).unwrap().timestamp_millis())
+    units::millisecond::i64::new(Timestamp::from_str(s).unwrap().as_millisecond())
 }

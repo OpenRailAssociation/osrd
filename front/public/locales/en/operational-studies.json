@@ -522,12 +522,14 @@
       "serviceChangeWarning": {
         "cancel": "Cancel",
         "confirm": "Confirm",
-        "explanationsLinkings": "Editing the cadence or the duration of the service will delete the linkings. Do you wish to continue?",
-        "explanationsWithLinkings_one": "Editing the cadence or the duration of the service will reset an exception and delete the linkings. Do you wish to continue?",
-        "explanationsWithLinkings_other": "Editing the cadence or the duration of the service will reset {{count}} exceptions and delete the linkings. Do you wish to continue?",
-        "explanations_one": "Editing the cadence or the duration of the service will reset an exception. Do you wish to continue?",
-        "explanations_other": "Editing the cadence or the duration of the service will reset {{count}} exceptions. Do you wish to continue?",
-        "header": "Service model changed"
+        "exceptionsCount_one": "an exception",
+        "exceptionsCount_other": "{{count}} exceptions",
+        "explanationsExceptions": "Editing the cadence or the duration of the service will reset {{exceptions}}. Do you wish to continue?",
+        "explanationsExceptionsAndLinkings": "Editing the cadence or the duration of the service will reset {{exceptions}} and delete {{linkings}}. Do you wish to continue?",
+        "explanationsLinkings": "Editing the cadence or the duration of the service will delete {{linkings}}. Do you wish to continue?",
+        "header": "Service model changed",
+        "linkingsCount_one": "a linking",
+        "linkingsCount_other": "{{count}} linkings"
       },
       "serviceModelTrain": "Service model train",
       "serviceOccurrence": "Service occurrence"

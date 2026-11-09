@@ -53,7 +53,6 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
 use crate::views::path::operational_point_cache::OperationalPointCache;
-use authz::Role;
 use authz::authorizers::SystemAuthorizer;
 use authz::authorizers::UserAuthorizer;
 use models::Infra;
@@ -430,16 +429,24 @@ impl InfraPatchForm {
     ),
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<Arc<DbConnectionPool>>,
-    Path(infra): Path<i64>,
+    Extension(authn_state): Extension<authentication::State>,
+    State(AppState {
+        db_pool, openfga, ..
+    }): State<AppState>,
+    Path(infra_id): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
     let infra_cs: Changeset<Infra> = patch.into_changeset();
     let infra = infra_cs
-        .update_or_fail(&mut db_pool.get().await?, infra, || {
-            InfraApiError::NotFound { infra_id: infra }
+        .update_or_fail(&mut db_pool.get().await?, infra_id, || {
+            InfraApiError::NotFound { infra_id }
         })
         .await?;
+
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanWrite)
+        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+        .await?;
+
     Ok(Json(infra))
 }
 
@@ -730,7 +737,7 @@ pub(in crate::views) struct MatchOperationalPointsResponse {
     related_operational_points: Vec<Option<RelatedOperationalPoint>>,
 }
 
-#[editoast_derive::route(Role::OperationalStudies)]
+#[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "infra",
@@ -851,6 +858,7 @@ async fn populate_op_geo(
 
 #[cfg(test)]
 pub mod tests {
+    use authz::Role;
     use axum::http::StatusCode;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
@@ -1819,7 +1827,7 @@ pub mod tests {
         }
 
         #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-        async fn match_operational_points_requires_reader_and_operational_studies() {
+        async fn match_operational_points_requires_reader() {
             let app = test_app!().build();
             let db_pool = app.db_pool();
             let infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -1828,19 +1836,9 @@ pub mod tests {
                 .with_roles([Role::OperationalStudies])
                 .create()
                 .await;
-            let user_no_role = app
-                .user("bob", "Bob")
-                .with_infra_grant(infra.id, InfraGrant::Reader)
-                .create()
-                .await;
             app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
                 .json(&json!({"operational_point_references": []}))
                 .by_user(user_no_grant.as_ref())
-                .await
-                .assert_status_forbidden();
-            app.post(format!("/infra/{}/match_operational_points", infra.id).as_str())
-                .json(&json!({"operational_point_references": []}))
-                .by_user(user_no_role.as_ref())
                 .await
                 .assert_status_forbidden();
         }

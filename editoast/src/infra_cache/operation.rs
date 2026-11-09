@@ -4,8 +4,8 @@ mod update;
 
 use std::ops::Deref as _;
 
-use chrono::Utc;
 use json_patch::Patch;
+use models::Timestamp;
 use schemas::primitives::OSRDObject as _;
 use serde::Deserialize;
 use serde::Serialize;
@@ -64,10 +64,10 @@ impl utoipa::PartialSchema for Operation {
             Delete,
         }
 
+        #[editoast_derive::title_variants]
         #[derive(ToSchema, Serialize)]
         #[serde(untagged)]
         #[expect(unused, reason = "only used as an OpenAPI schema")]
-        #[schema(title_variants)]
         enum Operation {
             Create {
                 #[schema(inline)]
@@ -149,7 +149,7 @@ impl Operation {
             }
         };
         Infra::changeset()
-            .modified(Utc::now())
+            .modified(Timestamp::now())
             .update(conn, infra_id)
             .await?;
         Ok(res)

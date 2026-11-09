@@ -90,6 +90,14 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
+      postAuthzUsers: build.mutation<PostAuthzUsersApiResponse, PostAuthzUsersApiArg>({
+        query: (queryArg) => ({
+          url: `/authz/users`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1148,6 +1156,14 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetable'],
       }),
+      patchTimetableById: build.mutation<PatchTimetableByIdApiResponse, PatchTimetableByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}`,
+          method: 'PATCH',
+          body: queryArg.timetablePatchForm,
+        }),
+        invalidatesTags: ['timetable'],
+      }),
       getTimetableByIdConflicts: build.query<
         GetTimetableByIdConflictsApiResponse,
         GetTimetableByIdConflictsApiArg
@@ -1749,6 +1765,25 @@ export type PostAuthzUserInfoApiArg = {
   body: {
     identities?: string[];
     ids?: number[];
+  };
+};
+export type PostAuthzUsersApiResponse = /** status 201 User created */ {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+};
+export type PostAuthzUsersApiArg = {
+  /** User to create, with its identities, groups, and roles */
+  body: {
+    groups: number[];
+    identities: string[];
+    name: string;
+    roles: Role[];
   };
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
@@ -2552,6 +2587,13 @@ export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
+};
+export type PatchTimetableByIdApiResponse =
+  /** status 201 Timetable with train schedule ids */ TimetableResult;
+export type PatchTimetableByIdApiArg = {
+  /** A timetable ID */
+  id: number;
+  timetablePatchForm: TimetablePatchForm;
 };
 export type GetTimetableByIdConflictsApiResponse = /** status 200 List of conflicts */ Conflict[];
 export type GetTimetableByIdConflictsApiArg = {
@@ -4387,12 +4429,16 @@ export type Scenario = {
   name: string;
   study_id: number;
   tags: Tags;
-  timetable_id: number;
 };
 export type TimetableType = 'CALENDAR' | 'HOURLY';
+export type TimetableSummary = {
+  id: number;
+  name?: string | null;
+  type: TimetableType;
+};
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
-  timetable_type: TimetableType;
+  timetable_summaries: TimetableSummary[];
   train_schedules_count: number;
 };
 export type ScenarioCreateForm = {
@@ -4402,7 +4448,7 @@ export type ScenarioCreateForm = {
   name: string;
   study_id: number;
   tags?: Tags;
-  timetable_id: number;
+  timetable_ids?: number[];
 };
 export type Study = {
   actual_end_date?: string | null;
@@ -4425,7 +4471,7 @@ export type ScenarioResponse = Scenario & {
   infra_name: string;
   project: Project;
   study: Study;
-  timetable_type: TimetableType;
+  timetable_summaries: TimetableSummary[];
   train_schedules_count: number;
 };
 export type ScenarioPatchForm = {
@@ -4434,6 +4480,7 @@ export type ScenarioPatchForm = {
   infra_id?: number | null;
   name?: string | null;
   tags?: null | Tags;
+  timetable_ids?: number[] | null;
 };
 export type SearchResultItemTrack = {
   infra_id: number;
@@ -5003,10 +5050,15 @@ export type SubCategoryPage = PaginationStats & {
 export type TimetableResult = {
   is_train_schedule_set: boolean;
   timetable_id: number;
+  timetable_name?: string | null;
   timetable_type: TimetableType;
 };
 export type TimetableForm = {
+  timetable_name?: string | null;
   timetable_type: TimetableType;
+};
+export type TimetablePatchForm = {
+  name?: string | null;
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
 export type CoreConflictRequirement = {

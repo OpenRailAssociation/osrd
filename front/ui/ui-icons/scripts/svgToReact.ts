@@ -8,7 +8,11 @@ import {
 } from 'fs';
 import { join } from 'path';
 
-import { load } from 'cheerio';
+import { Window } from 'happy-dom';
+
+const window = new Window();
+const DOMParser = window.DOMParser;
+const parser = new DOMParser();
 
 /**
  * Ggenerating React components from SVG files. Designed to work with a specific directory structure where SVG files are organized by name, variant, and size.
@@ -54,13 +58,12 @@ export default function svgToReact(
   // Function to validate the SVG file structure and extract the SVG path
   const validateSvgAndExtractPath = (svgFilePath: string, height: string) => {
     const svg = readFileSync(svgFilePath, 'utf8');
-    const svgElement = load(svg)('svg');
-    svgElement.find('title').remove();
-    const svgWidth = parseInt(svgElement.attr('width') ?? '0', 10);
-    const svgHeight = parseInt(svgElement.attr('height') ?? '0', 10);
-    const svgViewBox = svgElement.attr('viewBox');
-    const svgPath = svgElement
-      .html()
+    const svgElement = parser.parseFromString(svg, 'image/svg+xml').documentElement;
+    svgElement.querySelectorAll('title').forEach((e) => e.remove());
+    const svgWidth = parseInt(svgElement.getAttribute('width') ?? '0', 10);
+    const svgHeight = parseInt(svgElement.getAttribute('height') ?? '0', 10);
+    const svgViewBox = svgElement.getAttribute('viewBox');
+    const svgPath = svgElement.outerHTML
       ?.split('\n')
       .map((line) => line.trim())
       .join('')

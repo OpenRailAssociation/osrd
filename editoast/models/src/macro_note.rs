@@ -28,7 +28,6 @@ pub mod test {
     use crate::project::Project;
     use crate::scenario::Scenario;
     use crate::study::Study;
-    use crate::timetable::Timetable;
     use database::DbConnectionPool;
     use pretty_assertions::assert_eq;
 
@@ -42,11 +41,6 @@ pub mod test {
             .await
             .expect("Failed to create empty infra");
 
-        let timetable = Timetable::changeset()
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create timetable");
-
         let project = Project::fake("test_project")
             .create(&mut db_pool.get_ok())
             .await
@@ -55,7 +49,7 @@ pub mod test {
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create study");
-        let scenario = Scenario::fake("test_scenario_name", study.id, infra.id, timetable.id)
+        let scenario = Scenario::fake("test_scenario_name", study.id, infra.id)
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create scenario");

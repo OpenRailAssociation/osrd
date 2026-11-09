@@ -1,6 +1,5 @@
-use chrono::Duration as ChronoDuration;
-use chrono::Utc;
 use database::DbConnection;
+use jiff::SignedDuration as JiffDuration;
 
 use models::CatalogEntry;
 use models::ElectricalProfileSet;
@@ -11,6 +10,7 @@ use models::prelude::*;
 use models::project::Project;
 use models::rolling_stock::RollingStock;
 use models::scenario::Scenario;
+use models::scenario_timetable::ScenarioTimetable;
 use models::study::Study;
 use models::tags::Tags;
 use models::timetable::Timetable;
@@ -142,8 +142,8 @@ pub fn simple_paced_train_base() -> TrainSchedule {
     TrainSchedule {
         train_occurrence: schemas::TrainOccurrence::fake(),
         paced: Some(Paced {
-            time_window: ChronoDuration::hours(2).try_into().unwrap(),
-            interval: ChronoDuration::minutes(15).try_into().unwrap(),
+            time_window: JiffDuration::from_hours(2).try_into().unwrap(),
+            interval: JiffDuration::from_mins(15).try_into().unwrap(),
             exceptions: vec![],
         }),
     }
@@ -193,19 +193,13 @@ pub async fn create_train_schedule_exception(
         .expect("Failed to create exception")
 }
 
-pub fn scenario_changeset(
-    name: &str,
-    study_id: i64,
-    timetable_id: i64,
-    infra_id: i64,
-) -> Changeset<Scenario> {
+pub fn scenario_changeset(name: &str, study_id: i64, infra_id: i64) -> Changeset<Scenario> {
     Scenario::changeset()
         .name(name.to_string())
         .description("test_scenario description".to_string())
         .creation_date(Timestamp::now())
         .last_modification(Timestamp::now())
         .tags(Tags::default())
-        .timetable_id(timetable_id)
         .study_id(study_id)
         .infra_id(infra_id)
 }
@@ -217,11 +211,17 @@ pub async fn create_scenario(
     timetable_id: i64,
     infra_id: i64,
 ) -> Scenario {
-    let scenario = scenario_changeset(name, study_id, timetable_id, infra_id);
-    scenario
+    let scenario = scenario_changeset(name, study_id, infra_id)
         .create(conn)
         .await
-        .expect("Failed to create scenario")
+        .expect("Failed to create scenario");
+    ScenarioTimetable::changeset()
+        .scenario_id(scenario.id)
+        .timetable_id(timetable_id)
+        .create(conn)
+        .await
+        .expect("Failed to link scenario to timetable");
+    scenario
 }
 
 pub struct ScenarioFixtureSet {
@@ -329,7 +329,7 @@ pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
 pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkScheduleGroup {
     WorkScheduleGroup::changeset()
         .name("Empty work schedule group".to_string())
-        .creation_date(Utc::now())
+        .creation_date(Timestamp::now())
         .create(conn)
         .await
         .expect("Failed to create empty work schedule group")

@@ -1,7 +1,7 @@
 import { Fragment, useState, type JSX } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { ArrowRight, CheckCircle, Container, Turnaround } from '@osrd-project/ui-icons';
+import { ArrowRight, CheckCircle, Container, Backtrack } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -91,7 +91,7 @@ const StdcmResultsTable = ({
               {index + 1}
               {step.isBackTrack && (
                 <div className="backtrack-icon" data-testid="backtrack-icon">
-                  <Turnaround className="backtrack-svg" />
+                  <Backtrack className="backtrack-svg" />
                 </div>
               )}
             </td>

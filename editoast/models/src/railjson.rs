@@ -1,8 +1,8 @@
-use chrono::Utc;
 use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::infra::major_version;
 
+use crate::Timestamp;
 use crate::infra_objects::*;
 use crate::prelude::*;
 use database::DbConnection;
@@ -127,7 +127,7 @@ pub async fn persist_railjson(
                 .await?;
 
                 Infra::changeset()
-                    .modified(Utc::now())
+                    .modified(Timestamp::now())
                     .update(&mut conn.clone(), infra_id)
                     .await?;
                 Ok(())

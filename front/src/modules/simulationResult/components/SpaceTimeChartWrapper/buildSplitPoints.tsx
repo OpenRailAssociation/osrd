@@ -21,6 +21,7 @@ import type { TimeRange } from 'modules/simulationResult/helpers/getTrainSchedul
 import type { CurveStyleInput } from 'modules/simulationResult/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import type { SelectedTrain } from 'reducers/simulationResults/types';
+import type { Duration } from 'utils/duration';
 import { extractTrainScheduleIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { PanelSelectionMode } from './CurveSelectionSidePanel';
@@ -60,6 +61,7 @@ type BuildSplitPointsProps = {
     showSuggestions: boolean;
   };
   repeatTimeRange?: TimeRange;
+  hourlyTimetableDuration?: Duration;
 };
 
 export function buildSplitPoints({
@@ -79,6 +81,7 @@ export function buildSplitPoints({
   onTrackDragOver,
   linkings,
   repeatTimeRange,
+  hourlyTimetableDuration,
 }: BuildSplitPointsProps): SplitPoint[] {
   if (!occupancyZonesLayers?.length) return [];
 
@@ -164,22 +167,39 @@ export function buildSplitPoints({
       });
 
       if (repeatTimeRange) {
-        occupancyZones = repeatOccupancyZonesInRange(occupancyZones, repeatTimeRange);
+        // A linking is built from its two zones. Repeat one pattern further than the chart on each
+        // side, so that a linking with one zone off screen is still drawn up to the edge.
+        // No linking is longer than a pattern.
+        const range = hourlyTimetableDuration
+          ? {
+              start: repeatTimeRange.start.sub(hourlyTimetableDuration),
+              end: repeatTimeRange.end.add(hourlyTimetableDuration),
+            }
+          : repeatTimeRange;
+        occupancyZones = repeatOccupancyZonesInRange(occupancyZones, range);
       }
 
       const { linkings: waypointLinkings, brokenLinkings } = buildWaypointLinkings({
-        zones: baseZones,
+        zones: occupancyZones,
         possibleLinkings,
         existingLinkings: linkings?.existing ?? [],
-        trainNames: (trainId) => pathsById[trainId]?.label,
         showSuggestions: linkings?.showSuggestions ?? false,
+        hourlyPatternDuration: hourlyTimetableDuration?.ms,
       });
-      const hoveredBadges = brokenLinkings.map((brokenLinking) => ({
-        ...brokenLinking,
-        hover:
-          brokenLinking.id === hoveredBadge?.brokenLinkingId &&
-          brokenLinking.direction === hoveredBadge.direction,
-      }));
+      // A badge names the train missing at this end of the linking:
+      const namedBrokenLinkings = brokenLinkings.flatMap(({ trainId, ...badge }) => {
+        const path = pathsById[trainId];
+        if (!path) return [];
+        return [
+          {
+            ...badge,
+            name: path.label,
+            hover:
+              badge.id === hoveredBadge?.brokenLinkingId &&
+              badge.direction === hoveredBadge.direction,
+          },
+        ];
+      });
       // A linking takes the colors of the train departing after it:
       const coloredLinkings = waypointLinkings.flatMap(({ targetTrainId, ...linking }) => {
         const path = pathsById[targetTrainId];
@@ -217,7 +237,7 @@ export function buildSplitPoints({
             occupancyZones={occupancyZones.filter((zone) => !isDraggingOccupancyZone(zone))}
             draggingOccupancyZones={occupancyZones.filter(isDraggingOccupancyZone)}
             linkings={coloredLinkings}
-            brokenLinkings={hoveredBadges}
+            brokenLinkings={namedBrokenLinkings}
             deleteIconUrl={trashIcon}
             onClose={() => onCloseOccupancyLayer?.(waypointId)}
             onDragOver={onTrackDragOver}

@@ -124,7 +124,8 @@ function computeMovedTrainSchedule(
 const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
   const dispatch = useAppDispatch();
 
-  const isHourlyTimetable = scenario.timetable_type === 'HOURLY';
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const isHourlyTimetable = scenario.timetable_summaries[0].type === 'HOURLY';
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
   const [isTrainSchedulesLoading, setIsTrainSchedulesLoading] = useState(true);
@@ -137,11 +138,14 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infraId, trainSchedulesById);
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const scenarioTimetableId = scenario.timetable_summaries[0].id;
+  const timetableType = scenario.timetable_summaries[0].type;
 
   useEffect(() => {
     const trainSchedulesResult = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
-        timetableId: scenario.timetable_id,
+        timetableId: scenarioTimetableId,
       })
     );
 
@@ -161,7 +165,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     return () => {
       trainSchedulesResult.unsubscribe();
     };
-  }, [scenario.timetable_id, dispatch]);
+  }, [scenarioTimetableId, dispatch]);
 
   const {
     projectedTrainsById,
@@ -172,7 +176,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     updateProjectedTrainExceptions,
   } = useLazyProjectTrains({
     infraId,
-    timetableId: scenario.timetable_id,
+    timetableId: scenarioTimetableId,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     path:
       projectionPath?.pathfindingStatus === 'succeeded'
@@ -192,7 +196,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
   } = useLazySimulateTrains({
     infraId,
     timetableId,
-    timetableType: scenario.timetable_type,
+    timetableType,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
@@ -211,7 +215,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
     isUninitialized,
     isFetching,
   } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    isReadyToFetchConflicts ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
+    isReadyToFetchConflicts ? { id: scenarioTimetableId, infraId: scenario.infra_id } : skipToken
   );
   const conflicts = useMemo(() => conflictsData ?? [], [conflictsData]);
 
@@ -222,10 +226,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetab
       const simulatedTrain = simulatedTrainsById.get(trainSchedule.id);
       if (simulatedTrain) return simulatedTrain;
       const rollingStock = rollingStocksByName.get(trainSchedule.rolling_stock_name);
-      return formatTrainScheduleWithDetails(trainSchedule, scenario.timetable_type, rollingStock);
+      return formatTrainScheduleWithDetails(trainSchedule, timetableType, rollingStock);
     });
     return sortBy(trains, ['startTime', 'name', 'id']);
-  }, [trainSchedules, rollingStocksByName, simulatedTrainsById, scenario.timetable_type]);
+  }, [trainSchedules, rollingStocksByName, simulatedTrainsById, timetableType]);
 
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),

@@ -33,6 +33,8 @@ describe('formatTrainSchedulePayload', () => {
         stopFor: null,
         theoreticalMargin: '0%',
         receptionSignal: null,
+        referenceBaseArrival: null,
+        referencePosition: null,
       },
       {
         key: '1-1',
@@ -50,6 +52,8 @@ describe('formatTrainSchedulePayload', () => {
         stopFor: null,
         theoreticalMargin: null,
         receptionSignal: 'OPEN',
+        referenceBaseArrival: null,
+        referencePosition: null,
       },
     ],
     constraintDistribution: 'MARECO',

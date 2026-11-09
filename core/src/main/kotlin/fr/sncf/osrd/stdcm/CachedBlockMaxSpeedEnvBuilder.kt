@@ -42,7 +42,7 @@ import kotlin.math.min
 data class CachedBlockMaxSpeedEnvBuilder(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
-    private val consistSchedule: ConsistSchedule,
+    val consistSchedule: ConsistSchedule,
     private val steps: List<ExplorerStep>,
     private val timeStep: Double,
     private val comfort: Comfort? = null,
@@ -132,8 +132,8 @@ data class CachedBlockMaxSpeedEnvBuilder(
         step: Int,
         endSpeed: Double?,
         allowanceValue: AllowanceValue? = null,
-        endOffset: Offset<Block> = blockInfra.getBlockLength(block),
         startOffset: Offset<Block> = Offset.zero(),
+        endOffset: Offset<Block> = blockInfra.getBlockLength(block),
     ): Double {
         if (endOffset.distance == 0.meters) return 0.0
         if (startOffset >= endOffset) return 0.0

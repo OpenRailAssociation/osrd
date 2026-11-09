@@ -1,4 +1,5 @@
 {
+  "timetable_type": "CALENDAR",
   "macro_nodes": [
     {
       "ngeId": 6,
@@ -89,7 +90,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT1H", "time_window": "PT2H", "exceptions": [] }
+      "paced": { "interval": "PT1H", "time_window": "PT24H", "exceptions": [] }
     }
   ],
   "round_trips": [[0, null]]

@@ -200,10 +200,6 @@
               "question": "When I run my simulation, is the capacity blocked?"
             },
             {
-              "answer": "LMR does not allow requests for turnarounds. These developments will nevertheless be taken into account for future versions of the app.",
-              "question": "Is it possible to make requests for turnarounds in the app?"
-            },
-            {
               "answer": "LMR does not take side tracks into account yet. These developments will nevertheless be taken into account for future versions of the tool.",
               "question": "Does the tool take side tracks into account?"
             }
@@ -243,7 +239,7 @@
       "content": [
         {
           "type": "text",
-          "value": "Indicate the origin, destination and any stopping points on your route (excluding turn-offs) to obtain a simulation."
+          "value": "Indicate the origin, destination and any stopping points on your route to obtain a simulation."
         },
         {
           "type": "text",
@@ -302,10 +298,6 @@
             {
               "type": "text",
               "value": "In the case of driver changeover or service stop, enter the minimum stop time required, in minutes. To find more solutions, the tool can extend these stops in the simulation."
-            },
-            {
-              "type": "text",
-              "value": "N.B.: Turnarounds are not yet taken into account in the app."
             }
           ],
           "title": "Intermediate OP"

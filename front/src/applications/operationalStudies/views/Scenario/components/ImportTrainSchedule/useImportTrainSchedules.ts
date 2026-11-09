@@ -5,15 +5,17 @@ import { useSelector } from 'react-redux';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
+import { computeHourlyTimetableDuration } from 'modules/trainSchedule/helpers/hourlyTimetable';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import { adaptPayloadForTargetTimetable, getPayloadTimetableType } from './helpers/adaptJsonImport';
-import { processJsonFile } from './helpers/parseJson';
+import { isNgeDto, processJsonFile } from './helpers/parseJson';
 import locallyProcessXmlFile from './helpers/parseXML';
 import { postFullImportPayload } from './helpers/postPayloads';
 
@@ -48,26 +50,34 @@ const useImportTrainSchedules = () => {
     }
   };
 
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableId = scenario.timetable_summaries[0].id;
+  const timetableType = scenario.timetable_summaries[0].type;
+
   const processFile = async (file: File): Promise<TimetableJsonPayload> => {
     const fileContent = await file.text();
-    const jsonPayload = processJsonFile(fileContent, file.type, t);
-    if (jsonPayload !== null) return jsonPayload;
-    return await processXmlFile(file, fileContent);
+    const jsonContent = processJsonFile(fileContent, file.type, t);
+    if (jsonContent === null) return await processXmlFile(file, fileContent);
+    if (isNgeDto(jsonContent)) {
+      return convertNgeDtoToOsrd(jsonContent, {
+        timetableType,
+        hourlyTimetableDuration: computeHourlyTimetableDuration([...trainSchedules.values()]),
+      });
+    }
+    return jsonContent;
   };
 
   const importFile = async (file: File) => {
     try {
       const rawPayload = await processFile(file);
       const timetableJsonPayload =
-        getPayloadTimetableType(rawPayload) === scenario.timetable_type
+        getPayloadTimetableType(rawPayload) === timetableType
           ? rawPayload
-          : adaptPayloadForTargetTimetable(rawPayload, scenario.timetable_type, [
-              ...trainSchedules.values(),
-            ]);
+          : adaptPayloadForTargetTimetable(rawPayload, timetableType, [...trainSchedules.values()]);
 
       const importedTrainSchedules = await postFullImportPayload(
         sandboxId,
-        scenario.timetable_id,
+        timetableId,
         scenario.id,
         timetableJsonPayload,
         subCategories,

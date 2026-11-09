@@ -19,6 +19,8 @@ describe('formatSchedule', () => {
           stopFor: null,
           theoreticalMargin: null,
           receptionSignal: null,
+          referenceBaseArrival: null,
+          referencePosition: null,
         },
       ];
       const result = formatSchedule(pathSteps);
@@ -36,6 +38,8 @@ describe('formatSchedule', () => {
           arrival: Duration.parse('PT60S'),
           stopFor: Duration.zero,
           receptionSignal: 'OPEN',
+          referenceBaseArrival: null,
+          referencePosition: null,
         },
       ];
       const result = formatSchedule(pathSteps);

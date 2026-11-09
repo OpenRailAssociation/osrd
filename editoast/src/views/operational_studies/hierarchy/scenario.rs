@@ -15,6 +15,7 @@ use models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
+use std::ops::DerefMut as _;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -35,9 +36,10 @@ use models::Infra;
 use models::Timestamp;
 use models::project::Project;
 use models::scenario::Scenario;
+use models::scenario_timetable::ScenarioTimetable;
 use models::study::Study;
 use models::tags::Tags;
-use models::timetable::Timetable;
+use models::timetable::TimetableSummary;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioIdParam {
@@ -51,7 +53,8 @@ pub(in crate::views) struct ScenarioCreateForm {
     #[serde(default)]
     pub description: String,
     pub infra_id: i64,
-    pub timetable_id: i64,
+    #[serde(default)]
+    pub timetable_ids: Vec<i64>,
     pub study_id: i64,
     #[serde(default)]
     pub tags: Tags,
@@ -66,7 +69,6 @@ impl ScenarioCreateForm {
             .creation_date(Timestamp::now())
             .last_modification(Timestamp::now())
             .infra_id(self.infra_id)
-            .timetable_id(self.timetable_id)
             .tags(self.tags)
             .electrical_profile_set_id(self.electrical_profile_set_id)
             .study_id(self.study_id)
@@ -83,10 +85,6 @@ pub enum ScenarioError {
     #[error("Scenario '{scenario_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { scenario_id: i64 },
-
-    #[error("Timetable '{timetable_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    TimetableNotFound { timetable_id: i64 },
 
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
@@ -126,7 +124,7 @@ pub struct ScenarioWithDetails {
     pub scenario: Scenario,
     pub infra_name: String,
     pub train_schedules_count: i64,
-    pub timetable_type: schemas::timetable_type::TimetableType,
+    pub timetable_summaries: Vec<TimetableSummary>,
 }
 
 impl ScenarioWithDetails {
@@ -134,17 +132,13 @@ impl ScenarioWithDetails {
         scenario: Scenario,
         conn: &mut DbConnection,
     ) -> Result<Self, ScenarioError> {
-        let timetable = Timetable::retrieve_or_fail(conn.clone(), scenario.timetable_id, || {
-            ScenarioError::TimetableNotFound {
-                timetable_id: scenario.timetable_id,
-            }
-        })
-        .await?;
+        let timetable_summaries = TimetableSummary::from_scenario(&scenario, conn).await?;
+
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
             train_schedules_count: scenario.train_schedules_count(conn).await?,
             scenario,
-            timetable_type: timetable.timetable_type.0,
+            timetable_summaries,
         })
     }
 }
@@ -157,7 +151,7 @@ pub struct ScenarioResponse {
     pub train_schedules_count: i64,
     pub project: Project,
     pub study: Study,
-    pub timetable_type: schemas::timetable_type::TimetableType,
+    pub timetable_summaries: Vec<TimetableSummary>,
 }
 
 impl ScenarioResponse {
@@ -172,7 +166,7 @@ impl ScenarioResponse {
             train_schedules_count: scenarios_with_details.train_schedules_count,
             project,
             study,
-            timetable_type: scenarios_with_details.timetable_type,
+            timetable_summaries: scenarios_with_details.timetable_summaries,
         }
     }
 }
@@ -193,6 +187,7 @@ pub(in crate::views) async fn create(
 ) -> Result<impl IntoResponse> {
     let infra_id = data.infra_id;
     let study_id = data.study_id;
+    let timetable_ids = data.timetable_ids.clone();
     let scenario_cs = data.into_changeset();
 
     let details = Study::transactional_content_update(
@@ -205,6 +200,13 @@ pub(in crate::views) async fn create(
             .await?;
 
             let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
+            for timetable_id in timetable_ids {
+                ScenarioTimetable::changeset()
+                    .scenario_id(scenario.id)
+                    .timetable_id(timetable_id)
+                    .create(&mut conn)
+                    .await?;
+            }
 
             let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
             Ok::<_, InternalError>(details)
@@ -265,6 +267,7 @@ pub(in crate::views) struct ScenarioPatchForm {
     pub infra_id: Option<i64>,
     #[serde(default, with = "double_option")]
     pub electrical_profile_set_id: Option<Option<i64>>,
+    pub timetable_ids: Option<Vec<i64>>,
 }
 
 impl ScenarioPatchForm {
@@ -304,6 +307,27 @@ pub(in crate::views) async fn patch(
                     infra_id,
                 })
                 .await?;
+            }
+
+            if let Some(ref timetable_ids) = form.timetable_ids {
+                use database::tables::scenario_timetable::dsl;
+                use diesel::prelude::*;
+                diesel_async::RunQueryDsl::execute(
+                    diesel::delete(
+                        dsl::scenario_timetable.filter(dsl::scenario_id.eq(scenario_id)),
+                    ),
+                    conn.write().await.deref_mut(),
+                )
+                .await
+                .map_err(|err| ScenarioError::Database(err.into()))?;
+
+                let scenario_timetable_cs = timetable_ids.iter().map(|timetable_id| {
+                    ScenarioTimetable::changeset()
+                        .scenario_id(scenario_id)
+                        .timetable_id(*timetable_id)
+                });
+                ScenarioTimetable::create_batch::<_, Vec<_>>(&mut conn, scenario_timetable_cs)
+                    .await?;
             }
 
             let scenario_cs = form.into_changeset();
@@ -686,7 +710,7 @@ mod tests {
                 "name": scenario_name,
                 "description": scenario_description,
                 "infra_id": scenario_infra_id,
-                "timetable_id": scenario_timetable_id,
+                "timetable_ids": [scenario_timetable_id],
                 "tags": scenario_tags,
                 "study_id": study.id
             }))
@@ -697,7 +721,7 @@ mod tests {
         assert_eq!(response.scenario.name, scenario_name);
         assert_eq!(response.scenario.description, scenario_description);
         assert_eq!(response.scenario.infra_id, scenario_infra_id);
-        assert_eq!(response.scenario.timetable_id, scenario_timetable_id);
+        assert_eq!(response.timetable_summaries[0].id, scenario_timetable_id);
         assert_eq!(response.scenario.tags, scenario_tags);
         assert_eq!(response.scenario.study_id, study.id);
 
@@ -709,9 +733,140 @@ mod tests {
         assert_eq!(created_scenario.name, scenario_name);
         assert_eq!(created_scenario.description, scenario_description);
         assert_eq!(created_scenario.infra_id, scenario_infra_id);
-        assert_eq!(created_scenario.timetable_id, scenario_timetable_id);
+        assert_eq!(
+            created_scenario
+                .timetable_ids(&mut pool.get_ok())
+                .await
+                .expect("Failed to retrieve scenario's timetables"),
+            vec![scenario_timetable_id]
+        );
         assert_eq!(created_scenario.tags, scenario_tags);
         assert_eq!(created_scenario.study_id, study.id);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_scenario_with_multiple_timetables() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
+        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&mut pool.get_ok()).await;
+        let first_timetable = create_timetable(&mut pool.get_ok()).await;
+        let second_timetable = create_timetable(&mut pool.get_ok()).await;
+        let expected_timetable_ids = vec![first_timetable.id, second_timetable.id];
+
+        let response: ScenarioWithDetails = app
+            .post(&scenario_url(None))
+            .json(&json!({
+                "name": "scenario with multiple timetables",
+                "infra_id": infra.id,
+                "timetable_ids": expected_timetable_ids.clone(),
+                "study_id": study.id
+            }))
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        let mut response_timetable_ids: Vec<i64> = response
+            .timetable_summaries
+            .iter()
+            .map(|summary| summary.id)
+            .collect();
+        response_timetable_ids.sort_unstable();
+        assert_eq!(response_timetable_ids, expected_timetable_ids);
+
+        let created_scenario = Scenario::retrieve(pool.get_ok(), response.scenario.id)
+            .await
+            .expect("Failed to retrieve scenario")
+            .expect("Scenario not found");
+        assert_eq!(
+            created_scenario
+                .timetable_ids(&mut pool.get_ok())
+                .await
+                .expect("Failed to retrieve scenario's timetables"),
+            expected_timetable_ids
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn post_scenario_without_timetables() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
+        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&mut pool.get_ok()).await;
+
+        let response: ScenarioWithDetails = app
+            .post(&scenario_url(None))
+            .json(&json!({
+                "name": "scenario without timetables",
+                "infra_id": infra.id,
+                "study_id": study.id
+            }))
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        assert!(response.timetable_summaries.is_empty());
+        assert_eq!(response.train_schedules_count, 0);
+
+        let created_scenario = Scenario::retrieve(pool.get_ok(), response.scenario.id)
+            .await
+            .expect("Failed to retrieve scenario")
+            .expect("Scenario not found");
+        assert!(
+            created_scenario
+                .timetable_ids(&mut pool.get_ok())
+                .await
+                .expect("Failed to retrieve scenario's timetables")
+                .is_empty()
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn patch_scenario_timetables_later() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
+        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&mut pool.get_ok()).await;
+        let timetable0 = create_timetable(&mut pool.get_ok()).await;
+
+        // Insert scenario
+        let created_scenario: ScenarioWithDetails = app
+            .post(&scenario_url(None))
+            .json(&json!({
+                "name": "scenario name",
+                "infra_id": infra.id,
+                "study_id": study.id,
+                "timetable_ids": [timetable0.id],
+            }))
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+        assert_eq!(created_scenario.timetable_summaries.len(), 1);
+
+        let timetable1 = create_timetable(&mut pool.get_ok()).await;
+        let timetable2 = create_timetable(&mut pool.get_ok()).await;
+
+        let updated_scenario: ScenarioWithDetails = app
+            .patch(&scenario_url(Some(created_scenario.scenario.id)))
+            .json(&json!({
+                "name": "scenario name",
+                "infra_id": infra.id,
+                "study_id": study.id,
+                "timetable_ids": [timetable1.id, timetable2.id]
+            }))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(updated_scenario.timetable_summaries.len(), 2);
+        assert_eq!(updated_scenario.timetable_summaries[0].id, timetable1.id);
+        assert_eq!(updated_scenario.timetable_summaries[1].id, timetable2.id);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

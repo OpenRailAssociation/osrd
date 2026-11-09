@@ -44,7 +44,8 @@ class DummyInfra : RawInfra, BlockInfra {
     /**
      * Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
      * with the given maximum speed and signaling system. If the nodes do not exist they are
-     * created.
+     * created. If `oppositeOf` is set, the new block is located on the same chunk as the given
+     * block, in the opposite direction (used for backtracks).
      */
     fun addBlock(
         entry: String,
@@ -54,6 +55,7 @@ class DummyInfra : RawInfra, BlockInfra {
         signalingSystemName: String = BAL.id,
         detailedSpeedLimits: DistanceRangeMap<SpeedLimitProperty>? = null,
         gradient: Double = 0.0,
+        oppositeOf: BlockId? = null,
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
         val entryId = getOrCreateDetectorId(entry)
@@ -73,6 +75,7 @@ class DummyInfra : RawInfra, BlockInfra {
                 gradient,
                 signalingSystemId,
                 signalingSystemName,
+                oppositeOf = oppositeOf,
             ),
         )
         entryMap.put(entryId, id)
@@ -110,6 +113,7 @@ class DummyInfra : RawInfra, BlockInfra {
         var voltage: String = "",
         var neutralSectionForward: NeutralSection? = null,
         var neutralSectionBackward: NeutralSection? = null,
+        val oppositeOf: BlockId? = null,
     )
 
     // region inherited
@@ -214,11 +218,15 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getChunksOnRoute(route: RouteId): List<DirTrackChunkId> {
-        return makeDirIndexList(route)
+        return getTrackChunksFromBlock(BlockId(route.index))
     }
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): List<RouteId> {
-        return makeIndexList(trackChunk.value)
+        val res = mutableStaticIdxArrayListOf<Route>()
+        for (block in getBlocksFromTrackChunk(trackChunk.value, trackChunk.direction)) res.add(
+            StaticIdx(block.index),
+        )
+        return res
     }
 
     override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): List<RouteId> {
@@ -274,7 +282,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getZonePathChunks(zonePath: ZonePathId): List<DirTrackChunkId> {
-        return makeDirIndexList(zonePath)
+        return getTrackChunksFromBlock(BlockId(zonePath.index))
     }
 
     override val zones: StaticIdxSpace<Zone>
@@ -548,13 +556,20 @@ class DummyInfra : RawInfra, BlockInfra {
         trackChunk: TrackChunkId,
         direction: Direction,
     ): MutableStaticIdxArraySet<Block> {
-        if (direction == Direction.DECREASING)
-            return mutableStaticIdxArraySetOf() // TODO: to implement eventually
+        if (direction == Direction.DECREASING) {
+            val res = mutableStaticIdxArraySetOf<Block>()
+            for ((i, desc) in blockPool.withIndex()) if (desc.oppositeOf?.index == trackChunk.index)
+                res.add(BlockId(i.toUInt()))
+            return res
+        }
         return mutableStaticIdxArraySetOf(StaticIdx(trackChunk.index))
     }
 
     override fun getTrackChunksFromBlock(block: BlockId): List<DirTrackChunkId> {
-        return makeDirIndexList(block)
+        val opposite = blockPool[block.index].oppositeOf ?: return makeDirIndexList(block)
+        val res = MutableDirStaticIdxArrayList<TrackChunk>()
+        res.add(DirStaticIdx(StaticIdx(opposite.index), Direction.DECREASING))
+        return res
     }
 
     override fun getBlockLength(block: BlockId): Length<Block> {

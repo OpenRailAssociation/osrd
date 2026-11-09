@@ -48,7 +48,7 @@ type TrainServiceFormProps = {
   ) => void;
   onPersistTrain: ExpandedTrainFormProps['onPersistTrain'];
   revertServiceChange: () => void;
-  hasLinkings: boolean;
+  linkingsCount: number;
 };
 
 export default function TrainServiceForm({
@@ -61,12 +61,13 @@ export default function TrainServiceForm({
   onFieldImmediateChange,
   onPersistTrain,
   revertServiceChange,
-  hasLinkings,
+  linkingsCount,
 }: TrainServiceFormProps) {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const displayStartTimeWrappedWarning = useStartTimeWrappedWarning();
   const { scenario } = useScenarioContext();
-  const timetableType = scenario.timetable_type;
+  // TODO: adapt once the front handles multiple timetable per scenario
+  const timetableType = scenario.timetable_summaries[0].type;
 
   const [extraOccurrencesVisible, setExtraOccurrencesVisible] = useState(false);
 
@@ -271,7 +272,7 @@ export default function TrainServiceForm({
       {isServiceChangeWarningDialogVisible && (
         <ServiceChangeWarningDialog
           exceptionsCount={train.paced!.exceptions.length}
-          hasLinkings={hasLinkings}
+          linkingsCount={linkingsCount}
           onCancel={revertServiceChange}
           onConfirm={confirmServiceChange}
         />

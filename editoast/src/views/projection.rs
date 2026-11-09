@@ -473,7 +473,7 @@ impl TrainToProjectOnOperationalPoint {
                 schedule
                     .stop_for
                     .as_ref()
-                    .map(|stop_for| (&schedule.at, stop_for.num_milliseconds() as u64))
+                    .map(|stop_for| (&schedule.at, stop_for.as_millis() as u64))
             })
             .collect();
 
@@ -485,7 +485,7 @@ impl TrainToProjectOnOperationalPoint {
                 schedule
                     .arrival
                     .as_ref()
-                    .map(|arrival| (&schedule.at, arrival.num_milliseconds() as u64))
+                    .map(|arrival| (&schedule.at, arrival.as_millis() as u64))
             })
             .collect::<HashMap<_, _>>();
 
@@ -550,9 +550,7 @@ impl TrainToProjectOnOperationalPoint {
                     || &schedule.at == first_path_item_key
                     || schedule.arrival.is_some()
             })
-            .filter_map(|schedule| {
-                Some((&schedule.at, schedule.stop_for?.num_milliseconds() as u64))
-            })
+            .filter_map(|schedule| Some((&schedule.at, schedule.stop_for?.as_millis() as u64)))
             .collect();
 
         let refs = ts
@@ -608,7 +606,7 @@ impl TrainToProjectOnOperationalPoint {
                 schedule
                     .stop_for
                     .as_ref()
-                    .map(|stop_for| (&schedule.at, stop_for.num_milliseconds() as u64))
+                    .map(|stop_for| (&schedule.at, stop_for.as_millis() as u64))
             })
             .collect();
         let CompleteReportTrain { report_train, .. } = sim.final_output;
@@ -889,12 +887,12 @@ fn extract_curve_for_invalid_train_with_sim<T: TrainScheduleLike>(
         else {
             continue;
         };
-        last_scheduled_time = arrival.num_milliseconds() as u64;
+        last_scheduled_time = arrival.as_millis() as u64;
         positions.push(*path_item_position);
         times.push(last_scheduled_time);
         if let Some(stop_for) = stop_for {
             positions.push(*path_item_position);
-            times.push((arrival.num_milliseconds() + stop_for.num_milliseconds()) as u64);
+            times.push((arrival.as_millis() + stop_for.as_millis()) as u64);
         }
     }
 

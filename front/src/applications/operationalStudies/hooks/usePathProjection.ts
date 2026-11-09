@@ -126,12 +126,12 @@ const usePathProjection = (
     : skipToken;
   const baseTrainScheduleArg = exceptionId ? { id: rawTrainScheduleId!, infraId } : skipToken;
 
-  const { data: pathfinding } =
+  const { currentData: pathfinding } =
     osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(trainScheduleArg);
   const { currentData: baseTrainSchedulePath } =
     osrdEditoastApi.endpoints.getTrainSchedulesByIdPath.useQuery(baseTrainScheduleArg);
 
-  const { data: pathProperties } =
+  const { currentData: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
         ? {
@@ -173,7 +173,7 @@ const usePathProjection = (
     return { opRefs: refs, opRefPathItemKeys: refPathItemKeys };
   }, [pathUsedForProjection]);
 
-  const { data: matchedOperationalPoints } =
+  const { currentData: matchedOperationalPoints } =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
       opRefs.length > 0
         ? {
@@ -297,14 +297,13 @@ const usePathProjection = (
       operationalPointReferences: opRefs,
       operationalPointDistances,
     };
-    // TODO: Remove this lint by moving the related API operation, opRefs and opRefPathItemKeys in their own hook
-    //       so their updates are synchronized together (see usePathOps for the same problem)
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [
     pathfinding,
     pathProperties,
     matchedOperationalPoints,
     pathUsedForProjection,
+    opRefs,
+    opRefPathItemKeys,
     projectingOnSimulatedPathException,
     t,
   ]);

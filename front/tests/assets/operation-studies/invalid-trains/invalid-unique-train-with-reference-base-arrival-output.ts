@@ -18,9 +18,9 @@ export const invalidUniqueTrainWithReferenceBaseArrivalOutput: TimesStopsTableRo
     powerRestriction: '',
     margin: {
       requestedTheoretical: '5%',
-      computedTheoretical: '00m04s',
+      computedTheoretical: '00m03s',
       real: '-01m00s',
-      difference: '-01m04s',
+      difference: '-01m03s',
     },
     timeFromAboveWaypoint: '',
     totalArrivalTime: '',

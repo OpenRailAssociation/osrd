@@ -153,7 +153,8 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
           if (scenarios) {
             // For each scenario in the study, clean the local storage if a manchette is saved
             scenarios.forEach((scenario) => {
-              cleanScenarioLocalStorage(scenario.timetable_id);
+              // TODO: adapt once the front handles multiple timetable per scenario
+              cleanScenarioLocalStorage(scenario.timetable_summaries[0].id);
             });
           }
 

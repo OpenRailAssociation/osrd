@@ -5,14 +5,14 @@ import { useTranslation } from 'react-i18next';
 
 type ServiceChangeWarningDialogProps = {
   exceptionsCount: number;
-  hasLinkings: boolean;
+  linkingsCount: number;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
 export const ServiceChangeWarningDialog = ({
   exceptionsCount,
-  hasLinkings,
+  linkingsCount,
   onCancel,
   onConfirm,
 }: ServiceChangeWarningDialogProps) => {
@@ -43,17 +43,23 @@ export const ServiceChangeWarningDialog = ({
     [onCancel, onConfirm, t]
   );
 
+  const explanationKey =
+    linkingsCount === 0
+      ? 'explanationsExceptions'
+      : exceptionsCount === 0
+        ? 'explanationsLinkings'
+        : 'explanationsExceptionsAndLinkings';
+
   return (
     <Dialog header={header()} footer={footer()}>
       <p
         className="service-change-warning-explanations"
         data-testid="train-header-service-change-explanations"
       >
-        {exceptionsCount === 0
-          ? t('explanationsLinkings')
-          : t(hasLinkings ? 'explanationsWithLinkings' : 'explanations', {
-              count: exceptionsCount,
-            })}
+        {t(explanationKey, {
+          exceptions: t('exceptionsCount', { count: exceptionsCount }),
+          linkings: t('linkingsCount', { count: linkingsCount }),
+        })}
       </p>
     </Dialog>
   );

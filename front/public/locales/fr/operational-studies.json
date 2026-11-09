@@ -522,12 +522,14 @@
       "serviceChangeWarning": {
         "cancel": "Annuler",
         "confirm": "Confirmer",
-        "explanationsLinkings": "Modifier la cadence ou la plage de répétition supprimera les enchaînements. Voulez-vous continuer ?",
-        "explanationsWithLinkings_one": "Modifier la cadence ou la plage de répétition supprimera une exception et les enchaînements. Voulez-vous continuer ?",
-        "explanationsWithLinkings_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions et les enchaînements. Voulez-vous continuer ?",
-        "explanations_one": "Modifier la cadence ou la plage de répétition supprimera une exception. Voulez-vous continuer ?",
-        "explanations_other": "Modifier la cadence ou la plage de répétition supprimera {{count}} exceptions. Voulez-vous continuer ?",
-        "header": "Modèle de service modifié"
+        "exceptionsCount_one": "une exception",
+        "exceptionsCount_other": "{{count}} exceptions",
+        "explanationsExceptions": "Modifier la cadence ou la plage de répétition supprimera {{exceptions}}. Voulez-vous continuer ?",
+        "explanationsExceptionsAndLinkings": "Modifier la cadence ou la plage de répétition supprimera {{exceptions}} et {{linkings}}. Voulez-vous continuer ?",
+        "explanationsLinkings": "Modifier la cadence ou la plage de répétition supprimera {{linkings}}. Voulez-vous continuer ?",
+        "header": "Modèle de service modifié",
+        "linkingsCount_one": "un enchaînement",
+        "linkingsCount_other": "{{count}} enchaînements"
       },
       "serviceModelTrain": "Train modèle de mission",
       "serviceOccurrence": "Occurrence de mission"

@@ -49,7 +49,9 @@
       "UnknownResource": "Ressource inconnue",
       "UnknownResourceType": "Type de ressource inconnu",
       "UnknownSubject": "Sujet inconnu",
-      "UnknownUser": "Utilisateur inconnu '{{id}}'"
+      "UnknownUser": "Utilisateur inconnu '{{id}}'",
+      "identity_already_exists": "L'identité utilisateur '{{identity}}' existe déjà",
+      "no_identity_provided": "L'utilisateur doit avoir au moins une identité"
     },
     "authz_legacy": {
       "Openfga": "Erreur interne",
@@ -69,8 +71,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} n'a pu être trouvé nulle part dans le cache de l'infrastructure"
     },
     "catalog_entry": {
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Entrée de catalogue '{{catalog_entry_id}}' non trouvée"
+      "not_found": "Entrée de catalogue '{{catalog_entry_id}}' non trouvée"
     },
     "core": {
       "pathfinding": {
@@ -216,8 +217,7 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Scénario non trouvé",
-      "StudyNotFound": "Étude '{{study_id}}' non trouvée",
-      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+      "StudyNotFound": "Étude '{{study_id}}' non trouvée"
     },
     "search": {
       "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",

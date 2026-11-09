@@ -357,8 +357,8 @@ mod tests {
     use crate::views::train_schedule_set::TrainScheduleSetForm;
     use crate::views::train_schedule_set::TrainScheduleSetResponse;
     use crate::views::train_schedule_set::TrainScheduleSetUpdateForm;
-    use chrono::Duration;
     use database::DbConnection;
+    use jiff::SignedDuration;
     use models::CatalogEntry;
     use models::Timetable;
     use models::TrainScheduleSet;
@@ -391,9 +391,9 @@ mod tests {
         let train_schedule_1 = simple_paced_train_base();
         let mut train_schedule_2 = simple_paced_train_base();
         train_schedule_2.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_2.paced.as_mut().unwrap().interval =
-            Duration::seconds(30).try_into().unwrap();
+            SignedDuration::from_secs(30).try_into().unwrap();
 
         let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
 
@@ -444,13 +444,13 @@ mod tests {
         train_schedule_1.train_occurrence.start_time = second::i64::new(5 * 60);
         train_schedule_2.train_occurrence.start_time = second::i64::new(5 * 60);
         train_schedule_1.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_1.paced.as_mut().unwrap().interval =
-            Duration::minutes(30).try_into().unwrap();
+            SignedDuration::from_mins(30).try_into().unwrap();
         train_schedule_2.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_2.paced.as_mut().unwrap().interval =
-            Duration::minutes(15).try_into().unwrap();
+            SignedDuration::from_mins(15).try_into().unwrap();
 
         let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
 
@@ -491,9 +491,9 @@ mod tests {
         train_schedule_2.train_occurrence.start_time = second::i64::new(5 * 60);
         train_schedule_1.paced = None;
         train_schedule_2.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_2.paced.as_mut().unwrap().interval =
-            Duration::minutes(30).try_into().unwrap();
+            SignedDuration::from_mins(30).try_into().unwrap();
 
         let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
 
@@ -531,9 +531,9 @@ mod tests {
         let mut train_schedule_1 = simple_paced_train_base();
         train_schedule_1.train_occurrence.start_time = second::i64::new(121 * 60);
         train_schedule_1.paced.as_mut().unwrap().time_window =
-            Duration::minutes(120).try_into().unwrap();
+            SignedDuration::from_mins(120).try_into().unwrap();
         train_schedule_1.paced.as_mut().unwrap().interval =
-            Duration::minutes(30).try_into().unwrap();
+            SignedDuration::from_mins(30).try_into().unwrap();
 
         let train_schedules = vec![train_schedule_1.clone()];
 
@@ -562,9 +562,9 @@ mod tests {
         let train_schedule_1 = simple_paced_train_base();
         let mut train_schedule_2 = simple_paced_train_base();
         train_schedule_2.paced.as_mut().unwrap().time_window =
-            Duration::minutes(90).try_into().unwrap();
+            SignedDuration::from_mins(90).try_into().unwrap();
         train_schedule_2.paced.as_mut().unwrap().interval =
-            Duration::seconds(45).try_into().unwrap();
+            SignedDuration::from_secs(45).try_into().unwrap();
 
         let _: Vec<TrainScheduleResponse> = app
             .post(

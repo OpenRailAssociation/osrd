@@ -1,6 +1,7 @@
 use authz::v2;
 use core_client::Headers;
 use models::TrainScheduleLinking;
+use schemas::primitives::duration::pg_interval_to_jiff_duration;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -12,9 +13,9 @@ use axum::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use chrono::Duration;
 use itertools::Itertools as _;
 use itertools::izip;
+use jiff::SignedDuration;
 use models::prelude::*;
 use schemas::timetable_type::TimetableType;
 use serde::Deserialize;
@@ -162,17 +163,17 @@ pub(super) fn build_conflict_core_request(
 
 pub(super) fn compute_hourly_pattern_period(
     paced_trains: &[models::TrainSchedule],
-) -> Option<Duration> {
+) -> Option<SignedDuration> {
     let paced_train_lcm = paced_trains
         .iter()
         .map(|paced_train| {
-            paced_train
+            let time_window = paced_train
                 .time_window
-                .expect("a paced_train should have a time_window")
-                .num_milliseconds()
+                .expect("a paced_train should have a time_window");
+            pg_interval_to_jiff_duration(time_window).as_millis() as i64
         })
         .reduce(lcm)?;
-    Some(Duration::milliseconds(paced_train_lcm))
+    Some(SignedDuration::from_millis(paced_train_lcm))
 }
 
 fn gcd(a: i64, b: i64) -> i64 {
@@ -206,9 +207,9 @@ pub(super) fn build_cyclic_occurrence_requirements(
     train_id: OccurrenceId,
     spacing_requirements: Vec<SpacingRequirement>,
     routing_requirements: Vec<RoutingRequirement>,
-    timetable_period: Duration,
+    timetable_period: SignedDuration,
 ) -> Vec<(OccurrenceId, TrainRequirements)> {
-    let period_ms = timetable_period.num_milliseconds() as u64;
+    let period_ms = timetable_period.as_millis() as u64;
 
     vec![(
         train_id.clone(),
@@ -343,10 +344,10 @@ pub(in crate::views) async fn conflicts(
     };
     // Reject a timetable period longer than 24h: an hourly timetable is not meant to span more than a day
     if let Some(timetable_period) = timetable_period
-        && timetable_period > Duration::hours(24)
+        && timetable_period > SignedDuration::from_hours(24)
     {
         return Err(TimetableError::InvalidPeriod {
-            timetable_period: timetable_period.num_hours(),
+            timetable_period: timetable_period.as_hours(),
         }
         .into());
     }
@@ -438,11 +439,12 @@ pub(in crate::views) async fn conflicts(
                 None => single_period_occurrences,
                 Some(period) => {
                     // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
-                    let time_window_ms = ts
+                    let time_window_interval = ts
                         .time_window
-                        .expect("all time_window are defined when timetable_period exists")
-                        .num_milliseconds();
-                    let repetition = (period.num_milliseconds() / time_window_ms) as usize;
+                        .expect("all time_window are defined when timetable_period exists");
+                    let time_window_ms =
+                        pg_interval_to_jiff_duration(time_window_interval).as_millis() as i64;
+                    let repetition = (period.as_millis() as i64 / time_window_ms) as usize;
                     populate_timetable(single_period_occurrences, repetition, time_window_ms)
                 }
             }
@@ -785,6 +787,7 @@ mod tests {
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
     use core_client::simulation::SpeedLimitProperties;
+    use jiff::SignedDuration;
     use models::train_schedule::TrainScheduleChangeset;
     use reqwest::StatusCode;
     use rstest::rstest;
@@ -1010,8 +1013,9 @@ mod tests {
             let mut base = simple_paced_train_base();
             base.train_occurrence.start_time = units::millisecond::i64::new(0);
             base.paced.as_mut().unwrap().time_window =
-                Duration::hours(time_window).try_into().unwrap();
-            base.paced.as_mut().unwrap().interval = Duration::hours(1).try_into().unwrap();
+                SignedDuration::from_hours(time_window).try_into().unwrap();
+            base.paced.as_mut().unwrap().interval =
+                SignedDuration::from_hours(1).try_into().unwrap();
             TrainScheduleChangeset::from(base)
                 .train_schedule_set_id(train_schedule_set.id)
                 .create(&mut pool.get_ok())
