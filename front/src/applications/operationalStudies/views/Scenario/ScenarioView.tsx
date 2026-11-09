@@ -32,7 +32,11 @@ const Scenario = () => {
         ) : (
           <RollingStockContextProvider>
             <SubCategoryContextProvider>
-              <ScenarioContent activeBoards={activeBoards} toggleBoard={toggleBoard} />
+              <ScenarioContent
+                key={timetable?.id}
+                activeBoards={activeBoards}
+                toggleBoard={toggleBoard}
+              />
             </SubCategoryContextProvider>
           </RollingStockContextProvider>
         )}
