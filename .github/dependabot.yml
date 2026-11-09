@@ -42,6 +42,9 @@ updates:
       opentelemetry:
         patterns:
           - "*opentelemetry*"
+      kubernetes:
+        patterns:
+          - "*kube*"
     commit-message:
       prefix: "osrdyne:"
     open-pull-requests-limit: 100
