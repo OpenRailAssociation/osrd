@@ -398,12 +398,12 @@ class BacktrackTests {
             )
         val stops =
             listOf(
-                TrainStop(9700.0, 60.0, SHORT_SLIP_STOP, StepType.INPUT_STOP),
+                TrainStop(9700.0, 60.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)),
                 TrainStop(
                     18700.0,
                     0.0,
                     OPEN,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP),
                 ),
             )
         val envelope = computeMrspWithStops(path, stops)
@@ -466,8 +466,8 @@ class BacktrackTests {
             )
         val stops =
             listOf(
-                TrainStop(8000.0, 60.0, SHORT_SLIP_STOP, StepType.INPUT_STOP),
-                TrainStop(15300.0, 0.0, OPEN, StepType.INPUT_STOP),
+                TrainStop(8000.0, 60.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)),
+                TrainStop(15300.0, 0.0, OPEN, listOf(StepType.INPUT_STOP)),
             )
         val envelope = computeMrspWithStops(path, stops)
         val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
@@ -511,8 +511,8 @@ class BacktrackTests {
             )
         val stops =
             listOf(
-                TrainStop(8400.0, 60.0, STOP, StepType.INPUT_STOP),
-                TrainStop(16400.0, 0.0, OPEN, StepType.INPUT_STOP),
+                TrainStop(8400.0, 60.0, STOP, listOf(StepType.INPUT_STOP)),
+                TrainStop(16400.0, 0.0, OPEN, listOf(StepType.INPUT_STOP)),
             )
         val envelope = computeMrspWithStops(path, stops)
         val zoneOccupationChangeEvents = zoneOccupationChangeEvents(path, envelope, rollingStocks)
@@ -566,8 +566,8 @@ class BacktrackTests {
         val path = buildPathBacktrackingOverNothing(infra, rollingStock.length.meters)
         val stops =
             listOf(
-                TrainStop(9700.0, 60.0, SHORT_SLIP_STOP, StepType.INPUT_STOP),
-                TrainStop(18700.0, 0.0, OPEN, StepType.INPUT_STOP),
+                TrainStop(9700.0, 60.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)),
+                TrainStop(18700.0, 0.0, OPEN, listOf(StepType.INPUT_STOP)),
             )
         val envelope = computeMrspWithStops(path, stops)
 
@@ -596,8 +596,8 @@ class BacktrackTests {
         val path = buildPathBacktrackingOverRouteDelimiter(infra, rollingStock.length.meters)
         val stops =
             listOf(
-                TrainStop(8000.0, 60.0, SHORT_SLIP_STOP, StepType.INPUT_STOP),
-                TrainStop(15300.0, 0.0, OPEN, StepType.INPUT_STOP),
+                TrainStop(8000.0, 60.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)),
+                TrainStop(15300.0, 0.0, OPEN, listOf(StepType.INPUT_STOP)),
             )
         val envelope = computeMrspWithStops(path, stops)
 
@@ -626,8 +626,8 @@ class BacktrackTests {
             buildPathBacktrackingShortlyAfterRouteDelimiter(infra, rollingStock.length.meters)
         val stops =
             listOf(
-                TrainStop(8400.0, 60.0, STOP, StepType.INPUT_STOP),
-                TrainStop(16400.0, 0.0, OPEN, StepType.INPUT_STOP),
+                TrainStop(8400.0, 60.0, STOP, listOf(StepType.INPUT_STOP)),
+                TrainStop(16400.0, 0.0, OPEN, listOf(StepType.INPUT_STOP)),
             )
         val envelope = computeMrspWithStops(path, stops)
 

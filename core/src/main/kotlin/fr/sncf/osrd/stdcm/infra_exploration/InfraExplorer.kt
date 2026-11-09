@@ -194,11 +194,12 @@ interface EdgeIdentifier {
 data class ExplorerStep(
     val locations: Collection<BlockLocation>,
     val duration: Double? = null,
-    val stop: Boolean = false,
     val canBacktrack: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,
-    val stepType: StepType? = null,
-)
+    val stepType: StepType = if (duration != null) StepType.INPUT_STOP else StepType.INPUT_STEP,
+) {
+    val stop: Boolean = stepType != StepType.INPUT_STEP
+}
 
 /**
  * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify

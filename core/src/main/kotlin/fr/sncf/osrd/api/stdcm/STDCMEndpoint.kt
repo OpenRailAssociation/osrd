@@ -547,7 +547,6 @@ fun parseSteps(
                     infra.blockInfra.findTrackLocationBlocks(infra.rawInfra, trackLocations[index])
                 },
                 it.stopDuration?.seconds,
-                it.stopDuration != null,
                 it.pathItem.canBacktrack,
                 if (it.stepTimingData != null)
                     PlannedTimingData(
@@ -556,6 +555,7 @@ fun parseSteps(
                         it.stepTimingData.arrivalTimeToleranceAfter,
                     )
                 else null,
+                if (it.stopDuration != null) StepType.INPUT_STOP else StepType.INPUT_STEP,
             )
         }
         .toList()
@@ -706,7 +706,6 @@ fun parseForcedOpStops(
                             ExplorerStep(
                                 locations = setOf(it),
                                 duration = FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
-                                stop = true,
                                 stepType =
                                     when (forcedOpStop.stop_type) {
                                         ForcedStopType.GENERAL_STOP -> StepType.GENERAL_STOP

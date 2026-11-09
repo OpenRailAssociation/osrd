@@ -229,7 +229,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     private fun makeOpStops(trainPath: TrainPath): List<TrainStop> {
         val res = ArrayList<TrainStop>()
         for ((_, offset) in trainPath.getOperationalPointParts()) {
-            res.add(TrainStop(offset.meters, 0.0, OPEN, StepType.INPUT_STOP))
+            res.add(TrainStop(offset.meters, 0.0, OPEN, listOf(StepType.INPUT_STOP)))
         }
         return res
     }

@@ -26,7 +26,7 @@ data class STDCMNode(
     // When the node is a stop, how long the train remains here
     val stopDuration: Double?,
     // When the node is a stop, what is its type
-    val stepType: StepType?,
+    val stepType: Collection<StepType>,
     // Planned arrival time at node, with its tolerance. Is null at least when the node is not a
     // stop
     val plannedTimingData: PlannedTimingData?,

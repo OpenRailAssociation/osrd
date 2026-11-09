@@ -35,8 +35,8 @@ public class EnvelopeStopWrapperTests {
         var envelopeStopWrapper = new EnvelopeStopWrapper(
                 envelopeFloor,
                 List.of(
-                        new TrainStop(3, 10, RJSReceptionSignal.SHORT_SLIP_STOP, StepType.INPUT_STOP),
-                        new TrainStop(6, 5, RJSReceptionSignal.OPEN, StepType.INPUT_STOP)));
+                        new TrainStop(3, 10, RJSReceptionSignal.SHORT_SLIP_STOP, List.of(StepType.INPUT_STOP)),
+                        new TrainStop(6, 5, RJSReceptionSignal.OPEN, List.of(StepType.INPUT_STOP))));
         Assertions.assertEquals(
                 List.of(
                         new EnvelopeTimeInterpolate.EnvelopePoint(0, 1, 0),

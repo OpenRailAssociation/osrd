@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.interfaces.PhysicsPath
@@ -321,7 +322,7 @@ class STDCMPathfinding(
                         null,
                         location.offset,
                         null,
-                        null,
+                        listOf(StepType.INPUT_STEP),
                         firstStep.plannedTimingData,
                         null,
                         graph.bestPossibleTime,

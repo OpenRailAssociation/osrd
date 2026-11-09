@@ -125,7 +125,7 @@ class ForcedStopsTests {
                                 40.0,
                                 FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                 SHORT_SLIP_STOP,
-                                StepType.GENERAL_STOP,
+                                listOf(StepType.GENERAL_STOP),
                             ),
                         ),
                 ),
@@ -141,7 +141,7 @@ class ForcedStopsTests {
                                     140.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                             ),
                     ),
@@ -158,7 +158,7 @@ class ForcedStopsTests {
                                     100.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                             ),
                     ),
@@ -175,7 +175,7 @@ class ForcedStopsTests {
                                     100.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                             ),
                     ),
@@ -196,13 +196,13 @@ class ForcedStopsTests {
                                     50.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                                 TrainStop(
                                     150.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                             ),
                     ),
@@ -223,13 +223,13 @@ class ForcedStopsTests {
                                     50.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                                 TrainStop(
                                     80.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                             ),
                     ),
@@ -260,7 +260,7 @@ class ForcedStopsTests {
                                     50.0,
                                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                                     SHORT_SLIP_STOP,
-                                    StepType.GENERAL_STOP,
+                                    listOf(StepType.GENERAL_STOP),
                                 ),
                             ),
                     ),
@@ -305,7 +305,14 @@ class ForcedStopsTests {
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(50.0, expectedStopDuration, SHORT_SLIP_STOP, StepType.INPUT_STOP)),
+            listOf(
+                TrainStop(
+                    50.0,
+                    expectedStopDuration,
+                    SHORT_SLIP_STOP,
+                    listOf(StepType.INPUT_STOP, StepType.GENERAL_STOP),
+                ),
+            ),
         )
     }
 
@@ -373,19 +380,19 @@ class ForcedStopsTests {
                     50.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.GENERAL_STOP,
+                    listOf(StepType.GENERAL_STOP),
                 ),
                 TrainStop(
                     80.0,
                     LONG_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP),
                 ),
                 TrainStop(
                     160.0,
                     SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP),
                 ),
             ),
         )
@@ -442,25 +449,25 @@ class ForcedStopsTests {
                     50.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.GENERAL_STOP,
+                    listOf(StepType.GENERAL_STOP),
                 ),
                 TrainStop(
                     80.0,
                     LONG_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP),
                 ),
                 TrainStop(
                     150.0,
                     SHORT_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP),
                 ),
                 TrainStop(
                     160.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.OVERTAKE,
+                    listOf(StepType.OVERTAKE),
                 ),
             ),
         )
@@ -504,7 +511,7 @@ class ForcedStopsTests {
                     60.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP, StepType.OVERTAKE),
                 ),
             ),
         )
@@ -554,7 +561,7 @@ class ForcedStopsTests {
                     60.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP, StepType.GENERAL_STOP, StepType.OVERTAKE),
                 ),
             ),
         )
@@ -598,7 +605,7 @@ class ForcedStopsTests {
                     60.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP, StepType.OVERTAKE),
                 ),
             ),
         )
@@ -611,7 +618,6 @@ class ForcedStopsTests {
         return ExplorerStep(
             setOf(blockLocation),
             FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
-            true,
             stepType = stepType,
         )
     }
@@ -686,7 +692,7 @@ class ForcedStopsTests {
                     60.0,
                     FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
                     SHORT_SLIP_STOP,
-                    StepType.INPUT_STOP,
+                    listOf(StepType.INPUT_STOP, StepType.GENERAL_STOP),
                 ),
             ),
         )

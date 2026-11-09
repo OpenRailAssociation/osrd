@@ -240,7 +240,14 @@ class SpacingResourceGeneratorTest {
         val zoneAfterStop = zoneRanges.first { it.pathBegin > stopOffset }.value
         val pathLength = blockRanges.last().pathEnd
         val stops =
-            listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP, StepType.INPUT_STOP))
+            listOf(
+                TrainStop(
+                    stopOffset.meters,
+                    stopDuration,
+                    SHORT_SLIP_STOP,
+                    listOf(StepType.INPUT_STOP),
+                ),
+            )
 
         // Build path
         val automaton = SpacingResourceGenerator(infra, Offset(0.meters), null)

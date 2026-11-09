@@ -627,7 +627,6 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds),
                 ),
             )
@@ -655,13 +654,11 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], outOfBoundsStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
                 ),
                 ExplorerStep(
                     listOf(BlockLocation(blocks[1], Offset(0.meters))),
                     null,
-                    false,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
                 ),
@@ -693,7 +690,6 @@ class BlockAvailabilityTests {
                 ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
-                    false,
                     false,
                     PlannedTimingData(
                         30.seconds,
@@ -744,7 +740,6 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
                 ),
             )
@@ -780,7 +775,6 @@ class BlockAvailabilityTests {
                 ExplorerStep(
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
-                    false,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
                 ),
@@ -820,7 +814,6 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(minDelay.seconds, 0.seconds, 10.seconds),
                 ),
             )
@@ -855,7 +848,6 @@ class BlockAvailabilityTests {
                     listOf(BlockLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    false,
                     PlannedTimingData(
                         (timeAtZoneEnd + internalMarginForSteps).seconds,
                         0.seconds,
@@ -866,7 +858,6 @@ class BlockAvailabilityTests {
                 ExplorerStep(
                     listOf(BlockLocation(blocks[0], secondPlannedStepOffset)),
                     null,
-                    false,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds),
                 ),
@@ -905,7 +896,6 @@ class BlockAvailabilityTests {
                 ExplorerStep(
                     listOf(BlockLocation(blocks[0], Offset(100.meters))),
                     null,
-                    false,
                     false,
                     PlannedTimingData(
                         timeAtZoneEnd.seconds,

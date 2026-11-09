@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -88,9 +89,9 @@ data class STDCMPathfindingBuilder(
             ExplorerStep(
                 startLocations,
                 duration = null,
-                stop = false,
                 canBacktrack = false,
                 plannedTimingData = plannedTimingData,
+                stepType = StepType.INPUT_STEP,
             ),
         )
         return this
@@ -108,9 +109,9 @@ data class STDCMPathfindingBuilder(
             ExplorerStep(
                 endLocations,
                 duration = 0.0,
-                stop = true,
                 canBacktrack = false,
                 plannedTimingData = plannedTimingData,
+                stepType = StepType.INPUT_STOP,
             ),
         )
         return this

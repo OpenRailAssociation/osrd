@@ -120,9 +120,12 @@ class StepTracker(
                     // If the step is a backtracking location, it has to mark a stop.
                     duration =
                         if (isBacktrackingStep && step.duration == null) 0.0 else step.duration,
-                    stop = step.stop || isBacktrackingStep,
                     step.canBacktrack,
                     step.plannedTimingData,
+                    // If the step is a backtracking location, it has to mark a stop.
+                    // Question : We could just return step.stepType here as backtracking are only
+                    // allowed on stops
+                    stepType = if (isBacktrackingStep) StepType.INPUT_STOP else step.stepType,
                 )
 
             val newStep =
@@ -131,7 +134,7 @@ class StepTracker(
                     location,
                     explorerStep,
                     isBacktrackingStep,
-                    stepType = if (explorerStep.stop) StepType.INPUT_STOP else null,
+                    stepType = if (explorerStep.stop) StepType.INPUT_STOP else StepType.INPUT_STEP,
                 )
             res.add(newStep)
             seenSteps.add(newStep)
@@ -220,12 +223,11 @@ data class LocatedStep(
     val originalStep: ExplorerStep,
     // /!\ A step can allow backtracking but actually not backtrack /!\
     val isBacktracking: Boolean = false,
-    // null means the step is a waypoint
-    var stepType: StepType?,
+    var stepType: StepType,
 ) {
 
     fun isInput(): Boolean {
-        return stepType == null || stepType == StepType.INPUT_STOP
+        return stepType == StepType.INPUT_STEP || stepType == StepType.INPUT_STOP
     }
 
     init {

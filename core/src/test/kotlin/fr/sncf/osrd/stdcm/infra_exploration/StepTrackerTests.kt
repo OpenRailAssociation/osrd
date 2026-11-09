@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.utils.DummyInfra
@@ -53,13 +54,13 @@ class StepTrackerTests {
                     Offset(25.meters),
                     steps[0].locations.single(),
                     steps[0],
-                    stepType = null,
+                    stepType = StepType.INPUT_STEP,
                 ),
                 LocatedStep(
                     Offset(26.meters),
                     BlockLocation(blocks[0], Offset(51.meters)),
                     steps[1],
-                    stepType = null,
+                    stepType = StepType.INPUT_STEP,
                 ),
             )
         assertEquals(expectedFirstSteps, firstSteps)
@@ -79,13 +80,13 @@ class StepTrackerTests {
                     Offset(75.meters),
                     steps[2].locations.single(),
                     steps[2],
-                    stepType = null,
+                    stepType = StepType.INPUT_STEP,
                 ),
                 LocatedStep(
                     Offset(175.meters),
                     steps[3].locations.single(),
                     steps[3],
-                    stepType = null,
+                    stepType = StepType.INPUT_STEP,
                 ),
             )
         assertEquals(expectedSecond, second)
@@ -106,7 +107,7 @@ class StepTrackerTests {
                     Offset(275.meters),
                     steps[4].locations.single(),
                     steps[4],
-                    stepType = null,
+                    stepType = StepType.INPUT_STEP,
                 ),
             )
         assertEquals(expectedThird, third)

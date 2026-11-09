@@ -90,7 +90,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 it.first.travelledPathOffset.meters,
                 it.second,
                 SHORT_SLIP_STOP,
-                it.first.stepType,
+                listOf(it.first.stepType),
             )
         }
     }

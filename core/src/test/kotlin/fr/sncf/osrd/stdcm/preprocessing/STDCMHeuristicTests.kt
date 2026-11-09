@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.api.ConsistSchedule
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
@@ -47,11 +48,31 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(25.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, true),
-                ExplorerStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, true),
-                ExplorerStep(listOf(BlockLocation(blocks[3], Offset(100.meters))), 1.0, true),
+                ExplorerStep(
+                    listOf(BlockLocation(blocks[0], Offset(50.meters))),
+                    null,
+                    stepType = StepType.INPUT_STEP,
+                ),
+                ExplorerStep(
+                    listOf(BlockLocation(blocks[1], Offset(25.meters))),
+                    null,
+                    stepType = StepType.INPUT_STEP,
+                ),
+                ExplorerStep(
+                    listOf(BlockLocation(blocks[1], Offset(75.meters))),
+                    null,
+                    stepType = StepType.INPUT_STOP,
+                ),
+                ExplorerStep(
+                    listOf(BlockLocation(blocks[2], Offset(0.meters))),
+                    null,
+                    stepType = StepType.INPUT_STOP,
+                ),
+                ExplorerStep(
+                    listOf(BlockLocation(blocks[3], Offset(100.meters))),
+                    1.0,
+                    stepType = StepType.INPUT_STOP,
+                ),
             )
 
         val consistSchedule = ConsistSchedule(List(5) { STANDARD_TRAIN }, null)
@@ -292,7 +313,7 @@ class STDCMHeuristicTests {
                         BlockLocation(cb, Offset(50.meters)),
                     ),
                     duration = 0.0,
-                    stop = true,
+                    stepType = StepType.INPUT_STOP,
                     canBacktrack = true,
                 ),
                 ExplorerStep(listOf(BlockLocation(ba, Offset(20.meters))), 1.0, true),
@@ -393,7 +414,7 @@ class STDCMHeuristicTests {
                 null,
                 Offset(0.meters),
                 null,
-                null,
+                listOf(StepType.INPUT_STEP),
                 null,
                 null,
                 0.0,

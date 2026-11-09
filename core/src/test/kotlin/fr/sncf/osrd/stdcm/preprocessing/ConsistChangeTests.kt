@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.preprocessing
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.RJSTrackLocation
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.api.stdcm.ConsistConfiguration
 import fr.sncf.osrd.api.stdcm.RequestConsistSchedule
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
@@ -56,8 +57,20 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(middle2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle1.blockLocations,
+                        duration = 2000.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
+                .addStep(
+                    ExplorerStep(
+                        middle2.blockLocations,
+                        duration = 2000.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -116,8 +129,20 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(middle2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle1.blockLocations,
+                        duration = 2000.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
+                .addStep(
+                    ExplorerStep(
+                        middle2.blockLocations,
+                        duration = 2000.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -159,7 +184,13 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle.blockLocations, duration = 20.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle.blockLocations,
+                        duration = 20.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -173,7 +204,13 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle.blockLocations, duration = 20.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle.blockLocations,
+                        duration = 20.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -197,7 +234,13 @@ class ConsistChangeTests {
                 STDCMPathfindingBuilder()
                     .setInfra(infra)
                     .setStartLocations(start.blockLocations)
-                    .addStep(ExplorerStep(middle.blockLocations, duration = 2000.0, stop = true))
+                    .addStep(
+                        ExplorerStep(
+                            middle.blockLocations,
+                            duration = 2000.0,
+                            stepType = StepType.INPUT_STOP,
+                        ),
+                    )
                     .setEndLocations(end.blockLocations)
                     .setBlockAvailability(makeBlockAvailability(requirements))
                     .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -225,7 +268,13 @@ class ConsistChangeTests {
                 STDCMPathfindingBuilder()
                     .setInfra(infra)
                     .setStartLocations(start.blockLocations)
-                    .addStep(ExplorerStep(middle.blockLocations, duration = 2000.0, stop = true))
+                    .addStep(
+                        ExplorerStep(
+                            middle.blockLocations,
+                            duration = 2000.0,
+                            stepType = StepType.INPUT_STOP,
+                        ),
+                    )
                     .setEndLocations(end.blockLocations)
                     .setBlockAvailability(makeBlockAvailability(requirements))
                     .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -262,8 +311,20 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(step1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(step2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        step1.blockLocations,
+                        duration = 2000.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
+                .addStep(
+                    ExplorerStep(
+                        step2.blockLocations,
+                        duration = 2000.0,
+                        stepType = StepType.INPUT_STOP,
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
