@@ -2916,6 +2916,11 @@ class ForcedStopType(Enum):
     OVERTAKE = "OVERTAKE"
 
 
+class HistoryEventMacroNoteDeleted(BaseModel):
+    id: StrictInt
+    type: Literal["MacroNoteDeleted"] = "MacroNoteDeleted"
+
+
 class Identifier(RootModel[StrictStr]):
     root: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
@@ -6683,6 +6688,23 @@ class PolygonGeometry(BaseModel):
 
 class GeoJsonPolygon(RootModel[PolygonGeometry]):
     root: PolygonGeometry
+
+
+class HistoryEventMacroNoteUpserted(MacroNoteResponse):
+    type: Literal["MacroNoteUpserted"] = "MacroNoteUpserted"
+
+
+class Event(BaseModel):
+    epoch: AwareDatetime
+    event: HistoryEventMacroNoteUpserted | HistoryEventMacroNoteDeleted
+
+
+class HistoryEventMessageEvent(BaseModel):
+    Event_1: Annotated[Event, Field(alias="Event")]
+
+
+class HistoryEventMessage(RootModel[HistoryEventMessageEvent | Literal["FatalError"]]):
+    root: HistoryEventMessageEvent | Literal["FatalError"]
 
 
 class InfraErrorTypeInvalidReference(BaseModel):

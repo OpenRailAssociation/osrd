@@ -944,6 +944,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getScenariosByScenarioIdHistoryEvents: build.query<
+        GetScenariosByScenarioIdHistoryEventsApiResponse,
+        GetScenariosByScenarioIdHistoryEventsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/scenarios/${queryArg.scenarioId}/history_events`,
+        }),
+        providesTags: ['scenarios'],
+      }),
       postSearch: build.query<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
           url: `/search`,
@@ -2460,6 +2469,10 @@ export type PatchScenariosByScenarioIdApiResponse =
 export type PatchScenariosByScenarioIdApiArg = {
   scenarioId: number;
   scenarioPatchForm: ScenarioPatchForm;
+};
+export type GetScenariosByScenarioIdHistoryEventsApiResponse = unknown;
+export type GetScenariosByScenarioIdHistoryEventsApiArg = {
+  scenarioId: number;
 };
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
@@ -4519,6 +4532,22 @@ export type ScenarioPatchForm = {
   tags?: null | Tags;
   timetable_ids?: number[] | null;
 };
+export type HistoryEvent =
+  | (MacroNoteResponse & {
+      type: 'MacroNoteUpserted';
+    })
+  | {
+      id: number;
+      type: 'MacroNoteDeleted';
+    };
+export type HistoryEventMessage =
+  | {
+      Event: {
+        epoch: string;
+        event: HistoryEvent;
+      };
+    }
+  | 'FatalError';
 export type SearchResultItemTrack = {
   infra_id: number;
   line_code: number;
