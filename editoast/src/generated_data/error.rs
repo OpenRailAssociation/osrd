@@ -13,7 +13,6 @@ pub mod track_sections;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::pin::Pin;
 
 use database::DbConnection;
 use diesel::prelude::*;
@@ -27,7 +26,6 @@ use diesel::sql_types::Text;
     reason = "if not in scope, collides with `diesel::prelude::RunQueryDsl`"
 )]
 use diesel_async::RunQueryDsl;
-use futures_util::Future;
 use itertools::Itertools as _;
 use schemas::primitives::OSRDObject as _;
 use schemas::primitives::ObjectType;
@@ -129,7 +127,7 @@ impl From<InfraError> for ErrorWithHash {
 /// Generate errors given static object and global error generators.
 /// This function assume that object error generators list isn't empty and sorted by priority.
 /// Global errors are generated at the end.
-async fn generate_errors<Ctx: Default>(
+fn generate_errors<Ctx: Default>(
     object_type: ObjectType,
     infra_cache: &InfraCache,
     graph: &Graph<'_>,
@@ -183,95 +181,92 @@ async fn generate_errors<Ctx: Default>(
     errors
 }
 
-pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
+pub fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     // Create a graph for topological errors
     let graph = Graph::load(infra_cache);
     // Generate the errors
-    let futures: Vec<Pin<Box<dyn Future<Output = _> + Send>>> = vec![
-        Box::pin(generate_errors(
+    [
+        generate_errors(
             ObjectType::TrackSection,
             infra_cache,
             &graph,
             &track_sections::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::Signal,
             infra_cache,
             &graph,
             &signals::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::SpeedSection,
             infra_cache,
             &graph,
             &speed_sections::OBJECT_GENERATORS,
             &speed_sections::GLOBAL_GENERATORS,
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::Route,
             infra_cache,
             &graph,
             &routes::OBJECT_GENERATORS,
             &routes::GLOBAL_GENERATORS,
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::SwitchType,
             infra_cache,
             &graph,
             &switch_types::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::Detector,
             infra_cache,
             &graph,
             &detectors::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::BufferStop,
             infra_cache,
             &graph,
             &buffer_stops::OBJECT_GENERATORS,
             &buffer_stops::GLOBAL_GENERATORS,
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::OperationalPoint,
             infra_cache,
             &graph,
             &operational_points::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::LevelCrossing,
             infra_cache,
             &graph,
             &level_crossings::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::Switch,
             infra_cache,
             &graph,
             &switches::OBJECT_GENERATORS,
             &[],
-        )),
-        Box::pin(generate_errors(
+        ),
+        generate_errors(
             ObjectType::Electrification,
             infra_cache,
             &graph,
             &electrifications::OBJECT_GENERATORS,
             &electrifications::GLOBAL_GENERATORS,
-        )),
-    ];
-
-    futures::future::join_all(futures)
-        .await
-        .into_iter()
-        .flatten()
-        .collect()
+        ),
+    ]
+    .into_iter()
+    .flatten()
+    .collect()
 }
 
 /// Get sql query that insert errors given an object type
@@ -419,7 +414,7 @@ impl GeneratedData for ErrorLayer {
         infra_cache: &InfraCache,
     ) -> Result<(), database::DatabaseError> {
         // Compute current errors
-        let infra_errors = generate_infra_errors(infra_cache).await;
+        let infra_errors = generate_infra_errors(infra_cache);
 
         // Insert new errors and remove old ones in DB
         update_errors(conn, infra_id, infra_errors).await
@@ -459,8 +454,8 @@ mod tests {
     use schemas::primitives::ObjectRef;
     use schemas::primitives::ObjectType;
 
-    #[tokio::test]
-    async fn small_infra_cache_validation() {
+    #[test]
+    fn small_infra_cache_validation() {
         let small_infra_cache = create_small_infra_cache();
 
         let graph = Graph::load(&small_infra_cache);
@@ -473,8 +468,7 @@ mod tests {
                 &graph,
                 &track_sections::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -484,8 +478,7 @@ mod tests {
                 &graph,
                 &signals::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -495,8 +488,7 @@ mod tests {
                 &graph,
                 &speed_sections::OBJECT_GENERATORS,
                 &speed_sections::GLOBAL_GENERATORS,
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -506,8 +498,7 @@ mod tests {
                 &graph,
                 &switch_types::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -517,8 +508,7 @@ mod tests {
                 &graph,
                 &detectors::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -528,8 +518,7 @@ mod tests {
                 &graph,
                 &buffer_stops::OBJECT_GENERATORS,
                 &buffer_stops::GLOBAL_GENERATORS,
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -539,8 +528,7 @@ mod tests {
                 &graph,
                 &routes::OBJECT_GENERATORS,
                 &routes::GLOBAL_GENERATORS,
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -550,8 +538,7 @@ mod tests {
                 &graph,
                 &operational_points::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -561,8 +548,7 @@ mod tests {
                 &graph,
                 &level_crossings::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -572,8 +558,7 @@ mod tests {
                 &graph,
                 &switches::OBJECT_GENERATORS,
                 &[],
-            )
-            .await,
+            ),
             []
         );
         assert_eq!(
@@ -583,14 +568,13 @@ mod tests {
                 &graph,
                 &electrifications::OBJECT_GENERATORS,
                 &electrifications::GLOBAL_GENERATORS,
-            )
-            .await,
+            ),
             []
         );
     }
 
-    #[tokio::test]
-    async fn error_priority_check() {
+    #[test]
+    fn error_priority_check() {
         let mut small_infra_cache = create_small_infra_cache();
         let bf = create_buffer_stop_cache("BF_error", "E", 530.0);
         small_infra_cache.add(&bf).unwrap();
@@ -602,8 +586,7 @@ mod tests {
             &graph,
             &buffer_stops::OBJECT_GENERATORS,
             &[],
-        )
-        .await;
+        );
 
         let expected = [InfraError {
             obj_id: "BF_error".into(),
