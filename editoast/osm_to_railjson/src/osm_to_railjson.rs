@@ -102,11 +102,16 @@ pub fn parse_osm(
         signals(&osm_pbf_in, &nodes_tracks, &adjacencies)
     };
     let detectors = signals.iter().map(detector).collect_vec();
+    let detector_directions = signals
+        .iter()
+        .map(|signal| (signal.id.clone(), signal.direction))
+        .collect();
 
     debug!("Start generating routes");
     let routes = generate_routes::routes(
         &track_sections,
         &detectors,
+        &detector_directions,
         &buffer_stops,
         &switches,
         max_route_length,
