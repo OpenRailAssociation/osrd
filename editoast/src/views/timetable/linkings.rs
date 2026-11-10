@@ -19,13 +19,6 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::timetable::TimetableIdParam;
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-pub struct LinkingResponse {
-    pub id: i64,
-    pub source: LinkingOccurrenceId,
-    pub target: LinkingOccurrenceId,
-}
-
 #[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -44,6 +37,54 @@ pub enum LinkingOccurrenceId {
         added_exception_id: i64,
         train_schedule_instance_index: Option<i64>,
     },
+}
+
+impl LinkingOccurrenceId {
+    pub fn train_schedule_id(&self) -> i64 {
+        match self {
+            LinkingOccurrenceId::Unique {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+            LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+            LinkingOccurrenceId::AddedException {
+                train_schedule_id, ..
+            } => *train_schedule_id,
+        }
+    }
+    pub fn train_schedule_instance_index(&self) -> Option<i64> {
+        match self {
+            LinkingOccurrenceId::Unique {
+                train_schedule_instance_index,
+                ..
+            } => *train_schedule_instance_index,
+            LinkingOccurrenceId::PacedOccurrence {
+                train_schedule_instance_index,
+                ..
+            } => *train_schedule_instance_index,
+            LinkingOccurrenceId::AddedException {
+                train_schedule_instance_index,
+                ..
+            } => *train_schedule_instance_index,
+        }
+    }
+    pub fn occurrence_index(&self) -> Option<i64> {
+        match self {
+            LinkingOccurrenceId::PacedOccurrence {
+                occurrence_index, ..
+            } => Some(*occurrence_index),
+            _ => None,
+        }
+    }
+    pub fn added_exception_id(&self) -> Option<i64> {
+        match self {
+            LinkingOccurrenceId::AddedException {
+                added_exception_id, ..
+            } => Some(*added_exception_id),
+            _ => None,
+        }
+    }
 }
 
 fn get_linking_occurrence_id(
@@ -71,6 +112,13 @@ fn get_linking_occurrence_id(
             unreachable!("A train can't be both a regular occurrence and an added exception")
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+pub struct LinkingResponse {
+    pub id: i64,
+    pub source: LinkingOccurrenceId,
+    pub target: LinkingOccurrenceId,
 }
 
 impl From<TrainScheduleLinking> for LinkingResponse {
@@ -202,54 +250,6 @@ pub(in crate::views) async fn list(
 pub struct LinkingCreateForm {
     pub source: LinkingOccurrenceId,
     pub target: LinkingOccurrenceId,
-}
-
-impl LinkingOccurrenceId {
-    pub fn train_schedule_id(&self) -> i64 {
-        match self {
-            LinkingOccurrenceId::Unique {
-                train_schedule_id, ..
-            } => *train_schedule_id,
-            LinkingOccurrenceId::PacedOccurrence {
-                train_schedule_id, ..
-            } => *train_schedule_id,
-            LinkingOccurrenceId::AddedException {
-                train_schedule_id, ..
-            } => *train_schedule_id,
-        }
-    }
-    pub fn train_schedule_instance_index(&self) -> Option<i64> {
-        match self {
-            LinkingOccurrenceId::Unique {
-                train_schedule_instance_index,
-                ..
-            } => *train_schedule_instance_index,
-            LinkingOccurrenceId::PacedOccurrence {
-                train_schedule_instance_index,
-                ..
-            } => *train_schedule_instance_index,
-            LinkingOccurrenceId::AddedException {
-                train_schedule_instance_index,
-                ..
-            } => *train_schedule_instance_index,
-        }
-    }
-    pub fn occurrence_index(&self) -> Option<i64> {
-        match self {
-            LinkingOccurrenceId::PacedOccurrence {
-                occurrence_index, ..
-            } => Some(*occurrence_index),
-            _ => None,
-        }
-    }
-    pub fn added_exception_id(&self) -> Option<i64> {
-        match self {
-            LinkingOccurrenceId::AddedException {
-                added_exception_id, ..
-            } => Some(*added_exception_id),
-            _ => None,
-        }
-    }
 }
 
 impl From<LinkingCreateForm> for TrainScheduleLinkingChangeset {
