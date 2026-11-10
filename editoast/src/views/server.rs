@@ -14,12 +14,12 @@ use axum::extract::DefaultBodyLimit;
 use axum::extract::FromRef;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
-use chrono::Duration;
 use core_client::CoreClient;
 use core_client::mq_client;
 use dashmap::DashMap;
 use database::DbConnectionPool;
 use fga::client::Limits;
+use jiff::SignedDuration;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
 use tokio::sync::RwLock;
@@ -45,7 +45,7 @@ use crate::views::timetable;
 #[derive(Clone)]
 pub struct CoreConfig {
     pub mq_url: Url,
-    pub timeout: Duration,
+    pub timeout: SignedDuration,
     pub single_worker: bool,
     pub num_channels: usize,
     pub worker_pool_id: String,
@@ -76,7 +76,7 @@ pub struct S3Config {
 pub struct ServerConfig {
     pub port: u16,
     pub address: String,
-    pub health_check_timeout: Duration,
+    pub health_check_timeout: SignedDuration,
     pub map_layers_max_zoom: u8,
     pub postgres_config: PostgresConfig,
     pub core_config: CoreConfig,
@@ -105,7 +105,7 @@ pub struct AppState {
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub core_client: Arc<CoreClient>,
-    pub health_check_timeout: Duration,
+    pub health_check_timeout: SignedDuration,
     pub openfga: fga::Client,
     pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
     pub s3_client: Option<Arc<AmazonS3>>,
@@ -158,7 +158,7 @@ impl AppState {
             let options = mq_client::Options {
                 uri: mq_url,
                 worker_pool_identifier: worker_pool_id,
-                timeout: timeout.num_seconds() as u64,
+                timeout: timeout.as_secs() as u64,
                 single_worker,
                 num_channels,
             };

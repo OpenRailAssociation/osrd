@@ -206,11 +206,9 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
-use chrono::DateTime;
 
 use authz::InfraPrivilege;
 use authz::Role;
-use chrono::Utc;
 use common::geometry::GeoJsonPoint;
 use diesel::QueryableByName;
 use diesel::pg::Pg;
@@ -227,6 +225,7 @@ use editoast_derive::Search;
 use editoast_derive::SearchConfigStore;
 use geos::geojson::Geometry;
 use itertools::Itertools as _;
+use jiff::Timestamp;
 use models::macro_node::OperationalPointReferenceNode;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
@@ -725,7 +724,7 @@ pub(super) struct SearchResultItemProject {
     #[search(sql = "project.description")]
     description: String,
     #[search(sql = "project.last_modification")]
-    last_modification: DateTime<Utc>,
+    last_modification: Timestamp,
     #[search(sql = "project.tags")]
     tags: Vec<String>,
 }
@@ -800,7 +799,7 @@ pub(super) struct SearchResultItemStudy {
     #[schema(required)]
     description: Option<String>,
     #[search(sql = "study.last_modification")]
-    last_modification: DateTime<Utc>,
+    last_modification: Timestamp,
     #[search(sql = "study.tags")]
     tags: Vec<String>,
     #[search(sql = "study.budget")]
@@ -874,7 +873,7 @@ pub(super) struct SearchResultItemScenario {
     #[search(sql = "scenario.description")]
     description: String,
     #[search(sql = "scenario.last_modification")]
-    last_modification: DateTime<Utc>,
+    last_modification: Timestamp,
     #[search(sql = "scenario.tags")]
     tags: Vec<String>,
 }
@@ -989,6 +988,8 @@ pub struct SearchConfigFinder;
 
 #[cfg(test)]
 pub mod tests {
+    use std::str::FromStr as _;
+
     use models::infra_objects::SchemaModel as _;
     use models::prelude::Create as _;
     use models::prelude::CreateBatch as _;
@@ -1112,12 +1113,12 @@ pub mod tests {
         // Fixture train has start_time = 2023-12-21T08:51:30Z
         let train = create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.id).await;
 
-        let day_start = DateTime::parse_from_rfc3339("2023-12-21T00:00:00Z")
+        let day_start = Timestamp::from_str("2023-12-21T00:00:00Z")
             .unwrap()
-            .timestamp_millis();
-        let next_day = DateTime::parse_from_rfc3339("2023-12-22T00:00:00Z")
+            .as_millisecond();
+        let next_day = Timestamp::from_str("2023-12-22T00:00:00Z")
             .unwrap()
-            .timestamp_millis();
+            .as_millisecond();
 
         let response: Vec<SearchResultItemTrainSchedule> = app
             .post("/search")
