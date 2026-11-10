@@ -1,5 +1,3 @@
-use chrono::DateTime;
-use chrono::Utc;
 use database::DbConnection;
 use diesel::ExpressionMethods as _;
 use diesel::QueryDsl as _;
@@ -12,6 +10,7 @@ use std::collections::HashSet;
 use std::ops::DerefMut as _;
 use utoipa::ToSchema;
 
+use crate::Timestamp;
 use crate::prelude::*;
 
 #[derive(Clone, Debug, Serialize, Model, ToSchema)]
@@ -34,17 +33,17 @@ pub struct StdcmSearchEnvironment {
     pub timetable_id: i64,
     /// The start of the search time window.
     /// Usually, trains schedules from the `timetable_id` runs within this window.
-    pub search_window_begin: DateTime<Utc>,
+    pub search_window_begin: Timestamp,
     /// The end of the search time window.
-    pub search_window_end: DateTime<Utc>,
+    pub search_window_end: Timestamp,
     #[schema(nullable = false)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temporary_speed_limit_group_id: Option<i64>,
     /// The time window start point where the environment is enabled.
-    pub enabled_from: DateTime<Utc>,
+    pub enabled_from: Timestamp,
     /// The time window end point where the environment is enabled.
     /// This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
-    pub enabled_until: DateTime<Utc>,
+    pub enabled_until: Timestamp,
     #[model(non_null_array = "i64")]
     pub operational_points: Vec<i64>,
     /// Map of speed limit tag with their value
@@ -166,10 +165,13 @@ pub mod fixtures {
 
 #[cfg(test)]
 mod tests {
-    use chrono::Duration;
-    use chrono::DurationRound as _;
-    use chrono::TimeZone as _;
-    use chrono::Utc;
+    use std::str::FromStr as _;
+
+    use jiff::RoundMode;
+    use jiff::SignedDuration;
+    use jiff::Timestamp;
+    use jiff::TimestampRound;
+    use jiff::Unit;
     use pretty_assertions::assert_eq;
 
     use database::DbConnectionPool;
@@ -195,30 +197,42 @@ mod tests {
             .work_schedule_group_id(Some(work_schedule_group.id))
             .temporary_speed_limit_group_id(Some(temporary_speed_limit_group.id))
             .timetable_id(timetable.id)
-            .search_window_begin(Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap())
-            .search_window_end(Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap())
-            .enabled_from(Utc::now() - Duration::days(3))
-            .enabled_until(Utc::now() - Duration::days(2));
+            .search_window_begin(Timestamp::from_str("2024-01-01T00:00:00Z").unwrap().into())
+            .search_window_end(Timestamp::from_str("2024-01-02T00:00:00Z").unwrap().into())
+            .enabled_from((Timestamp::now() - SignedDuration::from_hours(3 * 24)).into())
+            .enabled_until((Timestamp::now() - SignedDuration::from_hours(2 * 24)).into());
 
         let too_young = too_old
             .clone()
-            .enabled_from(Utc::now() + Duration::days(2))
-            .enabled_until(Utc::now() + Duration::days(3));
+            .enabled_from((Timestamp::now() + SignedDuration::from_hours(2 * 24)).into())
+            .enabled_until((Timestamp::now() + SignedDuration::from_hours(3 * 24)).into());
 
         let enabled_but_not_last = too_old
             .clone()
-            .enabled_from(Utc::now() - Duration::hours(1))
-            .enabled_until(Utc::now() + Duration::hours(1));
+            .enabled_from((Timestamp::now() - SignedDuration::from_hours(1)).into())
+            .enabled_until((Timestamp::now() + SignedDuration::from_hours(1)).into());
 
-        let enabled_from =
-            Utc::now().duration_trunc(Duration::seconds(1)).unwrap() - Duration::days(1);
-        let enabled_until =
-            Utc::now().duration_trunc(Duration::seconds(1)).unwrap() + Duration::days(1);
+        let enabled_from = Timestamp::now()
+            .round(
+                TimestampRound::new()
+                    .smallest(Unit::Second)
+                    .mode(RoundMode::Trunc),
+            )
+            .unwrap()
+            - SignedDuration::from_hours(24);
+        let enabled_until = Timestamp::now()
+            .round(
+                TimestampRound::new()
+                    .smallest(Unit::Second)
+                    .mode(RoundMode::Trunc),
+            )
+            .unwrap()
+            + SignedDuration::from_hours(24);
 
         let the_best = too_old
             .clone()
-            .enabled_from(enabled_from)
-            .enabled_until(enabled_until);
+            .enabled_from(enabled_from.into())
+            .enabled_until(enabled_until.into());
 
         for changeset in [
             too_old,
@@ -237,8 +251,8 @@ mod tests {
             .await
             .expect("Failed to retrieve latest search environment");
 
-        assert_eq!(result.enabled_from, enabled_from);
-        assert_eq!(result.enabled_until, enabled_until);
+        assert_eq!(result.enabled_from, enabled_from.into());
+        assert_eq!(result.enabled_until, enabled_until.into());
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

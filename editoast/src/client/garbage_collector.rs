@@ -246,6 +246,7 @@ mod tests {
     use crate::fixtures::create_scenario_fixtures_set;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_train_schedule_set;
+    use jiff::SignedDuration;
     use models::SearchJourneyEnvironment;
     use models::search_journey_environment::fixtures::search_journey_env_fixtures;
     use models::stdcm_search_environment::StdcmSearchEnvironment;
@@ -268,10 +269,10 @@ mod tests {
             .work_schedule_group_id(Some(work_schedule_group.id))
             .temporary_speed_limit_group_id(Some(temp_speed_limit_group.id))
             .timetable_id(stdcm_timetable.id)
-            .search_window_begin(chrono::Utc::now())
-            .search_window_end(chrono::Utc::now() + chrono::Duration::hours(1))
-            .enabled_from(chrono::Utc::now())
-            .enabled_until(chrono::Utc::now() + chrono::Duration::hours(1))
+            .search_window_begin(models::Timestamp::now())
+            .search_window_end((jiff::Timestamp::now() + SignedDuration::from_hours(1)).into())
+            .enabled_from(models::Timestamp::now())
+            .enabled_until((jiff::Timestamp::now() + SignedDuration::from_hours(1)).into())
             .create(conn)
             .await
             .expect("Failed to create StdcmSearchEnvironment");

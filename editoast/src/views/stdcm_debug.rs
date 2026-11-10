@@ -2,11 +2,10 @@ use authz::Role;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
-use chrono::DateTime;
-use chrono::Utc;
 use common::geometry::GeoJsonLineString;
 use editoast_derive::EditoastError;
 use geos::geojson::Geometry;
+use jiff::Timestamp;
 use object_store::GetOptions;
 use object_store::ObjectStore as _;
 use object_store::aws::AmazonS3;
@@ -51,7 +50,7 @@ pub(in crate::views) struct RequirementId {
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct SimDebugConflictReport {
-    at: DateTime<Utc>,
+    at: Timestamp,
     time_lost: f64,
     best_remaining_time: f64,
     current_travel_time: f64,
@@ -98,7 +97,7 @@ pub(in crate::views) struct SimDebugData {
     sim_output: Option<SimulationResponseSuccess>,
     path_properties: PathProperties,
     other_requirements: Vec<SimDebugTrainZoneRequirement>,
-    departure_time: DateTime<Utc>,
+    departure_time: Timestamp,
     engineering_allowances_ranges: Vec<SimDebugEngineeringAllowanceRange>,
     zone_locations: Vec<SimDebugZoneLocation>,
     train_times: Vec<f64>,
