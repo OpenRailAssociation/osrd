@@ -525,7 +525,7 @@ const TimesStopsTable = ({
   };
 
   const returnOPCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string>) => {
-    const { name, secondaryCode, pathStepKey } = info.row.original;
+    const { name, secondaryCode, secondaryName, pathStepKey } = info.row.original;
     return (
       <>
         {pathStepKey && <span className="requested-point-dot" data-testid="op-name-dot" />}
@@ -537,7 +537,11 @@ const TimesStopsTable = ({
           {name}
         </span>
         {secondaryCode && (
-          <span className="secondary-code" data-testid="secondary-code">
+          <span
+            className="secondary-code"
+            data-testid="secondary-code"
+            title={secondaryName ?? undefined}
+          >
             {secondaryCode}
           </span>
         )}
