@@ -485,13 +485,13 @@ mod tests {
         railjson: &schemas::infra::RailJson,
         track: &Identifier,
         position: f64,
-        direction: &Direction,
+        direction: Direction,
     ) -> bool {
         const FLOAT_EPSILON: f64 = 1.0;
         railjson.signals.iter().any(|signal| {
             signal.track == *track
                 && (signal.position - position).abs() < FLOAT_EPSILON
-                && signal.direction == *direction
+                && signal.direction == direction
         })
     }
 
@@ -517,7 +517,7 @@ mod tests {
             &railjson,
             &expected_track,
             expected_position,
-            &expected_direction
+            expected_direction
         ));
     }
 
@@ -562,7 +562,7 @@ mod tests {
             &railjson,
             &expected_track,
             expected_position,
-            &expected_direction
+            expected_direction
         ));
     }
 }

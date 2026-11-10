@@ -227,6 +227,7 @@ pub(in crate::views) async fn occupancy(
             |((occurrence_id, train_schedule), (simulation, pathfinding))| {
                 rolling_stock_lengths
                     .get(&train_schedule.rolling_stock_name)
+                    .copied()
                     .zip(Some((
                         occurrence_id,
                         train_schedule,
@@ -248,7 +249,7 @@ pub(in crate::views) async fn occupancy(
                 simulation,
                 pathfinding,
                 train_schedule.start_time,
-                rolling_stock_length,
+                *rolling_stock_length,
             ) {
                 level_crossing_occupancies.push(occupancy);
             }
@@ -264,7 +265,7 @@ fn find_level_crossing_occupancy(
     simulation: &simulation::Response,
     pathfinding: &PathfindingResult,
     start_time: Offset,
-    rolling_stock_length: &u64,
+    rolling_stock_length: u64,
 ) -> Option<LevelCrossingOccupancy> {
     // Check simulation results
     let (report_train, pathfinding_success) = match (simulation, pathfinding) {
@@ -291,10 +292,10 @@ fn find_level_crossing_occupancy(
 
     // Compute the occupancy time window
     let time_window = find_occupancy_time_window(
-        &direction,
+        direction,
         report_train,
         level_crossing,
-        &lc_position,
+        lc_position,
         &matched_track_offset,
         start_time,
         rolling_stock_length,
@@ -323,13 +324,13 @@ fn find_level_crossing_intersection(
 }
 
 fn find_occupancy_time_window(
-    direction: &Direction,
+    direction: Direction,
     report_train: &ReportTrain,
     level_crossing: &LevelCrossing,
-    lc_position: &u64,
+    lc_position: u64,
     matched_track_offset: &TrackOffset,
     start_time: Offset,
-    rolling_stock_length: &u64,
+    rolling_stock_length: u64,
 ) -> Option<TimeWindow> {
     let pedal_position =
         find_pedal_position(direction, lc_position, level_crossing, matched_track_offset)?;
@@ -355,8 +356,8 @@ fn find_occupancy_time_window(
 }
 
 fn find_pedal_position(
-    direction: &Direction,
-    lc_position: &u64,
+    direction: Direction,
+    lc_position: u64,
     level_crossing: &LevelCrossing,
     matched_track_offset: &TrackOffset,
 ) -> Option<u64> {

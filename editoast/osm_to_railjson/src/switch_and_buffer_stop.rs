@@ -22,11 +22,11 @@ pub(crate) fn switches_and_buffer_stops(
         let branches_count = adj.branches.len();
         match (edges_count, branches_count) {
             (0, _) => error!("node {id} without edge"),
-            (1, 0) => buffer_stops.push(edge_to_buffer(node, adj.edges[0], 0)),
+            (1, 0) => buffer_stops.push(edge_to_buffer(*node, adj.edges[0], 0)),
             (2, 0) => {
                 // This can happens when data is truncated (e.g. cropped to a region, or the output track is a service track)
-                buffer_stops.push(edge_to_buffer(node, adj.edges[0], 0));
-                buffer_stops.push(edge_to_buffer(node, adj.edges[1], 1));
+                buffer_stops.push(edge_to_buffer(*node, adj.edges[0], 0));
+                buffer_stops.push(edge_to_buffer(*node, adj.edges[1], 1));
             }
             (2, 1) => switches.push(link_switch(*node, &adj.branches)),
             (3, 2) => switches.push(point_switch(*node, &adj.branches)),
@@ -38,11 +38,11 @@ pub(crate) fn switches_and_buffer_stops(
     (switches, buffer_stops)
 }
 
-fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
+fn edge_to_buffer(node: NodeId, edge: &Edge, count: i64) -> BufferStop {
     BufferStop {
         id: format!("buffer-{}-{count}", node.0).into(),
         track: edge.id.clone().into(),
-        position: if &edge.source == node {
+        position: if edge.source == node {
             0.
         } else {
             edge.length()
