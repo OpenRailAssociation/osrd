@@ -364,7 +364,10 @@ impl OperationalPointCache {
         }
     }
 
-    pub fn get_reference(&self, op_ref: &OperationalPointReference) -> Option<&OperationalPoint> {
+    pub fn get_from_reference(
+        &self,
+        op_ref: &OperationalPointReference,
+    ) -> Option<&OperationalPoint> {
         match op_ref {
             OperationalPointReference::Id { operational_point } => self
                 .get_from_id(&operational_point.0)
