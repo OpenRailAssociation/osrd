@@ -1,0 +1,17 @@
+.identity-input-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-content: end;
+  padding-right: 20px;
+}
+
+.identity-input {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  place-content: center;
+
+  .delete-identity-button {
+    margin-left: 12px;
+    margin-right: 8px;
+  }
+}

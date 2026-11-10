@@ -1,7 +1,11 @@
+import { useState } from 'react';
+
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import type { Role } from 'common/api/osrdEditoastApi';
+
+import UserEditForm from './UserEditForm';
 
 import './styles/user-list-table.css';
 
@@ -57,6 +61,8 @@ function Row({ name, identities, groups, roles }: UserInfo) {
 export function UserListTable() {
   'use memo';
   const { t } = useTranslation('admin-dashboard');
+  const [isFormOpen, setIsFormOpen] = useState(true);
+
   const users: UserInfo[] = [
     {
       id: 1,
@@ -80,12 +86,20 @@ export function UserListTable() {
       roles: ['OperationalStudies'],
     },
   ];
+
   return (
     <table className="user-list-table">
       <caption>
         <div className="user-list-header">
           <p className="user-count">{t('users', { count: 4 })}</p>
-          <Button label={t('addUser')} size="small" variant="Quiet" onClick={() => {}} />
+          {!isFormOpen && (
+            <Button
+              label={t('addUser')}
+              size="small"
+              variant="Quiet"
+              onClick={() => setIsFormOpen(true)}
+            />
+          )}
           <Button
             className="user-edit-groups-button"
             label={t('editGroups')}
@@ -95,6 +109,7 @@ export function UserListTable() {
           />
         </div>
       </caption>
+      {isFormOpen && <UserEditForm onCancel={() => setIsFormOpen(false)} />}
       {users.map((user) => (
         <Row key={user.id} {...user} />
       ))}
