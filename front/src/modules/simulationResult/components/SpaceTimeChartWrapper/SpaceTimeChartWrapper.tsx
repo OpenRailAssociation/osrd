@@ -369,6 +369,7 @@ const SpaceTimeChartWrapper = ({
       position: waypoint.position,
       name: waypoint.name,
       secondaryCode: waypoint.secondary_code,
+      secondaryName: waypoint.secondary_name,
       weight: waypoint.weight ?? 0,
     }));
   }, [waypointsPanelData, operationalPoints]);
