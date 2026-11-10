@@ -128,7 +128,7 @@ impl ChannelWorker {
         self.channel.clone()
     }
 
-    pub async fn register_response_tracker(
+    pub fn register_response_tracker(
         &self,
         correlation_id: String,
         tx: mpsc::UnboundedSender<Delivery>,
@@ -486,9 +486,7 @@ impl RabbitMQClient {
             .with_headers(headers);
 
         let (tx, rx) = mpsc::unbounded_channel();
-        channel_worker
-            .register_response_tracker(correlation_id.clone(), tx)
-            .await;
+        channel_worker.register_response_tracker(correlation_id.clone(), tx);
 
         // Publish the message
         channel
