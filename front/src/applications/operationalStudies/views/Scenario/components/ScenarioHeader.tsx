@@ -1,8 +1,19 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
+import { OptionGroup } from '@osrd-project/ui-core';
+import {
+  X,
+  ChevronDown,
+  ChevronUp,
+  Hubot,
+  Person,
+  PatternHourly,
+  SignOut,
+  TimetableCalendar,
+} from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -10,6 +21,7 @@ import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/useAuth';
 
 import InfraLoadingState from './InfraLoadingState';
@@ -35,6 +47,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const navigate = useNavigate();
   const { scenario, timetableId, infraId } = useScenarioContext();
   const { t } = useTranslation('operational-studies');
+  const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
 
   // The chronogram is not supported by hourly timetables yet.
   // TODO: adapt once the front handles multiple timetable per scenario
@@ -52,13 +65,32 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
     username: false,
+    timetableName: false,
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
   const [openEditScenarioModal, setOpenEditScenarioModal] = useState(false);
+  const [isTimetableMenuOpen, setIsTimetableMenuOpen] = useState(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLSpanElement>(null);
+  const timetableNameRef = useRef<HTMLSpanElement>(null);
+  const timetableTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const timetableTypeIcon =
+    timetableType === 'HOURLY' ? <PatternHourly size="lg" /> : <TimetableCalendar size="lg" />;
+  const timetableTypeLabel =
+    timetableType === 'HOURLY'
+      ? t('main.scenarioTimetableTypeHourly')
+      : t('main.scenarioTimetableTypeCalendar');
+  // The timetable name is optional, so we use its type as a fallback label
+  const timetableLabel = scenario.timetable_summaries[0].name ?? timetableTypeLabel;
+  const timetableSections = [
+    {
+      title: timetableTypeLabel,
+      items: [{ value: timetableId, label: timetableLabel }],
+    },
+  ];
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -89,6 +121,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       setIsTruncated({
         scenarioName: scenarioNameRef.current ? checkTruncation(scenarioNameRef.current) : false,
         username: usernameRef.current ? checkTruncation(usernameRef.current) : false,
+        timetableName: timetableNameRef.current ? checkTruncation(timetableNameRef.current) : false,
       });
     });
 
@@ -143,6 +176,36 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
             </button>
           </div>
+
+          {multipleTimetablesEnabled && (
+            <>
+              <button
+                ref={timetableTriggerRef}
+                className="timetable-name-container"
+                type="button"
+                onClick={() => setIsTimetableMenuOpen((prev) => !prev)}
+              >
+                {!isTimetableMenuOpen && timetableTypeIcon}
+                <span
+                  ref={timetableNameRef}
+                  className="timetable-name-label"
+                  title={isTruncated.timetableName ? timetableLabel : undefined}
+                >
+                  {timetableLabel}
+                </span>
+                <ChevronDown size="sm" />
+              </button>
+              <OptionGroup
+                triggerRef={timetableTriggerRef}
+                isOpen={isTimetableMenuOpen}
+                onClose={() => setIsTimetableMenuOpen(false)}
+                sections={timetableSections}
+                selectedValue={timetableId}
+                onSelect={() => setIsTimetableMenuOpen(false)}
+                getItemKey={(id) => String(id)}
+              />
+            </>
+          )}
 
           <div className="spacer" />
         </div>
