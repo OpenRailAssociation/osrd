@@ -1928,7 +1928,7 @@ pub(in crate::views) async fn track_occupancy(
     let op_cache =
         OperationalPointCache::load_path_items(db_pool.get().await?, infra_id, &path_items).await?;
 
-    let operational_point = op_cache.get_reference(&operational_point_reference);
+    let operational_point = op_cache.get_from_reference(&operational_point_reference);
 
     let occupancies = match operational_point {
         Some(operational_point) => {
