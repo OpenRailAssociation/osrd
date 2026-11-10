@@ -14,6 +14,7 @@ type UserInfo = {
 };
 
 function RoleTag({ userRole }: { userRole: Role }) {
+  "use memo";
   const { t } = useTranslation('admin-dashboard');
   const text = t(`roles.${userRole}`, { defaultValue: 'unknown' });
   return (
@@ -24,6 +25,7 @@ function RoleTag({ userRole }: { userRole: Role }) {
 }
 
 function Row({ name, identities, groups, roles }: UserInfo) {
+  "use memo";
   return (
     <tr className="user-row">
       <td>{name}</td>
@@ -53,6 +55,7 @@ function Row({ name, identities, groups, roles }: UserInfo) {
 }
 
 export function UserListTable() {
+  "use memo";
   const { t } = useTranslation('admin-dashboard');
   const users: UserInfo[] = [
     {
