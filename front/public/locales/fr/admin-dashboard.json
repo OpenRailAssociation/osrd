@@ -6,6 +6,18 @@
     "OperationalStudies": "Études d'exploitation",
     "Stdcm": "ST DCM"
   },
+  "userForm": {
+    "addIdentity": "Ajouter une identité",
+    "addUser": "Ajouter un utilisateur",
+    "cancel": "Annuler",
+    "chooseProvider": "Choisir",
+    "deleteIdentity": "Supprimer l’identité",
+    "groups": "Groupes",
+    "identifier": "Identifiant",
+    "name": "Nom",
+    "provider": "Fournisseur",
+    "rolesLabel": "Rôles"
+  },
   "users_one": "{{count}} utilisateur",
   "users_other": "{{count}} utilisateurs"
 }

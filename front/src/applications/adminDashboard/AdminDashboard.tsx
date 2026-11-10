@@ -10,10 +10,8 @@ function Header() {
   const { username } = useAuth();
   return (
     <header className="admin-dashboard-header">
-      <Link to="/">
-        <a role="button" href="/" className="osrd-brand-name">
-          OSRD
-        </a>
+      <Link to="/" className="osrd-brand-name">
+        OSRD
       </Link>
       <div className="header-tools">
         <p className="header-username">{username}</p>

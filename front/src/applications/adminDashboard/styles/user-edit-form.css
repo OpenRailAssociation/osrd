@@ -1,0 +1,69 @@
+.user-edit-form {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  gap: 40px 8px;
+  padding: 32px;
+  background-color: var(--white100);
+  border-bottom: 1px solid var(--black25);
+}
+
+.user-info-input {
+  padding-left: 16px;
+  max-width: 520px;
+
+  .add-identity-button {
+    margin-block: 10px 17px;
+    color: var(--primary60);
+    font-size: 0.875rem;
+  }
+
+  .user-name-input {
+    padding-right: 32px;
+  }
+}
+
+.identity-input-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  place-content: center;
+  gap: 10px 16px;
+
+  .identity-label-identifier,
+  .identity-label-provider {
+    font-weight: 600;
+  }
+
+  .identity-label-identifier {
+    grid-column: 2 / span 2;
+  }
+
+  .delete-identity-button {
+    align-content: start;
+    color: var(--primary30);
+  }
+}
+
+.user-edit-groups-input {
+  grid-column: 1 / span 2;
+
+  .checkbox-list {
+    max-height: 450px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 2px 24px;
+  }
+
+  li {
+    width: 240px;
+  }
+}
+
+.user-edit-form-actions {
+  grid-column: 1 / span 2;
+  display: flex;
+  justify-content: end;
+  gap: 24px;
+}
