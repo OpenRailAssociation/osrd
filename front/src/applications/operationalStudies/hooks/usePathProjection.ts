@@ -264,16 +264,11 @@ const usePathProjection = (
         const occurrenceCount = (opOccurrenceCounts.get(matchedOp.id) ?? 0) + 1;
         opOccurrenceCounts.set(matchedOp.id, occurrenceCount);
         normalizedOps.push({
-          country_code: matchedOp.country_code,
+          ...omit(matchedOp, 'id'),
           waypointId: buildOpWaypointId(matchedOp.id, occurrenceCount),
           opId: matchedOp.id,
           pathItemKey,
-          is_passenger_station: matchedOp.is_passenger_station,
-          main_code: matchedOp.main_code,
-          name: matchedOp.name,
           position,
-          secondary_code: matchedOp.secondary_code,
-          uic: matchedOp.uic,
           weight,
           location: {
             type: 'operational_point_part_reference',
