@@ -774,7 +774,7 @@ pub(in crate::views) async fn match_operational_points(
     let operational_points: Vec<Option<&OperationalPoint>> = operational_point_references
         .into_iter()
         // Retrieve related OP based on the input operational point identifier:
-        .map(|operational_point_reference| op_cache.get_reference(operational_point_reference))
+        .map(|operational_point_reference| op_cache.get_reference(&operational_point_reference))
         .collect_vec();
     let related_operational_points =
         populate_op_geo(&mut conn, infra_id, &operational_points).await?;
