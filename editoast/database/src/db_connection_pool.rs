@@ -258,7 +258,7 @@ impl DbConnectionPool {
     /// Creates a connection pool with the given settings
     ///
     /// In a testing environment, you should use `DbConnectionPool::for_tests` instead.
-    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, DatabasePoolBuildError> {
+    pub fn try_initialize(url: Url, max_size: usize) -> Result<Self, DatabasePoolBuildError> {
         let pool = create_connection_pool(url, max_size)?.into();
         #[cfg(any(test, feature = "testing"))]
         let pool = Self {
@@ -334,7 +334,7 @@ impl DbConnectionPool {
     ///    #[cfg(not(any(test, feature = "testing")))]
     ///    let pool = {
     ///        let url = "postgresql://postgres:password@localhost/osrd".parse().unwrap();
-    ///        futures::executor::block_on(database::DbConnectionPool::try_initialize(url, 1)).unwrap()
+    ///        database::DbConnectionPool::try_initialize(url, 1).unwrap()
     ///    };
     ///    #[cfg(any(test, feature = "testing"))]
     ///    let pool = database::DbConnectionPool::for_tests();

@@ -118,8 +118,7 @@ async fn run() -> anyhow::Result<()> {
 
     let pg_config = client.postgres_config;
     let db_pool =
-        DbConnectionPool::try_initialize(pg_config.database_url.clone(), pg_config.pool_size)
-            .await?;
+        DbConnectionPool::try_initialize(pg_config.database_url.clone(), pg_config.pool_size)?;
 
     let valkey_config = client.valkey_config;
 
