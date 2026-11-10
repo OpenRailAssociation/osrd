@@ -4,7 +4,14 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.LogicalSignalId
 import fr.sncf.osrd.sim_infra.api.SigState
+import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
 import fr.sncf.osrd.standalone_sim.PathSignal
+import fr.sncf.osrd.standalone_sim.pathSignals
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 // TODO: BAL only for now
 private val STOP_ASPECTS = setOf("S", "C")
@@ -25,7 +32,7 @@ class SignaledTrain(
 class SignalingRegulator(
     private val fullInfra: FullInfra,
     val trains: List<SignaledTrain>,
-) : Regulator {
+) : RecordableRegulator {
     var lastSignalStates: List<Map<LogicalSignalId, SigState>> = trains.map { mapOf() }
         private set
 
@@ -59,6 +66,32 @@ class SignalingRegulator(
             val stop = ahead.entries.firstOrNull { it.value.getEnum("aspect") in STOP_ASPECTS }
             if (stop != null) {
                 train.simulator.constraints = train.baseConstraints + train.holdAt(stop.key)
+            }
+        }
+    }
+
+    private val recordedSignals by lazy {
+        trains.map { pathSignals(it.path, fullInfra.blockInfra) }
+    }
+
+    override fun recordHeader(train: Int) = buildJsonObject {
+        val rawInfra = fullInfra.rawInfra
+        put("length", trains[train].length.meters)
+        put("geo", pathGeometryJson(rawInfra, trains[train].path))
+        putJsonArray("signals") {
+            for (signal in recordedSignals[train]) {
+                addJsonObject {
+                    put("name", rawInfra.getLogicalSignalName(signal.signal))
+                    put("offset", signal.pathOffset.toPrecise().meters)
+                }
+            }
+        }
+    }
+
+    override fun recordTick(train: Int) = buildJsonObject {
+        putJsonArray("aspects") {
+            for (signal in recordedSignals[train]) {
+                add(lastSignalStates[train][signal.signal]?.getEnum("aspect"))
             }
         }
     }

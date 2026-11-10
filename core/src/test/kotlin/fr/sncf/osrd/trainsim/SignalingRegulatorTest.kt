@@ -114,4 +114,22 @@ class SignalingRegulatorTest {
             aspects,
         )
     }
+
+    @Test
+    fun testFiveTrainsStartingInARowQueueBehindTheFirstOne() {
+        val path = path("rt.buffer_stop.1->DA0", "rt.DA0->DA5")
+        val heads = listOf(8500.0, 6900.0, 5300.0, 3700.0, 1700.0)
+        val trains = heads.map { train(head = it.meters, path = path) }
+        val regulator = SignalingRegulator(infra, trains)
+
+        val result = runTrains(regulator.scheduledTrains(), timeStep.seconds, regulator)
+        val stalled = assertIs<TimetableResult.Stalled>(result)
+
+        assertEquals(listOf(1, 2, 3, 4), stalled.blocked)
+        assertTrue(trains[0].simulator.isFinished)
+        assertEquals(
+            listOf("SA6_5", "SA6_4", "SA6_3", "SA6_2").map { signalPosition(it, path) },
+            trains.drop(1).map { it.simulator.state.position },
+        )
+    }
 }

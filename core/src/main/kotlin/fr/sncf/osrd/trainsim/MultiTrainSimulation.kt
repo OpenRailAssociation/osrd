@@ -47,6 +47,25 @@ fun runTrains(
         require(train.departure >= 0.microseconds) { "a train can't depart before the timetable" }
     }
 
+    val recorder =
+        (regulator as? RecordableRegulator)?.let { SimRecorder.fromEnv(trains, it) }
+            ?: return runTicks(trains, timeStep, regulator)
+    recorder.use {
+        val recording = Regulator {
+            regulator.regulate()
+            recorder.record()
+        }
+        val result = runTicks(trains, timeStep, recording)
+        recorder.record()
+        return result
+    }
+}
+
+private fun runTicks(
+    trains: List<ScheduledTrain>,
+    timeStep: PreciseDuration,
+    regulator: Regulator,
+): TimetableResult {
     var clock = 0.microseconds
     while (trains.any { !it.simulator.isFinished }) {
         var tickEnd = clock + timeStep
