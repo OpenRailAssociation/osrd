@@ -16,31 +16,35 @@ type UserInfo = {
 function RoleTag({ userRole }: { userRole: Role }) {
   const { t } = useTranslation('admin-dashboard');
   const text = t(`roles.${userRole}`, { defaultValue: 'unknown' });
-  return <li data-role={userRole}>{text}</li>;
+  return (
+    <li className="role-tag" data-role={userRole}>
+      {text}
+    </li>
+  );
 }
 
 function Row({ name, identities, groups, roles }: UserInfo) {
   return (
-    <tr>
+    <tr className="user-row">
       <td>{name}</td>
       <td>
+        <ul className="identities-list">
+          {identities.map((identity) => (
+            <li key={identity}>{identity}</li>
+          ))}
+        </ul>
+      </td>
+      <td className="groups-list">
         <ul>
-          {identities.map((identity, index) => (
-            <li key={index}>{identity}</li>
+          {groups.map((group) => (
+            <li key={group}>{group}</li>
           ))}
         </ul>
       </td>
       <td>
-        <ul>
-          {groups.map((group, index) => (
-            <li key={index}>{group}</li>
-          ))}
-        </ul>
-      </td>
-      <td>
-        <ul>
-          {roles.map((role, index) => (
-            <RoleTag key={index} userRole={role} />
+        <ul className="roles-list">
+          {roles.map((role) => (
+            <RoleTag key={role} userRole={role} />
           ))}
         </ul>
       </td>

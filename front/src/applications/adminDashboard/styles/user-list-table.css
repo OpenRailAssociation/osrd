@@ -30,21 +30,21 @@
       margin-left: auto;
     }
   }
+}
 
-  tr {
-    border-top: 1px solid rgba(1, 1, 1, 0.25);
+.user-row {
+  border-top: 1px solid rgba(1, 1, 1, 0.25);
 
-    &:last-child {
-      border-bottom: 1px solid rgba(1, 1, 1, 0.25);
-    }
+  &:last-child {
+    border-bottom: 1px solid rgba(1, 1, 1, 0.25);
+  }
 
-    &:nth-child(even) {
-      background-color: white;
-    }
+  &:nth-child(even) {
+    background-color: white;
+  }
 
-    &:nth-child(odd) {
-      background-color: var(--grey5);
-    }
+  &:nth-child(odd) {
+    background-color: var(--grey5);
   }
 
   td {
@@ -58,52 +58,46 @@
     &:last-child {
       padding-right: 16px;
     }
-
-    ul {
-      margin: 0;
-    }
   }
 
-  td:nth-child(2) {
-    /* user's groups */
-    li {
-      color: rgba(121, 118, 113, 1);
-    }
+  ul {
+    margin: 0;
   }
 
-  td:nth-child(4) {
-    /* roles */
-    ul {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
+  .identities-list {
+    color: rgba(121, 118, 113, 1);
+  }
+
+  .roles-list {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .role-tag {
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 3px;
+    padding: 0 4px;
+    text-wrap: nowrap;
+
+    &[data-role='Admin'] {
+      background-color: var(--trainYellow30);
+      color: black;
     }
 
-    li {
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: 3px;
-      padding: 0 4px;
-      text-wrap: nowrap;
-
-      &[data-role='Admin'] {
-        background-color: var(--trainYellow30);
-        color: black;
-      }
-
-      &[data-role='Stdcm'] {
-        background-color: var(--trainBlue50);
-        color: white;
-      }
-
-      &[data-role='OperationalStudies'] {
-        background-color: var(--trainGreen50);
-        color: white;
-      }
-
-      /* unknown role */
-      background-color: red;
-      color: yellow;
+    &[data-role='Stdcm'] {
+      background-color: var(--trainBlue50);
+      color: white;
     }
+
+    &[data-role='OperationalStudies'] {
+      background-color: var(--trainGreen50);
+      color: white;
+    }
+
+    /* unknown role */
+    background-color: red;
+    color: yellow;
   }
 }
