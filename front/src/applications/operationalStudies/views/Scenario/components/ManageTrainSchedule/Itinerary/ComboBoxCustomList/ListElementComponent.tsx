@@ -7,6 +7,7 @@ import './ListElementComponent.scss';
 
 export type OpSecondaryCode = {
   code: string | null;
+  name: string | null;
   isCandidate?: boolean;
   isBestSuggestion?: boolean;
 };
@@ -73,6 +74,7 @@ export const ListElementComponent = ({
               'op-suggestion-secondary-code--inactive': secondaryCode.isCandidate === false,
             })}
             disabled={secondaryCode.isCandidate === false}
+            title={secondaryCode.name ?? undefined}
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
