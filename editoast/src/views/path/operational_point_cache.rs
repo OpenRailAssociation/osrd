@@ -364,16 +364,14 @@ impl OperationalPointCache {
         }
     }
 
-    pub fn get_reference(&self, op_ref: OperationalPointReference) -> Option<&OperationalPoint> {
+    pub fn get_reference(&self, op_ref: &OperationalPointReference) -> Option<&OperationalPoint> {
         match op_ref {
-            OperationalPointReference::Id {
-                ref operational_point,
-            } => self
+            OperationalPointReference::Id { operational_point } => self
                 .get_from_id(&operational_point.0)
                 .map(|op_model| &op_model.schema),
             OperationalPointReference::Domestic {
                 country_code,
-                ref main_code,
+                main_code,
                 secondary_code,
             } => self
                 .get_from_domestic(&Domestic {
@@ -386,7 +384,7 @@ impl OperationalPointCache {
                 uic,
                 secondary_code,
             } => self
-                .get_from_uic(&(uic, secondary_code.clone()))
+                .get_from_uic(&(*uic, secondary_code.clone()))
                 .map(|op| &op.schema),
         }
     }

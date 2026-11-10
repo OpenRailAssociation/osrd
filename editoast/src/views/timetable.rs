@@ -674,7 +674,7 @@ pub(in crate::views) async fn get_local_track_names(
             local_track_names
                 .iter()
                 .filter_map(|(op_ref, names)| {
-                    let op = op_cache.get_reference(op_ref.clone())?;
+                    let op = op_cache.get_reference(op_ref)?;
                     Some((NonBlankString::from(&op.id.0), names.clone()))
                 })
                 .into_grouping_map()
@@ -686,7 +686,7 @@ pub(in crate::views) async fn get_local_track_names(
         let result: HashMap<NonBlankString, HashSet<NonBlankString>> = operational_point_references
             .into_iter()
             .map(|(key, op_ref)| {
-                let track_names = match op_cache.get_reference(op_ref.clone()) {
+                let track_names = match op_cache.get_reference(&op_ref) {
                     Some(op) => op_id_to_local_track_names
                         .get(&op.id.0)
                         .cloned()
