@@ -241,7 +241,7 @@ image = { version = "0.25.9", default-features = false, features = [
 inventory = "0.3"
 itertools.workspace = true
 jiff.workspace = true
-json-patch = { version = "4.1.0", default-features = false, features = [
+json-patch = { version = "5.0.0", default-features = false, features = [
   "utoipa",
 ] }
 linkme.workspace = true
