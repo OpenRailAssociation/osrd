@@ -6,6 +6,18 @@
     "OperationalStudies": "Operational Studies",
     "Stdcm": "ST DCM"
   },
+  "userForm": {
+    "addIdentity": "Add an identity",
+    "addUser": "Add user",
+    "cancel": "Cancel",
+    "chooseProvider": "Choose",
+    "deleteIdentity": "Delete identity",
+    "groups": "Groups",
+    "identifier": "Identifier",
+    "name": "Name",
+    "provider": "Provider",
+    "rolesLabel": "Roles"
+  },
   "users_one": "{{count}} user",
   "users_other": "{{count}} users"
 }
