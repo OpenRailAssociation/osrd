@@ -45,9 +45,7 @@ pub(in crate::views) async fn health(
     }): State<AppState>,
 ) -> Result<&'static str> {
     tokio::time::timeout(
-        health_check_timeout
-            .to_std()
-            .expect("timeout should be valid at this point"),
+        health_check_timeout.unsigned_abs(),
         check_health(db_pool, valkey_client, core_client, &openfga),
     )
     .await
