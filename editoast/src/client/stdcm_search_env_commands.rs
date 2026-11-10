@@ -1,10 +1,9 @@
-use chrono::DateTime;
-use chrono::Duration;
-use chrono::Utc;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPool;
+use jiff::SignedDuration;
+use jiff::Timestamp;
 use models::ElectricalProfileSet;
 use models::Infra;
 use models::WorkScheduleGroup;
@@ -124,10 +123,10 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
     pub work_schedule_group_id: Option<i64>,
     /// If omitted, set to the earliest train start time in the timetable
     #[arg(long)]
-    pub search_window_begin: Option<DateTime<Utc>>,
+    pub search_window_begin: Option<Timestamp>,
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
-    pub search_window_end: Option<DateTime<Utc>>,
+    pub search_window_end: Option<Timestamp>,
     /// List of operational points
     #[arg(long, num_args = 1.., value_delimiter = ' ')]
     pub operational_points: Option<Vec<i64>>,
@@ -176,10 +175,10 @@ async fn set_stdcm_search_env_from_scenario(
         .electrical_profile_set_id(scenario.electrical_profile_set_id)
         .work_schedule_group_id(args.work_schedule_group_id)
         .timetable_id(timetable_id)
-        .search_window_begin(begin)
-        .search_window_end(end)
-        .enabled_from(Utc::now())
-        .enabled_until(Utc::now() + Duration::days(1000))
+        .search_window_begin(begin.into())
+        .search_window_end(end.into())
+        .enabled_from(Timestamp::now().into())
+        .enabled_until((Timestamp::now() + SignedDuration::from_hours(1000 * 24)).into())
         .allowed_tracks(parse_allowed_tracks(args.allowed_tracks_json_path)?)
         .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
         .default_speed_limit_tag(args.default_speed_limit_tag)
@@ -220,10 +219,10 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     pub default_speed_limit_tag: Option<String>,
     /// If omitted, set to the earliest train start time in the timetable
     #[arg(long)]
-    pub search_window_begin: Option<DateTime<Utc>>,
+    pub search_window_begin: Option<Timestamp>,
     /// If omitted, set to the latest train start time in the timetable plus one day
     #[arg(long)]
-    pub search_window_end: Option<DateTime<Utc>>,
+    pub search_window_end: Option<Timestamp>,
     /// Path to the file that contains the allowed tracks ids for STDCM requests
     pub allowed_tracks_json_path: Option<PathBuf>,
     /// Path to the file that contains the mandatory operational point stops
@@ -265,10 +264,10 @@ async fn set_stdcm_search_env_from_scratch(
         .electrical_profile_set_id(args.electrical_profile_set_id)
         .work_schedule_group_id(args.work_schedule_group_id)
         .timetable_id(args.timetable_id)
-        .search_window_begin(begin)
-        .search_window_end(end)
-        .enabled_from(Utc::now())
-        .enabled_until(Utc::now() + Duration::days(1000))
+        .search_window_begin(begin.into())
+        .search_window_end(end.into())
+        .enabled_from(Timestamp::now().into())
+        .enabled_until((Timestamp::now() + SignedDuration::from_hours(1000 * 24)).into())
         .operational_points(args.operational_points.unwrap_or_default())
         .operational_points_id_filtered(args.operational_points_id_filtered.unwrap_or_default())
         .allowed_tracks(parse_allowed_tracks(args.allowed_tracks_json_path)?)
@@ -284,10 +283,10 @@ async fn set_stdcm_search_env_from_scratch(
 
 async fn resolve_search_window(
     timetable_id: i64,
-    search_window_begin: Option<DateTime<Utc>>,
-    search_window_end: Option<DateTime<Utc>>,
+    search_window_begin: Option<Timestamp>,
+    search_window_end: Option<Timestamp>,
     conn: &mut DbConnection,
-) -> anyhow::Result<(DateTime<Utc>, DateTime<Utc>)> {
+) -> anyhow::Result<(Timestamp, Timestamp)> {
     let (begin, end) = if let (Some(begin), Some(end)) = (search_window_begin, search_window_end) {
         (begin, end)
     } else {
@@ -306,12 +305,11 @@ async fn resolve_search_window(
             anyhow::bail!("{error_msg}");
         };
 
-        let begin = search_window_begin.unwrap_or(
-            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(*min)).unwrap(),
-        );
+        let begin = search_window_begin
+            .unwrap_or(Timestamp::from_millisecond(millisecond::i64::from(*min)).unwrap());
         let end = search_window_end.unwrap_or(
-            DateTime::<Utc>::from_timestamp_millis(millisecond::i64::from(*max)).unwrap()
-                + Duration::days(1),
+            Timestamp::from_millisecond(millisecond::i64::from(*max)).unwrap()
+                + SignedDuration::from_hours(24),
         );
         (begin, end)
     };
@@ -338,6 +336,8 @@ async fn show_stdcm_search_env(conn: &mut DbConnection) -> anyhow::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr as _;
+
     use crate::client::generate_temp_file;
     use crate::fixtures::create_electrical_profile_set;
     use crate::fixtures::create_empty_infra;
@@ -348,8 +348,6 @@ mod tests {
     use crate::fixtures::simple_paced_train_changeset;
 
     use super::*;
-    use chrono::DateTime;
-    use chrono::Utc;
     use database::DbConnection;
     use database::DbConnectionPool;
     use rstest::rstest;
@@ -357,8 +355,8 @@ mod tests {
     use serde_json::json;
     use unit_system::quantities::Offset;
 
-    fn make_datetime(s: &str) -> DateTime<Utc> {
-        DateTime::parse_from_rfc3339(s).unwrap().to_utc()
+    fn make_datetime(s: &str) -> Timestamp {
+        Timestamp::from_str(s).unwrap()
     }
 
     async fn create_trains_from_start_times(
@@ -402,10 +400,10 @@ mod tests {
     )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn resolve_search_window_works(
-        #[case] search_window_begin: Option<DateTime<Utc>>,
-        #[case] search_window_end: Option<DateTime<Utc>>,
-        #[case] expected_begin: DateTime<Utc>,
-        #[case] expected_end: DateTime<Utc>,
+        #[case] search_window_begin: Option<Timestamp>,
+        #[case] search_window_end: Option<Timestamp>,
+        #[case] expected_begin: Timestamp,
+        #[case] expected_end: Timestamp,
     ) {
         let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
@@ -455,8 +453,8 @@ mod tests {
     #[case::begin_none(None, Some(make_datetime("2000-01-01 08:00:00Z")))]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn resolve_search_window_incompatible_dates(
-        #[case] search_window_begin: Option<DateTime<Utc>>,
-        #[case] search_window_end: Option<DateTime<Utc>>,
+        #[case] search_window_begin: Option<Timestamp>,
+        #[case] search_window_end: Option<Timestamp>,
     ) {
         let db_pool = DbConnectionPool::for_tests();
         let conn = &mut db_pool.get_ok();
@@ -537,11 +535,11 @@ mod tests {
 
         assert_eq!(
             search_env.search_window_begin,
-            make_datetime("2000-01-01 12:00:00Z")
+            make_datetime("2000-01-01 12:00:00Z").into()
         );
         assert_eq!(
             search_env.search_window_end,
-            make_datetime("2000-02-03 08:00:00Z")
+            make_datetime("2000-02-03 08:00:00Z").into()
         );
 
         assert_eq!(search_env.allowed_tracks, Some(allowed_tracks));
@@ -609,11 +607,11 @@ mod tests {
 
         assert_eq!(
             search_env.search_window_begin,
-            make_datetime("2000-01-01 12:00:00Z")
+            make_datetime("2000-01-01 12:00:00Z").into()
         );
         assert_eq!(
             search_env.search_window_end,
-            make_datetime("2000-02-03 08:00:00Z")
+            make_datetime("2000-02-03 08:00:00Z").into()
         );
 
         assert_eq!(search_env.operational_points.to_vec(), operational_points);
@@ -701,11 +699,11 @@ mod tests {
 
         assert_eq!(
             search_env.search_window_begin,
-            make_datetime("2000-01-01 12:00:00Z")
+            make_datetime("2000-01-01 12:00:00Z").into()
         );
         assert_eq!(
             search_env.search_window_end,
-            make_datetime("2000-02-03 08:00:00Z")
+            make_datetime("2000-02-03 08:00:00Z").into()
         );
 
         assert_eq!(search_env.forced_op_stops, Some(forced_op_stops));

@@ -10,12 +10,11 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use chrono::DateTime;
-use chrono::Utc;
 use database::DbConnectionPool;
 use derive_more::From;
 use editoast_derive::ViewError;
 use itertools::Itertools as _;
+use jiff::Timestamp;
 use models::prelude::*;
 use models::stdcm_search_environment::StdcmSearchEnvironment;
 use schemas::infra::OperationalPointStop;
@@ -67,10 +66,10 @@ pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     work_schedule_group_id: Option<i64>,
     temporary_speed_limit_group_id: Option<i64>,
     timetable_id: i64,
-    search_window_begin: DateTime<Utc>,
-    search_window_end: DateTime<Utc>,
-    enabled_from: DateTime<Utc>,
-    enabled_until: DateTime<Utc>,
+    search_window_begin: Timestamp,
+    search_window_end: Timestamp,
+    enabled_from: Timestamp,
+    enabled_until: Timestamp,
     allowed_tracks: Option<HashMap<String, HashSet<String>>>,
     forced_op_stops: Option<HashSet<OperationalPointStop>>,
     operational_points: Option<Vec<i64>>,
@@ -87,10 +86,10 @@ struct StdcmSearchEnvironmentResponse {
     work_schedule_group_id: Option<i64>,
     temporary_speed_limit_group_id: Option<i64>,
     timetable_id: i64,
-    search_window_begin: DateTime<Utc>,
-    search_window_end: DateTime<Utc>,
-    enabled_from: DateTime<Utc>,
-    enabled_until: DateTime<Utc>,
+    search_window_begin: Timestamp,
+    search_window_end: Timestamp,
+    enabled_from: Timestamp,
+    enabled_until: Timestamp,
     /// Map of a gauge with their authorized track section ids.
     /// None means no zones restrictions.
     #[schema(required)]
@@ -156,10 +155,10 @@ impl From<StdcmSearchEnvironmentCreateForm>
             .work_schedule_group_id(form.work_schedule_group_id)
             .temporary_speed_limit_group_id(form.temporary_speed_limit_group_id)
             .timetable_id(form.timetable_id)
-            .search_window_begin(form.search_window_begin)
-            .search_window_end(form.search_window_end)
-            .enabled_from(form.enabled_from)
-            .enabled_until(form.enabled_until)
+            .search_window_begin(form.search_window_begin.into())
+            .search_window_end(form.search_window_end.into())
+            .enabled_from(form.enabled_from.into())
+            .enabled_until(form.enabled_until.into())
             .allowed_tracks(form.allowed_tracks)
             .operational_points(form.operational_points.unwrap_or_default())
             .operational_points_id_filtered(form.operational_points_id_filtered.unwrap_or_default())
@@ -189,10 +188,10 @@ impl From<models::stdcm_search_environment::StdcmSearchEnvironment>
             work_schedule_group_id: from.work_schedule_group_id,
             temporary_speed_limit_group_id: from.temporary_speed_limit_group_id,
             timetable_id: from.timetable_id,
-            search_window_begin: from.search_window_begin,
-            search_window_end: from.search_window_end,
-            enabled_from: from.enabled_from,
-            enabled_until: from.enabled_until,
+            search_window_begin: from.search_window_begin.into(),
+            search_window_end: from.search_window_end.into(),
+            enabled_from: from.enabled_from.into(),
+            enabled_until: from.enabled_until.into(),
             allowed_tracks: from.allowed_tracks,
             forced_op_stops: from.forced_op_stops,
             operational_points: if !from.operational_points.is_empty() {
@@ -314,12 +313,13 @@ pub(in crate::views) async fn list(
 #[cfg(test)]
 pub mod tests {
     use std::collections::HashSet;
+    use std::str::FromStr as _;
 
     use axum::http::StatusCode;
-    use chrono::Duration;
-    use chrono::DurationRound as _;
-    use chrono::TimeZone as _;
-    use chrono::Utc;
+    use jiff::RoundMode;
+    use jiff::SignedDuration;
+    use jiff::TimestampRound;
+    use jiff::Unit;
     use models::Timetable;
     use pretty_assertions::assert_eq;
 
@@ -348,10 +348,10 @@ pub mod tests {
             work_schedule_group_id: Some(work_schedule_group.id),
             temporary_speed_limit_group_id: Some(temporary_speed_limit_group.id),
             timetable_id: timetable.id,
-            search_window_begin: Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap(),
-            search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
-            enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
-            enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            search_window_begin: Timestamp::from_str("2024-01-02T00:00:00Z").unwrap(),
+            search_window_end: Timestamp::from_str("2024-01-15T00:00:00Z").unwrap(),
+            enabled_from: Timestamp::from_str("2024-01-01T00:00:00Z").unwrap(),
+            enabled_until: Timestamp::from_str("2024-01-01T23:59:59Z").unwrap(),
             operational_points: Some(Vec::from([1, 2, 3])),
             operational_points_id_filtered: Vec::from(["uuid-1".to_string(), "uuid-2".to_string()])
                 .into(),
@@ -402,10 +402,10 @@ pub mod tests {
             work_schedule_group_id: Some(work_schedule_group.id),
             temporary_speed_limit_group_id: Some(temporary_speed_limit_group.id),
             timetable_id: timetable.id,
-            search_window_begin: Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap(),
-            search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
-            enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
-            enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            search_window_begin: Timestamp::from_str("2024-01-02T00:00:00Z").unwrap(),
+            search_window_end: Timestamp::from_str("2024-01-15T00:00:00Z").unwrap(),
+            enabled_from: Timestamp::from_str("2024-01-01T00:00:00Z").unwrap(),
+            enabled_until: Timestamp::from_str("2024-01-01T23:59:59Z").unwrap(),
             operational_points: Some(Vec::from([1, 2, 3])),
             operational_points_id_filtered: Vec::from(["uuid-1".to_string(), "uuid-2".to_string()])
                 .into(),
@@ -454,10 +454,10 @@ pub mod tests {
             work_schedule_group_id: Some(work_schedule_group.id),
             temporary_speed_limit_group_id: Some(temporary_speed_limit_group.id),
             timetable_id: hourly_timetable.id,
-            search_window_begin: Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap(),
-            search_window_end: Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap(),
-            enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
-            enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
+            search_window_begin: Timestamp::from_str("2024-01-02T00:00:00Z").unwrap(),
+            search_window_end: Timestamp::from_str("2024-01-15T00:00:00Z").unwrap(),
+            enabled_from: Timestamp::from_str("2024-01-01T00:00:00Z").unwrap(),
+            enabled_until: Timestamp::from_str("2024-01-01T23:59:59Z").unwrap(),
             operational_points: Some(Vec::from([1, 2, 3])),
             operational_points_id_filtered: Vec::from(["uuid-1".to_string(), "uuid-2".to_string()])
                 .into(),
@@ -493,10 +493,22 @@ pub mod tests {
             electrical_profile_set,
         ) = stdcm_search_env_fixtures(&mut pool.get_ok()).await;
 
-        let enabled_from =
-            Utc::now().duration_trunc(Duration::seconds(1)).unwrap() - Duration::days(1);
-        let enabled_until =
-            Utc::now().duration_trunc(Duration::seconds(1)).unwrap() + Duration::days(1);
+        let enabled_from = Timestamp::now()
+            .round(
+                TimestampRound::new()
+                    .smallest(Unit::Second)
+                    .mode(RoundMode::Trunc),
+            )
+            .unwrap()
+            - SignedDuration::from_hours(24);
+        let enabled_until = Timestamp::now()
+            .round(
+                TimestampRound::new()
+                    .smallest(Unit::Second)
+                    .mode(RoundMode::Trunc),
+            )
+            .unwrap()
+            + SignedDuration::from_hours(24);
 
         let best_env = StdcmSearchEnvironment::changeset()
             .infra_id(infra.id)
@@ -504,18 +516,18 @@ pub mod tests {
             .work_schedule_group_id(Some(work_schedule_group.id))
             .temporary_speed_limit_group_id(Some(temporary_speed_limit_group.id))
             .timetable_id(timetable.id)
-            .search_window_begin(Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap())
-            .search_window_end(Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap())
-            .enabled_from(enabled_from)
-            .enabled_until(enabled_until);
+            .search_window_begin(Timestamp::from_str("2024-01-01T00:00:00Z").unwrap().into())
+            .search_window_end(Timestamp::from_str("2024-01-15T00:00:00Z").unwrap().into())
+            .enabled_from(enabled_from.into())
+            .enabled_until(enabled_until.into());
         let too_old = best_env
             .clone()
-            .enabled_from(enabled_from - Duration::days(3))
-            .enabled_until(enabled_until - Duration::days(3));
+            .enabled_from((enabled_from - SignedDuration::from_hours(3 * 24)).into())
+            .enabled_until((enabled_until - SignedDuration::from_hours(3 * 24)).into());
         let too_young = best_env
             .clone()
-            .enabled_from(enabled_from + Duration::days(3))
-            .enabled_until(enabled_until + Duration::days(3));
+            .enabled_from((enabled_from + SignedDuration::from_hours(3 * 24)).into())
+            .enabled_until((enabled_until + SignedDuration::from_hours(3 * 24)).into());
 
         for env in [best_env, too_old, too_young] {
             env.create(&mut pool.get_ok())
@@ -572,10 +584,10 @@ pub mod tests {
             .work_schedule_group_id(Some(work_schedule_group.id))
             .temporary_speed_limit_group_id(Some(temporary_speed_limit_group.id))
             .timetable_id(timetable.id)
-            .search_window_begin(Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap())
-            .search_window_end(Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap())
-            .enabled_from(Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap())
-            .enabled_until(Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap())
+            .search_window_begin(Timestamp::from_str("2024-01-02T00:00:00Z").unwrap().into())
+            .search_window_end(Timestamp::from_str("2024-01-15T00:00:00Z").unwrap().into())
+            .enabled_from(Timestamp::from_str("2024-01-01T00:00:00Z").unwrap().into())
+            .enabled_until(Timestamp::from_str("2024-01-01T23:59:59Z").unwrap().into())
             .create(&mut pool.get_ok())
             .await
             .expect("Failed to create stdcm search environment");
@@ -614,10 +626,10 @@ pub mod tests {
             .work_schedule_group_id(Some(work_schedule_group.id))
             .temporary_speed_limit_group_id(Some(temporary_speed_limit_group.id))
             .timetable_id(timetable.id)
-            .search_window_begin(Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap())
-            .search_window_end(Utc.with_ymd_and_hms(2024, 1, 15, 0, 0, 0).unwrap())
-            .enabled_from(Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap())
-            .enabled_until(Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap())
+            .search_window_begin(Timestamp::from_str("2024-01-02T00:00:00Z").unwrap().into())
+            .search_window_end(Timestamp::from_str("2024-01-15T00:00:00Z").unwrap().into())
+            .enabled_from(Timestamp::from_str("2024-01-01T00:00:00Z").unwrap().into())
+            .enabled_until(Timestamp::from_str("2024-01-01T23:59:59Z").unwrap().into())
             .create(&mut pool.get_ok())
             .await
             .expect("Failed to create stdcm search environment");
