@@ -12,6 +12,8 @@ const buildRow = (overrides: Partial<TimesStopsRow> = {}): TimesStopsRow => ({
   opOnPathIndex: 1,
   stepStatus: 'allHonored',
   name: 'Some station',
+  secondaryCode: null,
+  secondaryName: null,
   track: 'track',
   hasRequestedTrack: false,
   location: {} as TimesStopsRow['location'],

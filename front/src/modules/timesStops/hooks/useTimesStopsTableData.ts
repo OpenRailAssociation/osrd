@@ -72,6 +72,7 @@ type BuildTableRowParams = {
   opOnPathIndex: number;
   name?: string;
   secondaryCode?: string | null;
+  secondaryName?: string | null;
   trackName?: string;
   hasRequestedTrack?: boolean;
   startDate: StartTime;
@@ -95,6 +96,7 @@ const buildTableRow = ({
   opOnPathIndex,
   name,
   secondaryCode = null,
+  secondaryName = null,
   trackName,
   hasRequestedTrack = false,
   startDate,
@@ -179,6 +181,7 @@ const buildTableRow = ({
     opOnPathIndex,
     name: name ?? '',
     secondaryCode,
+    secondaryName,
     track: trackName ?? '',
     requestedArrival,
     computedArrival: computedArrivalDate,
@@ -309,6 +312,7 @@ const useTimesStopsTableData = (
           t
         );
         const secondaryCode = getOperationalPointSecondaryCode(matchingOp, pathStep.location);
+        const secondaryName = matchingOp?.secondary_name;
 
         const pathStepLocation = pathStep.location;
 
@@ -369,6 +373,7 @@ const useTimesStopsTableData = (
           opOnPathIndex: -1,
           name,
           secondaryCode,
+          secondaryName,
           trackName,
           hasRequestedTrack,
           startDate,
@@ -431,6 +436,7 @@ const useTimesStopsTableData = (
               opOnPathIndex: opIndex,
               name: op.name,
               secondaryCode: op.secondary_code,
+              secondaryName: op.secondary_name,
               trackName,
               startDate,
               computedArrival,
