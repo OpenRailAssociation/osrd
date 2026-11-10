@@ -11,16 +11,19 @@ import type {
   OperationalPointReference,
   CoreTrainPath,
   PacedTrainException,
+  TimetableType,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import { withPacedExceptions } from 'modules/trainSchedule/helpers/pacedTrain';
 import { getProjectionType, getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { startTimeToMs, type StartTime } from 'utils/duration';
 
 type UseLazyProjectTrainsOptions = {
   infraId: number;
   timetableId: number;
+  timetableType: TimetableType;
   electricalProfileSetId?: number;
   path?: CoreTrainPath;
   operationalPointDistances?: number[];
@@ -46,6 +49,7 @@ const DEFAULT_OP_REFERENCES: OperationalPointReference[] = [];
 const useLazyProjectTrains = ({
   infraId,
   timetableId,
+  timetableType,
   electricalProfileSetId,
   path,
   operationalPointDistances = DEFAULT_OP_DISTANCES,
@@ -61,12 +65,15 @@ const useLazyProjectTrains = ({
   const isSimulationEnabled = useSelector(getIsSimulationEnabled);
   const [allTrainsProjected, setAllTrainsProjected] = useState(false);
 
-  const onProgress = useCallback((results: Map<number, ProjectionResult>) => {
-    setProjectedTrainsById((prev) =>
-      upsertNewProjectedTrains(prev, results, trainSchedulesByIdRef.current)
-    );
-    setAllTrainsProjected(loaderRef.current === null || loaderRef.current.pending.length === 0);
-  }, []);
+  const onProgress = useCallback(
+    (results: Map<number, ProjectionResult>) => {
+      setProjectedTrainsById((prev) =>
+        upsertNewProjectedTrains(prev, results, trainSchedulesByIdRef.current, timetableType)
+      );
+      setAllTrainsProjected(loaderRef.current === null || loaderRef.current.pending.length === 0);
+    },
+    [timetableType]
+  );
 
   useEffect(() => {
     const baseOptions = {
@@ -142,7 +149,7 @@ const useLazyProjectTrains = ({
   }, []);
 
   const updateProjectedTrainScheduleDepartureTime = useCallback(
-    (id: number, newDeparture: Date, shiftedExceptions?: PacedTrainException[]) => {
+    (id: number, newDeparture: StartTime, shiftedExceptions?: PacedTrainException[]) => {
       setProjectedTrainsById((prev) => {
         const result = prev.get(id);
         if (!result) {
@@ -164,7 +171,7 @@ const useLazyProjectTrains = ({
         trainSchedulesByIdRef.current.set(
           id,
           withPacedExceptions(
-            { ...trainSchedule, start_time: newDeparture.getTime() },
+            { ...trainSchedule, start_time: startTimeToMs(newDeparture) },
             shiftedExceptions
           )
         );

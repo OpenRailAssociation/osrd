@@ -10,7 +10,12 @@ import getTrainScheduleRepeatOffsets, {
 } from 'modules/simulationResult/helpers/getTrainScheduleRepeatOffsets';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import computeOccurrenceName from 'modules/trainSchedule/helpers/computeOccurrenceName';
-import { addDurationToDate, type Duration } from 'utils/duration';
+import {
+  addDurationToStartTime,
+  msToStartTime,
+  startTimeToMs,
+  type Duration,
+} from 'utils/duration';
 import {
   formatEditoastIdToTrainScheduleId,
   isIndexedOccurrenceId,
@@ -22,26 +27,27 @@ export const EXCEPTION_SUFFIX = '≠';
 function repeatOccurrencesInRange(
   projectedTrain: TrainSpaceTimeData,
   timeWindow: Duration,
-  occurrences: BareOccurrence<Date>[],
+  occurrences: BareOccurrence[],
   timeRange: TimeRange
-): BareOccurrence<Date>[] {
+): BareOccurrence[] {
   const repeatOffsets = getTrainScheduleRepeatOffsets(projectedTrain, timeRange);
 
   // An occurrence dragged out of the first time window is repeated from its copy inside it.
   const firstPeriodOccurrences = occurrences.map((occurrence) => ({
     ...occurrence,
-    startTime: new Date(
-      occurrence.startTime.getTime() -
-        getFirstPeriodOffset(occurrence.startTime.getTime(), timeWindow)
+    startTime: msToStartTime(
+      startTimeToMs(occurrence.startTime) -
+        getFirstPeriodOffset(startTimeToMs(occurrence.startTime), timeWindow),
+      occurrence.startTime
     ),
   }));
 
-  const repeatedOccurrences: BareOccurrence<Date>[] = [];
+  const repeatedOccurrences: BareOccurrence[] = [];
   for (const offset of repeatOffsets) {
     for (const occurrence of firstPeriodOccurrences) {
       repeatedOccurrences.push({
         ...occurrence,
-        startTime: addDurationToDate(occurrence.startTime, offset),
+        startTime: addDurationToStartTime(occurrence.startTime, offset),
       });
     }
   }

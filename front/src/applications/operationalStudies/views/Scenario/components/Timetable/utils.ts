@@ -15,7 +15,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TrainScheduleWithDetails } from 'modules/trainSchedule/types';
-import { Duration } from 'utils/duration';
+import { Duration, startTimeToMs } from 'utils/duration';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 
@@ -265,8 +265,8 @@ export function computeLatestMidnight(trainSchedules: TrainScheduleResponse[], n
   }
 
   const latestStartTime = trainSchedules.map(
-    (trainSchedule: TrainScheduleResponse): Date | undefined => {
-      if (!trainSchedule.paced) return new Date(trainSchedule.start_time);
+    (trainSchedule: TrainScheduleResponse): number | undefined => {
+      if (!trainSchedule.paced) return trainSchedule.start_time;
 
       const occurrences = generateBareOccurrences({
         id: trainSchedule.id,
@@ -279,15 +279,13 @@ export function computeLatestMidnight(trainSchedules: TrainScheduleResponse[], n
       });
 
       return occurrences
-        .map(({ startTime }) => startTime)
-        .toSorted((a, b) => +b - +a)
+        .map(({ startTime }) => startTimeToMs(startTime))
+        .toSorted((a, b) => b - a)
         .at(0);
     }
   );
 
-  const midnight = new Date(
-    latestStartTime.toSorted((a, b) => (a && b ? +b - +a : 0)).at(0) ?? now
-  );
+  const midnight = new Date(latestStartTime.toSorted((a, b) => (a && b ? b - a : 0)).at(0) ?? now);
   midnight.setHours(0, 0, 0, 0);
 
   return midnight;

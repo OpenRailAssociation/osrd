@@ -15,6 +15,7 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
+import { startTimeToMs } from 'utils/duration';
 import {
   isOccurrenceId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -64,7 +65,7 @@ const formatSpaceTimeCurves = (
       }
     }
 
-    const departureTime = train.departureTime.getTime();
+    const departureTime = startTimeToMs(train.departureTime);
 
     return train.spaceTimeCurves.map((curve) => ({
       key: `${train.key}-${curve.positions[0]}`,
