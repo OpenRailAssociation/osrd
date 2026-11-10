@@ -38,7 +38,12 @@ import PathStepSubForm, {
   type OnCustomOpCreation,
   type OnSubFormHasErrors,
 } from './PathStepSubForm';
-import { computePathStepCoordinates, formatOpLabel, isOpRefMetadata } from './utils';
+import {
+  computePathStepCoordinates,
+  formatOpLabel,
+  getUnrecognizedOpLabel,
+  isOpRefMetadata,
+} from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
 
@@ -327,8 +332,7 @@ const PathStepItem = ({
 
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
-    // Don't show invalid points in the combobox - they'll be shown in the error message instead
-    if (shouldShowInvalidMessage) {
+    if (shouldShowInvalidMessage && !unrecognizedWaypointsActivated) {
       return '';
     }
 
@@ -338,8 +342,18 @@ const PathStepItem = ({
       return formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode);
     }
 
+    if (shouldShowInvalidMessage) return getUnrecognizedOpLabel(pathStep.location);
+
     return undefined;
-  }, [inputValue, pathStepMetadata, isTrackOffset, trackOffsetLabel, shouldShowInvalidMessage]);
+  }, [
+    inputValue,
+    pathStepMetadata,
+    isTrackOffset,
+    trackOffsetLabel,
+    shouldShowInvalidMessage,
+    unrecognizedWaypointsActivated,
+    pathStep.location,
+  ]);
 
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
@@ -673,7 +687,7 @@ const PathStepItem = ({
             />
           </button>
         </div>
-        {shouldShowInvalidMessage && (
+        {shouldShowInvalidMessage && !unrecognizedWaypointsActivated && (
           <div className="invalid-step-message">{getInvalidMessage()}</div>
         )}
       </div>
