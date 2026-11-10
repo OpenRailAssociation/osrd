@@ -139,7 +139,7 @@ impl AppState {
                 pool_size,
             }: PostgresConfig,
         ) -> anyhow::Result<Arc<DbConnectionPool>> {
-            let pool = DbConnectionPool::try_initialize(database_url, pool_size).await?;
+            let pool = DbConnectionPool::try_initialize(database_url, pool_size)?;
             Ok(Arc::new(pool))
         }
         let db_pool_fut =
