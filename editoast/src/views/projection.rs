@@ -368,7 +368,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_train_details(simulations, train_schedules).await;
+    let trains_details = extract_train_details(simulations, train_schedules);
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
@@ -925,7 +925,7 @@ fn extract_curve_for_invalid_train_with_sim<T: TrainScheduleLike>(
     SpaceTimeCurve { positions, times }
 }
 
-pub async fn extract_train_details<T: TrainScheduleLike>(
+pub fn extract_train_details<T: TrainScheduleLike>(
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
     train_schedules: &[T],
 ) -> Vec<Option<TrainSimulationDetails>> {
