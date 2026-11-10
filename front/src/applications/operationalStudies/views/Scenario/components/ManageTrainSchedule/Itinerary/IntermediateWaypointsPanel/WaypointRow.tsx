@@ -50,7 +50,12 @@ const WaypointRow = ({ op, fallbackName, count, onAdd }: WaypointRowProps) => {
         {/* TODO: Replace this with the train-station icon from ui-icons once it's been added */}
         {station && <i className="icons-itinerary-train-station" />}
       </span>
-      <span className="intermediate-waypoints-panel__row-ch">{op?.secondary_code ?? ''}</span>
+      <span
+        className="intermediate-waypoints-panel__row-ch"
+        title={op?.secondary_name ?? undefined}
+      >
+        {op?.secondary_code ?? ''}
+      </span>
       {onAdd ? (
         <button
           type="button"
