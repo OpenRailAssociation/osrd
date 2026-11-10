@@ -1,9 +1,9 @@
 .user-list-table {
-  color: black;
+  color: var(--black100);
 
   caption {
     caption-side: top;
-    color: black;
+    color: var(--black100);
   }
 
   .user-list-header {
@@ -33,14 +33,14 @@
 }
 
 .user-row {
-  border-top: 1px solid rgba(1, 1, 1, 0.25);
+  border-top: 1px solid var(--black25);
 
   &:last-child {
-    border-bottom: 1px solid rgba(1, 1, 1, 0.25);
+    border-bottom: 1px solid var(--black25);
   }
 
   &:nth-child(even) {
-    background-color: white;
+    background-color: var(--white100);
   }
 
   &:nth-child(odd) {
@@ -65,7 +65,7 @@
   }
 
   .identities-list {
-    color: rgba(121, 118, 113, 1);
+    color: var(--grey50);
   }
 
   .roles-list {
@@ -83,17 +83,17 @@
 
     &[data-role='Admin'] {
       background-color: var(--trainYellow30);
-      color: black;
+      color: var(--black100);
     }
 
     &[data-role='Stdcm'] {
       background-color: var(--trainBlue50);
-      color: white;
+      color: var(--white100);
     }
 
     &[data-role='OperationalStudies'] {
       background-color: var(--trainGreen50);
-      color: white;
+      color: var(--white100);
     }
 
     /* unknown role */

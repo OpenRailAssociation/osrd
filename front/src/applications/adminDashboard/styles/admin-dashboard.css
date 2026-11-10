@@ -1,5 +1,5 @@
 body:has(.admin-dashboard) {
-  background-color: rgb(235, 235, 234);
+  background-color: var(--grey10);
 }
 
 .admin-dashboard {
@@ -30,7 +30,7 @@ body:has(.admin-dashboard) {
     height: 18px;
     box-shadow: 0 0 0 3px rgb(185 199 196 / 0.5);
     border-radius: 50%;
-    background-color: white;
+    background-color: var(--white100);
     color: #b9c7c4; /* TODO: check with @tsailly to see if we have a color from the design system here */
     font-weight: 600;
     display: grid;
@@ -46,7 +46,7 @@ body:has(.admin-dashboard) {
 div:has(> .admin-dashboard-users-table) {
   width: 60%;
   margin: 48px auto;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: var(--white100);
   overflow: hidden;
 }
 
@@ -61,8 +61,8 @@ div:has(> .admin-dashboard-users-table) {
   border-radius: 8px;
   box-shadow:
     0 2px 4px 0 rgba(0, 0, 0, 0.16),
-    0 4px 7px -3px rgba(24, 68, 239, 0.19),
-    0 1px 0 0 inset rgba(255, 255, 255, 1);
+    0 4px 7px -3px rgba(var(--primary60-rgb), 0.19),
+    0 1px 0 0 inset var(--white100);
   padding-bottom: 24px;
-  background-color: rgba(235, 235, 234, 1);
+  background-color: var(--grey10);
 }
