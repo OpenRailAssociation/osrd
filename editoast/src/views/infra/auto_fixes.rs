@@ -127,7 +127,7 @@ pub(in crate::views) async fn list_auto_fixes(
 
     let mut fixes = vec![];
     for _ in 0..MAX_AUTO_FIXES_ITERATIONS {
-        let infra_errors = generate_infra_errors(&infra_cache_clone).await;
+        let infra_errors = generate_infra_errors(&infra_cache_clone);
         let new_fixes = fix_infra(&mut infra_cache_clone, infra_errors)?;
         if new_fixes.is_empty() {
             // Every possible error is fixed
