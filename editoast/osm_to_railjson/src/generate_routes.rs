@@ -70,10 +70,16 @@ impl Graph {
         &mut self,
         track_sections: &[TrackSection],
         detectors: &[Detector],
+        detector_directions: &HashMap<Identifier, Direction>,
         buffer_stops: &[BufferStop],
         switches: &[Switch],
     ) {
-        self.edges_from_track_sections(track_sections, detectors, buffer_stops);
+        self.edges_from_track_sections(
+            track_sections,
+            detectors,
+            detector_directions,
+            buffer_stops,
+        );
         self.edges_from_switches(switches);
     }
 
@@ -81,9 +87,9 @@ impl Graph {
         &mut self,
         track_sections: &[TrackSection],
         detectors: &[Detector],
+        detector_directions: &HashMap<Identifier, Direction>,
         buffer_stops: &[BufferStop],
     ) {
-        // We need to split handle separately the signals that are forward
         let detectors_by_track = detectors
             .iter()
             .map(|detector| (&detector.track, detector))
@@ -101,48 +107,33 @@ impl Graph {
                 .get(*track)
                 .expect("A track must have a length");
 
-            // When going from start to end
-            // We only consider the last detector (closest to end) that is on the same track
+            // When going from start to end, use the last detector (closest to end) facing that direction.
             // All the other can be considered as block defining
-            let detector = detectors
+            // u---(d>)---v
+            detectors
                 .iter()
-                .max_by_key(|d| (d.position * 1000.0).round() as u64)
-                .expect("missing detector");
-            let d = Node::Detector(detector.id.clone());
-            self.add_directed_edge(
-                u.clone(),
-                d.clone(),
-                EdgeType::ToDetector,
-                detector.position,
-            );
-            debug_assert!((0.0..=length).contains(&detector.position));
-            self.add_directed_edge(
-                d.clone(),
-                v.clone(),
-                EdgeType::FromDetector(Direction::StartToStop),
-                length - detector.position,
-            );
+                .filter(|detector| {
+                    detector_directions.get(&detector.id) == Some(&Direction::StartToStop)
+                })
+                .max_by_key(|detector| (detector.position * 1000.0).round() as u64)
+                .map(|d| {
+                    self.add_edges_around_detector(&u, &v, d, Direction::StartToStop, length);
+                })
+                .unwrap_or(());
 
-            // When going from end to start
-            // We only consider the first detector (closest to start) that is on the same track
+            // When going from end to start, use the first detector (closest to start) facing that direction.
             // All the other can be considered as block defining
-            let detector = detectors
+            // u---(<d)---v
+            detectors
                 .iter()
-                .min_by_key(|d| (d.position * 1000.0).round() as u64) //Because floats aren’t sortable
-                .expect("missing detector");
-            let d = Node::Detector(detector.id.clone());
-            self.add_directed_edge(
-                v.clone(),
-                d.clone(),
-                EdgeType::ToDetector,
-                length - detector.position,
-            );
-            self.add_directed_edge(
-                d.clone(),
-                u.clone(),
-                EdgeType::FromDetector(Direction::StopToStart),
-                detector.position,
-            );
+                .filter(|detector| {
+                    detector_directions.get(&detector.id) == Some(&Direction::StopToStart)
+                })
+                .min_by_key(|detector| (detector.position * 1000.0).round() as u64)
+                .map(|d| {
+                    self.add_edges_around_detector(&u, &v, d, Direction::StopToStart, length);
+                })
+                .unwrap_or(());
         }
 
         for buffer in buffer_stops {
@@ -157,11 +148,27 @@ impl Graph {
         }
 
         for track in track_sections {
-            // We only consider tracks that have no detector for the given direction on them as we split them
+            // A directed track without a detector remains traversable as a single track edge.
             let u = Node::from_track_endpoint(&track.id, Endpoint::Begin);
             let v = Node::from_track_endpoint(&track.id, Endpoint::End);
-            if !detectors_by_track.contains_key(&track.id) {
-                self.add_symmetrical_edge(v.clone(), u.clone(), EdgeType::Track, track.length);
+            let track_detectors = detectors_by_track.get(&track.id);
+
+            // tracks Start to Stop without detector
+            if track_detectors.is_none_or(|detectors| {
+                !detectors.iter().any(|detector| {
+                    detector_directions.get(&detector.id) == Some(&Direction::StartToStop)
+                })
+            }) {
+                self.add_directed_edge(u.clone(), v.clone(), EdgeType::Track, track.length);
+            }
+
+            // tracks Stop to Start without detector
+            if track_detectors.is_none_or(|detectors| {
+                !detectors.iter().any(|detector| {
+                    detector_directions.get(&detector.id) == Some(&Direction::StopToStart)
+                })
+            }) {
+                self.add_directed_edge(v.clone(), u.clone(), EdgeType::Track, track.length);
             }
         }
     }
@@ -198,6 +205,39 @@ impl Graph {
                 }
             }
         }
+    }
+
+    // Adds edges from u -> d> -> v respectively u <- <d <- v
+    fn add_edges_around_detector(
+        &mut self,
+        u: &Node,
+        v: &Node,
+        detector: &Detector,
+        detector_direction: Direction,
+        edge_length: f64,
+    ) {
+        let d = Node::Detector(detector.id.clone());
+        debug_assert!((0.0..=edge_length).contains(&detector.position));
+
+        // When Stop -> Start turn edge
+        let (from, to, dist_to_detector) = match detector_direction {
+            Direction::StartToStop => (u, v, detector.position),
+            Direction::StopToStart => (v, u, edge_length - detector.position),
+        };
+
+        self.add_directed_edge(
+            from.clone(),
+            d.clone(),
+            EdgeType::ToDetector,
+            dist_to_detector,
+        );
+
+        self.add_directed_edge(
+            d.clone(),
+            to.clone(),
+            EdgeType::FromDetector(detector_direction),
+            edge_length - dist_to_detector,
+        );
     }
 
     fn add_directed_edge(&mut self, u: Node, v: Node, edge_type: EdgeType, length: f64) {
@@ -360,12 +400,19 @@ impl Graph {
 pub fn routes(
     track_sections: &[TrackSection],
     detectors: &[Detector],
+    detector_directions: &HashMap<Identifier, Direction>,
     buffer_stops: &[BufferStop],
     switches: &[Switch],
     max_route_length: Option<f64>,
 ) -> Vec<Route> {
     let mut graph = Graph::default();
-    graph.load(track_sections, detectors, buffer_stops, switches);
+    graph.load(
+        track_sections,
+        detectors,
+        detector_directions,
+        buffer_stops,
+        switches,
+    );
 
     let from_buffers = buffer_stops
         .iter()
@@ -386,14 +433,35 @@ mod tests {
     use schemas::infra::RailJson;
     use schemas::infra::TrackSection;
 
+    fn detector_directions(infra: &RailJson) -> HashMap<Identifier, Direction> {
+        infra
+            .signals
+            .iter()
+            .map(|signal| (signal.id.clone(), signal.direction))
+            .collect()
+    }
+
+    fn min_detector_directions() -> HashMap<Identifier, Direction> {
+        HashMap::from([
+            ("detector_forward".into(), Direction::StartToStop),
+            ("detector_backward".into(), Direction::StopToStart),
+        ])
+    }
+
     fn min_infra() -> RailJson {
         let track = TrackSection {
             id: "track".into(),
             length: 1.,
             ..Default::default()
         };
-        let detector = Detector {
-            id: "detector".into(),
+        let detector_forward = Detector {
+            id: "detector_forward".into(),
+            position: 0.5,
+            track: "track".into(),
+            ..Default::default()
+        };
+        let detector_backward = Detector {
+            id: "detector_backward".into(),
             position: 0.5,
             track: "track".into(),
             ..Default::default()
@@ -414,7 +482,7 @@ mod tests {
         RailJson {
             track_sections: vec![track],
             buffer_stops: vec![buffer_begin, buffer_end],
-            detectors: vec![detector],
+            detectors: vec![detector_forward, detector_backward],
             ..Default::default()
         }
     }
@@ -423,20 +491,24 @@ mod tests {
     fn build_graph() {
         let mut g = super::Graph::default();
         let railjson = min_infra();
+        let detector_directions = min_detector_directions();
         g.load(
             &railjson.track_sections,
             &railjson.detectors,
+            &detector_directions,
             &railjson.buffer_stops,
             &railjson.switches,
         );
         let begin = super::Node::BufferStop("buffer_begin".into());
         let end = super::Node::BufferStop("buffer_end".into());
-        let detector = super::Node::Detector("detector".into());
+        let detector_forward = super::Node::Detector("detector_forward".into());
+        let detector_backward = super::Node::Detector("detector_backward".into());
         // buffer, trackend, detector, trackend, buffer
-        assert_eq!(5, g.successors.len());
+        assert_eq!(6, g.successors.len());
         assert_eq!(1, g.successors[&begin].len());
         assert_eq!(1, g.successors[&end].len());
-        assert_eq!(2, g.successors[&detector].len());
+        assert_eq!(1, g.successors[&detector_forward].len());
+        assert_eq!(1, g.successors[&detector_backward].len());
     }
 
     #[test]
@@ -486,9 +558,11 @@ mod tests {
     /* --s-- one track, one detector, two buffers */
     fn minimal_routes() {
         let railjson = min_infra();
+        let detector_directions = min_detector_directions();
         let routes = super::routes(
             &railjson.track_sections,
             &railjson.detectors,
+            &detector_directions,
             &railjson.buffer_stops,
             &railjson.switches,
             None,
@@ -505,14 +579,16 @@ mod tests {
         let railjson =
             crate::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into(), false, None)
                 .unwrap();
+        let detector_directions = detector_directions(&railjson);
         let routes = super::routes(
             &railjson.track_sections,
             &railjson.detectors,
+            &detector_directions,
             &railjson.buffer_stops,
             &railjson.switches,
             None,
         );
-        assert_eq!(6, routes.len());
+        assert_eq!(5, routes.len());
         let routes_with_switches_count = routes
             .iter()
             .filter(|r| r.switches_directions.len() == 1)
