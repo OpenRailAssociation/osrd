@@ -33,7 +33,7 @@ pub struct TrainBlockOccupancyDetails {
     pub simulation_end_time: u64,
 }
 
-async fn extract_block_occupancy_details<T: TrainScheduleLike>(
+fn extract_block_occupancy_details<T: TrainScheduleLike>(
     simulations: Vec<Arc<simulation::Response>>,
     train_schedules: &[T],
 ) -> Vec<Option<TrainBlockOccupancyDetails>> {
@@ -157,7 +157,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     .collect();
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_block_occupancy_details(simulations, trains_schedules).await;
+    let trains_details = extract_block_occupancy_details(simulations, trains_schedules);
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
