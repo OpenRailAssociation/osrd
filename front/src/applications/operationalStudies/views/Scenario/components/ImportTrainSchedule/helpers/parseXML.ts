@@ -18,7 +18,7 @@ const uniqueTrainToPacedTrain = (
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
-): Omit<PacedTrain, 'train_schedule_set_id'> => ({
+): Omit<PacedTrain, 'timetable_id'> => ({
   ...uniqueTrain,
   train_name: pacedTrainId,
   paced: {

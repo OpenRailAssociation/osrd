@@ -131,7 +131,7 @@ export async function updateTrainSchedule({
       {
         ...formattedPacedTrain,
         id: trainScheduleId,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
         paced: formattedPacedTrain.paced
           ? { ...formattedPacedTrain.paced, exceptions: updatedExceptions }
           : undefined,
@@ -162,7 +162,7 @@ export async function updateTrainSchedule({
       trainScheduleId,
       {
         ...updatedTrainSchedule,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
       },
       dispatch
     );
@@ -196,7 +196,7 @@ export async function updateTrainSchedule({
       {
         ...updatedTrainSchedule,
         id: trainScheduleId,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
         ...(updatedTrainSchedule.paced && {
           paced: { ...updatedTrainSchedule.paced, exceptions: createdExceptions },
         }),
@@ -217,7 +217,7 @@ export async function updateTrainSchedule({
       trainScheduleId,
       {
         ...updatedTrainSchedule,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
       },
       dispatch,
       upsertTrainSchedules
@@ -271,7 +271,7 @@ export async function updateTrainSchedule({
     trainScheduleId,
     {
       ...updatedTrainSchedule,
-      train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+      timetable_id: originalTrainSchedule.timetable_id,
       ...(updatedTrainSchedule.paced && {
         paced: { ...updatedTrainSchedule.paced, exceptions: finalExceptions },
       }),

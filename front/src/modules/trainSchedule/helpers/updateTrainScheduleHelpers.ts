@@ -204,18 +204,17 @@ export async function syncAndUpdateTrainSchedule(
     );
   }
 
-  // Remove train_schedule_set_id before updating train schedule as we don't want to pass it in the payload
-  const { train_schedule_set_id: _trainScheduleSetId, ...trainScheduleWithoutTrainScheduleSetId } =
-    trainSchedule;
+  // Remove timetable_id before updating train schedule as we don't want to pass it in the payload
+  const { timetable_id: _timetableId, ...trainScheduleWithoutTimetableId } = trainSchedule;
 
   // Strip exceptions from the paced field before sending to the API
   // Exceptions have their own dedicated endpoints and should not be included in the train schedule payload
-  const trainSchedulePayload: TrainSchedule = trainScheduleWithoutTrainScheduleSetId.paced
+  const trainSchedulePayload: TrainSchedule = trainScheduleWithoutTimetableId.paced
     ? {
-        ...trainScheduleWithoutTrainScheduleSetId,
-        paced: { ...trainScheduleWithoutTrainScheduleSetId.paced, exceptions: [] },
+        ...trainScheduleWithoutTimetableId,
+        paced: { ...trainScheduleWithoutTimetableId.paced, exceptions: [] },
       }
-    : trainScheduleWithoutTrainScheduleSetId;
+    : trainScheduleWithoutTimetableId;
 
   await updateTrainSchedule(dispatch, trainScheduleIdToUpdate, trainSchedulePayload);
 

@@ -351,7 +351,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
 
 export const uniqueTrainHonored: TrainScheduleResponse = {
   id: 95,
-  train_schedule_set_id: 1000,
+  timetable_id: 1000,
   train_name: 'normal',
   labels: [],
   rolling_stock_name: 'TC64700',
