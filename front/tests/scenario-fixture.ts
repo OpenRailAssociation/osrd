@@ -70,7 +70,7 @@ export default function setupScenarioFixture({
   }
 
   const createScenarioWithTrains = async () => {
-    const { scenario, trainScheduleSet } = await createScenario(
+    const { scenario, trainScheduleSet, timetableResult } = await createScenario(
       generateUniqueName(scenarioNamePrefix),
       scenarioContext.project.id,
       scenarioContext.study.id,
@@ -79,8 +79,7 @@ export default function setupScenarioFixture({
     );
     scenarioContext.scenarioItems = scenario;
     scenarioContext.trainScheduleSet = trainScheduleSet;
-    // TODO: adapt once the front handles multiple timetable per scenario
-    await sendTrains(trainScheduleSet.id, trains, scenario.timetable_summaries[0].id);
+    await sendTrains(trainScheduleSet.id, trains, timetableResult.timetable_id);
   };
 
   const deleteCreatedScenario = () =>

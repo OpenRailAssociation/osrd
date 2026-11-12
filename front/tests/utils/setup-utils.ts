@@ -179,14 +179,13 @@ export async function createDataForTests(): Promise<void> {
       projectWithTrainSchedules.id,
       trainScheduleStudyName
     );
-    const { scenario, trainScheduleSet } = await createScenario(
+    const { trainScheduleSet, timetableResult } = await createScenario(
       trainScheduleScenarioName,
       projectWithTrainSchedules.id,
       studyWithTrainSchedules.id,
       mediumInfra.id
     );
-    // TODO: adapt once the front handles multiple timetable per scenario
-    const timetableId = scenario.timetable_summaries[0].id;
+    const timetableId = timetableResult.timetable_id;
     await sendTrains(trainScheduleSet.id, trains, timetableId);
 
     // Step 7: Configure STDCM search environment for the tests
