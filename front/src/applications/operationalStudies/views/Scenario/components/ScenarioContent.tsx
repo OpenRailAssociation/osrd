@@ -106,7 +106,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
     updateTrainScheduleDepartureTime,
     selectedTrainScheduleIds,
     setSelectedTrainScheduleIds,
-  } = useScenarioData(scenario, infraId, timetableId);
+  } = useScenarioData();
 
   const {
     showOnlySelectedTrain,
