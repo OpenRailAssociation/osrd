@@ -13,6 +13,7 @@ use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use itertools::Itertools as _;
+use schemas::timetable::InnerTimetable;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
@@ -25,12 +26,14 @@ use database::DbConnection;
 
 use crate::Scenario;
 use crate::TimetableInheritance;
+use crate::timetable_inheritance::TimetableRanges;
 use crate::timetable_type::TimetableType;
 
-#[derive(Debug, Default, Clone, Model)]
+#[derive(Debug, Default, Clone, Model, Queryable, Selectable)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[model(table = database::tables::timetable)]
 #[model(gen(ops = crud, list))]
+#[diesel(table_name = database::tables::timetable)]
 pub struct Timetable {
     pub id: i64,
     pub timetable_type: TimetableType,
@@ -43,9 +46,56 @@ pub struct Timetable {
     pub published: bool,
 }
 
-impl From<Timetable> for Option<i64> {
+impl Timetable {
+    pub async fn get_inners_or_fail<E, F>(
+        conn: &mut DbConnection,
+        timetable_id: i64,
+        fail: F,
+    ) -> Result<(Timetable, Vec<InnerTimetable>), E>
+    where
+        E: From<crate::Error>,
+        F: FnOnce() -> E + Send,
+    {
+        use crate::prelude::Retrieve as _;
+        use database::tables::timetable;
+        use database::tables::timetable_inheritance;
+
+        let outer_timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, fail).await?;
+
+        let inners: Vec<(Timetable, Option<TimetableRanges>)> = timetable_inheritance::table
+            .inner_join(
+                timetable::table.on(timetable::id.eq(timetable_inheritance::inner_timetable_id)),
+            )
+            .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
+            .order_by(timetable_inheritance::id.asc())
+            .select((Timetable::as_select(), timetable_inheritance::ranges))
+            .load(conn.write().await.deref_mut())
+            .await
+            .map_err(crate::Error::from)?;
+        let inners = inners
+            .into_iter()
+            .map(|(timetable, ranges)| InnerTimetable {
+                timetable: timetable.into(),
+                ranges: ranges.map(|ranges| ranges.0),
+            })
+            .collect();
+
+        Ok((outer_timetable, inners))
+    }
+}
+
+impl From<Timetable> for schemas::timetable::Timetable {
     fn from(timetable: Timetable) -> Self {
-        Some(timetable.id)
+        Self {
+            id: timetable.id,
+            timetable_type: *timetable.timetable_type,
+            train_schedule_set_id: timetable.train_schedule_set_id,
+            is_train_schedule_set: timetable.is_train_schedule_set,
+            catalog_entry_id: timetable.catalog_entry_id,
+            name: timetable.name,
+            description: timetable.description,
+            published: timetable.published,
+        }
     }
 }
 

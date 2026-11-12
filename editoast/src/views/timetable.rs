@@ -234,6 +234,39 @@ pub(in crate::views) async fn delete(
     Ok(StatusCode::NO_CONTENT)
 }
 
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
+pub(in crate::views) struct TimetableResponse {
+    #[serde(flatten)]
+    timetable: schemas::timetable::Timetable,
+    inners: Vec<schemas::timetable::InnerTimetable>,
+}
+
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    get, path = "",
+    tag = "timetable",
+    params(TimetableIdParam),
+    responses(
+        (status = 200, description = "The timetable with its inner timetables", body = TimetableResponse),
+        (status = 404, description = "Timetable not found"),
+    ),
+)]
+pub(in crate::views) async fn get(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+) -> Result<Json<TimetableResponse>> {
+    let (timetable, inners) =
+        Timetable::get_inners_or_fail(&mut db_pool.get().await?, timetable_id, || {
+            TimetableError::NotFound { timetable_id }
+        })
+        .await?;
+    Ok(Json(TimetableResponse {
+        timetable: timetable.into(),
+        inners: inners.into_iter().map_into().collect(),
+    }))
+}
+
 #[derive(Debug, IntoParams, Deserialize)]
 pub(in crate::views) struct TrainScheduleIdParam {
     train_schedule_id: i64,
@@ -1043,6 +1076,7 @@ mod tests {
     use axum::http::StatusCode;
     use core_client::simulation::RoutingZoneRequirement;
     use jiff::SignedDuration;
+    use models::TimetableInheritance;
     use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
@@ -1775,5 +1809,93 @@ mod tests {
             .assert_status_ok()
             .json();
         assert_eq!(train_schedule_sets, vec![train_schedule_set]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_timetable_with_inners() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let timetable = Timetable::changeset()
+            .name(Some("outer".into()))
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut db_pool.get_ok(),
+            Timetable::changeset().name(Some("inner".into())),
+        )
+        .await
+        .expect("Failed to create train schedule set");
+        TimetableInheritance::changeset()
+            .outer_timetable_id(timetable.id)
+            .inner_timetable_id(train_schedule_set.timetable_id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to include train schedule set");
+
+        let inner_timetable =
+            Timetable::retrieve(db_pool.get_ok(), train_schedule_set.timetable_id)
+                .await
+                .expect("Failed to retrieve inner timetable")
+                .expect("The train schedule set should have a timetable");
+
+        let response: TimetableResponse = app
+            .get(format!("/timetable/{}", timetable.id).as_str())
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(
+            response,
+            TimetableResponse {
+                timetable: timetable.into(),
+                inners: vec![schemas::timetable::InnerTimetable {
+                    timetable: inner_timetable.into(),
+                    ranges: None,
+                }],
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_timetable_without_inners() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+
+        let other_timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_set =
+            TrainScheduleSet::create_with_timetable(&mut db_pool.get_ok(), Timetable::changeset())
+                .await
+                .expect("Failed to create train schedule set");
+        TimetableInheritance::changeset()
+            .outer_timetable_id(other_timetable.id)
+            .inner_timetable_id(train_schedule_set.timetable_id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to include train schedule set");
+
+        let response: TimetableResponse = app
+            .get(format!("/timetable/{}", timetable.id).as_str())
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(
+            response,
+            TimetableResponse {
+                timetable: timetable.into(),
+                inners: vec![],
+            }
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_timetable_not_found() {
+        let app = test_app!().skip_authz().build();
+
+        app.get("/timetable/0").await.assert_status_not_found();
     }
 }
