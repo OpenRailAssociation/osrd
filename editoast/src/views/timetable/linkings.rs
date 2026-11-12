@@ -17,7 +17,6 @@ use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use crate::error::Result;
 use crate::views::DatabaseError;
 use crate::views::timetable::TimetableIdParam;
 
