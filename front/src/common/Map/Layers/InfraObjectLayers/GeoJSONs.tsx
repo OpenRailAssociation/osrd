@@ -13,7 +13,12 @@ import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerO
 import type { MapSettings } from 'reducers/commonMap/types';
 import type { EditorState } from 'reducers/editor';
 
-import { lineNameLayer, lineNumberLayer, trackNameLayer } from '../commonLayers';
+import {
+  lineNameLayer,
+  lineNumberLayer,
+  trackLineTileProperty,
+  trackNameLayer,
+} from '../commonLayers';
 import {
   getLineErrorsLayerProps,
   getLineTextErrorsLayerProps,
@@ -77,7 +82,7 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
       ...trackNameLayer(context.colors),
       layout: {
         ...trackNameLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_track_name}',
+        'text-field': ['to-string', trackLineTileProperty('track_name')],
       },
       id: `${prefix}geo/track-name`,
     },
@@ -85,7 +90,7 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
       ...lineNumberLayer(context.colors),
       layout: {
         ...lineNumberLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_line_code}',
+        'text-field': ['to-string', trackLineTileProperty('line_code')],
       },
       id: `${prefix}geo/line-number`,
     },
@@ -93,7 +98,7 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
       ...lineNameLayer(context.colors),
       layout: {
         ...lineNameLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_line_name}',
+        'text-field': ['to-string', trackLineTileProperty('line_name')],
       },
       id: `${prefix}geo/line-name`,
     },

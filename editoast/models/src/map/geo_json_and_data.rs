@@ -249,7 +249,7 @@ mod tests {
         )
         SELECT
             matches.geo_json as geo_json,
-            track_section.data - 'curves' - 'loading_gauge_limits' - 'slopes' - 'geo' AS data
+            (track_section.data || jsonb_build_object('line', osrd_track_line_extension(track_section.data))) - 'curves' - 'loading_gauge_limits' - 'slopes' - 'geo' AS data
         FROM matches
         INNER JOIN infra_layer_track_section layer on matches.id = layer.id
         inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id

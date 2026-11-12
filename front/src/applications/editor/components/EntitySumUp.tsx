@@ -23,6 +23,7 @@ import { LoaderFill } from 'common/Loaders';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/InfraObjectLayers';
 import { useInfraID } from 'common/osrdContext';
 import { type AppDispatch, useAppDispatch } from 'store';
+import { getTrackLine } from 'utils/trackSection';
 
 import { InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 
@@ -133,7 +134,7 @@ function getSumUpContent(
   switch (entity.objType) {
     case 'TrackSection': {
       const trackSection = entity as TrackSectionEntity;
-      const attrs = trackSection.properties.extensions?.sncf || {};
+      const attrs = getTrackLine(trackSection.properties.extensions) || {};
       if (attrs.track_name) {
         text = attrs.track_name;
         subtexts.push(trackSection.properties.id);
@@ -163,7 +164,9 @@ function getSumUpContent(
             <span className={classes.muted}>
               {t('Editor.tools.select-items.linked-to-line', { count: 1 }).toString()}
             </span>{' '}
-            <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
+            <span>
+              {getTrackLine(track.properties?.extensions)?.line_name || track.properties.id}
+            </span>
           </>
         );
       }
@@ -176,7 +179,7 @@ function getSumUpContent(
       const trackNames = uniq(
         flatMap(switchEntity.properties.ports, (port) => {
           const track = additionalEntities[port.track] as TrackSectionEntity | undefined;
-          const trackLabel = track?.properties?.extensions?.sncf?.line_name;
+          const trackLabel = getTrackLine(track?.properties?.extensions)?.line_name;
           return trackLabel ? [trackLabel] : [];
         })
       );

@@ -27,6 +27,7 @@ import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { getTrackLine } from 'utils/trackSection';
 
 const SwitchEditionLayers = () => {
   const dispatch = useAppDispatch();
@@ -115,7 +116,7 @@ const SwitchEditionLayers = () => {
           position: closest.geometry.coordinates,
           trackSectionId: hoveredTrack.properties.id,
           trackSectionName:
-            hoveredTrack.properties?.extensions?.sncf?.track_name ||
+            getTrackLine(hoveredTrack.properties?.extensions)?.track_name ||
             t('Editor.tools.switch-edition.untitled-track'),
         },
       },

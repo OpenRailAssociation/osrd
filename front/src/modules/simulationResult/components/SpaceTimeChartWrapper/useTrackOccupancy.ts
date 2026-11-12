@@ -14,6 +14,7 @@ import type { SimulatedException } from 'modules/trainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { getIsSimulationEnabled } from 'reducers/simulationResults/selectors';
 import type { Duration } from 'utils/duration';
+import { getTrackLine } from 'utils/trackSection';
 import {
   extractEditoastIdFromTrainScheduleId,
   extractTrainScheduleIdFromOccurrenceId,
@@ -593,7 +594,7 @@ const useTrackOccupancy = ({
                 return {
                   id: part.track,
                   name: part.local_track_name,
-                  line: trackPart?.extensions?.sncf?.line_code,
+                  line: getTrackLine(trackPart?.extensions)?.line_code,
                 };
               }),
               (track) => track.id

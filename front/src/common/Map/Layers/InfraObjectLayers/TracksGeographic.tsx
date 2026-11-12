@@ -3,7 +3,12 @@ import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
-import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
+import {
+  lineNameLayer,
+  lineNumberLayer,
+  trackLineTileProperty,
+  trackNameLayer,
+} from 'common/Map/Layers/commonLayers';
 import type { Theme } from 'common/Map/theme';
 import { useMapContext } from 'common/Map/useMapContext';
 
@@ -48,7 +53,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           ...trackNameLayer(colors, highlightedArea),
           layout: {
             ...trackNameLayer(colors, highlightedArea).layout,
-            'text-field': '{extensions_sncf_track_name}',
+            'text-field': ['to-string', trackLineTileProperty('track_name')],
           },
         }}
         id="tracks-geo/track-name"
@@ -60,7 +65,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           ...lineNumberLayer(colors, highlightedArea),
           layout: {
             ...lineNumberLayer(colors, highlightedArea).layout,
-            'text-field': '{extensions_sncf_line_code}',
+            'text-field': ['to-string', trackLineTileProperty('line_code')],
           },
         }}
         id="tracks-geo/line-number"
@@ -72,7 +77,7 @@ function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeograp
           ...lineNameLayer(colors, highlightedArea),
           layout: {
             ...lineNameLayer(colors, highlightedArea).layout,
-            'text-field': '{extensions_sncf_line_name}',
+            'text-field': ['to-string', trackLineTileProperty('line_name')],
           },
         }}
         id="tracks-geo/line-name"

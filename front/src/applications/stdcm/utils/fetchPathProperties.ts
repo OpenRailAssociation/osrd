@@ -12,6 +12,7 @@ import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { AppDispatch } from 'store';
+import { getTrackLine } from 'utils/trackSection';
 
 /**
  *  Function to fetch and format path properties
@@ -43,14 +44,14 @@ const fetchPathProperties = async (
 
     const operationalPointsWithMetadata = result.operational_points.map((op) => {
       const associatedTrackSection = trackSections[op.part.track];
-      const sncf = associatedTrackSection?.properties?.extensions?.sncf;
+      const line = getTrackLine(associatedTrackSection?.properties?.extensions);
       const metadata =
-        sncf && Object.values(sncf).every((value) => value !== undefined)
+        line && Object.values(line).every((value) => value !== undefined)
           ? {
-              lineCode: sncf.line_code!,
-              lineName: sncf.line_name!,
+              lineCode: line.line_code!,
+              lineName: line.line_name!,
               trackName: op.part.local_track_name,
-              trackNumber: sncf.track_number!,
+              trackNumber: line.track_number!,
             }
           : undefined;
       return { ...op, metadata };
