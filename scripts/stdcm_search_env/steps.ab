@@ -1,0 +1,154 @@
+import { date_format_posix, date_now } from "std/date"
+import { split_lines } from "std/text"
+import { log_info, log_error } from "./logger.ab"
+import { day_start, db_date } from "./dates.ab"
+import { download_paginated, send_json_file, download_infra_railjson, import_railjson_locally, create_timetable, create_and_link_train_schedule_set_to_timetable, create_work_schedule_group, create_stdcm_search_env } from "./editoast.ab"
+import { ensure_aws_session, download_s3_file } from "./s3.ab"
+
+const BATCH_SIZE = 500
+const TIMETABLE_CACHE_DIR = "../../core/scripts/.s3_cache"
+
+// Every function taking `work_dir` writes its temporary files there.
+// The directory is removed by main when the script exits, so nothing here cleans up.
+
+// Copies the remote items kept by `filter` to a local endpoint, in batches of BATCH_SIZE.
+// Returns the number of items created.
+fun copy_items(work_dir: Text, remote_url: Text, remote_auth: Text, list_path: Text, filter: Text, local_url: Text, local_auth: Text, send_method: Text, send_path: Text, label: Text): Int? {
+    const items_dir = $ mktemp -d -p "{work_dir}" $?
+    const filtered_path = "{items_dir}/filtered.jsonl"
+    download_paginated(remote_url, remote_auth, list_path, filtered_path, filter)?
+
+    $ split -l {BATCH_SIZE} -d "{filtered_path}" "{items_dir}/batch_" $ failed {
+        log_error("Could not split {label} into batches")
+        fail 1
+    }
+    const batch_files = $ find "{items_dir}" -name 'batch_*' | sort $?
+
+    let total_created = 0
+    for batch in split_lines(batch_files) {
+        if batch == "" {
+            continue
+        }
+        const body_path = "{batch}.json"
+        // JSONL -> JSON array
+        $ jq -s -c '.' "{batch}" > "{body_path}" $ failed {
+            log_error("Could not build request body from {batch}")
+            fail 1
+        }
+        const created = send_json_file(local_url, local_auth, send_method, send_path, body_path)?
+        total_created += created
+        log_info("Posted {created} {label} ({total_created} total so far)")
+    }
+    return total_created
+}
+
+// Step 1: Returns the JSON of the last stdcm search env whose search window includes the date
+pub fun find_remote_stdcm_search_env(remote_url: Text, remote_auth: Text, date: Text, work_dir: Text): Text? {
+    log_info("--------- 1. Find the STDCM search env whose search windows include {date} ---------")
+    const envs_path = "{work_dir}/search_envs.jsonl"
+    download_paginated(remote_url, remote_auth, "/stdcm/search_environment/list", envs_path)?
+
+    const reference = day_start(date)?
+
+    // date-time values, assumed in UTC ("Z") as editoast returns them.
+    // fromdateiso8601 only accepts "%Y-%m-%dT%H:%M:%SZ": keep the first 19 chars (up to the seconds)
+    // and add the "Z" back, so fractional seconds ("...13.296Z") are accepted too
+    const begin = "(.search_window_begin[:19] + \"Z\" | fromdateiso8601)"
+    const end = "(.search_window_end[:19] + \"Z\" | fromdateiso8601)"
+    const filter = "map(select({begin} <= {reference} and {reference} <= {end})) | last // empty"
+    const search_env = $ jq -cs "{filter}" "{envs_path}" $ failed {
+        log_error("Could not read the STDCM search envs")
+        fail 1
+    }
+    if search_env == "" {
+        log_error("Could not find an STDCM search env including {date}")
+        fail 1
+    }
+    return search_env
+}
+
+// Step 2: Downloads the remote infra and imports it locally. Returns the local infra id.
+pub fun copy_infra(remote_url: Text, remote_auth: Text, env: Text, infra_id: Text, work_dir: Text): Int? {
+    log_info("--------- 2. Copy the railjson locally ---------")
+    const infra_name = "{env}-infra-{infra_id}-{date_format_posix(date_now())?}"
+    const railjson_path = "{work_dir}/infra.json"
+
+    log_info("Download the railjson")
+    download_infra_railjson(remote_url, remote_auth, infra_id, railjson_path)?
+    log_info("Import the railjson locally")
+    const local_infra_id = import_railjson_locally(railjson_path, infra_name)?
+
+    log_info("✅ Infra '{infra_name}' imported locally as infra_id={local_infra_id}")
+    return local_infra_id
+}
+
+// Step 3: Creates a local timetable and copies the train schedules starting on `date`. Returns the local timetable id.
+pub fun copy_train_schedules(remote_url: Text, remote_auth: Text, remote_timetable_id: Text, local_url: Text, local_auth: Text, env: Text, date: Text, work_dir: Text): Int? {
+    log_info("--------- 3. Copy the train schedules ---------")
+    const local_timetable_id = create_timetable(local_url, local_auth)?
+    const description = "Copy of {env} train schedules of date {date}"
+    const set_id = create_and_link_train_schedule_set_to_timetable(local_url, local_auth, local_timetable_id, description)?
+
+    // [start, end) of the UTC day, in ms; `id` belongs to the remote schedule
+    const start = day_start(date)?
+    const start_ms = start * 1000
+    const end_ms = (start + 86400) * 1000
+    const filter = "select(.start_time >= {start_ms} and .start_time < {end_ms}) | del(.id)"
+
+    const total = copy_items(work_dir, remote_url, remote_auth, "/timetable/{remote_timetable_id}/train_schedules/", filter, local_url, local_auth, "POST", "/train_schedule_sets/{set_id}/train_schedules/", "train schedules")?
+    log_info("✅ {total} train schedules created locally, local_timetable_id={local_timetable_id} local_train_schedule_set_id={set_id}")
+    return local_timetable_id
+}
+
+// Step 4: Downloads the remote timetable cache under the name core expects
+pub fun copy_timetable_cache(env: Text, remote_timetable_id: Text, local_infra_id: Int, local_timetable_id: Int): Null? {
+    log_info("--------- 4. Copy the timetable cache from s3 ---------")
+    ensure_aws_session(env)?
+    const local_infra_version = 1 // When importing the infra the first time, it's version 1
+    const filename = "development-{local_infra_id}-{local_infra_version}-{local_timetable_id}.json.gz"
+    const file_path = download_s3_file(env, "stdcm/saved_timetables/{remote_timetable_id}.json.gz", TIMETABLE_CACHE_DIR, filename)?
+    log_info("✅ Timetable cache saved to {file_path}")
+}
+
+// Step 5: Creates a local work schedule group and copies the work schedules overlapping `date`.
+// Returns the local group id.
+pub fun copy_work_schedules(remote_url: Text, remote_auth: Text, remote_group_id: Text, local_url: Text, local_auth: Text, env: Text, date: Text, work_dir: Text): Int? {
+    log_info("--------- 5. Copy the work schedules ---------")
+    const name = "Copy of {env} work schedules {remote_group_id} active on {date}, made on {date_format_posix(date_now())?}"
+    const local_group_id = create_work_schedule_group(local_url, local_auth, name)?
+
+    log_info("la")
+
+    // Overlap test on strings: valid because editoast's date format is fixed-width (date-time), from year down to seconds
+    const day_start_text = db_date(date)?
+    const day_end_text = db_date(date, 1)?
+    const filter = "select(.start_date_time < \"{day_end_text}\" and .end_date_time > \"{day_start_text}\") | del(.id)"
+
+    const total = copy_items(work_dir, remote_url, remote_auth, "/work_schedules/group/{remote_group_id}", filter, local_url, local_auth, "PUT", "/work_schedules/group/{local_group_id}", "work schedules")?
+    log_info("✅ {total} work schedules created locally, local_work_schedule_group_id={local_group_id}")
+    return local_group_id
+}
+
+// Step 6: Create the local search env based on the remote env, with local ids and a one-year validity period starting on `date`
+pub fun create_local_search_env(local_url: Text, local_auth: Text, search_env: Text, date: Text, local_infra_id: Int, local_timetable_id: Int, local_work_schedule_group_id: Int, work_dir: Text): Null? {
+    log_info("--------- 6. Create the STDCM search env locally ---------")
+    const enabled_from = db_date(date)?
+    const enabled_until = db_date(date, 365)?
+
+    const filter = "del(.id)
+        | .electrical_profile_set_id = null
+        | .enabled_from = \"{enabled_from}\"
+        | .enabled_until = \"{enabled_until}\"
+        | .infra_id = {local_infra_id}
+        | .timetable_id = {local_timetable_id}
+        | .work_schedule_group_id = {local_work_schedule_group_id}
+        | .temporary_speed_limit_group_id = null"
+
+    // Write to a file because the body can exceed the 128 KB limit of a command-line argument
+    const body_path = "{work_dir}/search_env_body.json"
+    $ printf '%s' "{search_env}" | jq -c "{filter}" > "{body_path}" $ failed {
+        log_error("Could not build the STDCM search env body")
+        fail 1
+    }
+    create_stdcm_search_env(local_url, local_auth, "@{body_path}")?
+}
