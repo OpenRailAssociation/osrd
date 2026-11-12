@@ -7,6 +7,7 @@ import { sortBy, uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
 import {
   osrdEditoastApi,
   type ScenarioPatchForm,
@@ -50,6 +51,7 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { scenario, timetableId, workerStatus } = useScenarioContextWithOptionalTimetable();
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   const [patchScenario, { isLoading: isPatchingScenario }] =
     osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
@@ -198,9 +200,14 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
                         className={cx('details-section-timetable', { selected: isSelected })}
                       >
                         {isSelected ? <ArrowRight /> : <Dot />}
-                        <span className="details-section-timetable-label" title={label}>
+                        <button
+                          type="button"
+                          className="details-section-timetable-label"
+                          title={label}
+                          onClick={() => setParamsInUrlAndStorage('timetable', String(id))}
+                        >
                           {label}
-                        </span>
+                        </button>
                         {/* TODO(#18904): no action until the backend handles several timetables */}
                         <div className="details-section-timetable-icons">
                           <button

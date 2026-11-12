@@ -20,16 +20,13 @@ const Scenario = () => {
 
   const hasNoTimetable = scenario.timetable_summaries.length === 0;
 
-  // The sandbox is linked to a timetable: only wait for it when the scenario has one
-  if (!hasNoTimetable && !sandboxId) return null;
-
   return (
     <div id="scenario">
       <ScenarioContextProvider scenario={scenario} timetable={timetable} sandboxId={sandboxId}>
         <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
-        {hasNoTimetable ? (
-          <ScenarioNoTimetable />
-        ) : (
+        {hasNoTimetable && <ScenarioNoTimetable />}
+        {/* The sandbox is linked to the timetable: wait for it without hiding the header */}
+        {!hasNoTimetable && sandboxId !== undefined && (
           <RollingStockContextProvider>
             <SubCategoryContextProvider>
               <ScenarioContent
