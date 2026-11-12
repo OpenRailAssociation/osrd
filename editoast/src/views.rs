@@ -201,7 +201,8 @@ fn service_router() -> server::router::DocumentedRouter {
             .nests("/timetable", |path| {
                 path.route("/", post!(timetable::post))
                     .nests("/{id}", |path| {
-                        path.route("/", delete!(timetable::delete))
+                        path.route("/", get!(timetable::get_by_id))
+                            .route("/", delete!(timetable::delete))
                             .route(
                                 "/train_schedule_sets",
                                 get!(timetable::get_train_schedule_sets_from_timetable),
