@@ -308,7 +308,7 @@ const PathStepItem = ({
     pathStepMetadata.trackName &&
     !pathStepMetadata.isValidLocalTrackName;
 
-  const isOpValid = !isInvalid && !!pathStep.location;
+  const isOpValid = pathStepMetadata?.validity === 'valid';
 
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
@@ -454,6 +454,7 @@ const PathStepItem = ({
                   e.stopPropagation();
                   onSubFormToggled();
                 }}
+                title={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
                 aria-expanded={isSubFormExpanded}
                 aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
                 data-testid="path-step-subform-toggle"
