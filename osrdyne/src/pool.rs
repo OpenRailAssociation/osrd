@@ -12,7 +12,7 @@ use lapin::{
         BasicConsumeOptions, BasicPublishOptions, BasicQosOptions, ExchangeDeclareOptions,
         QueueBindOptions, QueueDeclareOptions,
     },
-    types::FieldTable,
+    types::{AMQPValue, FieldTable},
 };
 use percent_encoding::{NON_ALPHANUMERIC, utf8_percent_encode};
 use tokio::{sync::oneshot, task::JoinSet};
@@ -181,33 +181,38 @@ impl Pool {
 
         // create queues
         let exclusive = QueueDeclareOptions {
-            exclusive: true,
+            exclusive: false,
             durable: true,
             auto_delete: false,
             ..Default::default()
         };
+        let mut queue_arguments = FieldTable::default();
+        queue_arguments.insert(
+            "x-queue-type".into(),
+            AMQPValue::LongString("quorum".into()),
+        );
         chan.queue_declare(
             self.orphan_queue.clone().into(),
             exclusive,
-            FieldTable::default(),
+            queue_arguments.clone(),
         )
         .await?;
         chan.queue_declare(
             self.deadletter_queue.clone().into(),
             exclusive,
-            FieldTable::default(),
+            queue_arguments.clone(),
         )
         .await?;
         chan.queue_declare(
             self.activity_queue.clone().into(),
             exclusive,
-            FieldTable::default(),
+            queue_arguments.clone(),
         )
         .await?;
         chan.queue_declare(
             self.poison_queue.clone().into(),
             exclusive,
-            FieldTable::default(),
+            queue_arguments.clone(),
         )
         .await?;
 
