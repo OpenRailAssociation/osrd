@@ -22,6 +22,7 @@ import InfraLoadingState from './InfraLoadingState';
 
 type ScenarioExpandedHeaderProps = {
   onEditScenario: (field: ScenarioField) => void;
+  onAddTimetable: (type: TimetableType) => void;
   onCollapse: () => void;
 };
 
@@ -45,7 +46,11 @@ const DetailsSection = ({ title, icons, children }: DetailsSectionProps) => (
 
 const TIMETABLE_TYPES: TimetableType[] = ['HOURLY', 'CALENDAR'];
 
-const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpandedHeaderProps) => {
+const ScenarioExpandedHeader = ({
+  onEditScenario,
+  onAddTimetable,
+  onCollapse,
+}: ScenarioExpandedHeaderProps) => {
   'use memo';
 
   const { t } = useTranslation('operational-studies');
@@ -180,11 +185,11 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
               key={type}
               title={t(`main.scenarioTimetableSections.${type}.title`)}
               icons={
-                // TODO: no action until #19081 is merged
                 <button
                   type="button"
                   aria-label={t('translation:common.add')}
                   title={t('translation:common.add')}
+                  onClick={() => onAddTimetable(type)}
                 >
                   <Plus />
                 </button>
