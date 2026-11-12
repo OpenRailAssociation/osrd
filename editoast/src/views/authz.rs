@@ -1262,7 +1262,7 @@ pub(in crate::views) async fn create_group(
     responses((
         status = 200,
         description = "List all the users with their identities, roles and groups",
-        body = inline(Vec<UserInfo>),
+        body = inline(Vec<UserInfoWithDirectRoles>),
     ))
 )]
 pub(in crate::views) async fn list_users(
@@ -1294,7 +1294,6 @@ pub(in crate::views) async fn list_users(
         .await?;
 
     // Fetch groups from the database to get their names
-    // let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
     let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
         &mut db_pool.get().await?,
         all_users_roles_and_groups
@@ -1313,11 +1312,10 @@ pub(in crate::views) async fn list_users(
                 ((effective_roles, groups), direct_roles),
                 UserWithIdentities { user, identities },
             )| {
-                let groups = groups_from_db
-                    .iter()
-                    .filter(|g| groups.binary_search(&authz::Group(*g.0)).is_ok())
-                    .map(|(_, g)| g.clone())
-                    .collect::<Vec<_>>();
+                let groups = groups
+                    .into_iter()
+                    .filter_map(|g| groups_from_db.get(&*g).cloned())
+                    .collect_vec();
                 UserInfoWithDirectRoles {
                     id: user.id,
                     name: user.name,
@@ -1328,7 +1326,7 @@ pub(in crate::views) async fn list_users(
                 }
             },
         )
-        .collect::<Vec<_>>();
+        .collect_vec();
 
     Ok(Json(users))
 }
@@ -4515,19 +4513,53 @@ mod tests {
             },
         ];
 
-        assert!(admin.id < user_1.id && user_1.id < user_2.id);
-        for (user, expected_user) in users.iter().zip(expected_users.iter()) {
-            assert_eq!(user.id, expected_user.id);
-            assert_eq!(user.name, expected_user.name);
-            assert_eq!(user.identities, expected_user.identities);
-            assert_eq!(user.direct_roles, expected_user.direct_roles);
-            assert_eq!(user.effective_roles, expected_user.effective_roles);
-            assert_eq!(user.groups.len(), expected_user.groups.len());
-            for (group, expected_group) in user.groups.iter().zip(expected_user.groups.iter()) {
-                assert_eq!(group.id, expected_group.id);
-                assert_eq!(group.name, expected_group.name);
-            }
-        }
+        assert_eq!(
+            users.iter().find(|u| u.id == admin.id),
+            Some(&expected_users[0])
+        );
+
+        assert_eq!(
+            users.iter().find(|u| u.id == user_1.id),
+            Some(&expected_users[1])
+        );
+
+        assert_eq!(
+            users.iter().find(|u| u.id == user_2.id).unwrap().id,
+            expected_users[2].id
+        );
+
+        assert_eq!(
+            users.iter().find(|u| u.id == user_2.id).unwrap().name,
+            expected_users[2].name
+        );
+
+        assert_eq!(
+            users.iter().find(|u| u.id == user_2.id).unwrap().identities,
+            expected_users[2].identities
+        );
+
+        assert_eq!(
+            users
+                .iter()
+                .find(|u| u.id == user_2.id)
+                .unwrap()
+                .direct_roles,
+            expected_users[2].direct_roles
+        );
+
+        assert_eq!(
+            users
+                .iter()
+                .find(|u| u.id == user_2.id)
+                .unwrap()
+                .effective_roles,
+            expected_users[2].effective_roles
+        );
+
+        assert_eq!(
+            users.iter().find(|u| u.id == user_2.id).unwrap().groups,
+            expected_users[2].groups
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
