@@ -10,7 +10,6 @@ import {
 import {
   osrdEditoastApi,
   type PacedTrainException,
-  type ScenarioWithDetails,
   type TrainSchedule,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -121,10 +120,10 @@ function computeMovedTrainSchedule(
   };
 }
 
-const useScenarioData = (scenario: ScenarioWithDetails, infraId: number, timetableId: number) => {
+const useScenarioData = () => {
   const dispatch = useAppDispatch();
 
-  const { workerStatus, timetableType } = useScenarioContext();
+  const { scenario, infraId, timetableId, workerStatus, timetableType } = useScenarioContext();
   const isHourlyTimetable = timetableType === 'HOURLY';
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
