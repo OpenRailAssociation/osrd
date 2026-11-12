@@ -193,7 +193,7 @@ pub(in crate::views) enum ListLinkingsError {
     ),
     #[error(transparent)]
     #[from(forward)]
-    Databse(#[view_error] DatabaseError),
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Debug, Error, ViewError, From)]
@@ -262,7 +262,7 @@ pub(in crate::views) enum DeleteLinkingsError {
     ),
     #[error(transparent)]
     #[from(forward)]
-    Databse(#[view_error] DatabaseError),
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
