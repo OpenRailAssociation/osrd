@@ -503,7 +503,7 @@ paths:
       - authz
       responses:
         '200':
-          description: List all the users with their identities, roles and groups
+          description: List all the users
           content:
             application/json:
               schema:
@@ -514,9 +514,20 @@ paths:
                   - id
                   - name
                   - identities
-                  - roles
+                  - direct_roles
+                  - effective_roles
                   - groups
                   properties:
+                    direct_roles:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Role'
+                      uniqueItems: true
+                    effective_roles:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Role'
+                      uniqueItems: true
                     groups:
                       type: array
                       items:
@@ -540,11 +551,81 @@ paths:
                         type: string
                     name:
                       type: string
-                    roles:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/Role'
-                      uniqueItems: true
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+                - type: object
+                  description: 'openfga error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:authorization:open_fga
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
     post:
       tags:
       - authz

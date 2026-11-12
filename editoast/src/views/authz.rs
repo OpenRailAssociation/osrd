@@ -210,13 +210,14 @@ pub(in crate::views) struct UserInfo {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq, Eq))]
-pub(in crate::views) struct UserInfoWithDirectRoles {
+pub(in crate::views) struct FullUserInfo {
     id: i64,
     name: String,
     identities: Vec<String>,
-    direct_roles: HashSet<Role>,
-    effective_roles: Vec<Role>,
-    groups: Vec<Group>,
+    direct_roles: HashSet<authz::Role>,
+    effective_roles: HashSet<authz::Role>,
+    #[schema(inline)]
+    groups: HashSet<Group>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -1292,6 +1293,19 @@ pub(in crate::views) async fn delete_group(
     }
 }
 
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+pub(in crate::views) enum ListUsersError {
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    OpenFgaError(
+        #[from]
+        #[view_error]
+        OpenFgaError,
+    ),
+}
+
 #[editoast_derive::route(Role::Admin)]
 #[utoipa::path(
     get,
@@ -1299,16 +1313,16 @@ pub(in crate::views) async fn delete_group(
     tag = "authz",
     responses((
         status = 200,
-        description = "List all the users with their identities, roles and groups",
-        body = inline(Vec<UserInfo>),
-    ))
+        description = "List all the users",
+        body = inline(Vec<FullUserInfo>),
+    ), ListUsersError,
+    )
 )]
 pub(in crate::views) async fn list_users(
     State(AppState {
         db_pool, openfga, ..
     }): State<AppState>,
-    Extension(authn_state): Extension<crate::authentication::State>,
-) -> Result<Json<Vec<UserInfoWithDirectRoles>>> {
+) -> Result<Json<Vec<FullUserInfo>>, ListUsersError> {
     let user_with_identities = UserWithIdentities::stream(db_pool.get().await?)
         .await?
         .try_collect::<Vec<_>>()
@@ -1327,12 +1341,10 @@ pub(in crate::views) async fn list_users(
 
     let protected = v2::Protected::from_iter(protected_list);
 
-    let all_users_roles_and_groups = protected
-        .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
-        .await?;
+    let system_authorizer = SystemAuthorizer::new_infallible(&openfga);
+    let all_users_roles_and_groups = protected.run::<OpenFgaError, _>(&system_authorizer).await?;
 
     // Fetch groups from the database to get their names
-    // let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
     let groups_from_db: BTreeMap<_, _> = Group::retrieve_batch_with_key_unchecked(
         &mut db_pool.get().await?,
         all_users_roles_and_groups
@@ -1351,22 +1363,21 @@ pub(in crate::views) async fn list_users(
                 ((effective_roles, groups), direct_roles),
                 UserWithIdentities { user, identities },
             )| {
-                let groups = groups_from_db
-                    .iter()
-                    .filter(|g| groups.binary_search(&authz::Group(*g.0)).is_ok())
-                    .map(|(_, g)| g.clone())
-                    .collect::<Vec<_>>();
-                UserInfoWithDirectRoles {
+                let groups = groups
+                    .into_iter()
+                    .filter_map(|g| groups_from_db.get(&*g).cloned())
+                    .collect_vec();
+                FullUserInfo {
                     id: user.id,
                     name: user.name,
                     identities,
                     direct_roles,
-                    effective_roles,
-                    groups,
+                    effective_roles: HashSet::from_iter(effective_roles),
+                    groups: HashSet::from_iter(groups),
                 }
             },
         )
-        .collect::<Vec<_>>();
+        .collect_vec();
 
     Ok(Json(users))
 }
@@ -4577,36 +4588,36 @@ mod tests {
             .by_user(admin.as_ref())
             .await
             .assert_status_ok()
-            .json::<Vec<UserInfoWithDirectRoles>>();
+            .json::<Vec<FullUserInfo>>();
 
         // Verify all users are returned
         let expected_users = [
-            UserInfoWithDirectRoles {
+            FullUserInfo {
                 id: admin.id,
                 name: "Admin".to_string(),
                 identities: admin.info.identities.clone(),
                 direct_roles: HashSet::from([Role::Admin]),
-                effective_roles: vec![Role::Admin],
-                groups: Vec::new(),
+                effective_roles: HashSet::from([Role::Admin]),
+                groups: HashSet::new(),
             },
-            UserInfoWithDirectRoles {
+            FullUserInfo {
                 id: user_1.id,
                 name: "User 1".to_string(),
                 identities: user_1.info.identities.clone(),
                 direct_roles: HashSet::from([Role::OperationalStudies]),
-                effective_roles: vec![Role::OperationalStudies],
-                groups: vec![Group {
+                effective_roles: HashSet::from([Role::OperationalStudies]),
+                groups: HashSet::from([Group {
                     id: group.id,
                     name: group.info.name.clone(),
-                }],
+                }]),
             },
-            UserInfoWithDirectRoles {
+            FullUserInfo {
                 id: user_2.id,
                 name: "User 2".to_string(),
                 identities: user_2.info.identities.clone(),
                 direct_roles: HashSet::from([Role::Stdcm]),
-                effective_roles: vec![Role::Stdcm, Role::OperationalStudies],
-                groups: vec![
+                effective_roles: HashSet::from([Role::Stdcm, Role::OperationalStudies]),
+                groups: HashSet::from([
                     Group {
                         id: group.id,
                         name: group.info.name.clone(),
@@ -4615,23 +4626,11 @@ mod tests {
                         id: group_2.id,
                         name: group_2.info.name.clone(),
                     },
-                ],
+                ]),
             },
         ];
 
-        assert!(admin.id < user_1.id && user_1.id < user_2.id);
-        for (user, expected_user) in users.iter().zip(expected_users.iter()) {
-            assert_eq!(user.id, expected_user.id);
-            assert_eq!(user.name, expected_user.name);
-            assert_eq!(user.identities, expected_user.identities);
-            assert_eq!(user.direct_roles, expected_user.direct_roles);
-            assert_eq!(user.effective_roles, expected_user.effective_roles);
-            assert_eq!(user.groups.len(), expected_user.groups.len());
-            for (group, expected_group) in user.groups.iter().zip(expected_user.groups.iter()) {
-                assert_eq!(group.id, expected_group.id);
-                assert_eq!(group.name, expected_group.name);
-            }
-        }
+        assert_eq!(users, expected_users);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

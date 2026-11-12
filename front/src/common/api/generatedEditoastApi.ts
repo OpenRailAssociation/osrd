@@ -1805,17 +1805,17 @@ export type PostAuthzUserInfoApiArg = {
     ids?: number[];
   };
 };
-export type GetAuthzUsersApiResponse =
-  /** status 200 List all the users with their identities, roles and groups */ {
-    groups: {
-      id: number;
-      name: string;
-    }[];
+export type GetAuthzUsersApiResponse = /** status 200 List all the users */ {
+  direct_roles: Role[];
+  effective_roles: Role[];
+  groups: {
     id: number;
-    identities: string[];
     name: string;
-    roles: Role[];
   }[];
+  id: number;
+  identities: string[];
+  name: string;
+}[];
 export type GetAuthzUsersApiArg = void;
 export type PostAuthzUsersApiResponse = /** status 201 User created */ {
   groups: {

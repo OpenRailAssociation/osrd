@@ -38,6 +38,7 @@ pub fn user_direct_roles(user: User) -> Protected<HashSet<Role>> {
         }
         .boxed()
     })
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
 /// Gives the subject the specified roles
