@@ -90,9 +90,7 @@
       "Database": "Erro interno (base de dados)",
       "NotFound": "Perfil elétrico '{{electrical_profile_set_id}}' não encontrado"
     },
-    "file": {
-      "not_found": "Ficheiro '{{file}}' não encontrado"
-    },
+    "file_not_found": "Ficheiro '{{file}}' não encontrado",
     "geometry": {
       "UnexpectedGeometry": "Geometria {{expected}} esperada mas {{actual}} recebida"
     },

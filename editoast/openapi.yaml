@@ -1880,7 +1880,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:file:not_found
+                      - editoast:file_not_found
   /health:
     get:
       responses:
@@ -1941,7 +1941,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:file:not_found
+                      - editoast:file_not_found
   /infra:
     get:
       tags:

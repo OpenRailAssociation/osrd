@@ -97,9 +97,7 @@
     "electrical_profiles": {
       "not_found": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
     },
-    "file": {
-      "file_not_found": "File '{{file}}' not found"
-    },
+    "file_not_found": "File '{{file}}' not found",
     "geometry": {
       "UnexpectedGeometry": "Expected geometry {{expected}} but got {{actual}}"
     },
