@@ -17,7 +17,6 @@ use serde::Deserialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 
-use crate::error::Result;
 use crate::views::DatabaseError;
 use models::ElectricalProfileSet;
 use models::LightElectricalProfileSet;
@@ -56,11 +55,12 @@ pub(in crate::views) enum ElectricalProfilesError {
     tag = "electrical_profiles",
     responses(
         (status = 200, body = Vec<LightElectricalProfileSet>, description = "The list of ids and names of electrical profile sets available"),
+        DatabaseError,
     )
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPool>>,
-) -> Result<Json<Vec<LightElectricalProfileSet>>> {
+) -> Result<Json<Vec<LightElectricalProfileSet>>, DatabaseError> {
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }

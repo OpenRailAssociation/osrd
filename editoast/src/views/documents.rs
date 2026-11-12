@@ -12,7 +12,6 @@ use serde::Serialize;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
-use crate::error::Result;
 use crate::views::ContentType;
 use crate::views::DatabaseError;
 use database::DbConnectionPool;

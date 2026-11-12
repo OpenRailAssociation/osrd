@@ -8,7 +8,6 @@ use tower::ServiceExt as _;
 use tower_http::services::ServeFile;
 
 use crate::AppState;
-use crate::error::Result;
 
 #[derive(Debug, Error, ViewError)]
 #[error("File '{file}' not found")]

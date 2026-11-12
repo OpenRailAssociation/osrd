@@ -4,7 +4,6 @@ use editoast_derive::ViewError;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::Result;
 use crate::views::DatabaseError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
