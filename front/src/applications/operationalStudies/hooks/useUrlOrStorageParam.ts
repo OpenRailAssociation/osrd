@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from 'react';
-
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 type SimulationParams = {
@@ -17,9 +15,11 @@ type SimulationParams = {
  * key after a refactor).
  */
 const useUrlOrStorageParam = (keyPrefix: string) => {
+  'use memo';
+
   const location = useLocation();
   const navigate = useNavigate();
-  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const searchParams = new URLSearchParams(location.search);
 
   const {
     projectId: urlProjectId,
@@ -31,29 +31,23 @@ const useUrlOrStorageParam = (keyPrefix: string) => {
   /**
    * Get a parameter from the URL, or if absent from local storage
    */
-  const getParamFromUrlOrStorage = useCallback(
-    (paramName: string) =>
-      searchParams.get(paramName) || localStorage.getItem(`${localKey}_${paramName}`) || undefined,
-    [localKey, searchParams]
-  );
+  const getParamFromUrlOrStorage = (paramName: string) =>
+    searchParams.get(paramName) || localStorage.getItem(`${localKey}_${paramName}`) || undefined;
 
   /**
    * Set a parameter in the URL and in the local storage.
    * If the parameter value given is undefined, remove the parameter from the URL and local storage instead.
    */
-  const setParamsInUrlAndStorage = useCallback(
-    (paramName: string, paramValue: string | undefined) => {
-      if (paramValue === undefined) {
-        searchParams.delete(paramName);
-        localStorage.removeItem(`${localKey}_${paramName}`);
-      } else {
-        searchParams.set(paramName, paramValue);
-        localStorage.setItem(`${localKey}_${paramName}`, paramValue);
-      }
-      navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
-    },
-    [localKey, searchParams, location.pathname, navigate]
-  );
+  const setParamsInUrlAndStorage = (paramName: string, paramValue: string | undefined) => {
+    if (paramValue === undefined) {
+      searchParams.delete(paramName);
+      localStorage.removeItem(`${localKey}_${paramName}`);
+    } else {
+      searchParams.set(paramName, paramValue);
+      localStorage.setItem(`${localKey}_${paramName}`, paramValue);
+    }
+    navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+  };
 
   return { getParamFromUrlOrStorage, setParamsInUrlAndStorage };
 };
