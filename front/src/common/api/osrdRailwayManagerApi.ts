@@ -1,11 +1,15 @@
 import { baseRailwayManagerApi as api } from './baseGeneratedApis';
-export const addTagTypes = ['timetable', 'lmr'] as const;
+export const addTagTypes = ['lmr', 'timetable'] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
     addTagTypes,
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      getCsCodes: build.query<GetCsCodesApiResponse, GetCsCodesApiArg>({
+        query: () => ({ url: `/cs_codes` }),
+        providesTags: ['lmr'],
+      }),
       postTransformTimetable: build.mutation<
         PostTransformTimetableApiResponse,
         PostTransformTimetableApiArg
@@ -60,6 +64,8 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as osrdRailwayManagerApi };
+export type GetCsCodesApiResponse = /** status 200 The list of CS codes */ CsCodesResponse;
+export type GetCsCodesApiArg = void;
 export type PostTransformTimetableApiResponse =
   /** status 200 Timetable successfully transformed */ TransformTimetableResponse;
 export type PostTransformTimetableApiArg = {
@@ -92,6 +98,13 @@ export type PostSendLastMinuteRequestStatusesApiResponse = /** status 200 undefi
 };
 export type PostSendLastMinuteRequestStatusesApiArg = {
   body: string[];
+};
+export type CsCode = {
+  code: string;
+  label: string;
+};
+export type CsCodesResponse = {
+  results: CsCode[];
 };
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1 =
   string;
