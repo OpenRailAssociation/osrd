@@ -320,7 +320,7 @@
   // Vertically center the icons
   .details-section-icons,
   .details-section-timetable {
-    span:has(> svg) {
+    span {
       display: flex;
     }
   }
@@ -462,6 +462,7 @@
       }
 
       .details-section-timetable-label {
+        cursor: pointer;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
