@@ -270,7 +270,7 @@ const TrainScheduleSetTab = ({
             }}
             onCancel={() => setOpenedDialog(null)}
             onDelete={async () => {
-              await manageTrainScheduleSet.removeSet(trainScheduleSet.id);
+              await manageTrainScheduleSet.removeSet(trainScheduleSet);
             }}
           />,
           document.body

@@ -305,7 +305,7 @@ pub(in crate::views) async fn post_train_schedule(
     let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
     let response: Vec<TrainScheduleResponse> = train_schedules
         .into_iter()
-        .map(|train_schedule| TrainScheduleResponse::new(train_schedule, train_schedule_set_id))
+        .map(TrainScheduleResponse::from)
         .collect();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -344,7 +344,7 @@ pub(in crate::views) async fn get_train_schedules(
     Ok(Json(
         train_schedules
             .into_iter()
-            .map(|train_schedule| TrainScheduleResponse::new(train_schedule, train_schedule_set_id))
+            .map(TrainScheduleResponse::from)
             .collect(),
     ))
 }
@@ -602,9 +602,9 @@ mod tests {
 
         assert_eq!(response.len(), 2);
         assert!(
-            response
-                .iter()
-                .all(|train_schedule| train_schedule.train_schedule_set_id == train_schedule_set.id)
+            response.iter().all(
+                |train_schedule| train_schedule.timetable_id == train_schedule_set.timetable_id
+            )
         );
     }
 

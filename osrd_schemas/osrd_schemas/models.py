@@ -7809,7 +7809,7 @@ class TrainScheduleException(BaseModel):
 
 class TrainScheduleResponse(TrainSchedule):
     id: StrictInt
-    train_schedule_set_id: StrictInt
+    timetable_id: StrictInt
 
 
 class TransformTimetableResponse(BaseModel):

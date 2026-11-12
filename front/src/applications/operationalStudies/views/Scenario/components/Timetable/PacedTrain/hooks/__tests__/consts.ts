@@ -27,7 +27,7 @@ export const pacedTrainSchedule: PacedTrainWithDetails = {
   },
   constraint_distribution: 'STANDARD',
   path: [],
-  train_schedule_set_id: 0,
+  timetable_id: 0,
   labels: [],
   speedLimitTag: null,
 };

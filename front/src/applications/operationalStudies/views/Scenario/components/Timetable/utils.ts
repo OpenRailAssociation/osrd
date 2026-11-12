@@ -56,7 +56,7 @@ const formatTrainSchedulesForExport = (
     .map((id) => trainSchedules.get(id)!)
     .reduce<TrainSchedule[]>((acc, trainSchedule) => {
       trainScheduleIndexByEditoastId.set(trainSchedule.id, acc.length);
-      acc.push(omit(trainSchedule, ['id', 'train_schedule_set_id']));
+      acc.push(omit(trainSchedule, ['id', 'timetable_id']));
       return acc;
     }, []);
 
