@@ -8,6 +8,7 @@ use derive_more::From;
 use editoast_derive::ViewError;
 use itertools::Itertools as _;
 use models::Timetable;
+use models::TrainSchedule;
 use models::TrainScheduleLinking;
 use models::prelude::*;
 use models::train_schedule_linking::TrainScheduleLinkingChangeset;
@@ -151,6 +152,23 @@ pub(in crate::views) struct LinkingTimetableNotFound {
     timetable_id: i64,
 }
 
+#[derive(Debug, Error, ViewError)]
+#[error("Train schedule {train_schedule_id} not found.")]
+#[view_error(status = NOT_FOUND, context, path = train_schedule_linking::train_schedule_not_found)]
+pub(in crate::views) struct LinkingTrainScheduleNotFound {
+    train_schedule_id: i64,
+}
+
+#[derive(Debug, Error, ViewError)]
+#[error(
+    "Train schedules {source_train_schedule_id} and {target_train_schedule_id} have different time windows, they can't be linked in an hourly timetable."
+)]
+#[view_error(status = CONFLICT, context, path = train_schedule_linking::different_paced_train_time_windows)]
+pub(in crate::views) struct DifferentPacedTrainTimeWindows {
+    source_train_schedule_id: i64,
+    target_train_schedule_id: i64,
+}
+
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum ListLinkingsError {
     #[error(transparent)]
@@ -187,6 +205,18 @@ pub(in crate::views) enum CreateLinkingsError {
         timetable_id: i64,
         timetable_type: TimetableType,
     },
+    #[error(transparent)]
+    TrainScheduleNotFound(
+        #[from]
+        #[view_error]
+        LinkingTrainScheduleNotFound,
+    ),
+    #[error(transparent)]
+    DifferentPacedTrainTimeWindows(
+        #[from]
+        #[view_error]
+        DifferentPacedTrainTimeWindows,
+    ),
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -332,6 +362,43 @@ pub(in crate::views) async fn create(
                     timetable_id: timetable.id,
                     timetable_type: *timetable.timetable_type,
                 });
+            }
+        }
+    }
+
+    // In an hourly timetable, throw an error if both missions have different
+    if timetable.timetable_type.0 == TimetableType::Hourly {
+        for linking in &linking_forms {
+            let source_train_schedule_id = linking.source.train_schedule_id();
+            let source_train_schedule = TrainSchedule::retrieve_or_fail(
+                conn.clone(),
+                linking.source.train_schedule_id(),
+                || {
+                    CreateLinkingsError::TrainScheduleNotFound(LinkingTrainScheduleNotFound {
+                        train_schedule_id: source_train_schedule_id,
+                    })
+                },
+            )
+            .await?;
+            let target_train_schedule_id = linking.target.train_schedule_id();
+            let target_train_schedule = TrainSchedule::retrieve_or_fail(
+                conn.clone(),
+                linking.target.train_schedule_id(),
+                || {
+                    CreateLinkingsError::TrainScheduleNotFound(LinkingTrainScheduleNotFound {
+                        train_schedule_id: target_train_schedule_id,
+                    })
+                },
+            )
+            .await?;
+
+            if source_train_schedule.time_window != target_train_schedule.time_window {
+                return Err(CreateLinkingsError::DifferentPacedTrainTimeWindows(
+                    DifferentPacedTrainTimeWindows {
+                        source_train_schedule_id,
+                        target_train_schedule_id,
+                    },
+                ));
             }
         }
     }
