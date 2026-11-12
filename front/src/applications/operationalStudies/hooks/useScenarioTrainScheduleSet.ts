@@ -43,7 +43,7 @@ export type TrainScheduleSetManager = {
   getSetByCatalogAndName: (name: string, catalogId: number) => TrainScheduleSet | null;
   localCopySet: (trainScheduleSet: TrainScheduleSet) => Promise<void>;
   updateSet: (trainScheduleSet: TrainScheduleSet, data: TrainScheduleSetFormData) => Promise<void>;
-  removeSet: (id: number) => Promise<void>;
+  removeSet: (trainScheduleSet: TrainScheduleSet) => Promise<void>;
 };
 
 export default function useScenarioTrainScheduleSet(
@@ -126,7 +126,7 @@ export default function useScenarioTrainScheduleSet(
   );
 
   const removeTrainScheduleSet = useCallback(
-    async (id: TrainScheduleSet['id']): Promise<void> => {
+    async ({ id, timetable_id }: TrainScheduleSet): Promise<void> => {
       // When linking train schedule sets to a timetable, the backend expects the full list of IDs.
       // Any ID not provided is automatically unlinked, so when removing one train schedule set
       // we must explicitly send all remaining IDs to avoid unlinking the others.
@@ -142,7 +142,7 @@ export default function useScenarioTrainScheduleSet(
       // dropped explicitly, otherwise they stay displayed until the page is reloaded.
       removeTrainSchedules(
         [...trainSchedules.values()]
-          .filter((trainSchedule) => trainSchedule.train_schedule_set_id === id)
+          .filter((trainSchedule) => trainSchedule.timetable_id === timetable_id)
           .map((trainSchedule) => trainSchedule.id)
       );
     },
@@ -209,13 +209,10 @@ export default function useScenarioTrainScheduleSet(
 
       // copy all the trains that were attached to the old published tss
       const trainsToCopy: TrainSchedule[] = [...trainSchedules.values()]
-        .filter((trainSchedule) => trainSchedule.train_schedule_set_id === trainScheduleSet.id)
+        .filter((trainSchedule) => trainSchedule.timetable_id === trainScheduleSet.timetable_id)
         .map((trainSchedule) => {
-          const {
-            id: __id,
-            train_schedule_set_id: _train_schedule_set_id,
-            ...rest
-          } = trainSchedule;
+          // Remove id and timetable_id from payload
+          const { id: __id, timetable_id: _timetable_id, ...rest } = trainSchedule;
 
           return {
             ...rest,
@@ -317,10 +314,10 @@ export default function useScenarioTrainScheduleSet(
 
           newIds.push(newTss.id);
 
-          const trainsWithoutIds = sourceTrainSchedules.map(({ id: _id, ...train }) => ({
-            ...train,
-            train_schedule_set_id: newTss.id,
-          }));
+          const trainsWithoutIds = sourceTrainSchedules.map(
+            // Remove id and timetable_id from payload
+            ({ id: _id, timetable_id: _timetable_id, ...train }) => train
+          );
 
           const createdTrains = await createTrainSchedules(dispatch, newTss.id, trainsWithoutIds);
 
@@ -356,16 +353,14 @@ export default function useScenarioTrainScheduleSet(
   const trainSchedulesByTrainScheduleSets = useMemo(() => {
     if (!trainScheduleSets) return null;
 
-    // We group trains by trainScheduleSet
-    const trainsByTrainScheduleSetId = new Map<number, TrainScheduleWithDetails[]>();
+    // We group trains by the timetable of their trainScheduleSet
+    const trainsByTimetableId = new Map<number, TrainScheduleWithDetails[]>();
     for (const trainSchedule of trainSchedulesWithDetails) {
-      const trainScheduleInIndex = trainsByTrainScheduleSetId.get(
-        trainSchedule.train_schedule_set_id
-      );
+      const trainScheduleInIndex = trainsByTimetableId.get(trainSchedule.timetable_id);
       if (!trainScheduleInIndex) {
-        trainsByTrainScheduleSetId.set(trainSchedule.train_schedule_set_id, [trainSchedule]);
+        trainsByTimetableId.set(trainSchedule.timetable_id, [trainSchedule]);
       } else {
-        trainsByTrainScheduleSetId.set(trainSchedule.train_schedule_set_id, [
+        trainsByTimetableId.set(trainSchedule.timetable_id, [
           ...trainScheduleInIndex,
           trainSchedule,
         ]);
@@ -388,7 +383,7 @@ export default function useScenarioTrainScheduleSet(
       .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntriesIndex))
       .map((trainScheduleSet): TrainSchedulesByTrainScheduleSet => ({
         trainScheduleSet,
-        trains: trainsByTrainScheduleSetId.get(trainScheduleSet.id) || [],
+        trains: trainsByTimetableId.get(trainScheduleSet.timetable_id) || [],
         catalog: trainScheduleSet.catalog_entry_id
           ? catalogEntriesIndex.get(trainScheduleSet.catalog_entry_id)
           : undefined, // can happen if it's the sandbox

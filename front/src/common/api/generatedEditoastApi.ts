@@ -5559,7 +5559,7 @@ export type TrainSchedule = {
 };
 export type TrainScheduleResponse = TrainSchedule & {
   id: number;
-  train_schedule_set_id: number;
+  timetable_id: number;
 };
 export type TowedRollingStock = {
   /** Acceleration in m·s⁻² */
