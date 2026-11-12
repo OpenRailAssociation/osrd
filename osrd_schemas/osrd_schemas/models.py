@@ -4424,6 +4424,14 @@ class TimetablePatchForm(BaseModel):
     name: StrictStr | None = None
 
 
+class TimetableRange(BaseModel):
+    start_time: StrictInt
+    time_window: Annotated[timedelta, Field(examples=["PT2H"])]
+    """
+    Duration in ISO 8601 format (e.g. PT2H for 2 hours)
+    """
+
+
 class TimetableType(Enum):
     CALENDAR = "CALENDAR"
     HOURLY = "HOURLY"
@@ -6378,6 +6386,17 @@ class SwitchExtensions(BaseModel):
     sncf: SwitchSncfExtension | None = None
 
 
+class Timetable(BaseModel):
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr
+    id: StrictInt
+    is_train_schedule_set: StrictBool
+    name: StrictStr | None = None
+    published: StrictBool
+    timetable_type: TimetableType
+    train_schedule_set_id: StrictInt | None = None
+
+
 class TimetableForm(BaseModel):
     timetable_name: StrictStr | None = None
     timetable_type: TimetableType
@@ -6739,6 +6758,15 @@ class InfraObjectBufferStop(BaseModel):
 class InfraObjectRoute(BaseModel):
     obj_type: Literal["Route"] = "Route"
     railjson: Route
+
+
+class InnerTimetable(BaseModel):
+    """
+    A timetable included in another timetable
+    """
+
+    ranges: list[TimetableRange] | None = None
+    timetable: Timetable
 
 
 class JourneyProposals(BaseModel):
@@ -7342,6 +7370,10 @@ class Switch(BaseModel):
         TrackEndpoint,
     ]
     switch_type: Annotated[StrictStr, Field(max_length=255, min_length=1)]
+
+
+class TimetableResponse(Timetable):
+    inners: list[InnerTimetable]
 
 
 class TrackSectionModel(BaseModel):
