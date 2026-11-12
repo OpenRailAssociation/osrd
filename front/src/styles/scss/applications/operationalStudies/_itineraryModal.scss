@@ -511,6 +511,10 @@
 
                 &:has(.path-step-op-status-icon.placeholder) {
                   background-color: var(--black5);
+
+                  svg {
+                    color: var(--black10);
+                  }
                 }
 
                 .path-step-op-status-icon {
