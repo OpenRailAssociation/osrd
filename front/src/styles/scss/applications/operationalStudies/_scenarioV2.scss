@@ -317,6 +317,14 @@
     outline: none;
   }
 
+  // Vertically center the icons
+  .details-section-icons,
+  .details-section-timetable {
+    span:has(> svg) {
+      display: flex;
+    }
+  }
+
   .scenario-expanded-header-grid {
     flex: 1;
     min-height: 0;
