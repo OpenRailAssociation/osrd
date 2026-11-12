@@ -5242,6 +5242,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/TimetableResult'
   /timetable/{id}:
+    get:
+      tags:
+      - timetable
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The timetable with its inner timetables
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimetableResponse'
+        '404':
+          description: Timetable not found
     delete:
       tags:
       - timetable
@@ -13508,6 +13528,20 @@ components:
         value:
           type: number
           format: double
+    InnerTimetable:
+      type: object
+      description: A timetable included in another timetable
+      required:
+      - timetable
+      properties:
+        ranges:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TimetableRange'
+        timetable:
+          $ref: '#/components/schemas/Timetable'
     InternalError:
       type: object
       required:
@@ -18490,6 +18524,40 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to test against.
+    Timetable:
+      type: object
+      required:
+      - id
+      - timetable_type
+      - is_train_schedule_set
+      - description
+      - published
+      properties:
+        catalog_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
+        id:
+          type: integer
+          format: int64
+        is_train_schedule_set:
+          type: boolean
+        name:
+          type:
+          - string
+          - 'null'
+        published:
+          type: boolean
+        timetable_type:
+          $ref: '#/components/schemas/TimetableType'
+        train_schedule_set_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
     TimetableForm:
       type: object
       required:
@@ -18512,6 +18580,29 @@ components:
           type:
           - string
           - 'null'
+    TimetableRange:
+      type: object
+      required:
+      - start_time
+      - time_window
+      properties:
+        start_time:
+          type: integer
+          format: int64
+        time_window:
+          $ref: '#/components/schemas/StrictlyPositiveDuration'
+    TimetableResponse:
+      allOf:
+      - $ref: '#/components/schemas/Timetable'
+      - type: object
+        required:
+        - inners
+        properties:
+          inners:
+            type: array
+            items:
+              $ref: '#/components/schemas/InnerTimetable'
+      description: A timetable along with the timetables it includes
     TimetableResult:
       type: object
       description: Creation result for a Timetable

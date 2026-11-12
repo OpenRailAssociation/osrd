@@ -7,19 +7,8 @@ use diesel::serialize::Output;
 use diesel::serialize::ToSql;
 use diesel::sql_types::Jsonb;
 use editoast_derive::Model;
-use schemas::primitives::StrictlyPositiveDuration;
-use serde::Deserialize;
-use serde::Serialize;
-use unit_system::quantities::Offset;
-use utoipa::ToSchema;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct TimetableRange {
-    #[serde(with = "unit_system::units::millisecond::i64")]
-    #[schema(value_type = i64)]
-    pub start_time: Offset,
-    pub time_window: StrictlyPositiveDuration,
-}
+pub use schemas::timetable::TimetableRange;
 
 #[derive(Debug, Clone, PartialEq, FromSqlRow, AsExpression)]
 #[diesel(sql_type = Jsonb)]
