@@ -33,7 +33,6 @@
   --path-step-type-width: 60px;
   --map-interactions-width: 58px;
   --map-interactions-margin-left: 7px;
-  --subform-fields-width: 470px;
 
   margin: 16px;
   width: 100%;
@@ -329,6 +328,16 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
+          grid-template-columns:
+            24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
+            auto auto [last-col];
+          display: grid;
+
+          &:has(.unrecognized-waypoints-activated) {
+            grid-template-columns: 20px 20px [name-col] minmax(184px, 1fr) var(
+                --path-step-track-name-width
+              ) var(--path-step-type-width) auto auto [last-col];
+          }
 
           &.unknown-track {
             background-color: var(--black10);
@@ -370,18 +379,11 @@
 
           .path-step {
             display: grid;
-            grid-template-columns:
-              24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-              auto auto;
+            grid-template-columns: subgrid;
+            grid-column: 1 / last-col;
             align-items: center;
             column-gap: 8px;
             padding-block: 8px;
-
-            &.unrecognized-waypoints-activated {
-              grid-template-columns: 20px 20px minmax(184px, 1fr) var(
-                  --path-step-track-name-width
-                ) var(--path-step-type-width) auto auto;
-            }
 
             &.map-selection-mode {
               .segmented-control {
@@ -592,10 +594,27 @@
 
         .path-step-subform-wrapper {
           background-color: var(--ambientB5);
+          display: grid;
+          grid-template-columns: subgrid;
+          grid-column: 1 / last-col;
+          margin-inline: -12px -10px;
 
           .path-step-subform-content {
-            width: var(--subform-fields-width);
-            margin: auto;
+            margin-inline: 23px -9px;
+            grid-column: name-col;
+
+            label {
+              margin-bottom: 0;
+            }
+
+            > .ui-feedback {
+              padding-bottom: 0;
+            }
+
+            .path-step-subform-specific-fields .ui-feedback {
+              padding-top: 9px;
+              padding-bottom: 21px;
+            }
 
             .path-step-subform-uic-fields {
               display: grid;
@@ -611,17 +630,7 @@
               display: flex;
               justify-content: space-between;
 
-              .path-step-subform-field {
-                position: relative;
-                width: 150px;
-
-                .path-step-subform-required-input {
-                  position: absolute;
-                  right: 100%;
-                  top: 8px;
-                  color: var(--info30);
-                }
-              }
+              // gap: 10px;
             }
           }
         }

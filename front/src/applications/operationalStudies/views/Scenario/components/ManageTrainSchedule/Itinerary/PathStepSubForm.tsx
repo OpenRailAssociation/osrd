@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
-import { RequiredInput } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -38,39 +37,33 @@ const DomesticFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => 
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
 
   return (
-    <div className="path-step-subform-domestic-fields">
-      <div className="path-step-subform-field">
-        <RequiredInput className="path-step-subform-required-input" size="sm"></RequiredInput>
-        <Input
-          id={`path-step-subform-country-code-${pathStep.key}`}
-          label={t('countryCode')}
-          readOnly={isOpValid}
-          small
-          value={subFormCountryCode}
-          onChange={(e) => setSubFormCountryCode(e.target.value)}
-        />
-      </div>
-      <div className="path-step-subform-field">
-        <RequiredInput className="path-step-subform-required-input" size="sm"></RequiredInput>
-        <Input
-          id={`path-step-subform-main-code-${pathStep.key}`}
-          label={t('primaryCode')}
-          readOnly={isOpValid}
-          small
-          value={subFormMainCode}
-          onChange={(e) => setSubFormMainCode(e.target.value)}
-        />
-      </div>
-      <div className="path-step-subform-field">
-        <Input
-          id={`pathStep-subform-secondary-code-${pathStep.key}`}
-          label={t('secondaryCode')}
-          readOnly={isOpValid}
-          small
-          value={subFormSecondaryCode}
-          onChange={(e) => setSubFormSecondaryCode(e.target.value)}
-        />
-      </div>
+    <div className="path-step-subform-specific-fields path-step-subform-domestic-fields">
+      <Input
+        id={`path-step-subform-country-code-${pathStep.key}`}
+        label={t('countryCode')}
+        readOnly={isOpValid}
+        small
+        required
+        value={subFormCountryCode}
+        onChange={(e) => setSubFormCountryCode(e.target.value)}
+      />
+      <Input
+        id={`path-step-subform-main-code-${pathStep.key}`}
+        label={t('primaryCode')}
+        readOnly={isOpValid}
+        small
+        required
+        value={subFormMainCode}
+        onChange={(e) => setSubFormMainCode(e.target.value)}
+      />
+      <Input
+        id={`pathStep-subform-secondary-code-${pathStep.key}`}
+        label={t('secondaryCode')}
+        readOnly={isOpValid}
+        small
+        value={subFormSecondaryCode}
+        onChange={(e) => setSubFormSecondaryCode(e.target.value)}
+      />
     </div>
   );
 };
@@ -95,27 +88,23 @@ const UicFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => {
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
 
   return (
-    <div className="path-step-subform-uic-fields">
-      <div className="path-step-subform-field">
-        <Input
-          id={`path-step-subform-uic-code-${pathStep.key}`}
-          label={t('uicCode')}
-          readOnly={isOpValid}
-          small
-          value={subFormUicCode}
-          onChange={(e) => setSubFormUicCode(e.target.value)}
-        />
-      </div>
-      <div className="path-step-subform-field">
-        <Input
-          id={`pathStep-subform-secondary-code-${pathStep.key}`}
-          label={t('secondaryCode')}
-          readOnly={isOpValid}
-          small
-          value={subFormSecondaryCode}
-          onChange={(e) => setSubFormSecondaryCode(e.target.value)}
-        />
-      </div>
+    <div className="path-step-subform-specific-fields path-step-subform-uic-fields">
+      <Input
+        id={`path-step-subform-uic-code-${pathStep.key}`}
+        label={t('uicCode')}
+        readOnly={isOpValid}
+        small
+        value={subFormUicCode}
+        onChange={(e) => setSubFormUicCode(e.target.value)}
+      />
+      <Input
+        id={`pathStep-subform-secondary-code-${pathStep.key}`}
+        label={t('secondaryCode')}
+        readOnly={isOpValid}
+        small
+        value={subFormSecondaryCode}
+        onChange={(e) => setSubFormSecondaryCode(e.target.value)}
+      />
     </div>
   );
 };
@@ -133,17 +122,15 @@ const OpIdFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) => {
   const [subFormOpIdCode, setSubFormOpIdCode] = useState<string>(defaultOpIdCode);
 
   return (
-    <div className="path-step-subform-op-id-fields">
-      <div className="path-step-subform-field">
-        <Input
-          id={`path-step-subform-op-id-code-${pathStep.key}`}
-          label={t('opIdCode')}
-          readOnly={isOpValid}
-          small
-          value={subFormOpIdCode}
-          onChange={(e) => setSubFormOpIdCode(e.target.value)}
-        />
-      </div>
+    <div className="path-step-subform-specific-fields path-step-subform-op-id-fields">
+      <Input
+        id={`path-step-subform-op-id-code-${pathStep.key}`}
+        label={t('opIdCode')}
+        readOnly={isOpValid}
+        small
+        value={subFormOpIdCode}
+        onChange={(e) => setSubFormOpIdCode(e.target.value)}
+      />
     </div>
   );
 };
@@ -160,27 +147,23 @@ const TrackOffsetFields = ({ pathStep, isOpValid }: PathStepSubFormFieldsProps) 
   const [subFormTrackId, setSubFormTrackId] = useState<string>(defaultTrack);
 
   return (
-    <div className="path-step-subform-track-offset-fields">
-      <div className="path-step-subform-field">
-        <Input
-          id={`path-step-subform-offset-${pathStep.key}`}
-          label={t('offset')}
-          readOnly={isOpValid}
-          small
-          value={subFormOffset}
-          onChange={(e) => setSubFormOffset(e.target.value)}
-        />
-      </div>
-      <div className="path-step-subform-field">
-        <Input
-          id={`pathStep-subform-track-id-${pathStep.key}`}
-          label={t('trackId')}
-          readOnly={isOpValid}
-          small
-          value={subFormTrackId}
-          onChange={(e) => setSubFormTrackId(e.target.value)}
-        />
-      </div>
+    <div className="path-step-subform-specific-fields path-step-subform-track-offset-fields">
+      <Input
+        id={`path-step-subform-offset-${pathStep.key}`}
+        label={t('offset')}
+        readOnly={isOpValid}
+        small
+        value={subFormOffset}
+        onChange={(e) => setSubFormOffset(e.target.value)}
+      />
+      <Input
+        id={`pathStep-subform-track-id-${pathStep.key}`}
+        label={t('trackId')}
+        readOnly={isOpValid}
+        small
+        value={subFormTrackId}
+        onChange={(e) => setSubFormTrackId(e.target.value)}
+      />
     </div>
   );
 };
