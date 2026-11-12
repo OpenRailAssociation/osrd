@@ -110,6 +110,16 @@ const Timetable = ({
   const handleSubmitMove = useCallback(
     async (trainScheduleSetId: number) => {
       try {
+        // TODO: SHARING_EXCEPTIONS - train_schedule do not have the train_schedule_set_id anymore
+        // we need to find the timetable_id of the target set to update the local state
+        const targetTimetableId = trainSchedulesByTrainScheduleSets?.find(
+          ({ trainScheduleSet }) => trainScheduleSet.id === trainScheduleSetId
+        )?.trainScheduleSet.timetable_id;
+        if (targetTimetableId === undefined) {
+          throw new Error('Train schedule set to move the train schedules to not found');
+        }
+
+        // TODO: SHARING_EXCEPTIONS - This endpoint is not yet migrated and require a train_schedule_set_id
         await updateTrainSchedulesTssId({
           body: {
             train_schedule_ids: trainScheduleIdsToMove,
@@ -121,7 +131,7 @@ const Timetable = ({
           .map((id) => trainSchedules.get(id)!)
           .map((train) => ({
             ...train,
-            train_schedule_set_id: trainScheduleSetId,
+            timetable_id: targetTimetableId,
           }));
 
         upsertTrainSchedules(trainsToUpsert);
@@ -133,6 +143,7 @@ const Timetable = ({
     },
     [
       trainScheduleIdsToMove,
+      trainSchedulesByTrainScheduleSets,
       updateTrainSchedulesTssId,
       dispatch,
       trainSchedules,

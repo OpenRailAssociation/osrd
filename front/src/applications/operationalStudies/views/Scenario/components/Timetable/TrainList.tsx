@@ -183,6 +183,7 @@ const TrainList = ({
               isSelectMode={isSelectMode}
               moveTrainSchedule={() => moveTrainSchedule?.([trainSchedule.id])}
               showMovebutton={timetableMode === 'trainScheduleSet'}
+              timetableId={timetableId}
             />
           ) : (
             <PacedTrainItem

@@ -19033,12 +19033,12 @@ components:
       - type: object
         required:
         - id
-        - train_schedule_set_id
+        - timetable_id
         properties:
           id:
             type: integer
             format: int64
-          train_schedule_set_id:
+          timetable_id:
             type: integer
             format: int64
     TrainScheduleSet:

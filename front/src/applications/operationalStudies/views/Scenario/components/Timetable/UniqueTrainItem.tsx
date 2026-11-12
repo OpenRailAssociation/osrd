@@ -52,6 +52,7 @@ type UniqueTrainItemProps = {
   isSelectMode: boolean;
   moveTrainSchedule: () => void;
   showMovebutton: boolean;
+  timetableId: number;
 };
 
 const UniqueTrainItem = ({
@@ -66,6 +67,7 @@ const UniqueTrainItem = ({
   isSelectMode,
   moveTrainSchedule,
   showMovebutton,
+  timetableId,
 }: UniqueTrainItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
@@ -74,6 +76,8 @@ const UniqueTrainItem = ({
   const { removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
+  const [getTrainScheduleSets] =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useLazyQuery();
 
   const { summary } = train;
 
@@ -114,15 +118,23 @@ const UniqueTrainItem = ({
       );
 
       const newUniqueTrainPayload: TrainSchedule = {
-        ...omit(trainDetail, ['id', 'train_schedule_set_id']),
+        ...omit(trainDetail, ['id', 'timetable_id']),
         start_time: startTime.getTime(),
         train_name: trainName,
       };
 
+      // TODO: SHARING_EXCEPTIONS - train_schedule do not have the train_schedule_set_id anymore
+      // we need to find it from getTrainScheduleSets (cached)
+      const trainScheduleSet = (
+        await getTrainScheduleSets({ id: timetableId }, true).unwrap()
+      ).find((tss) => tss.timetable_id === trainDetail.timetable_id);
+      if (!trainScheduleSet) {
+        throw new Error('Train schedule set of the train schedule not found');
+      }
+
+      // TODO: SHARING_EXCEPTIONS - This endpoint is not yet migrated and require a train_schedule_set_id
       const newUniqueTrain: TrainScheduleResponse = (
-        await createTrainSchedules(dispatch, trainDetail.train_schedule_set_id, [
-          newUniqueTrainPayload,
-        ])
+        await createTrainSchedules(dispatch, trainScheduleSet.id, [newUniqueTrainPayload])
       )[0];
       dispatch(
         updateSelectedTrain({

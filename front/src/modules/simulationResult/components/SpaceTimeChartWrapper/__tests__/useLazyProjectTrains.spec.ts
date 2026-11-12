@@ -33,7 +33,7 @@ describe.skip('useLazyProjectTrains', () => {
     path: [],
     start_time: 0,
     train_name: 'Train 1',
-    train_schedule_set_id: 1,
+    timetable_id: 1,
   };
 
   const mockTrain2: TrainScheduleResponse = {
@@ -43,7 +43,7 @@ describe.skip('useLazyProjectTrains', () => {
     path: [],
     start_time: 0,
     train_name: 'Train 2',
-    train_schedule_set_id: 1,
+    timetable_id: 1,
   };
 
   const baseOptions = {

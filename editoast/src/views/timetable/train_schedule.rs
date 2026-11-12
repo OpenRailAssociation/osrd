@@ -144,16 +144,16 @@ enum TrainScheduleError {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleResponse {
     pub id: i64,
-    pub train_schedule_set_id: i64,
+    pub timetable_id: i64,
     #[serde(flatten)]
     pub train_schedule: TrainSchedule,
 }
 
-impl TrainScheduleResponse {
-    pub fn new(train_schedule: models::TrainSchedule, train_schedule_set_id: i64) -> Self {
+impl From<models::TrainSchedule> for TrainScheduleResponse {
+    fn from(train_schedule: models::TrainSchedule) -> Self {
         Self {
             id: train_schedule.id,
-            train_schedule_set_id,
+            timetable_id: train_schedule.timetable_id,
             train_schedule: train_schedule_schema_from_model(train_schedule, vec![]),
         }
     }
@@ -188,16 +188,7 @@ pub(in crate::views) async fn get_by_id(
         })
         .await?;
 
-    let train_schedule_set_id =
-        models::Timetable::retrieve(conn.clone(), train_schedule.timetable_id)
-            .await?
-            .and_then(|timetable| timetable.train_schedule_set_id)
-            .ok_or(TrainScheduleError::NotFound { train_schedule_id })?;
-
-    Ok(Json(TrainScheduleResponse::new(
-        train_schedule,
-        train_schedule_set_id,
-    )))
+    Ok(Json(TrainScheduleResponse::from(train_schedule)))
 }
 
 /// Update a paced train
@@ -2646,7 +2637,7 @@ mod tests {
             .assert_status_ok()
             .json::<TrainScheduleResponse>();
 
-        assert_eq!(response.train_schedule_set_id, train_schedule_set.id);
+        assert_eq!(response.timetable_id, train_schedule_set.timetable_id);
         assert_eq!(
             response.train_schedule,
             train_schedule_schema_from_model(paced_train, vec![])
@@ -4921,8 +4912,8 @@ mod tests {
             .assert_status_ok()
             .json::<TrainScheduleResponse>();
         assert_eq!(
-            response.train_schedule_set_id,
-            train_schedule_set_to_move.id
+            response.timetable_id,
+            train_schedule_set_to_move.timetable_id
         );
     }
 

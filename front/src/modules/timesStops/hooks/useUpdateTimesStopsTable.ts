@@ -490,7 +490,7 @@ const useUpdateTimesStopsTable = (
       return persistTrain({
         ...originalPacedTrain,
         id: trainScheduleId,
-        train_schedule_set_id: originalPacedTrainWithDetails.train_schedule_set_id,
+        timetable_id: originalPacedTrainWithDetails.timetable_id,
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
     },

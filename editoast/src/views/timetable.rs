@@ -279,16 +279,9 @@ pub(in crate::views) async fn get_train_schedule_by_id(
         .map_into()
         .collect();
 
-    let train_schedule_set_id = Timetable::retrieve(conn.clone(), train_schedule.timetable_id)
-        .await?
-        .and_then(|timetable| timetable.train_schedule_set_id)
-        .ok_or(TimetableError::NotFound {
-            timetable_id: train_schedule.timetable_id,
-        })?;
-
     Ok(Json(TrainScheduleResponse {
         id: train_schedule.id,
-        train_schedule_set_id,
+        timetable_id: train_schedule.timetable_id,
         train_schedule: train_schedule_schema_from_model(train_schedule, exceptions),
     }))
 }
@@ -328,17 +321,12 @@ pub(in crate::views) async fn get_train_schedules(
     let train_schedule_set_ids =
         Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
-    let train_schedule_set_ids_by_timetable: HashMap<i64, i64> =
+    let inner_timetable_ids =
         TrainScheduleSetWithTimetable::retrieve_batch(conn, train_schedule_set_ids)
             .await?
             .into_iter()
-            .map(|train_schedule_set| (train_schedule_set.timetable_id, train_schedule_set.id))
-            .collect();
-
-    let inner_timetable_ids = train_schedule_set_ids_by_timetable
-        .keys()
-        .copied()
-        .collect_vec();
+            .map(|train_schedule_set| train_schedule_set.timetable_id)
+            .collect_vec();
 
     let settings = pagination_params
         .into_selection_settings()
@@ -363,7 +351,7 @@ pub(in crate::views) async fn get_train_schedules(
         .into_iter()
         .map(|ts| {
             let id = ts.id;
-            let train_schedule_set_id = train_schedule_set_ids_by_timetable[&ts.timetable_id];
+            let timetable_id = ts.timetable_id;
             let exceptions = exceptions
                 .remove(&id)
                 .unwrap_or_default()
@@ -373,7 +361,7 @@ pub(in crate::views) async fn get_train_schedules(
             let train_schedule = train_schedule_schema_from_model(ts, exceptions);
             TrainScheduleResponse {
                 id,
-                train_schedule_set_id,
+                timetable_id,
                 train_schedule,
             }
         })
@@ -1262,12 +1250,12 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        // Check if the timetable has the two train schedules, with their train schedule set
+        // Check if the timetable has the two train schedules, with the timetable of their train schedule set
         assert_eq!(list.results.len(), 2);
         assert!(
             list.results
                 .iter()
-                .all(|result| result.train_schedule_set_id == train_schedule_set1.id)
+                .all(|result| result.timetable_id == train_schedule_set1.timetable_id)
         );
 
         // Check if the first train schedule contains only his own exception
@@ -1307,7 +1295,7 @@ mod tests {
             .json();
 
         assert_eq!(response.id, train_schedule.id);
-        assert_eq!(response.train_schedule_set_id, train_schedule_set.id);
+        assert_eq!(response.timetable_id, train_schedule_set.timetable_id);
         app.get(&format!(
             "/timetable/{}/train_schedules/{}",
             timetable.id, 0
