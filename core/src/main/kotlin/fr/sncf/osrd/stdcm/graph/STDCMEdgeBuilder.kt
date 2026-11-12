@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
@@ -104,7 +105,7 @@ internal constructor(
                     BlockSimulationParameters(
                         infraExplorer.getCurrentBlock(),
                         prevNode.speed,
-                        infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex(),
+                        infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                         startOffset,
                         getNextStopOffsetOnCurrentBlock(infraExplorer),
                     ),
@@ -121,7 +122,7 @@ internal constructor(
             val envelope = getEnvelope() ?: return null
             val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
             val scaledEnvelope =
-                if (envelope.endPos == 0.0) envelope
+                if (envelope.endPos == 0.0 || speedRatio == 1.0) envelope
                 else LinearAllowance.scaleEnvelope(envelope, speedRatio)
             val stopDuration = getEndOfEdgeStopDuration()
             explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(scaledEnvelope)
@@ -229,7 +230,7 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
-                nextStop?.stepType,
+                nextStop?.originalStep?.stepTypes ?: setOf(StepType.INPUT_STEP),
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

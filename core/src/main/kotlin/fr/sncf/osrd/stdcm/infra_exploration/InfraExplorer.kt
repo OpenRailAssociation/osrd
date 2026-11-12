@@ -19,6 +19,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.stdcm.graph.logger
+import fr.sncf.osrd.stdcm.infra_exploration.StepTracker.Companion.initStepTracker
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -196,9 +197,32 @@ data class ExplorerStep(
     val duration: Double? = null,
     val canBacktrack: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,
-    val stepType: StepType = if (duration != null) StepType.INPUT_STOP else StepType.INPUT_STEP,
+    val stepTypes: Set<StepType> =
+        if (duration != null) {
+            setOf(StepType.INPUT_STOP)
+        } else setOf(StepType.INPUT_STEP),
 ) {
-    val stop: Boolean = stepType != StepType.INPUT_STEP
+    val stop: Boolean = !stepTypes.contains(StepType.INPUT_STEP)
+
+    init {
+        if (stepTypes.contains(StepType.INPUT_STEP)) assert(stepTypes.size == 1)
+    }
+
+    fun isInput(): Boolean {
+        return stepTypes.contains(StepType.INPUT_STEP) || stepTypes.contains(StepType.INPUT_STOP)
+    }
+
+    fun mergeExplorerStep(step: ExplorerStep): ExplorerStep {
+        val priorityStep =
+            listOf(this, step).minBy { it.stepTypes.minBy { stepType -> stepType.priority } }
+        return ExplorerStep(
+            priorityStep.locations,
+            listOfNotNull(duration, priorityStep.duration).maxOrNull(),
+            priorityStep.canBacktrack,
+            priorityStep.plannedTimingData,
+            stepTypes + step.stepTypes,
+        )
+    }
 }
 
 /**
@@ -221,16 +245,7 @@ fun initInfraExplorers(
     val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, listOf())
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
-    val forcedOpStopsByBlockIdSortedByOffset =
-        forcedOpStops
-            .flatMap { stop ->
-                stop.locations.map { location ->
-                    location.edge to (location.offset to stop)
-                }
-            }
-            .groupBy({ it.first }, { it.second })
-            .mapValues { (_, stops) -> stops.sortedBy { it.first }.map { it.second } }
-
+    val stepTracker = initStepTracker(targets, forcedOpStops)
     routes.forEach { route ->
         val infraExplorer =
             InfraExplorerImpl(
@@ -242,7 +257,7 @@ fun initInfraExplorers(
                 appendOnlyMapOf(),
                 null,
                 blockToPathProperties,
-                stepTracker = StepTracker(targets, forcedOpStopsByBlockIdSortedByOffset),
+                stepTracker = stepTracker.clone(),
                 constraints = constraints,
             )
         val infraExtended = infraExplorer.extend(route, location)
@@ -602,13 +617,7 @@ private class InfraExplorerImpl(
             isPathComplete = stepTracker.hasSeenDestination() && lastSeenStepLocation?.edge == block
             val blockEndOffset = if (isPathComplete) lastSeenStepLocation!!.offset else untilOffset
 
-            val stepIndex =
-                max(
-                    0,
-                    stepTracker.iterateSeenStepsBackwards().count {
-                        it.isInput()
-                    } - 1,
-                )
+            val stepIndex = stepTracker.getCurrentSeenInputStepIndex()
 
             // If a block cannot be explored, give up
             val isRouteBlocked =

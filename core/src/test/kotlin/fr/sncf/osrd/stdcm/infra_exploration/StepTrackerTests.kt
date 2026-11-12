@@ -1,8 +1,8 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.sim_infra.api.BlockLocation
+import fr.sncf.osrd.stdcm.infra_exploration.StepTracker.Companion.initStepTracker
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -36,7 +36,7 @@ class StepTrackerTests {
                 ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
                 ExplorerStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
             )
-        val tracker = StepTracker(steps, emptyMap())
+        val tracker = initStepTracker(steps, listOf())
 
         val firstBlockRange =
             BlockRange(
@@ -54,13 +54,13 @@ class StepTrackerTests {
                     Offset(25.meters),
                     steps[0].locations.single(),
                     steps[0],
-                    stepType = StepType.INPUT_STEP,
+                    0,
                 ),
                 LocatedStep(
                     Offset(26.meters),
                     BlockLocation(blocks[0], Offset(51.meters)),
                     steps[1],
-                    stepType = StepType.INPUT_STEP,
+                    1,
                 ),
             )
         assertEquals(expectedFirstSteps, firstSteps)
@@ -80,13 +80,13 @@ class StepTrackerTests {
                     Offset(75.meters),
                     steps[2].locations.single(),
                     steps[2],
-                    stepType = StepType.INPUT_STEP,
+                    2,
                 ),
                 LocatedStep(
                     Offset(175.meters),
                     steps[3].locations.single(),
                     steps[3],
-                    stepType = StepType.INPUT_STEP,
+                    3,
                 ),
             )
         assertEquals(expectedSecond, second)
@@ -107,7 +107,7 @@ class StepTrackerTests {
                     Offset(275.meters),
                     steps[4].locations.single(),
                     steps[4],
-                    stepType = StepType.INPUT_STEP,
+                    4,
                 ),
             )
         assertEquals(expectedThird, third)

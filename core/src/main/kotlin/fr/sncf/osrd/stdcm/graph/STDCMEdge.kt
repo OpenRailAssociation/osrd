@@ -26,8 +26,7 @@ data class STDCMEdge(
     val envelopeStartOffset: Offset<Block>,
     // True if the edge end is a stop
     val endAtStop: Boolean,
-    // Type at the end of the edge if there is a stop
-    val endStepType: StepType?,
+    val endStepTypes: Set<StepType>,
     // Speed at the beginning of the edge
     val beginSpeed: Double,
     // Speed at the end of the edge
@@ -83,7 +82,7 @@ data class STDCMEdge(
                     this,
                     null,
                     null,
-                    listOf(StepType.INPUT_STEP),
+                    setOf(StepType.INPUT_STEP),
                     null,
                     previousPlannedNodeRelativeTimeDiff,
                     graph.remainingTimeEstimator.invoke(this, null, stepTracker),
@@ -110,7 +109,7 @@ data class STDCMEdge(
                     this,
                     envelopeStartOffset + length.distance,
                     stopDuration,
-                    listOf(nextStop.stepType),
+                    nextStop.originalStep.stepTypes,
                     nextStop.originalStep.plannedTimingData,
                     previousPlannedNodeRelativeTimeDiff,
                     graph.remainingTimeEstimator.invoke(this, locationOnEdge, stepTracker),

@@ -555,7 +555,8 @@ fun parseSteps(
                         it.stepTimingData.arrivalTimeToleranceAfter,
                     )
                 else null,
-                if (it.stopDuration != null) StepType.INPUT_STOP else StepType.INPUT_STEP,
+                if (it.stopDuration != null) setOf(StepType.INPUT_STOP)
+                else setOf(StepType.INPUT_STEP),
             )
         }
         .toList()
@@ -706,10 +707,10 @@ fun parseForcedOpStops(
                             ExplorerStep(
                                 locations = setOf(it),
                                 duration = FORCED_OP_STOP_DURATION.inWholeSeconds.toDouble(),
-                                stepType =
+                                stepTypes =
                                     when (forcedOpStop.stop_type) {
-                                        ForcedStopType.GENERAL_STOP -> StepType.GENERAL_STOP
-                                        ForcedStopType.OVERTAKE -> StepType.OVERTAKE
+                                        ForcedStopType.GENERAL_STOP -> setOf(StepType.GENERAL_STOP)
+                                        ForcedStopType.OVERTAKE -> setOf(StepType.OVERTAKE)
                                     },
                             )
                         }

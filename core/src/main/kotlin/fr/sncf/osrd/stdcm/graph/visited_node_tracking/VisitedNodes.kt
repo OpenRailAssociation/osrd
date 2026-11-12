@@ -15,7 +15,6 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.getRemainingBlocks
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -122,12 +121,7 @@ data class VisitedNodes(
                 val mapAtDetector = mapAtStepIndex?.get(exitDet)
 
                 val stepIndex =
-                    max(
-                        parameters.explorer.getStepTracker().iterateSeenStepsBackwards().count {
-                            it.isInput()
-                        } - 1,
-                        0,
-                    )
+                    parameters.explorer.getStepTracker().getCurrentReachedInputStepIndex()
                 val minTravelTime =
                     parameters.explorer.getRemainingBlocks().sumOf {
                         maxSpeedEnvBuilder!!.getBlockTime(it, stepIndex, null, null)

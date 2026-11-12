@@ -9,37 +9,8 @@ import fr.sncf.osrd.utils.units.Offset
  * Returns the LocatedStep of the next stop (if any) on the current block, starting at startOffset
  */
 fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: BlockId): LocatedStep? {
-    val step =
-        infraExplorer.getStepTracker().iterateStepsInLookaheadBackwards().lastOrNull {
-            it.location.edge == currentBlockId && it.originalStep.stop
-        }
-    val forcedOpStop =
-        infraExplorer.getStepTracker().iterateForcedOpStopsInLookaheadBackwards().lastOrNull {
-            it.location.edge == currentBlockId && it.originalStep.stop
-        }
-    if (step == null && forcedOpStop == null) return null
-    if (step == null || forcedOpStop == null) return step ?: forcedOpStop
-    val stepOffset = step.location.offset.meters
-    val forcedOpStopOffset = forcedOpStop.location.offset.meters
-
-    val stepDuration = step.originalStep.duration ?: Double.POSITIVE_INFINITY
-    val forcedOpStopDuration = forcedOpStop.originalStep.duration ?: Double.POSITIVE_INFINITY
-
-    return when {
-        stepOffset < forcedOpStopOffset -> step
-        forcedOpStopOffset < stepOffset -> forcedOpStop
-        // In the case where there is an input stop with a shorter stop time than a forced op stop
-        // at the same offset, we want to keep the max stop time but still know that it was an input
-        // stop
-        stepDuration < forcedOpStopDuration -> {
-            LocatedStep(
-                travelledPathOffset = forcedOpStop.travelledPathOffset,
-                location = forcedOpStop.location,
-                originalStep = forcedOpStop.originalStep,
-                stepType = step.stepType,
-            )
-        }
-        else -> step
+    return infraExplorer.getStepTracker().iterateStepsInLookaheadBackwards().lastOrNull {
+        it.location.edge == currentBlockId && it.originalStep.stop
     }
 }
 

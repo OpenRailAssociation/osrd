@@ -217,7 +217,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                         // TODO: forward and use receptionSignal param from request
                         if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP
                         else OPEN,
-                        prevNode.stepType,
+                        prevNode.stepTypes,
                     ),
                 )
             offset += edge.length.distance
@@ -270,7 +270,7 @@ private fun makeConsistChanges(
     finalPathSteps: StepTracker,
 ): List<ConsistChange> {
     // Inconsistent inputs
-    assert(rollingStocksPerStep.size == finalPathSteps.getSeenSteps().size)
+    assert(rollingStocksPerStep.size == finalPathSteps.nSeenInputSteps)
     assert(finalPathSteps.getSeenSteps()[0].travelledPathOffset.distance == 0.meters)
     val consistsPerStep =
         rollingStocksPerStep.slice(0..rollingStocksPerStep.size - 2).mapIndexed {
@@ -283,7 +283,7 @@ private fun makeConsistChanges(
                     .toList()
                     .reversed()
                     .filter { it.travelledPathOffset.distance != 0.meters }
-                    .filter { it.isInput() }
+                    .filter { it.originalStep.isInput() }
                     .elementAt(index)
                     .travelledPathOffset,
             )

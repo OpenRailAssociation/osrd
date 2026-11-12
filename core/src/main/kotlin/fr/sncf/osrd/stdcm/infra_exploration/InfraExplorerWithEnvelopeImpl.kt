@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.ConsistSchedule
-import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
@@ -69,28 +68,25 @@ data class InfraExplorerWithEnvelopeImpl(
 
     override fun generateReachedTrainStops(): List<TrainStop> {
         val seenSteps = getStepTracker().getSeenSteps()
-        val seenForcedOpStops = getStepTracker().getSeenForcedOpStops().iterateBackwards().toList()
-        val stopOffsets =
+        val stops =
             seenSteps
                 .iterateBackwards()
                 .filter { it.originalStep.stop }
                 .toList()
-                .union(seenForcedOpStops)
-                .sortedWith(
-                    compareBy<LocatedStep> { it.travelledPathOffset }
-                        .thenBy { it.stepType == StepType.INPUT_STOP },
-                )
+                .sortedBy {
+                    it.travelledPathOffset
+                }
         val stopDurations = stopTimeData.map { it.currentDuration }
 
         // Stop offsets include the lookahead while stop durations doesn't.
         // We want the intersection, which is what `zip` does here.
-        assert(stopDurations.size <= stopOffsets.size)
-        return (stopOffsets zip stopDurations).map {
+        assert(stopDurations.size <= stops.size)
+        return (stops zip stopDurations).map {
             TrainStop(
                 it.first.travelledPathOffset.meters,
                 it.second,
                 SHORT_SLIP_STOP,
-                listOf(it.first.stepType),
+                it.first.originalStep.stepTypes,
             )
         }
     }
@@ -110,7 +106,7 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getCurrentRollingStock(): PhysicsRollingStock {
-        val currentStepIndex = infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex()
+        val currentStepIndex = infraExplorer.getStepTracker().getCurrentReachedInputStepIndex()
         return consistSchedule.rollingStocks[currentStepIndex]
     }
 
@@ -147,11 +143,11 @@ data class InfraExplorerWithEnvelopeImpl(
         var previousStepPos = 0.meters
         return distanceRangeMapOf(
             getStepTracker()
-                .getSeenSteps()
+                .getSeenInputSteps()
                 .toList()
                 .asSequence()
                 .mapIndexedNotNull { stepIndex, step ->
-                    if (!step.isInput()) return@mapIndexedNotNull null
+                    if (!step.originalStep.isInput()) return@mapIndexedNotNull null
                     val rollingStock: PhysicsRollingStock = consistSchedule.rollingStocks[stepIndex]
                     val stepPos = step.travelledPathOffset.distance
                     val res = DistanceRangeMap.RangeMapEntry(previousStepPos, stepPos, rollingStock)
@@ -162,7 +158,7 @@ data class InfraExplorerWithEnvelopeImpl(
                     run {
                         val lastStep =
                             getStepTracker().iterateSeenStepsBackwards().firstOrNull {
-                                it.isInput()
+                                it.originalStep.isInput()
                             }
                         val rollingStock = getCurrentRollingStock()
                         val lookaheadEndOffset = getAllBlocks().last().pathEnd.distance

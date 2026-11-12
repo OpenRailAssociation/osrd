@@ -63,7 +63,7 @@ class StopTests {
         // Check that the stop is properly returned
         Assertions.assertEquals(
             listOf(
-                TrainStop(expectedOffset, 10000.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)),
+                TrainStop(expectedOffset, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP)),
             ),
             resSuccess.stopResults,
         )
@@ -139,7 +139,7 @@ class StopTests {
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP))),
+            listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP))),
         )
     }
 
@@ -171,7 +171,7 @@ class StopTests {
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP))),
+            listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP))),
         )
     }
 
@@ -207,14 +207,15 @@ class StopTests {
                     ExplorerStep(
                         setOf(BlockLocation(detour[1], Offset(1000.meters))),
                         0.0,
-                        stepType = if (stop) StepType.INPUT_STOP else StepType.INPUT_STEP,
+                        stepTypes =
+                            if (stop) setOf(StepType.INPUT_STOP) else setOf(StepType.INPUT_STEP),
                     ),
                 )
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(blocksDirectPath[3], Offset(0.meters))),
                         0.0,
-                        stepType = StepType.INPUT_STOP,
+                        stepTypes = setOf(StepType.INPUT_STOP),
                     ),
                 )
                 .run()!!
@@ -297,7 +298,7 @@ class StopTests {
         val resSuccess = res as STDCMCompleteResult
         checkStop(
             resSuccess,
-            listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP))),
+            listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP))),
         )
         occupancyTest(resSuccess, occupancy)
     }
@@ -359,7 +360,7 @@ class StopTests {
             )
 
         val expectedStops =
-            listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)))
+            listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP)))
         checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
         checkStop(res.withoutAllowance!! as STDCMCompleteResult, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -435,7 +436,7 @@ class StopTests {
                     ),
             )
         val expectedStops =
-            listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP, listOf(StepType.INPUT_STOP)))
+            listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP)))
         checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
         checkStop(res.withoutAllowance!! as STDCMCompleteResult, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)

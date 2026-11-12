@@ -152,7 +152,7 @@ class Pathfinding(
     private fun remainingCostEstimation(infraExplorer: InfraExplorer): Double {
         if (infraExplorer.getStepTracker().hasSeenDestination()) return 0.0
 
-        val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
+        val nbSeenSteps = infraExplorer.getStepTracker().nSeenInputSteps
         val currentRange = infraExplorer.getCurrentBlockRange()
         return remainingCostEstimators[nbSeenSteps - 1].apply(
             BlockLocation(currentRange.value, currentRange.objectEnd),
@@ -218,7 +218,7 @@ class Pathfinding(
                 return step.infraExplorer
             }
 
-            val nbSeenTargets = step.infraExplorer.getStepTracker().getSeenSteps().size
+            val nbSeenTargets = step.infraExplorer.getStepTracker().nSeenInputSteps
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()

@@ -79,9 +79,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                 BlockSimulationParameters(
                     old.infraExplorer.getCurrentBlock(),
                     old.beginSpeed,
-                    old.infraExplorer.getStepTracker().iterateReachedStepsBackwards().count {
-                        it.isInput()
-                    },
+                    old.infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                     old.envelopeStartOffset,
                     getNextStopOffsetOnCurrentBlock(old.infraExplorer),
                 ),
