@@ -1708,6 +1708,10 @@
             "type": "object"
         },
         "TrackSectionExtensions": {
+            "additionalProperties": {
+                "$ref": "#/$defs/TrackSectionSncfExtension"
+            },
+            "description": "Line and track identification by infrastructure manager: sncf, or any other by its short name",
             "properties": {
                 "sncf": {
                     "$ref": "#/$defs/TrackSectionSncfExtension",
@@ -1722,6 +1726,7 @@
             "type": "object"
         },
         "TrackSectionSncfExtension": {
+            "description": "Line and track identification of a track section",
             "properties": {
                 "line_code": {
                     "description": "Code of the line used by the corresponding track section",

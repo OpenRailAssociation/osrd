@@ -3431,6 +3431,7 @@ export type TrackSectionExtensions = {
     id: string;
     name: string;
   };
+  [key: string]: unknown;
 };
 export type GeoJsonPointValue = number[];
 export type GeoJsonLineStringValue = GeoJsonPointValue[];

@@ -5,6 +5,10 @@ use utoipa::ToSchema;
 
 use crate::primitives::NonBlankString;
 
+/// Line and track identification of a track section
+///
+/// Despite its name, it is shared by every infrastructure manager extension of a track section
+/// (`sncf`, `db`, `sbb`, …).
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]
