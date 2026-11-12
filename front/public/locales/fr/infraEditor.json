@@ -423,7 +423,12 @@
         "title": "Identifiant"
       },
       "is_passenger_station": {
+        "description": "Indique si le point remarquable est un bâtiment voyageur ou non",
         "title": "Est une gare de voyageurs"
+      },
+      "main_code": {
+        "description": "Code principal identifiant le point remarquable (ex. le trigramme pour la SNCF)",
+        "title": "Code principal"
       },
       "name": {
         "description": "Nom du point remarquable",
