@@ -11,9 +11,13 @@ import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOr
 import {
   osrdEditoastApi,
   type ScenarioPatchForm,
+  type TimetableSummary,
   type TimetableType,
 } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { type ScenarioField } from 'modules/scenario/components/AddOrEditScenarioModal';
+import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -22,6 +26,8 @@ import InfraLoadingState from './InfraLoadingState';
 
 type ScenarioExpandedHeaderProps = {
   onEditScenario: (field: ScenarioField) => void;
+  onAddTimetable: (type: TimetableType) => void;
+  onEditTimetable: (timetable: TimetableSummary) => void;
   onCollapse: () => void;
 };
 
@@ -45,16 +51,23 @@ const DetailsSection = ({ title, icons, children }: DetailsSectionProps) => (
 
 const TIMETABLE_TYPES: TimetableType[] = ['HOURLY', 'CALENDAR'];
 
-const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpandedHeaderProps) => {
+const ScenarioExpandedHeader = ({
+  onEditScenario,
+  onAddTimetable,
+  onEditTimetable,
+  onCollapse,
+}: ScenarioExpandedHeaderProps) => {
   'use memo';
 
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
   const { scenario, timetableId, workerStatus } = useScenarioContextWithOptionalTimetable();
   const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
+  const { openModal } = useModal();
 
   const [patchScenario, { isLoading: isPatchingScenario }] =
     osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
+  const [deleteTimetable] = osrdEditoastApi.endpoints.deleteTimetableById.useMutation();
 
   // Used to remount the selects when the update fails.
   const [selectsKey, setSelectsKey] = useState(() => uniqueId());
@@ -85,6 +98,7 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
   const timetables = scenario.timetable_summaries.map(({ id, type, name }) => ({
     id,
     type,
+    name,
     label:
       name ??
       (type === 'HOURLY'
@@ -107,6 +121,24 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
         setSelectsKey(uniqueId());
         dispatch(setFailure(castErrorToFailure(error)));
       });
+  };
+
+  const removeTimetable = (timetable: TimetableSummary) => {
+    deleteTimetable({ id: timetable.id })
+      .unwrap()
+      .then(() => cleanScenarioLocalStorage({ timetable_summaries: [timetable] }))
+      .catch((error) => dispatch(setFailure(castErrorToFailure(error))));
+  };
+
+  const openDeleteTimetableModal = (timetable: TimetableSummary, label: string) => {
+    openModal(
+      <DeleteItemsModal
+        translationKey={t('main.scenarioTimetableConfirmDelete', { name: label })}
+        handleDeleteItems={() => removeTimetable(timetable)}
+      />,
+      'sm',
+      'scenario-delete-timetable-modal'
+    );
   };
 
   const getEditButton = (field: ScenarioField) => (
@@ -180,11 +212,11 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
               key={type}
               title={t(`main.scenarioTimetableSections.${type}.title`)}
               icons={
-                // TODO: no action until #19081 is merged
                 <button
                   type="button"
                   aria-label={t('translation:common.add')}
                   title={t('translation:common.add')}
+                  onClick={() => onAddTimetable(type)}
                 >
                   <Plus />
                 </button>
@@ -192,7 +224,7 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
             >
               {sectionTimetables.length > 0 ? (
                 <ul className="details-section-timetables">
-                  {sectionTimetables.map(({ id, label }) => {
+                  {sectionTimetables.map(({ id, name, label }) => {
                     const isSelected = id === timetableId;
                     return (
                       <li
@@ -208,12 +240,12 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
                         >
                           {label}
                         </button>
-                        {/* TODO(#18904): no action until the backend handles several timetables */}
                         <div className="details-section-timetable-icons">
                           <button
                             type="button"
-                            aria-label={t('main.timetable.trainScheduleSets.removeFromScenario')}
-                            title={t('main.timetable.trainScheduleSets.removeFromScenario')}
+                            aria-label={t('translation:common.delete')}
+                            title={t('translation:common.delete')}
+                            onClick={() => openDeleteTimetableModal({ id, type, name }, label)}
                           >
                             <Trash />
                           </button>
@@ -221,6 +253,7 @@ const ScenarioExpandedHeader = ({ onEditScenario, onCollapse }: ScenarioExpanded
                             type="button"
                             aria-label={t('translation:common.edit')}
                             title={t('translation:common.edit')}
+                            onClick={() => onEditTimetable({ id, type, name })}
                           >
                             <Pencil />
                           </button>

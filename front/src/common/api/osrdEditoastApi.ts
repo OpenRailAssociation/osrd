@@ -290,6 +290,13 @@ const osrdEditoastApi = generatedEditoastApi
       getTimetableByIdTrainSchedules: {
         providesTags: ['timetable', 'train_schedule', 'train_schedule_exceptions'],
       },
+      // Only refetch the scenario which contains the timetables and their names.
+      patchTimetableById: {
+        invalidatesTags: ['scenarios'],
+      },
+      deleteTimetableById: {
+        invalidatesTags: ['scenarios'],
+      },
       postTimetableByIdTrainScheduleException: {
         invalidatesTags: ['train_schedule_exceptions', 'train_schedule'],
       },

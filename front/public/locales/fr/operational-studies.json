@@ -200,6 +200,8 @@
     "scenarioDescription": "Description",
     "scenarioDescriptionInvalid": "La description pour le scénario ne doit pas dépasser 1024 caractères",
     "scenarioDescriptionPlaceholder": "Courte description du scénario",
+    "scenarioEditCalendarModalTitle": "Modifier la grille calendaire",
+    "scenarioEditHourlyPatternModalTitle": "Modifier la trame",
     "scenarioElectricalProfile": "Profil électrique",
     "scenarioInfraInvalid": "Infrastructure requise",
     "scenarioInfrastructureLabel": "Infrastructure",
@@ -211,6 +213,7 @@
     "scenarioNoTimetableAddCalendar": "Ajouter une grille calendaire",
     "scenarioNoTimetableAddHourlyPattern": "Ajouter une trame",
     "scenarioTags": "Étiquettes",
+    "scenarioTimetableConfirmDelete": "Voulez-vous supprimer\n« {{ name }} » ?",
     "scenarioTimetableNameInvalid": "Un nom est requis",
     "scenarioTimetableNameLabel": "Nom",
     "scenarioTimetableSections": {

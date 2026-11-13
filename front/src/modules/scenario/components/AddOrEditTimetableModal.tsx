@@ -5,31 +5,51 @@ import { noop } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
+import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type AddOrEditTimetableModalProps = {
+  editionMode?: boolean;
   timetableType: TimetableType;
+  timetable?: TimetableSummary;
   onCancel: () => void;
 };
 
-const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetableModalProps) => {
+const AddOrEditTimetableModal = ({
+  editionMode = false,
+  timetableType,
+  timetable,
+  onCancel,
+}: AddOrEditTimetableModalProps) => {
   'use memo';
 
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dispatch = useAppDispatch();
   const { scenario } = useScenarioContextWithOptionalTimetable();
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
   const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation();
+  const [patchTimetable] = osrdEditoastApi.endpoints.patchTimetableById.useMutation();
   const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
-  const [name, setName] = useState('');
+  const [getScenario] = osrdEditoastApi.endpoints.getScenariosByScenarioId.useLazyQuery();
+  const [name, setName] = useState(timetable?.name ?? '');
   const [displayError, setDisplayError] = useState(false);
 
-  const title =
+  const addTitle =
     timetableType === 'HOURLY'
       ? t('main.scenarioAddHourlyPatternModalTitle')
       : t('main.scenarioAddCalendarModalTitle');
+  const editTitle =
+    timetableType === 'HOURLY'
+      ? t('main.scenarioEditHourlyPatternModalTitle')
+      : t('main.scenarioEditCalendarModalTitle');
+  const title = editionMode ? editTitle : addTitle;
 
   const isNameInvalid = !name.trim();
 
@@ -40,20 +60,32 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
       return;
     }
     try {
-      const timetable = await postTimetable({
+      if (editionMode && timetable) {
+        await patchTimetable({
+          id: timetable.id,
+          timetablePatchForm: { name: name.trim() },
+        }).unwrap();
+        onCancel();
+        return;
+      }
+      const newTimetable = await postTimetable({
         timetableForm: { timetable_type: timetableType, timetable_name: name.trim() },
       }).unwrap();
-      // No need to create the sandbox here, useScenario creates it once the scenario is refetched
+      // No need to create the sandbox here, useScenario creates it once the timetable is selected
       // The patch replaces all the timetables of the scenario, so we keep the existing ones
       await patchScenario({
         scenarioId: scenario.id,
         scenarioPatchForm: {
           timetable_ids: [
             ...scenario.timetable_summaries.map(({ id }) => id),
-            timetable.timetable_id,
+            newTimetable.timetable_id,
           ],
         },
       }).unwrap();
+      // Wait for the scenario with the new timetable, otherwise useScenario doesn't know it yet
+      // and falls back on the first timetable when we select it
+      await getScenario({ scenarioId: scenario.id }).unwrap();
+      setParamsInUrlAndStorage('timetable', String(newTimetable.timetable_id));
       onCancel();
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));

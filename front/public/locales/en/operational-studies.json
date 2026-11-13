@@ -200,6 +200,8 @@
     "scenarioDescription": "Description",
     "scenarioDescriptionInvalid": "The description for the scenario must not exceed 1024 characters",
     "scenarioDescriptionPlaceholder": "Short description of the scenario",
+    "scenarioEditCalendarModalTitle": "Edit calendar timetable",
+    "scenarioEditHourlyPatternModalTitle": "Edit hourly pattern",
     "scenarioElectricalProfile": "Electrical profile",
     "scenarioInfraInvalid": "Infrastructure is required",
     "scenarioInfrastructureLabel": "Infrastructure",
@@ -211,6 +213,7 @@
     "scenarioNoTimetableAddCalendar": "Add a calendar timetable",
     "scenarioNoTimetableAddHourlyPattern": "Add an hourly pattern",
     "scenarioTags": "Tags",
+    "scenarioTimetableConfirmDelete": "Do you want to delete\n\"{{ name }}\"?",
     "scenarioTimetableNameInvalid": "A name is required",
     "scenarioTimetableNameLabel": "Name",
     "scenarioTimetableSections": {

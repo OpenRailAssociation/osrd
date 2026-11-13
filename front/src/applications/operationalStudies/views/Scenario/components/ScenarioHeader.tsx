@@ -9,11 +9,16 @@ import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { Board } from 'applications/operationalStudies/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal, {
   type ScenarioField,
 } from 'modules/scenario/components/AddOrEditScenarioModal';
+import AddOrEditTimetableModal from 'modules/scenario/components/AddOrEditTimetableModal';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/useAuth';
 
@@ -61,6 +66,8 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
   const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
+  const [timetableTypeToCreate, setTimetableTypeToCreate] = useState<TimetableType>();
+  const [timetableToEdit, setTimetableToEdit] = useState<TimetableSummary>();
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
@@ -204,6 +211,8 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       {areScenarioDetailsVisible && multipleTimetablesEnabled && (
         <ScenarioExpandedHeader
           onEditScenario={setScenarioFieldToEdit}
+          onAddTimetable={setTimetableTypeToCreate}
+          onEditTimetable={setTimetableToEdit}
           onCollapse={() => setAreScenarioDetailsVisible(false)}
         />
       )}
@@ -261,6 +270,20 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           scenario={scenario}
           fieldToFocus={scenarioFieldToEdit}
           onCancel={() => setScenarioFieldToEdit(undefined)}
+        />
+      ) : undefined}
+      {timetableTypeToCreate ? (
+        <AddOrEditTimetableModal
+          timetableType={timetableTypeToCreate}
+          onCancel={() => setTimetableTypeToCreate(undefined)}
+        />
+      ) : undefined}
+      {timetableToEdit ? (
+        <AddOrEditTimetableModal
+          editionMode
+          timetableType={timetableToEdit.type}
+          timetable={timetableToEdit}
+          onCancel={() => setTimetableToEdit(undefined)}
         />
       ) : undefined}
     </header>
