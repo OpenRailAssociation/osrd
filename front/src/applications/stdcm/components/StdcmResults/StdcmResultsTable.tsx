@@ -1,7 +1,14 @@
 import { Fragment, useState, type JSX } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { ArrowRight, CheckCircle, Container, Backtrack } from '@osrd-project/ui-icons';
+import {
+  ArrowRight,
+  Backtrack,
+  CheckCircle,
+  Container,
+  GeneralStop,
+  Overtake,
+} from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -14,6 +21,7 @@ import type {
 } from 'applications/stdcm/types';
 import {
   dateToHHMM,
+  getForcedStopTypeLabel,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
@@ -63,8 +71,13 @@ const StdcmResultsTable = ({
     const isRequestedPathStep = stdcmData.simulationPathSteps.some(
       ({ operationalPoint }) => operationalPoint && operationalPoint.id === step.opId
     );
+    // TODO: remove the `forcedStopType` check once core enforces general stops
     const shouldRenderRow =
-      isFirstStep || isRequestedPathStep || isLastStep || step.stopDuration !== null;
+      isFirstStep ||
+      isRequestedPathStep ||
+      isLastStep ||
+      step.stopDuration !== null ||
+      !!step.forcedStopType;
     const isPathStep = isFirstStep || isLastStep || isRequestedPathStep;
     const isNotExtremity = !isFirstStep && !isLastStep;
 
@@ -102,6 +115,20 @@ const StdcmResultsTable = ({
               step.stopDuration === null
                 ? '='
                 : step.name || t('reportSheet.unknown')}
+              {step.forcedStopType && (
+                <span
+                  className="forced-stop-icon"
+                  role="img"
+                  title={getForcedStopTypeLabel(step.forcedStopType, t)}
+                  aria-label={getForcedStopTypeLabel(step.forcedStopType, t)}
+                >
+                  {step.forcedStopType === 'GENERAL_STOP' ? (
+                    <GeneralStop size="sm" />
+                  ) : (
+                    <Overtake size="sm" />
+                  )}
+                </span>
+              )}
               {step.isBackTrack && (
                 <div className="backtrack-label" data-testid="backtrack-label">
                   {t('simulation.results.backtrack')}

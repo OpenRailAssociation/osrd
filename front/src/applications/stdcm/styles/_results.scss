@@ -260,6 +260,19 @@
               font-style: 'semibold';
               font-weight: 600;
               color: var(--grey80);
+
+              .forced-stop-icon {
+                float: right;
+                display: flex;
+                align-items: center;
+                height: 20px;
+                margin-right: 8px;
+                color: var(--info60);
+
+                span {
+                  display: flex;
+                }
+              }
             }
 
             .consist-change-label {
