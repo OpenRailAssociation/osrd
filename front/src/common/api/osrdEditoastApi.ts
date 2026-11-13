@@ -26,6 +26,7 @@ import {
   type RelatedOperationalPoint,
   type SimulationResponse,
   type StdcmResponse,
+  type StdcmRequest,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
@@ -249,6 +250,27 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['catalog_entry'],
+      }),
+      getAllStdcmRequests: builder.query<StdcmRequest[], { by?: 'user' | 'group' }>({
+        queryFn: async ({ by }, { dispatch }) => {
+          const requests: StdcmRequest[] = [];
+          let after: string | undefined;
+          do {
+            const data = await dispatch(
+              osrdEditoastApi.endpoints.getStdcmRequests.initiate(
+                {
+                  by,
+                  after,
+                  limit: 200,
+                },
+                { subscribe: false }
+              )
+            ).unwrap();
+            requests.push(...data.requests);
+            after = data.links.next ?? undefined;
+          } while (after);
+          return { data: requests };
+        },
       }),
     }),
   })

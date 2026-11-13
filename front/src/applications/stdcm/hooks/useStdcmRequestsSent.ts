@@ -18,7 +18,7 @@ const useStdcmRequestsSent = () => {
     data: stdcmRequests,
     isLoading: idsLoading,
     refetch: refetchIDs,
-  } = osrdEditoastApi.endpoints.getStdcmRequests.useQuery({
+  } = osrdEditoastApi.endpoints.getAllStdcmRequests.useQuery({
     by: 'user',
   });
 
@@ -29,7 +29,7 @@ const useStdcmRequestsSent = () => {
     refetch: refetchStatuses,
     fulfilledTimeStamp: lastRefresh,
   } = osrdRailwayManagerApi.endpoints.postSendLastMinuteRequestStatuses.useQuery(
-    stdcmRequests ? { body: stdcmRequests.requests.map((request) => request.rmi_id) } : skipToken
+    stdcmRequests ? { body: stdcmRequests.map((request) => request.rmi_id) } : skipToken
   );
 
   const statuses = Object.values(statusesById ?? {});
