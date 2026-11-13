@@ -370,9 +370,9 @@ pub(in crate::views) async fn create(
     if timetable.timetable_type.0 == TimetableType::Hourly {
         for LinkingCreateForm { source, target } in &linking_forms {
             let source_train_schedule_id = source.train_schedule_id();
-            let source_train_schedule = train_schedules.get(&source_train_schedule_id).unwrap();
+            let source_train_schedule = &train_schedules[&source_train_schedule_id];
             let target_train_schedule_id = target.train_schedule_id();
-            let target_train_schedule = train_schedules.get(&target_train_schedule_id).unwrap();
+            let target_train_schedule = &train_schedules[&target_train_schedule_id];
 
             if source_train_schedule.time_window != target_train_schedule.time_window {
                 return Err(CreateLinkingsError::DifferentPacedTrainTimeWindows {
