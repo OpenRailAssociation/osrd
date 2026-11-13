@@ -574,7 +574,6 @@ mod tests {
         assert_eq!(created_linkings[0].target, target);
     }
 
-    #[expect(clippy::too_many_arguments)]
     #[rstest::rstest]
     #[case::train_schedules_not_found(
         "editoast:train_schedule_linking:train_schedules_not_found",
@@ -632,6 +631,10 @@ mod tests {
         StatusCode::CONFLICT
     )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "Many different cases, but still worth it to parameterize."
+    )]
     async fn create_errors(
         #[case] expected_error_type: &str,
         #[case] is_hourly_timetable: bool,
