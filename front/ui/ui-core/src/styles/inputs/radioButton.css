@@ -1,366 +1,191 @@
+/* Radio button styles
+ * Note that we style the input directly like checkboxes, using &:before to draw the outer hover or
+ * focus ring, and &:after for the circle visible inside of it. */
 .ui-radio-button {
-  align-items: center;
-  margin-bottom: 0.25rem;
-  cursor: pointer;
+  --ui-radio-button-size: 18px;
+  --ui-radio-inner-size: 8px;
 
-  input[type='radio'] {
-    position: absolute;
-    opacity: 0;
-    height: 0.75rem;
-    width: 0.75rem;
-    border: 0.0625rem solid #94918e;
-  }
-
-  .checkmark {
-    position: absolute;
+  input {
+    appearance: none;
+    width: var(--ui-radio-button-size);
+    height: var(--ui-radio-button-size);
     border-radius: 50%;
-    box-sizing: content-box;
-    width: 1.125rem;
-    height: 1.125rem;
-    border: 0.0625rem solid #94918e;
-    opacity: 1;
-    background-image: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 1) 0%,
-      rgba(245, 245, 245, 1) 100%
-    );
-    outline: solid 0.125rem #d3d1cf;
+    border: 1px solid #94918e;
+
+    --ui-radio-button-outer-ring-color: #ebebea;
+
+    box-shadow:
+      inset 0 0 0 1px white,
+      inset 0 0 0 1.5px #d3d1cf;
+    background-image: linear-gradient(180deg, white 0%, #f5f5f5 100%);
+    outline: 0 none;
+    cursor: pointer;
+    display: grid;
+    grid: 1fr / 1fr;
+    place-items: center;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      grid-area: 1 / 1;
+      border-radius: 50%;
+      outline: 2px solid var(--ui-radio-button-outer-ring-color);
+      outline-offset: 1px;
+      pointer-events: none;
+    }
+
+    &:hover:not(:disabled) {
+      --ui-radio-button-outer-ring-color: #98c0f5;
+    }
+
+    &:focus-visible::before {
+      border-radius: 50%;
+      outline: 1px solid #256afa;
+      outline-offset: 2px;
+      box-shadow: none;
+    }
 
     &::after {
+      grid-area: 1 / 1;
       content: '';
-      position: absolute;
-      top: 0.0625rem;
-      left: 0.0625rem;
-      bottom: 0.0625rem;
-      right: 0.0625rem;
-      border: 0.5px #d3d1cf solid;
+      display: block;
+      width: var(--ui-radio-inner-size);
+      height: var(--ui-radio-inner-size);
+      pointer-events: none;
+      background-position: center center;
       border-radius: 50%;
     }
-  }
 
-  .radio-label {
-    z-index: 1; /* This is to move the label above the checkmark to make the label clickable. */
-  }
+    &:checked {
+      background-image: linear-gradient(180deg, #94918e 0%, #797671 100%);
+      border-color: #1f1b17;
+      box-shadow: 0 0 0 0.5px inset black;
+    }
 
-  .hint {
-    height: 1.25rem;
-    margin-bottom: 0.25rem;
-    font-size: 0.75rem;
-    line-height: 1.25rem;
+    &:checked::after {
+      background-color: white;
+      box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.5);
+    }
 
-    @apply text-black-50;
+    &:disabled {
+      box-shadow: none;
+      background-image: none;
+      background-color: white;
 
-    margin-left: 2rem;
-  }
+      @apply border-grey-20;
 
-  &:hover {
-    &.small {
-      .checkmark {
-        outline: solid 1.5px #98c0f5;
+      cursor: default;
+
+      &:checked {
+        background-color: #d3d1cf;
+        border-color: #b6b3af;
+      }
+
+      &::before {
+        display: none;
       }
     }
 
-    .checkmark {
-      outline: solid 0.125rem #98c0f5;
+    &.read-only {
+      box-shadow: none;
+      cursor: default;
+
+      &,
+      &:checked {
+        background-image: none;
+        background-color: white;
+
+        @apply border-grey-60;
+      }
+
+      &:not(:focus-visible)::before {
+        display: none;
+      }
+
+      &:checked::after {
+        background-color: #5c5955;
+        box-shadow: none;
+      }
     }
   }
 
   &.small {
-    font-size: 0.875rem;
-    margin-bottom: 0.125rem;
+    --ui-radio-button-size: 16px;
+    --ui-radio-inner-size: 6px;
 
-    .checkmark {
-      width: 0.875rem;
-      height: 0.875rem;
-      outline: solid 1.5px #ebebea;
-    }
-
-    .label {
-      line-height: 1.25rem;
-      padding-top: 0.125rem;
-    }
-
-    label {
-      font-size: 0.875rem;
-      padding-left: 1.5rem;
-    }
-
-    input:checked ~ .checkmark {
-      &::after {
-        position: absolute;
-        border: none;
-        opacity: 1;
-        top: -1.5px;
-        left: 0;
+    input {
+      &::before {
+        outline-width: 1px;
       }
     }
-  }
-
-  input[type='radio']:checked ~ .checkmark {
-    border-radius: 50%;
-    border: 0.0625rem solid #5c5955;
-    opacity: 1;
-    background-image: linear-gradient(
-      180deg,
-      rgba(148, 145, 142, 1) 0%,
-      rgba(121, 118, 113, 1) 100%
-    );
-
-    &::after {
-      border: none;
-      opacity: 1;
-      top: 0;
-      left: 0;
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: 50%;
-      background-color: white;
-    }
-  }
-
-  input[type='radio']:disabled ~ .checkmark {
-    background-image: white;
-    outline: none;
-    cursor: default;
-    border: 0.5px #d3d1cf solid;
-
-    &::after {
-      border: none;
-      opacity: 1;
-      top: 0;
-      left: 0;
-    }
-  }
-
-  input[type='radio']:disabled ~ .checkmark {
-    cursor: default;
-  }
-
-  label {
-    font-size: 1rem;
-    line-height: 1.25rem;
-    color: #333;
-    display: block;
-    padding-left: 1.6875rem;
-    cursor: pointer;
-    height: 1.75rem;
-    align-content: center;
-  }
-
-  .radio-container {
-    display: flex;
-    align-items: center;
-  }
-
-  &:focus {
-    outline: none;
-
-    .checkmark {
-      &::after {
-        top: -4px;
-        width: 26px;
-        height: 26px;
-        left: -4px;
-        border: 1px rgba(37, 106, 250, 1) solid;
-      }
-    }
-  }
-
-  &:has(input[type='radio']:disabled) {
-    cursor: default;
-  }
-
-  &:has(.read-only) {
-    cursor: default;
   }
 }
 
-.ui-radio-button-wrapper {
-  position: relative;
-  padding: 1rem 0.625rem;
-  border-radius: 0.5rem;
+/* Labels and hints */
+.ui-radio-button {
+  display: grid;
+  grid: auto / minmax(calc(var(--ui-radio-button-size) + 6px), auto);
+  align-items: center;
+  width: fit-content;
+  margin-bottom: unset;
 
-  input[type='radio']:disabled ~ label {
-    @apply text-grey-30;
-
-    cursor: default;
+  &.with-label,
+  &.with-hint {
+    grid-template-columns: auto auto;
+    margin-bottom: 0.3rem;
   }
 
-  &.info {
-    @apply bg-info-5;
+  &.with-hint {
+    grid-template-rows: minmax(calc(var(--ui-radio-button-size) + 6px), auto) auto;
   }
 
-  &.warning {
-    @apply bg-warning-5;
-  }
-
-  &.error {
-    @apply bg-error-5;
+  .label,
+  .hint {
+    grid-column: 2;
+    cursor: pointer;
   }
 
   .label {
-    display: block;
-
-    @apply text-grey-80;
-
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0;
-    line-height: 1.5rem;
-    margin-bottom: 0.625rem;
-
-    .required {
-      position: absolute;
-      left: -0.5rem;
-      top: 1.25rem;
-      border-radius: 0.5px;
-
-      @apply text-info-30;
-    }
+    line-height: var(--ui-radio-button-size);
   }
 
-  .subtitle {
-    @apply text-grey-50;
-
+  &.small .label {
     font-size: 0.875rem;
-    font-weight: 400;
-    letter-spacing: 0;
-    text-align: left;
-    line-height: 1.25rem;
-    display: block;
   }
 
-  .status-message {
-    letter-spacing: 0;
-    text-align: left;
-    line-height: 1.5rem;
+  .hint {
+    font-size: 0.875rem;
 
-    @apply font-semibold;
-
-    &.info {
-      @apply text-info-60;
-    }
-
-    &.warning {
-      @apply text-warning-60;
-    }
-
-    &.error {
-      @apply text-error-60;
-    }
+    @apply text-grey-50;
   }
 
-  .status-with-message {
-    display: flex;
-    margin-top: 1rem;
+  input:disabled {
+    & ~ .label,
+    & ~ .hint {
+      cursor: default;
 
-    .ui-status-icon {
-      margin-right: 0.5625rem;
-
-      &.info {
-        @apply text-info-30;
-      }
-
-      &.success {
-        @apply text-success-30;
-      }
-
-      &.warning {
-        @apply text-warning-30;
-      }
-
-      &.error {
-        @apply text-error-60;
-      }
-
-      &.small {
-        margin: 0.3125rem 0 0.3125rem 0.5rem;
-      }
+      @apply text-grey-30;
     }
   }
 
   .read-only {
-    input[type='radio'] {
+    & ~ .label,
+    & ~ .hint {
       cursor: default;
 
-      @apply border-grey-60;
-    }
-
-    span {
-      cursor: default;
-    }
-
-    .hint {
-      cursor: default;
-    }
-
-    .radio-label {
       @apply text-grey-50;
-    }
-
-    .checkmark {
-      background-image: white;
-      border: 0.0625rem solid #5c5955;
-      outline: none;
-      cursor: default;
-
-      &::after {
-        border: none;
-        opacity: 1;
-        top: 0;
-        left: 0;
-      }
     }
   }
 
-  .read-only {
-    input[type='radio'] {
-      cursor: default;
+  column-gap: 8px;
 
-      @apply border-grey-60;
-    }
-
-    .radio-label {
-      @apply text-grey-50;
-    }
-
-    input[type='radio']:checked ~ .checkmark {
-      background-image: none;
-      background-color: white;
-      cursor: default;
-
-      &::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-
-        @apply bg-grey-60;
-      }
-    }
-
-    label {
-      cursor: default;
-
-      @apply text-grey-50;
-    }
-
-    &:hover {
-      .checkmark {
-        outline: none;
-      }
-    }
+  &.small {
+    column-gap: 6px;
   }
+}
+
+.ui-radio-button-wrapper .ui-radio-button {
+  margin-bottom: 7px;
 }
