@@ -22,7 +22,7 @@ moshi = '1.15.2'
 okhttp = '5.5.1'
 junit = '6.0.+'
 mockito = '5.2.+'
-otel = '1.67.0'
+otel = '1.68.0'
 otel-agent = '2.33.1'
 
 [libraries]
