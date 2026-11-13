@@ -353,7 +353,7 @@
       "source_already_used": "Occurrence {{occurrence}} is already used as a source.",
       "target_already_used": "Occurrence {{occurrence}} is already used as a target.",
       "timetable_not_found": "Timetable '{{timetable_id}}' could not be found",
-      "train_schedule_not_found": "Train schedule '{{train_schedule_id}}' could not be found"
+      "train_schedules_not_found": "{{count}} train schedule(s) could not be found."
     },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalog entry '{{catalog_entry_id}}' could not be found",

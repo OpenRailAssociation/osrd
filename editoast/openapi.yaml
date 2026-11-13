@@ -5604,6 +5604,33 @@ paths:
               schema:
                 oneOf:
                 - type: object
+                  description: '{count} train schedule(s) could not be found'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - count
+                      properties:
+                        count:
+                          type: integer
+                          minimum: 0
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:train_schedules_not_found
+                - type: object
                   description: Timetable {timetable_id} does not exist
                   required:
                   - type
@@ -5630,33 +5657,6 @@ paths:
                       type: string
                       enum:
                       - editoast:train_schedule_linking:timetable_not_found
-                - type: object
-                  description: Train schedule {train_schedule_id} not found.
-                  required:
-                  - type
-                  - status
-                  - message
-                  - context
-                  properties:
-                    context:
-                      type: object
-                      required:
-                      - train_schedule_id
-                      properties:
-                        train_schedule_id:
-                          type: integer
-                          format: int64
-                    message:
-                      type: string
-                    status:
-                      type: integer
-                      format: int32
-                      enum:
-                      - '404'
-                    type:
-                      type: string
-                      enum:
-                      - editoast:train_schedule_linking:train_schedule_not_found
         '409':
           description: ''
           content:

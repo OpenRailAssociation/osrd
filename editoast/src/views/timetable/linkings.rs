@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::AppState;
 use axum::Json;
 use axum::extract::Path;
@@ -152,23 +154,6 @@ pub(in crate::views) struct LinkingTimetableNotFound {
     timetable_id: i64,
 }
 
-#[derive(Debug, Error, ViewError)]
-#[error("Train schedule {train_schedule_id} not found.")]
-#[view_error(status = NOT_FOUND, context, path = train_schedule_linking::train_schedule_not_found)]
-pub(in crate::views) struct LinkingTrainScheduleNotFound {
-    train_schedule_id: i64,
-}
-
-#[derive(Debug, Error, ViewError)]
-#[error(
-    "Train schedules {source_train_schedule_id} and {target_train_schedule_id} have different time windows, they can't be linked in an hourly timetable."
-)]
-#[view_error(status = CONFLICT, context, path = train_schedule_linking::different_paced_train_time_windows)]
-pub(in crate::views) struct DifferentPacedTrainTimeWindows {
-    source_train_schedule_id: i64,
-    target_train_schedule_id: i64,
-}
-
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum ListLinkingsError {
     #[error(transparent)]
@@ -205,18 +190,17 @@ pub(in crate::views) enum CreateLinkingsError {
         timetable_id: i64,
         timetable_type: TimetableType,
     },
-    #[error(transparent)]
-    TrainScheduleNotFound(
-        #[from]
-        #[view_error]
-        LinkingTrainScheduleNotFound,
-    ),
-    #[error(transparent)]
-    DifferentPacedTrainTimeWindows(
-        #[from]
-        #[view_error]
-        DifferentPacedTrainTimeWindows,
-    ),
+    #[error("{count} train schedule(s) could not be found")]
+    #[view_error(status = NOT_FOUND, context, path = train_schedules_not_found)]
+    LinkingTrainSchedulesNotFound { count: usize },
+    #[error(
+        "Train schedules {source_train_schedule_id} and {target_train_schedule_id} have different time windows, they can't be linked in an hourly timetable."
+    )]
+    #[view_error(status = CONFLICT, context, path = different_paced_train_time_windows)]
+    DifferentPacedTrainTimeWindows {
+        source_train_schedule_id: i64,
+        target_train_schedule_id: i64,
+    },
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -366,39 +350,35 @@ pub(in crate::views) async fn create(
         }
     }
 
-    // In an hourly timetable, throw an error if both missions have different
+    let train_schedule_ids =
+        linking_forms
+            .clone()
+            .into_iter()
+            .flat_map(|LinkingCreateForm { source, target }| {
+                [source.train_schedule_id(), target.train_schedule_id()]
+            });
+
+    let train_schedules: HashMap<_, _> =
+        TrainSchedule::retrieve_batch_with_key_or_fail(conn, train_schedule_ids, |missing| {
+            CreateLinkingsError::LinkingTrainSchedulesNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
+
+    // In an hourly timetable, throw an error if both missions have different time windows
     if timetable.timetable_type.0 == TimetableType::Hourly {
-        for linking in &linking_forms {
-            let source_train_schedule_id = linking.source.train_schedule_id();
-            let source_train_schedule = TrainSchedule::retrieve_or_fail(
-                conn.clone(),
-                linking.source.train_schedule_id(),
-                || {
-                    CreateLinkingsError::TrainScheduleNotFound(LinkingTrainScheduleNotFound {
-                        train_schedule_id: source_train_schedule_id,
-                    })
-                },
-            )
-            .await?;
-            let target_train_schedule_id = linking.target.train_schedule_id();
-            let target_train_schedule = TrainSchedule::retrieve_or_fail(
-                conn.clone(),
-                linking.target.train_schedule_id(),
-                || {
-                    CreateLinkingsError::TrainScheduleNotFound(LinkingTrainScheduleNotFound {
-                        train_schedule_id: target_train_schedule_id,
-                    })
-                },
-            )
-            .await?;
+        for LinkingCreateForm { source, target } in &linking_forms {
+            let source_train_schedule_id = source.train_schedule_id();
+            let source_train_schedule = train_schedules.get(&source_train_schedule_id).unwrap();
+            let target_train_schedule_id = target.train_schedule_id();
+            let target_train_schedule = train_schedules.get(&target_train_schedule_id).unwrap();
 
             if source_train_schedule.time_window != target_train_schedule.time_window {
-                return Err(CreateLinkingsError::DifferentPacedTrainTimeWindows(
-                    DifferentPacedTrainTimeWindows {
-                        source_train_schedule_id,
-                        target_train_schedule_id,
-                    },
-                ));
+                return Err(CreateLinkingsError::DifferentPacedTrainTimeWindows {
+                    source_train_schedule_id,
+                    target_train_schedule_id,
+                });
             }
         }
     }
