@@ -6,7 +6,7 @@ use tower::ServiceExt as _;
 use tower_http::services::ServeFile;
 
 use crate::AppState;
-use crate::views::FileNotFound;
+use crate::views::FileNotFoundError;
 
 #[editoast_derive::route]
 #[utoipa::path(
@@ -18,27 +18,27 @@ use crate::views::FileNotFound;
     ),
     responses(
         (status = 200, description = "The requested icon"),
-        FileNotFound,
+        FileNotFoundError,
     ),
 )]
 pub(in crate::views) async fn icons(
     Path((signaling_system, file_name)): Path<(String, String)>,
     State(AppState { config, .. }): State<AppState>,
     request: Request,
-) -> Result<impl IntoResponse, FileNotFound> {
+) -> Result<impl IntoResponse, FileNotFoundError> {
     let path = config
         .dynamic_assets_path
         .join(format!("icons/{signaling_system}/{file_name}"));
 
     if !path.is_file() {
-        return Err(FileNotFound { file: file_name });
+        return Err(FileNotFoundError { file: file_name });
     }
 
     // Avoid path traversal attack by ensuring the path is within the dynamic assets directory
     let canonical_path = path.canonicalize().unwrap();
     let canonical_assets_path = config.dynamic_assets_path.canonicalize().unwrap();
     if !canonical_path.starts_with(&canonical_assets_path) {
-        return Err(FileNotFound { file: file_name });
+        return Err(FileNotFoundError { file: file_name });
     }
 
     Ok(ServeFile::new(&path).oneshot(request).await)
