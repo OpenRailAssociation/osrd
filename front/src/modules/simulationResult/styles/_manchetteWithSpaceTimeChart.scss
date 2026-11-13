@@ -120,6 +120,7 @@
     .reset-button {
       svg {
         transform: rotate(180deg) translate(0, 2px);
+        transform-origin: center;
       }
     }
 
