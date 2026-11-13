@@ -208,9 +208,7 @@
       "NameAlreadyUsed": "Ein Schienenfahrzeug mit dem Namen '{{name}}' existiert bereits"
     },
     "round_trips": {
-      "Database": "Interner Fehler (Datenbank)",
-      "DuplicateTrainIds": "Die übermittelten Daten enthalten doppelte Zug-IDs, was nicht erlaubt ist",
-      "TimetableNotFound": "Fahrplan '{{timetable_id}}' nicht gefunden"
+      "duplicate_train_ids": "Die übermittelten Daten enthalten doppelte Zug-IDs, was nicht erlaubt ist"
     },
     "scenario": {
       "Database": "Interner Fehler (Datenbank)",
@@ -284,6 +282,7 @@
       "NotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
       "ParseError": "train_id konnte nicht analysiert werden: '{{train_id}}'",
       "TrainScheduleSetsNotFound": "'{{ids}}' Zugpakete nicht gefunden",
+      "not_found": "Fahrplan '{{timetable_id}}' nicht gefunden",
       "similar_trains": {
         "Database": "Interner Fehler (Datenbank)",
         "EmptyTrainsTraffic": "Die Verkehrsdaten sind leer",

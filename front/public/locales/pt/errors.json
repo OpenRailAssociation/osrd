@@ -198,9 +198,7 @@
       "NameAlreadyUsed": "Já existe um material circulante com o nome '{{name}}'"
     },
     "round_trips": {
-      "Database": "Erro interno (base de dados)",
-      "DuplicateTrainIds": "As informações transmitidas contêm identificadores de comboio duplicados, o que não é permitido",
-      "TimetableNotFound": "Horário '{{timetable_id}}' não encontrado"
+      "duplicate_train_ids": "As informações transmitidas contêm identificadores de comboio duplicados, o que não é permitido"
     },
     "scenario": {
       "Database": "Erro interno (base de dados)",

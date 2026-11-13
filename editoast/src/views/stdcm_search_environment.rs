@@ -30,8 +30,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::Result;
-
 #[derive(Debug, Error, ViewError)]
 #[error("Stdcm search environment '{env_id}', could not be found")]
 #[view_error(status = NOT_FOUND, context, path = stdcm_search_env::not_found)]
