@@ -1,6 +1,8 @@
 // React Component displaying different applications versions and license attributions
 // List of applications : Editoast, Core, Api
 
+import { useRef } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -15,6 +17,7 @@ const ReleaseInformation = () => {
   const { t } = useTranslation();
   const deploymentSettings = useDeploymentSettings();
   const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
+  const osrdLogoRef = useRef<HTMLImageElement | null>(null);
 
   const osrdWebSite = 'https://osrd.fr/';
 
@@ -48,9 +51,10 @@ const ReleaseInformation = () => {
                   className="mb-4"
                   target="_blank"
                   rel="noopener noreferrer"
-                  onMouseEnter={motriceParty}
+                  onMouseEnter={() => motriceParty(osrdLogoRef)}
                 >
                   <img
+                    ref={osrdLogoRef}
                     src={deploymentSettings?.operationalStudiesLogo}
                     alt="OSRD logo"
                     width={192}

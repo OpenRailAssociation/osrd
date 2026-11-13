@@ -1,16 +1,17 @@
-import party from 'party-js';
+import { confetti, range, spread } from 'party-js';
 
-export default function motriceParty() {
-  const listOfShapes: string[] = [];
-  for (let i = 0; i <= 21; i += 1) {
-    party.resolvableShapes[`motrice${i}`] = `<img src="/pictures/minimotrices/motrice_${i}.png" />`;
-    // listOfShapes.push(`motrice${i}`);
-  }
-  listOfShapes.push('motrice7', 'motrice12', 'motrice14');
-  party.confetti(document.body, {
-    shapes: listOfShapes,
-    count: party.variation.range(30, 500),
-    size: party.variation.range(0.1, 1),
-    speed: party.variation.range(50, 600),
+export default function motriceParty(ref: React.RefObject<HTMLImageElement | null>) {
+  if (!ref.current) return;
+
+  confetti(ref.current, {
+    shapes: [
+      { type: 'image', image: `/pictures/minimotrices/motrice_7.png` },
+      { type: 'image', image: `/pictures/minimotrices/motrice_12.png` },
+      { type: 'image', image: `/pictures/minimotrices/motrice_14.png` },
+    ],
+    count: range(30, 500),
+    size: range(10, 30),
+    startVelocity: range(800, 2000),
+    spread: spread(10000, 20000),
   });
 }
