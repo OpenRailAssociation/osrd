@@ -27,12 +27,11 @@ use std::sync::Arc;
 use authz::Role;
 use axum::Json;
 use axum::extract::State;
-use chrono::DateTime;
-use chrono::Utc;
 use database::DbConnection;
 use derive_more::Deref;
 use derive_more::Display;
 use editoast_derive::EditoastError;
+use jiff::Timestamp;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -126,7 +125,7 @@ struct SimilarTrainItem {
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct TrainInfo {
     train_name: String,
-    start_time: DateTime<Utc>,
+    start_time: Timestamp,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -446,8 +445,8 @@ fn decide_best_train_combination(
 
 #[cfg(test)]
 mod tests {
-    use chrono::Duration;
     use itertools::Itertools as _;
+    use jiff::SignedDuration;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use uuid::Uuid;
@@ -632,7 +631,7 @@ mod tests {
     ) {
         let train_traffic = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: Uuid::new_v4().to_string(),
             speed_limit_tag: "MA100".to_string(),
             train: PastTrain::new(
@@ -772,7 +771,7 @@ mod tests {
     ) {
         let train_traffic = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: Uuid::new_v4().to_string(),
             speed_limit_tag: "MA100".to_string(),
             train: PastTrain::new(
@@ -834,7 +833,7 @@ mod tests {
         let speed_limit_tag = "MA100".to_string();
         let train_1 = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: rolling_stock_name.clone(),
             speed_limit_tag: speed_limit_tag.clone(),
             train: PastTrain::new(
@@ -859,7 +858,7 @@ mod tests {
         // MES(44):stop  NS(55):passing_by  SS(66):stop
         let train_2 = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: rolling_stock_name.clone(),
             speed_limit_tag: speed_limit_tag.clone(),
             train: PastTrain::new(
@@ -949,7 +948,7 @@ mod tests {
         // WS(22):stop  MWS(33):passing_by  MES(44):stop  NES(77):stop
         let train_targeted = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: rolling_stock_name.clone(),
             speed_limit_tag: speed_limit_tag.clone(),
             train: PastTrain::new(
@@ -979,7 +978,7 @@ mod tests {
         let mut hour = 10;
         // WS(22):stop  MWS(33):passing_by  MES(44):stop
         for index in 1..3 {
-            let start_time = Utc::now() + Duration::hours(hour);
+            let start_time = Timestamp::now() + SignedDuration::from_hours(hour);
             hour += 1;
             traffics.push(TrainTraffic {
                 name: Uuid::new_v4().to_string(),
@@ -1008,7 +1007,7 @@ mod tests {
 
         // MES(44):stop  NES(77):stop
         for index in 3..5 {
-            let start_time = Utc::now() + Duration::hours(hour);
+            let start_time = Timestamp::now() + SignedDuration::from_hours(hour);
             hour += 1;
             traffics.push(TrainTraffic {
                 name: Uuid::new_v4().to_string(),
@@ -1093,7 +1092,7 @@ mod tests {
         let rolling_stock_name = Uuid::new_v4().to_string();
         let train_1 = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: rolling_stock_name.clone(),
             speed_limit_tag: "MA100".to_string(),
             train: PastTrain::new(
@@ -1112,7 +1111,7 @@ mod tests {
         };
         let train_2 = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: rolling_stock_name.clone(),
             speed_limit_tag: "MA100".to_string(),
             train: PastTrain::new(
@@ -1252,7 +1251,7 @@ mod tests {
     async fn similar_trains_by_relaxing_rolling_stock_criterion() {
         let train_traffic = TrainTraffic {
             name: Uuid::new_v4().to_string(),
-            start_time: Utc::now(),
+            start_time: Timestamp::now(),
             rolling_stock: Uuid::new_v4().to_string(),
             speed_limit_tag: "MA100".to_string(),
             train: PastTrain::new(
