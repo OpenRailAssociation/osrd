@@ -8,7 +8,7 @@ use axum::response::IntoResponse;
 use database::DbConnectionPool;
 use jiff::Timestamp;
 use models::MacroNote;
-use models::history::NotificationError;
+use models::notifications::NotificationError;
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -93,7 +93,7 @@ pub(in crate::views) async fn events(
         'socket_loop: loop {
             tokio::select! {
                 event = events.next() => {
-                    let models::history::Notification { epoch, notification } = match event {
+                    let models::notifications::Notification { epoch, notification } = match event {
                         None => break 'socket_loop, // event stream closed
                         Some(Ok(event)) => event,
                         Some(Err(error @ NotificationError::Database(_))) => {

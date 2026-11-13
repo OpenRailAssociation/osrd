@@ -1,3 +1,5 @@
+pub mod events;
+
 use authz::ProjectPrivilege;
 use authz::Role;
 use authz::v2::project_privilege_check;

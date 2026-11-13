@@ -4,9 +4,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::history::Notification;
-use crate::history::NotificationError;
-use crate::history::NotificationMessage;
+use crate::notifications::Notification;
+use crate::notifications::NotificationError;
+use crate::notifications::NotificationMessage;
 use crate::tags::Tags;
 
 const MACRO_NOTE_NOTIFY_CHANNEL: &str = "macro_note";
@@ -46,7 +46,7 @@ impl MacroNote {
         impl TryStream<Ok = Notification<MacroNoteNotification>, Error = NotificationError>,
         database::DatabaseError,
     > {
-        crate::history::notifications(conn, MACRO_NOTE_NOTIFY_CHANNEL).await
+        crate::notifications::notifications(conn, MACRO_NOTE_NOTIFY_CHANNEL).await
     }
 }
 
