@@ -207,9 +207,7 @@
       "NameAlreadyUsed": "Nome '{{name}}' già utilizzato"
     },
     "round_trips": {
-      "Database": "Errore interno (database)",
-      "DuplicateTrainIds": "Il payload contiene ID di treni duplicati, che non è autorizzato",
-      "TimetableNotFound": "Tabella oraria '{{timetable_id}}' non trovata"
+      "duplicate_train_ids": "Il payload contiene ID di treni duplicati, che non è autorizzato"
     },
     "scenario": {
       "Database": "Errore interno (database)",
