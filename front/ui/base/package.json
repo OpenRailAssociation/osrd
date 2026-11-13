@@ -24,7 +24,7 @@
     "react-dom": "^19.3.1",
     "rimraf": "^6.1.4",
     "stylelint": "^17.16.0",
-    "stylelint-config-standard": "^40.0.0",
+    "stylelint-config-standard": "^41.0.0",
     "tsdown": "^0.23.7",
     "typescript": "^6.0.3",
     "vitest": "^5.0.3"
