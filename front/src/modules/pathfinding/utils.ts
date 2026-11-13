@@ -2,7 +2,7 @@ import { compact } from 'lodash';
 
 import type {
   CorePropertyGeometryProjection,
-  GeoJsonLineString,
+  GeoJsonMultiLineString,
   LightRollingStock,
   LoadingGaugeType,
   PathProperties,
@@ -22,7 +22,7 @@ export const formatSuggestedOperationalPoints = (
       metadata?: NonNullable<SuggestedOP['metadata']>;
     }
   >,
-  geometry: GeoJsonLineString,
+  geometry: GeoJsonMultiLineString,
   geomProjection: CorePropertyGeometryProjection
 ): SuggestedOP[] =>
   operationalPoints.map((op) => ({
