@@ -480,15 +480,6 @@ class CoreZoneUpdate(BaseModel):
     zone: StrictStr
 
 
-class Curve(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    begin: StrictFloat
-    end: StrictFloat
-    radius: StrictFloat
-
-
 class DetectorSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -2916,6 +2907,34 @@ class ForcedStopType(Enum):
     OVERTAKE = "OVERTAKE"
 
 
+class HeightPoint(BaseModel):
+    """
+    A point of the vertical tangent polygon
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    elevation: StrictFloat
+    """
+    Elevation of the top of the rail that is not raised by the cant, in meters
+    """
+    vertical_curve_length: StrictFloat | None = None
+    """
+    Length in meters of that vertical curve, where the length governs it rather than the radius
+    """
+    vertical_curve_radius: StrictFloat | None = None
+    """
+    Radius in meters of the vertical curve rounding the change of gradient at this point
+    """
+
+
+class HorizontalElementType(Enum):
+    straight = "straight"
+    arc = "arc"
+    transition = "transition"
+
+
 class Identifier(RootModel[StrictStr]):
     root: Annotated[StrictStr, Field(max_length=255, min_length=1)]
 
@@ -4124,15 +4143,6 @@ class SummaryResponsePathfindingInputError6(
     """
 
 
-class Slope(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    begin: StrictFloat
-    end: StrictFloat
-    gradient: StrictFloat
-
-
 class SpaceTimeCurve(BaseModel):
     positions: Annotated[list[Position], Field(min_length=1)]
     """
@@ -4642,8 +4652,37 @@ class TrainScheduleSetUpdateForm(BaseModel):
     published: StrictBool
 
 
+class TransitionType(Enum):
+    clothoid = "clothoid"
+    bloss = "bloss"
+
+
 class Version(BaseModel):
     git_describe: StrictStr | None
+
+
+class VerticalAlignment(BaseModel):
+    """
+    A stretch of the vertical alignment's tangent polygon, from `begin` to `end` of its slope
+
+    OSRD does not interpret it: the slope's `gradient` stays what the simulation uses.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    begin: HeightPoint
+    """
+    The tangent polygon's point at `begin`
+    """
+    end: HeightPoint
+    """
+    The tangent polygon's point at `end`
+    """
+    epsg: Annotated[StrictInt | None, Field(ge=0)] = None
+    """
+    EPSG code of the vertical datum the elevations are stated in
+    """
 
 
 class WaypointBufferStop(BaseModel):
@@ -5564,6 +5603,66 @@ class GrantBody(BaseModel):
     subject_id: StrictInt
 
 
+class HorizontalAlignment(BaseModel):
+    """
+    A design element of the horizontal alignment, from `begin` to `end` of its curve
+
+    OSRD does not interpret it: the curve's `radius` stays what the simulation uses.
+    Radii and cants are signed: a positive radius turns right in the direction of increasing
+    offsets, a positive cant raises the left rail.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    bearing: StrictFloat | None = None
+    """
+    Bearing at `begin` in degrees from grid north, clockwise
+    """
+    begin_cant: StrictFloat | None = None
+    """
+    Cant at `begin` in millimeters where the cant changes along the element
+    """
+    begin_point: list[StrictFloat]
+    """
+    Easting and northing of `begin` in meters, in the plane given by `epsg`
+    """
+    begin_radius: StrictFloat | None = None
+    """
+    Radius of a transition at `begin` in meters, absent where it joins a straight
+    """
+    cant: StrictFloat | None = None
+    """
+    Cant in millimeters where it is the same at both ends, instead of `begin_cant` and `end_cant`
+    """
+    element_type: HorizontalElementType
+    end_bearing: StrictFloat | None = None
+    """
+    Bearing at `end` in degrees, only where it differs from the one the element's shape gives
+    """
+    end_cant: StrictFloat | None = None
+    """
+    Cant at `end` in millimeters where the cant changes along the element
+    """
+    end_point: list[StrictFloat]
+    """
+    Easting and northing of `end` in meters, in the plane given by `epsg`
+    """
+    end_radius: StrictFloat | None = None
+    """
+    Radius of a transition at `end` in meters, absent where it joins a straight
+    """
+    epsg: Annotated[StrictInt, Field(ge=0)]
+    """
+    EPSG code of the plane `begin_point` and `end_point` are stated in
+    """
+    radius: StrictFloat | None = None
+    """
+    Radius of an arc in meters
+    """
+    transition_type: TransitionType | None = None
+
+
 class InfraObjectSwitchType(BaseModel):
     obj_type: Literal["SwitchType"] = "SwitchType"
     railjson: SwitchType
@@ -6247,6 +6346,16 @@ class SummaryResponsePathfindingInputError2(
     """
 
 
+class Slope(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    begin: StrictFloat
+    end: StrictFloat
+    gradient: StrictFloat
+    vertical_alignment: VerticalAlignment | None = None
+
+
 class SpeedSectionExtensions(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -6599,6 +6708,16 @@ class CorePathfindingResultSuccess(BaseModel):
     The path offset in mm of each path item given as input of the pathfinding
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
     """
+
+
+class Curve(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    begin: StrictFloat
+    end: StrictFloat
+    horizontal_alignment: HorizontalAlignment | None = None
+    radius: StrictFloat
 
 
 class Detector(BaseModel):

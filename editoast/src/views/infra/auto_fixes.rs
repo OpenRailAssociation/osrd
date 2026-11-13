@@ -918,6 +918,7 @@ mod tests {
                 begin: 250.0,
                 end: 1250.0,
                 gradient: 0.,
+                vertical_alignment: None,
             }],
             ..Default::default()
         }

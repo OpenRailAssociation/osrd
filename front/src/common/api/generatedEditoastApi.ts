@@ -3435,9 +3435,38 @@ export type Switch = {
   };
   switch_type: string;
 };
+export type HorizontalElementType = 'straight' | 'arc' | 'transition';
+export type TransitionType = 'clothoid' | 'bloss';
+export type HorizontalAlignment = {
+  /** Bearing at `begin` in degrees from grid north, clockwise */
+  bearing?: number | null;
+  /** Cant at `begin` in millimeters where the cant changes along the element */
+  begin_cant?: number | null;
+  /** Easting and northing of `begin` in meters, in the plane given by `epsg` */
+  begin_point: number[];
+  /** Radius of a transition at `begin` in meters, absent where it joins a straight */
+  begin_radius?: number | null;
+  /** Cant in millimeters where it is the same at both ends, instead of `begin_cant` and `end_cant` */
+  cant?: number | null;
+  element_type: HorizontalElementType;
+  /** Bearing at `end` in degrees, only where it differs from the one the element's shape gives */
+  end_bearing?: number | null;
+  /** Cant at `end` in millimeters where the cant changes along the element */
+  end_cant?: number | null;
+  /** Easting and northing of `end` in meters, in the plane given by `epsg` */
+  end_point: number[];
+  /** Radius of a transition at `end` in meters, absent where it joins a straight */
+  end_radius?: number | null;
+  /** EPSG code of the plane `begin_point` and `end_point` are stated in */
+  epsg: number;
+  /** Radius of an arc in meters */
+  radius?: number | null;
+  transition_type?: null | TransitionType;
+};
 export type Curve = {
   begin: number;
   end: number;
+  horizontal_alignment?: null | HorizontalAlignment;
   radius: number;
 };
 export type TrackSectionSncfExtension = {
@@ -3474,10 +3503,27 @@ export type LoadingGaugeLimit = {
   category: LoadingGaugeType;
   end: number;
 };
+export type HeightPoint = {
+  /** Elevation of the top of the rail that is not raised by the cant, in meters */
+  elevation: number;
+  /** Length in meters of that vertical curve, where the length governs it rather than the radius */
+  vertical_curve_length?: number | null;
+  /** Radius in meters of the vertical curve rounding the change of gradient at this point */
+  vertical_curve_radius?: number | null;
+};
+export type VerticalAlignment = {
+  /** The tangent polygon's point at `begin` */
+  begin: HeightPoint;
+  /** The tangent polygon's point at `end` */
+  end: HeightPoint;
+  /** EPSG code of the vertical datum the elevations are stated in */
+  epsg?: number | null;
+};
 export type Slope = {
   begin: number;
   end: number;
   gradient: number;
+  vertical_alignment?: null | VerticalAlignment;
 };
 export type TrackSection = {
   curves: Curve[];

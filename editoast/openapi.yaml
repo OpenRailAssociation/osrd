@@ -8359,6 +8359,11 @@ components:
         end:
           type: number
           format: double
+        horizontal_alignment:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/HorizontalAlignment'
+            description: The design element of the horizontal alignment this range is
         radius:
           type: number
           format: double
@@ -13070,6 +13075,122 @@ components:
         subject_id:
           type: integer
           format: int64
+    HeightPoint:
+      type: object
+      description: A point of the vertical tangent polygon
+      required:
+      - elevation
+      properties:
+        elevation:
+          type: number
+          format: double
+          description: Elevation of the top of the rail that is not raised by the cant, in meters
+        vertical_curve_length:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Length in meters of that vertical curve, where the length governs it rather than the radius
+        vertical_curve_radius:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Radius in meters of the vertical curve rounding the change of gradient at this point
+      additionalProperties: false
+    HorizontalAlignment:
+      type: object
+      description: |-
+        A design element of the horizontal alignment, from `begin` to `end` of its curve
+
+        OSRD does not interpret it: the curve's `radius` stays what the simulation uses.
+        Radii and cants are signed: a positive radius turns right in the direction of increasing
+        offsets, a positive cant raises the left rail.
+      required:
+      - element_type
+      - begin_point
+      - end_point
+      - epsg
+      properties:
+        bearing:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Bearing at `begin` in degrees from grid north, clockwise
+        begin_cant:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Cant at `begin` in millimeters where the cant changes along the element
+        begin_point:
+          type: array
+          items:
+            type: number
+            format: double
+          description: Easting and northing of `begin` in meters, in the plane given by `epsg`
+        begin_radius:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Radius of a transition at `begin` in meters, absent where it joins a straight
+        cant:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Cant in millimeters where it is the same at both ends, instead of `begin_cant` and `end_cant`
+        element_type:
+          $ref: '#/components/schemas/HorizontalElementType'
+        end_bearing:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Bearing at `end` in degrees, only where it differs from the one the element's shape gives
+        end_cant:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Cant at `end` in millimeters where the cant changes along the element
+        end_point:
+          type: array
+          items:
+            type: number
+            format: double
+          description: Easting and northing of `end` in meters, in the plane given by `epsg`
+        end_radius:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Radius of a transition at `end` in meters, absent where it joins a straight
+        epsg:
+          type: integer
+          format: int32
+          description: EPSG code of the plane `begin_point` and `end_point` are stated in
+          minimum: 0
+        radius:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Radius of an arc in meters
+        transition_type:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/TransitionType'
+            description: The shape of a transition's curvature, only for a transition
+      additionalProperties: false
+    HorizontalElementType:
+      type: string
+      enum:
+      - straight
+      - arc
+      - transition
     Identifier:
       type: string
       maxLength: 255
@@ -17429,6 +17550,11 @@ components:
         gradient:
           type: number
           format: double
+        vertical_alignment:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/VerticalAlignment'
+            description: The stretch of the vertical tangent polygon this range is
       additionalProperties: false
     SpaceTimeCurve:
       type: object
@@ -19138,6 +19264,11 @@ components:
             type: string
         train_schedule:
           $ref: '#/components/schemas/SimulationSummaryResult'
+    TransitionType:
+      type: string
+      enum:
+      - clothoid
+      - bloss
     Version:
       type: object
       required:
@@ -19147,6 +19278,30 @@ components:
           type:
           - string
           - 'null'
+    VerticalAlignment:
+      type: object
+      description: |-
+        A stretch of the vertical alignment's tangent polygon, from `begin` to `end` of its slope
+
+        OSRD does not interpret it: the slope's `gradient` stays what the simulation uses.
+      required:
+      - begin
+      - end
+      properties:
+        begin:
+          $ref: '#/components/schemas/HeightPoint'
+          description: The tangent polygon's point at `begin`
+        end:
+          $ref: '#/components/schemas/HeightPoint'
+          description: The tangent polygon's point at `end`
+        epsg:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          description: EPSG code of the vertical datum the elevations are stated in
+          minimum: 0
+      additionalProperties: false
     Waypoint:
       oneOf:
       - type: object
