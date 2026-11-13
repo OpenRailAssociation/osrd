@@ -5604,7 +5604,7 @@ paths:
               schema:
                 oneOf:
                 - type: object
-                  description: '{count} train schedule(s) could not be found'
+                  description: Some train schedules could not be found
                   required:
                   - type
                   - status
@@ -5614,11 +5614,13 @@ paths:
                     context:
                       type: object
                       required:
-                      - count
+                      - ids
                       properties:
-                        count:
-                          type: integer
-                          minimum: 0
+                        ids:
+                          type: array
+                          items:
+                            type: integer
+                            format: int64
                     message:
                       type: string
                     status:

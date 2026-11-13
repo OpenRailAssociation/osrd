@@ -354,7 +354,7 @@
       "source_already_used": "L'occurrence {{occurrence}} est déjà utilisée comme source.",
       "target_already_used": "L'occurrence ({{occurrence}} est déjà utilisée comme cible.",
       "timetable_not_found": "Grille horaire '{{timetable_id}}' non trouvée",
-      "train_schedules_not_found": "{{count}} circulation(s) non trouvée(s)"
+      "train_schedules_not_found": "Circulation(s) non trouvée(s)"
     },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",

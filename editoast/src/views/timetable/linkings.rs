@@ -190,13 +190,13 @@ pub(in crate::views) enum CreateLinkingsError {
         timetable_id: i64,
         timetable_type: TimetableType,
     },
-    #[error("{count} train schedule(s) could not be found")]
-    #[view_error(status = NOT_FOUND, context, path = train_schedules_not_found)]
-    LinkingTrainSchedulesNotFound { count: usize },
+    #[error("Some train schedules could not be found")]
+    #[view_error(status = NOT_FOUND, context)]
+    TrainSchedulesNotFound { ids: Vec<i64> },
     #[error(
         "Train schedules {source_train_schedule_id} and {target_train_schedule_id} have different time windows, they can't be linked in an hourly timetable."
     )]
-    #[view_error(status = CONFLICT, context, path = different_paced_train_time_windows)]
+    #[view_error(status = CONFLICT, context)]
     DifferentPacedTrainTimeWindows {
         source_train_schedule_id: i64,
         target_train_schedule_id: i64,
@@ -360,8 +360,8 @@ pub(in crate::views) async fn create(
 
     let train_schedules: HashMap<_, _> =
         TrainSchedule::retrieve_batch_with_key_or_fail(conn, train_schedule_ids, |missing| {
-            CreateLinkingsError::LinkingTrainSchedulesNotFound {
-                count: missing.len(),
+            CreateLinkingsError::TrainSchedulesNotFound {
+                ids: missing.into_iter().collect(),
             }
         })
         .await?;
