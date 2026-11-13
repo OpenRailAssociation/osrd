@@ -124,6 +124,8 @@
   "requestsSentModal": {
     "applicationDate": "Application date",
     "asap": "a.s.a.p.",
+    "asSoonAsPossible": "as soon as possible",
+    "dest": "dest.",
     "calendar": {
       "lastDay": "[Yes. -] HH:mm",
       "lastWeek": "ddd MM/DD",
@@ -136,6 +138,7 @@
     "noRequests": "No request could be fetched.",
     "origin": "Origin",
     "requestNumber": "Request N°",
+    "respectDestinationSchedule": "respect the destination schedule",
     "status": "Status",
     "statuses": {
       "ACCEPTED": "Allocated",
