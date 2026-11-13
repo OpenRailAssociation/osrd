@@ -71,6 +71,9 @@ export function shiftPacedExceptions(
   );
 }
 
+export const stripExceptionSummaries = (exceptions: SimulatedException[]): PacedTrainException[] =>
+  exceptions.map(({ summary: _summary, ...exception }) => exception);
+
 /**
  * Return `train` with its paced exceptions replaced by `exceptions`. No-op (returns `train`
  * unchanged) when there is nothing to apply: `exceptions` is undefined or the train is not paced.
