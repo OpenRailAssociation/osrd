@@ -328,6 +328,16 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
+          grid-template-columns:
+            24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
+            auto auto [last-col];
+          display: grid;
+
+          &:has(.unrecognized-waypoints-activated) {
+            grid-template-columns: 24px 24px [name-col] minmax(184px, 1fr) var(
+                --path-step-track-name-width
+              ) var(--path-step-type-width) auto auto [last-col];
+          }
 
           &.unknown-track {
             background-color: var(--black10);
@@ -369,9 +379,8 @@
 
           .path-step {
             display: grid;
-            grid-template-columns:
-              24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-              auto;
+            grid-template-columns: subgrid;
+            grid-column: 1 / last-col;
             align-items: center;
             column-gap: 8px;
             padding-block: 8px;
@@ -486,6 +495,32 @@
               &.invalid {
                 border-radius: 3px;
               }
+
+              .leading-content-wrapper {
+                padding: 0 4px;
+                border-radius: 6px 0 0 6px;
+                box-shadow: 0 0 0 0.063rem var(--black25) inset;
+
+                &:has(.path-step-op-status-icon.valid) {
+                  background-color: var(--success5);
+                }
+
+                &:has(.path-step-op-status-icon.invalid) {
+                  background-color: var(--warning5);
+                }
+
+                &:has(.path-step-op-status-icon.placeholder) {
+                  background-color: var(--black5);
+
+                  svg {
+                    color: var(--black10);
+                  }
+                }
+
+                .path-step-op-status-icon {
+                  color: var(--black50);
+                }
+              }
             }
 
             .invalid-step-message {
@@ -503,6 +538,10 @@
             .track-name.unknown-track {
               border-radius: 3px;
               box-shadow: 0 0 0 1.5px var(--grey50);
+            }
+
+            .path-step-subform-toggle {
+              color: var(--black25);
             }
 
             .map-interactions {
@@ -549,6 +588,49 @@
                   color: var(--primary20);
                 }
               }
+            }
+          }
+        }
+
+        .path-step-subform-wrapper {
+          background-color: var(--ambientB5);
+          display: grid;
+          grid-template-columns: subgrid;
+          grid-column: 1 / last-col;
+          margin-inline: -12px -10px;
+
+          .path-step-subform-content {
+            margin-inline: 23px -9px;
+            grid-column: name-col;
+
+            label {
+              margin-bottom: 0;
+            }
+
+            > .ui-feedback {
+              padding-bottom: 0;
+            }
+
+            .path-step-subform-specific-fields .ui-feedback {
+              padding-top: 9px;
+              padding-bottom: 21px;
+            }
+
+            .path-step-subform-uic-fields {
+              display: grid;
+              grid-template-columns: 2fr 1fr;
+            }
+
+            .path-step-subform-track-offset-fields {
+              display: grid;
+              grid-template-columns: 1fr 2fr;
+            }
+
+            .path-step-subform-domestic-fields {
+              display: flex;
+              justify-content: space-between;
+
+              // gap: 10px;
             }
           }
         }

@@ -4,20 +4,28 @@ import { ComboBox, SegmentedControl } from '@osrd-project/ui-core';
 import {
   AddedLocation,
   AddLocation,
-  FocusLocation,
   ArrowRight,
-  Square,
+  FocusLocation,
+  Infrastructure,
+  InfrastructureInvalid,
+  InfrastructureValid,
   KebabHorizontal,
+  Square,
+  TrackOffset,
+  TriangleRight,
+  TriangleDown,
   X,
 } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -25,9 +33,41 @@ import {
   ListElementComponent,
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
+import PathStepSubForm from './PathStepSubForm';
 import { computePathStepCoordinates, formatOpLabel, isOpRefMetadata } from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
+
+type StatusIconProps = {
+  pathStep: PathStep;
+  isOpValid: boolean;
+  isInvalid: boolean;
+};
+
+const StatusIcon = ({ pathStep, isOpValid, isInvalid }: StatusIconProps) => {
+  const loc = pathStep.location;
+  const Icon = !loc ? (
+    <Infrastructure size="lg" />
+  ) : loc.type === 'track_offset' ? (
+    <TrackOffset size="lg" />
+  ) : isOpValid ? (
+    <InfrastructureValid size="lg" />
+  ) : (
+    <InfrastructureInvalid size="lg" />
+  );
+
+  return (
+    <span
+      className={cx('path-step-op-status-icon', {
+        valid: isOpValid,
+        invalid: isInvalid,
+        placeholder: !loc, // isOpValid and isInvalid are both false in this case
+      })}
+    >
+      {Icon}
+    </span>
+  );
+};
 
 type PathStepProps = {
   pathStep: PathStep;
@@ -56,6 +96,9 @@ type PathStepProps = {
   onOpClear: () => void;
   isTrailingPlaceHolder: boolean;
   isOnlyStep: boolean;
+  isSubFormExpanded: boolean;
+  isPreviousSubFormExpanded: boolean;
+  onSubFormToggled: () => void;
   isMapSelectionMode?: boolean;
   isDestination?: boolean;
   onStartMapSelection?: () => void;
@@ -86,6 +129,9 @@ const PathStepItem = ({
   onOpClear,
   isTrailingPlaceHolder,
   isOnlyStep,
+  isSubFormExpanded,
+  isPreviousSubFormExpanded,
+  onSubFormToggled,
   isMapSelectionMode,
   isDestination,
   onStartMapSelection,
@@ -98,6 +144,7 @@ const PathStepItem = ({
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
+  const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
 
@@ -261,6 +308,8 @@ const PathStepItem = ({
     pathStepMetadata.trackName &&
     !pathStepMetadata.isValidLocalTrackName;
 
+  const isOpValid = pathStepMetadata?.validity === 'valid';
+
   const comboBoxValue = useMemo(() => {
     if (isTrackOffset) return trackOffsetLabel;
     // Don't show invalid points in the combobox - they'll be shown in the error message instead
@@ -317,6 +366,15 @@ const PathStepItem = ({
     blurActiveElement();
   };
 
+  // TODO: find a better way to handle the counter link so its length is inherited from the elements height
+  const counterLinkSize = isPreviousSubFormExpanded
+    ? connectorLong
+      ? '186px'
+      : '166px'
+    : connectorLong
+      ? '44px'
+      : '24px';
+
   return (
     <div
       className={cx('path-step-wrapper', {
@@ -331,6 +389,7 @@ const PathStepItem = ({
         className={cx('path-step', {
           'requested-point': isTrackOffset,
           'map-selection-mode': isMapSelectionMode,
+          'unrecognized-waypoints-activated': unrecognizedWaypointsActivated,
         })}
       >
         <button
@@ -351,8 +410,8 @@ const PathStepItem = ({
                 : categoryColors.base
               : '',
             // @ts-expect-error: variable CSS custom property to be used to style ::before
-            '--pathBackground': isTrailingPlaceHolder ? 'rgba(0, 0, 0, 0.2)' : categoryColors.base,
-            '--counterLink': connectorLong ? '48px' : '28px',
+            '--pathBackground': isTrailingPlaceHolder ? 'var(--black20)' : categoryColors.base,
+            '--counterLink': counterLinkSize,
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -387,6 +446,22 @@ const PathStepItem = ({
           </div>
         ) : (
           <>
+            {unrecognizedWaypointsActivated && (
+              <button
+                type="button"
+                className="path-step-subform-toggle"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSubFormToggled();
+                }}
+                title={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+                aria-expanded={isSubFormExpanded}
+                aria-label={isSubFormExpanded ? t('collapseSubForm') : t('expandSubForm')}
+                data-testid="path-step-subform-toggle"
+              >
+                {isSubFormExpanded ? <TriangleDown size="lg" /> : <TriangleRight size="lg" />}
+              </button>
+            )}
             <div
               role="button"
               tabIndex={0}
@@ -405,6 +480,11 @@ const PathStepItem = ({
               <ComboBox
                 id={`pathStep-name-${pathStep.key}`}
                 data-testid="path-step-combo-box"
+                leadingContent={
+                  unrecognizedWaypointsActivated && (
+                    <StatusIcon pathStep={pathStep} isOpValid={isOpValid} isInvalid={isInvalid} />
+                  )
+                }
                 value={comboBoxValue}
                 numberOfSuggestionsToShow={numberOfSuggestionsToShow}
                 suggestions={visibleSuggestions}
@@ -490,7 +570,6 @@ const PathStepItem = ({
                   invalid: isInvalid,
                   'unknown-track': isUnknownTrack,
                 })}
-                data-testid="path-step-track-name"
               >
                 <ComboBox
                   id={`pathStep-status-${pathStep.key}`}
@@ -571,11 +650,16 @@ const PathStepItem = ({
           </button>
         </div>
         {shouldShowInvalidMessage && (
-          <div className="invalid-step-message" data-testid="invalid-step-message">
-            {getInvalidMessage()}
-          </div>
+          <div className="invalid-step-message">{getInvalidMessage()}</div>
         )}
       </div>
+
+      <PathStepSubForm
+        pathStep={pathStep}
+        pathStepMetadata={pathStepMetadata}
+        isSubFormExpanded={isSubFormExpanded}
+        isOpValid={isOpValid}
+      />
     </div>
   );
 };
