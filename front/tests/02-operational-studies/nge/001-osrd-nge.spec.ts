@@ -76,23 +76,15 @@ test.describe('Netzgrafik Editor', { tag: ['@op', '@nge'] }, () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Delete a train from train list', async ({ page, scenarioTimetableSection, ngePage }) => {
+  test('Delete a train from train list', async ({ scenarioTimetableSection, ngePage }) => {
     await test.step('Delete train from timetable list', async () => {
       await scenarioTimetableSection.deleteTrainSchedule();
-    });
-
-    await test.step('Reload page to refresh timetable state', async () => {
-      await page.reload(); // Should be removed once issue #13758 is resolved
     });
 
     await test.step('Verify timetable is empty (UI message)', async () => {
       await scenarioTimetableSection.verifyTimetableIsEmpty(
         frTranslations.timetable.noTrainSchedule
       );
-    });
-
-    await test.step('Enable macro view while keeping the default train list visible', async () => {
-      await ngePage.enableMacroViewWithDefaultTrainList();
     });
 
     await test.step('Verify NGE lines are deleted (no train lines but nodes are persisted)', async () => {
