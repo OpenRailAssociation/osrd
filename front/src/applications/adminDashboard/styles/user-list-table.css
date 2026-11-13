@@ -1,0 +1,103 @@
+.user-list-table {
+  color: var(--black100);
+
+  caption {
+    caption-side: top;
+    color: var(--black100);
+  }
+
+  .user-list-header {
+    height: 48px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: var(--grey5);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .user-count {
+      display: inline;
+      padding: 0 16px 2px 0; /* vertical padding aligns the text with the buttons */
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .user-edit-groups-button {
+      margin-left: auto;
+    }
+  }
+}
+
+.user-row {
+  border-top: 1px solid var(--black25);
+
+  &:last-child {
+    border-bottom: 1px solid var(--black25);
+  }
+
+  &:nth-child(even) {
+    background-color: var(--white100);
+  }
+
+  &:nth-child(odd) {
+    background-color: var(--grey5);
+  }
+
+  td {
+    padding: 8px;
+    font-size: 14px;
+
+    &:first-child {
+      padding-left: 16px;
+    }
+
+    &:last-child {
+      padding-right: 16px;
+    }
+  }
+
+  ul {
+    margin: 0;
+  }
+
+  .identities-list {
+    color: var(--grey50);
+  }
+
+  .roles-list {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .role-tag {
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 3px;
+    padding: 0 4px;
+    text-wrap: nowrap;
+
+    &[data-role='Admin'] {
+      background-color: var(--trainYellow30);
+      color: var(--black100);
+    }
+
+    &[data-role='Stdcm'] {
+      background-color: var(--trainBlue50);
+      color: var(--white100);
+    }
+
+    &[data-role='OperationalStudies'] {
+      background-color: var(--trainGreen50);
+      color: var(--white100);
+    }
+
+    /* unknown role */
+    background-color: red;
+    color: yellow;
+  }
+}

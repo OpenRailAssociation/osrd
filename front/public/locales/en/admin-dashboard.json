@@ -1,0 +1,11 @@
+{
+  "addUser": "Add",
+  "editGroups": "Edit groups",
+  "roles": {
+    "Admin": "Admin",
+    "OperationalStudies": "Operational Studies",
+    "Stdcm": "ST DCM"
+  },
+  "users_one": "{{count}} user",
+  "users_other": "{{count}} users"
+}
