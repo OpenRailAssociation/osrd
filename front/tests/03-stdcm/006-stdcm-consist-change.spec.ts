@@ -22,7 +22,7 @@ import {
 } from '../assets/constants/stdcm/stdcm-const';
 import test from '../page-object-fixture';
 import { waitForInfraStateToBeCached } from '../utils';
-import { getInfra, setTowedRollingStock } from '../utils/api-utils';
+import { getInfra } from '../utils/api-utils';
 import { parsePdfText, readFirstPdf, verifyConsistChangeContent } from '../utils/pdf-parser';
 
 test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change'] }, () => {
@@ -31,8 +31,8 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
   let infra: Infra;
   let downloadDir: string | undefined;
 
-  test.beforeAll('Fetch infrastructure and create towed rolling stock', async () => {
-    [infra] = await Promise.all([getInfra(), setTowedRollingStock()]);
+  test.beforeAll('Fetch infrastructure', async () => {
+    infra = await getInfra();
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
