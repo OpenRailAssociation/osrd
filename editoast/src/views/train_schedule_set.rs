@@ -2,7 +2,6 @@ use axum::extract::Query;
 use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
-use itertools::Itertools as _;
 use models::prelude::*;
 use schemas::paced_train::TrainSchedule;
 use thiserror::Error;
@@ -290,23 +289,24 @@ pub(in crate::views) async fn post_train_schedule(
 ) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
 
-    let train_schedule_set_exists = TrainScheduleSet::exists(conn, train_schedule_set_id).await?;
-    if !train_schedule_set_exists {
-        return Err(TrainScheduleSetError::NotFound {
+    let train_schedule_set = TrainScheduleSetWithTimetable::retrieve(conn, train_schedule_set_id)
+        .await?
+        .ok_or(TrainScheduleSetError::NotFound {
             train_schedule_set_id,
-        }
-        .into());
-    }
+        })?;
 
     let changesets = train_schedules
         .into_iter()
         .map(TrainScheduleChangeset::from)
-        .map(|cs| cs.train_schedule_set_id(train_schedule_set_id))
+        .map(|cs| cs.timetable_id(train_schedule_set.timetable_id))
         .collect::<Vec<_>>();
 
     // Create a batch of train schedules
     let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
-    let response: Vec<TrainScheduleResponse> = train_schedules.into_iter().map_into().collect();
+    let response: Vec<TrainScheduleResponse> = train_schedules
+        .into_iter()
+        .map(TrainScheduleResponse::from)
+        .collect();
 
     Ok((StatusCode::CREATED, Json(response)))
 }
@@ -330,19 +330,23 @@ pub(in crate::views) async fn get_train_schedules(
 ) -> Result<Json<Vec<TrainScheduleResponse>>> {
     let conn = &mut db_pool.get().await?;
 
-    let train_schedule_set_exists = TrainScheduleSet::exists(conn, train_schedule_set_id).await?;
-    if !train_schedule_set_exists {
-        return Err(TrainScheduleSetError::NotFound {
+    let train_schedule_set = TrainScheduleSetWithTimetable::retrieve(conn, train_schedule_set_id)
+        .await?
+        .ok_or(TrainScheduleSetError::NotFound {
             train_schedule_set_id,
-        }
-        .into());
-    }
+        })?;
+    let timetable_id = train_schedule_set.timetable_id;
 
     let settings = SelectionSettings::new()
-        .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set_id));
+        .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
 
     let train_schedules = models::TrainSchedule::list(conn, settings).await?;
-    Ok(Json(train_schedules.into_iter().map_into().collect()))
+    Ok(Json(
+        train_schedules
+            .into_iter()
+            .map(TrainScheduleResponse::from)
+            .collect(),
+    ))
 }
 
 #[cfg(test)]
@@ -350,6 +354,7 @@ mod tests {
 
     use crate::error::InternalError;
     use crate::fixtures::create_catalog_entry;
+    use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
     use crate::views::test_app;
@@ -412,8 +417,9 @@ mod tests {
 
         assert!(response.len() == 2);
 
+        let timetable_id = train_schedule_set.timetable_id;
         let settings = SelectionSettings::default()
-            .filter(move || models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq(train_schedule_set.id))
+            .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
             .limit(25)
             .offset(0);
 
@@ -559,6 +565,9 @@ mod tests {
         let pool = app.db_pool();
 
         let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        // A train schedule of another train schedule set, which must not be listed
+        let other_train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        create_simple_paced_train(&mut pool.get_ok(), other_train_schedule_set.timetable_id).await;
         let train_schedule_1 = simple_paced_train_base();
         let mut train_schedule_2 = simple_paced_train_base();
         train_schedule_2.paced.as_mut().unwrap().time_window =
@@ -592,6 +601,11 @@ mod tests {
             .json();
 
         assert_eq!(response.len(), 2);
+        assert!(
+            response.iter().all(
+                |train_schedule| train_schedule.timetable_id == train_schedule_set.timetable_id
+            )
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -699,6 +713,28 @@ mod tests {
                 train_schedule_count: 0
             }
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_train_schedule_set_counts_its_train_schedules() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        let train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
+        create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
+        // A train schedule of another train schedule set, which must not be counted
+        let other_train_schedule_set = create_train_schedule_set(&mut db_pool.get_ok()).await;
+        create_simple_paced_train(&mut db_pool.get_ok(), other_train_schedule_set.timetable_id)
+            .await;
+
+        let response: TrainScheduleSetResponse = app
+            .get(&format!("/train_schedule_sets/{}", train_schedule_set.id))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.train_schedule_count, 2);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -864,12 +900,20 @@ mod tests {
         let db_pool = app.db_pool();
         let train_schedule_set = create_train_schedule_set(&mut db_pool.get().await.unwrap()).await;
         let train_schedule_set_id = train_schedule_set.id;
+        let train_schedule =
+            create_simple_paced_train(&mut db_pool.get_ok(), train_schedule_set.timetable_id).await;
         app.delete(&format!("/train_schedule_sets/{}", train_schedule_set_id))
             .await
             .assert_status_no_content();
 
         assert!(
             !TrainScheduleSet::exists(&mut db_pool.get().await.unwrap(), train_schedule_set_id)
+                .await
+                .unwrap()
+        );
+        // Its train schedules are deleted along with it
+        assert!(
+            !models::TrainSchedule::exists(&mut db_pool.get_ok(), train_schedule.id)
                 .await
                 .unwrap()
         );

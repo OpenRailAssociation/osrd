@@ -37,7 +37,7 @@ const existingTrain: TrainScheduleResponse = {
   constraint_distribution: 'STANDARD',
   path: [],
   id: 0,
-  train_schedule_set_id: 0,
+  timetable_id: 0,
   start_time: localTime('08:00:00'),
 };
 

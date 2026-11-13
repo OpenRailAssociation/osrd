@@ -44,7 +44,7 @@ function normalizeTrainForDiff(train: Omit<TrainSchedule, 'paced'>) {
  */
 export function generatePacedTrainException(
   updatedOccurrence: Omit<TrainSchedule, 'paced'>,
-  originalPacedTrain: Omit<PacedTrain, 'train_schedule_set_id'>,
+  originalPacedTrain: Omit<PacedTrain, 'timetable_id'>,
   occurrenceIndex: number | null = null
   // TODO_EXCEPTION: remove `key`
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
@@ -190,7 +190,7 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
  * for a given occurrence update. Pure function — caller handles the API calls.
  */
 export function buildOccurrenceExceptionData(
-  originalPacedTrain: Omit<PacedTrain, 'train_schedule_set_id'>,
+  originalPacedTrain: Omit<PacedTrain, 'timetable_id'>,
   updatedOccurrence: TrainSchedule,
   occurrenceId: OccurrenceId
 ): {

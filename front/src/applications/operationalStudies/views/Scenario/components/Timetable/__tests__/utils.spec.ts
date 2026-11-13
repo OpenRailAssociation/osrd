@@ -56,7 +56,7 @@ const buildTrainScheduleWithStartTime = (
   exceptionsStartTimes?: Date[]
 ): TrainScheduleResponse => ({
   id,
-  train_schedule_set_id: 1,
+  timetable_id: 1,
   constraint_distribution: 'STANDARD',
   path: [],
   rolling_stock_name: '',

@@ -584,7 +584,7 @@ mod tests {
             .await
             .expect("Failed to create level crossing");
 
-        let train = create_train(app, train_schedule_set.id, &rolling_stock.name).await;
+        let train = create_train(app, train_schedule_set.timetable_id, &rolling_stock.name).await;
 
         let form = LevelCrossingOccupancyForm {
             train_ids: vec![train.id],
@@ -600,12 +600,12 @@ mod tests {
     /// over an hour
     async fn create_train(
         app: &TestApp,
-        train_schedule_set_id: i64,
+        timetable_id: i64,
         rolling_stock_name: &str,
     ) -> TrainSchedule {
         TrainSchedule::default()
             .into_changeset()
-            .train_schedule_set_id(train_schedule_set_id)
+            .timetable_id(timetable_id)
             .rolling_stock_name(rolling_stock_name.to_string())
             .path(vec![
                 PathItem::new_operational_point("Mid_West_station"),
@@ -738,7 +738,7 @@ mod tests {
                 .await;
         let unreadable_train = create_train(
             &app,
-            readable_train.train_schedule_set_id,
+            readable_train.timetable_id,
             &unreadable_rolling_stock.name,
         )
         .await;

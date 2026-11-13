@@ -12,7 +12,7 @@ import type { SpeedDistanceDiagramData } from 'modules/simulationResult/types';
 
 const computeChartData = (
   stdcmResponse: StdcmSuccessResponse,
-  stdcmTrainResult: Omit<TrainScheduleResponse, 'train_schedule_set_id'>,
+  stdcmTrainResult: Omit<TrainScheduleResponse, 'timetable_id'>,
   t: TFunction,
   rollingStock: RollingStockWithLiveries,
   pathProperties: PathProperties

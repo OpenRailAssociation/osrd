@@ -32,6 +32,7 @@ use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use itertools::izip;
+use models::TimetableInheritance;
 use models::TrainScheduleException;
 use models::prelude::*;
 use models::timetable::Timetable;
@@ -72,7 +73,6 @@ use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use models::Infra;
-use models::TrainScheduleSet;
 use models::TrainScheduleSetWithTimetable;
 use models::train_schedule::OccurrenceId;
 use models::train_schedule::train_schedule_schema_from_model;
@@ -281,7 +281,7 @@ pub(in crate::views) async fn get_train_schedule_by_id(
 
     Ok(Json(TrainScheduleResponse {
         id: train_schedule.id,
-        train_schedule_set_id: train_schedule.train_schedule_set_id,
+        timetable_id: train_schedule.timetable_id,
         train_schedule: train_schedule_schema_from_model(train_schedule, exceptions),
     }))
 }
@@ -321,11 +321,16 @@ pub(in crate::views) async fn get_train_schedules(
     let train_schedule_set_ids =
         Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
+    let inner_timetable_ids =
+        TrainScheduleSetWithTimetable::retrieve_batch(conn, train_schedule_set_ids)
+            .await?
+            .into_iter()
+            .map(|train_schedule_set| train_schedule_set.timetable_id)
+            .collect_vec();
+
     let settings = pagination_params
         .into_selection_settings()
-        .filter(move || {
-            models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
-        })
+        .filter(move || models::TrainSchedule::TIMETABLE_ID.eq_any(inner_timetable_ids.clone()))
         .order_by(move || models::TrainSchedule::ID.asc());
 
     let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
@@ -346,7 +351,7 @@ pub(in crate::views) async fn get_train_schedules(
         .into_iter()
         .map(|ts| {
             let id = ts.id;
-            let train_schedule_set_id = ts.train_schedule_set_id;
+            let timetable_id = ts.timetable_id;
             let exceptions = exceptions
                 .remove(&id)
                 .unwrap_or_default()
@@ -356,7 +361,7 @@ pub(in crate::views) async fn get_train_schedules(
             let train_schedule = train_schedule_schema_from_model(ts, exceptions);
             TrainScheduleResponse {
                 id,
-                train_schedule_set_id,
+                timetable_id,
                 train_schedule,
             }
         })
@@ -413,17 +418,22 @@ pub(in crate::views) async fn requirements(
     })
     .await?;
 
-    let train_schedule_sets_ids =
-        Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
+    let inner_timetable_ids = TimetableInheritance::list(
+        conn,
+        SelectionSettings::new()
+            .filter(move || TimetableInheritance::OUTER_TIMETABLE_ID.eq(timetable_id)),
+    )
+    .await?
+    .into_iter()
+    .map(|inheritance| inheritance.inner_timetable_id)
+    .collect_vec();
 
     // List trains and paced trains
     let (paced_trains, stats) = models::TrainSchedule::list_paginated(
         conn,
         page_settings
             .into_selection_settings()
-            .filter(move || {
-                models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_sets_ids.clone())
-            })
+            .filter(move || models::TrainSchedule::TIMETABLE_ID.eq_any(inner_timetable_ids.clone()))
             .order_by(move || models::TrainSchedule::ID.asc()),
     )
     .await?;
@@ -593,13 +603,20 @@ pub(in crate::views) async fn get_local_track_names(
         })
         .await?;
 
-        let train_schedule_set_ids =
-            Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
+        let inner_timetable_ids = TimetableInheritance::list(
+            conn,
+            SelectionSettings::new()
+                .filter(move || TimetableInheritance::OUTER_TIMETABLE_ID.eq(timetable_id)),
+        )
+        .await?
+        .into_iter()
+        .map(|inheritance| inheritance.inner_timetable_id)
+        .collect_vec();
 
         let train_schedules = models::TrainSchedule::list(
             conn,
             SelectionSettings::new().filter(move || {
-                models::TrainSchedule::TRAIN_SCHEDULE_SET_ID.eq_any(train_schedule_set_ids.clone())
+                models::TrainSchedule::TIMETABLE_ID.eq_any(inner_timetable_ids.clone())
             }),
         )
         .await?;
@@ -928,12 +945,22 @@ pub(in crate::views) async fn set_included_train_schedule_sets(
     })
     .await?;
 
-    let _: Vec<_> = TrainScheduleSet::retrieve_batch_or_fail(
+    let found_ids: HashSet<i64> = TrainScheduleSetWithTimetable::retrieve_batch(
         &mut conn,
-        train_schedule_set_ids.clone(),
-        |missing| TimetableError::TrainScheduleSetsNotFound { ids: missing },
+        train_schedule_set_ids.iter().copied().collect(),
     )
-    .await?;
+    .await?
+    .into_iter()
+    .map(|train_schedule_set| train_schedule_set.id)
+    .collect();
+
+    if train_schedule_set_ids.len() != found_ids.len() {
+        let missing = train_schedule_set_ids
+            .difference(&found_ids)
+            .copied()
+            .collect();
+        return Err(TimetableError::TrainScheduleSetsNotFound { ids: missing }.into());
+    }
 
     // Transaction to ensure consistency of modifications
     Timetable::set_included_train_schedule_sets(timetable_id, train_schedule_set_ids, &mut conn)
@@ -1043,6 +1070,7 @@ mod tests {
     use axum::http::StatusCode;
     use core_client::simulation::RoutingZoneRequirement;
     use jiff::SignedDuration;
+    use models::TrainScheduleSet;
     use models::train_schedule::TrainScheduleChangeset;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_rolling_stock;
@@ -1056,6 +1084,7 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
+    use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_simple_paced_train;
@@ -1160,7 +1189,7 @@ mod tests {
         let train_schedules_changesets_t1 = train_schedules_bases_t1
             .into_iter()
             .map(TrainScheduleChangeset::from)
-            .map(|cs| cs.train_schedule_set_id(train_schedule_set1.id))
+            .map(|cs| cs.timetable_id(train_schedule_set1.timetable_id))
             .collect::<Vec<_>>();
         let train_schedules_t1: Vec<_> =
             models::TrainSchedule::create_batch(&mut pool.get_ok(), train_schedules_changesets_t1)
@@ -1199,7 +1228,7 @@ mod tests {
         let train_schedules_changesets_t2 = train_schedules_bases_t2
             .into_iter()
             .map(TrainScheduleChangeset::from)
-            .map(|cs| cs.train_schedule_set_id(train_schedule_set2.id))
+            .map(|cs| cs.timetable_id(train_schedule_set2.timetable_id))
             .collect::<Vec<_>>();
         let train_schedules_t2: Vec<_> =
             models::TrainSchedule::create_batch(&mut pool.get_ok(), train_schedules_changesets_t2)
@@ -1221,8 +1250,13 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        // Check if the timetable has the two train schedules
+        // Check if the timetable has the two train schedules, with the timetable of their train schedule set
         assert_eq!(list.results.len(), 2);
+        assert!(
+            list.results
+                .iter()
+                .all(|result| result.timetable_id == train_schedule_set1.timetable_id)
+        );
 
         // Check if the first train schedule contains only his own exception
         assert_eq!(
@@ -1240,6 +1274,34 @@ mod tests {
                 .unwrap(),
             train_schedule_exception_t1_1.id
         )
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_timetable_train_schedule_by_id() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+        let (timetable, train_schedule_set) =
+            create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
+        let train_schedule =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
+
+        let response: TrainScheduleResponse = app
+            .get(&format!(
+                "/timetable/{}/train_schedules/{}",
+                timetable.id, train_schedule.id
+            ))
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.id, train_schedule.id);
+        assert_eq!(response.timetable_id, train_schedule_set.timetable_id);
+        app.get(&format!(
+            "/timetable/{}/train_schedules/{}",
+            timetable.id, 0
+        ))
+        .await
+        .assert_status_not_found();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1547,7 +1609,7 @@ mod tests {
         )];
 
         Changeset::<models::TrainSchedule>::from(train_schedule_base_2)
-            .train_schedule_set_id(train_schedule.train_schedule_set_id)
+            .timetable_id(train_schedule.timetable_id)
             .create(&mut db_pool.get().await.unwrap())
             .await
             .expect("Failed to create paced train");

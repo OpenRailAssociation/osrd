@@ -13,7 +13,7 @@ import {
 const baseTrainScheduleWithSummary: TrainScheduleWithDetails = {
   id: 1,
   name: 'train1',
-  train_schedule_set_id: 1000,
+  timetable_id: 1000,
   constraint_distribution: 'STANDARD',
   rollingStockName: 'rollingStock1',
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,

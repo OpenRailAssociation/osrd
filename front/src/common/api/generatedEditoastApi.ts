@@ -4658,8 +4658,8 @@ export type SearchResultItemTrainSchedule = {
   /** For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start. */
   start_time: number;
+  timetable_id: number;
   train_name: string;
-  train_schedule_set_id: number;
 };
 export type SearchResultItemUser = {
   id: number;
@@ -5412,7 +5412,7 @@ export type TrainSchedule = {
 };
 export type TrainScheduleResponse = TrainSchedule & {
   id: number;
-  train_schedule_set_id: number;
+  timetable_id: number;
 };
 export type TowedRollingStock = {
   /** Acceleration in m·s⁻² */

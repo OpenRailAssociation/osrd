@@ -115,7 +115,7 @@ const useLinkedTrainSearch = () => {
         dispatch(setFailure({ name: t('error'), message: t('noTrainScheduleSetFound') }));
         return;
       }
-      const tssPayload = trainScheduleSets.map((tss) => ['=', ['train_schedule_set_id'], tss.id]);
+      const tssPayload = trainScheduleSets.map((tss) => ['=', ['timetable_id'], tss.timetable_id]);
 
       const startOfDay = new Date(linkedTrainDate);
       startOfDay.setHours(0, 0, 0, 0);

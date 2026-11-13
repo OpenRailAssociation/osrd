@@ -12,7 +12,7 @@ import {
 
 const baseTrainSchedule: TrainScheduleResponse = {
   id: 0,
-  train_schedule_set_id: 0,
+  timetable_id: 0,
   train_name: 'test',
   rolling_stock_name: 'test',
   constraint_distribution: 'STANDARD',
