@@ -260,7 +260,7 @@ pub(in crate::views) async fn list(
 
     let conn = &mut db_pool.get().await?;
     Timetable::exists_or_fail(conn, timetable_id, || {
-        ListLinkingsError::TimetableNotFound(LinkingTimetableNotFound { timetable_id })
+        ListLinkingsError::from(LinkingTimetableNotFound { timetable_id })
     })
     .await?;
 
@@ -317,7 +317,7 @@ pub(in crate::views) async fn create(
     let conn = &mut db_pool.get().await?;
 
     let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
-        CreateLinkingsError::TimetableNotFound(LinkingTimetableNotFound { timetable_id })
+        CreateLinkingsError::from(LinkingTimetableNotFound { timetable_id })
     })
     .await?;
 
