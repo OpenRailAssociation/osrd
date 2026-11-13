@@ -92,6 +92,22 @@
       margin: 12px 0;
     }
 
+    .forced-stop-info {
+      display: flex;
+      align-items: flex-start;
+      padding: 12px;
+      margin-top: 24px;
+      gap: 12px;
+      background-color: var(--info5);
+      color: var(--info60);
+      font-size: 0.875rem;
+      border-radius: 6px;
+
+      svg {
+        color: var(--info30);
+      }
+    }
+
     > div:not(.stdcm-loader) {
       width: 100%;
     }
