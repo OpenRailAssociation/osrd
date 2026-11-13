@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use clap::Args;
-use jiff::SignedDuration;
+use std::time::Duration;
 use tokio::sync::RwLock;
 use tracing::Instrument as _;
 use url::Url;
@@ -108,12 +108,12 @@ pub async fn runserver(
     let config = views::ServerConfig {
         port,
         address,
-        health_check_timeout: SignedDuration::from_millis(health_check_timeout_ms as i64),
+        health_check_timeout: Duration::from_millis(health_check_timeout_ms),
         map_layers_max_zoom: map_layers_config.max_zoom as u8,
         postgres_config: postgres.into(),
         core_config: views::CoreConfig {
             mq_url,
-            timeout: SignedDuration::from_secs(core_timeout as i64),
+            timeout: Duration::from_secs(core_timeout),
             single_worker: core_single_worker,
             num_channels: core_client_channels_size,
             worker_pool_id,
