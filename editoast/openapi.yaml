@@ -3822,7 +3822,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioWithDetails'
-  /scenarios/{scenario_id}/history_events:
+  /scenarios/{scenario_id}/events:
     get:
       tags:
       - scenarios
@@ -3835,11 +3835,11 @@ paths:
           format: int64
       responses:
         '101':
-          description: WebSocket sending LiveUpdateMessage JSON messages
+          description: WebSocket sending ScenarioEventMessage JSON messages
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HistoryEventMessage'
+                $ref: '#/components/schemas/ScenarioEventMessage'
         '500':
           description: ''
           content:
@@ -12614,55 +12614,6 @@ components:
         subject_id:
           type: integer
           format: int64
-    HistoryEvent:
-      oneOf:
-      - allOf:
-        - $ref: '#/components/schemas/MacroNoteResponse'
-        - type: object
-          required:
-          - type
-          properties:
-            type:
-              type: string
-              enum:
-              - MacroNoteUpserted
-        title: HistoryEventMacroNoteUpserted
-      - type: object
-        title: HistoryEventMacroNoteDeleted
-        required:
-        - id
-        - type
-        properties:
-          id:
-            type: integer
-            format: int64
-          type:
-            type: string
-            enum:
-            - MacroNoteDeleted
-    HistoryEventMessage:
-      oneOf:
-      - type: object
-        title: HistoryEventMessageEvent
-        required:
-        - Event
-        properties:
-          Event:
-            type: object
-            required:
-            - epoch
-            - event
-            properties:
-              epoch:
-                type: string
-                format: date-time
-              event:
-                $ref: '#/components/schemas/HistoryEvent'
-      - type: string
-        title: HistoryEventMessageFatalError
-        description: A fatal error occurred while processing the event stream. The WebSocket will be closed after this message.
-        enum:
-        - FatalError
     Identifier:
       type: string
       maxLength: 255
@@ -15788,6 +15739,55 @@ components:
           items:
             type: integer
             format: int64
+    ScenarioEvent:
+      oneOf:
+      - allOf:
+        - $ref: '#/components/schemas/MacroNoteResponse'
+        - type: object
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              enum:
+              - MacroNoteUpserted
+        title: ScenarioEventMacroNoteUpserted
+      - type: object
+        title: ScenarioEventMacroNoteDeleted
+        required:
+        - id
+        - type
+        properties:
+          id:
+            type: integer
+            format: int64
+          type:
+            type: string
+            enum:
+            - MacroNoteDeleted
+    ScenarioEventMessage:
+      oneOf:
+      - type: object
+        title: ScenarioEventMessageEvent
+        required:
+        - Event
+        properties:
+          Event:
+            type: object
+            required:
+            - epoch
+            - event
+            properties:
+              epoch:
+                type: string
+                format: date-time
+              event:
+                $ref: '#/components/schemas/ScenarioEvent'
+      - type: string
+        title: ScenarioEventMessageFatalError
+        description: A fatal error occurred while processing the event stream. The WebSocket will be closed after this message.
+        enum:
+        - FatalError
     ScenarioPatchForm:
       type: object
       description: This structure is used by the patch endpoint to patch a scenario

@@ -367,7 +367,7 @@ fn service_router() -> server::router::DocumentedRouter {
                         path.route("/", get!(operational_studies::hierarchy::scenario::get))
                             .route("/", delete!(operational_studies::hierarchy::scenario::delete))
                             .route("/", patch!(operational_studies::hierarchy::scenario::patch))
-                            .route("/history_events", get!(operational_studies::hierarchy::events::history_events))
+                            .route("/events", get!(operational_studies::hierarchy::events::events))
                     })
             })
             .nests("/macro_nodes", |path| {

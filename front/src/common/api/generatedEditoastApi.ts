@@ -926,12 +926,12 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
-      getScenariosByScenarioIdHistoryEvents: build.query<
-        GetScenariosByScenarioIdHistoryEventsApiResponse,
-        GetScenariosByScenarioIdHistoryEventsApiArg
+      getScenariosByScenarioIdEvents: build.query<
+        GetScenariosByScenarioIdEventsApiResponse,
+        GetScenariosByScenarioIdEventsApiArg
       >({
         query: (queryArg) => ({
-          url: `/scenarios/${queryArg.scenarioId}/history_events`,
+          url: `/scenarios/${queryArg.scenarioId}/events`,
         }),
         providesTags: ['scenarios'],
       }),
@@ -2434,8 +2434,8 @@ export type PatchScenariosByScenarioIdApiArg = {
   scenarioId: number;
   scenarioPatchForm: ScenarioPatchForm;
 };
-export type GetScenariosByScenarioIdHistoryEventsApiResponse = unknown;
-export type GetScenariosByScenarioIdHistoryEventsApiArg = {
+export type GetScenariosByScenarioIdEventsApiResponse = unknown;
+export type GetScenariosByScenarioIdEventsApiArg = {
   scenarioId: number;
 };
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
@@ -4495,7 +4495,7 @@ export type ScenarioPatchForm = {
   tags?: null | Tags;
   timetable_ids?: number[] | null;
 };
-export type HistoryEvent =
+export type ScenarioEvent =
   | (MacroNoteResponse & {
       type: 'MacroNoteUpserted';
     })
@@ -4503,11 +4503,11 @@ export type HistoryEvent =
       id: number;
       type: 'MacroNoteDeleted';
     };
-export type HistoryEventMessage =
+export type ScenarioEventMessage =
   | {
       Event: {
         epoch: string;
-        event: HistoryEvent;
+        event: ScenarioEvent;
       };
     }
   | 'FatalError';

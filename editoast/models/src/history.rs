@@ -1,44 +1,49 @@
-use chrono::DateTime;
-use chrono::Utc;
 use diesel::pg::PgNotification;
 use futures::TryStream;
+use jiff::Timestamp;
 use serde::Deserialize;
 
-/// An object modification event raised by PostgreSQL on select editoast objects.
+pub trait NotificationMessage: std::fmt::Debug + serde::de::DeserializeOwned {}
+
+/// An object modification notification raised by PostgreSQL on select editoast objects.
 ///
-/// The event type `T` should deserialize as `{ "type": "<event_type>", "object": { ... } }`.
-/// Tip: use `#[serde(tag = "type", content = "object")]` on the event enum to achieve this.
+/// The notification type `T` should deserialize as `{ "type": "<notification_type>", "object": { ... } }`.
+/// Tip: use `#[serde(tag = "type", content = "object")]` on the notification enum to achieve this.
 #[derive(Debug, Deserialize)]
-pub struct HistoryEvent<T>
+pub struct Notification<T>
 where
-    T: std::fmt::Debug + serde::de::DeserializeOwned,
+    T: NotificationMessage,
 {
-    pub epoch: DateTime<Utc>,
-    #[serde(flatten, bound(deserialize = "T: serde::de::DeserializeOwned"))] // needed on stable but not on nightly ¯\_(ツ)_/¯
-    pub event: T,
+    pub epoch: Timestamp,
+    #[serde(flatten, bound(deserialize = "T: serde::de::DeserializeOwned"))]
+    // needed until the new trait solver lands on stable
+    pub notification: T,
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum HistoryError {
+pub enum NotificationError {
     #[error(transparent)]
     Database(#[from] database::DatabaseError),
     #[error(transparent)]
-    MalformedEvent(#[from] serde_json::Error),
-    #[error("unexpected event with type {} on channel {channel}", r#type)]
-    UnexpectedEvent {
+    MalformedNotification(#[from] serde_json::Error),
+    #[error(
+        "unexpected notification with type ‘{}’ on channel ‘{channel}’",
+        r#type
+    )]
+    UnexpectedNotification {
         r#type: String,
         channel: String,
         payload: String,
     },
 }
 
-/// Produces a stream of events parsed from notification on the given PostgreSQL channel.
-pub(crate) async fn history_stream<T>(
+/// Produces a stream of parsed notifications from the given PostgreSQL channel.
+pub(crate) async fn notifications<T>(
     conn: &mut diesel_async::AsyncPgConnection,
     channel: &'static str,
-) -> Result<impl TryStream<Ok = HistoryEvent<T>, Error = HistoryError>, database::DatabaseError>
+) -> Result<impl TryStream<Ok = Notification<T>, Error = NotificationError>, database::DatabaseError>
 where
-    T: std::fmt::Debug + serde::de::DeserializeOwned,
+    T: NotificationMessage,
 {
     use diesel_async::RunQueryDsl as _;
     use futures::StreamExt as _;
@@ -49,27 +54,29 @@ where
 
     Ok(conn
         .notifications_stream()
-        .map(|notif| match notif {
-            Err(e) => Err(HistoryError::Database(e.into())),
+        .map(move |notif| match notif {
+            Err(e) => Err(NotificationError::Database(e.into())),
             Ok(PgNotification {
-                channel,
+                channel: chan,
                 payload,
                 process_id: _,
             }) => {
-                let Ok(event) = serde_json::from_str::<HistoryEvent<T>>(&payload) else {
+                debug_assert_eq!(&chan, channel);
+                let Ok(notification) = serde_json::from_str::<Notification<T>>(&payload) else {
                     #[derive(Deserialize)]
-                    struct EventType {
+                    struct NotificationType {
                         r#type: String,
                     }
 
-                    let EventType { r#type } = serde_json::from_str::<EventType>(&payload)?;
-                    return Err(HistoryError::UnexpectedEvent {
+                    let NotificationType { r#type } =
+                        serde_json::from_str::<NotificationType>(&payload)?;
+                    return Err(NotificationError::UnexpectedNotification {
                         r#type,
-                        channel,
+                        channel: chan,
                         payload,
                     });
                 };
-                Ok(event)
+                Ok(notification)
             }
         })
         .boxed())

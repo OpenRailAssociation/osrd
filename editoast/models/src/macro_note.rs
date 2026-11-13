@@ -4,11 +4,14 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::history::HistoryError;
-use crate::history::HistoryEvent;
+use crate::history::Notification;
+use crate::history::NotificationError;
+use crate::history::NotificationMessage;
 use crate::tags::Tags;
 
-#[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq, Eq)]
+const MACRO_NOTE_NOTIFY_CHANNEL: &str = "macro_note";
+
+#[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::macro_note)]
 #[model(gen(ops = crud, batch_ops = c, list))]
 pub struct MacroNote {
@@ -23,33 +26,35 @@ pub struct MacroNote {
 }
 
 #[derive(Debug, Deserialize)]
-#[cfg_attr(test, derive(PartialEq, Eq))]
+#[cfg_attr(test, derive(PartialEq))]
 #[serde(tag = "type", content = "object")]
-pub enum MacroNoteEvent {
+pub enum MacroNoteNotification {
     #[serde(rename = "MacroNoteUpserted")]
     Upserted(MacroNote),
     #[serde(rename = "MacroNoteDeleted")]
     Deleted(MacroNote),
 }
 
+impl NotificationMessage for MacroNoteNotification {}
+
 impl MacroNote {
     // WARNING: We should not leak AsyncPgConnection here. But we need to own it earlier to return a stream.
-    //          Hoperfully temporary until the SeaORM migration. Do not do that for non-stream returning functions.
-    pub async fn event_stream(
+    //          Hopefully temporary until the SeaORM migration. Do not do that for non-stream returning functions.
+    pub async fn notifications(
         conn: &mut diesel_async::AsyncPgConnection,
     ) -> Result<
-        impl TryStream<Ok = HistoryEvent<MacroNoteEvent>, Error = HistoryError>,
+        impl TryStream<Ok = Notification<MacroNoteNotification>, Error = NotificationError>,
         database::DatabaseError,
     > {
-        crate::history::history_stream(conn, "macro_note").await
+        crate::history::notifications(conn, MACRO_NOTE_NOTIFY_CHANNEL).await
     }
 }
 
-impl MacroNoteEvent {
+impl MacroNoteNotification {
     pub fn note(&self) -> &MacroNote {
         match self {
-            MacroNoteEvent::Upserted(note) => note,
-            MacroNoteEvent::Deleted(note) => note,
+            MacroNoteNotification::Upserted(note) => note,
+            MacroNoteNotification::Deleted(note) => note,
         }
     }
 }
@@ -140,7 +145,7 @@ pub mod test {
         // Setup notification stream
         let conn = db_pool.get_ok();
         let mut conn = conn.write().await;
-        let events = MacroNote::event_stream(&mut conn).await.unwrap();
+        let notifications = MacroNote::notifications(&mut conn).await.unwrap();
 
         // Interact with notes
         let created = MacroNote::changeset()
@@ -166,21 +171,26 @@ pub mod test {
             .await
             .expect("Failed to delete macro note");
 
-        // Check the event stream
+        // Check the notification stream
         use futures::StreamExt as _;
         use futures::TryStreamExt as _;
-        let events = events
-            .map_ok(|HistoryEvent { epoch: _, event }| event)
+        let notifications = notifications
+            .map_ok(
+                |Notification {
+                     epoch: _,
+                     notification,
+                 }| notification,
+            )
             .take(3)
             .try_collect::<Vec<_>>()
             .await
             .expect("Expected notification for macro_note creation");
         assert_eq!(
-            &events,
+            &notifications,
             &[
-                MacroNoteEvent::Upserted(created.clone()),
-                MacroNoteEvent::Upserted(updated.clone()),
-                MacroNoteEvent::Deleted(updated),
+                MacroNoteNotification::Upserted(created.clone()),
+                MacroNoteNotification::Upserted(updated.clone()),
+                MacroNoteNotification::Deleted(updated),
             ]
         );
     }
