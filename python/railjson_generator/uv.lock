@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform != 'emscripten'",
@@ -376,7 +376,7 @@ wheels = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.5.0"
+version = "0.5.1"
 source = { editable = "../../osrd_schemas" }
 dependencies = [
     { name = "datamodel-code-generator" },

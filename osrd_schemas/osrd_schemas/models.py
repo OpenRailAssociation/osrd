@@ -4808,6 +4808,11 @@ class RequestStatus(Enum):
     CANCELLED = "CANCELLED"
 
 
+class TransformTimetablePostRequest(BaseModel):
+    infra_id: StrictFloat
+    timetable_file: StrictBytes
+
+
 class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
     authorized: StrictBool
     """
