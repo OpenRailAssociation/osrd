@@ -1,3 +1,10 @@
+.user-edit-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr auto;
+    padding: 24px;
+}
+
 .identity-input-labels {
   display: grid;
   grid-template-columns: 1fr 1fr;

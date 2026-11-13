@@ -1,10 +1,11 @@
 import { useReducer } from "react";
 
-import { Input, Select } from "@osrd-project/ui-core";
 import { NoEntry } from "@osrd-project/ui-icons";
+import { CheckboxesTree, Input, Select } from "@osrd-project/ui-core";
 
 import "./styles/user-edit-form.css";
 import { v4 as uuidv4 } from "uuid";
+import type { Role } from "common/api/osrdEditoastApi";
 
 type Identity = `${string}/${string}`;
 
@@ -13,6 +14,35 @@ type InfoInputProps = {
   providerList: string[];
   name: string;
 };
+
+function RolesInput({
+  roles,
+  onChange,
+}: {
+  roles: Role[];
+  onChange: (roles: Role[]) => void;
+}) {
+  "use memo";
+  return (
+    <CheckboxesTree
+      id="admin-dashboard-roles-input"
+      label="Roles"
+      items={["Stdcm", "OperationalStudies", "Admin"].map(
+        (role_value, index) => {
+          const role: Role = role_value as Role;
+          return {
+            id: index,
+            props: { label: role, checked: roles.includes(role) },
+          };
+        },
+      )}
+      onChange={(checkedItems) => {
+        const newRoles = checkedItems.map((item) => item.props.label as Role);
+        onChange(newRoles);
+      }}
+    />
+  );
+}
 
 function IdentityInput({
   key,
@@ -205,6 +235,10 @@ export default function UserEditForm({ onCancel }: { onCancel: () => void }) {
             identities={["github/leo", "google/leo"]}
             providerList={["github", "google", "facebook"]}
             name="Leo"
+          />
+          <RolesInput
+            roles={["Stdcm", "OperationalStudies"]}
+            onChange={() => {}}
           />
           <button onClick={onCancel}>Cancel</button>
         </form>
