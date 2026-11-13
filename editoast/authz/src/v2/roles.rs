@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use fga::client::UserList;
 use fga::model::Relation as _;
 use futures::FutureExt as _;
 
@@ -21,6 +22,23 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
         }
         .boxed()
     })
+}
+
+/// Returns the set of roles assigned to a subject, or None if the subject has no roles
+pub fn user_direct_roles(user: User) -> Protected<HashSet<Role>> {
+    Protected::new(move |openfga| {
+        async move {
+            let UserList {
+                users,
+                public_access: _,
+            } = openfga
+                .list_direct_users(User::role().query_direct_users(&user))
+                .await?;
+            Ok(users.into_iter().collect::<HashSet<_>>())
+        }
+        .boxed()
+    })
+        .with_check(Check::HasRole(Actor::Issuer, Role::Admin))
 }
 
 /// Gives the subject the specified roles
@@ -302,6 +320,22 @@ mod tests {
         assert_eq!(
             openfga.subject_roles(&Subject::user(2)).await,
             HashSet::from_iter([Role::Stdcm])
+        );
+    }
+
+    #[tokio::test]
+    async fn direct_roles() {
+        let openfga = crate::authz_client!();
+
+        openfga
+            .add_roles(
+                Subject::user(1),
+                HashSet::from_iter([Role::Admin, Role::Stdcm]),
+            )
+            .await;
+        assert_eq!(
+            openfga.user_direct_roles(User(1)).await,
+            HashSet::from([Role::Admin, Role::Stdcm])
         );
     }
 
