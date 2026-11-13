@@ -151,37 +151,6 @@ pub(in crate::views) struct LinkingTimetableNotFound {
     timetable_id: i64,
 }
 
-#[derive(Debug, Error, ViewError)]
-#[error("Occurrence {occurrence} is already used as a source.")]
-#[view_error(status = CONFLICT, context, path = train_schedule_linking::source_already_used)]
-pub(in crate::views) struct SourceAlreadyUsed {
-    occurrence: String,
-}
-
-#[derive(Debug, Error, ViewError)]
-#[error("Occurrence {occurrence} is already used as a target.")]
-#[view_error(status = CONFLICT, context, path = train_schedule_linking::target_already_used)]
-pub(in crate::views) struct TargetAlreadyUsed {
-    occurrence: String,
-}
-
-#[derive(Debug, Error, ViewError)]
-#[error(
-    "Timetable {timetable_id} has type {timetable_type}, so it can't have occurrences with train_schedule_instance_index"
-)]
-#[view_error(status = CONFLICT, context, path = train_schedule_linking::request_incompatible_with_timetable_type)]
-pub(in crate::views) struct RequestIncompatibleWithTimetableType {
-    timetable_id: i64,
-    timetable_type: TimetableType,
-}
-
-#[derive(Debug, Error, ViewError)]
-#[error("{count} linking(s) could not be found")]
-#[view_error(status = NOT_FOUND, context, path = train_schedule_linking::batch_not_found)]
-pub(in crate::views) struct LinkingsBatchNotFound {
-    count: usize,
-}
-
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum ListLinkingsError {
     #[error(transparent)]
@@ -196,6 +165,7 @@ pub(in crate::views) enum ListLinkingsError {
 }
 
 #[derive(Debug, Error, ViewError, From)]
+#[view_error(path = train_schedule_linking)]
 pub(in crate::views) enum CreateLinkingsError {
     #[error(transparent)]
     TimetableNotFound(
@@ -203,24 +173,20 @@ pub(in crate::views) enum CreateLinkingsError {
         #[view_error]
         LinkingTimetableNotFound,
     ),
-    #[error(transparent)]
-    SourceAlreadyUsed(
-        #[from]
-        #[view_error]
-        SourceAlreadyUsed,
-    ),
-    #[error(transparent)]
-    TargetAlreadyUsed(
-        #[from]
-        #[view_error]
-        TargetAlreadyUsed,
-    ),
-    #[error(transparent)]
-    RequestIncompatibleWithTimetableType(
-        #[from]
-        #[view_error]
-        RequestIncompatibleWithTimetableType,
-    ),
+    #[error("Occurrence {occurrence} is already used as a source.")]
+    #[view_error(status = CONFLICT, context, path = source_already_used)]
+    SourceAlreadyUsed { occurrence: String },
+    #[error("Occurrence {occurrence} is already used as a target.")]
+    #[view_error(status = CONFLICT, context, path = target_already_used)]
+    TargetAlreadyUsed { occurrence: String },
+    #[error(
+        "Timetable {timetable_id} has type {timetable_type}, so it can't have occurrences with train_schedule_instance_index"
+    )]
+    #[view_error(status = CONFLICT, context, path = request_incompatible_with_timetable_type)]
+    RequestIncompatibleWithTimetableType {
+        timetable_id: i64,
+        timetable_type: TimetableType,
+    },
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -233,18 +199,18 @@ fn model_error_into_linking_error(err: models::Error) -> CreateLinkingsError {
             column: _,
             value,
         } => match constraint.as_str() {
-            "unique_source" => CreateLinkingsError::SourceAlreadyUsed(SourceAlreadyUsed {
+            "unique_source" => CreateLinkingsError::SourceAlreadyUsed {
                 occurrence: format!(
                     "(timetable_id, train_schedule_id, occurrence_index, added_exception_id, train_schedule_instance_index) = ({})",
                     value.clone()
                 ),
-            }),
-            "unique_target" => CreateLinkingsError::TargetAlreadyUsed(TargetAlreadyUsed {
+            },
+            "unique_target" => CreateLinkingsError::TargetAlreadyUsed {
                 occurrence: format!(
                     "(timetable_id, train_schedule_id, occurrence_index, added_exception_id, train_schedule_instance_index) = ({})",
                     value.clone()
                 ),
-            }),
+            },
             _ => err.into(),
         },
         _ => err.into(),
@@ -252,13 +218,11 @@ fn model_error_into_linking_error(err: models::Error) -> CreateLinkingsError {
 }
 
 #[derive(Debug, Error, ViewError, From)]
+#[view_error(path = train_schedule_linking)]
 pub(in crate::views) enum DeleteLinkingsError {
-    #[error(transparent)]
-    BatchNotFound(
-        #[from]
-        #[view_error]
-        LinkingsBatchNotFound,
-    ),
+    #[error("{count} linking(s) could not be found")]
+    #[view_error(status = NOT_FOUND, context, path = batch_not_found)]
+    BatchNotFound { count: usize },
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -364,12 +328,10 @@ pub(in crate::views) async fn create(
             if linking.source.train_schedule_instance_index().is_some()
                 || linking.target.train_schedule_instance_index().is_some()
             {
-                return Err(CreateLinkingsError::RequestIncompatibleWithTimetableType(
-                    RequestIncompatibleWithTimetableType {
-                        timetable_id: timetable.id,
-                        timetable_type: *timetable.timetable_type,
-                    },
-                ));
+                return Err(CreateLinkingsError::RequestIncompatibleWithTimetableType {
+                    timetable_id: timetable.id,
+                    timetable_type: *timetable.timetable_type,
+                });
             }
         }
     }
@@ -404,7 +366,7 @@ pub(in crate::views) async fn delete(
     let conn = &mut db_pool.get().await?;
 
     TrainScheduleLinking::delete_batch_or_fail(conn, linking_ids, |count| {
-        DeleteLinkingsError::BatchNotFound(LinkingsBatchNotFound { count })
+        DeleteLinkingsError::BatchNotFound { count }
     })
     .await?;
 
