@@ -31,6 +31,7 @@ import {
   retrieveLatestStdcmEnvironment,
   postApiRequest,
   createStdcmEnvironment,
+  setTowedRollingStock,
 } from './api-utils';
 import { createDateInSpecialTimeZone } from './date-utils';
 import { readJsonFile } from './file-utils';
@@ -161,8 +162,8 @@ export async function createDataForTests(): Promise<void> {
     if (!mediumInfra) mediumInfra = await createInfrastructure();
     process.env.TEST_INFRA_ID = String(mediumInfra.id);
 
-    // Step 2: Create rolling stocks
-    await createRollingStocks();
+    // Step 2: Create rolling stocks and the towed rolling stock
+    await Promise.all([createRollingStocks(), setTowedRollingStock()]);
 
     // Step 3: Create a project
     const project = await createProject();
