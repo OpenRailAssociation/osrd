@@ -483,7 +483,7 @@ wheels = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.5.0"
+version = "0.6.0"
 source = { editable = "../osrd_schemas" }
 dependencies = [
     { name = "datamodel-code-generator" },
