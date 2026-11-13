@@ -184,21 +184,47 @@ fn lcm(a: i64, b: i64) -> i64 {
     (a / gcd(a, b)).saturating_mul(b)
 }
 
-pub(super) fn populate_timetable(
-    period_occurrences: Vec<(OccurrenceId, TrainOccurrence)>,
+fn repeat_spacing_requirements(
+    spacing_requirements: Vec<SpacingRequirement>,
     repetition: usize,
-    time_window_ms: i64,
-) -> Vec<(OccurrenceId, TrainOccurrence)> {
-    let mut occurrences = Vec::with_capacity(period_occurrences.len() * repetition);
+    time_window_ms: u64,
+) -> Vec<SpacingRequirement> {
+    let mut repeated_spacing_requirements =
+        Vec::with_capacity(spacing_requirements.len() * repetition);
     for period in 0..repetition {
-        for (id, occurrence) in &period_occurrences {
-            let mut new_occurrence = occurrence.clone();
-            new_occurrence.start_time += millisecond::i64::new(time_window_ms * period as i64);
-            let new_id = id.clone();
-            occurrences.push((new_id, new_occurrence));
+        for spacing_requirement in &spacing_requirements {
+            let mut new_spacing_requirement = spacing_requirement.clone();
+            new_spacing_requirement.begin_time += time_window_ms * period as u64;
+            new_spacing_requirement.end_time += time_window_ms * period as u64;
+            repeated_spacing_requirements.push(new_spacing_requirement);
         }
     }
-    occurrences
+    repeated_spacing_requirements
+}
+
+fn repeat_routing_requirements(
+    routing_requirements: Vec<RoutingRequirement>,
+    repetition: usize,
+    time_window_ms: u64,
+) -> Vec<RoutingRequirement> {
+    let mut repeated_routing_requirements =
+        Vec::with_capacity(routing_requirements.len() * repetition);
+    for period in 0..repetition {
+        for routing_requirement in &routing_requirements {
+            let mut new_routing_requirement = routing_requirement.clone();
+            new_routing_requirement.begin_time += time_window_ms * period as u64;
+            new_routing_requirement.zones = new_routing_requirement
+                .zones
+                .into_iter()
+                .map(|mut zone| {
+                    zone.end_time += time_window_ms * period as u64;
+                    zone
+                })
+                .collect();
+            repeated_routing_requirements.push(new_routing_requirement);
+        }
+    }
+    repeated_routing_requirements
 }
 
 /// An hourly timetable is cyclic, so we need to get back each requirement onto [0, timetable_period[.
@@ -430,24 +456,26 @@ pub(in crate::views) async fn conflicts(
         }
     };
 
-    // Flatten paced trains occurrences
+    let mut train_schedules_repetitions = HashMap::<i64, usize>::new();
+    let mut train_schedules_time_windows_ms = HashMap::<i64, u64>::new();
+
+    // Flatten paced trains occurrences and compute repetitions for hourly timetables
     let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
         .iter()
         .flat_map(|(ts, exceptions)| {
-            let single_period_occurrences = ts.iter_occurrences(exceptions).collect();
-            match timetable_period {
-                None => single_period_occurrences,
-                Some(period) => {
-                    // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
-                    let time_window_interval = ts
-                        .time_window
-                        .expect("all time_window are defined when timetable_period exists");
-                    let time_window_ms =
-                        pg_interval_to_jiff_duration(time_window_interval).as_millis() as i64;
-                    let repetition = (period.as_millis() as i64 / time_window_ms) as usize;
-                    populate_timetable(single_period_occurrences, repetition, time_window_ms)
-                }
-            }
+            // Compute repetitions for hourly timetables
+            timetable_period.map(|period| {
+                // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
+                let time_window_interval = ts
+                    .time_window
+                    .expect("all time_window are defined when timetable_period exists");
+                let time_window_ms =
+                    pg_interval_to_jiff_duration(time_window_interval).as_millis() as i64;
+                let repetition = (period.as_millis() as i64 / time_window_ms) as usize;
+                train_schedules_repetitions.insert(ts.id, repetition);
+                train_schedules_time_windows_ms.insert(ts.id, time_window_ms as u64);
+            });
+            ts.iter_occurrences(exceptions)
         })
         .unzip();
 
@@ -481,6 +509,7 @@ pub(in crate::views) async fn conflicts(
                 occurrence_simulations.as_ref(),
                 occurrence_pathfindings.as_ref(),
                 *linking,
+                timetable_type == TimetableType::Hourly,
             )
         })
         .collect();
@@ -526,6 +555,31 @@ pub(in crate::views) async fn conflicts(
             let mut routing_requirements = simulation.final_output.routing_requirements.clone();
             // Add linking routing requirements
             routing_requirements.extend(occurrence_linking_routing_requirements);
+
+            println!("==== REQUIREMENTS BEFORE REPETITION ====");
+            println!("{routing_requirements:?}");
+            println!("{spacing_requirements:?}");
+            println!("==== ^^^ REQUIREMENTS BEFORE REPETITION ^^^ ====");
+
+            if timetable_period.is_some() {
+                let train_schedule_id = &train_id.train_schedule_id();
+                spacing_requirements = repeat_spacing_requirements(
+                    spacing_requirements,
+                    train_schedules_repetitions[train_schedule_id],
+                    train_schedules_time_windows_ms[train_schedule_id],
+                );
+                routing_requirements = repeat_routing_requirements(
+                    routing_requirements,
+                    train_schedules_repetitions[train_schedule_id],
+                    train_schedules_time_windows_ms[train_schedule_id],
+                );
+            }
+
+            println!("==== REQUIREMENTS AFTER REPETITION ====");
+            println!("{routing_requirements:?}");
+            println!("{spacing_requirements:?}");
+            println!("==== ^^^ REQUIREMENTS AFTER REPETITION ^^^ ====");
+
             Some((
                 train_id,
                 super::make_requirements_absolute(
@@ -549,11 +603,16 @@ pub(in crate::views) async fn conflicts(
     let (trains_ids_map, conflict_detection_request) =
         build_conflict_core_request(infra, request_items);
 
+    println!("[DEBUG] Request core endpoint /conflicts");
+
     // 3. Call core
     let conflict_detection_response = conflict_detection_request
         .fetch(&core_client, Headers::default())
         .await?;
     let conflicts = conflict_detection_response.conflicts;
+
+    println!("=== CONFLICTS ===");
+    println!("{conflicts:?}");
     let conflicts_response: Result<Vec<Conflict>> = conflicts
         .into_iter()
         .map(|response| Conflict::from_core_response(response, &trains_ids_map))
@@ -623,6 +682,7 @@ fn is_linking_valid(
     occurrence_simulations: &[Arc<super::simulation::Response>],
     occurrence_pathfindings: &[Arc<PathfindingResult>],
     (source_index, target_index): (usize, usize),
+    is_hourly_timetable: bool,
 ) -> bool {
     let source_occurrence = &occurrence_trains[source_index];
     let target_occurrence = &occurrence_trains[target_index];
@@ -666,8 +726,8 @@ fn is_linking_valid(
             .expect("times should not be empty") as i64,
     );
     let source_end_time = source_occurrence.start_time() + source_simulation_duration;
-    // The source train arrives after the target train starts
-    if source_end_time > target_occurrence.start_time() {
+    // The source train arrives after the target train starts (not required in hourly timetable)
+    if !is_hourly_timetable && source_end_time > target_occurrence.start_time() {
         return false;
     }
     let source_arrival_schedule_item = source_occurrence
@@ -888,48 +948,6 @@ mod tests {
     ) {
         let period = 1000;
         assert_eq!(split_routing(period, &reqs), expected);
-    }
-
-    #[test]
-    fn populate_timetable_duplicates_occurrences() {
-        // A 1h mission with two occurrences (at 0 and 30min), duplicated 3 times to fill a 3h period.
-        let occurrences = [0, 1_800_000]
-            .into_iter()
-            .enumerate()
-            .map(|(index, start_ms)| {
-                (
-                    OccurrenceId::new_base(1, index),
-                    TrainOccurrence {
-                        start_time: units::millisecond::i64::new(start_ms),
-                        ..TrainOccurrence::fake()
-                    },
-                )
-            })
-            .collect();
-
-        let result = populate_timetable(occurrences, 3, 3_600_000);
-
-        let starts: Vec<i64> = result
-            .iter()
-            .map(|(_, occurrence)| units::millisecond::i64::from(occurrence.start_time))
-            .collect();
-        assert_eq!(
-            starts,
-            vec![0, 1_800_000, 3_600_000, 5_400_000, 7_200_000, 9_000_000]
-        );
-
-        let ids: Vec<_> = result.into_iter().map(|(id, _)| id).collect();
-        assert_eq!(
-            ids,
-            vec![
-                OccurrenceId::new_base(1, 0),
-                OccurrenceId::new_base(1, 1),
-                OccurrenceId::new_base(1, 0),
-                OccurrenceId::new_base(1, 1),
-                OccurrenceId::new_base(1, 0),
-                OccurrenceId::new_base(1, 1),
-            ]
-        );
     }
 
     // Build one train schedule and one paced train with 2 occurrences
@@ -1273,7 +1291,8 @@ mod tests {
                 &[source_occurrence, target_occurrence],
                 &[Arc::new(source_simulation), Arc::new(target_simulation)],
                 &[Arc::new(source_pathfinding), Arc::new(target_pathfinding)],
-                (0, 1)
+                (0, 1),
+                false
             ),
             is_valid
         );
