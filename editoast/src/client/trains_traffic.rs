@@ -1,8 +1,8 @@
 use crate::views::timetable::similar_trains::trains_traffic::TrainOperationalPoint;
 use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
 use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
-use chrono::NaiveDate;
-use chrono::Utc;
+use jiff::civil::Date;
+use jiff::tz::TimeZone;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::BufRead as _;
@@ -15,7 +15,7 @@ use tokio::sync::RwLock;
 #[derive(Clone, Debug, Deserialize)]
 pub struct JsonTrainTraffic {
     pub train_name: String,
-    pub date: NaiveDate,
+    pub date: Date,
     pub operational_points: Vec<TrainOperationalPoint>,
     pub rolling_stock_name: String,
     pub speed_limit_tag: String,
@@ -49,12 +49,7 @@ pub async fn import_trains_traffic(
                 .add_train_traffic(TrainTraffic::new(
                     index,
                     json_train.train_name,
-                    json_train
-                        .date
-                        .and_hms_opt(0, 0, 0)
-                        .unwrap()
-                        .and_local_timezone(Utc)
-                        .unwrap(),
+                    json_train.date.to_zoned(TimeZone::UTC).unwrap().timestamp(),
                     json_train.rolling_stock_name,
                     json_train.speed_limit_tag,
                     json_train.operational_points,
@@ -78,8 +73,7 @@ pub mod tests {
     use std::str::FromStr as _;
     use std::sync::Arc;
 
-    use chrono::DateTime;
-    use chrono::Utc;
+    use jiff::Timestamp;
     use tokio::sync::RwLock;
 
     use crate::client::trains_traffic::import_trains_traffic;
@@ -88,7 +82,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_traffic_file() {
         let valid_traffic_date =
-            DateTime::<Utc>::from_str("2025-03-01T00:00:00Z").expect("Date should be valid");
+            Timestamp::from_str("2025-03-01T00:00:00Z").expect("Date should be valid");
 
         let trains_traffic = Arc::new(RwLock::new(TrainsTrafficPool::new_with_date(
             valid_traffic_date,

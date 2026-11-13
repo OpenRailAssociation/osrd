@@ -2,11 +2,10 @@ use crate::error::Result;
 use crate::views::timetable::similar_trains::OperationalPoint;
 use crate::views::timetable::similar_trains::PastTrain;
 use crate::views::timetable::similar_trains::past_train::Id;
-use chrono::DateTime;
-use chrono::Months;
 
-use chrono::Utc;
 use itertools::Itertools as _;
+use jiff::Timestamp;
+use jiff::tz::TimeZone;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -17,7 +16,7 @@ use super::graph;
 #[derive(Clone, Debug)]
 pub struct TrainTraffic {
     pub(super) name: String,
-    pub(super) start_time: DateTime<Utc>,
+    pub(super) start_time: Timestamp,
     pub(super) rolling_stock: String,
     pub(super) speed_limit_tag: String,
     pub(super) train: PastTrain,
@@ -33,7 +32,7 @@ impl TrainTraffic {
     pub fn new(
         id: Id,
         name: String,
-        start_time: DateTime<Utc>,
+        start_time: Timestamp,
         rolling_stock: String,
         speed_limit_tag: String,
         waypoints: Vec<TrainOperationalPoint>,
@@ -80,7 +79,7 @@ struct Segment {
 #[derive(Clone, Debug, Default)]
 pub struct TrainsTrafficPool {
     // Date from which traffic are valid (ie. can be imported)
-    traffic_valid_from: DateTime<Utc>,
+    traffic_valid_from: Timestamp,
     // Trains by speed limit
     trains_by_speed_limit: HashMap<String, HashSet<usize>>,
     // Trains by rolling stock
@@ -94,13 +93,15 @@ pub struct TrainsTrafficPool {
 impl TrainsTrafficPool {
     pub fn new() -> Self {
         TrainsTrafficPool::new_with_date(
-            Utc::now()
-                .checked_sub_months(Months::new(6))
-                .expect("6 month ago date should be valid"),
+            Timestamp::now()
+                .to_zoned(TimeZone::UTC)
+                .checked_sub(jiff::Span::new().months(6))
+                .expect("6 month ago date should be valid")
+                .timestamp(),
         )
     }
 
-    pub fn new_with_date(traffic_valid_from: DateTime<Utc>) -> Self {
+    pub fn new_with_date(traffic_valid_from: Timestamp) -> Self {
         Self {
             traffic_valid_from,
             ..Default::default()
@@ -225,8 +226,7 @@ impl TrainsTrafficPool {
 
 #[cfg(test)]
 pub mod tests {
-    use chrono::DateTime;
-    use chrono::Utc;
+    use jiff::Timestamp;
     use std::str::FromStr as _;
 
     use super::graph;
@@ -240,7 +240,7 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn load_traffic_file() {
         let valid_traffic_date =
-            DateTime::<Utc>::from_str("2025-03-01T00:00:00Z").expect("Date should be valid");
+            Timestamp::from_str("2025-03-01T00:00:00Z").expect("Date should be valid");
 
         let mut traffic = TrainsTrafficPool::new_with_date(valid_traffic_date);
         let operational_points = vec![
@@ -264,7 +264,7 @@ pub mod tests {
         traffic
             .add_train_traffic(TrainTraffic {
                 name: "TEST_123".to_string(),
-                start_time: DateTime::<Utc>::from_str("2025-03-26T00:00:00Z")
+                start_time: Timestamp::from_str("2025-03-26T00:00:00Z")
                     .expect("Date should be valid"),
                 rolling_stock: "RS_V1".to_string(),
                 speed_limit_tag: "MA100".to_string(),
@@ -274,7 +274,7 @@ pub mod tests {
         traffic
             .add_train_traffic(TrainTraffic {
                 name: "TEST_321".to_string(),
-                start_time: DateTime::<Utc>::from_str("2025-07-14T00:00:00Z")
+                start_time: Timestamp::from_str("2025-07-14T00:00:00Z")
                     .expect("Date should be valid"),
                 rolling_stock: "RS_V2".to_string(),
                 speed_limit_tag: "MA100".to_string(),
@@ -284,7 +284,7 @@ pub mod tests {
         traffic
             .add_train_traffic(TrainTraffic {
                 name: "OUTDATED".to_string(),
-                start_time: DateTime::<Utc>::from_str("2025-02-01T00:00:00Z")
+                start_time: Timestamp::from_str("2025-02-01T00:00:00Z")
                     .expect("Date should be valid"),
                 rolling_stock: "RS_V2".to_string(),
                 speed_limit_tag: "MA100".to_string(),
@@ -301,7 +301,7 @@ pub mod tests {
         assert_eq!(train_123.speed_limit_tag, "MA100");
         assert_eq!(
             train_123.start_time,
-            DateTime::<Utc>::from_str("2025-03-26T00:00:00Z").expect("Date should be valid")
+            Timestamp::from_str("2025-03-26T00:00:00Z").expect("Date should be valid")
         );
 
         let train_321 = traffic.get_by_id(1).expect("TEST_321 should be imported");
@@ -310,7 +310,7 @@ pub mod tests {
         assert_eq!(train_321.speed_limit_tag, "MA100");
         assert_eq!(
             train_321.start_time,
-            DateTime::<Utc>::from_str("2025-07-14T00:00:00Z").expect("Date should be valid")
+            Timestamp::from_str("2025-07-14T00:00:00Z").expect("Date should be valid")
         );
 
         // Checking the inner indices
