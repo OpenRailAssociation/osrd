@@ -11,18 +11,22 @@ import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOr
 import {
   osrdEditoastApi,
   type ScenarioPatchForm,
+  type TimetableSummary,
   type TimetableType,
 } from 'common/api/osrdEditoastApi';
 import { type ScenarioField } from 'modules/scenario/components/AddOrEditScenarioModal';
+import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import InfraLoadingState from './InfraLoadingState';
+import ConfirmationDialog from './Timetable/ConfirmationDialog';
 
 type ScenarioExpandedHeaderProps = {
   onEditScenario: (field: ScenarioField) => void;
   onAddTimetable: (type: TimetableType) => void;
+  onEditTimetable: (timetable: TimetableSummary) => void;
   onCollapse: () => void;
 };
 
@@ -49,6 +53,7 @@ const TIMETABLE_TYPES: TimetableType[] = ['HOURLY', 'CALENDAR'];
 const ScenarioExpandedHeader = ({
   onEditScenario,
   onAddTimetable,
+  onEditTimetable,
   onCollapse,
 }: ScenarioExpandedHeaderProps) => {
   'use memo';
@@ -60,9 +65,11 @@ const ScenarioExpandedHeader = ({
 
   const [patchScenario, { isLoading: isPatchingScenario }] =
     osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
+  const [deleteTimetable] = osrdEditoastApi.endpoints.deleteTimetableById.useMutation();
 
   // Used to remount the selects when the update fails.
   const [selectsKey, setSelectsKey] = useState(() => uniqueId());
+  const [timetableIdToDelete, setTimetableIdToDelete] = useState<number | null>(null);
 
   const { infraOptions = [] } = osrdEditoastApi.endpoints.getInfra.useQuery(
     { pageSize: 1000 },
@@ -90,12 +97,14 @@ const ScenarioExpandedHeader = ({
   const timetables = scenario.timetable_summaries.map(({ id, type, name }) => ({
     id,
     type,
+    name,
     label:
       name ??
       (type === 'HOURLY'
         ? t('main.scenarioTimetableTypeHourly')
         : t('main.scenarioTimetableTypeCalendar')),
   }));
+  const timetableToDelete = timetables.find(({ id }) => id === timetableIdToDelete);
 
   const updateScenario = (scenarioPatchForm: ScenarioPatchForm) => {
     patchScenario({ scenarioId: scenario.id, scenarioPatchForm })
@@ -112,6 +121,11 @@ const ScenarioExpandedHeader = ({
         setSelectsKey(uniqueId());
         dispatch(setFailure(castErrorToFailure(error)));
       });
+  };
+
+  const removeTimetable = async (timetable: TimetableSummary) => {
+    await deleteTimetable({ id: timetable.id }).unwrap();
+    cleanScenarioLocalStorage({ timetable_summaries: [timetable] });
   };
 
   const getEditButton = (field: ScenarioField) => (
@@ -197,7 +211,7 @@ const ScenarioExpandedHeader = ({
             >
               {sectionTimetables.length > 0 ? (
                 <ul className="details-section-timetables">
-                  {sectionTimetables.map(({ id, label }) => {
+                  {sectionTimetables.map(({ id, name, label }) => {
                     const isSelected = id === timetableId;
                     return (
                       <li
@@ -213,12 +227,12 @@ const ScenarioExpandedHeader = ({
                         >
                           {label}
                         </button>
-                        {/* TODO(#18904): no action until the backend handles several timetables */}
                         <div className="details-section-timetable-icons">
                           <button
                             type="button"
-                            aria-label={t('main.timetable.trainScheduleSets.removeFromScenario')}
-                            title={t('main.timetable.trainScheduleSets.removeFromScenario')}
+                            aria-label={t('translation:common.delete')}
+                            title={t('translation:common.delete')}
+                            onClick={() => setTimetableIdToDelete(id)}
                           >
                             <Trash />
                           </button>
@@ -226,6 +240,7 @@ const ScenarioExpandedHeader = ({
                             type="button"
                             aria-label={t('translation:common.edit')}
                             title={t('translation:common.edit')}
+                            onClick={() => onEditTimetable({ id, type, name })}
                           >
                             <Pencil />
                           </button>
@@ -267,6 +282,19 @@ const ScenarioExpandedHeader = ({
         {t('translation:common.collapse')}
         <ChevronUp />
       </button>
+
+      {timetableToDelete && (
+        <ConfirmationDialog
+          onCancel={() => setTimetableIdToDelete(null)}
+          onConfirm={() => removeTimetable(timetableToDelete)}
+          labels={{
+            title: t('translation:common.delete'),
+            texts: [t('main.scenarioTimetableConfirmDelete', { name: timetableToDelete.label })],
+            submit: t('translation:common.delete'),
+            cancel: t('translation:common.cancel'),
+          }}
+        />
+      )}
     </div>
   );
 };
