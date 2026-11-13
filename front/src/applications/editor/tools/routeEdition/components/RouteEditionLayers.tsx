@@ -168,7 +168,7 @@ const RouteEditionLayers = () => {
   useEffect(() => {
     // if there is an initial entity
     if (!isNil(state.initialEntity)) {
-      getRouteGeometry(state.initialEntity.properties.id).then((d) => {
+      void getRouteGeometry(state.initialEntity.properties.id).then((d) => {
         setEntityGeo({
           ...d,
           properties: {

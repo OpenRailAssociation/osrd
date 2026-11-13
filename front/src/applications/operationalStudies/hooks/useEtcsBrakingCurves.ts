@@ -93,7 +93,7 @@ const useEtcsBrakingCurves = (
   // Update existing curves when simulation changes
   useEffect(() => {
     if (etcsBrakingCurves) {
-      fetchEtcsBrakingCurves();
+      void fetchEtcsBrakingCurves();
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [simulation]);

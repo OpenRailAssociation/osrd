@@ -46,7 +46,7 @@ export const useCheckProtectedAction = () => {
         notifyUnauthorized();
         return;
       }
-      action();
+      await action();
     },
     [notifyUnauthorized]
   );
@@ -83,7 +83,7 @@ const useProtectedAction = ({ resourceType, resourceId, privileges }: UseProtect
         notifyUnauthorized();
         return;
       }
-      action();
+      await action();
     },
     [resourceType, resourceId, privileges, checkUserPrivileges, notifyUnauthorized]
   );

@@ -67,7 +67,7 @@ const useStdcm = ({
   ) =>
     new Promise<StdcmResponseWithTraceId>((resolve, reject) => {
       // subscribe for progress point
-      stream.subscribe((event) => {
+      void stream.subscribe((event) => {
         switch (event.event) {
           case 'ongoing': {
             setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);

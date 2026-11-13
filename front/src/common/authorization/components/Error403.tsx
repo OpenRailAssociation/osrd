@@ -15,7 +15,7 @@ const Error403 = () => {
         <button
           className="btn btn-primary btn-sm px-2 ml-2"
           type="button"
-          onClick={() => navigate('/')}
+          onClick={async () => await navigate('/')}
         >
           {t('translation:common.navigation.goHome')}
         </button>

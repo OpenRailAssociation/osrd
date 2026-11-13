@@ -47,7 +47,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
     /* eslint-disable-next-line react/set-state-in-effect */
     setError(null);
     setLoading(false);
-    fetchPage();
+    void fetchPage();
     /* oxlint-disable-next-line react/exhaustive-effect-dependencies */
   }, [resourceType, id, fetchPage]);
 

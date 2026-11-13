@@ -155,7 +155,7 @@ const useScenarioData = () => {
       }
     };
 
-    fetchTrainSchedules();
+    void fetchTrainSchedules();
 
     return () => {
       trainSchedulesResult.unsubscribe();

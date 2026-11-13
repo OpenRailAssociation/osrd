@@ -67,8 +67,8 @@ const useAutoSelectTrainIds = (
   // Update the URL and local storage on redux store change
   useEffect(() => {
     if (parametersLoaded) {
-      setParamsInUrlAndStorage('selected_train', selectedTrainId?.toString());
-      setParamsInUrlAndStorage('projection', currentTrainIdForProjection?.toString());
+      void setParamsInUrlAndStorage('selected_train', selectedTrainId?.toString());
+      void setParamsInUrlAndStorage('projection', currentTrainIdForProjection?.toString());
     }
   }, [parametersLoaded, selectedTrainId, currentTrainIdForProjection, setParamsInUrlAndStorage]);
 

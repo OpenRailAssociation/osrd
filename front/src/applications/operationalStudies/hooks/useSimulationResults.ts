@@ -103,7 +103,7 @@ const useSimulationResults = (): {
       setTrackSectionsById(trackSections);
     };
     if (trackOffsetIds.length === 0) return;
-    fetchTrackSections();
+    void fetchTrackSections();
   }, [trackOffsetIds, getTrackSectionsByIds]);
 
   const { currentData: pathfinding, isFetching: isPathfindingFetching } =
