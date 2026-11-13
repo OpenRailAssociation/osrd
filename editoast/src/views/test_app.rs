@@ -151,7 +151,7 @@ impl TestAppBuilder {
             app_version: None,
             port: 0,
             address: String::default(),
-            health_check_timeout: jiff::SignedDuration::from_millis(500),
+            health_check_timeout: std::time::Duration::from_millis(500),
             map_layers_max_zoom: 18,
             postgres_config: PostgresConfig {
                 database_url: Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap(),
@@ -159,7 +159,7 @@ impl TestAppBuilder {
             },
             core_config: CoreConfig {
                 mq_url: Url::parse("amqp://osrd:password@127.0.0.1:5672/%2f").unwrap(),
-                timeout: jiff::SignedDuration::from_secs(180),
+                timeout: std::time::Duration::from_secs(180),
                 single_worker: false,
                 num_channels: 8,
                 worker_pool_id: "core".into(),
