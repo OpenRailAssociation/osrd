@@ -25,10 +25,14 @@ import {
   SOUTH_STATION_SUGGESTION,
   TRACK_NAME_2,
   MID_EAST_STATION,
-  NORTH_EAST_STATION,
+  NORTH_EAST_STATION_BV,
   IMPROBABLE_RS,
   ROCKET_SEARCH_INPUT,
   SOUTH_EAST_STATION_BV,
+  SOUTH_EAST_STATION,
+  NORTH_STATION,
+  NORTH_STATION_MAIN_CODE,
+  NORTH_EAST_STATION,
 } from './itinerary-modal.consts';
 
 const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
@@ -239,10 +243,14 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
     await test.step('Enter a recognized but non-computable combination of points and relaunch pathfinding', async () => {
       await itineraryModalPage.launchEditTrain();
       await itineraryModalPage.clearTrack(0);
-      await itineraryModalPage.replacePathStepValueWithSuggestion(1, 'NS');
+      await itineraryModalPage.replacePathStepValueWithSuggestion(
+        1,
+        NORTH_STATION_MAIN_CODE,
+        NORTH_STATION
+      );
       await itineraryModalPage.checkPathStepValue(1, NORTH_STATION_BV);
-      await itineraryModalPage.replacePathStepValueWithSuggestion(2, 'NE');
-      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION);
+      await itineraryModalPage.replacePathStepValueWithSuggestion(2, 'NE', NORTH_EAST_STATION);
+      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION_BV);
     });
 
     await test.step('Check the pathfinding failure error banner and no complete path on the map', async () => {
@@ -260,11 +268,15 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
       await itineraryModalPage.launchEditTrain();
       await itineraryModalPage.checkPathStepValue(0, MID_EAST_STATION);
       await itineraryModalPage.checkPathStepValue(1, NORTH_STATION_BV);
-      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION);
+      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION_BV);
     });
 
     await test.step('Fix the itinerary then select a rolling stock incompatible with the infrastructure', async () => {
-      await itineraryModalPage.replacePathStepValueWithSuggestion(1, SOUTH_EAST_STATION_BV);
+      await itineraryModalPage.replacePathStepValueWithSuggestion(
+        1,
+        SOUTH_EAST_STATION_BV,
+        SOUTH_EAST_STATION
+      );
       await itineraryModalPage.deleteNumberedRow(2, 3);
       await itineraryModalPage.selectIncompatibleTrack(0, TRACK_NAME_2);
       await itineraryModalPage.checkPathStepMarkers([

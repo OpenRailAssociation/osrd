@@ -464,11 +464,16 @@ class ItineraryModalPage {
     await expect(this.pathfindingErrorBanner).toHaveText(error);
   }
 
-  async replacePathStepValueWithSuggestion(index: number, value: string) {
+  async replacePathStepValueWithSuggestion(
+    index: number,
+    value: string,
+    expectedSuggestionText: string
+  ) {
     await this.comboBox.nth(index).click();
     await this.comboBox.nth(index).fill('');
     await this.comboBox.nth(index).fill(value);
     await expect(this.opSuggestion.first()).toBeVisible();
+    await expect(this.opSuggestion.first()).toContainText(expectedSuggestionText);
     await this.comboBox.nth(index).press('Enter');
   }
 
