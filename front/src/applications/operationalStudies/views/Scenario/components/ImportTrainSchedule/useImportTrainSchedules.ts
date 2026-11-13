@@ -22,7 +22,7 @@ import { postFullImportPayload } from './helpers/postPayloads';
 const useImportTrainSchedules = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const dispatch = useAppDispatch();
-  const { scenario, sandboxId } = useScenarioContext();
+  const { scenario, infraId, sandboxId } = useScenarioContext();
   const { upsertTrainSchedules, trainSchedules } = useTimetableContext();
 
   const subCategories = useSubCategoryContext();
@@ -40,7 +40,8 @@ const useImportTrainSchedules = () => {
     }
     try {
       const { paced_trains: train_schedules, ...rest } = await postTransformTimetable({
-        body: file,
+        body: { infra_id: infraId, timetable_file: file },
+        // TODO: pass the proper compression header or drop compression support
       }).unwrap();
       return { ...rest, train_schedules };
     } catch (error: unknown) {

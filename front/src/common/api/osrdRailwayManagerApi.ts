@@ -66,7 +66,10 @@ export type PostTransformTimetableApiArg = {
   /** Compression method used for the request body */
   'content-encoding'?: 'gzip' | 'zip';
   /** Arbitrary file to transform into a standard OSRD timetable json file */
-  body: Blob;
+  body: {
+    infra_id: number;
+    timetable_file: Blob;
+  };
 };
 export type GetSendLastMinuteRequestAuthorizedApiResponse = /** status 200 Authorization result */ {
   /** Whether the user is authenticated and authorized to send last-minute requests */
