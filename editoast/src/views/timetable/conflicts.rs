@@ -1017,7 +1017,7 @@ mod tests {
             base.paced.as_mut().unwrap().interval =
                 SignedDuration::from_hours(1).try_into().unwrap();
             TrainScheduleChangeset::from(base)
-                .train_schedule_set_id(train_schedule_set.id)
+                .timetable_id(train_schedule_set.timetable_id)
                 .create(&mut pool.get_ok())
                 .await
                 .expect("Failed to create paced train");
@@ -1072,21 +1072,22 @@ mod tests {
         let (timetable, train_schedule_set) =
             create_timetable_with_train_schedule_set(&mut pool.get_ok()).await;
 
-        let train_schedule_authorized = simple_paced_train_changeset(train_schedule_set.id)
-            .train_name("train_schedule_authorized".into())
-            .rolling_stock_name(rs_authorized.name.clone())
-            .path(vec![
-                PathItem::new_operational_point("Mid_West_station"),
-                PathItem::new_operational_point("Mid_East_station"),
-            ])
-            .schedule(vec![])
-            .margins(Margins::default())
-            .power_restrictions(vec![])
-            .create(&mut pool.get_ok())
-            .await
-            .expect("failed to create train schedule");
+        let train_schedule_authorized =
+            simple_paced_train_changeset(train_schedule_set.timetable_id)
+                .train_name("train_schedule_authorized".into())
+                .rolling_stock_name(rs_authorized.name.clone())
+                .path(vec![
+                    PathItem::new_operational_point("Mid_West_station"),
+                    PathItem::new_operational_point("Mid_East_station"),
+                ])
+                .schedule(vec![])
+                .margins(Margins::default())
+                .power_restrictions(vec![])
+                .create(&mut pool.get_ok())
+                .await
+                .expect("failed to create train schedule");
         // Filtered out: its rolling stock is not readable by the user
-        simple_paced_train_changeset(train_schedule_set.id)
+        simple_paced_train_changeset(train_schedule_set.timetable_id)
             .train_name("train_schedule_no_grant".into())
             .rolling_stock_name(rs_no_grant.name.clone())
             .path(vec![

@@ -954,7 +954,7 @@ diesel::table! {
         main_category -> Nullable<TrainMainCategory>,
         #[max_length = 255]
         sub_category -> Nullable<Varchar>,
-        train_schedule_set_id -> Int8,
+        timetable_id -> Int8,
     }
 }
 
@@ -1098,7 +1098,7 @@ diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule
 diesel::joinable!(study -> project (project_id));
 diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporary_speed_limit_group_id));
 diesel::joinable!(timetable -> catalog_entry (catalog_entry_id));
-diesel::joinable!(train_schedule -> train_schedule_set (train_schedule_set_id));
+diesel::joinable!(train_schedule -> timetable (timetable_id));
 diesel::joinable!(train_schedule_exception -> timetable (timetable_id));
 diesel::joinable!(train_schedule_exception -> train_schedule (train_schedule_id));
 diesel::joinable!(train_schedule_linking -> timetable (timetable_id));

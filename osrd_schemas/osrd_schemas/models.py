@@ -7234,8 +7234,8 @@ class SearchResultItemTrainSchedule(BaseModel):
     For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     For hourly timetables: elapsed ms since the timetable start.
     """
+    timetable_id: StrictInt
     train_name: StrictStr
-    train_schedule_set_id: StrictInt
 
 
 class Signal(BaseModel):
