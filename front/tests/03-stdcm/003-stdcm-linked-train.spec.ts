@@ -1,5 +1,5 @@
 import { StdcmStopTypes } from 'applications/stdcm/types';
-import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
+import type { Infra } from 'common/api/osrdEditoastApi';
 
 import LINKED_TRAIN_DETAILS from '../assets/constants/stdcm/linked-train-const';
 import {
@@ -19,22 +19,20 @@ import {
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
-import { fastRollingStockName } from './../assets/constants/project-const';
+import { fastRollingStockName, towedRollingStockName } from './../assets/constants/project-const';
 import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra, setTowedRollingStock } from './../utils/api-utils';
+import { getInfra } from './../utils/api-utils';
 
 test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-train'] }, () => {
   let infra: Infra;
-  let createdTowedRollingStock: TowedRollingStock;
   let towedConsistDetails: ConsistFields;
 
   test.beforeAll('Fetch infrastructure', async () => {
     infra = await getInfra();
-    createdTowedRollingStock = await setTowedRollingStock();
     towedConsistDetails = {
       tractionEngine: fastRollingStockName,
-      towedRollingStock: createdTowedRollingStock.name,
+      towedRollingStock: towedRollingStockName,
     };
   });
 
@@ -128,7 +126,7 @@ test.describe('STDCM linked train simulation', { tag: ['@stdcm', '@stdcm-linked-
       await newConsistSection.verifyConsistDetails(
         {
           tractionEngine: fastRollingStockName,
-          towedRollingStock: createdTowedRollingStock.name,
+          towedRollingStock: towedRollingStockName,
           tonnage: `${Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.tonnage) + Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.tonnage)}`,
           length: `${Number(TOWED_ROLLING_STOCK_PREFILLED_VALUES.length) + Number(FAST_ROLLING_STOCK_PREFILLED_VALUES.length)}`,
           maxSpeed: DEFAULT_DETAILS.maxSpeed,

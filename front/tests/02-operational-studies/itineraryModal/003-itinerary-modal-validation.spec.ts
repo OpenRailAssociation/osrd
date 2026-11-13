@@ -25,10 +25,14 @@ import {
   SOUTH_STATION_SUGGESTION,
   TRACK_NAME_2,
   MID_EAST_STATION,
-  NORTH_EAST_STATION,
+  NORTH_EAST_STATION_BV,
   IMPROBABLE_RS,
   ROCKET_SEARCH_INPUT,
   SOUTH_EAST_STATION_BV,
+  SOUTH_EAST_STATION,
+  NORTH_STATION,
+  NORTH_STATION_MAIN_CODE,
+  NORTH_EAST_STATION,
 } from './itinerary-modal.consts';
 
 const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile<{
@@ -127,79 +131,84 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
 
   /** *************** Test 2 **************** */
 
-  test('Handle invalid itinerary inputs in the form', async ({
-    itineraryModalPage,
-    opSimulationResultPage,
-    ngePage,
-  }) => {
-    await test.step('Type an unknown PR on a valid itinerary and check the field is cleared', async () => {
-      await itineraryModalPage.fillFirstPathStep(NORTH_STATION_BV, 2);
-      await itineraryModalPage.fillLastPathStep(SOUTH_STATION_BV, 3, SOUTH_STATION_SUGGESTION);
-      await itineraryModalPage.clearAndReplacePathStepValue(1, UNKNOWN_PR_VALUE);
-      await itineraryModalPage.checkPathStepValue(1, '');
-      await itineraryModalPage.checkNoInvalidPathStepMessage();
-      await itineraryModalPage.checkNoInvalidOpBanner();
-    });
+  test.describe('with NGE edits', () => {
+    //TODO: remove ignorePageErrors when issue #13066 is resolved
+    test.use({ ignorePageErrors: true });
 
-    // We can't yet add invalid ops from the itinerary modal, so we will have to create 2 invalid ops from NGE.
-    await test.step('Add invalid operational points from NGE and check invalid row state', async () => {
-      await itineraryModalPage.cancelItineraryEdition();
-      await opSimulationResultPage.enableMacroViewWithDefaultTrainList();
-      await ngePage.createNode({ x: 50, y: 400 }, 'ABC', 'Origin');
-      await expect(ngePage.nodeCards).toHaveCount(1);
-      await ngePage.createNode({ x: 250, y: 400 }, 'DEF', 'Destination');
-      await expect(ngePage.nodeCards).toHaveCount(2);
+    test('Handle invalid itinerary inputs in the form', async ({
+      itineraryModalPage,
+      opSimulationResultPage,
+      ngePage,
+    }) => {
+      await test.step('Type an unknown PR on a valid itinerary and check the field is cleared', async () => {
+        await itineraryModalPage.fillFirstPathStep(NORTH_STATION_BV, 2);
+        await itineraryModalPage.fillLastPathStep(SOUTH_STATION_BV, 3, SOUTH_STATION_SUGGESTION);
+        await itineraryModalPage.clearAndReplacePathStepValue(1, UNKNOWN_PR_VALUE);
+        await itineraryModalPage.checkPathStepValue(1, '');
+        await itineraryModalPage.checkNoInvalidPathStepMessage();
+        await itineraryModalPage.checkNoInvalidOpBanner();
+      });
 
-      await ngePage.connectNodesByIndex(0, 1);
-      await expect(ngePage.trainDetailsGroup).toBeVisible();
-      await ngePage.setTrainBasics({ name: 'Train1' });
-      await ngePage.closeDetailsDialogIfVisible();
-      await expect(ngePage.trainDetailsGroup).toBeHidden();
-      await expect(ngePage.trainLines).toHaveCount(1);
+      // We can't yet add invalid ops from the itinerary modal, so we will have to create 2 invalid ops from NGE.
+      await test.step('Add invalid operational points from NGE and check invalid row state', async () => {
+        await itineraryModalPage.cancelItineraryEdition();
+        await opSimulationResultPage.enableMacroViewWithDefaultTrainList();
+        await ngePage.createNode({ x: 50, y: 400 }, 'ABC', 'Origin');
+        await expect(ngePage.nodeCards).toHaveCount(1);
+        await ngePage.createNode({ x: 250, y: 400 }, 'DEF', 'Destination');
+        await expect(ngePage.nodeCards).toHaveCount(2);
 
-      await itineraryModalPage.launchEditTrain();
-      await itineraryModalPage.checkInvalidPathStepMessage(
-        0,
-        `${frManageTrainScheduleTranslations.itineraryModal.invalidOP}${frManageTrainScheduleTranslations.itineraryModal.mainCode} ABC`
-      );
-      await itineraryModalPage.checkInvalidPathStepMessage(
-        1,
-        `${frManageTrainScheduleTranslations.itineraryModal.invalidOP}${frManageTrainScheduleTranslations.itineraryModal.mainCode} DEF`
-      );
-      await itineraryModalPage.checkInvalidOpBanner(
-        `${frManageTrainScheduleTranslations.itineraryModal.alertInvalidOP}. ${frManageTrainScheduleTranslations.itineraryModal.noComputation}.`
-      );
-      await itineraryModalPage.checkPathStepMarkers([]);
-    });
+        await ngePage.connectNodesByIndex(0, 1);
+        await expect(ngePage.trainDetailsGroup).toBeVisible();
+        await ngePage.setTrainBasics({ name: 'Train1' });
+        await ngePage.closeDetailsDialogIfVisible();
+        await expect(ngePage.trainDetailsGroup).toBeHidden();
+        await expect(ngePage.trainLines).toHaveCount(1);
 
-    await test.step('Submit the invalid itinerary and check the train stays invalid', async () => {
-      await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
-      await itineraryModalPage.fillTrainName(TRAIN_NAME);
-      await itineraryModalPage.submitEdit();
-      await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
-      await itineraryModalPage.checkInvalidReasonInTimetable(
-        frScenarioTranslations.timetable.invalid.invalid_path_items
-      );
-    });
+        await itineraryModalPage.launchEditTrain();
+        await itineraryModalPage.checkInvalidPathStepMessage(
+          0,
+          `${frManageTrainScheduleTranslations.itineraryModal.invalidOP}${frManageTrainScheduleTranslations.itineraryModal.mainCode} ABC`
+        );
+        await itineraryModalPage.checkInvalidPathStepMessage(
+          1,
+          `${frManageTrainScheduleTranslations.itineraryModal.invalidOP}${frManageTrainScheduleTranslations.itineraryModal.mainCode} DEF`
+        );
+        await itineraryModalPage.checkInvalidOpBanner(
+          `${frManageTrainScheduleTranslations.itineraryModal.alertInvalidOP}. ${frManageTrainScheduleTranslations.itineraryModal.noComputation}.`
+        );
+        await itineraryModalPage.checkPathStepMarkers([]);
+      });
 
-    await test.step('Replace the invalid PR with a valid PR requiring a secondary code and check the recognized point', async () => {
-      await itineraryModalPage.launchEditTrain();
-      await itineraryModalPage.fillPathStepByName(1, SOUTH_STATION_BV, SOUTH_STATION_SUGGESTION);
-      await itineraryModalPage.selectFirstOpSuggestion();
-      await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
-    });
+      await test.step('Submit the invalid itinerary and check the train stays invalid', async () => {
+        await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
+        await itineraryModalPage.fillTrainName(TRAIN_NAME);
+        await itineraryModalPage.submitEdit();
+        await itineraryModalPage.checkTrainPresenceInTimetable(TRAIN_NAME);
+        await itineraryModalPage.checkInvalidReasonInTimetable(
+          frScenarioTranslations.timetable.invalid.invalid_path_items
+        );
+      });
 
-    await test.step('Remove the prefilled secondary code and check the fallback behavior', async () => {
-      await itineraryModalPage.fillPathStepValueAndBlur(1, SOUTH_STATION);
-      await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
-    });
+      await test.step('Replace the invalid PR with a valid PR requiring a secondary code and check the recognized point', async () => {
+        await itineraryModalPage.launchEditTrain();
+        await itineraryModalPage.fillPathStepByName(1, SOUTH_STATION_BV, SOUTH_STATION_SUGGESTION);
+        await itineraryModalPage.selectFirstOpSuggestion();
+        await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
+      });
 
-    await test.step('Type a nonexistent secondary code and check the input reset behavior', async () => {
-      await itineraryModalPage.replacePathStepValueWithoutSuggestion(
-        1,
-        SOUTH_STATION_WRONG_SECONDARY_CODE
-      );
-      await itineraryModalPage.checkPathStepValue(1, '');
+      await test.step('Remove the prefilled secondary code and check the fallback behavior', async () => {
+        await itineraryModalPage.fillPathStepValueAndBlur(1, SOUTH_STATION);
+        await itineraryModalPage.checkPathStepValue(1, SOUTH_STATION_BV);
+      });
+
+      await test.step('Type a nonexistent secondary code and check the input reset behavior', async () => {
+        await itineraryModalPage.replacePathStepValueWithoutSuggestion(
+          1,
+          SOUTH_STATION_WRONG_SECONDARY_CODE
+        );
+        await itineraryModalPage.checkPathStepValue(1, '');
+      });
     });
   });
 
@@ -234,10 +243,14 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
     await test.step('Enter a recognized but non-computable combination of points and relaunch pathfinding', async () => {
       await itineraryModalPage.launchEditTrain();
       await itineraryModalPage.clearTrack(0);
-      await itineraryModalPage.replacePathStepValueWithSuggestion(1, 'NS');
+      await itineraryModalPage.replacePathStepValueWithSuggestion(
+        1,
+        NORTH_STATION_MAIN_CODE,
+        NORTH_STATION
+      );
       await itineraryModalPage.checkPathStepValue(1, NORTH_STATION_BV);
-      await itineraryModalPage.replacePathStepValueWithSuggestion(2, 'NE');
-      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION);
+      await itineraryModalPage.replacePathStepValueWithSuggestion(2, 'NE', NORTH_EAST_STATION);
+      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION_BV);
     });
 
     await test.step('Check the pathfinding failure error banner and no complete path on the map', async () => {
@@ -255,11 +268,15 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
       await itineraryModalPage.launchEditTrain();
       await itineraryModalPage.checkPathStepValue(0, MID_EAST_STATION);
       await itineraryModalPage.checkPathStepValue(1, NORTH_STATION_BV);
-      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION);
+      await itineraryModalPage.checkPathStepValue(2, NORTH_EAST_STATION_BV);
     });
 
     await test.step('Fix the itinerary then select a rolling stock incompatible with the infrastructure', async () => {
-      await itineraryModalPage.replacePathStepValueWithSuggestion(1, SOUTH_EAST_STATION_BV);
+      await itineraryModalPage.replacePathStepValueWithSuggestion(
+        1,
+        SOUTH_EAST_STATION_BV,
+        SOUTH_EAST_STATION
+      );
       await itineraryModalPage.deleteNumberedRow(2, 3);
       await itineraryModalPage.selectIncompatibleTrack(0, TRACK_NAME_2);
       await itineraryModalPage.checkPathStepMarkers([

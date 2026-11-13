@@ -1,5 +1,5 @@
 import { StdcmStopTypes } from 'applications/stdcm/types';
-import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
+import type { Infra } from 'common/api/osrdEditoastApi';
 
 import {
   ALL_STOPS_TABLE_DATA_PATH,
@@ -24,17 +24,16 @@ import {
   VIA_SUGGESTIONS,
 } from '../assets/constants/stdcm/stdcm-const';
 import type { ConsistFields } from '../utils/stdcm-types';
-import { fastRollingStockName } from './../assets/constants/project-const';
+import { fastRollingStockName, towedRollingStockName } from './../assets/constants/project-const';
 import test, { createStdcmTab } from './../page-object-fixture';
 import { waitForInfraStateToBeCached } from './../utils';
-import { getInfra, setTowedRollingStock } from './../utils/api-utils';
+import { getInfra } from './../utils/api-utils';
 
 test.describe('STDCM simulation with all stops and towed rolling stock', { tag: '@stdcm' }, () => {
   let infra: Infra;
-  let createdTowedRollingStock: TowedRollingStock;
 
   test.beforeAll('Fetch infrastructure', async () => {
-    [infra, createdTowedRollingStock] = await Promise.all([getInfra(), setTowedRollingStock()]);
+    infra = await getInfra();
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
@@ -209,7 +208,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
   }) => {
     const towedConsistDetails: ConsistFields = {
       tractionEngine: fastRollingStockName,
-      towedRollingStock: createdTowedRollingStock.name,
+      towedRollingStock: towedRollingStockName,
     };
 
     await test.step('Fill consist section with towed RS and route', async () => {

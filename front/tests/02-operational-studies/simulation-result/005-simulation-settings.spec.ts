@@ -21,6 +21,7 @@ import {
 } from '../../assets/operation-studies/train-const';
 import test from '../../page-object-fixture';
 import setupScenarioFixture from '../../scenario-fixture';
+import { runAndWaitForTrainRecomputation } from '../../utils';
 import { deleteApiRequest, setElectricalProfile } from '../../utils/api-utils';
 import { PLACEHOLDER } from '../itineraryModal/itinerary-modal.consts';
 
@@ -86,6 +87,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
 
   /** *************** Test 1 **************** */
   test('Activate electrical profiles', async ({
+    page,
     browserName,
     headerPage,
     scenarioTimetableSection,
@@ -94,7 +96,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
   }) => {
     await test.step('Activate electrical profiles + Mareco margin', async () => {
       await headerPage.toggleElectricalProfiles(true);
-      await headerPage.selectRecoveryMargin('MARECO');
+      await runAndWaitForTrainRecomputation(page, () => headerPage.selectRecoveryMargin('MARECO'));
       await timesStopsTablePage.waitForSimulation();
     });
 
@@ -110,7 +112,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Deactivate electrical profiles and verify (OFF)', async () => {
-      await headerPage.toggleElectricalProfiles(false);
+      await runAndWaitForTrainRecomputation(page, () => headerPage.toggleElectricalProfiles(false));
       await timesStopsTablePage.waitForSimulation();
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
       if (browserName === 'chromium') {
@@ -124,6 +126,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
 
   /** *************** Test 2 **************** */
   test('Add speed limit tag', async ({
+    page,
     browserName,
     headerPage,
     scenarioTimetableSection,
@@ -131,9 +134,9 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     timesStopsTablePage,
   }) => {
     await test.step('Enable Mareco margin + speed limit tag (E32C), disable electrical profile', async () => {
-      await headerPage.toggleElectricalProfiles(false);
-      await headerPage.selectRecoveryMargin('MARECO');
-      await headerPage.selectCompositionCode('E32C');
+      await runAndWaitForTrainRecomputation(page, () => headerPage.toggleElectricalProfiles(false));
+      await runAndWaitForTrainRecomputation(page, () => headerPage.selectRecoveryMargin('MARECO'));
+      await runAndWaitForTrainRecomputation(page, () => headerPage.selectCompositionCode('E32C'));
       await timesStopsTablePage.waitForSimulation();
     });
 
@@ -149,7 +152,9 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Remove speed limit tag and verify (OFF)', async () => {
-      await headerPage.selectCompositionCode(PLACEHOLDER);
+      await runAndWaitForTrainRecomputation(page, () =>
+        headerPage.selectCompositionCode(PLACEHOLDER)
+      );
       await timesStopsTablePage.waitForSimulation();
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:48');
       if (browserName === 'chromium') {
@@ -163,6 +168,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
 
   /** *************** Test 3 **************** */
   test('Check default linear margin and activate mareco margin', async ({
+    page,
     browserName,
     headerPage,
     scenarioTimetableSection,
@@ -170,7 +176,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     timesStopsTablePage,
   }) => {
     await test.step('Disable electrical profile and set a 10% theoretical margin on the origin (default STANDARD/linear distribution)', async () => {
-      await headerPage.toggleElectricalProfiles(false);
+      await runAndWaitForTrainRecomputation(page, () => headerPage.toggleElectricalProfiles(false));
       const westStationRow = timesStopsTablePage.getRow(0);
       await timesStopsTablePage.editRequestedMarginWithUnit(westStationRow, '10', 'percent');
       await timesStopsTablePage.waitForSimulation();
@@ -188,7 +194,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     });
 
     await test.step('Switch to Mareco margin and verify', async () => {
-      await headerPage.selectRecoveryMargin('MARECO');
+      await runAndWaitForTrainRecomputation(page, () => headerPage.selectRecoveryMargin('MARECO'));
       await timesStopsTablePage.waitForSimulation();
       await scenarioTimetableSection.getTrainScheduleArrivalTime('11:51');
       if (browserName === 'chromium') {
@@ -205,6 +211,7 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     'Add all the simulation settings',
     { tag: '@smoke' },
     async ({
+      page,
       browserName,
       headerPage,
       scenarioTimetableSection,
@@ -213,13 +220,15 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
     }) => {
       await test.step('Set a 5% theoretical margin on the origin', async () => {
         const westStationRow = timesStopsTablePage.getRow(0);
-        await timesStopsTablePage.editRequestedMarginWithUnit(westStationRow, '5', 'percent');
+        await runAndWaitForTrainRecomputation(page, () =>
+          timesStopsTablePage.editRequestedMarginWithUnit(westStationRow, '5', 'percent')
+        );
         await timesStopsTablePage.waitForSimulation();
       });
 
       await test.step('Enable electrical profile + speed limit tag', async () => {
         await headerPage.toggleElectricalProfiles(true);
-        await headerPage.selectCompositionCode('E32C');
+        await runAndWaitForTrainRecomputation(page, () => headerPage.selectCompositionCode('E32C'));
         await timesStopsTablePage.waitForSimulation();
       });
 
