@@ -24,14 +24,17 @@ export function useCreateTrainSchedule(setIsWorking: (isWorking: boolean) => voi
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dateTimeLocale = useDateTimeLocale();
 
-  const { sandboxId, timetableId } = useScenarioContext();
+  const { sandboxId, timetableId, scenario } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
 
   return async (trainState: ItineraryModalTrainState): Promise<boolean> => {
     setIsWorking(true);
 
     try {
-      const newTrainSchedulePayload = formatTrainSchedulePayload(trainState);
+      const newTrainSchedulePayload = formatTrainSchedulePayload(
+        trainState,
+        scenario.timetable_type
+      );
 
       const validationErrors = validateTrainSchedule(newTrainSchedulePayload);
       if (validationErrors.length) {
