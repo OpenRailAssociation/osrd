@@ -1,7 +1,8 @@
-use crate::error::Result;
+use crate::views::DatabaseError;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::timetable::TimetableIdParam;
+use crate::views::timetable::TimetableNotFound;
 use authz;
 use axum::Json;
 use axum::extract::Path;
@@ -9,7 +10,8 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPool;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use itertools::Itertools as _;
 use models::prelude::*;
 use models::round_trips::TrainScheduleRoundTrips;
@@ -18,25 +20,28 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
 use std::sync::Arc;
+use thiserror::Error;
 use utoipa::ToSchema;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
 
-#[derive(Debug, thiserror::Error, EditoastError, derive_more::From)]
-#[editoast_error(base_id = "round_trips")]
-enum RoundTripsError {
-    #[error("Timetable '{timetable_id}' not found")]
-    #[editoast_error(status = 404)]
-    TimetableNotFound { timetable_id: i64 },
+#[derive(Debug, Error, ViewError, From)]
+#[view_error(path = round_trips)]
+pub(in crate::views) enum RoundTripsError {
+    #[error(transparent)]
+    TimetableNotFound(
+        #[from]
+        #[view_error]
+        TimetableNotFound,
+    ),
 
     #[error("The payload contains duplicate train IDs which is not allowed")]
-    #[editoast_error(status = 400)]
+    #[view_error(status = BAD_REQUEST, context, path = duplicate_train_ids)]
     DuplicateTrainIds,
 
-    #[error("Database error")]
-    #[editoast_error(status = 500)]
+    #[error(transparent)]
     #[from(forward)]
-    Database(models::Error),
+    Database(#[view_error] DatabaseError),
 }
 
 /// Represents a collection of round trips and one-way
@@ -94,14 +99,17 @@ fn schema_round_trips() -> RefOr<Schema> {
     post, path = "",
     tag = "round_trips",
     request_body = RoundTrips,
-    responses((status = 204, description = "Round trips were successfully upserted"))
+    responses(
+        (status = 204, description = "Round trips were successfully upserted"),
+        RoundTripsError,
+    )
 )]
 pub(in crate::views) async fn upsert(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(round_trips): Json<RoundTrips>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, RoundTripsError> {
     if round_trips.has_duplicates() {
-        return Err(RoundTripsError::DuplicateTrainIds.into());
+        return Err(RoundTripsError::DuplicateTrainIds);
     }
 
     let to_remove = round_trips
@@ -127,7 +135,7 @@ pub(in crate::views) async fn upsert(
     db_pool
         .get()
         .await?
-        .transaction::<_, crate::error::InternalError, _, _>(async move |mut conn| {
+        .transaction::<_, DatabaseError, _, _>(async move |mut conn| {
             TrainScheduleRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
             TrainScheduleRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
                 .await?;
@@ -147,12 +155,15 @@ pub(in crate::views) async fn upsert(
         content = Vec<i64>,
         description = "IDs of train schedules to remove from round trips or one-way."
     ),
-    responses((status = 204, description = "Round trips were successfully deleted"))
+    responses(
+        (status = 204, description = "Round trips were successfully deleted"),
+        DatabaseError,
+    )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(train_schedule_ids): Json<HashSet<i64>>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let conn = &mut db_pool.get().await?;
     TrainScheduleRoundTrips::delete_batch_train_ids(conn, train_schedule_ids).await?;
 
@@ -180,11 +191,11 @@ pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
-) -> Result<Json<RoundTripsPage>> {
+) -> Result<Json<RoundTripsPage>, RoundTripsError> {
     let conn = &mut db_pool.get().await?;
 
-    Timetable::exists_or_fail(conn, timetable_id, || RoundTripsError::TimetableNotFound {
-        timetable_id,
+    Timetable::exists_or_fail(conn, timetable_id, || {
+        RoundTripsError::from(TimetableNotFound { timetable_id })
     })
     .await?;
 

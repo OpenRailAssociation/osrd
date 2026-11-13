@@ -1734,43 +1734,6 @@ class EditoastRollingStockErrorNameAlreadyUsed(BaseModel):
     )
 
 
-class EditoastRoundTripsErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastRoundTripsErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:round_trips:Database"] = "editoast:round_trips:Database"
-
-
-class EditoastRoundTripsErrorDuplicateTrainIds(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastRoundTripsErrorDuplicateTrainIdsContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[400] = 400
-    type: Literal["editoast:round_trips:DuplicateTrainIds"] = (
-        "editoast:round_trips:DuplicateTrainIds"
-    )
-
-
-class EditoastRoundTripsErrorTimetableNotFoundContext(BaseModel):
-    timetable_id: StrictInt
-
-
-class EditoastRoundTripsErrorTimetableNotFound(BaseModel):
-    context: Annotated[
-        EditoastRoundTripsErrorTimetableNotFoundContext | None,
-        Field(title="EditoastRoundTripsErrorTimetableNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:round_trips:TimetableNotFound"] = (
-        "editoast:round_trips:TimetableNotFound"
-    )
-
-
 class EditoastScenarioErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastScenarioErrorDatabaseContext")
@@ -5188,9 +5151,6 @@ class EditoastError(
         | EditoastRollingStockErrorKeyNotFound
         | EditoastRollingStockErrorLiveryMultipartError
         | EditoastRollingStockErrorNameAlreadyUsed
-        | EditoastRoundTripsErrorDatabase
-        | EditoastRoundTripsErrorDuplicateTrainIds
-        | EditoastRoundTripsErrorTimetableNotFound
         | EditoastScenarioErrorDatabase
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound
@@ -5362,9 +5322,6 @@ class EditoastError(
         | EditoastRollingStockErrorKeyNotFound
         | EditoastRollingStockErrorLiveryMultipartError
         | EditoastRollingStockErrorNameAlreadyUsed
-        | EditoastRoundTripsErrorDatabase
-        | EditoastRoundTripsErrorDuplicateTrainIds
-        | EditoastRoundTripsErrorTimetableNotFound
         | EditoastScenarioErrorDatabase
         | EditoastScenarioErrorInfraNotFound
         | EditoastScenarioErrorNotFound

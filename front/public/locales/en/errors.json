@@ -210,9 +210,7 @@
       "NameAlreadyUsed": "Name '{{name}}' already used"
     },
     "round_trips": {
-      "Database": "Internal error (database)",
-      "DuplicateTrainIds": "The payload contains duplicate train IDs which is not allowed",
-      "TimetableNotFound": "Timetable '{{timetable_id}}' not found"
+      "duplicate_train_ids": "The payload contains duplicate train IDs which is not allowed"
     },
     "scenario": {
       "Database": "Internal error (database)",
@@ -314,6 +312,7 @@
       "Timeout": "Request timed out",
       "TrainScheduleNotFound": "Train schedule '{{id}}' could not be found",
       "TrainScheduleSetsNotFound": "'{{ids}}' train schedule sets not found",
+      "not_found": "Timetable '{{timetable_id}}' could not be found",
       "similar_trains": {
         "Database": "Internal error (database)",
         "EmptyTrainsTraffic": "Trains traffic data are empty",
