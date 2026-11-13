@@ -308,6 +308,7 @@
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "InvalidPeriod": "La période d'une trame doit être inférieure à 24h",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
+      "not_found": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",
       "Timeout": "Le serveur n'a pas répondu à temps",
       "TrainScheduleNotFound": "Circulation '{{id}}' non trouvée",
@@ -348,11 +349,10 @@
       "TrainScheduleNotFound": "La circulation '{{train_schedule_id}}' n’a pas été trouvée"
     },
     "train_schedule_linking": {
-      "batch_not_found": "{{count}} enchaînements(s) n'a/ont pas pu être trouvé(s)",
+      "not_found_in_batch": "{{count}} enchaînements(s) non trouvé(s)",
       "request_incompatible_with_timetable_type": "La grille horaire {{timetable_id}} est de type {{timetable_type}}, donc elle ne peut pas contenir d'occurrences avec un train_schedule_instance_index.",
       "source_already_used": "L'occurrence {{occurrence}} est déjà utilisée comme source.",
-      "target_already_used": "L'occurrence ({{occurrence}} est déjà utilisée comme cible.",
-      "timetable_not_found": "Grille horaire '{{timetable_id}}' non trouvée"
+      "target_already_used": "L'occurrence ({{occurrence}} est déjà utilisée comme cible."
     },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",

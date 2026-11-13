@@ -5604,7 +5604,7 @@ paths:
               schema:
                 oneOf:
                 - type: object
-                  description: Timetable {timetable_id} does not exist
+                  description: Timetable {timetable_id} could not be found
                   required:
                   - type
                   - status
@@ -5629,7 +5629,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:train_schedule_linking:timetable_not_found
+                      - editoast:timetable:not_found
         '409':
           description: ''
           content:
@@ -6370,7 +6370,7 @@ paths:
               schema:
                 oneOf:
                 - type: object
-                  description: Timetable {timetable_id} does not exist
+                  description: Timetable {timetable_id} could not be found
                   required:
                   - type
                   - status
@@ -6395,7 +6395,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:train_schedule_linking:timetable_not_found
+                      - editoast:timetable:not_found
         '500':
           description: ''
           content:
@@ -6499,7 +6499,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:train_schedule_linking:batch_not_found
+                      - editoast:train_schedule_linking:not_found_in_batch
         '500':
           description: ''
           content:

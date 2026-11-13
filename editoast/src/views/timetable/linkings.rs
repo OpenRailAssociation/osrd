@@ -19,6 +19,7 @@ use utoipa::ToSchema;
 
 use crate::views::DatabaseError;
 use crate::views::timetable::TimetableIdParam;
+use crate::views::timetable::TimetableNotFound;
 
 #[editoast_derive::title_variants]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
@@ -144,20 +145,13 @@ impl From<TrainScheduleLinking> for LinkingResponse {
 
 // Errors
 
-#[derive(Debug, Error, ViewError)]
-#[error("Timetable {timetable_id} does not exist")]
-#[view_error(status = NOT_FOUND, context, path = train_schedule_linking::timetable_not_found)]
-pub(in crate::views) struct LinkingTimetableNotFound {
-    timetable_id: i64,
-}
-
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum ListLinkingsError {
     #[error(transparent)]
     TimetableNotFound(
         #[from]
         #[view_error]
-        LinkingTimetableNotFound,
+        TimetableNotFound,
     ),
     #[error(transparent)]
     #[from(forward)]
@@ -171,18 +165,18 @@ pub(in crate::views) enum CreateLinkingsError {
     TimetableNotFound(
         #[from]
         #[view_error]
-        LinkingTimetableNotFound,
+        TimetableNotFound,
     ),
     #[error("Occurrence {occurrence} is already used as a source.")]
-    #[view_error(status = CONFLICT, context, path = source_already_used)]
+    #[view_error(status = CONFLICT, context)]
     SourceAlreadyUsed { occurrence: String },
     #[error("Occurrence {occurrence} is already used as a target.")]
-    #[view_error(status = CONFLICT, context, path = target_already_used)]
+    #[view_error(status = CONFLICT, context)]
     TargetAlreadyUsed { occurrence: String },
     #[error(
         "Timetable {timetable_id} has type {timetable_type}, so it can't have occurrences with train_schedule_instance_index"
     )]
-    #[view_error(status = CONFLICT, context, path = request_incompatible_with_timetable_type)]
+    #[view_error(status = CONFLICT, context)]
     RequestIncompatibleWithTimetableType {
         timetable_id: i64,
         timetable_type: TimetableType,
@@ -221,8 +215,8 @@ fn model_error_into_linking_error(err: models::Error) -> CreateLinkingsError {
 #[view_error(path = train_schedule_linking)]
 pub(in crate::views) enum DeleteLinkingsError {
     #[error("{count} linking(s) could not be found")]
-    #[view_error(status = NOT_FOUND, context, path = batch_not_found)]
-    BatchNotFound { count: usize },
+    #[view_error(status = NOT_FOUND, context)]
+    NotFoundInBatch { count: usize },
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -260,7 +254,7 @@ pub(in crate::views) async fn list(
 
     let conn = &mut db_pool.get().await?;
     Timetable::exists_or_fail(conn, timetable_id, || {
-        ListLinkingsError::from(LinkingTimetableNotFound { timetable_id })
+        ListLinkingsError::from(TimetableNotFound { timetable_id })
     })
     .await?;
 
@@ -317,7 +311,7 @@ pub(in crate::views) async fn create(
     let conn = &mut db_pool.get().await?;
 
     let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
-        CreateLinkingsError::from(LinkingTimetableNotFound { timetable_id })
+        CreateLinkingsError::from(TimetableNotFound { timetable_id })
     })
     .await?;
 
@@ -366,7 +360,7 @@ pub(in crate::views) async fn delete(
     let conn = &mut db_pool.get().await?;
 
     TrainScheduleLinking::delete_batch_or_fail(conn, linking_ids, |count| {
-        DeleteLinkingsError::BatchNotFound { count }
+        DeleteLinkingsError::NotFoundInBatch { count }
     })
     .await?;
 
