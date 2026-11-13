@@ -130,9 +130,9 @@ enum TimetableError {
 
 #[derive(Debug, Error, ViewError)]
 #[error("Timetable {timetable_id} could not be found")]
-#[view_error(status = NOT_FOUND, context)]
+#[view_error(status = NOT_FOUND, context, path = timetable::not_found)]
 pub(in crate::views) struct TimetableNotFound {
-    timetable_id: i64,
+    pub timetable_id: i64,
 }
 
 /// A timetable with its data
