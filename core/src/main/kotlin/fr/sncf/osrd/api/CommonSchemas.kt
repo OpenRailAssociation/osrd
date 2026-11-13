@@ -136,6 +136,16 @@ enum class ForcedStopType {
     OVERTAKE,
 }
 
+enum class StepType(
+    // This is used when comparing/merging steps, the lowest number is the highest priority.
+    val priority: Int,
+) {
+    INPUT_STEP(3),
+    INPUT_STOP(0),
+    GENERAL_STOP(1),
+    OVERTAKE(2),
+}
+
 /** Converts a DistanceRangeMap into an API compatible RangeValues. */
 fun <T> DistanceRangeMap<T>.toRangeValues(): RangeValues<T> {
     val boundaries = mutableListOf<Offset<PhysicsPath>>()

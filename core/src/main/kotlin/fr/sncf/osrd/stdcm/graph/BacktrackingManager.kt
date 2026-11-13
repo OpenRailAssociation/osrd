@@ -79,11 +79,9 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                 BlockSimulationParameters(
                     old.infraExplorer.getCurrentBlock(),
                     old.beginSpeed,
-                    old.infraExplorer.getStepTracker().iterateReachedStepsBackwards().count {
-                        it.isPlanned
-                    },
+                    old.infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                     old.envelopeStartOffset,
-                    getNextStopOnCurrentBlock(old.infraExplorer),
+                    getNextStopOffsetOnCurrentBlock(old.infraExplorer),
                 ),
             )
         val path = old.infraExplorer.getCurrentEdgePathProperties(old.envelopeStartOffset, null)

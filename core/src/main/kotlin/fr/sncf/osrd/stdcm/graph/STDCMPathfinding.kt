@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.interfaces.PhysicsPath
@@ -57,6 +58,7 @@ fun findPath(
     comfort: Comfort?,
     startTime: Double,
     steps: List<ExplorerStep>,
+    forcedOpStops: Collection<ExplorerStep>,
     blockAvailability: BlockAvailabilityInterface,
     timeStep: Double,
     maxDepartureDelay: Double,
@@ -75,6 +77,7 @@ fun findPath(
             comfort,
             startTime,
             steps,
+            forcedOpStops,
             blockAvailability,
             timeStep,
             maxDepartureDelay,
@@ -96,6 +99,7 @@ class STDCMPathfinding(
     private val comfort: Comfort?,
     private val startTime: Double,
     private val steps: List<ExplorerStep>,
+    private val forcedOpStops: Collection<ExplorerStep>,
     private val blockAvailability: BlockAvailabilityInterface,
     private val timeStep: Double,
     private val maxDepartureDelay: Double,
@@ -133,7 +137,7 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        starts = getStartNodes(graph, consistSchedule)
+        starts = getStartNodes(graph, consistSchedule, forcedOpStops)
 
         // If we are in a dead end, and the destination is not reached, the pathfinding should fail
         if (starts.isEmpty()) return null
@@ -283,13 +287,23 @@ class STDCMPathfinding(
     }
 
     /** Converts start locations into starting nodes. */
-    private fun getStartNodes(graph: STDCMGraph, consistSchedule: ConsistSchedule): Set<STDCMNode> {
+    private fun getStartNodes(
+        graph: STDCMGraph,
+        consistSchedule: ConsistSchedule,
+        forcedOpStops: Collection<ExplorerStep>,
+    ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)
         for (location in firstStep.locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(fullInfra, location, consistSchedule, steps)
+                initInfraExplorerWithEnvelope(
+                    fullInfra,
+                    location,
+                    consistSchedule,
+                    steps,
+                    forcedOpStops,
+                )
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
                 val node =
@@ -308,6 +322,7 @@ class STDCMPathfinding(
                         null,
                         location.offset,
                         null,
+                        setOf(StepType.INPUT_STEP),
                         firstStep.plannedTimingData,
                         null,
                         graph.bestPossibleTime,

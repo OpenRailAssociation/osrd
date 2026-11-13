@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.preprocessing
 import fr.sncf.osrd.api.ConsistSchedule
 import fr.sncf.osrd.api.PathItem
 import fr.sncf.osrd.api.RJSTrackLocation
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.api.stdcm.ConsistConfiguration
 import fr.sncf.osrd.api.stdcm.RequestConsistSchedule
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
@@ -56,8 +57,20 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(middle2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle1.blockLocations,
+                        duration = 2000.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
+                .addStep(
+                    ExplorerStep(
+                        middle2.blockLocations,
+                        duration = 2000.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -116,8 +129,20 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(middle2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle1.blockLocations,
+                        duration = 2000.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
+                .addStep(
+                    ExplorerStep(
+                        middle2.blockLocations,
+                        duration = 2000.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -137,7 +162,6 @@ class ConsistChangeTests {
         )
     }
 
-    @Test
     /**
      * Given:
      * - A train schedule with 3 steps A -> B -> C.
@@ -149,6 +173,7 @@ class ConsistChangeTests {
      * - The same exploration but with the consist change reversed (T2 swapped at step B for T1) to
      *   succeed.
      */
+    @Test
     fun correctConsistPathfindingConstraintsApplied() {
         val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
         val start = convertRouteLocation(infra, "rt.DD0->DC0", Offset(100.meters))
@@ -159,7 +184,13 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle.blockLocations, duration = 20.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle.blockLocations,
+                        duration = 20.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -173,7 +204,13 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(middle.blockLocations, duration = 20.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        middle.blockLocations,
+                        duration = 20.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -197,7 +234,13 @@ class ConsistChangeTests {
                 STDCMPathfindingBuilder()
                     .setInfra(infra)
                     .setStartLocations(start.blockLocations)
-                    .addStep(ExplorerStep(middle.blockLocations, duration = 2000.0, stop = true))
+                    .addStep(
+                        ExplorerStep(
+                            middle.blockLocations,
+                            duration = 2000.0,
+                            stepTypes = setOf(StepType.INPUT_STOP),
+                        ),
+                    )
                     .setEndLocations(end.blockLocations)
                     .setBlockAvailability(makeBlockAvailability(requirements))
                     .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -225,7 +268,13 @@ class ConsistChangeTests {
                 STDCMPathfindingBuilder()
                     .setInfra(infra)
                     .setStartLocations(start.blockLocations)
-                    .addStep(ExplorerStep(middle.blockLocations, duration = 2000.0, stop = true))
+                    .addStep(
+                        ExplorerStep(
+                            middle.blockLocations,
+                            duration = 2000.0,
+                            stepTypes = setOf(StepType.INPUT_STOP),
+                        ),
+                    )
                     .setEndLocations(end.blockLocations)
                     .setBlockAvailability(makeBlockAvailability(requirements))
                     .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -262,8 +311,20 @@ class ConsistChangeTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(step1.blockLocations, duration = 2000.0, stop = true))
-                .addStep(ExplorerStep(step2.blockLocations, duration = 2000.0, stop = true))
+                .addStep(
+                    ExplorerStep(
+                        step1.blockLocations,
+                        duration = 2000.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
+                .addStep(
+                    ExplorerStep(
+                        step2.blockLocations,
+                        duration = 2000.0,
+                        stepTypes = setOf(StepType.INPUT_STOP),
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setStandardAllowance(AllowanceValue.Percentage(0.0))
@@ -298,12 +359,12 @@ class ConsistChangeTests {
         )
     }
 
-    @Test
     /**
      * Parsing the list of consist changes and their boundaries of an STDCM request should create a
      * ConsistSchedule which contains the lists of the rolling stocks per step and their associated
      * pathfinding constraints.
      */
+    @Test
     fun parseRequestConsistChanges() {
         val nbSteps = 8
         val consist1 =
@@ -338,12 +399,12 @@ class ConsistChangeTests {
         assertEquals(expected, consistSchedule.rollingStocks.map { it.length })
     }
 
-    @Test
     /**
      * When an STDCM request contains a consist change, the StepExplorers locations should be built
      * using the longest rolling stock related to that consist change (the longest consist between
      * the previous step and the current step).
      */
+    @Test
     fun parseStepsMultipleConsists() {
         // Note: this test only checks that the longest consist change is used when creating the
         // steps. It doesn't check if the block locations we find for those waypoints make sense

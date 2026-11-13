@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Block
@@ -61,7 +62,9 @@ class StopTests {
 
         // Check that the stop is properly returned
         Assertions.assertEquals(
-            listOf(TrainStop(expectedOffset, 10000.0, SHORT_SLIP_STOP)),
+            listOf(
+                TrainStop(expectedOffset, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP)),
+            ),
             resSuccess.stopResults,
         )
     }
@@ -134,7 +137,10 @@ class StopTests {
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
-        checkStop(resSuccess, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
+        checkStop(
+            resSuccess,
+            listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP))),
+        )
     }
 
     /** Look for a path in an empty timetable, with a stop at the end of a block */
@@ -163,7 +169,10 @@ class StopTests {
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
-        checkStop(resSuccess, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
+        checkStop(
+            resSuccess,
+            listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP))),
+        )
     }
 
     /** Checks that we can make a detour to pass by an intermediate step */
@@ -195,13 +204,18 @@ class StopTests {
                 .setStartTime(100.0)
                 .addStep(ExplorerStep(setOf(BlockLocation(blocksDirectPath[0], Offset(0.meters)))))
                 .addStep(
-                    ExplorerStep(setOf(BlockLocation(detour[1], Offset(1000.meters))), 0.0, stop),
+                    ExplorerStep(
+                        setOf(BlockLocation(detour[1], Offset(1000.meters))),
+                        0.0,
+                        stepTypes =
+                            if (stop) setOf(StepType.INPUT_STOP) else setOf(StepType.INPUT_STEP),
+                    ),
                 )
                 .addStep(
                     ExplorerStep(
                         setOf(BlockLocation(blocksDirectPath[3], Offset(0.meters))),
                         0.0,
-                        true,
+                        stepTypes = setOf(StepType.INPUT_STOP),
                     ),
                 )
                 .run()!!
@@ -282,7 +296,10 @@ class StopTests {
                 .run()!!
         Assertions.assertTrue(res is STDCMCompleteResult)
         val resSuccess = res as STDCMCompleteResult
-        checkStop(resSuccess, listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP)))
+        checkStop(
+            resSuccess,
+            listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP))),
+        )
         occupancyTest(resSuccess, occupancy)
     }
 
@@ -342,7 +359,8 @@ class StopTests {
                     ),
             )
 
-        val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
+        val expectedStops =
+            listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP)))
         checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
         checkStop(res.withoutAllowance!! as STDCMCompleteResult, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -417,7 +435,8 @@ class StopTests {
                         ExplorerStep(setOf(BlockLocation(blocks[3], Offset(1.meters))), 0.0, true),
                     ),
             )
-        val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
+        val expectedStops =
+            listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP, setOf(StepType.INPUT_STOP)))
         checkStop(res.withAllowance!! as STDCMCompleteResult, expectedStops)
         checkStop(res.withoutAllowance!! as STDCMCompleteResult, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -891,7 +910,7 @@ class StopTests {
 
     companion object {
         /** Check that the train actually stops at the expected times and positions */
-        private fun checkStop(
+        fun checkStop(
             res: STDCMCompleteResult,
             expectedStops: List<TrainStop>,
             allowLonger: Boolean = true,
@@ -902,6 +921,7 @@ class StopTests {
                 if (allowLonger) assertTrue(expected.duration <= actual.duration)
                 else assertEquals(expected.duration, actual.duration)
                 assertEquals(expected.position, actual.position)
+                assertEquals(expected.stepTypes, actual.stepTypes)
             }
 
             // Check that we stop
