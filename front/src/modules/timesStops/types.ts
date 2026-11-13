@@ -35,7 +35,8 @@ export type TimesStopsRow = {
 
   // Stop information
   name: string;
-  secondaryCode?: string | null;
+  secondaryCode: string | null;
+  secondaryName: string | null;
   track: string;
 
   // Path information

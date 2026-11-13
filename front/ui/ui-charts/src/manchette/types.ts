@@ -5,6 +5,7 @@ export type Waypoint = {
   position: number; // in mm
   name?: string;
   secondaryCode?: string | null;
+  secondaryName?: string | null;
   weight?: number;
 };
 

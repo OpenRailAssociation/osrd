@@ -15,7 +15,7 @@ type WaypointProps = {
 };
 
 const Waypoint = ({
-  waypoint: { name, secondaryCode, id, position, onClick, styles },
+  waypoint: { name, secondaryCode, secondaryName, id, position, onClick, styles },
   waypointRef,
   isActive,
   isMenuActive,
@@ -50,7 +50,11 @@ const Waypoint = ({
     <div className="waypoint-separator" />
     {secondaryCode && (
       <>
-        <div data-testid="waypoint-ch" className="waypoint-ch font-mono justify-self-end">
+        <div
+          data-testid="waypoint-ch"
+          className="waypoint-ch font-mono justify-self-end"
+          title={secondaryName ?? undefined}
+        >
           {secondaryCode}
         </div>
         <div className="waypoint-separator" />

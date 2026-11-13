@@ -29,20 +29,19 @@ export const buildOpSuggestion = (
     const key = `${r.main_code}||${r.name}`;
     const existing = map.get(key);
     const secondaryCode = r.secondary_code ?? null;
+    const secondaryEntry: OpSecondaryCode = { code: secondaryCode, name: r.secondary_name ?? null };
 
     if (!existing) {
-      const secondaryCodeList = [{ code: secondaryCode }];
-
       map.set(key, {
         id: key,
         mainCode: r.main_code,
         uic: r.uic,
         name: r.name,
         countryCode: r.country_code,
-        secondaryCodeList,
+        secondaryCodeList: [secondaryEntry],
       });
     } else if (!existing.secondaryCodeList.some((c) => c.code === secondaryCode)) {
-      existing.secondaryCodeList.push({ code: secondaryCode });
+      existing.secondaryCodeList.push(secondaryEntry);
     }
   }
 
