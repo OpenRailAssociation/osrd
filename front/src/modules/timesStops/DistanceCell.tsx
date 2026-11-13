@@ -1,0 +1,134 @@
+import { useRef, useState } from 'react';
+
+import cx from 'classnames';
+
+import CellPlaceholder from './CellPlaceholder';
+
+type DistanceCellProps = {
+  distanceValue: number | undefined;
+  onCommit?: (value: number | null) => void;
+  onEnterKeyDown?: () => void;
+  onTabKeyDown?: (direction: 'forward' | 'backward') => boolean;
+  'data-testid'?: string;
+};
+
+const formatValue = (value: number | undefined): string | undefined =>
+  value !== undefined ? String(value) : undefined;
+
+const DistanceCell = ({
+  distanceValue,
+  onCommit,
+  onEnterKeyDown,
+  onTabKeyDown,
+  'data-testid': testId,
+}: DistanceCellProps) => {
+  const [draft, setDraft] = useState<string | undefined>(formatValue(distanceValue));
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [caretPosition, setCaretPosition] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const syncCaret = (e: React.SyntheticEvent<HTMLInputElement>) => {
+    setCaretPosition(e.currentTarget.selectionStart ?? 0);
+    setIsEditing(true);
+    if (e.currentTarget === null) {
+      setDraft(formatValue(distanceValue));
+    }
+  };
+
+  const normalizeInput = (input: string | undefined): string => {
+    const trimmed = (input ?? '').trim();
+    return trimmed.replaceAll(',', '.');
+  };
+
+  const commit = () => {
+    if (onCommit) {
+      const normalized = normalizeInput(draft);
+      if (normalized === '') {
+        if (distanceValue !== null && distanceValue !== undefined) onCommit(null);
+      } else {
+        const parsed = Number(normalized);
+        if (!Number.isNaN(parsed) && parsed !== distanceValue) {
+          onCommit(parsed);
+          setDraft(String(parsed));
+        } else {
+          setDraft(String(distanceValue));
+        }
+      }
+    }
+    setIsEditing(false);
+  };
+
+  const handleEscape = () => {
+    setDraft(formatValue(distanceValue));
+    setIsEditing(false);
+    inputRef.current?.blur();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    syncCaret(e);
+    if (e.key === 'Enter') {
+      commit();
+      onEnterKeyDown?.();
+      setIsEditing(false);
+    } else if (e.key === 'Tab') {
+      const handled = onTabKeyDown?.(e.shiftKey ? 'backward' : 'forward');
+      if (handled) {
+        e.preventDefault();
+        commit();
+        setIsEditing(false);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleEscape();
+    }
+  };
+
+  return (
+    <div
+      className="distance-cell"
+      data-testid={testId}
+      onClick={() => inputRef.current?.focus()}
+      role="button"
+      tabIndex={0}
+    >
+      <input
+        type="text"
+        inputMode="numeric"
+        ref={inputRef}
+        className="input"
+        data-testid="distance-cell-input"
+        value={draft ?? ''}
+        onBlur={commit}
+        onChange={(e) => setDraft(e.currentTarget.value)}
+        onKeyDown={handleKeyDown}
+        onKeyUp={syncCaret}
+        onSelect={syncCaret}
+      />
+      {isEditing || (draft !== undefined && draft !== '') ? (
+        <div
+          className={cx('display', {
+            saved: isEditing,
+          })}
+          aria-hidden="true"
+        >
+          <span className="value">
+            {isEditing && draft !== undefined ? (
+              <>
+                {draft.slice(0, caretPosition)}
+                <span className="custom-caret" />
+                {draft.slice(caretPosition)}
+              </>
+            ) : (
+              draft
+            )}
+          </span>
+          <span className="unit">km</span>
+        </div>
+      ) : (
+        <CellPlaceholder />
+      )}
+    </div>
+  );
+};
+
+export default DistanceCell;
