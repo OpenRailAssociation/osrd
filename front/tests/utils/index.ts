@@ -209,3 +209,14 @@ export async function toggleByState(
 
   await Promise.all(list.map(assertFn));
 }
+
+/** Runs a train edit and waits for its recomputation, to avoid a stale timetable (#13066). */
+export async function runAndWaitForTrainRecomputation(page: Page, action: () => Promise<void>) {
+  // Registered before the action so that no response can be missed
+  const responses = Promise.all([
+    page.waitForResponse((response) => response.url().includes('/simulation_summary')),
+    page.waitForResponse((response) => response.url().includes('/occupancy_blocks')),
+  ]);
+  await action();
+  await responses;
+}
