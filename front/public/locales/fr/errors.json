@@ -352,10 +352,12 @@
     },
     "train_schedule_linking": {
       "batch_not_found": "{{count}} enchaînements(s) n'a/ont pas pu être trouvé(s)",
+      "different_paced_train_time_windows": "Les circulations '{{source_train_schedule_id}}' et '{{target_train_schedule_id}}' ne partagent pas la même fenêtre temporelle, elles ne peuvent pas être reliées par un enchaînement dans une trame",
       "request_incompatible_with_timetable_type": "La grille horaire {{timetable_id}} est de type {{timetable_type}}, donc elle ne peut pas contenir d'occurrences avec un train_schedule_instance_index.",
       "source_already_used": "L'occurrence {{occurrence}} est déjà utilisée comme source.",
       "target_already_used": "L'occurrence ({{occurrence}} est déjà utilisée comme cible.",
-      "timetable_not_found": "Grille horaire '{{timetable_id}}' non trouvée"
+      "timetable_not_found": "Grille horaire '{{timetable_id}}' non trouvée",
+      "train_schedules_not_found": "{{count}} circulation(s) non trouvée(s)"
     },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",

@@ -351,10 +351,12 @@
     },
     "train_schedule_linking": {
       "batch_not_found": "{{count}} linking(s) could not be found",
+      "different_paced_train_time_windows": "Train schedules '{{source_train_schedule_id}}' and '{{target_train_schedule_id}}' have different time windows, they can't be linked in an hourly timetable",
       "request_incompatible_with_timetable_type": "Timetable {{timetable_id}} has type {{timetable_type}}, so it can't have occurrences with train_schedule_instance_index.",
       "source_already_used": "Occurrence {{occurrence}} is already used as a source.",
       "target_already_used": "Occurrence {{occurrence}} is already used as a target.",
-      "timetable_not_found": "Timetable '{{timetable_id}}' could not be found"
+      "timetable_not_found": "Timetable '{{timetable_id}}' could not be found",
+      "train_schedules_not_found": "{{count}} train schedule(s) could not be found."
     },
     "train_schedule_set": {
       "CatalogEntryNotFound": "Catalog entry '{{catalog_entry_id}}' could not be found",

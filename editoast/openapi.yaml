@@ -5734,6 +5734,33 @@ paths:
               schema:
                 oneOf:
                 - type: object
+                  description: '{count} train schedule(s) could not be found'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - count
+                      properties:
+                        count:
+                          type: integer
+                          minimum: 0
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:train_schedules_not_found
+                - type: object
                   description: Timetable {timetable_id} does not exist
                   required:
                   - type
@@ -5851,6 +5878,37 @@ paths:
                       type: string
                       enum:
                       - editoast:train_schedule_linking:request_incompatible_with_timetable_type
+                - type: object
+                  description: Train schedules {source_train_schedule_id} and {target_train_schedule_id} have different time windows, they can't be linked in an hourly timetable.
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - source_train_schedule_id
+                      - target_train_schedule_id
+                      properties:
+                        source_train_schedule_id:
+                          type: integer
+                          format: int64
+                        target_train_schedule_id:
+                          type: integer
+                          format: int64
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '409'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:train_schedule_linking:different_paced_train_time_windows
         '500':
           description: ''
           content:
