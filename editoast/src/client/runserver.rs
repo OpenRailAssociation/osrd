@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 use clap::Args;
-use std::time::Duration;
 use tokio::sync::RwLock;
 use tracing::Instrument as _;
 use url::Url;

@@ -7,6 +7,7 @@ pub use openapi::OpenApiRoot;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::Router;
 use axum::ServiceExt;
@@ -21,7 +22,6 @@ use database::DbConnectionPool;
 use fga::client::Limits;
 use object_store::aws::AmazonS3;
 use object_store::aws::AmazonS3Builder;
-use std::time::Duration;
 use tokio::sync::RwLock;
 use tower::Layer as _;
 use tower_http::compression::CompressionLayer;
