@@ -219,12 +219,12 @@
         "title": "Grilles calendaires"
       },
       "HOURLY": {
-        "empty": "Pas de trame 2h",
-        "title": "Trames 2h"
+        "empty": "Pas de trame",
+        "title": "Trames"
       }
     },
     "scenarioTimetableTypeCalendar": "Grille calendaire",
-    "scenarioTimetableTypeHourly": "Trame 2h",
+    "scenarioTimetableTypeHourly": "Trame",
     "scenarioUpdated": "Mise à jour réussie !",
     "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
     "timetable": {

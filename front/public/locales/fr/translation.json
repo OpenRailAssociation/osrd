@@ -709,7 +709,7 @@
     "adminDashboard": "Panneau administrateur",
     "disconnect": "Déconnexion",
     "featureFlags": {
-      "hourlyTimetables": "Activer les trames 2h",
+      "hourlyTimetables": "Activer les trames",
       "linkings": "Activer les enchaînements",
       "multipleTimetables": "Activer les grilles horaires multiples par scénario",
       "unrecognizedWaypoints": "Activer les points de passage non reconnus dans la modale itinéraire"
