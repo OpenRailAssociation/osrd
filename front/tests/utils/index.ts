@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../logging-fixture';
 import { getWorkerStatus } from './api-utils';
+import { escapeRegExp } from './data-normalizer';
 
 /**
  * Fill the input field identified by ID or TestID with the specified value and verifies it.
@@ -54,6 +55,27 @@ export const generateUniqueName = (baseName: string): string => {
   const uuidSegment = uuidv4().slice(0, 6);
   return `${baseName}-${uuidSegment}`;
 };
+
+export type ExpectedListing = { listed: string[]; notListed: string[] };
+
+/**
+ * Check which items are listed, matching their whole text, optionally followed by a ` - <details>`
+ * suffix (e.g. a rolling stock series). Pass at least one listed item to make sure the list is
+ * loaded before checking the missing ones.
+ *
+ * @param items - The locator of the list items.
+ * @param expected - The names expected to be listed or not.
+ */
+export async function expectListedItems(items: Locator, { listed, notListed }: ExpectedListing) {
+  const getItem = (name: string) =>
+    items.filter({ hasText: new RegExp(`^${escapeRegExp(name)}( - .*)?$`) });
+  for (const name of listed) {
+    await expect(getItem(name)).toBeVisible();
+  }
+  for (const name of notListed) {
+    await expect(getItem(name)).toHaveCount(0);
+  }
+}
 
 /**
  * Extract the first sequence of digits found in a string and returns it as a number.

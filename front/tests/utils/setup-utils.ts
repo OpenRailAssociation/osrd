@@ -11,7 +11,7 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { E2E_USER_IDENTITIES } from '../assets/constants/permission-const';
+import { E2E_USERS } from '../assets/constants/permission-const';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -27,15 +27,16 @@ import {
 } from '../assets/constants/project-const';
 import { PROJECT_DATA } from '../assets/operation-studies/project-const';
 import { STUDY_DATA } from '../assets/operation-studies/study-const';
+import { logger } from '../logging-fixture';
 import {
   getApiRequest,
   getInfra,
-  grantInfraAndRollingStocksToUser,
   listApiRequest,
   retrieveLatestStdcmEnvironment,
   postApiRequest,
   createStdcmEnvironment,
 } from './api-utils';
+import { addGrants, findUserSubjectId } from './authz-utils';
 import { createDateInSpecialTimeZone } from './date-utils';
 import { readJsonFile } from './file-utils';
 import createScenario from './scenario';
@@ -227,13 +228,26 @@ export async function createDataForTests(): Promise<void> {
       infra_id: mediumInfra.id,
     });
 
-    // Step 8: Grant the STDCM infrastructure and the rolling stocks to the STDCM only e2e user
-    const allRollingStocks: LightRollingStock[] = await listApiRequest('/api/light_rolling_stock');
-    await grantInfraAndRollingStocksToUser(
-      E2E_USER_IDENTITIES.stdcmOnly,
-      mediumInfra.id,
-      allRollingStocks.map(({ id }) => id)
-    );
+    // Step 8: Grant the STDCM infrastructure and the rolling stocks to the STDCM only e2e user.
+    // Skipped when the e2e users haven't been created, so that only the permission tests fail
+    if ((await findUserSubjectId(E2E_USERS.stdcmOnly)) === undefined) {
+      logger.warn(
+        `User "${E2E_USERS.stdcmOnly.identity}" not found, skipping its grants: ` +
+          'run scripts/load-e2e-users.sh before running the permission tests'
+      );
+    } else {
+      const allRollingStocks: LightRollingStock[] = await listApiRequest(
+        '/api/light_rolling_stock'
+      );
+      await addGrants('infra', mediumInfra.id, [
+        { subject: E2E_USERS.stdcmOnly, grant: 'RESTRICTED_READER' },
+      ]);
+      await addGrants(
+        'rolling_stock',
+        allRollingStocks.map(({ id }) => id),
+        [{ subject: E2E_USERS.stdcmOnly, grant: 'READER' }]
+      );
+    }
   } catch (error) {
     throw new Error('Error during test data setup', { cause: error });
   }

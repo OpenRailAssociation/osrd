@@ -1,7 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import {
+  type ExpectedListing,
   expectFieldsToHaveValues,
+  expectListedItems,
   handleAndVerifyInput,
   selectFirstDropDownItem,
 } from '../../utils';
@@ -17,6 +19,7 @@ class ConsistSection {
   readonly page: Page;
   private readonly tractionEngineField: Locator;
   private readonly tractionEngineAutocompleteList: Locator;
+  private readonly tractionEngineSuggestions: Locator;
   private readonly towedRollingStockField: Locator;
   private readonly towedRollingStockAutocompleteList: Locator;
   private readonly tonnageField: Locator;
@@ -28,6 +31,7 @@ class ConsistSection {
     this.page = page;
     this.tractionEngineField = page.getByTestId('tractionEngine-input');
     this.tractionEngineAutocompleteList = page.getByTestId('traction-engine-list');
+    this.tractionEngineSuggestions = page.getByTestId('traction-engine-item');
     this.towedRollingStockField = page.getByTestId('towedRollingStock-input');
     this.towedRollingStockAutocompleteList = page.getByTestId('towed-rolling-stock-list');
     this.tonnageField = page.getByTestId('tonnage-input');
@@ -82,6 +86,23 @@ class ConsistSection {
       expectedTonnage: getCombinedValue(tractionEngineTonnage, towedRollingStockTonnage),
       expectedLength: getCombinedValue(tractionEngineLength, towedRollingStockLength),
     };
+  }
+
+  async searchTractionEngineAndCheckSuggestions(
+    query: string,
+    expected: ExpectedListing
+  ): Promise<void> {
+    await expect(this.tractionEngineField).toBeEditable();
+    await this.tractionEngineField.fill(query);
+    await expectListedItems(this.tractionEngineSuggestions, expected);
+  }
+
+  async selectTractionEngine(name: string): Promise<void> {
+    await selectFirstDropDownItem(
+      this.tractionEngineField,
+      this.tractionEngineAutocompleteList,
+      name
+    );
   }
 
   async verifyDefaultConsistFields(params: { defaultSpeedLimitTag: string }): Promise<void> {
