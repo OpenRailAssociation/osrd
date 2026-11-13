@@ -52,7 +52,8 @@ export const formatStdcmDataForSimulationTable = (
 
     const startTime = isFirst || isStop ? dateToHHMM(op.stopEndTime) : '';
     const endTime = isLast || isStop ? dateToHHMM(op.time) : '';
-    const { stopType, trackName } = op;
+    const { stopType, trackName, forcedStopType } = op;
+    const isStopHighlighted = !forcedStopType || isPathStep;
 
     const stopTypeLabel = stopType
       ? capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`))
@@ -85,6 +86,7 @@ export const formatStdcmDataForSimulationTable = (
       name: !isPathStep && op.name === previousOp.name ? '=' : op.name || t('reportSheet.unknown'),
       secondaryCode: op.secondaryCode,
       secondaryCodeLabel: op.secondaryCodeLabel,
+      forcedStopType,
       trackName,
       endTime,
       passageStop,
@@ -100,7 +102,7 @@ export const formatStdcmDataForSimulationTable = (
       stopType,
       isBackTrack: op.isBackTrack,
       consistChanges,
-      ...getRowStyle(op.stopDuration, isPathStep, isFirst, isLast),
+      ...getRowStyle(op.stopDuration, isPathStep, isFirst, isLast, isStopHighlighted),
     };
   });
 };
