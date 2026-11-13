@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { uniqBy } from 'lodash';
+import { useSelector } from 'react-redux';
 
 import {
   osrdEditoastApi,
   type SearchPayload,
+  type SearchResultItemMacroNode,
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
+import { setFailure } from 'reducers/main';
+import type { PathStep } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/hooks/useDebounce';
 import { splitTokens, toUpper } from 'utils/strings';
 
@@ -16,23 +23,33 @@ import {
   largePayload,
   exactTrigramPayload,
   multiPayloadFromTokens,
+  macroNodePayload,
 } from '../helpers/searchPayload';
 import { selectSecondaryCode, shouldKeepMainCodeLock } from '../helpers/suggestionMatchers';
-import { buildOpSuggestion } from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
+import {
+  buildMacroNodeSuggestion,
+  buildOpSuggestion,
+} from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 import { formatOpLabel } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/utils';
 
 type Params = {
+  scenarioId: number;
+  pathSteps: PathStep[];
   pageSize?: number;
   minChars?: number;
   debounceMs?: number;
 };
 
 export const useOperationalPointSearch = ({
+  scenarioId,
+  pathSteps,
   pageSize = 1000,
   minChars = 2,
   debounceMs = 300,
 }: Params) => {
+  const dispatch = useAppDispatch();
+  const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [activeStepKey, setActiveStepKey] = useState<string | null>(null);
   const [draftByStepKey, setDraftByStepKey] = useState<Record<string, string>>({});
@@ -48,6 +65,8 @@ export const useOperationalPointSearch = ({
     setDraftByStepKey((prev) => ({ ...prev, [stepKey]: value }));
   }, []);
 
+  const isEditingStep = (stepKey: string) => isEditingByStepKey[stepKey] ?? true;
+
   const getInputForStep = useCallback(
     (stepKey: string) => {
       const isEditing = isEditingByStepKey[stepKey] ?? true;
@@ -57,6 +76,20 @@ export const useOperationalPointSearch = ({
   );
 
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
+  const [customOps, setCustomOps] = useState<OperationalPointSuggestion[]>([]);
+
+  const addCustomOp = useCallback((customOp: OperationalPointSuggestion) => {
+    setCustomOps((prev) => [...prev.filter((op) => op.id !== customOp.id), customOp]);
+  }, []);
+
+  const customOpQuery = rawActiveInput.trim().toLowerCase();
+  const matchingCustomOps = customOpQuery
+    ? customOps.filter(
+        (op) =>
+          op.name.toLowerCase().includes(customOpQuery) ||
+          op.mainCode.toLowerCase().includes(customOpQuery)
+      )
+    : [];
 
   const [searchTrigger, setSearchTrigger] = useState(0);
 
@@ -114,6 +147,56 @@ export const useOperationalPointSearch = ({
     []
   );
 
+  const searchMacroNodesToBuildSuggestions = useCallback(
+    async (searchQuery: string) => {
+      try {
+        const results = (await postSearch(
+          {
+            searchPayload: macroNodePayload(scenarioId, searchQuery),
+            pageSize,
+          },
+          true
+        ).unwrap()) as SearchResultItemMacroNode[];
+        return results.map(buildMacroNodeSuggestion).filter((suggestion) => suggestion !== null);
+      } catch (error) {
+        dispatch(setFailure(castErrorToFailure(error)));
+        return [];
+      }
+    },
+    [scenarioId, postSearch, pageSize, dispatch]
+  );
+
+  const doesOpExist = useCallback(
+    async (stepKey: string, countryCode: string, mainCode: string) => {
+      const isUsedByAnotherStep = pathSteps.some(
+        ({ key, location }) =>
+          key !== stepKey &&
+          location?.type === 'operational_point_part_reference' &&
+          location.operational_point.type === 'domestic' &&
+          location.operational_point.country_code === countryCode &&
+          location.operational_point.main_code === mainCode
+      );
+      if (isUsedByAnotherStep) return true;
+
+      const [infraOps, macroNodeSuggestions] = await Promise.all([
+        postSearch(
+          { searchPayload: exactTrigramPayload(infraId, mainCode), pageSize },
+          true
+        ).unwrap() as Promise<SearchResultItemOperationalPoint[]>,
+        searchMacroNodesToBuildSuggestions(mainCode),
+      ]);
+      return (
+        infraOps.some((op) => op.country_code === countryCode) ||
+        macroNodeSuggestions.some(
+          (macroNodeSuggestion) =>
+            macroNodeSuggestion.countryCode === countryCode &&
+            macroNodeSuggestion.mainCode === mainCode
+        )
+      );
+    },
+    [pathSteps, postSearch, infraId, pageSize, searchMacroNodesToBuildSuggestions]
+  );
+
   useEffect(() => {
     if (!activeStepKey) return;
 
@@ -146,7 +229,7 @@ export const useOperationalPointSearch = ({
     const searchOps = async () => {
       // 1) Large call on the entire query
       const largeRes = await search(largePayload(infraId, debouncedTrimmedInput));
-      if (cancelled) return;
+      if (cancelled) return [];
 
       const suggestionsLarge = buildOpSuggestion(largeRes);
 
@@ -157,8 +240,7 @@ export const useOperationalPointSearch = ({
         );
 
         if (keptFromLarge.length > 0) {
-          apply(suggestionsLarge);
-          return;
+          return suggestionsLarge;
         }
       }
 
@@ -166,34 +248,48 @@ export const useOperationalPointSearch = ({
       // We "lock" only if the rest is coherent, otherwise we relaunch a normal call.
       if (firstTokenUpper) {
         const exactRes = await search(exactTrigramPayload(infraId, firstTokenUpper));
-        if (cancelled) return;
+        if (cancelled) return [];
 
         if (exactRes.length > 0) {
           const suggestionsExact = buildOpSuggestion(exactRes);
           const keptExact = suggestionsExact.filter((s) => shouldKeepMainCodeLock(s, tokens));
 
           if (keptExact.length > 0) {
-            apply(uniqBy([...keptExact, ...suggestionsExact, ...suggestionsLarge], 'id'));
-            return;
+            return uniqBy([...keptExact, ...suggestionsExact, ...suggestionsLarge], 'id');
           }
         }
       }
 
       if (tokens.length > 1) {
         const multiRes = await search(multiPayloadFromTokens(infraId, tokens));
-        if (cancelled) return;
+        if (cancelled) return [];
 
         if (multiRes) {
           const multiSuggestions = buildOpSuggestion(multiRes);
-          apply(uniqBy([...suggestionsLarge, ...multiSuggestions], 'id'));
-          return;
+          return uniqBy([...suggestionsLarge, ...multiSuggestions], 'id');
         }
       }
 
-      apply(suggestionsLarge);
+      return suggestionsLarge;
     };
 
-    searchOps();
+    const searchAll = async () => {
+      const [infraOpSuggestions, macroNodeSuggestions] = await Promise.all([
+        searchOps(),
+        unrecognizedWaypointsActivated
+          ? searchMacroNodesToBuildSuggestions(debouncedTrimmedInput)
+          : [],
+      ]);
+      if (cancelled) return;
+
+      const opKeys = new Set(infraOpSuggestions.map((s) => `${s.countryCode}-${s.mainCode}`));
+      apply([
+        ...infraOpSuggestions,
+        ...macroNodeSuggestions.filter((s) => !opKeys.has(`${s.countryCode}-${s.mainCode}`)),
+      ]);
+    };
+
+    searchAll();
 
     return () => {
       cancelled = true;
@@ -203,6 +299,8 @@ export const useOperationalPointSearch = ({
     debouncedRawInput,
     debouncedTrimmedInput,
     infraId,
+    searchMacroNodesToBuildSuggestions,
+    unrecognizedWaypointsActivated,
     postSearch,
     pageSize,
     minChars,
@@ -215,9 +313,12 @@ export const useOperationalPointSearch = ({
     activeStepKey,
     setActiveStepKey,
     getInputForStep,
+    isEditingStep,
     setInputForStep,
-    opSuggestions,
+    opSuggestions: [...matchingCustomOps, ...opSuggestions],
     resetOpSuggestions,
+    addCustomOp,
+    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     startEditingForStep,

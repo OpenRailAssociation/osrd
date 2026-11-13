@@ -52,3 +52,12 @@ export const multiPayloadFromTokens = (
     query: ['and', multiQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
   };
 };
+
+export const macroNodePayload = (scenarioId: number, input: string): SearchPayload => ({
+  object: 'macronode',
+  query: [
+    'and',
+    ['or', ['search', ['full_name'], input], ['search', ['short_name'], input]],
+    ['=', ['scenario_id'], scenarioId],
+  ],
+});

@@ -18,6 +18,7 @@ export type OperationalPointSuggestion = {
   name: string;
   countryCode: string;
   secondaryCodeList: OpSecondaryCode[];
+  source: 'infra' | 'custom' | 'macroNode';
 };
 
 export type ListElementComponentProps = {
