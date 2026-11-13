@@ -6,17 +6,27 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
-import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type AddOrEditTimetableModalProps = {
   timetableType: TimetableType;
+  // Only given when editing a timetable
+  timetable?: TimetableSummary;
   onCancel: () => void;
 };
 
-const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetableModalProps) => {
+const AddOrEditTimetableModal = ({
+  timetableType,
+  timetable,
+  onCancel,
+}: AddOrEditTimetableModalProps) => {
   'use memo';
 
   const { t } = useTranslation(['operational-studies', 'translation']);
@@ -24,15 +34,23 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
   const { scenario } = useScenarioContextWithOptionalTimetable();
   const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
   const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation();
+  const [patchTimetable] = osrdEditoastApi.endpoints.patchTimetableById.useMutation();
   const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
   const [getScenario] = osrdEditoastApi.endpoints.getScenariosByScenarioId.useLazyQuery();
-  const [name, setName] = useState('');
+  const [name, setName] = useState(timetable?.name ?? '');
   const [displayError, setDisplayError] = useState(false);
 
-  const title =
+  const isEdition = timetable !== undefined;
+
+  const addTitle =
     timetableType === 'HOURLY'
       ? t('main.scenarioAddHourlyPatternModalTitle')
       : t('main.scenarioAddCalendarModalTitle');
+  const editTitle =
+    timetableType === 'HOURLY'
+      ? t('main.scenarioEditHourlyPatternModalTitle')
+      : t('main.scenarioEditCalendarModalTitle');
+  const title = isEdition ? editTitle : addTitle;
 
   const isNameInvalid = !name.trim();
 
@@ -43,7 +61,15 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
       return;
     }
     try {
-      const timetable = await postTimetable({
+      if (isEdition) {
+        await patchTimetable({
+          id: timetable.id,
+          timetablePatchForm: { name: name.trim() },
+        }).unwrap();
+        onCancel();
+        return;
+      }
+      const newTimetable = await postTimetable({
         timetableForm: { timetable_type: timetableType, timetable_name: name.trim() },
       }).unwrap();
       // No need to create the sandbox here, useScenario creates it once the timetable is selected
@@ -53,14 +79,14 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
         scenarioPatchForm: {
           timetable_ids: [
             ...scenario.timetable_summaries.map(({ id }) => id),
-            timetable.timetable_id,
+            newTimetable.timetable_id,
           ],
         },
       }).unwrap();
       // Wait for the scenario with the new timetable, otherwise useScenario doesn't know it yet
       // and falls back on the first timetable when we select it
       await getScenario({ scenarioId: scenario.id }).unwrap();
-      void setParamsInUrlAndStorage('timetable', String(timetable.timetable_id));
+      void setParamsInUrlAndStorage('timetable', String(newTimetable.timetable_id));
       onCancel();
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
@@ -77,7 +103,7 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
       footer={
         <>
           <Button
-            variant="Cancel"
+            variant="Normal"
             type="reset"
             label={t('translation:common.cancel')}
             onClick={onCancel}
