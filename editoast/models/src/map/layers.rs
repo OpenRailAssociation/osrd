@@ -70,7 +70,7 @@ const TRACK_SECTIONS_LAYER: Layer = Layer {
     attribution: None,
     geo: View {
         on_field: "geographic",
-        data_expr: "track_section.data",
+        data_expr: "(track_section.data || jsonb_build_object('line', osrd_track_line_extension(track_section.data)))",
         exclude_fields: &["curves", "loading_gauge_limits", "slopes", "geo"],
         joins: &[
             "inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id",
@@ -181,7 +181,7 @@ const OPERATIONAL_POINTS_LAYER: Layer = Layer {
     attribution: None,
     geo: View {
         on_field: "geographic",
-        data_expr: "operational_point.data || jsonb_build_object('kp', layer.kp, 'track_name', track_section.data->'extensions'->'sncf'->'track_name', 'local_track_name', (SELECT elem->>'local_track_name' FROM jsonb_array_elements(operational_point.data->'parts') elem WHERE elem->>'track' = layer.track_section::text limit 1))",
+        data_expr: "operational_point.data || jsonb_build_object('kp', layer.kp, 'track_name', osrd_track_line_extension(track_section.data)->'track_name', 'local_track_name', (SELECT elem->>'local_track_name' FROM jsonb_array_elements(operational_point.data->'parts') elem WHERE elem->>'track' = layer.track_section::text limit 1))",
         exclude_fields: &["parts", "plc"],
         joins: &[
             "inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id",

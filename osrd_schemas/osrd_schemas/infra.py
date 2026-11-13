@@ -4,7 +4,14 @@ from itertools import product
 from typing import Annotated, Literal, get_args
 
 from geojson_pydantic import LineString
-from pydantic import BaseModel, Field, StringConstraints, create_model, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    create_model,
+    model_validator,
+)
 from pydantic.fields import FieldInfo
 
 from .models import Endpoint
@@ -701,8 +708,22 @@ def register_extension(object: type[BaseModel], name):
     return register_extension
 
 
+class TrackSectionExtensions(BaseModel):
+    """Line and track identification by infrastructure manager: sncf, or any other by its short name"""
+
+    model_config = ConfigDict(extra="allow")
+    __pydantic_extra__: dict[str, "TrackSectionSncfExtension"] = Field(init=False)
+
+
+TrackSection.model_fields["extensions"] = FieldInfo(
+    annotation=TrackSectionExtensions, default=None
+)
+
+
 @register_extension(object=TrackSection, name="sncf")
 class TrackSectionSncfExtension(BaseModel):
+    """Line and track identification of a track section"""
+
     line_code: int = Field(
         description="Code of the line used by the corresponding track section"
     )

@@ -66,7 +66,7 @@ impl From<TrackSection> for TrackSectionCache {
             length: track.length,
             curves: track.curves,
             slopes: track.slopes,
-            line_code: track.extensions.sncf.map(|sncf| sncf.line_code),
+            line_code: track.extensions.line().map(|line| line.line_code),
         }
     }
 }

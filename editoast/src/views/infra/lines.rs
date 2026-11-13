@@ -68,7 +68,12 @@ pub(in crate::views) async fn get_line_bbox(
     let mut tracksections = tracksections_model
         .into_iter()
         .map(TrackSection::from)
-        .filter(|track| track.extensions.sncf.as_ref().expect("track section extension 'sncf' is required for /infra/{id}/lines/{line_code}/bbox").line_code == line_code)
+        .filter(|track| {
+            track
+                .extensions
+                .line()
+                .is_some_and(|line| line.line_code == line_code)
+        })
         .peekable();
 
     if tracksections.peek().is_none() {

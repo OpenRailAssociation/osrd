@@ -6,6 +6,7 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PathWaypoint, ProjectionWaypoint } from 'modules/simulationResult/types';
+import { getTrackLine } from 'utils/trackSection';
 
 /**
  * Check if the train path used waypoints added by map click and add them to the operational points
@@ -74,7 +75,7 @@ export function upsertTrackOffsetPathItemsInWaypoints(
                 track: location.track,
                 position: location.offset,
                 local_track_name:
-                  trackSectionsById[location.track]?.extensions?.sncf?.track_name ?? '',
+                  getTrackLine(trackSectionsById[location.track]?.extensions)?.track_name ?? '',
               },
             };
 

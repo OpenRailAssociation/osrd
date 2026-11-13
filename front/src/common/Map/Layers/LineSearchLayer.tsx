@@ -3,6 +3,7 @@ import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_TRACK_SOURCE_LAYER, MAP_URL } from 'common/Map/const';
 
+import { trackLineTileProperty } from './commonLayers';
 import OrderedLayer from './OrderedLayer';
 
 type TracksGeographicProps = {
@@ -30,7 +31,7 @@ const LineSearchLayer = ({ layerOrder, infraID, lineSearchCode }: TracksGeograph
             'line-color': '#ffb612',
             'line-width': 4,
           }}
-          filter={['==', ['get', 'extensions_sncf_line_code'], lineSearchCode]}
+          filter={['==', trackLineTileProperty('line_code'), lineSearchCode]}
         />
       )}
     </Source>

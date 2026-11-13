@@ -209,6 +209,7 @@ pub(crate) fn track_sections(edges: &[Edge]) -> Vec<TrackSection> {
                         name: "OpenStreetMap".into(),
                         id: "osm".into(),
                     }),
+                    ..Default::default()
                 },
                 ..Default::default()
             }

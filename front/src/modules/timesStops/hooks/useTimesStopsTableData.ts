@@ -24,6 +24,7 @@ import {
   addDurationToStartTime,
   subtractStartTime,
 } from 'utils/duration';
+import { getTrackLine } from 'utils/trackSection';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
@@ -316,7 +317,7 @@ const useTimesStopsTableData = (
         // the stableOPs fallback never applies for those since it requires 'operational_point' in location.
         const trackName =
           pathStepLocation.type === 'track_offset'
-            ? trackSections[pathStepLocation.track]?.extensions?.sncf?.track_name
+            ? getTrackLine(trackSections[pathStepLocation.track]?.extensions)?.track_name
             : (pathStepLocation.local_track_name ?? undefined);
 
         const hasRequestedTrack =

@@ -18778,9 +18778,17 @@ components:
                 type: string
                 minLength: 1
             additionalProperties: false
-      additionalProperties: false
+      additionalProperties:
+        description: |-
+          Line and track identification of the track section in the terms of any other infrastructure
+          manager, keyed by its short name (`db`, `sbb`, `oebb`, …), each a `TrackSectionSncfExtension`
     TrackSectionSncfExtension:
       type: object
+      description: |-
+        Line and track identification of a track section
+
+        Despite its name, it is shared by every infrastructure manager extension of a track section
+        (`sncf`, `db`, `sbb`, …).
       required:
       - line_code
       - line_name

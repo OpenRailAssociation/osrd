@@ -7,7 +7,7 @@ from datetime import date
 from datetime import time as time_aliased
 from datetime import timedelta
 from enum import Enum
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Dict, Literal
 
 from pydantic import (
     AwareDatetime,
@@ -4555,6 +4555,13 @@ class Source(BaseModel):
 
 
 class TrackSectionSncfExtension(BaseModel):
+    """
+    Line and track identification of a track section
+
+    Despite its name, it is shared by every infrastructure manager extension of a track section
+    (`sncf`, `db`, `sbb`, …).
+    """
+
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -6393,8 +6400,11 @@ class TimetableSummary(BaseModel):
 
 class TrackSectionExtensions(BaseModel):
     model_config = ConfigDict(
-        extra="forbid",
+        extra="allow",
     )
+    __annotations__ = {
+        "__pydantic_extra__": Dict[str, Any],
+    }
     sncf: TrackSectionSncfExtension | None = None
     source: Source | None = None
 

@@ -17,6 +17,7 @@ import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEditio
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+import { getTrackLine } from 'utils/trackSection';
 
 import type { TrackSectionEntity } from '../../trackEdition/types';
 
@@ -125,7 +126,8 @@ const TrackSectionEndpointSelector = ({
         <div className="flex-grow-1 flex-shrink-1 mr-2">
           {trackSection ? (
             <span>
-              {trackSection?.properties?.extensions?.sncf?.line_name || trackSection.properties.id}
+              {getTrackLine(trackSection?.properties?.extensions)?.line_name ||
+                trackSection.properties.id}
             </span>
           ) : (
             <span className="text-danger font-weight-bold">
