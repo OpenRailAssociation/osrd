@@ -426,12 +426,17 @@ mod tests {
 
     use authz::Role;
     use axum::http::StatusCode;
+    use diesel::data_types::PgInterval;
+    use jiff::SignedDuration;
     use serde_json::json;
+    use unit_system::units::millisecond;
 
     use crate::error::InternalError;
+    use crate::fixtures::create_hourly_timetable_with_train_schedule_set;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_timetable;
     use crate::fixtures::create_timetable_with_train_schedule_set;
+    use crate::fixtures::simple_paced_train_changeset;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
 
@@ -569,8 +574,75 @@ mod tests {
         assert_eq!(created_linkings[0].target, target);
     }
 
+    #[expect(clippy::too_many_arguments)]
+    #[rstest::rstest]
+    #[case::train_schedules_not_found(
+        "editoast:train_schedule_linking:train_schedules_not_found",
+        false,
+        Some(i64::MAX),
+        None,
+        0,
+        0,
+        2,
+        false,
+        StatusCode::NOT_FOUND
+    )]
+    #[case::request_incompatible_with_timetable_type(
+        "editoast:train_schedule_linking:request_incompatible_with_timetable_type",
+        true,
+        None,
+        Some(0),
+        0,
+        0,
+        2,
+        false,
+        StatusCode::CONFLICT
+    )]
+    #[case::different_paced_train_time_windows(
+        "editoast:train_schedule_linking:different_paced_train_time_windows",
+        true,
+        None,
+        None,
+        0,
+        0,
+        3,
+        false,
+        StatusCode::CONFLICT
+    )]
+    #[case::source_already_used(
+        "editoast:train_schedule_linking:source_already_used",
+        false,
+        None,
+        None,
+        0,
+        1,
+        2,
+        true,
+        StatusCode::CONFLICT
+    )]
+    #[case::target_already_used(
+        "editoast:train_schedule_linking:target_already_used",
+        false,
+        None,
+        None,
+        1,
+        0,
+        2,
+        true,
+        StatusCode::CONFLICT
+    )]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_already_used() {
+    async fn create_errors(
+        #[case] expected_error_type: &str,
+        #[case] is_hourly_timetable: bool,
+        #[case] missing_target_train_schedule_id: Option<i64>,
+        #[case] source_train_schedule_instance_index: Option<i64>,
+        #[case] source_occurrence_index: i64,
+        #[case] target_occurrence_index: i64,
+        #[case] target_time_window_hours: i64,
+        #[case] create_existing_linking: bool,
+        #[case] expected_status: StatusCode,
+    ) {
         let app = test_app!().build();
         let pool = app.db_pool();
         let conn = &mut pool.get_ok();
@@ -580,73 +652,58 @@ mod tests {
             .create()
             .await;
 
-        let (timetable, train_schedule_set) = create_timetable_with_train_schedule_set(conn).await;
-        let train_schedule_1 = create_simple_paced_train(conn, train_schedule_set.id).await;
-        let train_schedule_2 = create_simple_paced_train(conn, train_schedule_set.id).await;
-
-        TrainScheduleLinking::changeset()
-            .timetable_id(timetable.id)
-            .source_train_schedule_id(train_schedule_1.id)
-            .source_occurrence_index(Some(0))
-            .target_train_schedule_id(train_schedule_2.id)
-            .target_occurrence_index(Some(0))
+        let (timetable, train_schedule_set) = if is_hourly_timetable {
+            create_hourly_timetable_with_train_schedule_set(conn).await
+        } else {
+            create_timetable_with_train_schedule_set(conn).await
+        };
+        let train_schedule_1 = simple_paced_train_changeset(train_schedule_set.id)
+            .start_time(millisecond::i64::new(0))
             .create(conn)
             .await
-            .expect("Failed to create a linking");
+            .expect("Failed to create paced train");
+        let train_schedule_2 = simple_paced_train_changeset(train_schedule_set.id)
+            .start_time(millisecond::i64::new(0))
+            .time_window(Some(PgInterval::from_microseconds(
+                SignedDuration::from_hours(target_time_window_hours).as_micros() as i64,
+            )))
+            .create(conn)
+            .await
+            .expect("Failed to create paced train");
 
-        let request = vec![LinkingCreateForm {
-            source: LinkingOccurrenceId::PacedOccurrence {
-                train_schedule_id: train_schedule_1.id,
-                occurrence_index: 0,
-                train_schedule_instance_index: None,
-            },
-            target: LinkingOccurrenceId::PacedOccurrence {
-                train_schedule_id: train_schedule_2.id,
-                occurrence_index: 1,
-                train_schedule_instance_index: None,
-            },
-        }];
+        if create_existing_linking {
+            TrainScheduleLinking::changeset()
+                .timetable_id(timetable.id)
+                .source_train_schedule_id(train_schedule_1.id)
+                .source_occurrence_index(Some(0))
+                .target_train_schedule_id(train_schedule_2.id)
+                .target_occurrence_index(Some(0))
+                .create(conn)
+                .await
+                .expect("Failed to create a linking");
+        }
 
-        // Make sure an error is returned for a source already used
         let response: InternalError = app
             .post(format!("/timetable/{}/train_schedule_linkings", timetable.id).as_str())
-            .json(&json!(request))
+            .json(&json!(vec![LinkingCreateForm {
+                source: LinkingOccurrenceId::PacedOccurrence {
+                    train_schedule_id: train_schedule_1.id,
+                    occurrence_index: source_occurrence_index,
+                    train_schedule_instance_index: source_train_schedule_instance_index,
+                },
+                target: LinkingOccurrenceId::PacedOccurrence {
+                    train_schedule_id: missing_target_train_schedule_id
+                        .unwrap_or(train_schedule_2.id),
+                    occurrence_index: target_occurrence_index,
+                    train_schedule_instance_index: None,
+                },
+            }]))
             .by_user(user.as_ref())
             .await
-            .assert_status(StatusCode::CONFLICT)
+            .assert_status(expected_status)
             .json();
 
-        assert_eq!(
-            &response.error_type,
-            "editoast:train_schedule_linking:source_already_used"
-        );
-
-        let request = vec![LinkingCreateForm {
-            source: LinkingOccurrenceId::PacedOccurrence {
-                train_schedule_id: train_schedule_1.id,
-                occurrence_index: 1,
-                train_schedule_instance_index: None,
-            },
-            target: LinkingOccurrenceId::PacedOccurrence {
-                train_schedule_id: train_schedule_2.id,
-                occurrence_index: 0,
-                train_schedule_instance_index: None,
-            },
-        }];
-
-        // Make sure an error is returned for a target already used
-        let response: InternalError = app
-            .post(format!("/timetable/{}/train_schedule_linkings", timetable.id).as_str())
-            .json(&json!(request))
-            .by_user(user.as_ref())
-            .await
-            .assert_status(StatusCode::CONFLICT)
-            .json();
-
-        assert_eq!(
-            &response.error_type,
-            "editoast:train_schedule_linking:target_already_used"
-        );
+        assert_eq!(&response.error_type, expected_error_type);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
