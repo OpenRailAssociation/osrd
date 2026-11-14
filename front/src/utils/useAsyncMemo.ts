@@ -18,23 +18,28 @@ export function getAsyncMemoData<T>(state: AsyncMemoState<T>): T | undefined {
  * This hook helps to manipulate asynchronous memoized values, without having to rewrite every time the same boilerplate
  * code to handle loading state and errors.
  */
-export function useAsyncMemo<T>(fn: () => Promise<T>, deps: DependencyList): AsyncMemoState<T> {
+export function useAsyncMemo<T>(
+  fn: (controller: AbortController) => Promise<T>,
+  deps: DependencyList
+): AsyncMemoState<T> {
   const [state, setState] = useState<AsyncMemoState<T>>({ type: 'loading' });
+  const activeController = useRef<AbortController | null>(null);
 
   /* eslint-disable-next-line react-hooks/exhaustive-deps */
   useEffect(() => {
-    let aborted = false;
+    activeController.current?.abort();
+    const controller = new AbortController();
     setState({ type: 'loading', previousData: getAsyncMemoData(state) });
-    fn()
+    fn(controller)
       .then((data) => {
-        if (!aborted) setState({ type: 'ready', data });
+        if (!controller.signal.aborted) setState({ type: 'ready', data });
       })
       .catch((error) => {
-        if (!aborted) setState({ type: 'error', error });
+        if (!controller.signal.aborted) setState({ type: 'error', error });
       });
 
     return () => {
-      aborted = true;
+      controller.abort();
     };
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, deps);
