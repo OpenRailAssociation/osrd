@@ -5,3 +5,4 @@ input-payload.json
 timetable.cbor
 infra.railjson
 debug_stdcm.json
+trainsim-chart.js

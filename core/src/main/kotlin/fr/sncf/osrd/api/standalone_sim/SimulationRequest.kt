@@ -107,6 +107,14 @@ sealed class MarginValue {
     class Percentage(var percentage: Double) : MarginValue()
 
     class None : MarginValue()
+
+    /** Return whether there is no margin (this is [None] or has a value/percentage of zero). */
+    fun isNone(): Boolean =
+        when (this) {
+            is MinPer100Km -> value == 0.0
+            is None -> true
+            is Percentage -> percentage == 0.0
+        }
 }
 
 class MarginValueAdapter {
