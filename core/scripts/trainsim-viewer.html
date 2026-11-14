@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trainsim viewer</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafafa;
+        --fg: #222;
+        --muted: #888;
+        --track: #bbb;
+        --panel: #fff;
+        --border: #ddd;
+        --changed: #fff3bf;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181c;
+          --fg: #e6e6e6;
+          --track: #555;
+          --panel: #1e2126;
+          --border: #333;
+          --changed: #4a4020;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        color: var(--fg);
+        font: 13px system-ui, sans-serif;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      #slider { flex: 1; min-width: 120px; }
+      #status { color: var(--muted); }
+      main { flex: 1; display: flex; min-height: 0; }
+      #map { flex: 1; min-width: 0; cursor: grab; touch-action: none; }
+      #map.dragging { cursor: grabbing; }
+      aside {
+        width: 400px;
+        overflow: auto;
+        padding: 8px 12px;
+        background: var(--panel);
+        border-left: 1px solid var(--border);
+        font-variant-numeric: tabular-nums;
+      }
+      table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
+      th, td { padding: 2px 6px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+      th:first-child, td:first-child { text-align: left; }
+      td.changed { background: var(--changed); font-weight: bold; }
+      .swatch, .dot { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+      .swatch { border-radius: 2px; }
+      .dot { border-radius: 50%; }
+      .dot.hollow { border: 1.5px solid var(--muted); }
+      #legend { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); margin-bottom: 12px; }
+      @media (max-width: 700px) {
+        main { flex-direction: column; }
+        aside { width: auto; max-height: 40vh; border-left: 0; border-top: 1px solid var(--border); }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <input type="file" id="file" accept=".jsonl,.json,.txt" />
+      <button id="prev" title="← (shift: ×10)">◀ prev</button>
+      <button id="play" title="space">▶</button>
+      <button id="next" title="→ (shift: ×10)">next ▶</button>
+      <select id="speed" title="delay between ticks when playing">
+        <option value="200">slow</option>
+        <option value="50" selected>normal</option>
+        <option value="10">fast</option>
+      </select>
+      <input type="range" id="slider" min="0" max="0" value="0" />
+      <span id="tick">pick or drop a .jsonl</span>
+      <span id="status"></span>
+    </header>
+    <main>
+      <canvas id="map"></canvas>
+      <aside>
+        <div id="legend"></div>
+        <table id="trains"></table>
+        <table id="signals"></table>
+      </aside>
+    </main>
+    <script>
+      const ASPECT_COLORS = { S: "#d62728", C: "#d62728", A: "#f0b400", VL: "#2ca02c" };
+      const DISAGREEING_COLOR = "#ff00ff";
+      const TRAIN_COLORS = ["#1f77b4", "#ff7f0e", "#9467bd", "#17becf", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"];
+      const METERS_PER_DEGREE_LAT = 110540;
+      const METERS_PER_DEGREE_LON_AT_EQUATOR = 111320;
+      const SHIFT_STEP = 10;
+
+      const $ = (id) => document.getElementById(id);
+      const canvas = $("map");
+      const ctx = canvas.getContext("2d");
+
+      let trains = []; // [{name, color, length, departure, pathLength, points, offsets}]
+      let signals = []; // [{name, point, indexByTrain: Map(train index -> index in its tick aspects)}]
+      let ticks = []; // [{trains: [{time, position, speed, aspects}]}], in the order of trains
+      let current_tick = 0; // index of the displayed tick
+      let view = { cx: 0, cy: 0, scale: 1 };
+      let playTimer = null;
+
+      function parse(text) {
+        let header = null;
+        const tickRecords = [];
+        let skipped = 0;
+        for (const line of text.split("\n")) {
+          if (!line.trim()) continue;
+          try {
+            const record = JSON.parse(line);
+            if (record.type === "header") header = record;
+            else if (record.type === "tick") tickRecords.push(record);
+          } catch {
+            skipped++;
+          }
+        }
+        return { header, ticks: tickRecords, skipped };
+      }
+
+      function projector(header) {
+        const lats = header.trains.flatMap((train) => train.geo.map(([, lat]) => lat));
+        const meanLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+        const metersPerDegreeLon = METERS_PER_DEGREE_LON_AT_EQUATOR * Math.cos((meanLat * Math.PI) / 180);
+        return ([lon, lat]) => [lon * metersPerDegreeLon, lat * METERS_PER_DEGREE_LAT];
+      }
+
+      function load(text) {
+        play(false);
+        const parsed = parse(text);
+        $("status").textContent = parsed.skipped ? `${parsed.skipped} unreadable line(s) skipped` : "";
+        if (!parsed.header) {
+          trains = [];
+          signals = [];
+          ticks = [];
+          $("tick").textContent = "no header line in this file";
+          draw();
+          panel();
+          return;
+        }
+
+        const project = projector(parsed.header);
+        trains = parsed.header.trains.map((train, i) => ({
+          name: `T${i}`,
+          color: TRAIN_COLORS[i % TRAIN_COLORS.length],
+          length: train.length,
+          departure: train.departure,
+          pathLength: train.pathLength,
+          points: train.geo.map(project),
+          offsets: train.geo.map(([, , offset]) => offset),
+        }));
+
+        const signalsByName = new Map();
+        parsed.header.trains.forEach((train, trainIndex) =>
+          train.signals.forEach(({ name, offset }, signalIndex) => {
+            if (!signalsByName.has(name))
+              signalsByName.set(name, { name, point: pointAt(trains[trainIndex], offset), indexByTrain: new Map() });
+            signalsByName.get(name).indexByTrain.set(trainIndex, signalIndex);
+          })
+        );
+        signals = [...signalsByName.values()];
+
+        ticks = parsed.ticks;
+        $("slider").max = Math.max(ticks.length - 1, 0);
+        fit();
+        show(current_tick);
+      }
+
+      async function loadFile(file) {
+        if (file) load(await file.text());
+      }
+
+      $("file").onchange = async (e) => {
+        await loadFile(e.target.files[0]);
+        e.target.value = "";
+      };
+      document.ondragover = (e) => e.preventDefault();
+      document.ondrop = (e) => {
+        e.preventDefault();
+        loadFile(e.dataTransfer.files[0]);
+      };
+
+      const lerp = (a, b, ratio) => a + (b - a) * ratio;
+
+      function pointAt(train, offset) {
+        const { offsets, points } = train;
+        offset = Math.min(Math.max(offset, offsets[0]), offsets[offsets.length - 1]);
+        let i = 1;
+        while (i < offsets.length - 1 && offsets[i] < offset) i++;
+        const segment = offsets[i] - offsets[i - 1];
+        const ratio = segment > 0 ? (offset - offsets[i - 1]) / segment : 0;
+        const [a, b] = [points[i - 1], points[i]];
+        return [lerp(a[0], b[0], ratio), lerp(a[1], b[1], ratio)];
+      }
+
+      function trainPoints(train, head) {
+        const tail = head - train.length;
+        const inner = train.points.filter((_, i) => train.offsets[i] > tail && train.offsets[i] < head);
+        return [pointAt(train, tail), ...inner, pointAt(train, head)];
+      }
+
+      function status(train, state) {
+        if (state.position >= train.pathLength) return "finished";
+        if (state.time <= train.departure) return "not departed";
+        return state.speed === 0 ? "stopped" : "running";
+      }
+
+      function aspectSeenBy(tick, signal, trainIndex) {
+        const signalIndex = signal.indexByTrain.get(trainIndex);
+        return signalIndex === undefined ? undefined : tick.trains[trainIndex].aspects[signalIndex];
+      }
+
+      function seenAspects(tick, signal) {
+        const aspects = [...signal.indexByTrain.keys()].map((trainIndex) => aspectSeenBy(tick, signal, trainIndex));
+        return [...new Set(aspects.filter((aspect) => aspect != null))];
+      }
+
+      function signalColor(aspects) {
+        if (aspects.length > 1) return DISAGREEING_COLOR;
+        return ASPECT_COLORS[aspects[0]] ?? null;
+      }
+
+      function fit() {
+        const points = trains.flatMap((train) => train.points);
+        if (!points.length) return;
+        const xs = points.map(([x]) => x);
+        const ys = points.map(([, y]) => y);
+        const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+        view.cx = (x0 + x1) / 2;
+        view.cy = (y0 + y1) / 2;
+        view.scale = 0.9 * Math.min(canvas.clientWidth / (x1 - x0 || 1), canvas.clientHeight / (y1 - y0 || 1));
+      }
+
+      const toScreen = ([x, y]) => [
+        (x - view.cx) * view.scale + canvas.clientWidth / 2,
+        canvas.clientHeight / 2 - (y - view.cy) * view.scale,
+      ];
+
+      function polyline(points, color, width, dash = []) {
+        ctx.beginPath();
+        points.map(toScreen).forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash);
+        ctx.lineCap = "round";
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const overlap = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+      function drawSignals(tick, colors) {
+        ctx.font = "11px system-ui, sans-serif";
+        const labelBoxes = [];
+        for (const signal of signals) {
+          const aspects = tick ? seenAspects(tick, signal) : [];
+          const color = signalColor(aspects);
+          const [x, y] = toScreen(signal.point);
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, 2 * Math.PI);
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fill();
+          } else {
+            ctx.strokeStyle = colors.muted;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+
+          const label = `${signal.name} ${aspects.join("/")}`;
+          const box = { x: x + 9, y: y - 17, w: ctx.measureText(label).width, h: 13 };
+          if (labelBoxes.some((other) => overlap(box, other))) continue;
+          labelBoxes.push(box);
+          ctx.fillStyle = colors.fg;
+          ctx.fillText(label, box.x, y - 6);
+        }
+      }
+
+      function drawTrains(tick) {
+        ctx.font = "bold 12px system-ui, sans-serif";
+        trains.forEach((train, i) => {
+          const state = tick.trains[i];
+          const points = trainPoints(train, state.position);
+          polyline(points, train.color, 10, status(train, state) === "not departed" ? [4, 6] : []);
+          const [x, y] = toScreen(points[points.length - 1]);
+          ctx.fillStyle = train.color;
+          ctx.fillText(train.name, x + 8, y + 16);
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        const css = getComputedStyle(document.documentElement);
+        const colors = { fg: css.getPropertyValue("--fg"), muted: css.getPropertyValue("--muted") };
+        for (const train of trains) polyline(train.points, css.getPropertyValue("--track"), 4);
+        const tick = ticks[current_tick];
+        drawSignals(tick, colors);
+        if (tick) drawTrains(tick);
+      }
+
+      const escapeHtml = (text) => String(text).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+      const dot = (color, label) => `<span><span class="dot" style="background:${color}"></span>${label}</span>`;
+
+      $("legend").innerHTML = [
+        ...["S", "A", "VL"].map((aspect) => dot(ASPECT_COLORS[aspect], aspect)),
+        dot(DISAGREEING_COLOR, "trains disagree"),
+        `<span><span class="dot hollow"></span>not evaluated, "·" in the table (train finished)</span>`,
+        `<span><span class="swatch" style="background:var(--changed)"></span>changed since previous tick</span>`,
+      ].join("");
+
+      function trainsTable(tick) {
+        const rows = trains.map((train, i) => {
+          const state = tick.trains[i];
+          return (
+            `<tr><td><span class="swatch" style="background:${train.color}"></span>${train.name}</td>` +
+            `<td>${train.length}</td><td>${state.time.toFixed(1)}</td><td>${state.position.toFixed(1)}</td>` +
+            `<td>${(state.speed * 3.6).toFixed(1)}</td><td>${status(train, state)}</td></tr>`
+          );
+        });
+        return "<tr><th>train</th><th>len (m)</th><th>t (s)</th><th>pos (m)</th><th>km/h</th><th></th></tr>" + rows.join("");
+      }
+
+      function signalsTable(tick, previous) {
+        const rows = signals.map((signal) => {
+          const cells = trains.map((_, i) => {
+            const aspect = aspectSeenBy(tick, signal, i);
+            if (aspect === undefined) return "<td></td>";
+            const changed = previous && aspectSeenBy(previous, signal, i) !== aspect;
+            const color = ASPECT_COLORS[aspect] ?? "inherit";
+            return `<td class="${changed ? "changed" : ""}" style="color:${color}">${escapeHtml(aspect ?? "·")}</td>`;
+          });
+          return `<tr><td>${escapeHtml(signal.name)}</td>${cells.join("")}</tr>`;
+        });
+        const head = `<tr><th>signal</th>${trains.map((train) => `<th>${train.name}</th>`).join("")}</tr>`;
+        return head + rows.join("");
+      }
+
+      function panel() {
+        const tick = ticks[current_tick];
+        $("trains").innerHTML = tick ? trainsTable(tick) : "";
+        $("signals").innerHTML = tick ? signalsTable(tick, ticks[current_tick - 1]) : "";
+      }
+
+      function show(tickIndex) {
+        current_tick = Math.min(Math.max(tickIndex, 0), Math.max(ticks.length - 1, 0));
+        $("slider").value = current_tick;
+        $("tick").textContent = ticks.length ? `tick ${current_tick} / ${ticks.length - 1}` : "no tick in this file";
+        draw();
+        panel();
+      }
+
+      function play(on) {
+        clearTimeout(playTimer);
+        playTimer = null;
+        if (on && ticks.length > 1) {
+          if (current_tick >= ticks.length - 1) show(0);
+          playTimer = setTimeout(advance, +$("speed").value);
+        }
+        $("play").textContent = playTimer ? "❚❚" : "▶";
+      }
+
+      function advance() {
+        show(current_tick + 1);
+        play(current_tick < ticks.length - 1);
+      }
+
+      const stepSize = (e) => (e.shiftKey ? SHIFT_STEP : 1);
+      $("prev").onclick = (e) => show(current_tick - stepSize(e));
+      $("next").onclick = (e) => show(current_tick + stepSize(e));
+      $("play").onclick = () => play(!playTimer);
+      $("slider").oninput = (e) => show(+e.target.value);
+      document.onkeydown = (e) => {
+        if (e.target.type === "file") return;
+        if (e.key === "ArrowLeft") show(current_tick - stepSize(e));
+        else if (e.key === "ArrowRight") show(current_tick + stepSize(e));
+        else if (e.key === "Home") show(0);
+        else if (e.key === "End") show(ticks.length - 1);
+        else if (e.key === " ") play(!playTimer);
+        else return;
+
+        e.preventDefault();
+        e.target.blur?.();
+      };
+
+      new ResizeObserver(() => {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = canvas.clientWidth * dpr;
+        canvas.height = canvas.clientHeight * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw();
+      }).observe(canvas);
+
+      canvas.onwheel = (e) => {
+        e.preventDefault();
+        const zoom = Math.exp(-e.deltaY * 0.0015);
+        const rect = canvas.getBoundingClientRect();
+        const fromCenterX = e.clientX - rect.left - canvas.clientWidth / 2;
+        const fromCenterY = canvas.clientHeight / 2 - (e.clientY - rect.top);
+        view.cx += fromCenterX / view.scale - fromCenterX / (view.scale * zoom);
+        view.cy += fromCenterY / view.scale - fromCenterY / (view.scale * zoom);
+        view.scale *= zoom;
+        draw();
+      };
+      canvas.onpointerdown = (e) => {
+        canvas.setPointerCapture(e.pointerId);
+        canvas.classList.add("dragging");
+      };
+      canvas.onpointermove = (e) => {
+        if (!canvas.hasPointerCapture(e.pointerId)) return;
+        view.cx -= e.movementX / view.scale;
+        view.cy += e.movementY / view.scale;
+        draw();
+      };
+      canvas.onlostpointercapture = () => canvas.classList.remove("dragging");
+      canvas.ondblclick = () => {
+        fit();
+        draw();
+      };
+    </script>
+  </body>
+</html>
