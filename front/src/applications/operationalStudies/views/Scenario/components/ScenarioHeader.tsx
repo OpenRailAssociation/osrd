@@ -62,7 +62,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
   const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
-  const [timetableTypeToCreate, setTimetableTypeToCreate] = useState<TimetableType>();
+  const [timetableTypeToCreate, setTimetableTypeToCreate] = useState<TimetableType | null>(null);
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
@@ -266,12 +266,12 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
           onCancel={() => setScenarioFieldToEdit(undefined)}
         />
       ) : undefined}
-      {timetableTypeToCreate ? (
+      {timetableTypeToCreate && (
         <AddOrEditTimetableModal
           timetableType={timetableTypeToCreate}
-          onCancel={() => setTimetableTypeToCreate(undefined)}
+          onCancel={() => setTimetableTypeToCreate(null)}
         />
-      ) : undefined}
+      )}
     </header>
   );
 };
