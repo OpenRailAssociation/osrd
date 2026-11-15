@@ -4,6 +4,7 @@ import { OptionGroup } from '@osrd-project/ui-core';
 import {
   X,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Hubot,
   Person,
@@ -18,8 +19,13 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
 import type { Board } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal, {
   type ScenarioField,
@@ -42,6 +48,8 @@ const BOARDS: Board[] = [
   'conflicts',
 ];
 
+const TIMETABLE_TYPES: TimetableType[] = ['HOURLY', 'CALENDAR'];
+
 type ScenarioHeaderProps = {
   activeBoards: Set<Board>;
   toggleBoard: (board: Board) => void;
@@ -54,6 +62,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     useScenarioContextWithOptionalTimetable();
   const { t } = useTranslation('operational-studies');
   const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
@@ -69,33 +78,29 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const [isTruncated, setIsTruncated] = useState({
     scenarioName: false,
     username: false,
-    timetableName: false,
   });
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
   const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
   const [timetableTypeToCreate, setTimetableTypeToCreate] = useState<TimetableType | null>(null);
-  const [isTimetableMenuOpen, setIsTimetableMenuOpen] = useState(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLSpanElement>(null);
-  const timetableNameRef = useRef<HTMLSpanElement>(null);
-  const timetableTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const timetableTypeIcon =
-    timetableType === 'HOURLY' ? <PatternHourly size="lg" /> : <TimetableCalendar size="lg" />;
-  const timetableTypeLabel =
-    timetableType === 'HOURLY'
-      ? t('main.scenarioTimetableTypeHourly')
-      : t('main.scenarioTimetableTypeCalendar');
   // The timetable name is optional, so we use its type as a fallback label
-  const timetableLabel = scenario.timetable_summaries[0].name ?? timetableTypeLabel;
-  const timetableSections = [
-    {
-      title: timetableTypeLabel,
-      items: [{ value: timetableId, label: timetableLabel }],
-    },
-  ];
+  const getTimetableLabel = ({ name, type }: TimetableSummary) =>
+    name ??
+    (type === 'HOURLY'
+      ? t('main.scenarioTimetableTypeHourly')
+      : t('main.scenarioTimetableTypeCalendar'));
+  const isTimetableSelectorVisible = multipleTimetablesEnabled && timetableId !== undefined;
+  const timetableSections = TIMETABLE_TYPES.map((type) => ({
+    title: t(`main.scenarioTimetableSections.${type}.title`),
+    icon: type === 'HOURLY' ? <PatternHourly size="lg" /> : <TimetableCalendar size="lg" />,
+    items: scenario.timetable_summaries
+      .filter((timetable) => timetable.type === type)
+      .map((timetable) => ({ value: timetable.id, label: getTimetableLabel(timetable) })),
+  })).filter(({ items }) => items.length > 0);
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -128,7 +133,6 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       setIsTruncated({
         scenarioName: scenarioNameRef.current ? checkTruncation(scenarioNameRef.current) : false,
         username: usernameRef.current ? checkTruncation(usernameRef.current) : false,
-        timetableName: timetableNameRef.current ? checkTruncation(timetableNameRef.current) : false,
       });
     });
 
@@ -179,36 +183,20 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               {scenario.name}
             </span>
 
-            <button className="chevron-btn" type="button">
-              {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
-            </button>
+            {!isTimetableSelectorVisible && (
+              <button className="chevron-btn" type="button">
+                {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
+              </button>
+            )}
           </div>
 
-          {multipleTimetablesEnabled && (
+          {isTimetableSelectorVisible && (
             <>
-              <button
-                ref={timetableTriggerRef}
-                className="timetable-name-container"
-                type="button"
-                onClick={() => setIsTimetableMenuOpen((prev) => !prev)}
-              >
-                {!isTimetableMenuOpen && timetableTypeIcon}
-                <span
-                  ref={timetableNameRef}
-                  className="timetable-name-label"
-                  title={isTruncated.timetableName ? timetableLabel : undefined}
-                >
-                  {timetableLabel}
-                </span>
-                <ChevronDown size="sm" />
-              </button>
+              <ChevronRight className="breadcrumb-separator" />
               <OptionGroup
-                triggerRef={timetableTriggerRef}
-                isOpen={isTimetableMenuOpen}
-                onClose={() => setIsTimetableMenuOpen(false)}
                 sections={timetableSections}
                 selectedValue={timetableId}
-                onSelect={() => setIsTimetableMenuOpen(false)}
+                onSelect={(id) => setParamsInUrlAndStorage('timetable', String(id))}
                 getItemKey={(id) => String(id)}
               />
             </>
