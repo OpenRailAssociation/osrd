@@ -503,3 +503,10 @@
     }
   }
 }
+
+.scenario-delete-timetable-modal {
+  // Display the line break (\n) of the translation
+  .lead {
+    white-space: pre-line;
+  }
+}

@@ -9,7 +9,11 @@ import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { Board } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal, {
   type ScenarioField,
@@ -63,6 +67,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const [areScenarioDetailsVisible, setAreScenarioDetailsVisible] = useState(false);
   const [scenarioFieldToEdit, setScenarioFieldToEdit] = useState<ScenarioField>();
   const [timetableTypeToCreate, setTimetableTypeToCreate] = useState<TimetableType>();
+  const [timetableToEdit, setTimetableToEdit] = useState<TimetableSummary>();
 
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
@@ -207,6 +212,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
         <ScenarioExpandedHeader
           onEditScenario={setScenarioFieldToEdit}
           onAddTimetable={setTimetableTypeToCreate}
+          onEditTimetable={setTimetableToEdit}
           onCollapse={() => setAreScenarioDetailsVisible(false)}
         />
       )}
@@ -270,6 +276,14 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
         <AddOrEditTimetableModal
           timetableType={timetableTypeToCreate}
           onCancel={() => setTimetableTypeToCreate(undefined)}
+        />
+      ) : undefined}
+      {timetableToEdit ? (
+        <AddOrEditTimetableModal
+          editionMode
+          timetableType={timetableToEdit.type}
+          timetable={timetableToEdit}
+          onCancel={() => setTimetableToEdit(undefined)}
         />
       ) : undefined}
     </header>
