@@ -18,8 +18,13 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
 import type { Board } from 'applications/operationalStudies/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal, {
   type ScenarioField,
@@ -41,6 +46,8 @@ const BOARDS: Board[] = [
   'conflicts',
 ];
 
+const TIMETABLE_TYPES: TimetableType[] = ['HOURLY', 'CALENDAR'];
+
 type ScenarioHeaderProps = {
   activeBoards: Set<Board>;
   toggleBoard: (board: Board) => void;
@@ -53,6 +60,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     useScenarioContextWithOptionalTimetable();
   const { t } = useTranslation('operational-studies');
   const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
@@ -82,18 +90,20 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
 
   const timetableTypeIcon =
     timetableType === 'HOURLY' ? <PatternHourly size="lg" /> : <TimetableCalendar size="lg" />;
-  const timetableTypeLabel =
-    timetableType === 'HOURLY'
-      ? t('main.scenarioTimetableTypeHourly')
-      : t('main.scenarioTimetableTypeCalendar');
   // The timetable name is optional, so we use its type as a fallback label
-  const timetableLabel = scenario.timetable_summaries[0].name ?? timetableTypeLabel;
-  const timetableSections = [
-    {
-      title: timetableTypeLabel,
-      items: [{ value: timetableId, label: timetableLabel }],
-    },
-  ];
+  const getTimetableLabel = ({ name, type }: TimetableSummary) =>
+    name ??
+    (type === 'HOURLY'
+      ? t('main.scenarioTimetableTypeHourly')
+      : t('main.scenarioTimetableTypeCalendar'));
+  const currentTimetable = scenario.timetable_summaries.find(({ id }) => id === timetableId);
+  const timetableLabel = currentTimetable ? getTimetableLabel(currentTimetable) : undefined;
+  const timetableSections = TIMETABLE_TYPES.map((type) => ({
+    title: t(`main.scenarioTimetableSections.${type}.title`),
+    items: scenario.timetable_summaries
+      .filter((timetable) => timetable.type === type)
+      .map((timetable) => ({ value: timetable.id, label: getTimetableLabel(timetable) })),
+  })).filter(({ items }) => items.length > 0);
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -180,7 +190,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
             </button>
           </div>
 
-          {multipleTimetablesEnabled && (
+          {multipleTimetablesEnabled && currentTimetable && (
             <>
               <button
                 ref={timetableTriggerRef}
@@ -204,7 +214,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                 onClose={() => setIsTimetableMenuOpen(false)}
                 sections={timetableSections}
                 selectedValue={timetableId}
-                onSelect={() => setIsTimetableMenuOpen(false)}
+                onSelect={(id) => setParamsInUrlAndStorage('timetable', String(id))}
                 getItemKey={(id) => String(id)}
               />
             </>
