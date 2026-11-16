@@ -26,6 +26,8 @@
   --header-height: 164px;
   --footer-height: 96px;
   --footer-box-shadow-height: 1px;
+
+  // The next style is used for all gaps in subgrids in path step and path step subform
   --path-step-row-gap: 8px;
   --path-step-wrapper-padding-left: 12px;
   --path-step-wrapper-padding-right: 10px;
@@ -328,6 +330,17 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
+          grid-template-columns:
+            24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
+            auto auto [last-col];
+          display: grid;
+          column-gap: var(--path-step-row-gap);
+
+          &:has(.unrecognized-waypoints-activated) {
+            grid-template-columns: 24px 24px [name-col] minmax(184px, 1fr) var(
+                --path-step-track-name-width
+              ) var(--path-step-type-width) auto auto [last-col];
+          }
 
           &.unknown-track {
             background-color: var(--black10);
@@ -369,11 +382,9 @@
 
           .path-step {
             display: grid;
-            grid-template-columns:
-              24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-              auto;
+            grid-template-columns: subgrid;
+            grid-column: 1 / last-col;
             align-items: center;
-            column-gap: 8px;
             padding-block: 8px;
 
             &.map-selection-mode {
@@ -531,6 +542,14 @@
               box-shadow: 0 0 0 1.5px var(--grey50);
             }
 
+            .path-step-subform-toggle {
+              color: var(--black25);
+            }
+
+            .path-step-subform-toggle[disabled] {
+              color: var(--black10);
+            }
+
             .map-interactions {
               margin-left: 5px;
               color: var(--primary60);
@@ -575,6 +594,49 @@
                   color: var(--primary20);
                 }
               }
+            }
+          }
+        }
+
+        .path-step-subform-wrapper {
+          background-color: var(--ambientB5);
+          display: grid;
+          grid-template-columns: subgrid;
+          grid-column: 1 / last-col;
+          margin-inline: -12px -10px;
+
+          .path-step-subform-content {
+            margin-inline: 23px -9px;
+            grid-column: name-col;
+
+            label {
+              // TODO bootstrap: We have to override here because of bootstrap. This should be removed when removing the library.
+              margin-bottom: 0;
+            }
+
+            // TODO : These 2 next overrides should be removed when prop `narrow` is changed to work with `required`.
+            > .ui-feedback {
+              padding-bottom: 0;
+            }
+
+            .path-step-subform-specific-fields .ui-feedback {
+              padding-top: 9px;
+              padding-bottom: 21px;
+            }
+
+            .path-step-subform-uic-fields {
+              display: grid;
+              grid-template-columns: 2fr 1fr;
+            }
+
+            .path-step-subform-track-offset-fields {
+              display: grid;
+              grid-template-columns: 1fr 2fr;
+            }
+
+            .path-step-subform-domestic-fields {
+              display: flex;
+              justify-content: space-between;
             }
           }
         }
