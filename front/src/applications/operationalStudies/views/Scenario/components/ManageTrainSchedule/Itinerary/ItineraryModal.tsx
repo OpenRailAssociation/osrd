@@ -73,6 +73,7 @@ import {
 } from '../helpers/pathStepsActions';
 import { useCreateTrainSchedule } from '../hooks/useCreateTrainSchedule';
 import useMapTrackSelection from '../hooks/useMapTrackSelection';
+import { useSaveCustomOps } from '../hooks/useSaveCustomOps';
 import useUpdateTrainSchedule from '../hooks/useUpdateTrainSchedule';
 import type { DomesticOperationalPointReference, FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
@@ -241,6 +242,7 @@ const ItineraryModal = ({
   const [isWorking, setIsWorking] = useState(false);
   const createTrain = useCreateTrainSchedule(setIsWorking);
   const updateTimetable = useUpdateTrainSchedule(setIsWorking);
+  const saveCustomOps = useSaveCustomOps();
 
   const [modalFormState, setModalFormState] = useState<ItineraryModalFormState>({
     name: trainState.name,
@@ -337,6 +339,7 @@ const ItineraryModal = ({
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
+    customOps,
     addCustomOp,
     doesOpExist,
     formatChosenValue,
@@ -795,6 +798,8 @@ const ItineraryModal = ({
       editingTrainType: trainType ?? trainState.editingTrainType,
     };
     setTrainState(newTrainState);
+
+    await saveCustomOps(locatedSteps, customOps);
 
     let ok: boolean;
     if (trainScheduleToEditData) {

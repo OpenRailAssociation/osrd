@@ -317,6 +317,7 @@ export const useOperationalPointSearch = ({
     setInputForStep,
     opSuggestions: [...matchingCustomOps, ...opSuggestions],
     resetOpSuggestions,
+    customOps,
     addCustomOp,
     doesOpExist,
     formatChosenValue,

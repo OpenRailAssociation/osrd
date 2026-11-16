@@ -62,6 +62,7 @@ const DomesticFields = ({
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
   const [countryCodeError, setCountryCodeError] = useState<string>();
   const [mainCodeError, setMainCodeError] = useState<string>();
+  const appliedNameRef = useRef(name);
 
   const validateCustomOp = async () => {
     const countryCode = toUpper(subFormCountryCode);
@@ -78,6 +79,15 @@ const DomesticFields = ({
       setCountryCodeError(undefined);
       setMainCodeError(undefined);
       onSubFormHasErrors(false);
+      if (defaultMainCode && name !== appliedNameRef.current) {
+        appliedNameRef.current = name;
+        onCustomOpCreation(name, {
+          type: 'domestic',
+          country_code: defaultCountryCode,
+          main_code: defaultMainCode,
+          secondary_code: defaultSecondaryCode || undefined,
+        });
+      }
       return;
     }
 
