@@ -213,7 +213,7 @@
     "scenarioNoTimetableAddCalendar": "Ajouter une grille calendaire",
     "scenarioNoTimetableAddHourlyPattern": "Ajouter une trame",
     "scenarioTags": "Étiquettes",
-    "scenarioTimetableConfirmDelete": "Voulez-vous supprimer\n« {{ name }} » ?",
+    "scenarioTimetableConfirmDelete": "Voulez-vous supprimer « {{ name }} » ?",
     "scenarioTimetableNameInvalid": "Un nom est requis",
     "scenarioTimetableNameLabel": "Nom",
     "scenarioTimetableSections": {

@@ -213,7 +213,7 @@
     "scenarioNoTimetableAddCalendar": "Add a calendar timetable",
     "scenarioNoTimetableAddHourlyPattern": "Add an hourly pattern",
     "scenarioTags": "Tags",
-    "scenarioTimetableConfirmDelete": "Do you want to delete\n\"{{ name }}\"?",
+    "scenarioTimetableConfirmDelete": "Do you want to delete \"{{ name }}\"?",
     "scenarioTimetableNameInvalid": "A name is required",
     "scenarioTimetableNameLabel": "Name",
     "scenarioTimetableSections": {

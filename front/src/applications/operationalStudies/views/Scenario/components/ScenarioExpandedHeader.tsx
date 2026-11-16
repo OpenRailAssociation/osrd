@@ -14,8 +14,6 @@ import {
   type TimetableSummary,
   type TimetableType,
 } from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { type ScenarioField } from 'modules/scenario/components/AddOrEditScenarioModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -23,6 +21,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import InfraLoadingState from './InfraLoadingState';
+import ConfirmationDialog from './Timetable/ConfirmationDialog';
 
 type ScenarioExpandedHeaderProps = {
   onEditScenario: (field: ScenarioField) => void;
@@ -63,7 +62,6 @@ const ScenarioExpandedHeader = ({
   const dispatch = useAppDispatch();
   const { scenario, timetableId, workerStatus } = useScenarioContextWithOptionalTimetable();
   const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
-  const { openModal } = useModal();
 
   const [patchScenario, { isLoading: isPatchingScenario }] =
     osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
@@ -71,6 +69,7 @@ const ScenarioExpandedHeader = ({
 
   // Used to remount the selects when the update fails.
   const [selectsKey, setSelectsKey] = useState(() => uniqueId());
+  const [timetableIdToDelete, setTimetableIdToDelete] = useState<number | null>(null);
 
   const { infraOptions = [] } = osrdEditoastApi.endpoints.getInfra.useQuery(
     { pageSize: 1000 },
@@ -105,6 +104,7 @@ const ScenarioExpandedHeader = ({
         ? t('main.scenarioTimetableTypeHourly')
         : t('main.scenarioTimetableTypeCalendar')),
   }));
+  const timetableToDelete = timetables.find(({ id }) => id === timetableIdToDelete);
 
   const updateScenario = (scenarioPatchForm: ScenarioPatchForm) => {
     patchScenario({ scenarioId: scenario.id, scenarioPatchForm })
@@ -123,22 +123,9 @@ const ScenarioExpandedHeader = ({
       });
   };
 
-  const removeTimetable = (timetable: TimetableSummary) => {
-    deleteTimetable({ id: timetable.id })
-      .unwrap()
-      .then(() => cleanScenarioLocalStorage({ timetable_summaries: [timetable] }))
-      .catch((error) => dispatch(setFailure(castErrorToFailure(error))));
-  };
-
-  const openDeleteTimetableModal = (timetable: TimetableSummary, label: string) => {
-    openModal(
-      <DeleteItemsModal
-        translationKey={t('main.scenarioTimetableConfirmDelete', { name: label })}
-        handleDeleteItems={() => removeTimetable(timetable)}
-      />,
-      'sm',
-      'scenario-delete-timetable-modal'
-    );
+  const removeTimetable = async (timetable: TimetableSummary) => {
+    await deleteTimetable({ id: timetable.id }).unwrap();
+    cleanScenarioLocalStorage({ timetable_summaries: [timetable] });
   };
 
   const getEditButton = (field: ScenarioField) => (
@@ -245,7 +232,7 @@ const ScenarioExpandedHeader = ({
                             type="button"
                             aria-label={t('translation:common.delete')}
                             title={t('translation:common.delete')}
-                            onClick={() => openDeleteTimetableModal({ id, type, name }, label)}
+                            onClick={() => setTimetableIdToDelete(id)}
                           >
                             <Trash />
                           </button>
@@ -295,6 +282,19 @@ const ScenarioExpandedHeader = ({
         {t('translation:common.collapse')}
         <ChevronUp />
       </button>
+
+      {timetableToDelete && (
+        <ConfirmationDialog
+          onCancel={() => setTimetableIdToDelete(null)}
+          onConfirm={() => removeTimetable(timetableToDelete)}
+          labels={{
+            title: t('translation:common.delete'),
+            texts: [t('main.scenarioTimetableConfirmDelete', { name: timetableToDelete.label })],
+            submit: t('translation:common.delete'),
+            cancel: t('translation:common.cancel'),
+          }}
+        />
+      )}
     </div>
   );
 };
