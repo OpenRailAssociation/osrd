@@ -39,7 +39,13 @@ function AppLink({ allowed, children, cardImage, ...linkProps }: AppLinkProps) {
   const { t } = useTranslation('translation', { keyPrefix: 'home' });
 
   return (
-    <Link {...linkProps} aria-disabled={!allowed || undefined}>
+    <Link
+      {...linkProps}
+      aria-disabled={!allowed || undefined}
+      onClick={(event) => {
+        if (!allowed) event.preventDefault();
+      }}
+    >
       <div className="app-card">
         <img src={cardImage} alt="" />
         {!allowed && <div className="not-authorized-warning">{t('not-authorized-warning')}</div>}
