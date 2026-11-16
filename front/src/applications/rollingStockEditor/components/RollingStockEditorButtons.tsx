@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
-import { useCheckProtectedAction } from 'common/authorization/hooks/useProtectedAction';
+import ProtectedButton from 'common/authorization/components/ProtectedButton';
 import type { Privilege } from 'common/authorization/types';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { setSuccess, setFailure } from 'reducers/main';
@@ -34,7 +34,6 @@ const RollingStockEditorButtons = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { openModal } = useModal();
-  const checkProtectedAction = useCheckProtectedAction();
   const [deleteRollingStockById] =
     osrdEditoastApi.endpoints.deleteRollingStockByRollingStockId.useMutation();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
@@ -43,96 +42,81 @@ const RollingStockEditorButtons = ({
     setPageMode({ type: 'edit', rollingStockId: rollingStock.id });
   }, [setPageMode, rollingStock.id]);
 
-  const duplicateRollingStock = useCallback(
-    () =>
-      checkProtectedAction(userPrivileges, ['can_read'], () => {
-        const date = new Date().getTime().toString().slice(-3);
-        if (!('inertia_coefficient' in rollingStock)) {
-          throw new Error('Cannot duplicate a light rolling stock');
-        }
-        const duplicatedRollingStock = {
-          ...rollingStock,
-          name: `${rollingStock.name}-${date}`,
-        };
-        postRollingstock({
-          locked: false,
-          rollingStockForm: duplicatedRollingStock,
-        })
-          .unwrap()
-          .then((res) => {
-            setPageMode({ type: 'edit', rollingStockId: res.id });
-            resetFilters();
-            dispatch(
-              setSuccess({
-                title: t('rollingStock.messages.success'),
-                text: t('rollingStock.messages.rollingStockAdded'),
-              })
-            );
+  const duplicateRollingStock = useCallback(() => {
+    const date = new Date().getTime().toString().slice(-3);
+    if (!('inertia_coefficient' in rollingStock)) {
+      throw new Error('Cannot duplicate a light rolling stock');
+    }
+    const duplicatedRollingStock = {
+      ...rollingStock,
+      name: `${rollingStock.name}-${date}`,
+    };
+    postRollingstock({
+      locked: false,
+      rollingStockForm: duplicatedRollingStock,
+    })
+      .unwrap()
+      .then((res) => {
+        setPageMode({ type: 'edit', rollingStockId: res.id });
+        resetFilters();
+        dispatch(
+          setSuccess({
+            title: t('rollingStock.messages.success'),
+            text: t('rollingStock.messages.rollingStockAdded'),
           })
-          .catch((error) => {
-            dispatch(
-              setFailure(castErrorToFailure(error, { name: t('rollingStock.messages.failure') }))
-            );
-          });
-      }),
-    [
-      userPrivileges,
-      rollingStock,
-      t,
-      resetFilters,
-      checkProtectedAction,
-      setPageMode,
-      dispatch,
-      postRollingstock,
-    ]
-  );
-
-  const deleteRollingStock = useCallback(
-    () =>
-      checkProtectedAction(userPrivileges, ['can_delete'], () => {
-        setPageMode({ type: 'idle' });
-        if (!rollingStock.locked)
-          deleteRollingStockById({ rollingStockId: rollingStock.id })
-            .unwrap()
-            .then(() => {
-              dispatch(
-                setSuccess({
-                  title: t('rollingStock.messages.success'),
-                  text: t('rollingStock.messages.rollingStockDeleted'),
-                })
-              );
+        );
+      })
+      .catch((error) => {
+        dispatch(
+          setFailure(
+            castErrorToFailure(error, {
+              name: t('rollingStock.messages.failure'),
             })
-            .catch((error) => {
-              if (getErrorStatus(error) === 409) {
-                openModal(
-                  <RollingStockEditorFormModal
-                    mainText={t('rollingStock.messages.rollingStockNotDeleted')}
-                    errorObject={error.data.context.usage}
-                  />
-                );
-              }
-              dispatch(
-                setFailure(
-                  castErrorToFailure(error, {
-                    name: t('rollingStock.messages.failure'),
-                    message: t('rollingStock.messages.rollingStockNotDeleted'),
-                  })
-                )
-              );
-            });
-      }),
-    [
-      setPageMode,
-      rollingStock.id,
-      rollingStock.locked,
-      userPrivileges,
-      t,
-      openModal,
-      deleteRollingStockById,
-      checkProtectedAction,
-      dispatch,
-    ]
-  );
+          )
+        );
+      });
+  }, [rollingStock, t, resetFilters, setPageMode, dispatch, postRollingstock]);
+
+  const deleteRollingStock = useCallback(() => {
+    setPageMode({ type: 'idle' });
+    if (!rollingStock.locked)
+      deleteRollingStockById({ rollingStockId: rollingStock.id })
+        .unwrap()
+        .then(() => {
+          dispatch(
+            setSuccess({
+              title: t('rollingStock.messages.success'),
+              text: t('rollingStock.messages.rollingStockDeleted'),
+            })
+          );
+        })
+        .catch((error) => {
+          if (getErrorStatus(error) === 409) {
+            openModal(
+              <RollingStockEditorFormModal
+                mainText={t('rollingStock.messages.rollingStockNotDeleted')}
+                errorObject={error.data.context.usage}
+              />
+            );
+          }
+          dispatch(
+            setFailure(
+              castErrorToFailure(error, {
+                name: t('rollingStock.messages.failure'),
+                message: t('rollingStock.messages.rollingStockNotDeleted'),
+              })
+            )
+          );
+        });
+  }, [
+    setPageMode,
+    rollingStock.id,
+    rollingStock.locked,
+    t,
+    openModal,
+    deleteRollingStockById,
+    dispatch,
+  ]);
 
   const confirmDelete = () => {
     openModal(
@@ -151,50 +135,43 @@ const RollingStockEditorButtons = ({
         'condensed flex-column align-items-center': isCondensed,
       })}
     >
-      <button
+      {/* EDIT */}
+      <ProtectedButton
         data-testid="rollingstock-edit-button"
-        type="button"
         className="btn btn-primary bg-orange px-1 py-0"
-        aria-label={t('common.edit')}
-        title={
-          userPrivileges.has('can_write') ? t('common.edit') : t('authorization.permissionDenied')
-        }
-        tabIndex={0}
-        disabled={rollingStock.locked || !userPrivileges.has('can_write')}
+        title={t('common.edit')}
         onClick={editRollingStock}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_write']}
+        disabled={rollingStock.locked || !userPrivileges.has('can_write')}
       >
         <Pencil />
-      </button>
+      </ProtectedButton>
 
-      <button
+      {/* DUPLICATE */}
+      <ProtectedButton
         data-testid="rollingstock-duplicate-button"
-        type="button"
         className="btn btn-primary px-1 py-0"
-        aria-label={t('common.duplicate')}
         title={t('common.duplicate')}
-        tabIndex={0}
-        disabled={!userPrivileges.has('can_read')}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_read']}
         onClick={duplicateRollingStock}
       >
         <Duplicate />
-      </button>
+      </ProtectedButton>
 
-      <button
+      {/* DELETE */}
+      <ProtectedButton
         data-testid="rollingstock-delete-button"
-        type="button"
         className="btn btn-primary bg-red px-1 py-0"
-        aria-label={t('common.delete')}
-        title={
-          userPrivileges.has('can_delete')
-            ? t('common.delete')
-            : t('authorization.permissionDenied')
-        }
-        tabIndex={0}
-        disabled={rollingStock.locked || !userPrivileges.has('can_delete')}
+        title={t('common.delete')}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_delete']}
         onClick={confirmDelete}
+        disabled={rollingStock.locked || !userPrivileges.has('can_delete')}
       >
         <Trash />
-      </button>
+      </ProtectedButton>
     </div>
   );
 };

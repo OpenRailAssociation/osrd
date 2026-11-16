@@ -4,7 +4,7 @@ import { Lock, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
-import { useCheckProtectedAction } from 'common/authorization/hooks/useProtectedAction';
+import ProtectedButton from 'common/authorization/components/ProtectedButton';
 import type { Privilege } from 'common/authorization/types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
@@ -30,7 +30,6 @@ const InfraSelectorEditionItem = ({
   const [value, setValue] = useState(infra.name);
   const [runningDelete, setRunningDelete] = useState(false);
   const { t } = useTranslation();
-  const checkProtectedAction = useCheckProtectedAction();
 
   return (
     <div className="infraslist-item-edition">
@@ -39,21 +38,15 @@ const InfraSelectorEditionItem = ({
       ) : (
         <>
           {isFocused !== infra.id && (
-            <button
+            <ProtectedButton
               className="infraslist-item-action delete"
-              type="button"
-              aria-label={t('infraManagement.actions.delete')}
-              title={
-                userPrivileges.has('can_delete')
-                  ? t('infraManagement.actions.delete')
-                  : t('authorization.permissionDenied')
-              }
-              onClick={() =>
-                checkProtectedAction(userPrivileges, ['can_delete'], () => setRunningDelete(true))
-              }
+              title={t('infraManagement.actions.delete')}
+              onClick={() => setRunningDelete(true)}
+              userPrivileges={userPrivileges}
+              requiredPrivileges={['can_delete']}
             >
               <Trash />
-            </button>
+            </ProtectedButton>
           )}
           <div className="infraslist-item-edition-block">
             <div className="infraslist-item-edition-main">
