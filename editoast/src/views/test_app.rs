@@ -606,6 +606,11 @@ impl<'a> GroupBuilder<'a> {
         }
     }
 
+    pub fn with_roles(mut self, roles: impl IntoIterator<Item = Role>) -> Self {
+        self.roles = roles.into_iter().collect();
+        self
+    }
+
     pub fn with_members(
         mut self,
         members: impl IntoIterator<Item = &'a authz::identity::User>,
