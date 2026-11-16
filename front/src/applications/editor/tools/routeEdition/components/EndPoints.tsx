@@ -34,9 +34,8 @@ export const Endpoints = ({
   );
 
   const exitPoint = useMemo(
-    () =>
-      entity.properties.entry_point.id === NEW_ENTITY_ID ? null : entity.properties.exit_point,
-    [entity.properties.entry_point.id, entity.properties.exit_point]
+    () => (entity.properties.exit_point.id === NEW_ENTITY_ID ? null : entity.properties.exit_point),
+    [entity.properties.exit_point]
   );
 
   const onBeginWayPointInputChange = useCallback(
