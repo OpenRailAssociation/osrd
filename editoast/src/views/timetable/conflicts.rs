@@ -185,21 +185,47 @@ fn lcm(a: i64, b: i64) -> i64 {
     (a / gcd(a, b)).saturating_mul(b)
 }
 
-pub(super) fn populate_timetable(
-    period_occurrences: Vec<(OccurrenceId, TrainOccurrence)>,
+fn repeat_spacing_requirements(
+    spacing_requirements: Vec<SpacingRequirement>,
     repetition: usize,
-    time_window_ms: i64,
-) -> Vec<(OccurrenceId, TrainOccurrence)> {
-    let mut occurrences = Vec::with_capacity(period_occurrences.len() * repetition);
+    time_window_ms: u64,
+) -> Vec<SpacingRequirement> {
+    let mut repeated_spacing_requirements =
+        Vec::with_capacity(spacing_requirements.len() * repetition);
     for period in 0..repetition {
-        for (id, occurrence) in &period_occurrences {
-            let mut new_occurrence = occurrence.clone();
-            new_occurrence.start_time += millisecond::i64::new(time_window_ms * period as i64);
-            let new_id = id.clone();
-            occurrences.push((new_id, new_occurrence));
+        for spacing_requirement in &spacing_requirements {
+            let mut new_spacing_requirement = spacing_requirement.clone();
+            new_spacing_requirement.begin_time += time_window_ms * period as u64;
+            new_spacing_requirement.end_time += time_window_ms * period as u64;
+            repeated_spacing_requirements.push(new_spacing_requirement);
         }
     }
-    occurrences
+    repeated_spacing_requirements
+}
+
+fn repeat_routing_requirements(
+    routing_requirements: Vec<RoutingRequirement>,
+    repetition: usize,
+    time_window_ms: u64,
+) -> Vec<RoutingRequirement> {
+    let mut repeated_routing_requirements =
+        Vec::with_capacity(routing_requirements.len() * repetition);
+    for period in 0..repetition {
+        for routing_requirement in &routing_requirements {
+            let mut new_routing_requirement = routing_requirement.clone();
+            new_routing_requirement.begin_time += time_window_ms * period as u64;
+            new_routing_requirement.zones = new_routing_requirement
+                .zones
+                .into_iter()
+                .map(|mut zone| {
+                    zone.end_time += time_window_ms * period as u64;
+                    zone
+                })
+                .collect();
+            repeated_routing_requirements.push(new_routing_requirement);
+        }
+    }
+    repeated_routing_requirements
 }
 
 /// An hourly timetable is cyclic, so we need to get back each requirement onto [0, timetable_period[.
@@ -431,25 +457,29 @@ pub(in crate::views) async fn conflicts(
         }
     };
 
+    // Only filled for hourly timetables, where the requirements of each occurrence must be repeated
+    // every time window to cover the timetable period
+    let train_schedules_time_windows_ms: HashMap<i64, u64> = if timetable_period.is_some() {
+        train_schedules_with_exceptions
+            .iter()
+            .map(|(ts, _)| {
+                let time_window = ts
+                    .time_window
+                    .expect("all time_window are defined when timetable_period exists");
+                (
+                    ts.id,
+                    pg_interval_to_jiff_duration(time_window).as_millis() as u64,
+                )
+            })
+            .collect()
+    } else {
+        HashMap::new()
+    };
+
     // Flatten paced trains occurrences
     let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = train_schedules_with_exceptions
         .iter()
-        .flat_map(|(ts, exceptions)| {
-            let single_period_occurrences = ts.iter_occurrences(exceptions).collect();
-            match timetable_period {
-                None => single_period_occurrences,
-                Some(period) => {
-                    // For hourly timetable, occurrences must be duplicated to cover the timetable period (ex: a 1h mission within a 2h period)
-                    let time_window_interval = ts
-                        .time_window
-                        .expect("all time_window are defined when timetable_period exists");
-                    let time_window_ms =
-                        pg_interval_to_jiff_duration(time_window_interval).as_millis() as i64;
-                    let repetition = (period.as_millis() as i64 / time_window_ms) as usize;
-                    populate_timetable(single_period_occurrences, repetition, time_window_ms)
-                }
-            }
-        })
+        .flat_map(|(ts, exceptions)| ts.iter_occurrences(exceptions))
         .unzip();
 
     let (occurrence_simulations, occurrence_pathfindings): (Vec<_>, Vec<_>) =
@@ -474,22 +504,37 @@ pub(in crate::views) async fn conflicts(
     let linkings =
         get_linkings_from_train_schedules(&mut conn.clone(), timetable_id, occurrence_ids.as_ref())
             .await;
+    // Only defined in hourly timetables
+    let occurrence_time_window_ms = |occurrence_index: usize| {
+        train_schedules_time_windows_ms
+            .get(&occurrence_ids[occurrence_index].train_schedule_id())
+            .copied()
+    };
     let valid_linkings: Vec<_> = linkings
         .iter()
-        .filter(|&linking| {
+        .filter(|&&linking| {
             is_linking_valid(
                 occurrence_trains.as_ref(),
                 occurrence_simulations.as_ref(),
                 occurrence_pathfindings.as_ref(),
-                *linking,
+                linking,
+                (
+                    occurrence_time_window_ms(linking.0),
+                    occurrence_time_window_ms(linking.1),
+                ),
+                timetable_type == TimetableType::Hourly,
             )
         })
         .collect();
 
     // Populate linkings_spacing_requirements and linkings_routing_requirements
-    valid_linkings.iter().for_each(|&linking| {
-        let (spacing_requirements, routing_requirements) =
-            get_linking_requirements(&occurrence_trains, &occurrence_simulations, *linking);
+    valid_linkings.iter().for_each(|&&linking| {
+        let (spacing_requirements, routing_requirements) = get_linking_requirements(
+            &occurrence_trains,
+            &occurrence_simulations,
+            linking,
+            occurrence_time_window_ms(linking.0),
+        );
         linkings_spacing_requirements[linking.0] = spacing_requirements;
         linkings_routing_requirements[linking.0] = routing_requirements;
     });
@@ -527,6 +572,7 @@ pub(in crate::views) async fn conflicts(
             let mut routing_requirements = simulation.final_output.routing_requirements.clone();
             // Add linking routing requirements
             routing_requirements.extend(occurrence_linking_routing_requirements);
+
             Some((
                 train_id,
                 super::make_requirements_absolute(
@@ -539,12 +585,25 @@ pub(in crate::views) async fn conflicts(
     )
     .flat_map(|(train_id, train_requirements)| match timetable_period {
         None => vec![(train_id, train_requirements)],
-        Some(period) => build_cyclic_occurrence_requirements(
-            train_id,
-            train_requirements.spacing_requirements,
-            train_requirements.routing_requirements,
-            period,
-        ),
+        Some(period) => {
+            let time_window_ms = train_schedules_time_windows_ms[&train_id.train_schedule_id()];
+            // The period is the lcm of all time windows, so the division is exact
+            let repetition = (period.as_millis() as u64 / time_window_ms) as usize;
+            build_cyclic_occurrence_requirements(
+                train_id,
+                repeat_spacing_requirements(
+                    train_requirements.spacing_requirements,
+                    repetition,
+                    time_window_ms,
+                ),
+                repeat_routing_requirements(
+                    train_requirements.routing_requirements,
+                    repetition,
+                    time_window_ms,
+                ),
+                period,
+            )
+        }
     });
 
     let (trains_ids_map, conflict_detection_request) =
@@ -624,7 +683,13 @@ fn is_linking_valid(
     occurrence_simulations: &[Arc<super::simulation::Response>],
     occurrence_pathfindings: &[Arc<PathfindingResult>],
     (source_index, target_index): (usize, usize),
+    (source_time_window_ms, target_time_window_ms): (Option<u64>, Option<u64>),
+    is_hourly_timetable: bool,
 ) -> bool {
+    // In an hourly timetable, a linking between missions with different time windows is ambiguous
+    if source_time_window_ms != target_time_window_ms {
+        return false;
+    }
     let source_occurrence = &occurrence_trains[source_index];
     let target_occurrence = &occurrence_trains[target_index];
     let source_simulation = &occurrence_simulations[source_index];
@@ -667,8 +732,8 @@ fn is_linking_valid(
             .expect("times should not be empty") as i64,
     );
     let source_end_time = source_occurrence.start_time() + source_simulation_duration;
-    // The source train arrives after the target train starts
-    if source_end_time > target_occurrence.start_time() {
+    // The source train arrives after the target train starts (not required in hourly timetable)
+    if !is_hourly_timetable && source_end_time > target_occurrence.start_time() {
         return false;
     }
     let source_arrival_schedule_item = source_occurrence
@@ -689,10 +754,15 @@ fn is_linking_valid(
 /// To compute the requirements caused by a linking, we filter the requirements whose end time matches
 /// the simulation's end time, and we create new identical requirements with the source's end time and
 /// target's start time as the begin time and end time
+///
+/// In an hourly timetable, occurrences repeat every `time_window_ms`: the target may start before the
+/// source arrives within the same time window, so we use the first repetition of the target starting
+/// after the source's arrival.
 fn get_linking_requirements(
     occurrence_trains: &[TrainOccurrence],
     occurrence_simulations: &[Arc<super::simulation::Response>],
     (source_index, target_index): (usize, usize),
+    time_window_ms: Option<u64>,
 ) -> (Vec<SpacingRequirement>, Vec<RoutingRequirement>) {
     let super::simulation::Response::Success(source_simulation) =
         occurrence_simulations[source_index].as_ref()
@@ -711,8 +781,16 @@ fn get_linking_requirements(
         .times
         .last()
         .expect("times should not be empty");
-    let target_start_time =
-        millisecond::from(target_occurrence.start_time() - source_occurrence.start_time()) as u64;
+    let target_offset =
+        millisecond::i64::from(target_occurrence.start_time() - source_occurrence.start_time());
+    let target_start_time = match time_window_ms {
+        Some(time_window_ms) => {
+            let source_end_time = source_end_time as i64;
+            source_end_time + (target_offset - source_end_time).rem_euclid(time_window_ms as i64)
+        }
+        None => target_offset,
+    };
+    let target_start_time = target_start_time as u64;
 
     let final_spacing_requirements = spacing_requirements
         .into_iter()
@@ -892,43 +970,37 @@ mod tests {
     }
 
     #[test]
-    fn populate_timetable_duplicates_occurrences() {
-        // A 1h mission with two occurrences (at 0 and 30min), duplicated 3 times to fill a 3h period.
-        let occurrences = [0, 1_800_000]
-            .into_iter()
-            .enumerate()
-            .map(|(index, start_ms)| {
-                (
-                    OccurrenceId::new_base(1, index),
-                    TrainOccurrence {
-                        start_time: units::millisecond::i64::new(start_ms),
-                        ..TrainOccurrence::fake()
-                    },
-                )
-            })
-            .collect();
+    fn repeat_spacing_requirements_shifts_each_repetition_by_time_window() {
+        let requirements = vec![spacing("Z1", 100, 300), spacing("Z2", 400, 500)];
 
-        let result = populate_timetable(occurrences, 3, 3_600_000);
-
-        let starts: Vec<i64> = result
-            .iter()
-            .map(|(_, occurrence)| units::millisecond::i64::from(occurrence.start_time))
-            .collect();
         assert_eq!(
-            starts,
-            vec![0, 1_800_000, 3_600_000, 5_400_000, 7_200_000, 9_000_000]
-        );
-
-        let ids: Vec<_> = result.into_iter().map(|(id, _)| id).collect();
-        assert_eq!(
-            ids,
+            repeat_spacing_requirements(requirements, 3, 1000),
             vec![
-                OccurrenceId::new_base(1, 0),
-                OccurrenceId::new_base(1, 1),
-                OccurrenceId::new_base(1, 0),
-                OccurrenceId::new_base(1, 1),
-                OccurrenceId::new_base(1, 0),
-                OccurrenceId::new_base(1, 1),
+                spacing("Z1", 100, 300),
+                spacing("Z2", 400, 500),
+                spacing("Z1", 1100, 1300),
+                spacing("Z2", 1400, 1500),
+                spacing("Z1", 2100, 2300),
+                spacing("Z2", 2400, 2500),
+            ]
+        );
+    }
+
+    #[test]
+    fn repeat_routing_requirements_shifts_each_repetition_by_time_window() {
+        let requirements = vec![routing_req(
+            100,
+            vec![routing_zone("Z1", 300), routing_zone("Z2", 500)],
+        )];
+
+        assert_eq!(
+            repeat_routing_requirements(requirements, 2, 1000),
+            vec![
+                routing_req(100, vec![routing_zone("Z1", 300), routing_zone("Z2", 500)]),
+                routing_req(
+                    1100,
+                    vec![routing_zone("Z1", 1300), routing_zone("Z2", 1500)]
+                ),
             ]
         );
     }
@@ -1275,20 +1347,33 @@ mod tests {
                 &[source_occurrence, target_occurrence],
                 &[Arc::new(source_simulation), Arc::new(target_simulation)],
                 &[Arc::new(source_pathfinding), Arc::new(target_pathfinding)],
-                (0, 1)
+                (0, 1),
+                (None, None),
+                false
             ),
             is_valid
         );
     }
 
-    #[test]
-    fn get_linking_requirements_extends_requirements_to_target_start() {
+    // The source starts at 5000 and arrives at 9000 (4000 after its start)
+    #[rstest]
+    #[case::calendar(10000, None, 5000)]
+    #[case::hourly_target_after_source_arrival(10000, Some(60000), 5000)]
+    #[case::hourly_target_at_source_arrival(9000, Some(60000), 4000)]
+    // The target used is its repetition in the next time window
+    #[case::hourly_target_before_source_arrival(7000, Some(60000), 62000)]
+    #[case::hourly_target_before_source_start(1000, Some(60000), 56000)]
+    fn get_linking_requirements_extends_requirements_to_target_start(
+        #[case] target_start_time: i64,
+        #[case] time_window_ms: Option<u64>,
+        #[case] expected_end_time: u64,
+    ) {
         let source_occurrence = TrainOccurrence {
             start_time: millisecond::i64::new(5000),
             ..TrainOccurrence::fake()
         };
         let target_occurrence = TrainOccurrence {
-            start_time: millisecond::i64::new(10000),
+            start_time: millisecond::i64::new(target_start_time),
             ..TrainOccurrence::fake()
         };
         let mut simulation = fake_occurrence_simulation_success();
@@ -1312,18 +1397,19 @@ mod tests {
                 Arc::new(Response::Success(fake_occurrence_simulation_success())),
             ],
             (0, 1),
+            time_window_ms,
         );
 
         assert_eq!(
             spacing_requirements,
-            vec![spacing("handoff_zone", 4000, 5000)]
+            vec![spacing("handoff_zone", 4000, expected_end_time)]
         );
         assert_eq!(
             routing_requirements,
             vec![RoutingRequirement {
                 route: "handoff_route".into(),
                 begin_time: 4000,
-                zones: vec![routing_zone("handoff_zone", 5000)],
+                zones: vec![routing_zone("handoff_zone", expected_end_time)],
             }]
         );
     }
