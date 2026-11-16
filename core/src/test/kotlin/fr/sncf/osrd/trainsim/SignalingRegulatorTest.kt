@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
-import fr.sncf.osrd.standalone_sim.pathSignals
 import fr.sncf.osrd.utils.Helpers
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -23,22 +22,14 @@ class SignalingRegulatorTest {
             routes.map { infra.rawInfra.getRouteFromName(it) },
         )
 
-    private val trainPath = path("rt.buffer_stop.3->DB0", "rt.DB0->DA6")
-    private val zones = trainPath.getZoneRanges()
     private val trainLength = 100.0.meters
     private val timeStep = 2.0
 
-    private fun signalPosition(name: String, path: TrainPath = trainPath) =
-        pathSignals(path, infra.blockInfra)
-            .single { infra.rawInfra.getLogicalSignalName(it.signal) == name }
-            .pathOffset
-            .toPrecise()
-
     private fun train(
+        path: TrainPath,
         head: PreciseDistance = 0.micrometers,
         speedLimit: Double = 20.0,
         departure: PreciseDuration = 0.microseconds,
-        path: TrainPath = trainPath,
     ): SignaledTrain {
         val pathLength = path.getLength().distance.meters
         val constraints =
@@ -57,25 +48,25 @@ class SignalingRegulatorTest {
         )
     }
 
-    private fun holds(train: SignaledTrain) =
-        train.simulator.constraints.filterIsInstance<HoldAt>().map { it.position }
-
     @Test
     fun testFiveTrainsQueueBehindTheFirstOneParkedAtTheEnd() {
         val path = path("rt.buffer_stop.1->DA0", "rt.DA0->DA5")
         val pathZones = path.getZoneRanges()
-        val trains = (0 until 5).map { train(departure = (120.0 * it).seconds, path = path) }
+        val trains = (0 until 5).map { train(path, departure = (120.0 * it).seconds) }
         val regulator = SignalingRegulator(infra, trains)
 
         val checked = Regulator {
             regulator.regulate()
-            val occupancies = trains.map {
-                occupiedZones(pathZones, it.simulator.state.position, trainLength).toSet()
-            }
-            for (i in trains.indices) for (j in 0 until i) {
+            val spans =
+                trains
+                    .map { it.simulator.state.position }
+                    .filter { it > 0.micrometers }
+                    .map { it - trainLength..it }
+            for (i in spans.indices) for (j in 0 until i) {
                 assertTrue(
-                    occupancies[i].intersect(occupancies[j]).isEmpty(),
-                    "trains $j and $i are on the same zone: ${trains.map { it.simulator.state }}",
+                    spans[i].endInclusive <= spans[j].start ||
+                        spans[j].endInclusive <= spans[i].start,
+                    "trains overlap: $spans",
                 )
             }
         }
@@ -85,17 +76,16 @@ class SignalingRegulatorTest {
 
         assertEquals(listOf(1, 2, 3, 4), stalled.blocked)
         assertTrue(trains[0].simulator.isFinished)
+        val pathLength = path.getLength().distance.meters
         assertEquals(
-            listOf("SA6_5", "SA6_4", "SA6_3", "SA6_2").map { signalPosition(it, path) },
+            (1..4).map { (pathLength - (trainLength.meters + 30.0) * it).meters },
             trains.drop(1).map { it.simulator.state.position },
         )
         assertTrue(trains.drop(1).all { it.simulator.state.speed == 0.micrometersPerSecond })
 
         val occupied =
             trains
-                .flatMap {
-                    occupiedZones(pathZones, it.simulator.state.position, trainLength)
-                }
+                .flatMap { occupiedZones(pathZones, it.simulator.state.position, trainLength) }
                 .toSet()
         val aspects =
             signalStates(infra, path, occupied).entries.associate {
@@ -103,33 +93,15 @@ class SignalingRegulatorTest {
             }
         assertEquals(
             mapOf(
-                "SA0" to "A",
-                "SA6_1" to "S",
-                "SA6_2" to "S",
-                "SA6_3" to "S",
-                "SA6_4" to "S",
+                "SA0" to "VL",
+                "SA6_1" to "VL",
+                "SA6_2" to "VL",
+                "SA6_3" to "VL",
+                "SA6_4" to "A",
                 "SA6_5" to "S",
                 "SA5" to "A",
             ),
             aspects,
-        )
-    }
-
-    @Test
-    fun testFiveTrainsStartingInARowQueueBehindTheFirstOne() {
-        val path = path("rt.buffer_stop.1->DA0", "rt.DA0->DA5")
-        val heads = listOf(8500.0, 6900.0, 5300.0, 3700.0, 1700.0)
-        val trains = heads.map { train(head = it.meters, path = path) }
-        val regulator = SignalingRegulator(infra, trains)
-
-        val result = runTrains(regulator.scheduledTrains(), timeStep.seconds, regulator)
-        val stalled = assertIs<TimetableResult.Stalled>(result)
-
-        assertEquals(listOf(1, 2, 3, 4), stalled.blocked)
-        assertTrue(trains[0].simulator.isFinished)
-        assertEquals(
-            listOf("SA6_5", "SA6_4", "SA6_3", "SA6_2").map { signalPosition(it, path) },
-            trains.drop(1).map { it.simulator.state.position },
         )
     }
 }

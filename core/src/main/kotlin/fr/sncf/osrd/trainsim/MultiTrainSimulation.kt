@@ -37,6 +37,8 @@ sealed interface TimetableResult {
     ) : TimetableResult
 }
 
+private val STALL_TIMEOUT = 300.0.seconds
+
 fun runTrains(
     trains: List<ScheduledTrain>,
     timeStep: PreciseDuration,
@@ -67,6 +69,7 @@ private fun runTicks(
     regulator: Regulator,
 ): TimetableResult {
     var clock = 0.microseconds
+    var lastMove = clock
     while (trains.any { !it.simulator.isFinished }) {
         var tickEnd = clock + timeStep
 
@@ -75,6 +78,7 @@ private fun runTicks(
                 trains.filter { !it.simulator.isFinished }.minOfOrNull { it.departure } ?: break
             clock = nextDeparture
             tickEnd = clock + timeStep
+            lastMove = clock
         }
 
         val positionsBefore = trains.map { it.simulator.state.position }
@@ -91,7 +95,8 @@ private fun runTicks(
                 hasDeparted(trains[it], tickEnd) && !trains[it].simulator.isFinished
             }
         val moved = trains.indices.any { trains[it].simulator.state.position > positionsBefore[it] }
-        if (underWay.isNotEmpty() && !moved) {
+        if (moved || underWay.isEmpty()) lastMove = tickEnd
+        if (tickEnd - lastMove > STALL_TIMEOUT) {
             return TimetableResult.Stalled(trains.map { it.simulator.states }, underWay)
         }
 
