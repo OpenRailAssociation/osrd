@@ -3,6 +3,11 @@
 
   .add-or-edit-timetable-header {
     height: 72px;
+
+    h1 {
+      color: var(--black100);
+      letter-spacing: -0.2px;
+    }
   }
 
   .add-or-edit-timetable-body {

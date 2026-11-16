@@ -102,7 +102,7 @@ const AddOrEditTimetableModal = ({
       footer={
         <>
           <Button
-            variant="Cancel"
+            variant="Normal"
             type="reset"
             label={t('translation:common.cancel')}
             onClick={onCancel}
