@@ -1,8 +1,12 @@
 name: Publish Helm Chart to GHCR
 
 on:
-  release:
-    types: [published]
+  # called by the release workflow once the service images are pushed
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       tag_name:
@@ -10,8 +14,9 @@ on:
 
 jobs:
   release:
-    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
+    permissions:
+      packages: write # required to push the chart to ghcr.io
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
@@ -22,14 +27,11 @@ jobs:
         uses: azure/setup-helm@v5.0.1
 
       - name: Set Name and Version
+        env:
+          CHART_VERSION: ${{ inputs.tag_name }}
         run: |
           CHART_NAME="osrd"
           CHART_IMAGES_REPOSITORY="stable"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            CHART_VERSION="${{ github.event.inputs.tag_name }}"
-          else
-            CHART_VERSION="${{ github.event.release.tag_name }}"
-          fi
           CHART_IMAGES_VERSION="${CHART_VERSION}"
           echo "CHART_NAME=$CHART_NAME" >> $GITHUB_ENV
           echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV

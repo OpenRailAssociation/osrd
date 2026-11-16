@@ -53,3 +53,15 @@ jobs:
       - name: Build and push
         run: |
           docker buildx bake --file=docker/docker-bake.hcl --file=bake-metadata.json release --push
+
+  publish-chart:
+    name: Publish Helm chart
+    # the chart references the images by tag, so it must not be published before they exist
+    needs: build
+    # skip non-OSRD releases (e.g. osrd-ui); build is skipped too, but keep it explicit
+    if: ${{ startsWith(github.event.release.tag_name, 'v') }}
+    permissions:
+      packages: write # required by chart-publish to push the chart to ghcr.io
+    uses: ./.github/workflows/chart-publish.yml
+    with:
+      tag_name: ${{ github.event.release.tag_name }}
