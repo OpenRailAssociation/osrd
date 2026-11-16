@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useCheckProtectedAction } from 'common/authorization/hooks/useProtectedAction';
+import ProtectedButton from 'common/authorization/components/ProtectedButton';
 import type { Privilege } from 'common/authorization/types';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -32,7 +32,6 @@ const ActionsBar = ({
   const { t } = useTranslation();
   const [isWaiting, setIsWaiting] = useState(false);
   const dispatch = useAppDispatch();
-  const checkProtectedAction = useCheckProtectedAction();
 
   const [lockInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLock.useMutation();
   const [unlockInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdUnlock.useMutation();
@@ -75,7 +74,10 @@ const ActionsBar = ({
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await cloneInfra({ infraId: infra.id, name: `${infra.name}_copy` }).unwrap();
+        await cloneInfra({
+          infraId: infra.id,
+          name: `${infra.name}_copy`,
+        }).unwrap();
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
       } finally {
@@ -88,7 +90,10 @@ const ActionsBar = ({
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await updateInfra({ infraId: infra.id, body: { name: inputValue } }).unwrap();
+        await updateInfra({
+          infraId: infra.id,
+          body: { name: inputValue },
+        }).unwrap();
         setIsFocused(undefined);
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
@@ -140,60 +145,49 @@ const ActionsBar = ({
     : t('infraManagement.actions.lock');
   return (
     <>
-      <button
+      {/* LOCK/UNLOCK */}
+      <ProtectedButton
         className="infraslist-item-action unlock"
-        type="button"
-        aria-label={t('infraManagement.actions.unlock')}
-        title={
-          userPrivileges.has('can_write') ? lockButtonTitle : t('authorization.permissionDenied')
-        }
-        onClick={() => checkProtectedAction(userPrivileges, ['can_write'], toggleLockedState)}
+        title={lockButtonTitle}
+        onClick={toggleLockedState}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_write']}
       >
         {infra.locked ? <Unlock /> : <Lock />}
-      </button>
-      <button
+      </ProtectedButton>
+
+      {/* RENAME */}
+      <ProtectedButton
         className="infraslist-item-action rename"
-        type="button"
-        aria-label={t('infraManagement.actions.rename')}
-        title={
-          userPrivileges.has('can_write')
-            ? t('infraManagement.actions.rename')
-            : t('authorization.permissionDenied')
-        }
-        onClick={() =>
-          checkProtectedAction(userPrivileges, ['can_write'], () => setIsFocused(infra.id))
-        }
+        title={t('infraManagement.actions.rename')}
+        onClick={() => setIsFocused(infra.id)}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_write']}
       >
         <Pencil />
-      </button>
-      <button
+      </ProtectedButton>
+
+      {/* DUPLICATE */}
+      <ProtectedButton
         className="infraslist-item-action copy"
-        type="button"
-        aria-label={t('infraManagement.actions.copy')}
-        title={
-          userPrivileges.has('can_read')
-            ? t('infraManagement.actions.copy')
-            : t('authorization.permissionDenied')
-        }
-        disabled={!userPrivileges.has('can_read')}
+        title={t('infraManagement.actions.copy')}
         onClick={handleDuplicate}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_read']}
       >
         <Duplicate />
-      </button>
-      <button
+      </ProtectedButton>
+
+      {/* EXPORT */}
+      <ProtectedButton
         className="infraslist-item-action export"
-        type="button"
-        aria-label={t('infraManagement.actions.export')}
-        title={
-          userPrivileges.has('can_read')
-            ? t('infraManagement.actions.export')
-            : t('authorization.permissionDenied')
-        }
-        disabled={!userPrivileges.has('can_read')}
+        title={t('infraManagement.actions.export')}
         onClick={handleExport}
+        userPrivileges={userPrivileges}
+        requiredPrivileges={['can_read']}
       >
         <Download />
-      </button>
+      </ProtectedButton>
     </>
   );
 };
