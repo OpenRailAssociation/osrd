@@ -19,7 +19,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Helm
-        uses: azure/setup-helm@v5.0.1
+        uses: azure/setup-helm@v5.1.0
 
       - name: Set Name and Version
         run: |
