@@ -27,17 +27,23 @@ use utoipa::openapi::Schema;
 
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum RoundTripsError {
+    #[error("The payload contains duplicate train IDs which is not allowed")]
+    #[view_error(status = BAD_REQUEST, context)]
+    DuplicateTrainIds,
+
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+}
+
+#[derive(Debug, Error, ViewError, From)]
+pub(in crate::views) enum ListRoundTripsError {
     #[error(transparent)]
     TimetableNotFound(
         #[from]
         #[view_error]
         TimetableNotFound,
     ),
-
-    #[error("The payload contains duplicate train IDs which is not allowed")]
-    #[view_error(status = BAD_REQUEST, context)]
-    DuplicateTrainIds,
-
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -184,17 +190,20 @@ pub(in crate::views) struct RoundTripsPage {
     get, path = "",
     tags = ["timetable", "round_trips"],
     params(TimetableIdParam, PaginationQueryParams<1000>),
-    responses((status = 200, body = inline(RoundTripsPage), description = "The paginated list of round trips / one-ways"))
+    responses(
+        (status = 200, body = inline(RoundTripsPage), description = "The paginated list of round trips / one-ways"),
+        ListRoundTripsError,
+    )
 )]
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
-) -> Result<Json<RoundTripsPage>, RoundTripsError> {
+) -> Result<Json<RoundTripsPage>, ListRoundTripsError> {
     let conn = &mut db_pool.get().await?;
 
     Timetable::exists_or_fail(conn, timetable_id, || {
-        RoundTripsError::from(TimetableNotFound { timetable_id })
+        ListRoundTripsError::from(TimetableNotFound { timetable_id })
     })
     .await?;
 
