@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import type { Position } from 'geojson';
+import { useSelector } from 'react-redux';
 
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -11,6 +12,7 @@ import {
   type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
+import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 
@@ -38,7 +40,8 @@ export const usePathStepsMetadata = (
   pathSteps: PathStep[],
   pendingStepKeyRef: RefObject<string>
 ) => {
-  const { infraId, timetableId, getTrackSectionsByIds } = useScenarioContext();
+  const { scenario, infraId, timetableId, getTrackSectionsByIds } = useScenarioContext();
+  const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [pathStepsMetadataByKey, setPathStepsMetadataByKey] = useState<
     Map<string, PathStepMetadata>
@@ -65,6 +68,16 @@ export const usePathStepsMetadata = (
         ? {
             id: timetableId,
             body: { infra_id: infraId, operational_point_references: opRefsByKey },
+          }
+        : skipToken
+    );
+
+  const { data: macroNodesData, isLoading: isMacroNodesLoading } =
+    osrdEditoastApi.endpoints.postScenariosByScenarioIdMatchMacroNodes.useQuery(
+      hasOpRefs && unrecognizedWaypointsActivated
+        ? {
+            scenarioId: scenario.id,
+            body: { operational_point_references: Object.values(opRefsByKey) },
           }
         : skipToken
     );
@@ -163,11 +176,14 @@ export const usePathStepsMetadata = (
 
           const opRefKey = getOpRefKey(location.operational_point);
           const timetableTrackNames = localTrackNamesData?.[opRefKey] ?? [];
+          const macroNode =
+            macroNodesData?.related_operational_points[Object.keys(opRefsByKey).indexOf(opRefKey)];
 
           newPathStepsMetadataByKey.set(pathStep.key, {
-            validity: matchedOp === null ? 'invalid' : 'loading',
+            validity: matchedOp === null && !isMacroNodesLoading ? 'invalid' : 'loading',
             localTrackName: local_track_name ?? undefined,
             customTrackNames: timetableTrackNames.length > 0 ? timetableTrackNames : undefined,
+            name: macroNode?.full_name ?? macroNode?.short_name ?? undefined,
           });
           return;
         }
@@ -225,7 +241,13 @@ export const usePathStepsMetadata = (
     };
     fetchAndSetMetadata();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [pathStepsOperationalPoints, pathSteps, localTrackNamesData]);
+  }, [
+    pathStepsOperationalPoints,
+    pathSteps,
+    localTrackNamesData,
+    macroNodesData,
+    isMacroNodesLoading,
+  ]);
 
   const setPathStepMetadata = useCallback(
     (key: string, metadata: PathStepMetadata) =>

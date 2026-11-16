@@ -166,7 +166,9 @@ const PathStepItem = ({
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
-  const [subFormName, setSubFormName] = useState('');
+
+  const [subFormName, setSubFormName] = useState<string>();
+  const macroNodeName = pathStepMetadata?.validity !== 'valid' ? pathStepMetadata?.name : undefined;
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -342,7 +344,7 @@ const PathStepItem = ({
       return formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode);
     }
 
-    if (shouldShowInvalidMessage) return getUnrecognizedOpLabel(pathStep.location);
+    if (shouldShowInvalidMessage) return getUnrecognizedOpLabel(pathStep.location, macroNodeName);
 
     return undefined;
   }, [
@@ -353,6 +355,7 @@ const PathStepItem = ({
     shouldShowInvalidMessage,
     unrecognizedWaypointsActivated,
     pathStep.location,
+    macroNodeName,
   ]);
 
   const maxVisibleSuggestions = 8;
@@ -697,7 +700,7 @@ const PathStepItem = ({
         pathStepMetadata={pathStepMetadata}
         isSubFormExpanded={isSubFormExpanded}
         isOpValid={isOpValid}
-        name={subFormName}
+        name={subFormName ?? macroNodeName ?? ''}
         onNameChange={setSubFormName}
         onCustomOpCreation={onCustomOpCreation}
         doesOpExist={doesOpExist}

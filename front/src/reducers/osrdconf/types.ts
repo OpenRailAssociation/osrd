@@ -82,7 +82,12 @@ export type PathStep = {
 export type LocatedPathStep = PathStep & { location: PathItemLocation };
 
 export type PathStepMetadata =
-  | { validity: 'invalid' | 'loading'; localTrackName?: string; customTrackNames?: string[] }
+  | {
+      validity: 'invalid' | 'loading';
+      localTrackName?: string;
+      customTrackNames?: string[];
+      name?: string;
+    }
   | {
       type: 'trackOffset';
       validity: 'valid';
