@@ -53,44 +53,39 @@ const useStdcm = ({
   const dateTimeLocale = useDateTimeLocale();
   const osrdconf = useSelector(getStdcmConf);
   const infraId = useSelector(getStdcmInfraID);
-  const abortRequests = useRef<Array<() => void>>(null);
+  const abortController = useRef<AbortController>(null);
   const isCancelledRef = useRef(false);
   const progressPoints = useRef<StdcmProgressPoints>([]);
 
   const currentSimulationInputs = useStdcmForm();
 
   const postTimetableByIdStdcm = osrdEditoastApi.endpoints.postTimetableByIdStdcm;
-  const getPostTimetableByIdStdcmPromise = (
-    stream: ReturnType<typeof postTimetableByIdStdcm>,
+  const getPostTimetableByIdStdcmPromise = async (
+    args: PostTimetableByIdStdcmApiArg,
+    signal: AbortSignal,
     type: 'upstream' | 'downstream'
-  ) =>
-    new Promise<StdcmResponseWithTraceId>((resolve, reject) => {
-      // subscribe for progress point
-      void stream.subscribe((event) => {
-        switch (event.event) {
-          case 'ongoing': {
-            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);
-            progressPoints.current = [
-              ...progressPoints.current,
-              {
-                type,
-                geoPoint: event.data.point,
-                animationStartTime: Date.now(),
-              },
-            ];
-            break;
-          }
-          case 'error': {
-            reject(event.error);
-            break;
-          }
-          case 'completed': {
-            resolve({ ...event.data, traceId: event.traceId });
-            break;
-          }
+  ): Promise<StdcmResponseWithTraceId> => {
+    for await (const event of postTimetableByIdStdcm(args, signal)) {
+      switch (event.event) {
+        case 'ongoing': {
+          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);
+          progressPoints.current = [
+            ...progressPoints.current,
+            {
+              type,
+              geoPoint: event.data.point,
+              animationStartTime: Date.now(),
+            },
+          ];
+          break;
         }
-      });
-    });
+        case 'completed': {
+          return { ...event.data, traceId: event.traceId };
+        }
+      }
+    }
+    throw new Error('Missing completed event in stdcm response');
+  };
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
@@ -197,12 +192,17 @@ const useStdcm = ({
       const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
       const payloadDownstream = adjustPayloadByDirection(payload, 'downstream');
 
-      const upstream = postTimetableByIdStdcm(payloadUpstream);
-      const downstream = postTimetableByIdStdcm(payloadDownstream);
-      abortRequests.current = [upstream.unsubscribe, downstream.unsubscribe];
-
-      const promiseUpstream = getPostTimetableByIdStdcmPromise(upstream, 'upstream');
-      const promiseDownstream = getPostTimetableByIdStdcmPromise(downstream, 'downstream');
+      abortController.current = new AbortController();
+      const promiseUpstream = getPostTimetableByIdStdcmPromise(
+        payloadUpstream,
+        abortController.current.signal,
+        'upstream'
+      );
+      const promiseDownstream = getPostTimetableByIdStdcmPromise(
+        payloadDownstream,
+        abortController.current.signal,
+        'downstream'
+      );
 
       // The failure explanation of the current simulation is fetched while the two
       // additional requests for alternative simulations are running.
@@ -235,6 +235,7 @@ const useStdcm = ({
         setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
       }
     } catch (error) {
+      abortController.current?.abort(); // Abort the other request if one failed
       if ((error as Error).name !== 'AbortError') {
         handleRejection(error);
       }
@@ -255,15 +256,10 @@ const useStdcm = ({
     const payload = formatStdcmPayload(validConfig);
 
     try {
-      const { subscribe, unsubscribe } = postTimetableByIdStdcm(payload);
-      abortRequests.current = [unsubscribe];
+      abortController.current = new AbortController();
       // Listen to events
-      await subscribe(async (event) => {
+      for await (const event of postTimetableByIdStdcm(payload, abortController.current.signal)) {
         switch (event.event) {
-          case 'error': {
-            if (event.error.name !== 'AbortError') handleRejection(event.error);
-            break;
-          }
           case 'ongoing': {
             setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.in_progress);
             progressPoints.current = [
@@ -291,21 +287,22 @@ const useStdcm = ({
               case 'internal_error':
                 handleRejection(result.error);
             }
-            break;
+            return;
           }
         }
-      });
+      }
+      throw new Error('Missing completed event in stdcm response');
     } catch (err) {
-      handleRejection(err);
+      if (!(err instanceof DOMException) || err.name !== 'AbortError') {
+        handleRejection(err);
+      }
     }
   };
 
   const cancelStdcmRequest = () => {
     isCancelledRef.current = true;
-    abortRequests.current?.forEach((abortFn) => {
-      abortFn();
-    });
-    abortRequests.current = null;
+    abortController.current?.abort();
+    abortController.current = null;
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
   };
 
