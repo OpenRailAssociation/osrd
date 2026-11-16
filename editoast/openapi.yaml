@@ -2982,7 +2982,7 @@ paths:
                       enum:
                       - editoast:database:internal
                 - type: object
-                  description: 'core error: {0}'
+                  description: 'Core error: {0}'
                   required:
                   - type
                   - status

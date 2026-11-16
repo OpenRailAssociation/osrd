@@ -555,7 +555,7 @@ enum DatabaseError {
 }
 
 #[derive(Debug, thiserror::Error, ViewError)]
-#[error("core error: {0}")]
+#[error("Core error: {0}")]
 #[view_error(status = INTERNAL_SERVER_ERROR)]
 struct CoreError(#[from] core_client::Error);
 
