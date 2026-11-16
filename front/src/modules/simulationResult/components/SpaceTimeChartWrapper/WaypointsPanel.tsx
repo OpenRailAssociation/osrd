@@ -60,7 +60,11 @@ const Waypoint = ({
     <span className="name" data-testid="waypoint-name">
       {waypoint.name}
     </span>
-    <span className="secondary-code" data-testid="waypoint-secondary-code">
+    <span
+      className="secondary-code"
+      data-testid="waypoint-secondary-code"
+      title={waypoint.secondary_name ?? undefined}
+    >
       {waypoint.secondary_code}
     </span>
   </div>
