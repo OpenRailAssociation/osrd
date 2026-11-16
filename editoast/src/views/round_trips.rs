@@ -26,7 +26,6 @@ use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
 
 #[derive(Debug, Error, ViewError, From)]
-#[view_error(path = round_trips)]
 pub(in crate::views) enum RoundTripsError {
     #[error(transparent)]
     TimetableNotFound(
@@ -36,7 +35,7 @@ pub(in crate::views) enum RoundTripsError {
     ),
 
     #[error("The payload contains duplicate train IDs which is not allowed")]
-    #[view_error(status = BAD_REQUEST, context, path = duplicate_train_ids)]
+    #[view_error(status = BAD_REQUEST, context)]
     DuplicateTrainIds,
 
     #[error(transparent)]
