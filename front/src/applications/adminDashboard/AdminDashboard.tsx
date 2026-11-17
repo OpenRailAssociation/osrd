@@ -16,7 +16,6 @@ function Header() {
         </a>
       </Link>
       <div className="header-tools">
-        <button className="help-button">?</button>
         <p className="header-username">{username}</p>
       </div>
     </header>

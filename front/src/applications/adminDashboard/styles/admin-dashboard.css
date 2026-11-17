@@ -25,18 +25,6 @@ body:has(.admin-dashboard) {
     align-items: center;
   }
 
-  .help-button {
-    width: 18px;
-    height: 18px;
-    box-shadow: 0 0 0 3px rgb(185 199 196 / 0.5);
-    border-radius: 50%;
-    background-color: var(--white100);
-    color: #b9c7c4; /* TODO: check with @tsailly to see if we have a color from the design system here */
-    font-weight: 600;
-    display: grid;
-    place-content: center;
-  }
-
   .header-username {
     margin: 9px 16px;
     color: var(--black25);
