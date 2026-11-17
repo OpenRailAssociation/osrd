@@ -9,7 +9,7 @@ volumes:
 
 services:
   postgres:
-    image: ${OSRD_POSTGIS_IMAGE:-postgis/postgis:16-3.4-alpine}
+    image: ${OSRD_POSTGIS_IMAGE:-postgis/postgis:18-3.6-alpine}
     container_name: osrd-postgres
     user: postgres
     restart: unless-stopped
@@ -17,7 +17,7 @@ services:
     environment:
       POSTGRES_PASSWORD: "password"
     volumes:
-      - "psql_data:/var/lib/postgresql/data"
+      - "psql_data:/var/lib/postgresql"
       - "./docker/init_db.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
       test: [ "CMD", "pg_isready", "-d", "postgres://osrd:password@postgres/osrd" ]
