@@ -18,7 +18,7 @@
 
     .user-count {
       display: inline;
-      padding: 0 16px 2px 0; /* vertical padding aligns the text with the buttons */
+      padding-inline: 2px 16px; /* vertical padding aligns the text with the buttons */
       margin: 0;
       font-size: 14px;
       font-weight: 600;
