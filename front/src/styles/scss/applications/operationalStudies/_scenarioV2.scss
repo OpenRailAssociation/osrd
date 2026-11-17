@@ -74,7 +74,11 @@
         &:hover {
           color: var(--black100);
 
-          & ~ .scenario-name-container {
+          // Hide the whole breadcrumb, the close label takes its place
+          & ~ .scenario-name-container,
+          & ~ .breadcrumb-separator,
+          & ~ .ui-option-group-trigger,
+          & ~ .chevron-btn {
             opacity: 0;
           }
 
@@ -93,10 +97,37 @@
         text-align: left;
       }
 
+      // Same fade as the scenario name when hovering the close button
+      .breadcrumb-separator,
+      .ui-option-group-trigger,
+      .chevron-btn {
+        transition: opacity 0.3s ease-in-out;
+      }
+
       .close-label {
         position: absolute;
         text-transform: capitalize;
         display: none;
+      }
+
+      // Also used after the timetable selector, outside of the scenario name container
+      .chevron-btn {
+        padding: 4px;
+        color: var(--black25);
+
+        &:hover {
+          color: var(--black100);
+        }
+
+        &:active {
+          color: var(--grey70);
+        }
+      }
+
+      .breadcrumb-separator {
+        display: flex;
+        padding: 4px;
+        color: var(--black25);
       }
 
       .scenario-name-container {
@@ -105,18 +136,14 @@
         opacity: 1;
         height: 100%;
         color: var(--grey50);
-        min-width: 64px;
+        flex-basis: content;
+        width: 64px;
 
         .scenario-name-label {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
           min-width: 0;
-        }
-
-        .chevron-btn {
-          padding: 4px;
-          color: var(--black25);
         }
 
         &:hover {
@@ -133,29 +160,6 @@
           .chevron-btn {
             color: var(--grey70);
           }
-        }
-      }
-
-      .timetable-name-container {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        color: var(--grey50);
-        white-space: nowrap;
-        min-width: 0;
-
-        .timetable-name-label {
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        &:hover {
-          cursor: pointer;
-          color: var(--black100);
-        }
-
-        &:active {
-          color: var(--grey70);
         }
       }
     }
