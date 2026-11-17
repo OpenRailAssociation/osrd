@@ -570,6 +570,17 @@ impl From<::authz::v2::OpenFgaError> for OpenFgaError {
     }
 }
 
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+enum AuthorizerError {
+    #[error(transparent)]
+    #[from(::authz::authorizers::Error, fga::client::Error)]
+    OpenFgaError(#[view_error] OpenFgaError),
+    #[error("Forbidden (403) — user has insufficient privileges")]
+    #[view_error(status = FORBIDDEN)]
+    #[from(::authz::v2::Check)]
+    Forbidden,
+}
+
 /// Convert an Infallible error into an OpenFgaError.
 /// Useful since the SystemAuthorizer uses Infallible as
 /// its rejection type, and using run() forces to handle

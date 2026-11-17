@@ -30,7 +30,7 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::authentication;
-use crate::views::AuthorizationError;
+use crate::views::AuthorizerError;
 use crate::views::CoreError;
 use crate::views::DatabaseError;
 use crate::views::infra::InfraNotFound;
@@ -55,15 +55,14 @@ pub enum PathPropertiesError {
     #[from(forward)]
     Database(#[view_error] DatabaseError),
     #[error(transparent)]
-    Authorization(#[from] AuthorizationError),
+    Authorizer(
+        #[from]
+        #[view_error]
+        AuthorizerError,
+    ),
     #[error(transparent)]
+    #[from(core_client::Error)]
     Core(#[view_error] CoreError),
-}
-
-impl From<core_client::Error> for PathPropertiesError {
-    fn from(error: core_client::Error) -> Self {
-        Self::Core(error.into())
-    }
 }
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
@@ -142,7 +141,7 @@ pub(in crate::views) async fn post(
         authz::Infra(infra_id),
         authz::InfraPrivilege::CanRestrictedRead,
     )
-    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .run::<AuthorizerError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     use core_task::Task as _;
