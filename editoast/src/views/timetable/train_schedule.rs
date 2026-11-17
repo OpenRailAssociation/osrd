@@ -432,7 +432,7 @@ pub(in crate::views) async fn simulation_summary(
             let Ok(authorized_rolling_stocks) = system_authorizer
                 .authorize(authz::v2::rolling_stock_list(
                     user,
-                    RollingStockPrivilege::CanRead,
+                    RollingStockPrivilege::CanRestrictedRead,
                 ))
                 .await?
                 .access()
@@ -707,7 +707,7 @@ pub(in crate::views) async fn get_path(
 
     v2::rolling_stock_privilege_check(
         authz::RollingStock(rolling_stock_model.id),
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
     )
     .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await?;
@@ -861,12 +861,12 @@ pub(in crate::views) async fn simulation(
     };
     // Check user privilege on infra and rolling stock
     // Done here because we need to retrieve the exception if it exists.
-    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRead)
+    v2::infra_privilege_check(authz::Infra(infra_id), InfraPrivilege::CanRestrictedRead)
         .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
         .await?;
     match v2::rolling_stock_privilege_check(
         authz::RollingStock(rolling_stock.id),
-        RollingStockPrivilege::CanRead,
+        RollingStockPrivilege::CanRestrictedRead,
     )
     .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
     .await
