@@ -1,11 +1,9 @@
 mod authz;
 mod catalog_entry;
-mod documents;
 pub mod electrical_profiles;
 mod error;
-pub mod fonts;
+mod files;
 pub mod health;
-pub mod icons;
 pub mod infra;
 mod layers;
 mod level_crossing_occupancy;
@@ -20,7 +18,6 @@ pub mod search;
 pub mod search_journey_environment;
 mod search_journeys;
 mod server;
-pub mod sprites;
 pub mod stdcm_debug;
 pub mod stdcm_request;
 pub mod stdcm_search_environment;
@@ -119,7 +116,7 @@ fn service_router() -> server::router::DocumentedRouter {
             //
             // infra & map
             //
-            .route("/fonts/{font}/{glyph}", get!(fonts::fonts))
+            .route("/fonts/{font}/{glyph}", get!(files::fonts::fonts))
             .nests("/layers", |path| {
                 path.route(
                     "/layer/{layer_slug}/mvt/{view_slug}",
@@ -131,10 +128,10 @@ fn service_router() -> server::router::DocumentedRouter {
                 )
             })
             .nests("/sprites", |path| {
-                path.route("/signaling_systems", get!(sprites::signaling_systems))
-                    .route("/{signaling_system}/{file_name}", get!(sprites::sprites))
+                path.route("/signaling_systems", get!(files::sprites::signaling_systems))
+                    .route("/{signaling_system}/{file_name}", get!(files::sprites::sprites))
             })
-            .route("/icons/{signaling_system}/{file_name}", get!(icons::icons))
+            .route("/icons/{signaling_system}/{file_name}", get!(files::icons::icons))
             .route("/search", post!(search::search))
             .route(
                 "/stdcm/debug_data/{trace_id}",
@@ -343,10 +340,10 @@ fn service_router() -> server::router::DocumentedRouter {
             // operational studies
             //
             .nests("/documents", |path| {
-                path.route("/", post!(documents::post))
+                path.route("/", post!(files::documents::post))
                     .nests("/{document_key}", |path| {
-                        path.route("/", get!(documents::get))
-                            .route("/", delete!(documents::delete))
+                        path.route("/", get!(files::documents::get))
+                            .route("/", delete!(files::documents::delete))
                     })
             })
             .nests("/projects", |path| {
@@ -572,13 +569,6 @@ impl From<std::convert::Infallible> for OpenFgaError {
     fn from(_: std::convert::Infallible) -> Self {
         unreachable!()
     }
-}
-
-#[derive(Debug, Error, ViewError)]
-#[error("File '{file}' not found")]
-#[view_error(status = NOT_FOUND, context)]
-struct FileNotFoundError {
-    file: String,
 }
 
 #[cfg(test)]
