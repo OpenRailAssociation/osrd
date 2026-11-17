@@ -1,6 +1,9 @@
+use std::collections::HashSet;
 use std::ops::DerefMut as _;
 
 use database::DbConnection;
+use diesel::ExpressionMethods as _;
+use diesel::QueryDsl as _;
 use diesel::deserialize::FromSql;
 use diesel::deserialize::FromSqlRow;
 use diesel::expression::AsExpression;
@@ -9,6 +12,7 @@ use diesel::pg::PgValue;
 use diesel::serialize::Output;
 use diesel::serialize::ToSql;
 use diesel::sql_types::Jsonb;
+use diesel_async::RunQueryDsl as _;
 use editoast_derive::Model;
 
 pub use schemas::timetable::TimetableRange;
@@ -51,9 +55,6 @@ impl TimetableInheritance {
         outer_timetable_id: i64,
     ) -> Result<Vec<i64>, database::DatabaseError> {
         use database::tables::timetable_inheritance::dsl;
-        use diesel::ExpressionMethods as _;
-        use diesel::QueryDsl as _;
-        use diesel_async::RunQueryDsl as _;
 
         dsl::timetable_inheritance
             .filter(dsl::outer_timetable_id.eq(outer_timetable_id))
@@ -61,6 +62,38 @@ impl TimetableInheritance {
             .load(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
+    }
+
+    pub async fn set_inner_timetables(
+        conn: &mut DbConnection,
+        outer_timetable_id: i64,
+        inner_timetable_ids: HashSet<i64>,
+    ) -> Result<(), crate::Error> {
+        use crate::prelude::*;
+        use database::tables::timetable_inheritance::dsl;
+
+        // Transaction to ensure consistency of modifications
+        conn.transaction(async move |mut conn| {
+            // Delete the current inclusions of timetables
+            diesel::delete(
+                dsl::timetable_inheritance.filter(dsl::outer_timetable_id.eq(outer_timetable_id)),
+            )
+            .execute(conn.write().await.deref_mut())
+            .await?;
+
+            // Create the new inclusions
+            let changesets: Vec<TimetableInheritanceChangeset> = inner_timetable_ids
+                .into_iter()
+                .map(|inner_timetable_id| {
+                    TimetableInheritance::changeset()
+                        .outer_timetable_id(outer_timetable_id)
+                        .inner_timetable_id(inner_timetable_id)
+                })
+                .collect();
+            let _: Vec<_> = TimetableInheritance::create_batch(&mut conn, changesets).await?;
+            Ok(())
+        })
+        .await
     }
 }
 

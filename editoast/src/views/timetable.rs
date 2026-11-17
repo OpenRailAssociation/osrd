@@ -86,6 +86,9 @@ enum TimetableError {
     #[error("Timetable '{timetable_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { timetable_id: i64 },
+    #[error("Timetables {timetable_ids:?} could not be found")]
+    #[editoast_error(status = 404)]
+    BatchNotFound { timetable_ids: HashSet<i64> },
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
@@ -108,6 +111,19 @@ enum TimetableError {
     #[error("Train schedule '{id}' could not be found")]
     #[editoast_error(status = 404)]
     TrainScheduleNotFound { id: i64 },
+    #[error(
+        "Timetables {inner_ids:?} cannot be included in timetable '{outer_id}': a timetable can only include train schedule sets of the same type"
+    )]
+    #[editoast_error(status = 422)]
+    InvalidInners {
+        inner_ids: HashSet<i64>,
+        outer_id: i64,
+    },
+    #[error(
+        "Timetable '{timetable_id}' is a train schedule set: it cannot include other timetables"
+    )]
+    #[editoast_error(status = 422)]
+    InvalidOuter { timetable_id: i64 },
 }
 
 /// A timetable with its data
@@ -979,6 +995,83 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
     }
 }
 
+#[cfg_attr(test, derive(Serialize))]
+#[derive(Deserialize, ToSchema)]
+pub(in crate::views) struct TimetableInheritanceForm {
+    inner_timetable_ids: HashSet<i64>,
+}
+
+/// Set the timetables included in another one
+///
+/// Replaces all the existing inclusions by the given ones.
+///
+/// Currently, only train schedule sets can be included so ranges are not supported yet.
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    put, path = "",
+    tags = ["timetable"],
+    params(TimetableIdParam),
+    request_body(content = inline(TimetableInheritanceForm)),
+    responses(
+        (status = 204, description = "The inner timetables have been included in the outer timetable"),
+    ),
+)]
+pub(in crate::views) async fn set_inner_timetables(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Path(TimetableIdParam {
+        id: outer_timetable_id,
+    }): Path<TimetableIdParam>,
+    Json(TimetableInheritanceForm {
+        inner_timetable_ids,
+    }): Json<TimetableInheritanceForm>,
+) -> Result<impl IntoResponse> {
+    let mut conn = db_pool.get().await?;
+
+    let outer = Timetable::retrieve_or_fail(conn.clone(), outer_timetable_id, || {
+        TimetableError::NotFound {
+            timetable_id: outer_timetable_id,
+        }
+    })
+    .await?;
+
+    if outer.is_train_schedule_set {
+        return Err(TimetableError::InvalidOuter {
+            timetable_id: outer_timetable_id,
+        }
+        .into());
+    }
+
+    let inners: Vec<Timetable> = Timetable::retrieve_batch_or_fail(
+        &mut conn,
+        inner_timetable_ids.iter().copied(),
+        |missing| TimetableError::BatchNotFound {
+            timetable_ids: missing,
+        },
+    )
+    .await?;
+
+    let invalid_inner_ids: HashSet<i64> = inners
+        .iter()
+        .filter(|inner| {
+            !inner.is_train_schedule_set || inner.timetable_type != outer.timetable_type
+        })
+        .map(|inner| inner.id)
+        .collect();
+
+    if !invalid_inner_ids.is_empty() {
+        return Err(TimetableError::InvalidInners {
+            inner_ids: invalid_inner_ids,
+            outer_id: outer_timetable_id,
+        }
+        .into());
+    }
+
+    TimetableInheritance::set_inner_timetables(&mut conn, outer_timetable_id, inner_timetable_ids)
+        .await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 /// Set links between a timetable and train schedule sets
 /// If a link already exists, it is ignored
 /// If a link exists and is not in the new list, it is removed
@@ -1120,6 +1213,7 @@ mod tests {
 
     use axum::http::StatusCode;
     use core_client::simulation::RoutingZoneRequirement;
+    use database::DbConnection;
     use jiff::SignedDuration;
     use models::TimetableInheritance;
     use models::train_schedule::TrainScheduleChangeset;
@@ -1137,6 +1231,8 @@ mod tests {
     use super::*;
     use crate::error::InternalError;
     use crate::fixtures::create_catalog_entry_with_name;
+    use crate::fixtures::create_hourly_timetable;
+    use crate::fixtures::create_hourly_train_schedule_set;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
@@ -2049,5 +2145,139 @@ mod tests {
         let app = test_app!().skip_authz().build();
 
         app.get("/timetable/0").await.assert_status_not_found();
+    }
+
+    const UNKNOWN_TIMETABLE_ID: i64 = -1;
+
+    /// Timetable to set up for a test case
+    #[derive(Debug, Clone, Copy)]
+    enum TestTimetable {
+        /// A timetable id that does not exist in database
+        Unknown,
+        Timetable(TimetableType),
+        TrainScheduleSet(TimetableType),
+    }
+
+    impl TestTimetable {
+        /// Creates the timetable in database and returns its id
+        async fn setup(self, conn: &mut DbConnection) -> i64 {
+            match self {
+                Self::Unknown => UNKNOWN_TIMETABLE_ID,
+                Self::Timetable(TimetableType::Calendar) => create_timetable(conn).await.id,
+                Self::Timetable(TimetableType::Hourly) => create_hourly_timetable(conn).await.id,
+                Self::TrainScheduleSet(TimetableType::Calendar) => {
+                    create_train_schedule_set(conn).await.timetable_id
+                }
+                Self::TrainScheduleSet(TimetableType::Hourly) => {
+                    create_hourly_train_schedule_set(conn).await.timetable_id
+                }
+            }
+        }
+    }
+
+    #[rstest]
+    #[case::outer_not_found(
+        TestTimetable::Unknown,
+        TestTimetable::TrainScheduleSet(TimetableType::Calendar),
+        StatusCode::NOT_FOUND,
+        "editoast:timetable:NotFound"
+    )]
+    #[case::inner_not_found(
+        TestTimetable::Timetable(TimetableType::Calendar),
+        TestTimetable::Unknown,
+        StatusCode::NOT_FOUND,
+        "editoast:timetable:BatchNotFound"
+    )]
+    #[case::outer_is_train_schedule_set(
+        TestTimetable::TrainScheduleSet(TimetableType::Calendar),
+        TestTimetable::TrainScheduleSet(TimetableType::Calendar),
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "editoast:timetable:InvalidOuter"
+    )]
+    #[case::inner_is_not_train_schedule_set(
+        TestTimetable::Timetable(TimetableType::Calendar),
+        TestTimetable::Timetable(TimetableType::Calendar),
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "editoast:timetable:InvalidInners"
+    )]
+    #[case::calendar_outer_hourly_inner(
+        TestTimetable::Timetable(TimetableType::Calendar),
+        TestTimetable::TrainScheduleSet(TimetableType::Hourly),
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "editoast:timetable:InvalidInners"
+    )]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn set_inner_timetables_fails(
+        #[case] outer: TestTimetable,
+        #[case] inner: TestTimetable,
+        #[case] expected_status: StatusCode,
+        #[case] expected_error_type: &str,
+    ) {
+        let app = test_app!().skip_authz().build();
+        let mut conn = app.db_pool().get_ok();
+        let outer_timetable_id = outer.setup(&mut conn).await;
+        let inner_timetable_id = inner.setup(&mut conn).await;
+
+        let response: InternalError = app
+            .put(format!("/timetable/{outer_timetable_id}/inners").as_str())
+            .json(&TimetableInheritanceForm {
+                inner_timetable_ids: HashSet::from([inner_timetable_id]),
+            })
+            .await
+            .assert_status(expected_status)
+            .json();
+        assert_eq!(&response.error_type, expected_error_type);
+
+        let included_timetables = TimetableInheritance::list_inner_timetable_ids(
+            &mut app.db_pool().get_ok(),
+            outer_timetable_id,
+        )
+        .await
+        .expect("Failed to retrieve inner timetables");
+        assert!(
+            included_timetables.is_empty(),
+            "nothing must have been included"
+        );
+    }
+
+    #[rstest]
+    #[case::first_inclusions(&[], &[0, 1])]
+    #[case::replace_inclusions(&[0, 1], &[1, 2])]
+    #[case::same_inclusion(&[0, 1], &[0, 1])]
+    #[case::remove_all_inclusions(&[0, 1], &[])]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn set_inner_timetables_succeeds(#[case] initial: &[usize], #[case] new: &[usize]) {
+        let app = test_app!().skip_authz().build();
+        let mut conn = app.db_pool().get_ok();
+
+        let outer_timetable_id = create_timetable(&mut conn).await.id;
+        let train_schedule_set_timetable_ids = [
+            create_train_schedule_set(&mut conn).await.timetable_id,
+            create_train_schedule_set(&mut conn).await.timetable_id,
+            create_train_schedule_set(&mut conn).await.timetable_id,
+        ];
+        let select = |indexes: &[usize]| {
+            indexes
+                .iter()
+                .map(|index| train_schedule_set_timetable_ids[*index])
+                .collect()
+        };
+
+        for inners in [initial, new] {
+            app.put(format!("/timetable/{outer_timetable_id}/inners").as_str())
+                .json(&TimetableInheritanceForm {
+                    inner_timetable_ids: select(inners),
+                })
+                .await
+                .assert_status_no_content();
+
+            let included_timetables: HashSet<i64> =
+                TimetableInheritance::list_inner_timetable_ids(&mut conn, outer_timetable_id)
+                    .await
+                    .expect("Failed to retrieve inner timetables")
+                    .into_iter()
+                    .collect();
+            assert_eq!(included_timetables, select(inners));
+        }
     }
 }
