@@ -1,5 +1,5 @@
 use crate::error::Result;
-use core_client::NewClient;
+use core_client::CoreClient;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
 use core_client::simulation::CompleteReportTrain;
@@ -344,7 +344,7 @@ pub fn interpolate_arrival_time(position: u64, report_train: &ReportTrain) -> i6
 )]
 pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
-    core_client: NewClient,
+    core_client: CoreClient,
     valkey_client: Arc<cache::Client>,
     track_section_ranges: Vec<TrackRange>,
     infra: &Infra,
@@ -717,7 +717,7 @@ impl OperationalPointProjection {
 pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core_client: NewClient,
+    core_client: CoreClient,
     train_schedules: &[T],
     op_cache: &OperationalPointCache,
     operational_points_projection: &OperationalPointProjection,

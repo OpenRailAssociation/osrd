@@ -29,8 +29,8 @@ use axum_streams::StreamBodyAs;
 use chrono::Utc;
 use common::geometry::GeoJsonPoint;
 use core_client::AsCoreStreaming as _;
+use core_client::CoreClient;
 use core_client::Headers;
-use core_client::NewClient;
 use core_client::Progress;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -272,7 +272,7 @@ pub(in crate::views) async fn stdcm(
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
     Extension(user): Extension<Option<models::User>>,
-    Extension(new_client): Extension<NewClient>,
+    Extension(core_client): Extension<CoreClient>,
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     headers: HeaderMap,
@@ -387,7 +387,7 @@ pub(in crate::views) async fn stdcm(
     let virtual_train_runs = VirtualTrainRun::simulate_consists_sequence(
         db_pool.clone(),
         valkey_client.clone(),
-        new_client.clone(),
+        core_client.clone(),
         config.app_version.as_deref(),
         &request,
         &infra,
@@ -496,7 +496,7 @@ pub(in crate::views) async fn stdcm(
 
     let (response_tx, response_rx) = mpsc::unbounded_channel();
     let stdcm_task = async move {
-        let stdcm_stream = stdcm_request.fetch(&new_client, Headers::default()).await;
+        let stdcm_stream = stdcm_request.fetch(&core_client, Headers::default()).await;
 
         match stdcm_stream {
             Err(error) => response_tx
@@ -666,7 +666,7 @@ impl VirtualTrainRun {
     async fn simulate_consists_sequence(
         db_pool: Arc<DbConnectionPool>,
         valkey_client: Arc<cache::Client>,
-        core_client: NewClient,
+        core_client: CoreClient,
         app_version: Option<&str>,
         stdcm_request: &Request,
         infra: &Infra,

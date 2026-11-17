@@ -8,8 +8,8 @@ use std::sync::Arc;
 use std::task::Poll;
 
 use core_client::AsCoreRequest as _;
+use core_client::CoreClient;
 use core_client::Headers;
-use core_client::NewClient;
 use dashmap::DashMap;
 use futures::stream;
 use itertools::Itertools as _;
@@ -435,7 +435,7 @@ fn build_request(
 impl Task for core_client::pathfinding::PathfindingRequest {
     type Output = core_client::pathfinding::PathfindingCoreResult;
     type Error = core_client::Error;
-    type Context = NewClient;
+    type Context = CoreClient;
 
     // The compressed size of a pathfinding is:
     // - Mean: 3.5kB

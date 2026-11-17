@@ -1,8 +1,8 @@
 pub mod conflict_detection;
+mod core_client;
 pub mod etcs_braking_curves;
 pub mod mocking;
 pub mod mq_client;
-mod new_client;
 pub mod path_properties;
 pub mod pathfinding;
 pub mod signal_projection;
@@ -24,8 +24,8 @@ use std::time::Duration;
 use thiserror::Error;
 use tokio::sync::mpsc::UnboundedSender;
 
+pub use core_client::CoreClient;
 pub use mq_client::RabbitMQClient;
-pub use new_client::NewClient;
 
 pub type Headers = HashMap<String, String>;
 
@@ -54,12 +54,12 @@ impl Display for WorkerKey {
 }
 
 #[derive(Debug, Clone)]
-pub enum CoreClient {
+pub enum SharedCoreClient {
     MessageQueue(RabbitMQClient),
     Mocked(mocking::MockingClient),
 }
 
-impl CoreClient {
+impl SharedCoreClient {
     #[tracing::instrument(skip_all, err)]
     pub async fn new_mq(options: mq_client::Options) -> Result<Self, Error> {
         let client = RabbitMQClient::new(options)
@@ -72,10 +72,10 @@ impl CoreClient {
     #[tracing::instrument(name = "ping_core", skip_all)]
     pub async fn ping(&self) -> Result<bool, Error> {
         match self {
-            CoreClient::MessageQueue(mq_client) => {
+            SharedCoreClient::MessageQueue(mq_client) => {
                 mq_client.ping().await.map_err(|_| Error::BrokenPipe)
             }
-            CoreClient::Mocked(_) => Ok(true),
+            SharedCoreClient::Mocked(_) => Ok(true),
         }
     }
 }
@@ -88,7 +88,7 @@ impl CoreClient {
 /// # use core_client::AsCoreRequest;
 /// # use core_client::Json;
 /// # use core_client::WorkerKey;
-/// # use core_client::NewClient;
+/// # use core_client::CoreClient;
 /// # use serde::Serialize;
 /// # use serde::Deserialize;
 /// # use std::sync::Arc;
@@ -112,8 +112,8 @@ impl CoreClient {
 /// # rt.block_on(async {
 /// #   let mut core_mock = core_client::mocking::MockingClient::default();
 /// #   core_mock.stub("/some/path").response(http::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
-/// #   let core_client = NewClient {
-/// #           client: Arc::new(core_mock.into()),
+/// #   let core_client = CoreClient {
+/// #           shared: Arc::new(core_mock.into()),
 /// #           feature_flags: HashSet::default(),
 /// #   };
 /// // Builds the payload, executes the request at POST /some/path and deserializes its response
@@ -143,7 +143,7 @@ where
     /// TODO: provide a mechanism in this trait to allow the implementer to
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
-    async fn fetch(&self, core: &NewClient, core_headers: Headers) -> Result<R::Response, Error> {
+    async fn fetch(&self, core: &CoreClient, core_headers: Headers) -> Result<R::Response, Error> {
         core.fetch::<Self, R>(
             Self::URL_PATH,
             Some(self),
@@ -183,7 +183,7 @@ pub trait AsCoreStreaming: Serialize + Sized + Sync {
     /// Each item in the stream is a [Result], allowing both successful responses and errors
     async fn fetch(
         &self,
-        core: &NewClient,
+        core: &CoreClient,
         core_headers: Headers,
     ) -> Result<impl Stream<Item = Result<<Self::Response as CoreResponse>::Response, Error>>, Error>
     where
@@ -214,7 +214,7 @@ pub trait AsCoreProgression: AsCoreStreaming {
     /// The intermediate events are sent through `sender` and returns the final response
     async fn fetch_updates(
         &self,
-        core: &NewClient,
+        core: &CoreClient,
         sender: UnboundedSender<Result<Self::Event, Error>>,
     ) -> Result<Self::FinalResponse, Error>;
 }
@@ -230,7 +230,7 @@ where
 
     async fn fetch_updates(
         &self,
-        core: &NewClient,
+        core: &CoreClient,
         sender: UnboundedSender<Result<Self::Event, Error>>,
     ) -> Result<Self::FinalResponse, Error>
     where

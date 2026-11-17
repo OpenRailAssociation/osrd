@@ -1,11 +1,11 @@
-use core_client::NewClient;
+use core_client::CoreClient;
 
 /// Innermost environment to configure Core basic parameters
 #[derive(Debug, Clone)]
 pub struct CoreEnv {
     pub infra_id: u64,
     pub infra_version: i64,
-    pub client: NewClient,
+    pub client: CoreClient,
 }
 
 #[cfg(test)]
@@ -17,8 +17,8 @@ impl CoreEnv {
         Self {
             infra_id: 1,
             infra_version: 1,
-            client: NewClient {
-                client: Arc::new(mock.into()),
+            client: CoreClient {
+                shared: Arc::new(mock.into()),
                 feature_flags: HashSet::default(),
             },
         }

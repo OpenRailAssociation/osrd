@@ -22,7 +22,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use core_client::NewClient;
+use core_client::CoreClient;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
@@ -391,7 +391,7 @@ pub(in crate::views) async fn requirements(
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
-    Extension(new_client): Extension<NewClient>,
+    Extension(core_client): Extension<CoreClient>,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(page_settings): Query<PaginationQueryParams<200>>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
@@ -454,7 +454,7 @@ pub(in crate::views) async fn requirements(
     let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
-        new_client.clone(),
+        core_client.clone(),
         &occurrences,
         &infra,
         electrical_profile_set_id,

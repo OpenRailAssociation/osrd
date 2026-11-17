@@ -1,6 +1,6 @@
 use core_client::AsCoreRequest as _;
+use core_client::CoreClient;
 use core_client::Headers;
-use core_client::NewClient;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingResultSuccess;
@@ -374,7 +374,7 @@ impl From<PathfindingFailure> for SummaryResponse {
 pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core: NewClient,
+    core: CoreClient,
     train_schedules: &[T],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
@@ -481,7 +481,7 @@ pub async fn train_simulation_ordered_batch<T: TrainScheduleLike + Clone>(
 pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core: NewClient,
+    core: CoreClient,
     infra: &Infra,
     train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
     electrical_profile_set_id: Option<i64>,

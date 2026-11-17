@@ -862,7 +862,7 @@ async fn populate_op_geo(
 pub mod tests {
     use authz::Role;
     use axum::http::StatusCode;
-    use core_client::CoreClient;
+    use core_client::SharedCoreClient;
     use core_client::mocking::MockingClient;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
@@ -1045,7 +1045,7 @@ pub mod tests {
             let pool = DbConnectionPool::for_tests();
             let app = test_app!()
                 .db_pool(pool)
-                .core_client(CoreClient::Mocked(MockingClient::default()))
+                .core_client(SharedCoreClient::Mocked(MockingClient::default()))
                 .build();
             let db_pool = app.db_pool();
             let infra_id = create_empty_infra(&mut db_pool.get_ok()).await.id;

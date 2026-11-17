@@ -3,15 +3,15 @@ use std::hash::Hash as _;
 use std::hash::Hasher as _;
 
 use core_client::AsCoreRequest as _;
+use core_client::CoreClient;
 use core_client::Headers;
-use core_client::NewClient;
 
 use crate::Task;
 
 impl<'a> Task for core_client::path_properties::PathPropertiesRequest<'a> {
     type Output = core_client::path_properties::PathPropertiesResponse;
     type Error = core_client::Error;
-    type Context = NewClient;
+    type Context = CoreClient;
 
     const CACHE_READS_BATCH_SIZE: usize = 100; // adjust if needed
 

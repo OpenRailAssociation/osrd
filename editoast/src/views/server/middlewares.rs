@@ -9,7 +9,7 @@ use axum::extract::Request;
 use axum::extract::State;
 use axum::middleware::Next;
 use axum::response::Response;
-use core_client::NewClient;
+use core_client::CoreClient;
 use models::authn::user::AddIdentitiesError;
 
 use crate::AppState;
@@ -247,11 +247,11 @@ pub(in crate::views) async fn core_client_building_middleware(
     next: Next,
 ) -> Result<Response> {
     let feature_flags = feature_flags.iter().map(|flag| flag.to_string()).collect();
-    let new_client = NewClient {
-        client: core_client,
+    let core_client = CoreClient {
+        shared: core_client,
         feature_flags,
     };
-    req.extensions_mut().insert(new_client);
+    req.extensions_mut().insert(core_client);
     Ok(next.run(req).await)
 }
 

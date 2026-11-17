@@ -2,8 +2,8 @@ use std::hash::DefaultHasher;
 use std::hash::Hash as _;
 
 use core_client::AsCoreRequest as _;
+use core_client::CoreClient;
 use core_client::Headers;
-use core_client::NewClient;
 
 use crate::CoreEnv;
 use crate::Task;
@@ -127,7 +127,7 @@ pub(super) fn build_request(
 impl Task for core_client::simulation::Request {
     type Output = core_client::simulation::Response;
     type Error = core_client::Error;
-    type Context = NewClient;
+    type Context = CoreClient;
 
     // The compressed size of a simulation is:
     // - Mean: 18.5kB

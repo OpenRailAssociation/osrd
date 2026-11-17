@@ -3,9 +3,9 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use core_client::AsCoreRequest as _;
+use core_client::CoreClient;
 use core_client::Error as CoreClientError;
 use core_client::Headers;
-use core_client::NewClient;
 use core_client::mq_client::MqClientError;
 use core_client::worker_load::WorkerLoadRequest;
 use core_client::worker_load::WorkerLoadResponse;
@@ -81,7 +81,7 @@ pub(in crate::views) async fn worker_load(
         db_pool, openfga, ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
-    Extension(new_client): Extension<NewClient>,
+    Extension(core_client): Extension<CoreClient>,
     Json(WorkerLoadForm {
         infra_id,
         timetable_id,
@@ -113,7 +113,7 @@ pub(in crate::views) async fn worker_load(
         timetable: timetable_id,
     };
 
-    let status = infra_request.fetch(&new_client, Headers::default()).await;
+    let status = infra_request.fetch(&core_client, Headers::default()).await;
 
     let status = match status {
         Ok(WorkerLoadResponse { loaded: true }) => WorkerStatus::Ready,
@@ -134,7 +134,7 @@ mod tests {
     use crate::fixtures::create_empty_infra;
 
     use axum::http::StatusCode;
-    use core_client::CoreClient;
+    use core_client::SharedCoreClient;
     use core_client::mocking::MockingClient;
     use database::DbConnectionPool;
     use rstest::rstest;
@@ -159,7 +159,7 @@ mod tests {
         let app = test_app!()
             .skip_authz()
             .db_pool(db_pool)
-            .core_client(CoreClient::Mocked(core))
+            .core_client(SharedCoreClient::Mocked(core))
             .build();
         let response: WorkerStatus = app
             .post("/worker_load")

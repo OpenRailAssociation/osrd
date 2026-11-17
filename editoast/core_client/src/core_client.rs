@@ -1,7 +1,7 @@
-use crate::CoreClient;
 use crate::CoreResponse;
 use crate::Error;
 use crate::Headers;
+use crate::SharedCoreClient;
 use crate::WorkerKey;
 use crate::mocking;
 use futures::Stream;
@@ -17,12 +17,12 @@ use std::time::Duration;
 use tracing::trace;
 
 #[derive(Debug, Clone)]
-pub struct NewClient {
-    pub client: Arc<CoreClient>,
+pub struct CoreClient {
+    pub shared: Arc<SharedCoreClient>,
     pub feature_flags: HashSet<String>,
 }
 
-impl NewClient {
+impl CoreClient {
     #[tracing::instrument(
         target = "editoast::coreclient",
         name = "core:fetch",
@@ -42,8 +42,8 @@ impl NewClient {
         R: CoreResponse,
         <R as CoreResponse>::Response: std::marker::Send,
     {
-        match self.client.as_ref() {
-            CoreClient::MessageQueue(_) => {
+        match self.shared.as_ref() {
+            SharedCoreClient::MessageQueue(_) => {
                 let stream = self
                     .fetch_streaming::<B, R>(path, body, worker_key, override_timeout, core_headers)
                     .await?;
@@ -54,7 +54,7 @@ impl NewClient {
                     .ok_or(Error::UnparsableErrorOutput)?
             }
 
-            CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
+            SharedCoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
                 Ok(Some(response)) => Ok(response),
                 Ok(None) => Err(Error::NoResponseContent),
                 Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
@@ -86,8 +86,8 @@ impl NewClient {
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
             "Request content");
 
-        match self.client.as_ref() {
-            CoreClient::MessageQueue(client) => {
+        match self.shared.as_ref() {
+            SharedCoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
                 // TODO: tracing: use correlation id
                 core_headers.insert("feature_flags".into(), self.feature_flags.iter().join(", "));
@@ -119,7 +119,7 @@ impl NewClient {
                     todo!("TODO: handle protocol errors")
                 })))
             }
-            CoreClient::Mocked(client) => {
+            SharedCoreClient::Mocked(client) => {
                 match client.fetch_streaming_mocked::<_, B, R>(path, body) {
                     Ok(responses) => Ok(Either::Right(stream::iter(responses).map(Ok))),
                     Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),

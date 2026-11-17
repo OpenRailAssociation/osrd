@@ -29,7 +29,7 @@ use common::tracing::Stream;
 use common::tracing::Telemetry;
 use common::tracing::TracingConfig;
 use common::tracing::create_tracing_subscriber;
-use core_client::CoreClient;
+use core_client::SharedCoreClient;
 use core_client::mocking::MockingClient;
 use dashmap::DashMap;
 use database::DbConnectionPool;
@@ -84,7 +84,7 @@ impl SpanExporter for NoopSpanExporter {
 pub(crate) struct TestAppBuilder {
     test_name: String,
     db_pool: Option<DbConnectionPool>,
-    core_client: Option<CoreClient>,
+    core_client: Option<SharedCoreClient>,
     enable_authorization: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
@@ -112,7 +112,7 @@ impl TestAppBuilder {
         self
     }
 
-    pub fn core_client(mut self, core_client: CoreClient) -> Self {
+    pub fn core_client(mut self, core_client: SharedCoreClient) -> Self {
         self.core_client = Some(core_client);
         self
     }
@@ -216,7 +216,7 @@ impl TestAppBuilder {
         // Build Core client
         let core_client = Arc::new(
             self.core_client
-                .unwrap_or_else(|| CoreClient::Mocked(MockingClient::default())),
+                .unwrap_or_else(|| SharedCoreClient::Mocked(MockingClient::default())),
         );
 
         let store_name =

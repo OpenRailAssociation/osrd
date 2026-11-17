@@ -12,7 +12,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use common::geometry::GeoJsonLineString;
-use core_client::NewClient;
+use core_client::CoreClient;
 use core_client::path_properties::GeometryProjection;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
@@ -97,7 +97,7 @@ pub(in crate::views) async fn post(
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
-    Extension(new_client): Extension<NewClient>,
+    Extension(core_client): Extension<CoreClient>,
     Path(infra_id): Path<i64>,
     Json(path_properties_input): Json<PathPropertiesInput>,
 ) -> Result<Json<PathProperties>> {
@@ -118,7 +118,7 @@ pub(in crate::views) async fn post(
         infra: infra_id,
         expected_version: infra_version,
     }
-    .run(valkey_client, new_client)
+    .run(valkey_client, core_client)
     .await?;
 
     Ok(Json(PathProperties::from(path_properties)))
