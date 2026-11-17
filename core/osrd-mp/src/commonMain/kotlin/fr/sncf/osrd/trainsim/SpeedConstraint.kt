@@ -56,7 +56,7 @@ interface SpeedConstraint : Constraint {
                         return@map curve.advance(
                             currentState,
                             currentState.time + context.timeStep.seconds,
-                        )!!
+                        ) ?: mergedState
                     } else {
                         return@map mergedState
                     }

@@ -155,18 +155,15 @@ fun runStandaloneSimulation(
 
     tracer?.runStart("max-effort")
 
-    var trainState = TrainState.zero.copy(speed = initialSpeed.metersPerSecond)
-    val maxEffortStates = mutableListOf(trainState)
-    while (trainState.position < trainPath.length.meters) {
-        val nextTrainState = step(context, constraints, trainState, tracer)
-        for (constraint in constraints) {
-            if (constraint is Updatable) {
-                constraint.update(trainState, nextTrainState)
-            }
-        }
-        trainState = nextTrainState
-        maxEffortStates.add(trainState)
-    }
+    val maxEffortSimulator =
+        TrainSimulator(
+            context,
+            constraints,
+            TrainState.zero.copy(speed = initialSpeed.metersPerSecond),
+            tracer,
+        )
+    maxEffortSimulator.runToEnd()
+    val maxEffortStates = maxEffortSimulator.states
 
     val provisionalStates =
         runMargins(
@@ -384,7 +381,6 @@ fun runMargins(
             context.driver.vMaxFactor = vMaxFactor
 
             val initialTrainState = marginStates.last()
-            var trainState = initialTrainState
             states.clear()
 
             for (constraint in constraints) {
@@ -395,16 +391,9 @@ fun runMargins(
 
             tracer?.runStart("provisional-lower=$lower-upper=$upper-vmaxfactor=$vMaxFactor")
 
-            while (trainState.position < upper.toPrecise()) {
-                val nextTrainState = step(context, constraints, trainState, tracer)
-                for (constraint in constraints) {
-                    if (constraint is Updatable) {
-                        constraint.update(trainState, nextTrainState)
-                    }
-                }
-                trainState = nextTrainState
-                states.add(trainState)
-            }
+            val simulator = TrainSimulator(context, constraints, initialTrainState, tracer)
+            simulator.advanceUntilPosition(upper.toPrecise())
+            states.addAll(simulator.states.drop(1))
 
             val trialTime = states.last().time - initialTrainState.time
             val timeDiff = (trialTime - marginTime).seconds.absoluteValue
