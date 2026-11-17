@@ -6,29 +6,30 @@ use tower::ServiceExt as _;
 use tower_http::services::ServeFile;
 
 use crate::AppState;
-use crate::views::FileNotFoundError;
+use crate::views::files::FileNotFoundError;
 
+/// This endpoint is used by map libre to retrieve the fonts. They are separated by font and unicode block
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "icons",
+    tag = "fonts",
     params(
-        ("signaling_system" = String, Path, description = "Signaling system name"),
-        ("file_name" = String, Path, description = "File name (svg)"),
+        ("font" = String, Path, description = "Requested font"),
+        ("glyph" = String, Path, description = "Requested unicode block"),
     ),
     responses(
-        (status = 200, description = "The requested icon"),
+        (status = 200, description = "Glyphs in PBF format of the font at the requested unicode block"),
         FileNotFoundError,
     ),
 )]
-pub(in crate::views) async fn icons(
-    Path((signaling_system, file_name)): Path<(String, String)>,
+pub(in crate::views) async fn fonts(
+    Path((font, file_name)): Path<(String, String)>,
     State(AppState { config, .. }): State<AppState>,
     request: Request,
 ) -> Result<impl IntoResponse, FileNotFoundError> {
     let path = config
         .dynamic_assets_path
-        .join(format!("icons/{signaling_system}/{file_name}"));
+        .join(format!("fonts/glyphs/{font}/{file_name}"));
 
     if !path.is_file() {
         return Err(FileNotFoundError { file: file_name });
@@ -49,25 +50,25 @@ mod tests {
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn icons_works() {
+    async fn font_works() {
         let app = test_app!().skip_authz().build();
-        let response = app.get("/icons/TVM300/REP%20TGV.svg").await;
+        let response = app.get("/fonts/IBMPlexSans/0-255.pbf").await;
         response.assert_status_ok();
-        assert_eq!("image/svg+xml", response.content_type());
+        assert_eq!("application/octet-stream", response.content_type());
         let response = response.into_bytes();
         let expected = std::fs::read(
             app.config()
                 .dynamic_assets_path
-                .join("icons/TVM300/REP TGV.svg"),
+                .join("fonts/glyphs/IBMPlexSans/0-255.pbf"),
         )
         .unwrap();
         assert_eq!(response, expected);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn icons_not_found() {
+    async fn font_not_found() {
         let app = test_app!().skip_authz().build();
-        app.get("/icons/TVM300/NOT_A_THING.svg")
+        app.get("/fonts/Comic%20Sans/0-255.pbf")
             .await
             .assert_status_not_found();
     }
