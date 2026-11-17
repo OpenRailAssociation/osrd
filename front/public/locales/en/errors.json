@@ -296,10 +296,13 @@
       "NameAlreadyUsed": "A group of temporary speed limits with '{{name}}' already exists"
     },
     "timetable": {
+      "BatchNotFound": "Timetables '{{timetable_ids}}' could not be found",
       "BatchTrainScheduleSetNotFound": "'{{count}}' train schedule set(s) not found",
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
+      "InvalidInners": "Timetables '{{inner_ids}}' cannot be included in timetable '{{outer_id}}': a timetable can only include train schedule sets of the same type",
+      "InvalidOuter": "Timetable '{{timetable_id}}' is a train schedule set: it cannot include other timetables",
       "InvalidPeriod": "Hourly timetable period should be under 24h",
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
