@@ -300,10 +300,13 @@
       "NameAlreadyUsed": "Un groupe de limites temporaires de vitesse avec le nom '{{name}} existe déjà"
     },
     "timetable": {
+      "BatchNotFound": "Grilles horaires '{{timetable_ids}}' non trouvées",
       "BatchTrainScheduleSetNotFound": "'{{count}}' paquet(s) de circulation non trouvés",
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
+      "InvalidInners": "Les grilles horaires '{{inner_ids}}' ne peuvent pas être incluses dans la grille horaire '{{outer_id}}' : une grille horaire ne peut inclure que des paquets de circulation de même type",
+      "InvalidOuter": "La grille horaire '{{timetable_id}}' est un paquet de circulation : elle ne peut pas inclure d'autres grilles horaires",
       "InvalidPeriod": "La période d'une trame doit être inférieure à 24h",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",

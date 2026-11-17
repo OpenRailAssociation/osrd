@@ -272,10 +272,13 @@
       "NameAlreadyUsed": "Eine Gruppe temporärer Geschwindigkeitsbegrenzungen mit dem Namen '{{name}}' existiert bereits"
     },
     "timetable": {
+      "BatchNotFound": "Fahrpläne '{{timetable_ids}}' nicht gefunden",
       "BatchTrainScheduleSetNotFound": "'{{count}}' Zugpaket(e) nicht gefunden",
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' existiert nicht",
       "InfraNotLoaded": "Infrastruktur '{{infra_id}}' ist nicht geladen",
+      "InvalidInners": "Fahrpläne '{{inner_ids}}' können nicht in Fahrplan '{{outer_id}}' eingebunden werden: ein Fahrplan kann nur Zugpakete desselben Typs enthalten",
+      "InvalidOuter": "Fahrplan '{{timetable_id}}' ist ein Zugpaket: er kann keine anderen Fahrpläne enthalten",
       "NotFound": "Fahrplan '{{timetable_id}}' nicht gefunden",
       "ParseError": "train_id konnte nicht analysiert werden: '{{train_id}}'",
       "TrainScheduleSetsNotFound": "'{{ids}}' Zugpakete nicht gefunden",

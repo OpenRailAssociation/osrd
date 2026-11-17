@@ -5655,6 +5655,42 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Conflict'
+  /timetable/{id}/inners:
+    put:
+      tags:
+      - timetable
+      summary: Set the timetables included in another one
+      description: |-
+        If an inclusion already exists, it is ignored
+        If an inclusion exists and is not in the new list, it is removed
+
+        Currently, only train schedule sets can be included so ranges are not supported yet.
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - inner_timetable_ids
+              properties:
+                inner_timetable_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '204':
+          description: The inner timetables have been included in the outer timetable
   /timetable/{id}/path_steps/local_track_names:
     post:
       tags:
@@ -9670,8 +9706,11 @@ components:
       - $ref: '#/components/schemas/EditoastSubCategoryErrorNotFound'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorDatabase'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastTimetableErrorBatchNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorDatabase'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInvalidInners'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInvalidOuter'
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidPeriod'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
@@ -11984,6 +12023,31 @@ components:
           type: string
           enum:
           - editoast:temporary_speed_limit:NameAlreadyUsed
+    EditoastTimetableErrorBatchNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorBatchNotFoundContext
+          required:
+          - timetable_ids
+          properties:
+            timetable_ids:
+              type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:timetable:BatchNotFound
     EditoastTimetableErrorDatabase:
       type: object
       required:
@@ -12029,6 +12093,59 @@ components:
           type: string
           enum:
           - editoast:timetable:InfraNotFound
+    EditoastTimetableErrorInvalidInners:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorInvalidInnersContext
+          required:
+          - inner_ids
+          - outer_id
+          properties:
+            inner_ids:
+              type: object
+            outer_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:InvalidInners
+    EditoastTimetableErrorInvalidOuter:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorInvalidOuterContext
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:InvalidOuter
     EditoastTimetableErrorInvalidPeriod:
       type: object
       required:

@@ -1,4 +1,6 @@
 use database::DbConnection;
+use diesel::ExpressionMethods as _;
+use diesel::QueryDsl as _;
 use diesel::deserialize::FromSql;
 use diesel::deserialize::FromSqlRow;
 use diesel::expression::AsExpression;
@@ -7,10 +9,12 @@ use diesel::pg::PgValue;
 use diesel::serialize::Output;
 use diesel::serialize::ToSql;
 use diesel::sql_types::Jsonb;
+use diesel_async::RunQueryDsl as _;
 use editoast_derive::Model;
 use schemas::primitives::StrictlyPositiveDuration;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashSet;
 use std::ops::DerefMut as _;
 use unit_system::quantities::Offset;
 use utoipa::ToSchema;
@@ -61,9 +65,6 @@ impl TimetableInheritance {
         outer_timetable_id: i64,
     ) -> Result<Vec<i64>, database::DatabaseError> {
         use database::tables::timetable_inheritance::dsl;
-        use diesel::ExpressionMethods as _;
-        use diesel::QueryDsl as _;
-        use diesel_async::RunQueryDsl as _;
 
         dsl::timetable_inheritance
             .filter(dsl::outer_timetable_id.eq(outer_timetable_id))
@@ -71,6 +72,49 @@ impl TimetableInheritance {
             .load(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
+    }
+
+    pub async fn set_inner_timetables(
+        conn: &mut DbConnection,
+        outer_timetable_id: i64,
+        inner_timetable_ids: HashSet<i64>,
+    ) -> Result<(), crate::Error> {
+        use crate::prelude::*;
+        use database::tables::timetable_inheritance::dsl;
+
+        // Transaction to ensure consistency of modifications
+        conn.transaction(async move |mut conn| {
+            // 1. Retrieve the current inclusions of timetables
+            let existing_inner_timetable_ids: HashSet<i64> =
+                Self::list_inner_timetable_ids(&mut conn, outer_timetable_id)
+                    .await?
+                    .into_iter()
+                    .collect();
+
+            // 2. Delete only the inclusions that are NOT in the new list
+            let inclusions_to_delete =
+                existing_inner_timetable_ids.difference(&inner_timetable_ids);
+            diesel::delete(
+                dsl::timetable_inheritance
+                    .filter(dsl::outer_timetable_id.eq(outer_timetable_id))
+                    .filter(dsl::inner_timetable_id.eq_any(inclusions_to_delete)),
+            )
+            .execute(conn.write().await.deref_mut())
+            .await?;
+
+            // 3. Create missing inclusions
+            let changesets: Vec<TimetableInheritanceChangeset> = inner_timetable_ids
+                .difference(&existing_inner_timetable_ids)
+                .map(|inner_timetable_id| {
+                    TimetableInheritance::changeset()
+                        .outer_timetable_id(outer_timetable_id)
+                        .inner_timetable_id(*inner_timetable_id)
+                })
+                .collect();
+            let _: Vec<_> = TimetableInheritance::create_batch(&mut conn, changesets).await?;
+            Ok(())
+        })
+        .await
     }
 }
 
