@@ -1,8 +1,7 @@
-import React, { useRef, useState, type ReactNode } from 'react';
+import React, { useState } from 'react';
 
 import { OptionGroup, type OptionGroupSection } from '@osrd-project/ui-core';
 import {
-  ChevronDown,
   PatternDaily,
   PatternHourly,
   PatternWeekly,
@@ -14,10 +13,7 @@ import '@osrd-project/ui-core/dist/theme.css';
 
 type Timetable = { id: string; name: string };
 
-// The icon is only used to display the selected section on the trigger button
-type SectionWithIcon = OptionGroupSection<Timetable> & { icon: ReactNode };
-
-const sections: SectionWithIcon[] = [
+const sections: OptionGroupSection<Timetable>[] = [
   {
     title: 'Hourly patterns',
     icon: <PatternHourly size="lg" />,
@@ -51,30 +47,12 @@ const sections: SectionWithIcon[] = [
   },
 ];
 
-const findSectionIcon = (itemId: string) =>
-  sections.find((section) => section.items.some((item) => item.value.id === itemId))?.icon;
-
 const OptionGroupWrapper = () => {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<Timetable>(sections[0].items[0].value);
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
-      >
-        {!isOpen && findSectionIcon(selected.id)}
-        {selected.name}
-        <ChevronDown size="sm" />
-      </button>
       <OptionGroup
-        triggerRef={triggerRef}
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
         sections={sections}
         selectedValue={selected}
         onSelect={setSelected}

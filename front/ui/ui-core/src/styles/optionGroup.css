@@ -1,3 +1,27 @@
+.ui-option-group-trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  white-space: nowrap;
+  cursor: pointer;
+
+  @apply text-grey-50;
+
+  &:hover {
+    @apply text-black-100;
+  }
+
+  &:active {
+    @apply text-grey-70;
+  }
+
+  .option-group-trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .ui-option-group {
   position: absolute;
   width: 166px;
