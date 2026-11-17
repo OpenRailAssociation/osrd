@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { ComboBox, Input, Select, useDefaultComboBox } from '@osrd-project/ui-core';
-import { skipToken } from '@reduxjs/toolkit/query';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
-import {
-  osrdEditoastApi,
-  type LightRollingStockWithLiveries,
-  type SubCategory,
-} from 'common/api/osrdEditoastApi';
+import { type LightRollingStockWithLiveries, type SubCategory } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
+import { useRollingStockContext } from 'common/RollingStockContext';
 import useSpeedLimitTags from 'common/SpeedLimitTagSelector/useSpeedLimitTags';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
@@ -37,6 +33,7 @@ const ItineraryModalFormHeader = ({
   currentSubCategory,
   categoryColors,
 }: ItineraryModalFormHeaderProps) => {
+  const { rollingStockMap } = useRollingStockContext();
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule',
   });
@@ -53,14 +50,7 @@ const ItineraryModalFormHeader = ({
     }
   };
 
-  const { currentData: rollingStock } =
-    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
-      modalFormState.rollingStockId
-        ? {
-            rollingStockId: modalFormState.rollingStockId,
-          }
-        : skipToken
-    );
+  const rollingStock = rollingStockMap.get(modalFormState.rollingStockName);
 
   const getRollingStockLabel = useCallback((rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
