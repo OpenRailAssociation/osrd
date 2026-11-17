@@ -19,7 +19,7 @@ networks:
 
 services:
   postgres:
-    image: ${OSRD_POSTGIS_IMAGE:-postgis/postgis:16-3.4-alpine}
+    image: ${OSRD_POSTGIS_IMAGE:-postgis/postgis:18-3.6-alpine}
     container_name: osrd-postgres-pr-tests
     user: postgres
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
       POSTGRES_PASSWORD: "password"
     command: -c port=5433
     volumes:
-      - "psql_data:/var/lib/postgresql/data"
+      - "psql_data:/var/lib/postgresql"
       - "../docker/init_db.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
       test: [ "CMD", "pg_isready", "-d", "postgres://osrd:password@postgres:5433/osrd" ]
