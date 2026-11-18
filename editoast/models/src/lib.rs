@@ -134,7 +134,7 @@ fn try_parse_check_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) -
 fn try_parse_foreign_key_violation(
     e: &(dyn DatabaseErrorInformation + Send + Sync),
 ) -> Option<Error> {
-    if regex!(r#"update or delete on table .* violates foreign key constraint"#)
+    if regex!(r#"update or delete on table .* violates RESTRICT setting of foreign key constraint"#)
         .is_match(e.message())
     {
         Some(Error::ForeignKeyViolation {
@@ -171,7 +171,7 @@ impl From<diesel::result::Error> for Error {
                     Self::DatabaseError(e.into())
                 })
             }
-            diesel::result::Error::DatabaseError(DatabaseErrorKind::ForeignKeyViolation, inner) => {
+            diesel::result::Error::DatabaseError(DatabaseErrorKind::RestrictViolation, inner) => {
                 try_parse_foreign_key_violation(inner.as_ref()).unwrap_or_else(|| {
                     // falling back to the generic error — since it's still semantically correct, logging the error is enough
                     tracing::error!(
