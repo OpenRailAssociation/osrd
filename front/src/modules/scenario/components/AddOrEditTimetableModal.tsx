@@ -16,14 +16,13 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type AddOrEditTimetableModalProps = {
-  editionMode?: boolean;
   timetableType: TimetableType;
+  // Only given when editing a timetable
   timetable?: TimetableSummary;
   onCancel: () => void;
 };
 
 const AddOrEditTimetableModal = ({
-  editionMode = false,
   timetableType,
   timetable,
   onCancel,
@@ -41,6 +40,8 @@ const AddOrEditTimetableModal = ({
   const [name, setName] = useState(timetable?.name ?? '');
   const [displayError, setDisplayError] = useState(false);
 
+  const isEdition = timetable !== undefined;
+
   const addTitle =
     timetableType === 'HOURLY'
       ? t('main.scenarioAddHourlyPatternModalTitle')
@@ -49,7 +50,7 @@ const AddOrEditTimetableModal = ({
     timetableType === 'HOURLY'
       ? t('main.scenarioEditHourlyPatternModalTitle')
       : t('main.scenarioEditCalendarModalTitle');
-  const title = editionMode ? editTitle : addTitle;
+  const title = isEdition ? editTitle : addTitle;
 
   const isNameInvalid = !name.trim();
 
@@ -60,7 +61,7 @@ const AddOrEditTimetableModal = ({
       return;
     }
     try {
-      if (editionMode && timetable) {
+      if (isEdition) {
         await patchTimetable({
           id: timetable.id,
           timetablePatchForm: { name: name.trim() },

@@ -280,7 +280,6 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
       )}
       {timetableToEdit && (
         <AddOrEditTimetableModal
-          editionMode
           timetableType={timetableToEdit.type}
           timetable={timetableToEdit}
           onCancel={() => setTimetableToEdit(null)}
