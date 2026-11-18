@@ -711,7 +711,8 @@ const TimesStopsTable = ({
       if (isFirstRow) {
         return (
           <span data-testid="first-position" className="distance-cell">
-            0km
+            <span className="value">0</span>
+            <span className="unit">km</span>
           </span>
         );
       }

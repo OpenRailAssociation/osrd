@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import cx from 'classnames';
 
@@ -24,16 +24,8 @@ const DistanceCell = ({
 }: DistanceCellProps) => {
   const [draft, setDraft] = useState<string | undefined>(formatValue(distanceValue));
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [caretPosition, setCaretPosition] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const syncCaret = (e: React.SyntheticEvent<HTMLInputElement>) => {
-    setCaretPosition(e.currentTarget.selectionStart ?? 0);
-    setIsEditing(true);
-    if (e.currentTarget === null) {
-      setDraft(formatValue(distanceValue));
-    }
-  };
+  const cellRef = useRef<HTMLDivElement>(null);
 
   const normalizeInput = (input: string | undefined): string => {
     const trimmed = (input ?? '').trim();
@@ -65,7 +57,6 @@ const DistanceCell = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    syncCaret(e);
     if (e.key === 'Enter') {
       commit();
       onEnterKeyDown?.();
@@ -83,47 +74,59 @@ const DistanceCell = ({
     }
   };
 
+  const editAndFocus = (event: React.MouseEvent | React.FocusEvent) => {
+    event.preventDefault();
+    setIsEditing(true);
+    inputRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
+
   return (
     <div
-      className="distance-cell"
+      className={cx('distance-cell', 'editable', {
+        editing: isEditing,
+        empty: distanceValue === undefined,
+      })}
       data-testid={testId}
-      onClick={() => inputRef.current?.focus()}
+      onClick={editAndFocus}
+      onFocus={editAndFocus}
+      ref={cellRef}
       role="button"
-      tabIndex={0}
+      tabIndex={isEditing ? -1 : 0}
     >
-      <input
-        type="text"
-        inputMode="numeric"
-        ref={inputRef}
-        className="input"
-        data-testid="distance-cell-input"
-        value={draft ?? ''}
-        onBlur={commit}
-        onChange={(e) => setDraft(e.currentTarget.value)}
-        onKeyDown={handleKeyDown}
-        onKeyUp={syncCaret}
-        onSelect={syncCaret}
-      />
-      {isEditing || (draft !== undefined && draft !== '') ? (
-        <div
-          className={cx('display', {
-            saved: isEditing,
-          })}
-          aria-hidden="true"
-        >
-          <span className="value">
-            {isEditing && draft !== undefined ? (
-              <>
-                {draft.slice(0, caretPosition)}
-                <span className="custom-caret" />
-                {draft.slice(caretPosition)}
-              </>
-            ) : (
-              draft
-            )}
-          </span>
+      {isEditing ? (
+        <>
+          <input
+            type="text"
+            inputMode="numeric"
+            ref={inputRef}
+            className="input"
+            data-testid="distance-cell-input"
+            value={draft ?? ''}
+            onBlur={(event) => {
+              if (
+                !event.relatedTarget ||
+                (event.relatedTarget !== cellRef.current &&
+                  !cellRef.current?.contains(event.relatedTarget))
+              ) {
+                commit();
+              }
+            }}
+            onChange={(e) => setDraft(e.currentTarget.value)}
+            onKeyDown={handleKeyDown}
+          />
           <span className="unit">km</span>
-        </div>
+        </>
+      ) : distanceValue !== undefined ? (
+        <>
+          <span className="value">{formatValue(distanceValue)}</span>
+          <span className="unit">km</span>
+        </>
       ) : (
         <CellPlaceholder />
       )}
