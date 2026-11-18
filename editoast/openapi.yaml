@@ -3505,8 +3505,7 @@ paths:
                       - duration
                       properties:
                         duration:
-                          type: string
-                          example: PT5M
+                          $ref: '#/components/schemas/PositiveDuration'
                         time_begin:
                           type: integer
                           format: int64
@@ -7156,8 +7155,7 @@ paths:
                           - duration
                           properties:
                             duration:
-                              type: string
-                              example: PT5M
+                              $ref: '#/components/schemas/PositiveDuration'
                             time_begin:
                               type: integer
                               format: int64

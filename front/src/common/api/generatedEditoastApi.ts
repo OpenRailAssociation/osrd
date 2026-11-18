@@ -2302,7 +2302,7 @@ export type PostLevelCrossingOccupancyApiResponse =
           type: 'created';
         }
     ) & {
-      duration: string;
+      duration: PositiveDuration;
       time_begin: number;
     } & {
       direction: Direction;
@@ -3065,7 +3065,7 @@ export type PostTrainSchedulesTrackOccupancyApiResponse =
           type: 'created';
         }
     ) & {
-      duration: string;
+      duration: PositiveDuration;
       time_begin: number;
     } & {
       path_item_relative_location: PathItemRelativeLocation;
@@ -4136,6 +4136,7 @@ export type RoutePath = {
   }[];
   track_ranges: DirectionalTrackRange[];
 };
+export type PositiveDuration = string;
 export type LightModeEffortCurves = {
   is_electric: boolean;
   power_restriction_codes: string[];
@@ -4701,7 +4702,6 @@ export type PowerRestrictionItem = {
   to: string;
   value: string;
 };
-export type PositiveDuration = string;
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type ScheduleItem = {
   arrival?: null | PositiveDuration;
