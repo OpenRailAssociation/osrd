@@ -209,6 +209,60 @@ class PathfindingTests {
     }
 
     @Test
+    fun overlappingWaypoints() {
+        val infra = DummyInfra()
+        val block01 = infra.addBlock("0", "1", 10.meters)
+        val block12 = infra.addBlock("1", "2", 10.meters)
+        val block23 = infra.addBlock("2", "3", 10.meters)
+        val waypoints =
+            arrayListOf(
+                ExplorerStep(listOf(BlockLocation(block01, Offset(10.meters))), inputStepIndex = 0),
+                ExplorerStep(
+                    listOf(BlockLocation(block12, Offset(10.meters))),
+                    canBacktrack = true,
+                    inputStepIndex = 1,
+                ),
+                // Right now, this is allowed as an input (2 steps on the same location with
+                // different values of canBacktrack), but the output will be completely fucked imo,
+                // since we'll have an isBacktracking step followed by a !isBacktracking step at the
+                // same location. User's fault cheh.
+                ExplorerStep(
+                    listOf(BlockLocation(block12, Offset(10.meters))),
+                    canBacktrack = false,
+                    inputStepIndex = 2,
+                ),
+                ExplorerStep(listOf(BlockLocation(block23, Offset(1.meters))), inputStepIndex = 3),
+            )
+        val res = runPathFinding(waypoints, infra)
+        Assertions.assertEquals(
+            arrayListOf(
+                BlockRange(
+                    block01,
+                    Offset(10.meters),
+                    Offset(0.meters),
+                    0.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block12,
+                    Offset(0.meters),
+                    Offset(0.meters),
+                    10.meters,
+                    Length(10.meters),
+                ),
+                BlockRange(
+                    block23,
+                    Offset(0.meters),
+                    Offset(10.meters),
+                    1.meters,
+                    Length(10.meters),
+                ),
+            ),
+            res!!.getAllBlocks().toList(),
+        )
+    }
+
+    @Test
     fun severalStartsTest() {
         /* Bottom path has more edges but is shorter
 

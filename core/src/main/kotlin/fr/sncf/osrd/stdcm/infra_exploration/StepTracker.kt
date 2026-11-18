@@ -91,14 +91,14 @@ private constructor(
             val location = step.locations.single()
             if (step.isInput() && step.inputStepIndex != currentInputStepIndex + 1) continue
             if (step.isInput()) currentInputStepIndex++
-            // If current step and previous step are at the same location, stepDuplicate is not null
-            // and should be modified accordingly.
-            val stepDuplicate =
-                if (res.lastOrNull()?.location == location) res.removeLast() else null
+
+            // If current and previous steps are at the same location, the steps might need to be
+            // merged before being added back to the result.
+            val isDuplicateLocation = res.lastOrNull()?.location == location
 
             // Break if we're at a backtracking step AND the current step is not at the same
             // location as the last one.
-            if (isBacktrackingStep && stepDuplicate == null) break
+            if (isBacktrackingStep && !isDuplicateLocation) break
 
             isBacktrackingStep =
                 isBacktrackingAtEnd && location.offset == blockRange.objectEnd && step.canBacktrack
@@ -115,7 +115,7 @@ private constructor(
                         if (isBacktrackingStep) setOf(StepType.INPUT_STOP) else step.stepTypes,
                     inputStepIndex = currentInputStepIndex,
                 )
-            val newStep =
+            var newStep =
                 LocatedStep(
                     blockRange.offsetToTrainPath(location.offset),
                     location,
@@ -123,12 +123,20 @@ private constructor(
                     currentInputStepIndex,
                     isBacktrackingStep,
                 )
-            // If current step and previous steps are at the same location, they should be merged.
-            res.add(newStep.mergeLocatedStep(stepDuplicate))
+
+            // If the current and previous steps are at the same location, and are not both inputs,
+            // the current and previous steps should be merged together.
+            if (
+                isDuplicateLocation &&
+                    !(newStep.originalStep.isInput() && res.last().originalStep.isInput())
+            ) {
+                val stepDuplicate = res.removeLast()
+                newStep = newStep.mergeLocatedStep(stepDuplicate)
+            }
+            res.add(newStep)
         }
 
         seenSteps.addAll(res)
-        assert(!isBacktrackingAtEnd || res.last().isBacktracking)
         currentPathOffset = blockRange.pathEnd
         return res
     }
