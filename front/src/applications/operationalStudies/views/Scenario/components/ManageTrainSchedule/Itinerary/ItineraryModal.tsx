@@ -15,6 +15,7 @@ import { lineString } from '@turf/helpers';
 import cx from 'classnames';
 import type { Position } from 'geojson';
 import type { TFunction } from 'i18next';
+import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
@@ -61,6 +62,7 @@ import type {
 import { useAppDispatch } from 'store';
 import { addElementAtIndex } from 'utils/array';
 import { Duration, type StartTime } from 'utils/duration';
+import { usePrevious } from 'utils/hooks/state';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { msToKmh } from 'utils/physics';
 
@@ -801,8 +803,16 @@ const ItineraryModal = ({
     openModal();
   }, []);
 
+  const pathStepsCoordinates = useMemo(
+    () => [...pathStepsMetadataByKey.values()].flatMap(computePathStepCoordinates),
+    [pathStepsMetadataByKey]
+  );
+  const previousPathStepsCoordinates = usePrevious(pathStepsCoordinates);
+
   useEffect(() => {
     if (locatedStepsCount < 2 || pathStepsMetadataByKey.size < 2) return;
+    // Only frame when a marker moved, not when an empty step is added or focused
+    if (isEqual(pathStepsCoordinates, previousPathStepsCoordinates)) return;
 
     frameAllPathSteps();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
