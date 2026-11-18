@@ -1,15 +1,13 @@
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
-
-import type { WaypointGroup as WaypointGroupType } from './types';
+import type { WaypointGroup as WaypointGroupType, WaypointGroupOp } from './types';
 import WaypointRow from './WaypointRow';
 
 type WaypointGroupProps = {
   group: WaypointGroupType;
   requestedLabel: string;
-  onAdd: (op: CoreOperationalPointOnPath) => void;
+  onAdd: (op: WaypointGroupOp) => void;
   expanded: boolean;
   onToggle: () => void;
 };
@@ -52,7 +50,7 @@ const WaypointGroup = ({
       {expanded && hasIntermediates && (
         <ul className="intermediate-waypoints-panel__group-body">
           {group.intermediates.map((op) => (
-            <li key={`${op.id}-${op.position}`}>
+            <li key={op.waypointId}>
               <WaypointRow op={op} onAdd={() => onAdd(op)} />
             </li>
           ))}

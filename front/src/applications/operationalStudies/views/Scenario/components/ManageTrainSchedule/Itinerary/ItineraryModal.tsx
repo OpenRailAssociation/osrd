@@ -27,7 +27,6 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { buildPathWaypointsFromRawOPs } from 'applications/operationalStudies/utils';
 import type {
-  CoreOperationalPointOnPath,
   OperationalPointReference,
   PathProperties,
   PathItemLocation,
@@ -77,6 +76,7 @@ import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
+import type { WaypointGroupOp } from './IntermediateWaypointsPanel/types';
 import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
@@ -435,7 +435,7 @@ const ItineraryModal = ({
   };
 
   const handleAddWaypoint = useCallback(
-    (op: CoreOperationalPointOnPath, afterStepKey: string) => {
+    (op: WaypointGroupOp, afterStepKey: string) => {
       const insertIndex = pathSteps.findIndex((step) => step.key === afterStepKey) + 1;
       if (insertIndex === 0) return;
 
@@ -467,7 +467,6 @@ const ItineraryModal = ({
         validity: 'valid',
         name: op.name,
         mainCode: op.main_code,
-        uic: op.uic,
         secondaryCode: op.secondary_code,
         parts: coordinates
           ? [
@@ -1111,6 +1110,7 @@ const ItineraryModal = ({
           <IntermediateWaypointsPanel
             pathSteps={pathSteps}
             pathProperties={displayedPathProperties}
+            pathWaypoints={pathWaypoints}
             status={waypointsPanelStatus}
             onHide={() => setWaypointsPanelOpen(false)}
             onAddWaypoint={handleAddWaypoint}
