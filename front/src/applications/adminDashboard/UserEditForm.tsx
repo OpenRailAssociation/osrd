@@ -5,7 +5,7 @@ import { CheckboxesTree, Input, Select } from "@osrd-project/ui-core";
 
 import "./styles/user-edit-form.css";
 import { v4 as uuidv4 } from "uuid";
-import type { Role } from "common/api/osrdEditoastApi";
+import { osrdEditoastApi, type Role } from "common/api/osrdEditoastApi";
 
 type Identity = `${string}/${string}`;
 
@@ -14,6 +14,28 @@ type InfoInputProps = {
   providerList: string[];
   name: string;
 };
+
+function GroupsInput() {
+  "use memo";
+  let { data: groups } = osrdEditoastApi.endpoints.getAuthzGroups.useQuery();
+  if (groups) {
+    groups = groups.toSorted((a, b) => a.name.localeCompare(b.name));
+  }
+
+  return (
+    <div className="user-edit-groups-input">
+      <CheckboxesTree
+        id="admin-dashboard-groups-input"
+        label="Groups"
+        items={(groups || []).map(({ id, name }) => ({
+          id,
+          props: { label: name, checked: false },
+        }))}
+        onChange={() => {}}
+      />
+    </div>
+  );
+}
 
 function RolesInput({
   roles,
@@ -240,6 +262,7 @@ export default function UserEditForm({ onCancel }: { onCancel: () => void }) {
             roles={["Stdcm", "OperationalStudies"]}
             onChange={() => {}}
           />
+          <GroupsInput />
           <button onClick={onCancel}>Cancel</button>
         </form>
       </td>

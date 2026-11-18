@@ -1,8 +1,8 @@
 .user-edit-form {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: 1fr auto;
-    padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto;
+  padding: 24px;
 }
 
 .identity-input-labels {
@@ -20,5 +20,16 @@
   .delete-identity-button {
     margin-left: 12px;
     margin-right: 8px;
+  }
+}
+
+.user-edit-groups-input {
+  .checkbox-list {
+      width: 100%;
+      max-height: 450px;
+      display: flex;
+flex-direction: column;
+flex-wrap: wrap;
+
   }
 }
