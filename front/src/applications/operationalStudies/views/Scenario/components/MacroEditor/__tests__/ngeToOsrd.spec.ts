@@ -1,6 +1,11 @@
 import { readFile } from 'node:fs/promises';
 
-import type { NetzgrafikDto, NodeDto, TrainrunSectionDto } from '@osrd-project/netzgrafik-frontend';
+import {
+  PortAlignment,
+  type NetzgrafikDto,
+  type NodeDto,
+  type TrainrunSectionDto,
+} from '@osrd-project/netzgrafik-frontend';
 import { describe, expect, test, vi } from 'vitest';
 
 import { Duration } from 'utils/duration';
@@ -80,7 +85,9 @@ describe('generatPathAndSchedule', () => {
       fullName: 'Rothrist',
       positionX: 320,
       positionY: 32,
-      ports: [{ id: 6, trainrunSectionId: 3, positionIndex: 0, positionAlignment: 1 }],
+      ports: [
+        { id: 6, trainrunSectionId: 3, positionIndex: 0, positionAlignment: PortAlignment.Bottom },
+      ],
       transitions: [],
       connections: [],
       resourceId: 8,
@@ -98,7 +105,9 @@ describe('generatPathAndSchedule', () => {
       fullName: 'Langenthal',
       positionX: 320,
       positionY: 192,
-      ports: [{ id: 5, trainrunSectionId: 3, positionIndex: 0, positionAlignment: 0 }],
+      ports: [
+        { id: 5, trainrunSectionId: 3, positionIndex: 0, positionAlignment: PortAlignment.Top },
+      ],
       transitions: [],
       connections: [],
       resourceId: 9,
