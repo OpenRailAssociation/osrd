@@ -250,11 +250,16 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
       }
 
       const value = state.units[state.activeUnit];
-      // Replacement mode: initial state, cleared unit, or untouched '00' unit
-      const nextValue =
-        state.allDigitsSelected || value === '00' || isCleared(value)
-          ? CLEARED_VALUE[0] + digit
-          : clamp(state.activeUnit, value[1] + digit);
+      const hasTwoDigits = !isCleared(value) && value[0] !== CLEARED_VALUE[0];
+      // Replacement mode: initial state, cleared unit, untouched '00' unit, or a full unit not typed in yet
+      const isReplacing =
+        state.allDigitsSelected ||
+        value === '00' ||
+        isCleared(value) ||
+        (state.editedDigitCount === 0 && hasTwoDigits);
+      const nextValue = isReplacing
+        ? CLEARED_VALUE[0] + digit
+        : clamp(state.activeUnit, value[1] + digit);
 
       let editedDigitCount = state.editedDigitCount + 1;
       let nextUnit = state.activeUnit;
