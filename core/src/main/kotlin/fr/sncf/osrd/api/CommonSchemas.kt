@@ -140,10 +140,11 @@ enum class StepType(
     // This is used when comparing/merging steps, the lowest number is the highest priority.
     val priority: Int,
 ) {
-    INPUT_STEP(3),
-    INPUT_STOP(0),
-    GENERAL_STOP(1),
-    OVERTAKE(2),
+    INPUT_WAYPOINT(3), // via requested by the user
+    INPUT_STOP(0), // stop requested by the user
+    // The 2 following forced-stops behave the same (but tracking use-cases helps debug at least)
+    INFRA_FORCED_STOP(1), // infra location where stop is forced when passing-by
+    OVERTAKE_STOP(2), // used for overtake only, so stop is forced when passing-by
 }
 
 /** Converts a DistanceRangeMap into an API compatible RangeValues. */

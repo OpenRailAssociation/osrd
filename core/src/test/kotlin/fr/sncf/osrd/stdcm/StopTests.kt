@@ -239,7 +239,8 @@ class StopTests {
                         setOf(BlockLocation(detour[1], Offset(1000.meters))),
                         0.0,
                         stepTypes =
-                            if (stop) setOf(StepType.INPUT_STOP) else setOf(StepType.INPUT_STEP),
+                            if (stop) setOf(StepType.INPUT_STOP)
+                            else setOf(StepType.INPUT_WAYPOINT),
                         inputStepIndex = 1,
                     ),
                 )
@@ -685,10 +686,10 @@ class StopTests {
 
     private fun variableForcedOpStopParams(): Stream<Arguments> =
         Stream.of(
-            Arguments.of(true, StepType.GENERAL_STOP),
-            Arguments.of(false, StepType.GENERAL_STOP),
-            Arguments.of(true, StepType.OVERTAKE),
-            Arguments.of(false, StepType.OVERTAKE),
+            Arguments.of(true, StepType.INFRA_FORCED_STOP),
+            Arguments.of(false, StepType.INFRA_FORCED_STOP),
+            Arguments.of(true, StepType.OVERTAKE_STOP),
+            Arguments.of(false, StepType.OVERTAKE_STOP),
         )
 
     /** Checks that we can follow start scheduled points and adjust stop durations */

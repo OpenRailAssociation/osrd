@@ -230,7 +230,7 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
-                nextStop?.originalStep?.stepTypes ?: setOf(StepType.INPUT_STEP),
+                nextStop?.originalStep?.stepTypes ?: setOf(StepType.INPUT_WAYPOINT),
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

@@ -82,7 +82,7 @@ data class STDCMEdge(
                     this,
                     null,
                     null,
-                    setOf(StepType.INPUT_STEP),
+                    setOf(StepType.INPUT_WAYPOINT),
                     null,
                     previousPlannedNodeRelativeTimeDiff,
                     graph.remainingTimeEstimator.invoke(this, null, stepTracker),

@@ -51,13 +51,13 @@ class STDCMHeuristicTests {
                 ExplorerStep(
                     listOf(BlockLocation(blocks[0], Offset(50.meters))),
                     null,
-                    stepTypes = setOf(StepType.INPUT_STEP),
+                    stepTypes = setOf(StepType.INPUT_WAYPOINT),
                     inputStepIndex = 0,
                 ),
                 ExplorerStep(
                     listOf(BlockLocation(blocks[1], Offset(25.meters))),
                     null,
-                    stepTypes = setOf(StepType.INPUT_STEP),
+                    stepTypes = setOf(StepType.INPUT_WAYPOINT),
                     inputStepIndex = 1,
                 ),
                 ExplorerStep(
@@ -450,7 +450,7 @@ class STDCMHeuristicTests {
                 null,
                 Offset(0.meters),
                 null,
-                setOf(StepType.INPUT_STEP),
+                setOf(StepType.INPUT_WAYPOINT),
                 null,
                 null,
                 0.0,
@@ -464,7 +464,7 @@ class STDCMHeuristicTests {
                 defaultNode,
                 Offset(0.meters),
                 false,
-                setOf(StepType.INPUT_STEP),
+                setOf(StepType.INPUT_WAYPOINT),
                 0.0,
                 0.0,
                 Length(0.meters),

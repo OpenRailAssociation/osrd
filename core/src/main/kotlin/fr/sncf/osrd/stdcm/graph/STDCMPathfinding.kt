@@ -322,7 +322,7 @@ class STDCMPathfinding(
                         null,
                         location.offset,
                         null,
-                        setOf(StepType.INPUT_STEP),
+                        setOf(StepType.INPUT_WAYPOINT),
                         firstStep.plannedTimingData,
                         null,
                         graph.bestPossibleTime,

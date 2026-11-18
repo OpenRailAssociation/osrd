@@ -33,6 +33,8 @@ val stepTrackerLogger: Logger = LoggerFactory.getLogger("StepTracker")
 class StepTracker
 private constructor(
     private val nInputSteps: Int,
+    // Map of input steps and forced op stops combined with the BlockId as key and its corresponding
+    // Explorer Steps sorted by their offset as value.
     private val stepsByBlockIdSortedByOffset: Map<BlockId, List<ExplorerStep>>,
     private val seenSteps: AppendOnlyLinkedList<LocatedStep> = appendOnlyLinkedListOf(),
 ) {
@@ -76,6 +78,7 @@ private constructor(
         blockRange: BlockRange,
         isBacktrackingAtEnd: Boolean,
     ): List<LocatedStep> {
+        assert(currentPathOffset == blockRange.pathBegin)
         val res = mutableListOf<LocatedStep>()
         var currentInputStepIndex = nSeenInputSteps - 1
         val filteredSteps =
@@ -196,7 +199,7 @@ private constructor(
                             ->
                             if (locationsOnBlock.size > 1) {
                                 // We do not allow steps to have multiple locations on the same
-                                // block, i.e. locations that can be reched twice in the same path.
+                                // block, i.e. locations that can be reached twice in the same path.
                                 stepTrackerLogger.warn(
                                     "Step at ${step.inputStepIndex} has ${locationsOnBlock.size} duplicate locations on block $block: keeping the location with the lowest offset.",
                                 )
@@ -205,7 +208,10 @@ private constructor(
                             block to step.copy(locations = listOf(location))
                         }
                     }
-                    .groupBy({ it.first }, { it.second })
+                    .groupBy(
+                        keySelector = { (block, _step) -> block },
+                        valueTransform = { (_block, step) -> step },
+                    )
                     .mapValues { (_, blockSteps) ->
                         blockSteps.sortedBy { it.locations.single().offset }
                     }

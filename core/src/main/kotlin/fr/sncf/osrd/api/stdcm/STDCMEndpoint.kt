@@ -556,7 +556,7 @@ fun parseSteps(
                     )
                 else null,
                 if (it.stopDuration != null) setOf(StepType.INPUT_STOP)
-                else setOf(StepType.INPUT_STEP),
+                else setOf(StepType.INPUT_WAYPOINT),
                 inputStepIndex = index,
             )
         }
@@ -710,8 +710,9 @@ fun parseForcedOpStops(
                                 duration = FORCED_OP_STOP_DURATION.seconds,
                                 stepTypes =
                                     when (forcedOpStop.stop_type) {
-                                        ForcedStopType.GENERAL_STOP -> setOf(StepType.GENERAL_STOP)
-                                        ForcedStopType.OVERTAKE -> setOf(StepType.OVERTAKE)
+                                        ForcedStopType.GENERAL_STOP ->
+                                            setOf(StepType.INFRA_FORCED_STOP)
+                                        ForcedStopType.OVERTAKE -> setOf(StepType.OVERTAKE_STOP)
                                     },
                             )
                         }

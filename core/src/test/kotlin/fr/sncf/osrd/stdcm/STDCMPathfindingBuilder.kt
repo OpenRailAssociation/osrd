@@ -91,7 +91,7 @@ data class STDCMPathfindingBuilder(
                 duration = null,
                 canBacktrack = false,
                 plannedTimingData = plannedTimingData,
-                stepTypes = setOf(StepType.INPUT_STEP),
+                stepTypes = setOf(StepType.INPUT_WAYPOINT),
                 inputStepIndex = 0,
             ),
         )

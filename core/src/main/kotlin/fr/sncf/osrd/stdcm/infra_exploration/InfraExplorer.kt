@@ -199,18 +199,19 @@ data class ExplorerStep(
     val stepTypes: Set<StepType> =
         if (duration != null) {
             setOf(StepType.INPUT_STOP)
-        } else setOf(StepType.INPUT_STEP),
+        } else setOf(StepType.INPUT_WAYPOINT),
     val inputStepIndex: Int? = null,
 ) {
-    val stop: Boolean = !stepTypes.contains(StepType.INPUT_STEP)
+    val stop: Boolean = !stepTypes.contains(StepType.INPUT_WAYPOINT)
 
     init {
-        if (stepTypes.contains(StepType.INPUT_STEP)) assert(stepTypes.size == 1)
+        if (stepTypes.contains(StepType.INPUT_WAYPOINT)) assert(stepTypes.size == 1)
         if (isInput()) assert(inputStepIndex != null)
     }
 
     fun isInput(): Boolean {
-        return stepTypes.contains(StepType.INPUT_STEP) || stepTypes.contains(StepType.INPUT_STOP)
+        return stepTypes.contains(StepType.INPUT_WAYPOINT) ||
+            stepTypes.contains(StepType.INPUT_STOP)
     }
 
     fun mergeExplorerStep(step: ExplorerStep): ExplorerStep {
@@ -220,7 +221,7 @@ data class ExplorerStep(
             listOf(this, step).minBy { it.stepTypes.minBy { stepType -> stepType.priority } }
         return ExplorerStep(
             priorityStep.locations,
-            listOfNotNull(duration, priorityStep.duration).maxOrNull(),
+            listOfNotNull(duration, step.duration).maxOrNull(),
             priorityStep.canBacktrack,
             priorityStep.plannedTimingData,
             stepTypes + step.stepTypes,
@@ -244,6 +245,16 @@ fun initInfraExplorers(
     constraints: List<PathfindingConstraint>? = null,
 ): Collection<InfraExplorer> {
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
+    require(
+        targets
+            .flatMap { it.stepTypes }
+            .all { it in listOf(StepType.INPUT_WAYPOINT, StepType.INPUT_STOP) },
+    )
+    require(
+        forcedOpStops
+            .flatMap { it.stepTypes }
+            .all { it in listOf(StepType.INFRA_FORCED_STOP, StepType.OVERTAKE_STOP) },
+    )
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, listOf())
