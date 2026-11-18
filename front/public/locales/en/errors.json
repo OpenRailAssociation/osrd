@@ -302,6 +302,7 @@
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
       "InvalidInners": "Timetables '{{inner_ids}}' cannot be included in timetable '{{outer_id}}': a timetable can only include train schedule sets of the same type",
       "InvalidOuter": "Timetable '{{timetable_id}}' is a train schedule set: it cannot include other timetables",
+      "InvalidPaceInHourlyTimetable": "Train schedules at indices '{{indices}}' cannot be added to hourly timetable '{{timetable_id}}': they must be paced, with a start time within [0, interval) and an interval within (0, time window]",
       "InvalidPeriod": "Hourly timetable period should be under 24h",
       "NotFound": "Timetable '{{timetable_id}}' could not be found",
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
