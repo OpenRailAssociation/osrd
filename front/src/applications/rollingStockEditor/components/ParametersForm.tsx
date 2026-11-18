@@ -90,6 +90,8 @@ const RollingStockEditorParameterFormColumn = ({
     <>
       {propertiesList.map((property, index, arr) => {
         const isLast = index === arr.length - 1;
+        // TODO: make sure we properly cover all the properties that can appear here
+        // eslint-disable-next-line typescript/no-unsafe-enum-assignment
         const label = t(property.title as RollingStockEditorParameter);
 
         if (property.type === 'select' && property.enum) {
