@@ -72,6 +72,10 @@ const buildStdcmConfSelectors = () => {
     getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
     getMapSettings: makeOsrdConfSelector('mapSettings'),
     getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
+    getForcedOpStops: createSelector(
+      [makeOsrdConfSelector('forcedOpStops')],
+      (forcedOpStops) => forcedOpStops ?? []
+    ),
     getOperationalPoints: makeOsrdConfSelector('operationalPoints'),
     getTrackSectionIdsByLoadingGauge: makeOsrdConfSelector('trackSectionIdsByLoadingGauge'),
     getStdcmSpeedLimitsByTag: makeOsrdConfSelector('speedLimitsByTag'),
@@ -122,6 +126,7 @@ export const {
   getOperationalPoints,
   getTrackSectionIdsByLoadingGauge,
   getStdcmSpeedLimitsByTag,
+  getForcedOpStops,
   getOperationalPointsIdFiltered,
 } = selectors;
 
