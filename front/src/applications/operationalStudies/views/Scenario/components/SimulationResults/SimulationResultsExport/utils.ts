@@ -11,6 +11,7 @@ import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { Train } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { mmToM } from 'utils/physics';
+import { getTrackLine } from 'utils/trackSection';
 
 export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;
@@ -73,7 +74,7 @@ export const formatOperationalPoints = (
 
     let metadata;
     if (associatedTrackSection) {
-      metadata = associatedTrackSection.extensions?.sncf;
+      metadata = getTrackLine(associatedTrackSection.extensions);
     }
 
     const opCommonProp = {

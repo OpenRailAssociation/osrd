@@ -534,7 +534,7 @@ impl InfraCache {
         let ts = sql_query(
             "SELECT
                 obj_id,
-                (data->'extensions'->'sncf'->>'line_code')::integer as line_code,
+                (osrd_track_line_extension(data)->>'line_code')::integer as line_code,
                 (data->>'length')::float as length,
                 data->>'curves' as curves,
                 data->>'slopes' as slopes,

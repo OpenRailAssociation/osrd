@@ -64,6 +64,7 @@ mod tests {
     use serde_json::from_str;
 
     use super::TrackSectionExtensions;
+    use crate::infra::TrackSectionSncfExtension;
     use crate::primitives::BoundingBox;
 
     /// Test bounding box from linestring
@@ -91,5 +92,32 @@ mod tests {
     #[test]
     fn track_extensions_deserialization() {
         from_str::<TrackSectionExtensions>(r#"{}"#).unwrap();
+    }
+
+    #[test]
+    fn track_extensions_of_any_infrastructure_manager() {
+        let json = serde_json::json!({
+            "sncf": null,
+            "source": null,
+            "oebb": {"line_code": 101, "line_name": "Westbahn", "track_number": 1, "track_name": "1"}
+        });
+        let extensions = serde_json::from_value::<TrackSectionExtensions>(json.clone()).unwrap();
+        assert_eq!(extensions.line().unwrap().line_code, 101);
+        assert_eq!(serde_json::to_value(&extensions).unwrap(), json);
+        assert!(from_str::<TrackSectionExtensions>(r#"{"oebb": {"line_code": 101}}"#).is_err());
+    }
+
+    #[test]
+    fn track_extensions_line_prefers_sncf() {
+        let line = |line_code| TrackSectionSncfExtension {
+            line_code,
+            ..Default::default()
+        };
+        let extensions = TrackSectionExtensions {
+            sncf: Some(line(1)),
+            infrastructure_managers: [("db".to_owned(), line(2))].into(),
+            ..Default::default()
+        };
+        assert_eq!(extensions.line().unwrap().line_code, 1);
     }
 }

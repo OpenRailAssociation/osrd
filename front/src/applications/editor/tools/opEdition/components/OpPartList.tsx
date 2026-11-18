@@ -15,6 +15,7 @@ import type { OperationalPointPart } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
+import { getTrackLine } from 'utils/trackSection';
 
 import type { OpEditionState } from '../types';
 import { movePart, removePart, updatePart } from '../utils';
@@ -66,7 +67,7 @@ const PartTrackSumUp = ({ id, trackState }: { id: string; trackState?: TrackStat
     return <div className="text-danger">{t('Editor.tools.op-edition.track-error', { id })}</div>;
   if (trackState?.type !== 'success') return <div className="font-weight-medium">{id}</div>;
 
-  const { track_name, line_name } = trackState.track.properties.extensions?.sncf || {};
+  const { track_name, line_name } = getTrackLine(trackState.track.properties.extensions) || {};
   return (
     <div>
       <div className="font-weight-medium">{track_name || id}</div>

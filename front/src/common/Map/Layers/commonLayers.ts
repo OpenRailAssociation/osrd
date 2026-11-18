@@ -1,5 +1,5 @@
 import type { Geometry } from 'geojson';
-import type { PropertyValueSpecification } from 'maplibre-gl';
+import type { ExpressionSpecification, PropertyValueSpecification } from 'maplibre-gl';
 import type {
   SymbolLayerSpecification,
   LineLayerSpecification,
@@ -39,6 +39,16 @@ export function getDynamicTextSize(opts?: {
     opts?.toZoom || 22,
     opts?.toSize || 16,
   ];
+}
+
+/**
+ * Read a line and track field of a track section feature, whichever infrastructure manager states it:
+ * tiles carry it as `line` (see getTrackLine), edited entities only under `extensions.sncf`.
+ */
+export function trackLineTileProperty(
+  field: 'line_code' | 'line_name' | 'track_name' | 'track_number'
+): ExpressionSpecification {
+  return ['coalesce', ['get', `line_${field}`], ['get', `extensions_sncf_${field}`]];
 }
 
 export function trackNameLayer(
