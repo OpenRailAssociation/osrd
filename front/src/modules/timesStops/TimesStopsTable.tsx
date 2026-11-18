@@ -670,7 +670,15 @@ const TimesStopsTable = ({
       const { allRows } = info.table.options.meta!;
       const isFirstRow = info.row.index === 0;
 
-      if (!isValid && !isFirstRow) {
+      if (isFirstRow) {
+        return (
+          <span data-testid="first-base-arrival">
+            {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
+          </span>
+        );
+      }
+
+      if (!isValid) {
         return (
           <StartTimeCell
             type={startTimeCellType}
@@ -682,14 +690,6 @@ const TimesStopsTable = ({
             onCommit={(date) => info.table.options.meta!.onReferenceBaseArrivalChange(row, date)}
             disablePropagation
           />
-        );
-      }
-
-      if (isFirstRow) {
-        return (
-          <span data-testid="first-base-arrival">
-            {row.requestedArrival ? formatTime(row.requestedArrival, dateTimeLocale) : ''}
-          </span>
         );
       }
 
