@@ -7,30 +7,87 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.utils.toString
+import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
-internal class PreciseIntegrationStep(
+internal data class PreciseIntegrationStep(
     val timeDelta: PreciseDuration,
     val positionDelta: PreciseDistance,
     val startSpeed: PreciseSpeed,
     val endSpeed: PreciseSpeed,
     val acceleration: PreciseAcceleration,
+    val directionSign: Int = 1,
 ) {
-    fun truncate(startPos: PreciseDistance, newEndPos: PreciseDistance): PreciseIntegrationStep {
-        require(startPos < newEndPos)
+    init {
+        require(directionSign == 1 || directionSign == -1)
 
-        val endPos = startPos + positionDelta
-        if (endPos <= newEndPos) {
+        val computedEndSpeed = startSpeed + directionSign * acceleration * timeDelta
+        // "3" chosen after some testing on long paths after 1 and 2 failed
+        require((endSpeed - computedEndSpeed).micrometersPerSecond.absoluteValue <= 3) {
+            "expected endSpeed to be $computedEndSpeed, got $endSpeed"
+        }
+
+        // TODO once the ~20µm errors in [shrink] are fixed:
+        // Missing require "positionDelta == timeDelta * (startSpeed + endSpeed) / 2"
+    }
+
+    /**
+     * Shrink `this` PreciseIntegrationStep to span [newPositionDelta].
+     *
+     * Doesn't do anything if [newPositionDelta] is larger than [positionDelta].
+     */
+    fun shrink(newPositionDelta: PreciseDistance): PreciseIntegrationStep {
+        require(directionSign > 0) { "negative direction unsupported" }
+        require(startSpeed.micrometersPerSecond >= 0)
+        require(newPositionDelta.micrometers >= 0)
+
+        if (positionDelta <= newPositionDelta) {
             return this
         }
 
-        val newPositionDelta = newEndPos - startPos
-        val timeDelta = newPositionDelta * timeDelta / positionDelta
-        val newEndSpeed = startSpeed + acceleration * timeDelta
+        // Now we compute newTimeDelta:
+        //
+        // The requirements in "init", assuming "directionSign == 1", are:
+        // - "positionDelta == timeDelta * (startSpeed + endSpeed) / 2", and
+        // - "endSpeed == startSpeed + acceleration * timeDelta"
+        //
+        // Therefore, substituing endSpeed in the first equation, we need to find a newTimeDelta
+        // that satisfies this equation:
+        // "1/2 * acceleration * newTimeDelta² + startSpeed * newTimeDelta - newPositionDelta == 0"
+
+        if (acceleration == 0.micrometersPerSecond2) {
+            // The equation is linear
+
+            val newTimeDelta = newPositionDelta / startSpeed
+            return PreciseIntegrationStep(
+                timeDelta = newTimeDelta,
+                positionDelta = newPositionDelta,
+                startSpeed = startSpeed,
+                endSpeed = startSpeed,
+                acceleration = 0.micrometersPerSecond2,
+            )
+        }
+
+        // The equation is quadratic and its discriminant is:
+        val discriminant = startSpeed * startSpeed + 2 * newPositionDelta * acceleration
+
+        // The equation has a solution if and only if the discriminant is zero or higher, which it
+        // is, unless acceleration is too negative, since startSpeed and newPositionDelta are
+        // positive. I think this case can theorically happen if the train decelerates too much and
+        // goes backwards before it reaches newEndPos, but such case is already caught by
+        // [IntegrationStep.fromNaiveStep]
+        check(discriminant.micrometers2PerSecond2 >= 0)
+
+        // The only solution which is positive is
+        val newTimeDelta = (discriminant.sqrt() - startSpeed) / acceleration
+
+        // Then, we have "newEndSpeed = startSpeed + acceleration * newTimeDelta", which we can
+        // simplify to
+        val newEndSpeed = discriminant.sqrt()
 
         return PreciseIntegrationStep(
-            timeDelta,
+            newTimeDelta,
             newPositionDelta,
             startSpeed,
             newEndSpeed,
@@ -38,14 +95,19 @@ internal class PreciseIntegrationStep(
         )
     }
 
-    fun truncate(startTime: PreciseDuration, newEndTime: PreciseDuration): PreciseIntegrationStep {
-        require(startTime < newEndTime)
+    /**
+     * Shrink `this` PreciseIntegrationStep to span [newTimeDelta].
+     *
+     * Doesn't do anything if [newTimeDelta] is larger than [timeDelta].
+     */
+    fun shrink(newTimeDelta: PreciseDuration): PreciseIntegrationStep {
+        require(directionSign > 0) { "negative direction unsupported" }
+        require(newTimeDelta.microseconds >= 0)
 
-        if (startTime + timeDelta <= newEndTime) {
+        if (timeDelta <= newTimeDelta) {
             return this
         }
 
-        val newTimeDelta = newEndTime - startTime
         val newEndSpeed = startSpeed + acceleration * newTimeDelta
         val newPositionDelta = newTimeDelta * (startSpeed + newEndSpeed) / 2
 
@@ -61,14 +123,26 @@ internal class PreciseIntegrationStep(
     }
 }
 
-internal fun IntegrationStep.toPrecise(): PreciseIntegrationStep =
-    PreciseIntegrationStep(
-        timeDelta = timeDelta.seconds,
-        positionDelta = positionDelta.meters,
-        startSpeed = startSpeed.metersPerSecond,
-        endSpeed = endSpeed.metersPerSecond,
-        acceleration = acceleration.metersPerSecond2,
+internal fun IntegrationStep.toPrecise(): PreciseIntegrationStep {
+    val timeDelta = timeDelta.seconds
+    val startSpeed = startSpeed.metersPerSecond
+    val acceleration = acceleration.metersPerSecond2
+    val directionSign = directionSign.toInt()
+
+    // After rounding, this.endSpeed and this.positionDelta may end up not being coherent with other
+    // values.
+    val endSpeed = startSpeed + directionSign * acceleration * timeDelta
+    val positionDelta = directionSign * timeDelta * (startSpeed + endSpeed) / 2
+
+    return PreciseIntegrationStep(
+        timeDelta,
+        positionDelta,
+        startSpeed,
+        endSpeed,
+        acceleration,
+        directionSign,
     )
+}
 
 data class PantographState(
     /** Position of the pantograph, between 0.0 (fully down) and 1.0 (fully up) */
@@ -284,7 +358,7 @@ data class TrainState(
                 endSpeed = speed,
                 acceleration = (speed - oldState.speed) / (time - oldState.time),
             )
-        val newStep = oldStep.truncate(oldState.position, newEndPos)
+        val newStep = oldStep.shrink(newEndPos - oldState.position)
         val truncated =
             TrainState(
                 time = oldState.time + newStep.timeDelta,
@@ -313,9 +387,9 @@ data class TrainState(
                 positionDelta = position - oldState.position,
                 startSpeed = oldState.speed,
                 endSpeed = speed,
-                acceleration = (speed - oldState.speed) / (time - oldState.time),
+                acceleration = (speed - oldState.speed).roundDiv(time - oldState.time),
             )
-        val newStep = oldStep.truncate(oldState.time, newEndTime)
+        val newStep = oldStep.shrink(newEndTime - oldState.time)
         val truncated =
             TrainState(
                 time = oldState.time + newStep.timeDelta,
@@ -347,23 +421,11 @@ data class TrainState(
 
         val newEndPos = point.x.micrometers
         val newEndSpeed = point.y.micrometersPerSecond
-        val newTimeDelta =
-            if (newEndSpeed + oldState.speed <= 4.micrometersPerSecond) {
-                return oldState
-            } else {
-                // This is like (2*newPositionDelta)/(newEndSpeed+startSpeed),
-                // but with less likeliness of timeDelta becoming zero.
-                2 * newEndPos / (newEndSpeed + oldState.speed) -
-                    2 * oldState.position / (newEndSpeed + oldState.speed)
-            }
 
-        val truncated =
-            copy(time = oldState.time + newTimeDelta, position = newEndPos, speed = newEndSpeed)
+        val truncated = truncate(oldState, newEndPos)
 
-        check(oldState.isBefore(truncated))
-        check(truncated.isBefore(this))
-
-        return truncated
+        // TODO maybe interpolate curves quadratically instead of snapping like this
+        return truncated.copy(speed = newEndSpeed)
     }
 }
 

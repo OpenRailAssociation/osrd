@@ -1,5 +1,6 @@
 package fr.sncf.osrd.trainsim
 
+import fr.sncf.osrd.utils.roundDiv
 import fr.sncf.osrd.utils.signalingMinus
 import fr.sncf.osrd.utils.signalingPlus
 import fr.sncf.osrd.utils.signalingTimes
@@ -7,6 +8,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import kotlin.jvm.JvmInline
 import kotlin.math.absoluteValue
+import kotlin.math.roundToLong
 
 @JvmInline
 value class PreciseDuration(val microseconds: Long) : Comparable<PreciseDuration> {
@@ -35,7 +37,8 @@ value class PreciseDuration(val microseconds: Long) : Comparable<PreciseDuration
 
     operator fun times(speed: PreciseSpeed): PreciseDistance =
         PreciseDistance(
-            micrometers = (microseconds signalingTimes speed.micrometersPerSecond) / 1_000_000,
+            micrometers =
+                (microseconds signalingTimes speed.micrometersPerSecond).roundDiv(1_000_000),
         )
 
     operator fun times(distance: PreciseDistance): PreciseDiDu =
@@ -45,8 +48,11 @@ value class PreciseDuration(val microseconds: Long) : Comparable<PreciseDuration
         PreciseDuration2(microseconds2 = microseconds signalingTimes duration.microseconds)
 }
 
+operator fun Int.times(duration: PreciseDuration): PreciseDuration =
+    PreciseDuration(microseconds = toLong() signalingTimes duration.microseconds)
+
 val Double.seconds: PreciseDuration
-    get() = PreciseDuration(microseconds = (this * 1e6).toLong())
+    get() = PreciseDuration(microseconds = (this * 1e6).roundToLong())
 val Int.microseconds: PreciseDuration
     get() = PreciseDuration(microseconds = this.toLong())
 
@@ -91,6 +97,11 @@ value class PreciseDistance(val micrometers: Long) : Comparable<PreciseDistance>
     operator fun times(duration: PreciseDuration): PreciseDiDu =
         PreciseDiDu(micrometersMicrosecond = micrometers signalingTimes duration.microseconds)
 
+    operator fun times(acceleration: PreciseAcceleration): PreciseSpeed2 =
+        PreciseSpeed2(
+            micrometers2PerSecond2 = micrometers signalingTimes acceleration.micrometersPerSecond2,
+        )
+
     operator fun div(duration: PreciseDuration): PreciseSpeed =
         PreciseSpeed(
             micrometersPerSecond = (1_000_000L signalingTimes micrometers) / duration.microseconds,
@@ -109,7 +120,7 @@ operator fun Int.times(distance: PreciseDistance): PreciseDistance =
     PreciseDistance(micrometers = this.toLong() signalingTimes distance.micrometers)
 
 val Double.meters: PreciseDistance
-    get() = PreciseDistance(micrometers = (this * 1e6).toLong())
+    get() = PreciseDistance(micrometers = (this * 1e6).roundToLong())
 val Int.micrometers: PreciseDistance
     get() = PreciseDistance(micrometers = this.toLong())
 val Long.micrometers: PreciseDistance
@@ -152,21 +163,36 @@ value class PreciseSpeed(val micrometersPerSecond: Long) : Comparable<PreciseSpe
 
     operator fun times(duration: PreciseDuration): PreciseDistance =
         PreciseDistance(
-            micrometers = (micrometersPerSecond signalingTimes duration.microseconds) / 1_000_000,
+            micrometers =
+                (micrometersPerSecond signalingTimes duration.microseconds).roundDiv(1_000_000),
         )
 
     operator fun times(factor: Double): PreciseSpeed =
-        PreciseSpeed(micrometersPerSecond = (micrometersPerSecond * factor).toLong())
+        PreciseSpeed(micrometersPerSecond = (micrometersPerSecond * factor).roundToLong())
 
     operator fun times(distance: PreciseDistance): PreciseDiSp =
         PreciseDiSp(
             micrometers2PerSecond = micrometersPerSecond signalingTimes distance.micrometers,
         )
 
+    operator fun times(other: PreciseSpeed): PreciseSpeed2 =
+        PreciseSpeed2(
+            micrometers2PerSecond2 = micrometersPerSecond signalingTimes other.micrometersPerSecond,
+        )
+
+    operator fun div(unitless: Int): PreciseSpeed =
+        PreciseSpeed(micrometersPerSecond = micrometersPerSecond / unitless.toLong())
+
     operator fun div(duration: PreciseDuration): PreciseAcceleration =
         PreciseAcceleration(
             micrometersPerSecond2 =
                 (micrometersPerSecond signalingTimes 1_000_000) / duration.microseconds,
+        )
+
+    fun roundDiv(duration: PreciseDuration): PreciseAcceleration =
+        PreciseAcceleration(
+            micrometersPerSecond2 =
+                (micrometersPerSecond signalingTimes 1_000_000).roundDiv(duration.microseconds),
         )
 
     /**
@@ -178,14 +204,18 @@ value class PreciseSpeed(val micrometersPerSecond: Long) : Comparable<PreciseSpe
             micrometersPerSecond2 =
                 (micrometersPerSecond signalingTimes 1_000_000).floorDiv(duration.microseconds),
         )
+
+    operator fun div(acceleration: PreciseAcceleration): PreciseDuration =
+        PreciseDuration(
+            microseconds =
+                (micrometersPerSecond signalingTimes 1_000_000) /
+                    acceleration.micrometersPerSecond2,
+        )
 }
 
 val Double.metersPerSecond: PreciseSpeed
-    get() = PreciseSpeed(micrometersPerSecond = (this * 1e6).toLong())
+    get() = PreciseSpeed(micrometersPerSecond = (this * 1e6).roundToLong())
 
-/** kilometers per hour */
-val Double.kph: PreciseSpeed
-    get() = PreciseSpeed(micrometersPerSecond = (this / 3.6e-6).toLong())
 val Int.micrometersPerSecond: PreciseSpeed
     get() = PreciseSpeed(micrometersPerSecond = this.toLong())
 val Long.micrometersPerSecond: PreciseSpeed
@@ -210,12 +240,18 @@ value class PreciseAcceleration(val micrometersPerSecond2: Long) : Comparable<Pr
 
     operator fun times(duration: PreciseDuration): PreciseSpeed =
         PreciseSpeed(
-            micrometersPerSecond = micrometersPerSecond2 * duration.microseconds / 1_000_000,
+            micrometersPerSecond =
+                (micrometersPerSecond2 signalingTimes duration.microseconds).roundDiv(1_000_000),
         )
 }
 
+operator fun Int.times(acceleration: PreciseAcceleration): PreciseAcceleration =
+    PreciseAcceleration(
+        micrometersPerSecond2 = this.toLong() signalingTimes acceleration.micrometersPerSecond2,
+    )
+
 val Double.metersPerSecond2: PreciseAcceleration
-    get() = PreciseAcceleration(micrometersPerSecond2 = (this * 1e6).toLong())
+    get() = PreciseAcceleration(micrometersPerSecond2 = (this * 1e6).roundToLong())
 val Int.micrometersPerSecond2: PreciseAcceleration
     get() = PreciseAcceleration(micrometersPerSecond2 = this.toLong())
 
@@ -249,4 +285,22 @@ value class PreciseDiSp(val micrometers2PerSecond: Long) : Comparable<PreciseDiS
 
     operator fun div(duration: PreciseDistance): PreciseSpeed =
         PreciseSpeed(micrometersPerSecond = micrometers2PerSecond / duration.micrometers)
+}
+
+/** Value representing the square of a speed. expressed in `µm²/s²` */
+@JvmInline
+value class PreciseSpeed2(val micrometers2PerSecond2: Long) : Comparable<PreciseSpeed2> {
+    override fun compareTo(other: PreciseSpeed2): Int =
+        micrometers2PerSecond2.compareTo(other.micrometers2PerSecond2)
+
+    operator fun plus(other: PreciseSpeed2): PreciseSpeed2 =
+        PreciseSpeed2(
+            micrometers2PerSecond2 = micrometers2PerSecond2 + other.micrometers2PerSecond2,
+        )
+
+    fun sqrt(): PreciseSpeed =
+        PreciseSpeed(
+            micrometersPerSecond =
+                kotlin.math.sqrt(micrometers2PerSecond2.toDouble()).roundToLong(),
+        )
 }
