@@ -154,9 +154,8 @@ mod tests {
 
     use crate::views::test_app::TestApp;
     use axum_test::TestRequest;
-    use chrono::DateTime;
-    use chrono::Duration;
-    use chrono::Utc;
+    use jiff::SignedDuration;
+    use jiff::Timestamp;
     use models::TemporarySpeedLimitGroup;
 
     use schemas::infra::Direction;
@@ -169,8 +168,8 @@ mod tests {
     use models::TemporarySpeedLimit;
 
     struct TimePeriod {
-        start_date_time: DateTime<Utc>,
-        end_date_time: DateTime<Utc>,
+        start_date_time: Timestamp,
+        end_date_time: Timestamp,
     }
 
     impl TestApp {
@@ -215,8 +214,8 @@ mod tests {
                 group_name: Uuid::new_v4().to_string(),
                 obj_id: Uuid::new_v4().to_string(),
                 time_period: TimePeriod {
-                    start_date_time: Utc::now(),
-                    end_date_time: Utc::now() + Duration::days(1),
+                    start_date_time: Timestamp::now(),
+                    end_date_time: Timestamp::now() + SignedDuration::from_hours(24),
                 },
                 track_ranges: vec![
                     DirectionalTrackRange {
@@ -326,8 +325,8 @@ mod tests {
         let app = test_app!().skip_authz().build();
 
         let time_period = TimePeriod {
-            start_date_time: Utc::now() + Duration::days(1),
-            end_date_time: Utc::now(),
+            start_date_time: Timestamp::now() + SignedDuration::from_hours(24),
+            end_date_time: Timestamp::now(),
         };
 
         let _ = app

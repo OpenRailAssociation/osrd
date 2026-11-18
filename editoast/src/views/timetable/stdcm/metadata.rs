@@ -1,6 +1,4 @@
 use axum_tracing_opentelemetry::tracing_opentelemetry_instrumentation_sdk::find_current_trace_id;
-use chrono::DateTime;
-use chrono::Utc;
 use jiff::Timestamp;
 use object_store::ObjectStoreExt as _;
 use object_store::aws::AmazonS3;
@@ -15,7 +13,7 @@ use crate::views::timetable::simulation::ResponseVariant;
 /// The purpose of the generated file is to keep any data that we'd like to inspect and run statistics on.
 #[derive(Debug, Serialize)]
 pub(super) struct StdcmMetadata {
-    pub(super) request_time: DateTime<Utc>,
+    pub(super) request_time: Timestamp,
     pub(super) app_version: Option<String>,
     pub(super) user_name: Option<String>,
     pub(super) user_groups: Vec<String>,
