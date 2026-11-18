@@ -114,6 +114,7 @@
       "lines": {
         "LineNotFound": "No line with code {{line_code}} found"
       },
+      "not_found": "Infrastructure '{{infra_id}}' could not be found",
       "objects": {
         "DuplicateIdsProvided": "Duplicate object ids provided"
       },

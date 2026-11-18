@@ -39,6 +39,7 @@
       "edition": {
         "SplitTrackSectionBadOffset": "設施'{{infra_id}}'中的軌道區段 '{{tracksection_id}}'分割長度無效。需介於0至{{tracksection_length}}公尺之間。"
       },
+      "not_found": "未找到設施'{{infra_id}}'",
       "pathfinding": {
         "EndingTrackLocationNotFound": "找不到結束軌道位置",
         "StartingTrackLocationNotFound": "找不到起始軌道位置"

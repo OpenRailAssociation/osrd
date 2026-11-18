@@ -118,6 +118,7 @@
       "lines": {
         "LineNotFound": "No linea con codice {{line_code}} trovata"
       },
+      "not_found": "Infrastruttura '{{infra_id}}' non trovata",
       "objects": {
         "DuplicateIdsProvided": "Oggetti con id duplicati forniti",
         "ObjectIdNotFound": "Oggetto '{{object_id}}' non trovato"
