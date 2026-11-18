@@ -3,7 +3,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use common::geometry::GeoJsonLineString;
-use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use geos::geojson::Geometry;
 use jiff::Timestamp;
 use object_store::GetOptions;
@@ -16,21 +16,19 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::error::Result;
 use crate::views::path::properties::PathProperties;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "stdcm_debug")]
-enum StdcmDebugError {
+#[derive(Debug, Error, ViewError)]
+pub(in crate::views) enum StdcmDebugError {
     #[error("S3 is not configured")]
-    #[editoast_error(status = 503)]
+    #[view_error(status = SERVICE_UNAVAILABLE)]
     S3NotConfigured,
     #[error("S3 error fetching '{path}': {message}")]
-    #[editoast_error(status = 500)]
+    #[view_error(status = INTERNAL_SERVER_ERROR, context)]
     S3Error { path: String, message: String },
     #[error("Failed to parse JSON from S3 object '{path}': {message}")]
-    #[editoast_error(status = 500)]
+    #[view_error(status = INTERNAL_SERVER_ERROR, context)]
     JsonParseError { path: String, message: String },
 }
 
@@ -119,12 +117,13 @@ pub(in crate::views) struct StdcmDebugDataResponse {
     ),
     responses(
         (status = 200, body = inline(StdcmDebugDataResponse)),
+        StdcmDebugError,
     )
 )]
 pub(in crate::views) async fn get_debug_data(
     State(AppState { s3_client, .. }): State<AppState>,
     Path(trace_id): Path<String>,
-) -> Result<Json<StdcmDebugDataResponse>> {
+) -> Result<Json<StdcmDebugDataResponse>, StdcmDebugError> {
     let s3 = s3_client.as_ref().ok_or(StdcmDebugError::S3NotConfigured)?;
 
     let prefix = ObjectStorePath::from("stdcm/requests/").join(trace_id);
