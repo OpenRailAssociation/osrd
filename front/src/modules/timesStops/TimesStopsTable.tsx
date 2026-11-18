@@ -198,7 +198,7 @@ const tableFeatureSet = tableFeatures({ columnVisibilityFeature });
 export type TimesStopsTableFeatures = typeof tableFeatureSet;
 const columnHelper = createColumnHelper<TimesStopsTableFeatures, TimesStopsRow>();
 const getTimeCellKey = (rowIndex: number, columnId: string) => `${rowIndex}-${columnId}`;
-type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture';
+type TabbableCellColumnId = 'requestedArrival' | 'stopDuration' | 'requestedDeparture' | 'position';
 type TabbableCellHandle = TimeCellHandle | DurationCellHandle;
 type TimeCellTabEntry = {
   next: string | null;
@@ -720,10 +720,15 @@ const TimesStopsTable = ({
       if (!pathFound && !isFirstRow) {
         return (
           <DistanceCell
+            ref={registerTimeCellRef(info.row.index, 'position')}
             distanceValue={value ?? undefined}
             onCommit={(v) => {
               info.table.options.meta!.onReferencePositionChange(info.row.original, v);
             }}
+            onEnterKeyDown={() => focusCellBelow(info.row.index, 'position')}
+            onTabKeyDown={(direction) =>
+              focusRequestedCellOnTab(info.row.index, 'position', direction)
+            }
           />
         );
       }
@@ -734,7 +739,7 @@ const TimesStopsTable = ({
         </span>
       );
     },
-    [pathFound]
+    [pathFound, focusCellBelow, focusRequestedCellOnTab, registerTimeCellRef]
   );
 
   const columns = useMemo(

@@ -1,10 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import cx from 'classnames';
 
 import CellPlaceholder from './CellPlaceholder';
 
+type DistanceCellHandle = {
+  focus: () => void;
+};
+
 type DistanceCellProps = {
+  ref?: React.Ref<DistanceCellHandle>;
   distanceValue: number | undefined;
   onCommit?: (value: number | null) => void;
   onEnterKeyDown?: () => void;
@@ -16,6 +21,7 @@ const formatValue = (value: number | undefined): string | undefined =>
   value !== undefined ? String(value) : undefined;
 
 const DistanceCell = ({
+  ref,
   distanceValue,
   onCommit,
   onEnterKeyDown,
@@ -74,11 +80,21 @@ const DistanceCell = ({
     }
   };
 
-  const editAndFocus = (event: React.MouseEvent | React.FocusEvent) => {
-    event.preventDefault();
+  const editAndFocus = (event?: React.MouseEvent | React.FocusEvent) => {
+    event?.preventDefault();
     setIsEditing(true);
     inputRef.current?.focus();
   };
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        editAndFocus();
+      },
+    }),
+    []
+  );
 
   useEffect(() => {
     if (isEditing) {
