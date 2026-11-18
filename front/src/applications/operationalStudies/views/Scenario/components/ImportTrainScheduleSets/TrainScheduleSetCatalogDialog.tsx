@@ -56,13 +56,14 @@ const TrainScheduleSetCatalogDialog = ({
     [setCart]
   );
 
+  const { trainScheduleSets } = data ?? {};
   const submit = useCallback(async () => {
     // the button is disabled while importing, otherwise a double click imports twice
     setIsSubmitting(true);
     try {
       await onSubmit(
         cart.map(({ trainScheduleSetId, importType }) => {
-          const trainScheduleSet = data?.trainScheduleSets.get(trainScheduleSetId);
+          const trainScheduleSet = trainScheduleSets?.get(trainScheduleSetId);
           if (!trainScheduleSet)
             throw new Error(`Can't find trainSheculeSet ${trainScheduleSetId} in catalog`);
           return {
@@ -77,7 +78,7 @@ const TrainScheduleSetCatalogDialog = ({
     } finally {
       setIsSubmitting(false);
     }
-  }, [cart, onSubmit, data?.trainScheduleSets]);
+  }, [cart, onSubmit, trainScheduleSets]);
 
   return (
     <Dialog
