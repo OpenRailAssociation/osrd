@@ -32,11 +32,14 @@ use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use itertools::izip;
+use jiff::SignedDuration;
 use models::TimetableInheritance;
 use models::TrainScheduleException;
 use models::prelude::*;
 use models::timetable::Timetable;
+use models::train_schedule::TrainScheduleChangeset;
 use schemas::RollingStock;
+use schemas::paced_train::TrainSchedule;
 use schemas::primitives::NonBlankString;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::LoadingGaugeType;
@@ -52,6 +55,7 @@ use simulation::train_simulation_ordered_batch;
 use thiserror::Error;
 use tokio::time::timeout;
 use train_schedule::TrainScheduleResponse;
+use train_schedule::TrainScheduleResponseV2;
 use unit_system::quantities::Acceleration;
 use unit_system::quantities::Length;
 use unit_system::quantities::Mass;
@@ -122,6 +126,14 @@ enum TimetableError {
     )]
     #[editoast_error(status = 422)]
     InvalidOuter { timetable_id: i64 },
+    #[error(
+        "Train schedules at indices '{indices:?}' cannot be added to hourly timetable '{timetable_id}': they must be paced, with a start time within [0, interval) and an interval within (0, time window]"
+    )]
+    #[editoast_error(status = 422)]
+    InvalidPaceInHourlyTimetable {
+        indices: Vec<usize>,
+        timetable_id: i64,
+    },
 }
 
 /// Creation result for a Timetable
@@ -397,6 +409,72 @@ pub(in crate::views) async fn get_train_schedules(
         .collect();
 
     Ok(Json(ListTrainSchedulesResponse { stats, results }))
+}
+
+/// Create train schedules by batch
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    post, path = "",
+    tags = ["timetable", "train_schedule"],
+    params(TimetableIdParam),
+    request_body = Vec<TrainSchedule>,
+    responses(
+        (status = 201, description = "The created train schedules", body = Vec<TrainScheduleResponseV2>)
+    )
+)]
+pub(in crate::views) async fn create_train_schedules(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Json(train_schedules): Json<Vec<TrainSchedule>>,
+) -> Result<impl IntoResponse> {
+    let conn = &mut db_pool.get().await?;
+
+    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
+        TimetableError::NotFound { timetable_id }
+    })
+    .await?;
+
+    if timetable.timetable_type.0 == TimetableType::Hourly {
+        let invalid_train_schedules_indices = train_schedules
+            .iter()
+            .positions(|ts| !is_valid_for_hourly_timetables(ts))
+            .collect_vec();
+
+        if !invalid_train_schedules_indices.is_empty() {
+            return Err(TimetableError::InvalidPaceInHourlyTimetable {
+                indices: invalid_train_schedules_indices,
+                timetable_id,
+            }
+            .into());
+        }
+    }
+
+    let changesets = train_schedules
+        .into_iter()
+        .map(TrainScheduleChangeset::from)
+        .map(|cs| cs.timetable_id(timetable_id))
+        .collect::<Vec<_>>();
+
+    // Create a batch of train schedules
+    let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
+    let response: Vec<TrainScheduleResponseV2> = train_schedules
+        .into_iter()
+        .map(|train_schedule| TrainScheduleResponseV2::new(train_schedule, timetable_id))
+        .collect();
+
+    Ok((StatusCode::CREATED, Json(response)))
+}
+
+fn is_valid_for_hourly_timetables(train_schedule: &TrainSchedule) -> bool {
+    let Some(paced) = &train_schedule.paced else {
+        return false;
+    };
+
+    let interval_ms = SignedDuration::from(paced.interval).as_millis() as i64;
+    let time_window_ms = SignedDuration::from(paced.time_window).as_millis() as i64;
+    let start_time_ms = millisecond::i64::from(train_schedule.train_occurrence.start_time);
+
+    0 <= start_time_ms && start_time_ms < interval_ms && interval_ms <= time_window_ms
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -1399,6 +1477,111 @@ mod tests {
             .assert_status_not_found()
             .json();
         assert_eq!(&response.error_type, "editoast:timetable:NotFound")
+    }
+
+    /// Build a train schedule
+    fn train_schedule(start_time_min: i64, paced: Option<(i64, i64)>) -> TrainSchedule {
+        let mut train_schedule = simple_paced_train_base();
+        train_schedule.train_occurrence.start_time = units::second::i64::new(start_time_min * 60);
+        match paced {
+            Some((time_window_min, interval_min)) => {
+                let paced = train_schedule.paced.as_mut().unwrap();
+                paced.time_window = SignedDuration::from_mins(time_window_min)
+                    .try_into()
+                    .unwrap();
+                paced.interval = SignedDuration::from_mins(interval_min).try_into().unwrap();
+            }
+            None => train_schedule.paced = None,
+        }
+        train_schedule
+    }
+
+    #[rstest]
+    #[case::timetable_not_found(
+        None,
+        vec![train_schedule(0, Some((120, 30)))],
+        StatusCode::NOT_FOUND,
+        "editoast:timetable:NotFound")]
+    #[case::unique_train_in_hourly_timetable(
+        Some(TimetableType::Hourly),
+        vec![train_schedule(5, None)],
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "editoast:timetable:InvalidPaceInHourlyTimetable")]
+    #[case::start_time_out_of_hourly_window(
+        Some(TimetableType::Hourly),
+        vec![train_schedule(121, Some((120, 30)))],
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "editoast:timetable:InvalidPaceInHourlyTimetable")]
+    #[case::interval_longer_than_time_window(
+        Some(TimetableType::Hourly),
+        vec![train_schedule(0, Some((30, 60)))],
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "editoast:timetable:InvalidPaceInHourlyTimetable")]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_train_schedules_fails(
+        #[case] timetable_type: Option<TimetableType>,
+        #[case] train_schedules: Vec<TrainSchedule>,
+        #[case] expected_status: StatusCode,
+        #[case] expected_error: &str,
+    ) {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let timetable_id = create_timetable_with_type(
+            &mut pool.get_ok(),
+            timetable_type.map(|timetable_type| (timetable_type, false)),
+        )
+        .await;
+
+        let response: InternalError = app
+            .post(format!("/timetable/{timetable_id}/train_schedules").as_str())
+            .json(&train_schedules)
+            .await
+            .assert_status(expected_status)
+            .json();
+
+        assert_eq!(&response.error_type, expected_error)
+    }
+
+    #[rstest]
+    #[case::calendar(
+        TimetableType::Calendar,
+        vec![train_schedule(0, None), train_schedule(0, Some((120, 15)))])]
+    #[case::hourly(
+        TimetableType::Hourly,
+        vec![train_schedule(5, Some((120, 30))), train_schedule(5, Some((120, 15)))])]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_train_schedules_succeeds(
+        #[case] timetable_type: TimetableType,
+        #[case] train_schedules: Vec<TrainSchedule>,
+    ) {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let timetable_id =
+            create_timetable_with_type(&mut pool.get_ok(), Some((timetable_type, false))).await;
+
+        let response: Vec<TrainScheduleResponseV2> = app
+            .post(format!("/timetable/{timetable_id}/train_schedules").as_str())
+            .json(&train_schedules)
+            .await
+            .assert_status(StatusCode::CREATED)
+            .json();
+
+        assert_eq!(response.len(), train_schedules.len());
+        assert!(
+            response
+                .iter()
+                .all(|train_schedule| train_schedule.timetable_id == timetable_id)
+        );
+
+        let settings = SelectionSettings::default()
+            .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
+        let list_result = models::TrainSchedule::list(&mut pool.get_ok(), settings)
+            .await
+            .expect("Failed to fetch train schedules");
+
+        assert_eq!(list_result.len(), train_schedules.len());
     }
 
     #[test]

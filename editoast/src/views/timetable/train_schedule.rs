@@ -159,6 +159,25 @@ impl TrainScheduleResponse {
     }
 }
 
+// TODO: Rename to TrainScheduleResponse once the train_schedule_set are drop
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub(in crate::views) struct TrainScheduleResponseV2 {
+    pub id: i64,
+    pub timetable_id: i64,
+    #[serde(flatten)]
+    pub train_schedule: TrainSchedule,
+}
+
+impl TrainScheduleResponseV2 {
+    pub fn new(train_schedule: models::TrainSchedule, timetable_id: i64) -> Self {
+        Self {
+            id: train_schedule.id,
+            timetable_id,
+            train_schedule: train_schedule_schema_from_model(train_schedule, vec![]),
+        }
+    }
+}
+
 #[derive(Debug, IntoParams, Deserialize)]
 pub(in crate::views) struct TrainScheduleIdParam {
     id: i64,
