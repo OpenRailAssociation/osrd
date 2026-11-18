@@ -801,12 +801,17 @@ const ItineraryModal = ({
     openModal();
   }, []);
 
+  // Only frame when a marker moved, not when an empty step is added or focused
+  const pathStepsCoordinatesKey = JSON.stringify(
+    [...pathStepsMetadataByKey.values()].flatMap(computePathStepCoordinates)
+  );
+
   useEffect(() => {
     if (locatedStepsCount < 2 || pathStepsMetadataByKey.size < 2) return;
 
     frameAllPathSteps();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [pathStepsMetadataByKey, hasInvalidPathStep]);
+  }, [pathStepsCoordinatesKey]);
 
   const resetCategoryWarning = useCallback(() => {
     setCategoryWarning(undefined);
