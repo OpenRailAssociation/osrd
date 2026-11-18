@@ -251,7 +251,7 @@ impl axum::response::IntoResponse for StdcmProgressionStream {
     params(
         ("id" = i64, Path, description = "timetable_id"),
         StdcmQueryParams,
-        ("x-osrd-stdcm-fallback" = Option<bool>, Header, description = "Whether this request is a fallback, sent after an initial request failed to find a path"),
+        ("x-osrd-stdcm-fallback" = Option<bool>, Header, nullable = false, description = "Whether this request is a fallback, sent after an initial request failed to find a path"),
     ),
     responses(
         (status = 200, body = inline(StdcmProgression), description = "The simulation result"),

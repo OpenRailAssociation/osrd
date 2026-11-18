@@ -2743,7 +2743,7 @@ export type PostTimetableByIdStdcmApiArg = {
   /** The infra id */
   infra: number;
   /** Whether this request is a fallback, sent after an initial request failed to find a path */
-  'x-osrd-stdcm-fallback'?: boolean | null;
+  'x-osrd-stdcm-fallback'?: boolean;
   body: {
     /** Set of authorized track section ids, empty means no restriction */
     allowed_track_sections?: string[];
