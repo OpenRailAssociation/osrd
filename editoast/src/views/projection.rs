@@ -344,7 +344,7 @@ pub fn interpolate_arrival_time(position: u64, report_train: &ReportTrain) -> i6
 )]
 pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
-    core_client: Arc<CoreClient>,
+    core_client: CoreClient,
     valkey_client: Arc<cache::Client>,
     track_section_ranges: Vec<TrackRange>,
     infra: &Infra,
@@ -359,7 +359,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
-        core_client.clone(),
+        core_client,
         train_schedules,
         infra,
         electrical_profile_set_id,
@@ -717,7 +717,7 @@ impl OperationalPointProjection {
 pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core_client: Arc<CoreClient>,
+    core_client: CoreClient,
     train_schedules: &[T],
     op_cache: &OperationalPointCache,
     operational_points_projection: &OperationalPointProjection,
@@ -728,7 +728,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     let simulations = train_simulation_ordered_batch(
         conn,
         valkey_client.clone(),
-        core_client.clone(),
+        core_client,
         train_schedules,
         infra,
         electrical_profile_set_id,

@@ -3,6 +3,7 @@ mod catalog_entry;
 mod documents;
 pub mod electrical_profiles;
 mod error;
+mod feature_flags;
 pub mod fonts;
 pub mod health;
 pub mod icons;
@@ -33,6 +34,7 @@ pub mod work_schedules;
 mod worker_load;
 
 use editoast_derive::ViewError;
+use feature_flags::FeatureFlag;
 pub use server::*;
 
 #[cfg(test)]
@@ -45,7 +47,6 @@ use axum::extract::FromRequestParts;
 use axum::http::StatusCode;
 use axum::http::header;
 use axum::http::request::Parts;
-use core_client::CoreClient;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::extract::State;
-use core_client::CoreClient;
+use core_client::SharedCoreClient;
 use database::DbConnectionPool;
 use database::db_connection_pool::ping_database;
 use editoast_derive::EditoastError;
@@ -57,7 +57,7 @@ pub(in crate::views) async fn health(
 pub async fn check_health(
     db_pool: Arc<DbConnectionPool>,
     valkey_client: Arc<cache::Client>,
-    core_client: Arc<CoreClient>,
+    core_client: Arc<SharedCoreClient>,
     openfga: &fga::Client,
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;

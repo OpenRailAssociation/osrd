@@ -340,11 +340,11 @@ pub(in crate::views) async fn simulation_summary(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Json(SimulationBatchForm {
         infra_id,
         timetable_id,
@@ -648,11 +648,11 @@ pub(in crate::views) async fn get_path(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -805,12 +805,12 @@ pub struct ElectricalProfileSetIdQueryParam {
 pub(in crate::views) async fn simulation(
     State(AppState {
         valkey_client,
-        core_client,
         db_pool,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -960,12 +960,12 @@ pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
         config,
         valkey_client,
-        core_client,
         db_pool,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
@@ -1090,7 +1090,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     let etcs_braking_curves_response = etcs_braking_curves_request
-        .fetch(core_client.as_ref(), Headers::default())
+        .fetch(&core_client, Headers::default())
         .await?;
 
     Ok(Json(etcs_braking_curves_response))
@@ -1132,12 +1132,12 @@ pub(in crate::views) async fn project_path(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         config,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Json(ProjectPathForm {
         infra_id,
         timetable_id,
@@ -1317,12 +1317,12 @@ pub(in crate::views) async fn project_path_op(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         config,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Json(ProjectPathOperationalPointForm {
         infra_id,
         train_ids,
@@ -1556,12 +1556,12 @@ pub(in crate::views) async fn occupancy_blocks(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         config,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Json(OccupancyBlockForm {
         infra_id,
         timetable_id,
@@ -1824,11 +1824,11 @@ pub(in crate::views) async fn track_occupancy(
         config,
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Json(TrackOccupancyForm {
         train_schedule_ids,
         operational_point_reference,
@@ -2000,7 +2000,7 @@ pub(in crate::views) async fn track_occupancy(
 struct TrackOccupancySimulationParams<'a> {
     conn: &'a mut DbConnection,
     valkey_client: Arc<cache::Client>,
-    core_client: Arc<CoreClient>,
+    core_client: CoreClient,
     infra: &'a Infra,
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&'a str>,

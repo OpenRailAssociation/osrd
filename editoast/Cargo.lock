@@ -823,6 +823,7 @@ dependencies = [
  "rangemap",
  "serde",
  "serde_json",
+ "strum",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",

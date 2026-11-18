@@ -1,4 +1,5 @@
 pub mod conflict_detection;
+mod core_client;
 pub mod etcs_braking_curves;
 pub mod mocking;
 pub mod mq_client;
@@ -11,8 +12,6 @@ pub mod worker_load;
 
 use futures::Stream;
 use futures::StreamExt as _;
-use futures::future::Either;
-use futures::stream;
 use mq_client::MqClientError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,8 +23,8 @@ use std::pin::pin;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::trace;
 
+pub use core_client::CoreClient;
 pub use mq_client::RabbitMQClient;
 
 pub type Headers = HashMap<String, String>;
@@ -55,12 +54,12 @@ impl Display for WorkerKey {
 }
 
 #[derive(Debug, Clone)]
-pub enum CoreClient {
+pub enum SharedCoreClient {
     MessageQueue(RabbitMQClient),
     Mocked(mocking::MockingClient),
 }
 
-impl CoreClient {
+impl SharedCoreClient {
     #[tracing::instrument(skip_all, err)]
     pub async fn new_mq(options: mq_client::Options) -> Result<Self, Error> {
         let client = RabbitMQClient::new(options)
@@ -73,114 +72,10 @@ impl CoreClient {
     #[tracing::instrument(name = "ping_core", skip_all)]
     pub async fn ping(&self) -> Result<bool, Error> {
         match self {
-            CoreClient::MessageQueue(mq_client) => {
+            SharedCoreClient::MessageQueue(mq_client) => {
                 mq_client.ping().await.map_err(|_| Error::BrokenPipe)
             }
-            CoreClient::Mocked(_) => Ok(true),
-        }
-    }
-
-    #[tracing::instrument(
-        target = "editoast::coreclient",
-        name = "core:fetch",
-        skip(self, body),
-        err
-    )]
-    async fn fetch<B, R>(
-        &self,
-        path: &str,
-        body: Option<&B>,
-        worker_key: WorkerKey,
-        override_timeout: Option<Duration>,
-        core_headers: Headers,
-    ) -> Result<R::Response, Error>
-    where
-        B: Serialize,
-        R: CoreResponse,
-        <R as CoreResponse>::Response: std::marker::Send,
-    {
-        match self {
-            CoreClient::MessageQueue(_) => {
-                let stream = self
-                    .fetch_streaming::<B, R>(path, body, worker_key, override_timeout, core_headers)
-                    .await?;
-
-                pin!(stream)
-                    .next()
-                    .await
-                    .ok_or(Error::UnparsableErrorOutput)?
-            }
-
-            CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
-                Ok(Some(response)) => Ok(response),
-                Ok(None) => Err(Error::NoResponseContent),
-                Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
-            },
-        }
-    }
-
-    #[tracing::instrument(
-        target = "editoast::coreclient",
-        name = "core:fetch_streaming",
-        skip(self, body),
-        err
-    )]
-    async fn fetch_streaming<B, R>(
-        &self,
-        path: &str,
-        body: Option<&B>,
-        worker_key: WorkerKey,
-        override_timeout: Option<Duration>,
-        core_headers: Headers,
-    ) -> Result<impl Stream<Item = Result<<R as CoreResponse>::Response, Error>>, Error>
-    where
-        B: Serialize,
-        R: CoreResponse,
-        <R as CoreResponse>::Response: std::marker::Send,
-    {
-        trace!(
-            target: "editoast::coreclient",
-            body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
-            "Request content");
-
-        match self {
-            CoreClient::MessageQueue(client) => {
-                // TODO: maybe implement retry?
-                // TODO: tracing: use correlation id
-                let stream = client
-                    .call_with_multiple_responses(
-                        worker_key.to_string(),
-                        path,
-                        body,
-                        true,
-                        override_timeout,
-                        core_headers,
-                    )
-                    .await
-                    .map_err(Error::MqClient)?;
-
-                let owned_path = path.to_string();
-
-                Ok(Either::Left(stream.map(move |result| {
-                    let response = result.map_err(Error::MqClient)?;
-
-                    if response.status == b"ok" {
-                        return R::from_bytes(&response.payload);
-                    }
-
-                    if response.status == b"core_error" {
-                        return Err(Error::parse(&response.payload, owned_path.clone()));
-                    }
-
-                    todo!("TODO: handle protocol errors")
-                })))
-            }
-            CoreClient::Mocked(client) => {
-                match client.fetch_streaming_mocked::<_, B, R>(path, body) {
-                    Ok(responses) => Ok(Either::Right(stream::iter(responses).map(Ok))),
-                    Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
-                }
-            }
+            SharedCoreClient::Mocked(_) => Ok(true),
         }
     }
 }
@@ -189,11 +84,14 @@ impl CoreClient {
 ///
 /// For example:
 /// ```
+/// # use std::collections::HashSet;
 /// # use core_client::AsCoreRequest;
 /// # use core_client::Json;
 /// # use core_client::WorkerKey;
+/// # use core_client::CoreClient;
 /// # use serde::Serialize;
 /// # use serde::Deserialize;
+/// # use std::sync::Arc;
 /// #[derive(Serialize, Default)]
 /// struct TestReq {
 ///     foo: String,
@@ -214,7 +112,10 @@ impl CoreClient {
 /// # rt.block_on(async {
 /// #   let mut core_mock = core_client::mocking::MockingClient::default();
 /// #   core_mock.stub("/some/path").response(http::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
-/// #   let core_client = core_mock.into();
+/// #   let core_client = CoreClient {
+/// #           shared: Arc::new(core_mock.into()),
+/// #           feature_flags: HashSet::default(),
+/// #   };
 /// // Builds the payload, executes the request at POST /some/path and deserializes its response
 /// let response = TestReq::default().fetch(&core_client, core_client::Headers::default()).await.unwrap();
 /// assert_eq!(response.message, "YOU WON!");

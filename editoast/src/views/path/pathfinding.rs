@@ -274,11 +274,11 @@ pub(in crate::views) async fn post(
     State(AppState {
         db_pool,
         valkey_client,
-        core_client,
         openfga,
         ..
     }): State<AppState>,
     Extension(authn_state): Extension<authentication::State>,
+    Extension(core_client): Extension<CoreClient>,
     Path(infra_id): Path<i64>,
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
@@ -311,7 +311,7 @@ pub(in crate::views) async fn post(
 async fn pathfinding_blocks_batch(
     conn: DbConnection,
     valkey_conn: &mut cache::Connection,
-    core: Arc<CoreClient>,
+    core: CoreClient,
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
     app_version: Option<&str>,
@@ -401,7 +401,7 @@ async fn pathfinding_blocks_batch(
     );
     let mut futures = vec![];
     for request in &pathfinding_requests {
-        futures.push(Box::pin(request.fetch(core.as_ref(), Headers::default())));
+        futures.push(Box::pin(request.fetch(&core, Headers::default())));
     }
     let computed_paths: Vec<_> = futures::future::join_all(futures)
         .await
@@ -476,7 +476,7 @@ pub struct TrainScheduleWithConsist<T: TrainScheduleLike> {
 pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     conn: DbConnection,
     valkey: &mut cache::Connection,
-    core: Arc<CoreClient>,
+    core: CoreClient,
     infra: &Infra,
     train_schedules_with_consists: &[TrainScheduleWithConsist<T>],
     app_version: Option<&str>,
