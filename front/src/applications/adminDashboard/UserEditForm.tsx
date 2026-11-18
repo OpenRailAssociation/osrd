@@ -1,11 +1,12 @@
-import { useReducer } from "react";
+import { useReducer } from 'react';
 
-import { NoEntry } from "@osrd-project/ui-icons";
-import { CheckboxesTree, Input, Select } from "@osrd-project/ui-core";
+import { CheckboxesTree, Input, Select } from '@osrd-project/ui-core';
+import { NoEntry } from '@osrd-project/ui-icons';
+import { v4 as uuidv4 } from 'uuid';
 
-import "./styles/user-edit-form.css";
-import { v4 as uuidv4 } from "uuid";
-import { osrdEditoastApi, type Role } from "common/api/osrdEditoastApi";
+import { osrdEditoastApi, type Role } from 'common/api/osrdEditoastApi';
+
+import './styles/user-edit-form.css';
 
 type Identity = `${string}/${string}`;
 
@@ -16,7 +17,7 @@ type InfoInputProps = {
 };
 
 function GroupsInput() {
-  "use memo";
+  'use memo';
   let { data: groups } = osrdEditoastApi.endpoints.getAuthzGroups.useQuery();
   if (groups) {
     groups = groups.toSorted((a, b) => a.name.localeCompare(b.name));
@@ -37,27 +38,19 @@ function GroupsInput() {
   );
 }
 
-function RolesInput({
-  roles,
-  onChange,
-}: {
-  roles: Role[];
-  onChange: (roles: Role[]) => void;
-}) {
-  "use memo";
+function RolesInput({ roles, onChange }: { roles: Role[]; onChange: (roles: Role[]) => void }) {
+  'use memo';
   return (
     <CheckboxesTree
       id="admin-dashboard-roles-input"
       label="Roles"
-      items={["Stdcm", "OperationalStudies", "Admin"].map(
-        (role_value, index) => {
-          const role: Role = role_value as Role;
-          return {
-            id: index,
-            props: { label: role, checked: roles.includes(role) },
-          };
-        },
-      )}
+      items={['Stdcm', 'OperationalStudies', 'Admin'].map((role_value, index) => {
+        const role: Role = role_value as Role;
+        return {
+          id: index,
+          props: { label: role, checked: roles.includes(role) },
+        };
+      })}
       onChange={(checkedItems) => {
         const newRoles = checkedItems.map((item) => item.props.label as Role);
         onChange(newRoles);
@@ -77,7 +70,7 @@ function IdentityInput({
   onDelete,
 }: {
   key: string;
-  providerList: InfoInputProps["providerList"];
+  providerList: InfoInputProps['providerList'];
   provider?: string;
   identifier: string;
   deletable: boolean;
@@ -85,7 +78,7 @@ function IdentityInput({
   onChange: (identity: { provider?: string; identifier: string }) => void;
   onDelete: () => void;
 }) {
-  "use memo";
+  'use memo';
   return (
     <div className="identity-input">
       <Select
@@ -105,14 +98,10 @@ function IdentityInput({
         narrow={true}
         value={identifier}
         onChange={(e) => onChange({ provider, identifier: e.target.value })}
-        statusWithMessage={conflict ? { status: "error" } : undefined}
+        statusWithMessage={conflict ? { status: 'error' } : undefined}
       />
       {deletable && (
-        <button
-          type="button"
-          className="delete-identity-button"
-          onClick={onDelete}
-        >
+        <button type="button" className="delete-identity-button" onClick={onDelete}>
           <NoEntry size="sm" />
         </button>
       )}
@@ -135,7 +124,7 @@ function deriveState(
     key: string;
     provider?: string;
     identifier: string;
-  }[],
+  }[]
 ): InfoInputState {
   let globalConflict = false;
   const identityMap = new Map<string, number>();
@@ -163,12 +152,12 @@ function deriveState(
 
 // form block
 function InfoInput({ identities, providerList, name }: InfoInputProps) {
-  "use memo";
+  'use memo';
 
   const [state, dispatch] = useReducer(
     (
       oldState,
-      action,
+      action
     ): {
       identities: {
         key: string;
@@ -178,16 +167,16 @@ function InfoInput({ identities, providerList, name }: InfoInputProps) {
       }[];
     } => {
       switch (action.type) {
-        case "new_identity":
+        case 'new_identity':
           return deriveState([
             ...oldState.identities,
             {
               key: uuidv4(),
               provider: undefined,
-              identifier: "",
+              identifier: '',
             },
           ]);
-        case "update_identity": {
+        case 'update_identity': {
           const { key, provider, identifier } = action;
           return deriveState(
             oldState.identities.map((identity) =>
@@ -197,26 +186,22 @@ function InfoInput({ identities, providerList, name }: InfoInputProps) {
                     provider,
                     identifier,
                   }
-                : identity,
-            ),
+                : identity
+            )
           );
         }
-        case "delete_identity":
-          return deriveState(
-            oldState.identities.filter(
-              (identity) => identity.key !== action.key,
-            ),
-          );
+        case 'delete_identity':
+          return deriveState(oldState.identities.filter((identity) => identity.key !== action.key));
         default:
           throw Error(`Unhandled action type: ${action.type}`);
       }
     },
     deriveState(
       identities.map((identity) => {
-        const [provider, identifier] = identity.split("/", 2);
+        const [provider, identifier] = identity.split('/', 2);
         return { key: uuidv4(), provider, identifier };
-      }),
-    ),
+      })
+    )
   );
   const deletable = state.identities.length > 1;
   return (
@@ -233,13 +218,11 @@ function InfoInput({ identities, providerList, name }: InfoInputProps) {
           identifier={identifier}
           deletable={deletable}
           conflict={conflict}
-          onChange={(data) =>
-            dispatch({ type: "update_identity", key, ...data })
-          }
-          onDelete={() => dispatch({ type: "delete_identity", key })}
+          onChange={(data) => dispatch({ type: 'update_identity', key, ...data })}
+          onDelete={() => dispatch({ type: 'delete_identity', key })}
         />
       ))}
-      <button type="button" onClick={() => dispatch({ type: "new_identity" })}>
+      <button type="button" onClick={() => dispatch({ type: 'new_identity' })}>
         Add an identity
       </button>
       <Input id="admin-dashboard-name-input" label="Name" value={name} />
@@ -248,20 +231,17 @@ function InfoInput({ identities, providerList, name }: InfoInputProps) {
 }
 
 export default function UserEditForm({ onCancel }: { onCancel: () => void }) {
-  "use memo";
+  'use memo';
   return (
     <tr className="user-edit-form-row">
       <td colSpan={4}>
         <form className="user-edit-form">
           <InfoInput
-            identities={["github/leo", "google/leo"]}
-            providerList={["github", "google", "facebook"]}
+            identities={['github/leo', 'google/leo']}
+            providerList={['github', 'google', 'facebook']}
             name="Leo"
           />
-          <RolesInput
-            roles={["Stdcm", "OperationalStudies"]}
-            onChange={() => {}}
-          />
+          <RolesInput roles={['Stdcm', 'OperationalStudies']} onChange={() => {}} />
           <GroupsInput />
           <button onClick={onCancel}>Cancel</button>
         </form>
