@@ -256,11 +256,10 @@ const durationReducer = (state: DurationState, action: DurationAction): Duration
           ? CLEARED_VALUE[0] + digit
           : clamp(state.activeUnit, value[1] + digit);
 
-      let editedDigitCount = ++state.editedDigitCount;
+      let editedDigitCount = state.editedDigitCount + 1;
       let nextUnit = state.activeUnit;
-      if (state.editedDigitCount > 1) {
+      if (editedDigitCount > 1) {
         nextUnit = getNextUnit(state.activeUnit);
-
         editedDigitCount = 0;
       }
 
