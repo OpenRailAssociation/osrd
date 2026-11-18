@@ -16,8 +16,6 @@ const frTranslations = {
 };
 
 test.describe('Netzgrafik Editor', { tag: ['@op', '@nge', '@round-trips'] }, () => {
-  test.use({ ignorePageErrors: true });
-
   setupScenarioFixture({
     scenarioNamePrefix: 'nge-scenario',
     trains: [],
