@@ -263,9 +263,9 @@
       "TrainSimulationFail": "Échec de la simulation du train"
     },
     "stdcm_debug": {
-      "JsonParseError": "Erreur de lecture du fichier json",
-      "S3Error": "Erreur d'accès au s3",
-      "S3NotConfigured": "Editoast n'est pas configuré pour accéder au s3"
+      "json_parse": "Erreur de lecture du fichier json",
+      "s3": "Erreur d'accès au s3",
+      "s3_not_configured": "Editoast n'est pas configuré pour accéder au s3"
     },
     "stdcm_request": {
       "Database": "Erreur interne (base de données)",

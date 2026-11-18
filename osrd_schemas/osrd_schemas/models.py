@@ -1931,50 +1931,6 @@ class EditoastSpriteErrorsUnknownSignalingSystem(BaseModel):
     )
 
 
-class EditoastStdcmDebugErrorJsonParseErrorContext(BaseModel):
-    message: StrictStr
-    path: StrictStr
-
-
-class EditoastStdcmDebugErrorJsonParseError(BaseModel):
-    context: Annotated[
-        EditoastStdcmDebugErrorJsonParseErrorContext | None,
-        Field(title="EditoastStdcmDebugErrorJsonParseErrorContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_debug:JsonParseError"] = (
-        "editoast:stdcm_debug:JsonParseError"
-    )
-
-
-class EditoastStdcmDebugErrorS3ErrorContext(BaseModel):
-    message: StrictStr
-    path: StrictStr
-
-
-class EditoastStdcmDebugErrorS3Error(BaseModel):
-    context: Annotated[
-        EditoastStdcmDebugErrorS3ErrorContext | None,
-        Field(title="EditoastStdcmDebugErrorS3ErrorContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_debug:S3Error"] = "editoast:stdcm_debug:S3Error"
-
-
-class EditoastStdcmDebugErrorS3NotConfigured(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastStdcmDebugErrorS3NotConfiguredContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[503] = 503
-    type: Literal["editoast:stdcm_debug:S3NotConfigured"] = (
-        "editoast:stdcm_debug:S3NotConfigured"
-    )
-
-
 class EditoastStdcmErrorBatchRollingStockNotFoundContext(BaseModel):
     ids: dict[str, Any]
 
@@ -5204,9 +5160,6 @@ class EditoastError(
         | EditoastSimilarTrainsErrorSpeedLimitNotFound
         | EditoastSpriteErrorsFileNotFound
         | EditoastSpriteErrorsUnknownSignalingSystem
-        | EditoastStdcmDebugErrorJsonParseError
-        | EditoastStdcmDebugErrorS3Error
-        | EditoastStdcmDebugErrorS3NotConfigured
         | EditoastStdcmErrorBatchRollingStockNotFound
         | EditoastStdcmErrorDatabase
         | EditoastStdcmErrorInfraNotFound
@@ -5377,9 +5330,6 @@ class EditoastError(
         | EditoastSimilarTrainsErrorSpeedLimitNotFound
         | EditoastSpriteErrorsFileNotFound
         | EditoastSpriteErrorsUnknownSignalingSystem
-        | EditoastStdcmDebugErrorJsonParseError
-        | EditoastStdcmDebugErrorS3Error
-        | EditoastStdcmDebugErrorS3NotConfigured
         | EditoastStdcmErrorBatchRollingStockNotFound
         | EditoastStdcmErrorDatabase
         | EditoastStdcmErrorInfraNotFound

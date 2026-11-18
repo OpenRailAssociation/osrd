@@ -4756,6 +4756,97 @@ paths:
                     oneOf:
                     - type: 'null'
                     - $ref: '#/components/schemas/SimDebugData'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'S3 error fetching ''{path}'': {message}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - path
+                      - message
+                      properties:
+                        message:
+                          type: string
+                        path:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:stdcm_debug:s3
+                - type: object
+                  description: 'Failed to parse JSON from S3 object ''{path}'': {message}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - path
+                      - message
+                      properties:
+                        message:
+                          type: string
+                        path:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:stdcm_debug:json_parse
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: S3 is not configured
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:stdcm_debug:s3_not_configured
   /stdcm/search_environment:
     get:
       tags:
@@ -9665,9 +9756,6 @@ components:
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
-      - $ref: '#/components/schemas/EditoastStdcmDebugErrorJsonParseError'
-      - $ref: '#/components/schemas/EditoastStdcmDebugErrorS3Error'
-      - $ref: '#/components/schemas/EditoastStdcmDebugErrorS3NotConfigured'
       - $ref: '#/components/schemas/EditoastStdcmErrorBatchRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -11409,82 +11497,6 @@ components:
           type: string
           enum:
           - editoast:sprites:UnknownSignalingSystem
-    EditoastStdcmDebugErrorJsonParseError:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastStdcmDebugErrorJsonParseErrorContext
-          required:
-          - message
-          - path
-          properties:
-            message:
-              type: string
-            path:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_debug:JsonParseError
-    EditoastStdcmDebugErrorS3Error:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastStdcmDebugErrorS3ErrorContext
-          required:
-          - message
-          - path
-          properties:
-            message:
-              type: string
-            path:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_debug:S3Error
-    EditoastStdcmDebugErrorS3NotConfigured:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastStdcmDebugErrorS3NotConfiguredContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 503
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_debug:S3NotConfigured
     EditoastStdcmErrorBatchRollingStockNotFound:
       type: object
       required:
