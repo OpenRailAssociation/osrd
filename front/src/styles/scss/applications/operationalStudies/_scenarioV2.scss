@@ -462,6 +462,9 @@
       }
 
       .details-section-timetable-label {
+        // Fill the row, so that the empty space after the name is clickable too
+        flex: 1;
+        text-align: left;
         cursor: pointer;
         overflow: hidden;
         text-overflow: ellipsis;
