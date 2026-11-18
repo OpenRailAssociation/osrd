@@ -26,7 +26,6 @@ use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::http::HeaderValue;
 use axum_streams::StreamBodyAs;
-use chrono::Utc;
 use common::geometry::GeoJsonPoint;
 use core_client::AsCoreStreaming as _;
 use core_client::CoreClient;
@@ -50,6 +49,7 @@ use geos::geojson::Geometry;
 use geos::geojson::Value;
 use itertools::Itertools as _;
 use jiff::SignedDuration;
+use jiff::Timestamp;
 use metadata::ConsistPreprocessing;
 use metadata::StdcmMetadata;
 use models::Infra;
@@ -274,7 +274,7 @@ pub(in crate::views) async fn stdcm(
     headers: HeaderMap,
     Json(request): Json<Request>,
 ) -> Result<StdcmProgressionStream> {
-    let request_time = Utc::now();
+    let request_time = Timestamp::now();
     let consist_schedule_values = &request.consist_schedule.values;
     if authn_state.user().is_some() {
         let authorizer = authn_state.authorizer(&openfga);
