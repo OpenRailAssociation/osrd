@@ -2130,6 +2130,23 @@ class EditoastTimetableErrorInvalidOuter(BaseModel):
     type: Literal["editoast:timetable:InvalidOuter"] = "editoast:timetable:InvalidOuter"
 
 
+class EditoastTimetableErrorInvalidPaceInHourlyTimetableContext(BaseModel):
+    indices: list[Any]
+    timetable_id: StrictInt
+
+
+class EditoastTimetableErrorInvalidPaceInHourlyTimetable(BaseModel):
+    context: Annotated[
+        EditoastTimetableErrorInvalidPaceInHourlyTimetableContext | None,
+        Field(title="EditoastTimetableErrorInvalidPaceInHourlyTimetableContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:InvalidPaceInHourlyTimetable"] = (
+        "editoast:timetable:InvalidPaceInHourlyTimetable"
+    )
+
+
 class EditoastTimetableErrorInvalidPeriodContext(BaseModel):
     timetable_period: StrictInt
 
@@ -5036,6 +5053,7 @@ class EditoastError(
         | EditoastTimetableErrorInfraNotFound
         | EditoastTimetableErrorInvalidInners
         | EditoastTimetableErrorInvalidOuter
+        | EditoastTimetableErrorInvalidPaceInHourlyTimetable
         | EditoastTimetableErrorInvalidPeriod
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
@@ -5196,6 +5214,7 @@ class EditoastError(
         | EditoastTimetableErrorInfraNotFound
         | EditoastTimetableErrorInvalidInners
         | EditoastTimetableErrorInvalidOuter
+        | EditoastTimetableErrorInvalidPaceInHourlyTimetable
         | EditoastTimetableErrorInvalidPeriod
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
