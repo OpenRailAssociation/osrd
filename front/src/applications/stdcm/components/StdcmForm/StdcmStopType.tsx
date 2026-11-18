@@ -1,7 +1,7 @@
 import { Select } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
-import type { StdcmStopTypes } from '../../types';
+import { StdcmStopTypes } from '../../types';
 
 type StdcmStopTypeProps = {
   stopTypes: StdcmStopTypes;
@@ -12,17 +12,21 @@ const StdcmStopType = ({ stopTypes, updatePathStepStopType }: StdcmStopTypeProps
   const { t } = useTranslation('stdcm');
 
   return (
-    <Select
+    <Select<StdcmStopTypes>
       data-testid="stdcm-stop-type"
       label={t('trainPath.type')}
       id="type"
       value={stopTypes}
       onChange={(e) => {
         if (e) {
-          updatePathStepStopType(e as StdcmStopTypes);
+          updatePathStepStopType(e);
         }
       }}
-      options={['passageTime', 'driverSwitch', 'serviceStop']}
+      options={[
+        StdcmStopTypes.PASSAGE_TIME,
+        StdcmStopTypes.DRIVER_SWITCH,
+        StdcmStopTypes.SERVICE_STOP,
+      ]}
       getOptionLabel={(option) => t(`trainPath.stopType.${option}`)}
       getOptionValue={(option) => option}
       narrow
