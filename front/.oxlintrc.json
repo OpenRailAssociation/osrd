@@ -18,9 +18,6 @@
     }
   ],
   "ignorePatterns": [
-    "src/common/api/generatedEditoastApi.ts",
-    "src/common/api/osrdGatewayApi.ts",
-    "src/common/api/osrdRailwayManagerApi.ts",
     "public",
     "build",
     "playwright-report",
@@ -208,6 +205,16 @@
     "reportUnusedDisableDirectives": "error"
   },
   "overrides": [
+    {
+      "files": [
+        "src/common/api/generatedEditoastApi.ts",
+        "src/common/api/osrdGatewayApi.ts",
+        "src/common/api/osrdRailwayManagerApi.ts"
+      ],
+      "rules": {
+        "typescript/no-duplicate-type-constituents": ["deny", { "ignoreUnions": true }]
+      }
+    },
     {
       "files": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
       "rules": {
