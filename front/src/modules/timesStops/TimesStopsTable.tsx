@@ -25,7 +25,7 @@ import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { useDateTimeLocale } from 'utils/date';
 import { type Duration, type StartTime, startTimeToMs, subtractStartTime } from 'utils/duration';
 
-import DistanceCell from './DistanceCell';
+import DistanceCell, { formatDisplayedDistance } from './DistanceCell';
 import DurationCell, { type DurationCellHandle } from './DurationCell';
 import { getRowsToUpdateFromSimulation } from './helpers/fillTimesFromSimulation';
 import type { PowerRestrictionBlockInfo } from './helpers/powerRestrictionIncompatibility';
@@ -734,8 +734,8 @@ const TimesStopsTable = ({
       }
 
       return (
-        <span data-testid="computed-base-arrival" title={value + 'km'}>
-          {value !== null ? String(value).slice(0, 5) + 'km' : '-'}
+        <span data-testid="computed-position" title={value !== null ? `${value}km` : '-'}>
+          {value !== null ? formatDisplayedDistance(value) + 'km' : '-'}
         </span>
       );
     },

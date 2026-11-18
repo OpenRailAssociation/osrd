@@ -17,6 +17,15 @@ type DistanceCellProps = {
   'data-testid'?: string;
 };
 
+/**
+ * Format displayed distance to try to show only 5 digits or dot characters if possible.
+ */
+export const formatDisplayedDistance = (value: number) => {
+  if (value >= 1000) return value.toFixed(0);
+  if (value >= 100) return value.toFixed(1);
+  return value.toFixed(2);
+};
+
 const formatValue = (value: number | undefined): string | undefined =>
   value !== undefined ? String(value) : undefined;
 
