@@ -81,7 +81,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
   test(
     'Create a train with rocket pathfinding',
     { tag: '@smoke' },
-    async ({ itineraryModalPage, browserName }) => {
+    async ({ itineraryModalPage }) => {
       await test.step('Select rolling stock', async () => {
         await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
         await itineraryModalPage.checkRollingStock(ROLLING_STOCK_NAME);
@@ -99,12 +99,10 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         );
       });
       await test.step('Check path step marker presence on map', async () => {
-        if (browserName === 'chromium') {
-          await itineraryModalPage.checkPathStepMarkers([
-            { name: NORTH_STATION_BV, index: 1 },
-            { name: SOUTH_STATION_BV, index: 2 },
-          ]);
-        }
+        await itineraryModalPage.checkPathStepMarkers([
+          { name: NORTH_STATION_BV, index: 1 },
+          { name: SOUTH_STATION_BV, index: 2 },
+        ]);
       });
       await test.step('Check itinerary reverse', async () => {
         await itineraryModalPage.checkItineraryReverse(SOUTH_STATION_BV, NORTH_STATION_BV);
@@ -123,7 +121,7 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
   test(
     'Create a train by filling the itinerary form manually',
     { tag: '@smoke' },
-    async ({ itineraryModalPage, browserName }) => {
+    async ({ itineraryModalPage }) => {
       await test.step('Select rolling stock and check automatic category assignment', async () => {
         await itineraryModalPage.fillRollingStock(ROLLING_STOCK_NAME_QUERY);
         await itineraryModalPage.checkRollingStock(ROLLING_STOCK_NAME);
@@ -153,13 +151,11 @@ test.describe('Itinerary Modal, Default ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.insertIntermediatePathStep(1, NORTH_STATION_MAIN_CODE, 1);
       });
       await test.step('Check valid pathfinding result and itinerary displayed on map', async () => {
-        if (browserName === 'chromium') {
-          await itineraryModalPage.checkPathStepMarkers([
-            { name: WEST_STATION_BV, index: 1 },
-            { name: NORTH_STATION_BV, index: 2 },
-            { name: SOUTH_STATION_BV, index: 3 },
-          ]);
-        }
+        await itineraryModalPage.checkPathStepMarkers([
+          { name: WEST_STATION_BV, index: 1 },
+          { name: NORTH_STATION_BV, index: 2 },
+          { name: SOUTH_STATION_BV, index: 3 },
+        ]);
       });
       await test.step('Select track and update stop', async () => {
         await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, false);
