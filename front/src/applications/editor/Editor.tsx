@@ -71,6 +71,8 @@ function decodeMapHash(raw: string): Pick<Viewport, 'longitude' | 'latitude' | '
   return { zoom, latitude, longitude };
 }
 
+const ZOOM_DELTA = 1.5;
+
 const Editor = () => {
   const [showPanelContainer, setShowPanelContainer] = useState(true);
   const { t } = useTranslation();
@@ -156,6 +158,13 @@ const Editor = () => {
     },
     [dispatch, updateViewportAction]
   );
+
+  // Zoom through the map instance rather than the store, so that the map fires
+  // zoomend and the #map= hash gets updated like with the mouse wheel
+  const zoomBy = useCallback((delta: number) => {
+    const map = mapRef.current;
+    if (map) map.zoomTo(map.getZoom() + delta, { duration: 0 });
+  }, []);
 
   const resetPitchBearing = () => {
     setViewport({
@@ -578,6 +587,8 @@ const Editor = () => {
                     activeTool: toolAndState.tool,
                   }}
                   viewPort={viewport}
+                  zoomIn={() => zoomBy(ZOOM_DELTA)}
+                  zoomOut={() => zoomBy(-ZOOM_DELTA)}
                 />
 
                 {mapRef.current &&
