@@ -45,6 +45,18 @@ pub struct ModeEffortCurves {
     pub is_electric: bool,
 }
 
+impl ModeEffortCurves {
+    pub fn get_power_restriction_codes(&self) -> Vec<String> {
+        let codes: BTreeSet<_> = self
+            .curves
+            .iter()
+            .filter_map(|curve| curve.cond.power_restriction_code.clone())
+            .collect();
+
+        codes.into_iter().collect()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ConditionalEffortCurve {
@@ -140,7 +152,27 @@ mod tests {
     use serde_json::from_value;
     use serde_json::json;
 
-    use crate::rolling_stock::EffortCurve;
+    use crate::rolling_stock::{EffortCurve, ModeEffortCurves};
+
+    #[test]
+    fn get_power_restriction_codes_returns_unique_sorted_codes() {
+        let mode: ModeEffortCurves = from_value(json!({
+            "curves": [
+                {"cond": {"comfort": null, "electrical_profile_level": null, "power_restriction_code": "B"}, "curve": {"speeds": [0, 1], "max_efforts": [0, 1]}},
+                {"cond": {"comfort": null, "electrical_profile_level": null, "power_restriction_code": "A"}, "curve": {"speeds": [0, 1], "max_efforts": [0, 1]}},
+                {"cond": {"comfort": null, "electrical_profile_level": null, "power_restriction_code": "B"}, "curve": {"speeds": [0, 1], "max_efforts": [0, 1]}},
+                {"cond": {"comfort": null, "electrical_profile_level": null, "power_restriction_code": null}, "curve": {"speeds": [0, 1], "max_efforts": [0, 1]}}
+            ],
+            "default_curve": {"speeds": [0, 1], "max_efforts": [0, 1]},
+            "is_electric": true
+        }))
+        .unwrap();
+
+        assert_eq!(
+            mode.get_power_restriction_codes(),
+            vec!["A".to_owned(), "B".to_owned()]
+        );
+    }
 
     #[test]
     fn de_effort_curve_valid() {

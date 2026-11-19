@@ -4138,6 +4138,7 @@ export type RoutePath = {
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
+  power_restriction_codes: string[];
 };
 export type LightEffortCurves = {
   default_mode: string;

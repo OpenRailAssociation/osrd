@@ -20,7 +20,6 @@ import type {
 import {
   osrdEditoastApi,
   type PostTimetableByIdStdcmApiArg,
-  type RollingStockWithLiveries,
   type StdcmResponseWithTraceId,
   type TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -146,7 +145,7 @@ const useStdcm = ({
         formattedResponse,
         stdcmTrain,
         t,
-        stdcmRollingStock as RollingStockWithLiveries,
+        stdcmRollingStock!,
         pathProperties
       );
       outputs = {

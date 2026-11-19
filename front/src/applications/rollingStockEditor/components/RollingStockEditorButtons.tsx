@@ -17,7 +17,7 @@ import type { PageMode } from '../RollingStockEditorView';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockEditorButtonsProps = {
-  rollingStock: RollingStock | LightRollingStock;
+  rollingStock: LightRollingStock | RollingStock;
   resetFilters: () => void;
   setPageMode: React.Dispatch<React.SetStateAction<PageMode>>;
   isCondensed: boolean;

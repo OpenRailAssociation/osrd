@@ -11,11 +11,11 @@ import type {
   CoreOperationalPointOnPath,
   CoreSignalUpdate,
   PathItemLocation,
-  RollingStockWithLiveries,
   ScheduleItem,
   SimulationResponseSuccess,
   TrainSchedule,
   PathItem,
+  LightRollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainSchedule/types';
 import type {
@@ -101,7 +101,7 @@ export type IndividualTrainProjection = {
 export type SpeedLimitTagValue = SimulationResponseSuccess['mrsp']['values'][number];
 
 export type SpeedDistanceDiagramData = {
-  rollingStock: RollingStockWithLiveries;
+  rollingStock: LightRollingStockWithLiveries;
   formattedPowerRestrictions: LayerData<PowerRestrictionValues>[] | undefined;
   simulation?: SimulationResponseSuccess;
   formattedPathProperties: PathPropertiesFormatted;

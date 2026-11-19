@@ -29,7 +29,7 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = false;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: true } };
+      const modes: Modes = { '25000V': { is_electric: true, power_restriction_codes: [] } };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,
@@ -44,7 +44,7 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = false;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: false } };
+      const modes: Modes = { '25000V': { is_electric: false, power_restriction_codes: [] } };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,
@@ -61,7 +61,7 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = true;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: false } };
+      const modes: Modes = { '25000V': { is_electric: false, power_restriction_codes: [] } };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,
@@ -76,7 +76,7 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = true;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: true } };
+      const modes: Modes = { '25000V': { is_electric: true, power_restriction_codes: [] } };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,
@@ -93,7 +93,10 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = true;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: true }, '99999': { is_electric: false } };
+      const modes: Modes = {
+        '25000V': { is_electric: true, power_restriction_codes: [] },
+        '99999': { is_electric: false, power_restriction_codes: [] },
+      };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,
@@ -108,7 +111,10 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = true;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: true }, '99999': { is_electric: true } };
+      const modes: Modes = {
+        '25000V': { is_electric: true, power_restriction_codes: [] },
+        '99999': { is_electric: true, power_restriction_codes: [] },
+      };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,
@@ -123,7 +129,10 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterThermal = true;
       const filterLocked = false;
       const filterNotLocked = false;
-      const modes: Modes = { '25000V': { is_electric: false }, '99999': { is_electric: false } };
+      const modes: Modes = {
+        '25000V': { is_electric: false, power_restriction_codes: [] },
+        '99999': { is_electric: false, power_restriction_codes: [] },
+      };
       const result = rollingStockPassesEnergeticModeFilters(modes, {
         text: '',
         elec: filterElec,

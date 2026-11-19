@@ -1,4 +1,4 @@
-import type { Comfort, EffortCurves } from 'common/api/osrdEditoastApi';
+import type { Comfort, LightEffortCurves } from 'common/api/osrdEditoastApi';
 
 /**
  * Given a set of modes and some properties for their curves (electrical profile, power restriction code, and comfort),
@@ -7,30 +7,22 @@ import type { Comfort, EffortCurves } from 'common/api/osrdEditoastApi';
 const generateEffortCurvesForTests = (
   modes: Record<
     string,
-    { electricalProfile: string; powerRestrictionCode: string | null; comfort?: Comfort }[]
+    {
+      electricalProfile: string;
+      powerRestrictionCode: string | null;
+      comfort?: Comfort;
+    }[]
   >
 ) => {
-  const results: EffortCurves['modes'] = {};
+  const results: LightEffortCurves['modes'] = {};
   for (const mode of Object.keys(modes)) {
-    const curves = modes[mode].map((curve) => ({
-      cond: {
-        comfort: curve.comfort || null,
-        electrical_profile_level: curve.electricalProfile,
-        power_restriction_code: curve.powerRestrictionCode,
-      },
-      curve: {
-        max_efforts: [100, 200, 300],
-        speeds: [50, 100, 150],
-      },
-    }));
-
+    const powerRestrictionCodes = new Set<string>();
+    for (const curve of modes[mode]) {
+      if (curve.powerRestrictionCode) powerRestrictionCodes.add(curve.powerRestrictionCode);
+    }
     results[mode] = {
-      curves,
-      default_curve: {
-        max_efforts: [100, 200, 300],
-        speeds: [50, 100, 150],
-      },
       is_electric: true,
+      power_restriction_codes: Array.from(powerRestrictionCodes),
     };
   }
 

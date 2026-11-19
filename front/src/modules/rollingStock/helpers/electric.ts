@@ -1,5 +1,5 @@
 import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
-import type { LightRollingStock } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 
 export function isElectric(effortCurves: EffortCurveForms | null) {
   if (!effortCurves) {
@@ -13,7 +13,7 @@ export function isThermal(effortCurves: LightRollingStock['effort_curves']['mode
 }
 
 export function getSupportedElectrification(
-  effortCurves: LightRollingStock['effort_curves']['modes']
+  effortCurves: LightRollingStock['effort_curves']['modes'] | RollingStock['effort_curves']['modes']
 ) {
   const tractionModes = Object.keys(effortCurves);
   return tractionModes.filter((mode) => mode !== 'thermal');

@@ -3,8 +3,11 @@ import { useState, useEffect } from 'react';
 import type { CategoryOption } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
+  LightModeEffortCurves,
   LightRollingStock,
   LightRollingStockWithLiveries,
+  ModeEffortCurves,
+  RollingStock,
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
@@ -42,11 +45,13 @@ const initialFilters = {
 };
 
 export function rollingStockPassesEnergeticModeFilters(
-  modes: LightRollingStock['effort_curves']['modes'],
+  modes: LightRollingStock['effort_curves']['modes'] | RollingStock['effort_curves']['modes'],
   { elec, thermal }: RollingStockFilters
 ) {
   if (elec || thermal) {
-    const effortCurveModes = Object.values(modes).map(({ is_electric: isElec }) => isElec);
+    const effortCurveModes = Object.values(modes).map(
+      (e: ModeEffortCurves | LightModeEffortCurves) => e.is_electric
+    );
     const hasAnElectricMode = effortCurveModes.includes(true);
     const hasAThermalMode = effortCurveModes.includes(false);
     if ((elec && !hasAnElectricMode) || (thermal && !hasAThermalMode)) {
@@ -58,7 +63,7 @@ export function rollingStockPassesEnergeticModeFilters(
 
 function rollingStockPassesSearchedStringFilter(
   name: string,
-  metadata: LightRollingStock['metadata'],
+  metadata: RollingStock['metadata'],
   filters: RollingStockFilters
 ) {
   if (!filters.text) {
