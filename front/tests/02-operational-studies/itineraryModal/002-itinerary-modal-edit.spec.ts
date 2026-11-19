@@ -69,7 +69,7 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
   test(
     'Display the edit itinerary modal default structure',
     { tag: '@smoke' },
-    async ({ itineraryModalPage, browserName }) => {
+    async ({ itineraryModalPage }) => {
       await test.step('Check itinerary modal default state on edit mode', async () => {
         await itineraryModalPage.checkItineraryModalDefaultState('edit');
       });
@@ -88,12 +88,10 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
         );
       });
       await test.step('Check path step markers in the map', async () => {
-        if (browserName === 'chromium') {
-          await itineraryModalPage.checkPathStepMarkers([
-            { name: NORTH_STATION_BV, index: 1 },
-            { name: SOUTH_STATION_BV, index: 2 },
-          ]);
-        }
+        await itineraryModalPage.checkPathStepMarkers([
+          { name: NORTH_STATION_BV, index: 1 },
+          { name: SOUTH_STATION_BV, index: 2 },
+        ]);
       });
       await test.step('Check finale unumbered row', async () => {
         await itineraryModalPage.checkTrailingPlaceholder();
@@ -106,7 +104,7 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
   test(
     'Edit and save an existing train from the itinerary modal',
     { tag: '@smoke' },
-    async ({ itineraryModalPage, browserName }) => {
+    async ({ itineraryModalPage }) => {
       await test.step('Update rolling stock', async () => {
         await itineraryModalPage.fillRollingStock(ELECTRIC_RS);
         await itineraryModalPage.selectAndCheckCategory(INTERCITY_CATEGORY);
@@ -122,34 +120,28 @@ test.describe('Itinerary Modal, Edition ', { tag: ['@op', '@itinerary-modal'] },
         await itineraryModalPage.checkTrackSelectionAndStopsUpdate(1, TRACK_NAME, true);
       });
       await test.step('Check map update after track edition', async () => {
-        if (browserName === 'chromium') {
-          await itineraryModalPage.checkPathStepMarkers([
-            { name: NORTH_STATION_BV, index: 1 },
-            { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 2 },
-          ]);
-        }
+        await itineraryModalPage.checkPathStepMarkers([
+          { name: NORTH_STATION_BV, index: 1 },
+          { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 2 },
+        ]);
       });
       await test.step('Insert a path step in the itinerary', async () => {
         await itineraryModalPage.insertIntermediatePathStep(1, SOUTH_EAST_STATION_MAIN_CODE, 1);
         await itineraryModalPage.checkPathStepValue(2, SOUTH_STATION_BV);
-        if (browserName === 'chromium') {
-          await itineraryModalPage.checkPathStepMarkers([
-            { name: NORTH_STATION_BV, index: 1 },
-            { name: SOUTH_EAST_STATION_BV, index: 2 },
-            { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 3 },
-          ]);
-        }
+        await itineraryModalPage.checkPathStepMarkers([
+          { name: NORTH_STATION_BV, index: 1 },
+          { name: SOUTH_EAST_STATION_BV, index: 2 },
+          { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 3 },
+        ]);
         await itineraryModalPage.checkNumberedRowsCount(4);
       });
       await test.step('remove pathStep and check rows and map update', async () => {
         await itineraryModalPage.removePathStepAt(0);
         await itineraryModalPage.checkPathStepValue(0, SOUTH_EAST_STATION_BV);
-        if (browserName === 'chromium') {
-          await itineraryModalPage.checkPathStepMarkers([
-            { name: SOUTH_EAST_STATION_BV, index: 1 },
-            { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 2 },
-          ]);
-        }
+        await itineraryModalPage.checkPathStepMarkers([
+          { name: SOUTH_EAST_STATION_BV, index: 1 },
+          { name: `${SOUTH_STATION_BV} · ${TRACK_NAME}`, index: 2 },
+        ]);
       });
       await test.step('Submit itinerary edition and check train update', async () => {
         await itineraryModalPage.submitEdit();

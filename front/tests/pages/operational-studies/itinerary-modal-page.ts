@@ -273,6 +273,7 @@ class ItineraryModalPage {
   }
 
   async checkPathStepMarkers(markers: { name: string; index: number }[]) {
+    if (this.page.context().browser()?.browserType().name() !== 'chromium') return;
     await expect(this.itineraryModalMap).toBeVisible();
     await expect(this.pathStepMarker).toHaveCount(markers.length);
     for (const marker of markers) {
