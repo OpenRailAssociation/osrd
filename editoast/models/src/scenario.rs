@@ -1,7 +1,7 @@
 use std::ops::DerefMut as _;
 
+use diesel::BoolExpressionMethods as _;
 use diesel::ExpressionMethods as _;
-use diesel::JoinOnDsl as _;
 use diesel::QueryDsl as _;
 use diesel_async::RunQueryDsl as _;
 use serde::Deserialize;
@@ -66,22 +66,26 @@ impl Scenario {
         use database::tables::scenario_timetable;
         use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
-        use diesel::dsl::count;
-        use diesel::expression_methods::AggregateExpressionMethods as _;
 
-        scenario_timetable::table
-            .inner_join(
-                timetable_inheritance::table
-                    .on(timetable_inheritance::outer_timetable_id
-                        .eq(scenario_timetable::timetable_id)),
-            )
-            .inner_join(
-                train_schedule::table
-                    .on(train_schedule::timetable_id.eq(timetable_inheritance::inner_timetable_id)),
-            )
+        let scenario_timetable_ids = scenario_timetable::table
             .filter(scenario_timetable::scenario_id.eq(self.id))
-            .select(count(train_schedule::id).aggregate_distinct())
-            .first(conn.write().await.deref_mut())
+            .select(scenario_timetable::timetable_id);
+
+        train_schedule::table
+            .filter(
+                train_schedule::timetable_id
+                    .eq_any(scenario_timetable_ids)
+                    .or(train_schedule::timetable_id.eq_any(
+                        timetable_inheritance::table
+                            .filter(
+                                timetable_inheritance::outer_timetable_id
+                                    .eq_any(scenario_timetable_ids),
+                            )
+                            .select(timetable_inheritance::inner_timetable_id),
+                    )),
+            )
+            .count()
+            .get_result(conn.write().await.deref_mut())
             .await
             .map_err(Into::into)
     }
