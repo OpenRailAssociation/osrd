@@ -18974,13 +18974,24 @@ components:
               $ref: '#/components/schemas/InnerTimetable'
     TimetableResult:
       type: object
-      description: Creation result for a Timetable
+      description: A timetable with its data
       required:
       - timetable_id
       - timetable_type
       - is_train_schedule_set
+      - description
+      - published
       properties:
+        catalog_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
         is_train_schedule_set:
+          type: boolean
+        published:
           type: boolean
         timetable_id:
           type: integer
