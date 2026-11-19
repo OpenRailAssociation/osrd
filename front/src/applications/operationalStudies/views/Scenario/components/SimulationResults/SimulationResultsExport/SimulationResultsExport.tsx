@@ -10,7 +10,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type {
   CorePathfindingResultSuccess,
-  RollingStockWithLiveries,
+  LightRollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import SimulationReportSheet from 'modules/SimulationReportSheet';
@@ -24,7 +24,7 @@ const exportTrainPDF = async (
   scenarioData: { name: string; infraName: string },
   train: Train,
   simulation: SimulationResponseSuccess,
-  rollingStock: RollingStockWithLiveries,
+  rollingStock: LightRollingStockWithLiveries,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   t: TFunction<'stdcm'>,
   mapCanvas?: string
@@ -68,7 +68,7 @@ type SimulationResultsExportProps = {
   train: Train;
   simulation: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
-  rollingStock: RollingStockWithLiveries;
+  rollingStock: LightRollingStockWithLiveries;
   mapCanvas?: string;
 };
 

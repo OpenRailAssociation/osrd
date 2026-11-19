@@ -2,14 +2,14 @@ import type { Style } from '@react-pdf/types';
 
 import type { StdcmStopTypes } from 'applications/stdcm/types';
 import type {
-  RollingStockWithLiveries,
+  LightRollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import type { Duration } from 'utils/duration';
 
 export type SimulationSheetData = {
   trainName?: string;
-  rollingStock: RollingStockWithLiveries;
+  rollingStock: LightRollingStockWithLiveries;
   speedLimitByTag?: string | null;
   departure_time: string;
   creationDate: Date;

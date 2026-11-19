@@ -1,6 +1,4 @@
-import { compact, uniq } from 'lodash';
-
-import type { RollingStock } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 
 /**
  * Return the power restriction codes of the rolling stock by mode
@@ -8,17 +6,17 @@ import type { RollingStock } from 'common/api/osrdEditoastApi';
  * ex: { "1500V": ["C1US", "C2US"], "25000V": ["M1US"], "thermal": []}
  */
 export const getRollingStockPowerRestrictionsByMode = (
-  rollingStockModes: RollingStock['effort_curves']['modes']
+  rollingStockModes: LightRollingStock['effort_curves']['modes']
 ): { [mode: string]: string[] } => {
   const curvesModesKey = Object.keys(rollingStockModes);
 
   return curvesModesKey.reduce((result, mode) => {
-    const powerCodes = rollingStockModes[mode].curves.map(
-      (curve) => curve.cond.power_restriction_code
-    );
+    const powerCodes = rollingStockModes[mode].power_restriction_codes;
+    if (!powerCodes) return result;
+
     return {
       ...result,
-      [mode]: compact(uniq(powerCodes)),
+      [mode]: powerCodes,
     };
   }, {});
 };

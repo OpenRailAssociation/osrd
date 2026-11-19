@@ -4,8 +4,8 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   CorePathfindingResultSuccess,
+  LightRollingStock,
   ReceptionSignal,
-  RollingStock,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import useStartTimeWrappedWarning from 'modules/trainSchedule/hooks/useStartTimeWrappedWarning';
@@ -45,7 +45,7 @@ type TimeStopsTableWrapperProps = {
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
   voltages?: PathPropertiesFormatted['voltages'];
   isSimulationDataLoading?: boolean;
-  rollingStock?: RollingStock;
+  rollingStock?: LightRollingStock;
 };
 
 const TimeStopsTableWrapper = ({

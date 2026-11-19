@@ -1,4 +1,4 @@
-import type { RollingStock } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
@@ -29,7 +29,7 @@ const getInvalidZoneBoundaries = (
 export const getPowerRestrictionsWarnings = (
   powerRestrictionRanges: RangedValue[],
   voltageRanges: RangedValue[],
-  rollingStockModes: RollingStock['effort_curves']['modes']
+  rollingStockModes: LightRollingStock['effort_curves']['modes']
 ): PowerRestrictionWarnings => {
   const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStockModes);
   const warnings: PowerRestrictionWarnings = {

@@ -22,7 +22,6 @@ type RTKQueryRejectedAction = PayloadAction<
  * Add an endpoint name here when a 403 is expected and handled locally.
  */
 const ENDPOINTS_SKIP_403_REDIRECT = new Set<EditoastEndpointName>([
-  'getRollingStockNameByRollingStockName',
   'getTrainSchedulesByIdPath',
   'postAuthzGrants',
 ]);
