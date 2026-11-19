@@ -203,6 +203,7 @@ fn service_router() -> server::router::DocumentedRouter {
                     .nests("/{id}", |path| {
                         path.route("/", get!(timetable::get_by_id))
                             .route("/", delete!(timetable::delete))
+                            .route("/", patch!(timetable::patch))
                             .route(
                                 "/train_schedule_sets",
                                 get!(timetable::get_train_schedule_sets_from_timetable),
@@ -231,7 +232,6 @@ fn service_router() -> server::router::DocumentedRouter {
                                 path.route("/", post!(timetable::linkings::create))
                             })
                     })
-                    .route("/{id}", patch!(timetable::patch))
             })
             //
             // train schedule exception

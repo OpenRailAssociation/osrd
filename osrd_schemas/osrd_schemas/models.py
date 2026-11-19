@@ -4378,7 +4378,10 @@ class TimetablePatchForm(BaseModel):
     The type of a timetable cannot be changed after its creation
     """
 
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr | None = None
     name: StrictStr | None = None
+    published: StrictBool | None = None
 
 
 class TimetableRange(BaseModel):
