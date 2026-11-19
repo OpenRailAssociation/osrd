@@ -87,7 +87,7 @@ export type LightDestinationDetailsData = {
 export type ViaSearchText = 'mid_west' | 'mid_east' | 'nS';
 
 export type ViaStopTypes = {
-  PASSAGE_TIME: string;
+  WAYPOINT: string;
   SERVICE_STOP: string;
   DRIVER_SWITCH: string;
   BACKTRACK: string;

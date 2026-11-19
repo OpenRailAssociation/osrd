@@ -255,7 +255,7 @@ export const stdcmConfSlice = createSlice({
       // Index takes count of the origin in the array
       state.stdcmPathSteps = addElementAtIndex(state.stdcmPathSteps, action.payload, {
         key: uuidV4(),
-        stopType: StdcmStopTypes.PASSAGE_TIME,
+        stopType: StdcmStopTypes.WAYPOINT,
         isVia: true,
         consistChange: undefined,
       });

@@ -22,11 +22,7 @@ const StdcmStopType = ({ stopTypes, updatePathStepStopType }: StdcmStopTypeProps
           updatePathStepStopType(e);
         }
       }}
-      options={[
-        StdcmStopTypes.PASSAGE_TIME,
-        StdcmStopTypes.DRIVER_SWITCH,
-        StdcmStopTypes.SERVICE_STOP,
-      ]}
+      options={[StdcmStopTypes.WAYPOINT, StdcmStopTypes.DRIVER_SWITCH, StdcmStopTypes.SERVICE_STOP]}
       getOptionLabel={(option) => t(`trainPath.stopType.${option}`)}
       getOptionValue={(option) => option}
       narrow

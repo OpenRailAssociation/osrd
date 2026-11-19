@@ -164,7 +164,7 @@ export const checkStdcmConf = (
     let duration: number | undefined;
     if (step.isVia) {
       const { stopFor } = step;
-      if (step.stopType !== StdcmStopTypes.PASSAGE_TIME && stopFor !== undefined) {
+      if (step.stopType !== StdcmStopTypes.WAYPOINT && stopFor !== undefined) {
         duration = stopFor.ms;
       }
     } else {

@@ -292,7 +292,7 @@ const StdcmVias = ({
                 stopTypes={pathStep.stopType}
                 updatePathStepStopType={(newStopType) => updateStopType(newStopType, pathStep)}
               />
-              {pathStep.stopType !== StdcmStopTypes.PASSAGE_TIME && (
+              {pathStep.stopType !== StdcmStopTypes.WAYPOINT && (
                 <StopDurationInput pathStep={pathStep} />
               )}
             </StdcmCard>

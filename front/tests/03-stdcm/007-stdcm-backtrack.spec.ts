@@ -82,7 +82,7 @@ test.describe(
           expectedChValue: DEFAULT_DETAILS.chValue,
           expectAutofilledCh: true,
           selectedSuggestionText: BACKTRACK_DETAILS.via,
-          defaultViaType: StdcmStopTypes.PASSAGE_TIME,
+          defaultViaType: StdcmStopTypes.WAYPOINT,
           stopType: StdcmStopTypes.SERVICE_STOP,
           stopTime: VIA_STOP_TIMES.serviceStop.input,
         });

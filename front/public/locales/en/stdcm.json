@@ -230,8 +230,8 @@
           "consistChange": "a consist change",
           "driverSwitch": "a driver switch",
           "overtake": "an overtake",
-          "passageTime": "passage time",
-          "serviceStop": "a service stop"
+          "serviceStop": "a service stop",
+          "waypoint": "waypoint"
         },
         "successMessage": "Request <requestNumber/> received by GESICO",
         "toleranceAfter": "Future tolerance",
@@ -347,8 +347,8 @@
       "consistChange": "consist change",
       "driverSwitch": "driver switch",
       "overtake": "overtake",
-      "passageTime": "passage time",
-      "serviceStop": "service stop"
+      "serviceStop": "service stop",
+      "waypoint": "waypoint"
     },
     "time": "Time",
     "tolerance": "Tolerance",

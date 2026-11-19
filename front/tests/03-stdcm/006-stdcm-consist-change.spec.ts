@@ -86,7 +86,7 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
         expectedChValue: DEFAULT_DETAILS.chValue,
         expectAutofilledCh: true,
         selectedSuggestionText: VIA_SUGGESTIONS[0],
-        defaultViaType: StdcmStopTypes.PASSAGE_TIME,
+        defaultViaType: StdcmStopTypes.WAYPOINT,
         stopType: StdcmStopTypes.SERVICE_STOP,
         stopTime: CONSIST_CHANGE_VIA_STOP_TIME,
       });
@@ -108,7 +108,7 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
         expectedChValue: DEFAULT_DETAILS.chValue,
         expectAutofilledCh: true,
         selectedSuggestionText: VIA_SUGGESTIONS[1],
-        defaultViaType: StdcmStopTypes.PASSAGE_TIME,
+        defaultViaType: StdcmStopTypes.WAYPOINT,
         stopType: StdcmStopTypes.SERVICE_STOP,
         stopTime: CONSIST_CHANGE_VIA_STOP_TIME,
       });
@@ -128,7 +128,7 @@ test.describe('STDCM Consist Change', { tag: ['@stdcm', '@stdcm-consist-change']
         CONSIST_CHANGE_UPDATED_PREFILL
       );
 
-      await viaSection.setViaStopType(2, StdcmStopTypes.PASSAGE_TIME);
+      await viaSection.setViaStopType(2, StdcmStopTypes.WAYPOINT);
       await consistChangeSection.verifyConsistChangeCardHidden(2);
       await consistChangeSection.verifyEditConsistButtonHidden(2);
 

@@ -159,7 +159,7 @@ class ViaSection extends STDCMPage {
       expectedChValue,
       expectAutofilledCh,
       selectedSuggestionText,
-      defaultViaType: stopTypes.PASSAGE_TIME,
+      defaultViaType: stopTypes.WAYPOINT,
     });
 
     switch (ciSearchText) {
