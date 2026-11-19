@@ -56,7 +56,7 @@ const InfraSelectorModalBodyStandard = ({
   // Get the user privileges for infras
   const { refresh: userPrivilegesRefresh, data: userPrivilegesByInfraId } = useRefreshableAsyncMemo(
     async (controller) => {
-      const data = await getUserPrivileges({ infra: infraIdsList }, controller.signal);
+      const data = await getUserPrivileges({ infra: infraIdsList }, { signal: controller.signal });
       return data.infra || {};
     },
     [getUserPrivileges, infraIdsList]

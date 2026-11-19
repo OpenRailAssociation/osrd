@@ -78,7 +78,10 @@ const ProjectView = () => {
   // Get the user privileges for the project
   const { refresh: userPrivilegesrefresh, data: userPrivileges } = useRefreshableAsyncMemo(
     async (controller) => {
-      const data = await getUserPrivileges({ project: [projectId!] }, controller.signal);
+      const data = await getUserPrivileges(
+        { project: [projectId!] },
+        { signal: controller.signal }
+      );
       return data.project || {};
     },
     [getUserPrivileges, projectId]
