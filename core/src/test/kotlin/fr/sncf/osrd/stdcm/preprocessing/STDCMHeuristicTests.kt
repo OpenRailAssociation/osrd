@@ -167,6 +167,7 @@ class STDCMHeuristicTests {
                     locations = listOf(BlockLocation(blocks[1], Offset(100.meters))),
                     duration = null,
                     inputStepIndex = 1,
+                    stepTypes = setOf(StepType.INPUT_STOP),
                 ),
             )
 

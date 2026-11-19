@@ -261,7 +261,13 @@ class FullSTDCMTests {
             .setInfra(infra)
             .setStartTime(0.0)
             .setStartLocations(start.blockLocations)
-            .addStep(ExplorerStep(stop.blockLocations, 5_000.0, true, inputStepIndex = 1))
+            .addStep(
+                ExplorerStep(
+                    locations = stop.blockLocations,
+                    duration = 5_000.0,
+                    inputStepIndex = 1,
+                ),
+            )
             .setEndLocations(
                 end.blockLocations,
                 PlannedTimingData(10_000.seconds, 0.seconds, 0.seconds),
@@ -296,7 +302,13 @@ class FullSTDCMTests {
                 .setInfra(infra)
                 .setStartTime(0.0)
                 .setStartLocations(start.blockLocations)
-                .addStep(ExplorerStep(stop.blockLocations, 5_000.0, true, inputStepIndex = 1))
+                .addStep(
+                    ExplorerStep(
+                        locations = stop.blockLocations,
+                        duration = 5_000.0,
+                        inputStepIndex = 1,
+                    ),
+                )
                 .setEndLocations(end.blockLocations)
                 .setBlockAvailability(makeBlockAvailability(requirements))
                 .setMaxRunTime(Double.POSITIVE_INFINITY)
