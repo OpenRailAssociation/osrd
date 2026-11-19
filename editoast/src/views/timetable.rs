@@ -200,7 +200,7 @@ impl TimetableForm {
     tag = "timetable",
     request_body = TimetableForm,
     responses(
-        (status = 201, description = "Timetable with train schedule ids", body = TimetableResult),
+        (status = 201, description = "The created timetable", body = TimetableResult),
     ),
 )]
 pub(in crate::views) async fn post(
