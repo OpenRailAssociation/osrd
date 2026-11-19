@@ -100,14 +100,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['authz'],
       }),
-      postAuthzUserInfo: build.query<PostAuthzUserInfoApiResponse, PostAuthzUserInfoApiArg>({
-        query: (queryArg) => ({
-          url: `/authz/user/info`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        providesTags: ['authz'],
-      }),
       getAuthzUsers: build.query<GetAuthzUsersApiResponse, GetAuthzUsersApiArg>({
         query: () => ({ url: `/authz/users` }),
         providesTags: ['authz'],
@@ -119,6 +111,14 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['authz'],
+      }),
+      postAuthzUsersInfo: build.query<PostAuthzUsersInfoApiResponse, PostAuthzUsersInfoApiArg>({
+        query: (queryArg) => ({
+          url: `/authz/users/info`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['authz'],
       }),
       deleteAuthzUsersByUserId: build.mutation<
         DeleteAuthzUsersByUserIdApiResponse,
@@ -1809,23 +1809,6 @@ export type PostAuthzMePrivilegesApiArg = {
     [key: string]: number[];
   };
 };
-export type PostAuthzUserInfoApiResponse = /** status 200 Get information on a list of users */ {
-  groups: {
-    id: number;
-    name: string;
-  }[];
-  id: number;
-  identities: string[];
-  name: string;
-  roles: Role[];
-}[];
-export type PostAuthzUserInfoApiArg = {
-  /** A list of user IDs and identities to get information on */
-  body: {
-    identities?: string[];
-    ids?: number[];
-  };
-};
 export type GetAuthzUsersApiResponse = /** status 200 List all the users */ {
   direct_roles: Role[];
   effective_roles: Role[];
@@ -1855,6 +1838,23 @@ export type PostAuthzUsersApiArg = {
     identities: string[];
     name: string;
     roles: Role[];
+  };
+};
+export type PostAuthzUsersInfoApiResponse = /** status 200 Get information on a list of users */ {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+}[];
+export type PostAuthzUsersInfoApiArg = {
+  /** A list of user IDs and identities to get information on */
+  body: {
+    identities?: string[];
+    ids?: number[];
   };
 };
 export type DeleteAuthzUsersByUserIdApiResponse = unknown;

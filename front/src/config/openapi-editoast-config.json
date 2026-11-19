@@ -10,7 +10,7 @@
   "endpointOverrides": [
     {
       "pattern": [
-        "postAuthzUserInfo",
+        "postAuthzUsersInfo",
         "postWorkerLoad",
         "postInfraByInfraIdMatchOperationalPoints",
         "postScenariosByScenarioIdMatchMacroNodes",

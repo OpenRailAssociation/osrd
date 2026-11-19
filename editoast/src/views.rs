@@ -101,12 +101,10 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/grants", post!(authz::user_grants))
                             .route("/privileges", post!(authz::user_privileges))
                     })
-                    .nests("/user", |path| {
-                        path.route("/info", post!(authz::users_info))
-                    })
                     .nests("/users", |path| {
                         path.route("/", post!(authz::create_user))
                             .route("/", get!(authz::list_users))
+                            .route("/info", post!(authz::users_info))
                             .route("/{user_id}", delete!(authz::delete_user))
                     })
                     .nests("/groups", |path| {

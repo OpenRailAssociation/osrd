@@ -31,7 +31,7 @@ function useAuth() {
 
   const user = osrdEditoastApi.endpoints.getAuthzMe.useQuery(isUserLogged ? undefined : skipToken);
 
-  const [fetchFullUser] = osrdEditoastApi.endpoints.postAuthzUserInfo.useLazyQuery();
+  const [fetchFullUser] = osrdEditoastApi.endpoints.postAuthzUsersInfo.useLazyQuery();
 
   useEffect(() => {
     if (!isUserLogged && !isAuthenticateLoading) {
