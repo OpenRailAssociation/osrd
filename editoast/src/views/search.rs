@@ -859,13 +859,20 @@ pub(super) struct SearchResultItemScenario {
     #[search(sql = "infra.name")]
     infra_name: String,
     #[search(sql = r#"(
-        SELECT COUNT(DISTINCT trains.id)
+        SELECT COUNT(*)
         FROM train_schedule AS trains
-        INNER JOIN timetable_inheritance AS inheritance
-            ON trains.timetable_id = inheritance.inner_timetable_id
-        INNER JOIN scenario_timetable AS scenario_tt
-            ON scenario_tt.timetable_id = inheritance.outer_timetable_id
-        WHERE scenario_tt.scenario_id = scenario.id
+        WHERE trains.timetable_id IN (
+            SELECT scenario_timetable.timetable_id
+            FROM scenario_timetable
+            WHERE scenario_timetable.scenario_id = scenario.id
+        )
+        OR trains.timetable_id IN (
+            SELECT timetable_inheritance.inner_timetable_id
+            FROM timetable_inheritance
+            INNER JOIN scenario_timetable AS scenario_tt
+            ON scenario_tt.timetable_id = timetable_inheritance.outer_timetable_id
+            WHERE scenario_tt.scenario_id = scenario.id
+        )
         )"#)]
     train_schedules_count: u64,
     #[search(sql = "scenario.description")]
@@ -1089,6 +1096,9 @@ pub mod tests {
             .expect("Failed to link scenario to timetable");
         create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
 
+        // Add a train directly in the timetable of the scenario
+        create_simple_paced_train(&mut pool.get_ok(), fixtures.timetable.id).await;
+
         let response: Vec<SearchResultItemScenario> = app
             .post("/search")
             .json(&json!({
@@ -1101,7 +1111,7 @@ pub mod tests {
 
         assert_eq!(response.len(), 1);
         assert_eq!(response[0].id, fixtures.scenario.id as u64);
-        assert_eq!(response[0].train_schedules_count, 2);
+        assert_eq!(response[0].train_schedules_count, 3);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
