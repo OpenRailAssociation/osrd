@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockLocation
@@ -20,6 +21,41 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class InfraExplorerTests {
+
+    @Test
+    fun testForcedStopAfterDestinationOnSameBlock() {
+        /*
+        a --(destination)--(forced stop)--> b
+         */
+        val infra = DummyInfra()
+        val block = infra.addBlock("a", "b")
+        val destination = BlockLocation(block, Offset(50.meters))
+        val explorer =
+            initInfraExplorers(
+                    infra,
+                    infra,
+                    TestTrains.REALISTIC_FAST_TRAIN.length.meters,
+                    BlockLocation(block, Offset(0.meters)),
+                    listOf(
+                        ExplorerStep(
+                            listOf(BlockLocation(block, Offset(0.meters))),
+                            inputStepIndex = 0,
+                        ),
+                        ExplorerStep(listOf(destination), 0.0, inputStepIndex = 1),
+                    ),
+                    listOf(
+                        ExplorerStep(
+                            listOf(BlockLocation(block, Offset(80.meters))),
+                            60.0,
+                            stepTypes = setOf(StepType.INFRA_FORCED_STOP),
+                        ),
+                    ),
+                )
+                .single()
+        assertTrue { explorer.isPathComplete }
+        assertEquals(Offset(50.meters), explorer.getLookaheadEndOffset())
+        assertEquals(destination, explorer.getStepTracker().getSeenSteps().last().location)
+    }
 
     @Test
     fun testSingleEdge() {
