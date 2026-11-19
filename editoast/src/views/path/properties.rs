@@ -19,22 +19,50 @@ use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
+use derive_more::From;
+use editoast_derive::ViewError;
 use geos::geojson::Geometry;
 use serde::Deserialize;
 use serde::Serialize;
 use std::hash::Hash;
+use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::authentication;
-use crate::error::Result;
-use crate::views::AuthorizationError;
-use crate::views::path::retrieve_infra_version;
+use crate::views::AuthorizerError;
+use crate::views::CoreError;
+use crate::views::DatabaseError;
+use crate::views::infra::InfraNotFound;
+use models::Infra;
+use models::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
 pub struct PathPropertiesInput {
     /// List of track sections
     pub track_section_ranges: Vec<TrackRange>,
+}
+
+#[derive(Debug, Error, ViewError, From)]
+pub enum PathPropertiesError {
+    #[error(transparent)]
+    InfraNotFound(
+        #[from]
+        #[view_error]
+        InfraNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    Authorizer(
+        #[from]
+        #[view_error]
+        AuthorizerError,
+    ),
+    #[error(transparent)]
+    #[from(core_client::Error)]
+    Core(#[view_error] CoreError),
 }
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
@@ -86,6 +114,7 @@ impl From<core_client::path_properties::PathPropertiesResponse> for PathProperti
     ),
     responses(
         (status = 200, description = "Path properties", body = PathProperties),
+        PathPropertiesError,
     ),
 )]
 pub(in crate::views) async fn post(
@@ -99,16 +128,20 @@ pub(in crate::views) async fn post(
     Extension(authn_state): Extension<authentication::State>,
     Path(infra_id): Path<i64>,
     Json(path_properties_input): Json<PathPropertiesInput>,
-) -> Result<Json<PathProperties>> {
+) -> Result<Json<PathProperties>, PathPropertiesError> {
     // Extract information from parameters
     let conn = &mut db_pool.get().await?;
-    let infra_version = retrieve_infra_version(conn, infra_id).await?;
+    let infra_version = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
+        PathPropertiesError::InfraNotFound(InfraNotFound { infra_id })
+    })
+    .await?
+    .version;
 
     v2::infra_privilege_check(
         authz::Infra(infra_id),
         authz::InfraPrivilege::CanRestrictedRead,
     )
-    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .run::<AuthorizerError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     use core_task::Task as _;

@@ -555,6 +555,11 @@ enum DatabaseError {
 }
 
 #[derive(Debug, thiserror::Error, ViewError)]
+#[error("Core error: {0}")]
+#[view_error(status = INTERNAL_SERVER_ERROR)]
+struct CoreError(#[from] core_client::Error);
+
+#[derive(Debug, thiserror::Error, ViewError)]
 #[error("openfga error: {0}")]
 #[view_error(status = INTERNAL_SERVER_ERROR, path = authorization::OpenFga)]
 struct OpenFgaError(#[from] ::authz::authorizers::Error);
@@ -563,6 +568,17 @@ impl From<::authz::v2::OpenFgaError> for OpenFgaError {
     fn from(error: ::authz::v2::OpenFgaError) -> Self {
         Self(error.into())
     }
+}
+
+#[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
+enum AuthorizerError {
+    #[error(transparent)]
+    #[from(::authz::authorizers::Error, fga::client::Error)]
+    OpenFgaError(#[view_error] OpenFgaError),
+    #[error("Forbidden (403) — user has insufficient privileges")]
+    #[view_error(status = FORBIDDEN)]
+    #[from(::authz::v2::Check)]
+    Forbidden,
 }
 
 /// Convert an Infallible error into an OpenFgaError.

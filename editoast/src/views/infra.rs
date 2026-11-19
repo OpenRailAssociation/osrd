@@ -24,6 +24,7 @@ use common::geometry::GeoJsonPoint;
 use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use geos::Geom as _;
 use itertools::Itertools as _;
 use models::prelude::*;
@@ -61,6 +62,13 @@ use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointPart;
 use schemas::infra::builtin_node_types_list;
 use schemas::train_schedule::OperationalPointReference;
+
+#[derive(Debug, Error, ViewError)]
+#[error("Infra '{infra_id}', could not be found")]
+#[view_error(status = NOT_FOUND, context, path = infra::not_found)]
+pub(in crate::views) struct InfraNotFound {
+    pub infra_id: i64,
+}
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra")]

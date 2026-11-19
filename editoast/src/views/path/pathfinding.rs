@@ -21,6 +21,7 @@ use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
+use editoast_derive::EditoastError;
 use educe::Educe;
 use itertools::Itertools as _;
 use ordered_float::OrderedFloat;
@@ -33,6 +34,7 @@ use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
+use thiserror::Error;
 use tracing::debug;
 use tracing::info;
 use unit_system::units;
@@ -42,11 +44,21 @@ use crate::AppState;
 use crate::authentication;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use crate::views::path::PathfindingError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::PhysicsConsistParameters;
 use models::Infra;
 use models::prelude::*;
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "pathfinding")]
+pub enum PathfindingError {
+    #[error("Infra '{infra_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    InfraNotFound { infra_id: i64 },
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] models::Error),
+}
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
