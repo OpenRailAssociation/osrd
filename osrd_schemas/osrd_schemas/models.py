@@ -3025,6 +3025,7 @@ class LightElectricalProfileSet(BaseModel):
 
 class LightModeEffortCurves(BaseModel):
     is_electric: StrictBool
+    power_restriction_codes: list[StrictStr]
 
 
 class LinkingOccurrenceIdUnique(BaseModel):

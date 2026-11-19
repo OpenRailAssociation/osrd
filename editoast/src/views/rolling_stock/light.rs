@@ -290,6 +290,7 @@ impl From<RollingStock> for LightRollingStock {
 #[cfg_attr(test, derive(Deserialize))]
 struct LightModeEffortCurves {
     is_electric: bool,
+    power_restriction_codes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
@@ -322,6 +323,7 @@ impl From<ModeEffortCurves> for LightModeEffortCurves {
     fn from(value: ModeEffortCurves) -> Self {
         Self {
             is_electric: value.is_electric,
+            power_restriction_codes: value.get_power_restriction_codes(),
         }
     }
 }

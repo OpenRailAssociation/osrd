@@ -4,7 +4,7 @@ import { preparePathPropertiesData } from 'applications/operationalStudies/utils
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import type {
   PathProperties,
-  RollingStockWithLiveries,
+  LightRollingStockWithLiveries,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
@@ -14,7 +14,7 @@ const computeChartData = (
   stdcmResponse: StdcmSuccessResponse,
   stdcmTrainResult: Omit<TrainScheduleResponse, 'train_schedule_set_id'>,
   t: TFunction,
-  rollingStock: RollingStockWithLiveries,
+  rollingStock: LightRollingStockWithLiveries,
   pathProperties: PathProperties
 ): SpeedDistanceDiagramData => {
   const { simulation, pathfinding_result: pathfindingResult } = stdcmResponse;

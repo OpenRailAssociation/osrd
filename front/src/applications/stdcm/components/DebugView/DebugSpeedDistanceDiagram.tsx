@@ -11,7 +11,7 @@ import {
   transformBoundariesDataToPositionDataArray,
   transformElectricalBoundariesToRanges,
 } from 'applications/operationalStudies/utils';
-import type { RollingStockWithLiveries, SimDebugData } from 'common/api/osrdEditoastApi';
+import type { LightRollingStockWithLiveries, SimDebugData } from 'common/api/osrdEditoastApi';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 
 const DebugSpeedDistanceDiagram = ({ simData }: { simData: SimDebugData }) => {
@@ -51,7 +51,7 @@ const DebugSpeedDistanceDiagram = ({ simData }: { simData: SimDebugData }) => {
     <SpeedDistanceDiagramWrapper
       trainScheduleSimulation={simData.sim_output}
       pathProperties={pathProperties}
-      rollingStock={{ length: 0 } as RollingStockWithLiveries}
+      rollingStock={{ length: 0 } as LightRollingStockWithLiveries}
       initialLayersDisplay={{ speedLimits: true }}
       height={height}
       setHeight={setHeight}

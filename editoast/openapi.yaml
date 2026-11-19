@@ -13943,9 +13943,14 @@ components:
       type: object
       required:
       - is_electric
+      - power_restriction_codes
       properties:
         is_electric:
           type: boolean
+        power_restriction_codes:
+          type: array
+          items:
+            type: string
     LightRollingStock:
       type: object
       required:
