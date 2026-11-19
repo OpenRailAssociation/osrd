@@ -207,6 +207,7 @@
         "maxSpeed": "vitesse max.",
         "newRailManagerRequest": "Nouvelle demande GESICO",
         "noCategory": "Sans catégorie",
+        "notCSCode": "Aucun code CS",
         "other": "Autres parcours",
         "pathType": "Type de parcours",
         "pdf": "PDF",

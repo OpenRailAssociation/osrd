@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 
-import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-project/ui-core';
-import { Download, CheckCircle } from '@osrd-project/ui-icons';
+import {
+  Button,
+  Checkbox,
+  ComboBox,
+  DatePicker,
+  Input,
+  Select,
+  TextArea,
+} from '@osrd-project/ui-core';
+import { Download, CheckCircle, Info } from '@osrd-project/ui-icons';
 import { Trans, useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -20,6 +28,7 @@ import {
   type SimulationReport,
   type SendLastMinuteRequestResponse,
   type SimulatedStep,
+  type CsCode,
 } from 'common/api/osrdRailwayManagerApi';
 import { useInfraID } from 'common/osrdContext';
 import {
@@ -130,13 +139,15 @@ const SendToRailwayManagerModal = ({
   const { data: userGroups } = osrdEditoastApi.endpoints.getAuthzMeGroups.useQuery();
   const railwayCompanyName = userGroups?.[0]?.name;
 
+  const { data: csCodes } = osrdRailwayManagerApi.endpoints.getCsCodes.useQuery();
+  let csCodeSuggestions = useMemo(() => csCodes?.results ?? [], [csCodes?.results]);
+
   const DEFAULT_TRAIN_CATEGORY = { value: '', label: t('modal.noCategory') };
   const stdcmData = stdcmResults.results;
 
   const [pathType, setPathType] = useState<Option>();
   const [trainCategory, setTrainCategory] = useState<Option>(DEFAULT_TRAIN_CATEGORY);
   const [comment, setComment] = useState('');
-  const [csCode, setCsCode] = useState('');
   const [substituteTrain, setSubstituteTrain] = useState<SubstituteTrain>({
     trainName: '',
     date: stdcmData.departure_time,
@@ -150,7 +161,21 @@ const SendToRailwayManagerModal = ({
     linkedTrains.posteriorTrain?.trainName ?? ''
   );
   const [pathTypeError, setPathTypeError] = useState(false);
+
+  const FAKE_CS_CODES = [
+    { code: 'CS1', label: 'CS Code 1' },
+    { code: 'CS2', label: 'CS Code 2' },
+    { code: 'CS3', label: 'CS Code 3' },
+  ];
+  csCodeSuggestions = FAKE_CS_CODES;
+  const [csCode, setCsCode] = useState<CsCode | undefined>();
+  const [csCodeSearchQuery, setCsCodeSearchQuery] = useState('');
   const [csCodeError, setCsCodeError] = useState(false);
+  const filteredCsCodeSuggestions = useMemo(() => {
+    const input = csCodeSearchQuery.toLowerCase();
+    if (!input) return csCodeSuggestions;
+    return csCodeSuggestions.filter((s) => s.label.toLowerCase().includes(input));
+  }, [csCodeSuggestions, csCodeSearchQuery]);
 
   const { simulationPathSteps: steps } = stdcmData;
 
@@ -241,9 +266,8 @@ const SendToRailwayManagerModal = ({
     { value: 'B', label: 'B' },
   ];
 
-  const handleCsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value.toUpperCase();
-    setCsCode(input);
+  const handleCsChange = (codeCs?: CsCode) => {
+    setCsCode(codeCs);
   };
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -593,14 +617,23 @@ const SendToRailwayManagerModal = ({
               </div>
             </div>
             <div className={`cs-code ${csCodeError ? 'wiggle' : ''}`}>
-              <Input
-                id="cs-code"
-                value={csCode}
-                onChange={handleCsChange}
-                label={t('modal.csCode')}
-                required
-                maxLength={3}
-              />
+              <div className="cs-code-combobox">
+                <ComboBox
+                  id="cs-code"
+                  data-testid="cs-code"
+                  testIdPrefix="cs-code-suggestions"
+                  label={t('modal.csCode')}
+                  value={csCode}
+                  suggestions={filteredCsCodeSuggestions}
+                  onChange={setCsCodeSearchQuery} // Handle input change if needed
+                  getSuggestionLabel={(option) => option?.code}
+                  onSelectSuggestion={handleCsChange}
+                  resetSuggestions={() => setCsCodeSearchQuery('')}
+                />
+                <div className="cs-tooltip" title={csCode ? csCode.label : t('modal.notCSCode')}>
+                  <Info />
+                </div>
+              </div>
               <Input
                 id="train-to-be-substituted"
                 value={substituteTrain?.trainName}

@@ -240,6 +240,44 @@
 
       .cs-code {
         input:not(#train-to-be-substituted-date),
+        .cs-code-combobox {
+          display: flex;
+          gap: 8px;
+          justify-content: space-between;
+          .ui-feedback {
+            padding-right: 0;
+          }
+
+          .ui-combo-box {
+            width: 143px;
+          }
+        }
+
+        .cs-tooltip {
+          width: 48px;
+          height: 40px;
+          border: 1px solid rgba(148, 145, 142, 1);
+          border-radius: 4px;
+          background-color: rgba(255, 255, 255, 1);
+          justify-content: center;
+          margin-top: 37px;
+          margin-right: 13px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          span {
+            display: flex;
+            color: var(--primary60);
+          }
+
+          &:hover {
+            span {
+              color: var(--primary90);
+            }
+          }
+        }
+
         .ui-date-picker {
           width: 183px;
         }
