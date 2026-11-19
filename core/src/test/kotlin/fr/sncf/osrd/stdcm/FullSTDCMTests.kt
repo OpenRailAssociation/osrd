@@ -265,6 +265,7 @@ class FullSTDCMTests {
                 ExplorerStep(
                     locations = stop.blockLocations,
                     duration = 5_000.0,
+                    canBacktrack = true,
                     inputStepIndex = 1,
                 ),
             )
@@ -306,6 +307,7 @@ class FullSTDCMTests {
                     ExplorerStep(
                         locations = stop.blockLocations,
                         duration = 5_000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
