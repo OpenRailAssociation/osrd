@@ -30,6 +30,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
+import useFitViewportToInfra from 'modules/infra/useFitViewportToInfra';
 import useInfra from 'modules/infra/useInfra';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
@@ -80,6 +81,8 @@ const Editor = () => {
 
   const { updateMapSettings: updateMapSettingsAction, updateViewport: updateViewportAction } =
     useMapSettingsActions();
+
+  const fitViewportToInfra = useFitViewportToInfra();
 
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
@@ -318,6 +321,22 @@ const Editor = () => {
         };
         void selectObjectsAndFocus(selectedEntities);
       }
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  /**
+   * When the component mounts with an infra in the url
+   * => fit the viewport to the infra bounding box (the editor state is not persisted),
+   * unless the url already focuses the map (selection param or #map= hash)
+   */
+  useEffect(() => {
+    if (
+      !isNil(urlInfra) &&
+      !searchParams.has('selection') &&
+      !window.location.hash.startsWith('#map=')
+    ) {
+      void fitViewportToInfra(toInteger(urlInfra));
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
