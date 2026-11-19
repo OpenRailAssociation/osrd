@@ -630,6 +630,49 @@ class ForcedStopsTests {
         )
     }
 
+    @ParameterizedTest
+    @MethodSource("forcedOpStopOnInputWaypointParameters")
+    fun emptyTimetableWithForcedOpStopOnInputWaypoint(
+        startOffset: Double,
+        waypointOffset: Double?,
+        expectedStopPositions: List<Double>,
+    ) {
+        /*
+        a --> b
+           ^
+         forced
+          50m
+         */
+        val infra = DummyInfra()
+        val block = infra.addBlock("a", "b")
+        val builder =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(block, Offset(startOffset.meters))))
+                .addForcedOpStop(
+                    createForcedOpStopExplorerStep(BlockLocation(block, Offset(50.meters))),
+                )
+        if (waypointOffset != null)
+            builder.addStep(
+                ExplorerStep(
+                    setOf(BlockLocation(block, Offset(waypointOffset.meters))),
+                    inputStepIndex = 1,
+                ),
+            )
+        val res =
+            builder.setEndLocations(setOf(BlockLocation(block, Offset(100.meters)))).run()
+                as STDCMCompleteResult
+        assertEquals(expectedStopPositions, res.stopResults.map { it.position })
+    }
+
+    private fun forcedOpStopOnInputWaypointParameters() =
+        listOf(
+            // Forced stop on the origin: no stop expected
+            Arguments.of(50.0, null, listOf<Double>()),
+            // Forced stop on a waypoint: the train must stop there
+            Arguments.of(0.0, 50.0, listOf(50.0)),
+        )
+
     private fun createForcedOpStopExplorerStep(
         blockLocation: BlockLocation,
         stepTypes: Set<StepType> = setOf(StepType.INFRA_FORCED_STOP),
