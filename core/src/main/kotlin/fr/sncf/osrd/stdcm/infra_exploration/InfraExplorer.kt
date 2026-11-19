@@ -202,10 +202,9 @@ data class ExplorerStep(
         } else setOf(StepType.INPUT_WAYPOINT),
     val inputStepIndex: Int? = null,
 ) {
-    val stop: Boolean = !stepTypes.contains(StepType.INPUT_WAYPOINT)
+    val stop: Boolean = stepTypes.any { it.isStop }
 
     init {
-        if (stepTypes.contains(StepType.INPUT_WAYPOINT)) assert(stepTypes.size == 1)
         if (isInput()) assert(inputStepIndex != null)
     }
 

@@ -91,17 +91,19 @@ private constructor(
 
         for (step in filteredSteps) {
             val location = step.locations.single()
-            if (step.isInput() && step.inputStepIndex != currentInputStepIndex + 1) continue
-            if (step.isInput()) currentInputStepIndex++
-
             // If current and previous steps are at the same location, the steps might need to be
             // merged before being added back to the result.
             val isDuplicateLocation = res.lastOrNull()?.location == location
 
+            // When we are on the start of the path, ignore any non-input steps
+            if (currentInputStepIndex == 0 && isDuplicateLocation && !step.isInput()) continue
+            // Register input steps in the correct order
+            if (step.isInput() && step.inputStepIndex != currentInputStepIndex + 1) continue
             // Break if we're at a backtracking step AND the current step is not at the same
             // location as the last one.
             if (isBacktrackingStep && !isDuplicateLocation) break
 
+            if (step.isInput()) currentInputStepIndex++
             isBacktrackingStep =
                 isBacktrackingAtEnd && location.offset == blockRange.objectEnd && step.canBacktrack
             if (isBacktrackingStep) assert(step.stepTypes.contains(StepType.INPUT_STOP))
@@ -136,6 +138,9 @@ private constructor(
                 newStep = newStep.mergeLocatedStep(stepDuplicate)
             }
             res.add(newStep)
+
+            // Break when we have reached the destination, to ignore following steps
+            if (currentInputStepIndex == nInputSteps - 1) break
         }
 
         if (isBacktrackingAtEnd) {

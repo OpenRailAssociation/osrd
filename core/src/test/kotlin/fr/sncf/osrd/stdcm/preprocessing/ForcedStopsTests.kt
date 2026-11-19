@@ -12,6 +12,8 @@ import fr.sncf.osrd.stdcm.STDCMPathfindingBuilder
 import fr.sncf.osrd.stdcm.StopTests.Companion.checkStop
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_DURATION
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
+import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.train.TestTrains.VERY_SHORT_FAST_TRAIN
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DummyInfra
@@ -350,6 +352,92 @@ class ForcedStopsTests {
                 FORCED_OP_STOP_DURATION.seconds,
                 FORCED_OP_STOP_DURATION.seconds,
                 StepType.INFRA_OVERTAKE_STOP,
+            ),
+        )
+
+    @ParameterizedTest
+    @MethodSource("forcedOpStopsAndInputStep")
+    fun emptyTimetableWithForcedOpStopAndInputStep(
+        inputStepOffset: Double,
+        forcedOpStopType: StepType,
+        stepTypes: Set<StepType>,
+    ) {
+        val infra = DummyInfra()
+        val firstBlock = infra.addBlock("a", "b")
+        val secondBlock = infra.addBlock("b", "c")
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
+                .addStep(
+                    ExplorerStep(
+                        locations =
+                            setOf(BlockLocation(firstBlock, Offset(inputStepOffset.meters))),
+                        inputStepIndex = 1,
+                    ),
+                )
+                .addForcedOpStop(
+                    createForcedOpStopExplorerStep(
+                        BlockLocation(firstBlock, Offset(50.meters)),
+                        setOf(forcedOpStopType),
+                    ),
+                )
+                .setEndLocations(
+                    setOf(BlockLocation(secondBlock, Offset(100.meters))),
+                )
+                .run()!!
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        val resSuccess = res as STDCMCompleteResult
+        checkStop(
+            resSuccess,
+            listOf(
+                TrainStop(
+                    50.0,
+                    FORCED_OP_STOP_DURATION.seconds,
+                    SHORT_SLIP_STOP,
+                    stepTypes,
+                ),
+            ),
+        )
+    }
+
+    private fun forcedOpStopsAndInputStep() =
+        listOf(
+            // a --(input waypoint)--(forced stop)--> b --> c
+            Arguments.of(
+                10.0,
+                StepType.INFRA_FORCED_STOP,
+                setOf(StepType.INFRA_FORCED_STOP),
+            ),
+            // a --(input waypoint/forced stop)--> b --> c
+            Arguments.of(
+                50.0,
+                StepType.INFRA_FORCED_STOP,
+                setOf(StepType.INPUT_WAYPOINT, StepType.INFRA_FORCED_STOP),
+            ),
+            // a --(forced stop)--(input waypoint)--> b --> c
+            Arguments.of(
+                80.0,
+                StepType.INFRA_FORCED_STOP,
+                setOf(StepType.INFRA_FORCED_STOP),
+            ),
+            // a --(input waypoint)--(overtake)--> b --> c
+            Arguments.of(
+                10.0,
+                StepType.INFRA_OVERTAKE_STOP,
+                setOf(StepType.INFRA_OVERTAKE_STOP),
+            ),
+            // a --(input waypoint/overtake)--> b --> c
+            Arguments.of(
+                50.0,
+                StepType.INFRA_OVERTAKE_STOP,
+                setOf(StepType.INPUT_WAYPOINT, StepType.INFRA_OVERTAKE_STOP),
+            ),
+            // a --(overtake)--(input waypoint)--> b --> c
+            Arguments.of(
+                80.0,
+                StepType.INFRA_OVERTAKE_STOP,
+                setOf(StepType.INFRA_OVERTAKE_STOP),
             ),
         )
 

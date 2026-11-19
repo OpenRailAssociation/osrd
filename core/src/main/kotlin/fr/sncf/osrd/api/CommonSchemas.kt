@@ -139,13 +139,15 @@ enum class ForcedStopType {
 enum class StepType(
     // This is used when comparing/merging steps, the lowest number is the highest priority.
     val priority: Int,
+    val isStop: Boolean,
 ) {
-    INPUT_WAYPOINT(3), // via requested by the user
-    INPUT_STOP(0), // stop requested by the user
+    INPUT_WAYPOINT(3, false), // via requested by the user
+    INPUT_STOP(0, true), // stop requested by the user
     // The 2 following infra-stops behave the same (but tracking use-cases helps debug at least)
-    INFRA_FORCED_STOP(1), // infra location where stop is forced when passing-by
+    INFRA_FORCED_STOP(1, true), // infra location where stop is forced when passing-by
     INFRA_OVERTAKE_STOP(
         2,
+        true,
     ), // infra location used for overtake only, so stop is forced when passing-by
 }
 
