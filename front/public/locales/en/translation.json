@@ -930,6 +930,12 @@
     "requestedDeparture": "requested depart. time",
     "requestedTheoreticalMargin": "requested theoretical margin",
     "shortSlipDistance": "short slip distance",
+    "statusMessage": {
+      "marginNotMet": "Margin not met",
+      "scheduleNotMet": "Requested schedule not met",
+      "timeConstraintMet": "Time constraint met",
+      "unknown": "Unknown path step"
+    },
     "stopTime": "stopping time",
     "timeFromPreviousOp": "time from above waypoint",
     "totalTravelTime": "total travel time",
