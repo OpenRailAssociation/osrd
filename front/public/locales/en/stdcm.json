@@ -217,6 +217,7 @@
         "other": "Other paths",
         "pathType": "Path type",
         "pdf": "PDF",
+        "placeholderInfoCSCode": "You will find the description of the selected CS code",
         "posteriorTrain": "Next train",
         "referenceEngine": "reference engine",
         "requestedRoute": "REQUESTED ROUTE",
