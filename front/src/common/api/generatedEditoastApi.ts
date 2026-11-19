@@ -2695,8 +2695,7 @@ export type PostTemporarySpeedLimitGroupApiArg = {
     }[];
   };
 };
-export type PostTimetableApiResponse =
-  /** status 201 Timetable with train schedule ids */ TimetableResult;
+export type PostTimetableApiResponse = /** status 201 The created timetable */ TimetableResult;
 export type PostTimetableApiArg = {
   timetableForm: TimetableForm;
 };

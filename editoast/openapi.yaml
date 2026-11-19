@@ -6334,7 +6334,7 @@ paths:
         required: true
       responses:
         '201':
-          description: Timetable with train schedule ids
+          description: The created timetable
           content:
             application/json:
               schema:
