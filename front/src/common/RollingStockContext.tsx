@@ -12,7 +12,7 @@ type RollingStockContextValue = {
   rollingStocks: LightRollingStockWithLiveries[] | null;
 };
 
-const RollingStockContext = createContext<RollingStockContextValue | null>(null);
+export const RollingStockContext = createContext<RollingStockContextValue | null>(null);
 
 export const useRollingStockContext = (): RollingStockContextValue => {
   const context = useContext(RollingStockContext);

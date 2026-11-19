@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  RollingStockWithLiveries,
+  LightRollingStockWithLiveries,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 
@@ -21,7 +21,7 @@ export type SpeedDistanceDiagramWrapperProps = {
   selectedTrainSchedulePowerRestrictions?: LayerData<PowerRestrictionValues>[];
   pathProperties?: PathPropertiesFormatted;
   height: number;
-  rollingStock?: RollingStockWithLiveries;
+  rollingStock?: LightRollingStockWithLiveries;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
   fetchEtcsBrakingCurves?: () => Promise<void>;
   etcsBrakingCurves?: EtcsBrakingCurves;

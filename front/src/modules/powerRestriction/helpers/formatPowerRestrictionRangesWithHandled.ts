@@ -4,7 +4,7 @@ import { compact } from 'lodash';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   CorePathfindingResultSuccess,
-  RollingStock,
+  LightRollingStock,
   TrainSchedule,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
@@ -42,7 +42,7 @@ export const formatPowerRestrictionRanges = (
 export const convertPowerRestrictionsAndCheckCompatibility = (
   powerRestrictionRanges: LayerData<Omit<PowerRestrictionValues, 'handled'>>[],
   voltageRanges: RangedValue[],
-  rollingStockEffortCurves: RollingStock['effort_curves']['modes']
+  rollingStockEffortCurves: LightRollingStock['effort_curves']['modes']
 ): LayerData<PowerRestrictionValues>[] => {
   const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStockEffortCurves);
 
@@ -80,7 +80,7 @@ const formatPowerRestrictionRangesWithHandled = ({
   pathProperties,
 }: {
   selectedTrainSchedule: Pick<TrainScheduleResponse, 'path' | 'power_restrictions'>;
-  selectedTrainRollingStock?: RollingStock;
+  selectedTrainRollingStock?: LightRollingStock;
   pathfindingResult: CorePathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;
 }) => {

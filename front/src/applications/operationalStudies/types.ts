@@ -8,7 +8,6 @@ import type {
   SimulationResponse,
   SimulationResponseSuccess,
   MacroNodeForm,
-  RollingStockWithLiveries,
   TrainCategory,
   SearchResultItemStudy,
   StudyWithScenarios,
@@ -21,6 +20,7 @@ import type {
   PathfindingResult,
   TimetableType,
   CorePropertyGeometryProjection,
+  LightRollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { ProjectionWaypoint, PathWaypoint } from 'modules/simulationResult/types';
@@ -130,14 +130,14 @@ export type SimulationResults =
   | {
       isValid: false;
       train: Train;
-      rollingStock?: RollingStockWithLiveries;
+      rollingStock?: LightRollingStockWithLiveries;
       path?: PathfindingResult;
       pathProperties?: PathPropertiesFormatted;
     }
   | {
       isValid: true;
       train: Train;
-      rollingStock: RollingStockWithLiveries;
+      rollingStock: LightRollingStockWithLiveries;
       simulation: SimulationResponseSuccess;
       path: CorePathfindingResultSuccess;
       pathProperties: PathPropertiesFormatted;

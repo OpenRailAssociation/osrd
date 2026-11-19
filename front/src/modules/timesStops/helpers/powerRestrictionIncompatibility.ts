@@ -1,5 +1,5 @@
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type { PowerRestrictionItem, RollingStock } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, PowerRestrictionItem } from 'common/api/osrdEditoastApi';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { getPowerRestrictionsWarnings } from 'modules/timesStops/helpers/powerRestrictionWarnings';
 import type { Train } from 'reducers/osrdconf/types';
@@ -151,7 +151,7 @@ export const computePowerRestrictionWarnings = ({
   path: Train['path'];
   operationalPointsOnPath: PathPropertiesFormatted['operationalPoints'] | undefined;
   voltages: PathPropertiesFormatted['voltages'] | undefined;
-  rollingStock: RollingStock | undefined;
+  rollingStock: LightRollingStock | undefined;
 }): ComputePowerRestrictionWarningsResult => {
   const powerRestrictions: PowerRestrictionItem[] = buildPowerRestrictionsFromRows(rows);
   if (!voltages?.length || !rollingStock || !powerRestrictions.length) return EMPTY_RESULT;

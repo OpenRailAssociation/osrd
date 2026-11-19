@@ -9,12 +9,13 @@ import {
 } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { mockOsrdEditoastEndpoints } from 'common/api/__mocks__/osrdEditoastApi';
 import type {
+  LightRollingStockWithLiveries,
   PacedTrainException,
   PathfindingResult,
   PathProperties,
-  RollingStockWithLiveries,
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
+import { RollingStockContext } from 'common/RollingStockContext';
 
 import useSimulationResults from '../useSimulationResults';
 
@@ -32,12 +33,8 @@ const notFoundError = {
   data: { type: 'not_found', message: 'Not found', context: {} },
 };
 
-const {
-  getTrainPath,
-  getTrainSimulation,
-  getRollingStockNameByRollingStockName,
-  postInfraByInfraIdPathProperties,
-} = mockOsrdEditoastEndpoints;
+const { getTrainPath, getTrainSimulation, postInfraByInfraIdPathProperties } =
+  mockOsrdEditoastEndpoints;
 
 const { mockGetSelectedTrain, mockUseScenarioContext, mockUseSelectedTrainSchedule } = vi.hoisted(
   () => ({
@@ -92,7 +89,7 @@ describe.skip('useSimulationResults', () => {
   const rollingStock = {
     name: ROLLING_STOCK_NAME,
     effort_curves: { modes: {} },
-  } as RollingStockWithLiveries;
+  } as LightRollingStockWithLiveries;
 
   const trackSectionRanges = [
     { track_section: 'TS1', begin: 0, end: 1000, direction: 'START_TO_STOP' },
@@ -125,6 +122,10 @@ describe.skip('useSimulationResults', () => {
     ],
     operationalPoints: [],
     geometry: { type: 'LineString', coordinates: [] },
+    geomProjection: {
+      geom_offsets: [0, 900],
+      topo_offsets: [0, 1000],
+    },
   };
 
   // When simulation fails, electrical_profiles aren't passed
@@ -160,7 +161,18 @@ describe.skip('useSimulationResults', () => {
   const renderUseSimulationResults = () =>
     renderHookWithStore(() => useSimulationResults(), {
       wrapper: ({ children }) =>
-        createElement(TimetableContext.Provider, { value: timetableContext }, children),
+        createElement(
+          RollingStockContext.Provider,
+          {
+            value: {
+              rollingStockMap: new Map<string, LightRollingStockWithLiveries>([
+                [rollingStock.name, rollingStock],
+              ]),
+              rollingStocks: [rollingStock],
+            },
+          },
+          createElement(TimetableContext.Provider, { value: timetableContext }, children)
+        ),
     });
 
   const buildPacedTrainWithCustomExceptions = (exceptions: PacedTrainException[]) => ({
@@ -180,9 +192,6 @@ describe.skip('useSimulationResults', () => {
 
     getTrainPath.mockResolvedValue({ data: pathfindingSuccess });
     getTrainSimulation.mockResolvedValue({ data: simulationSuccess });
-    getRollingStockNameByRollingStockName.mockResolvedValue({
-      data: rollingStock,
-    });
     postInfraByInfraIdPathProperties.mockResolvedValue({
       data: rawPathProperties,
     });
@@ -224,9 +233,6 @@ describe.skip('useSimulationResults', () => {
         electricalProfileSetId: ELECTRICAL_PROFILE_SET_ID,
         exceptionId: undefined,
       });
-      expect(getRollingStockNameByRollingStockName).toHaveBeenCalledWith({
-        rollingStockName: ROLLING_STOCK_NAME,
-      });
       expect(postInfraByInfraIdPathProperties).toHaveBeenCalledWith({
         infraId: INFRA_ID,
         pathPropertiesInput: { track_section_ranges: trackSectionRanges },
@@ -250,13 +256,15 @@ describe.skip('useSimulationResults', () => {
     it.each([
       {
         case: 'rolling stock is missing',
-        arrange: () =>
-          getRollingStockNameByRollingStockName.mockResolvedValue({
-            error: notFoundError,
-          }),
+        arrange: () => {
+          mockUseSelectedTrainSchedule.mockReturnValue({
+            ...baseTrain,
+            rolling_stock_name: 'DOESNT_EXIST',
+          });
+        },
         expectedResults: {
           isValid: false,
-          train: expectedTrain,
+          train: { ...expectedTrain, rolling_stock_name: 'DOESNT_EXIST' },
           path: pathfindingSuccess,
           rollingStock: undefined,
         },

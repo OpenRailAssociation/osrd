@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type TrackSection } from 'common/api/osrdEditoastApi';
+import { useRollingStockContext } from 'common/RollingStockContext';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 import {
   extractOccurrenceDetailsFromPacedTrain,
@@ -35,6 +36,7 @@ const useSimulationResults = (): {
 } => {
   const { t } = useTranslation('operational-studies');
 
+  const { rollingStockMap } = useRollingStockContext();
   const { infraId, electricalProfileSetId, getTrackSectionsByIds } = useScenarioContext();
   const { id: selectedTrainId } = useSelector(getSelectedTrain) || {};
 
@@ -129,17 +131,6 @@ const useSimulationResults = (): {
         : skipToken
     );
 
-  // TODO: replace this API call by extracting the rolling stock from the rolling
-  // stocks list
-  const { currentData: rollingStock } =
-    osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
-      train?.rolling_stock_name
-        ? {
-            rollingStockName: train.rolling_stock_name,
-          }
-        : skipToken
-    );
-
   const { currentData: rawPathProperties, isFetching: isPathPropertiesFetching } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
@@ -151,6 +142,10 @@ const useSimulationResults = (): {
           }
         : skipToken
     );
+
+  const rollingStock = train?.rolling_stock_name
+    ? rollingStockMap.get(train.rolling_stock_name)
+    : undefined;
 
   const isSimulationDataLoading =
     isPathfindingFetching || isSimulationFetching || isPathPropertiesFetching;
