@@ -48,9 +48,8 @@ class StopTests {
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(secondBlock, Offset(50.meters))),
-                        10000.0,
-                        true,
+                        locations = setOf(BlockLocation(secondBlock, Offset(50.meters))),
+                        duration = 10000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -118,9 +117,8 @@ class StopTests {
                 )
         for (offset in stopsOffsets) builder.addStep(
             ExplorerStep(
-                setOf(BlockLocation(secondBlock, offset)),
-                1.0,
-                true,
+                locations = setOf(BlockLocation(secondBlock, offset)),
+                duration = 1.0,
                 inputStepIndex = inputStepIndex++,
             ),
         )
@@ -155,9 +153,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(secondBlock, Offset(0.meters))),
-                        10000.0,
-                        true,
+                        locations = setOf(BlockLocation(secondBlock, Offset(0.meters))),
+                        duration = 10000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -188,9 +185,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(100.meters))),
-                        10000.0,
-                        true,
+                        locations = setOf(BlockLocation(firstBlock, Offset(100.meters))),
+                        duration = 10000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -236,8 +232,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocksDirectPath[0], Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(detour[1], Offset(1000.meters))),
-                        0.0,
+                        locations = setOf(BlockLocation(detour[1], Offset(1000.meters))),
+                        duration = 0.0,
                         stepTypes =
                             if (stop) setOf(StepType.INPUT_STOP)
                             else setOf(StepType.INPUT_WAYPOINT),
@@ -280,9 +276,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(10.meters))),
-                        100000.0,
-                        true,
+                        locations = setOf(BlockLocation(firstBlock, Offset(10.meters))),
+                        duration = 100000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -320,9 +315,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[0], Offset(50.meters))),
-                        10000.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[0], Offset(50.meters))),
+                        duration = 10000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -384,9 +378,8 @@ class StopTests {
                     .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                     .addStep(
                         ExplorerStep(
-                            setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                            1000.0,
-                            true,
+                            locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                            duration = 1000.0,
                             inputStepIndex = 1,
                         ),
                     )
@@ -462,9 +455,8 @@ class StopTests {
                     .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                     .addStep(
                         ExplorerStep(
-                            setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                            1000.0,
-                            true,
+                            locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                            duration = 1000.0,
                             inputStepIndex = 1,
                         ),
                     )
@@ -525,9 +517,8 @@ class StopTests {
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        10_000.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 10_000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -575,9 +566,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        1.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 1.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -650,8 +640,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .addForcedOpStop(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        1.0,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 1.0,
                         stepTypes = setOf(stepType),
                     ),
                 )
@@ -688,8 +678,8 @@ class StopTests {
         Stream.of(
             Arguments.of(true, StepType.INFRA_FORCED_STOP),
             Arguments.of(false, StepType.INFRA_FORCED_STOP),
-            Arguments.of(true, StepType.OVERTAKE_STOP),
-            Arguments.of(false, StepType.OVERTAKE_STOP),
+            Arguments.of(true, StepType.INFRA_OVERTAKE_STOP),
+            Arguments.of(false, StepType.INFRA_OVERTAKE_STOP),
         )
 
     /** Checks that we can follow start scheduled points and adjust stop durations */
@@ -746,7 +736,7 @@ class StopTests {
                 .setInfra(infra.fullInfra())
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[0], Offset(0.meters))),
+                        locations = setOf(BlockLocation(blocks[0], Offset(0.meters))),
                         plannedTimingData =
                             PlannedTimingData(7_000.seconds, 7_000.seconds, 3_000.seconds),
                         inputStepIndex = 0,
@@ -754,9 +744,8 @@ class StopTests {
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        5_000.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 5_000.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -824,17 +813,15 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        5_000.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 5_000.0,
                         inputStepIndex = 1,
                     ),
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[2], Offset(1.meters))),
-                        0.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[2], Offset(1.meters))),
+                        duration = 0.0,
                         plannedTimingData =
                             PlannedTimingData(15_000.seconds, 15_000.seconds, 15_000.seconds),
                         inputStepIndex = 2,
@@ -897,9 +884,8 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        1.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 1.0,
                         inputStepIndex = 1,
                     ),
                 )
@@ -976,17 +962,15 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[1], Offset(50.meters))),
-                        1.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
+                        duration = 1.0,
                         inputStepIndex = 1,
                     ),
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(blocks[3], Offset(50.meters))),
-                        1.0,
-                        true,
+                        locations = setOf(BlockLocation(blocks[3], Offset(50.meters))),
+                        duration = 1.0,
                         inputStepIndex = 2,
                     ),
                 )
@@ -1039,12 +1023,12 @@ class StopTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(
-                            BlockLocation(topPath[1], Offset(100.meters)),
-                            BlockLocation(botPath[1], Offset(100.meters)),
-                        ),
-                        100_000.0,
-                        true,
+                        locations =
+                            setOf(
+                                BlockLocation(topPath[1], Offset(100.meters)),
+                                BlockLocation(botPath[1], Offset(100.meters)),
+                            ),
+                        duration = 100_000.0,
                         inputStepIndex = 1,
                     ),
                 )

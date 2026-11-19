@@ -14,7 +14,7 @@ import kotlin.math.max
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-val FORCED_OP_STOP_DURATION = 60.0.seconds
+val FORCED_OP_STOP_DURATION = 60.seconds
 
 val stepTrackerLogger: Logger = LoggerFactory.getLogger("StepTracker")
 
@@ -35,6 +35,8 @@ private constructor(
     private val nInputSteps: Int,
     // Map of input steps and forced op stops combined with the BlockId as key and its corresponding
     // Explorer Steps sorted by their offset as value.
+    // NB: Duplicates on the same block are removed, keeping only the lowest offset (this is not a
+    // business rule, just technical convenience).
     private val stepsByBlockIdSortedByOffset: Map<BlockId, List<ExplorerStep>>,
     private val seenSteps: AppendOnlyLinkedList<LocatedStep> = appendOnlyLinkedListOf(),
 ) {
@@ -48,12 +50,12 @@ private constructor(
     // Used to compute path offsets
     private var currentPathOffset: Offset<PhysicsPath> = Offset.zero()
 
-    /** Returns all the steps that have been passed on the path. */
+    /** Returns all the input steps that have been passed on the path. */
     fun getSeenInputSteps(): List<LocatedStep> {
         return seenSteps.toList().filter { it.originalStep.isInput() }
     }
 
-    /** Returns all the steps that have been passed on the path. */
+    /** Returns all the steps (input and forced stop) that have been passed on the path. */
     fun getSeenSteps(): AppendOnlyLinkedList<LocatedStep> {
         return seenSteps
     }
@@ -102,6 +104,7 @@ private constructor(
 
             isBacktrackingStep =
                 isBacktrackingAtEnd && location.offset == blockRange.objectEnd && step.canBacktrack
+            if (isBacktrackingStep) assert(step.stepTypes.contains(StepType.INPUT_STOP))
 
             val newExplorerStep =
                 step.copy(
@@ -111,8 +114,7 @@ private constructor(
                     // If the step is a backtracking location, it has to mark a stop.
                     // Question : We could just return step.stepType here as backtracking are only
                     // allowed on stops
-                    stepTypes =
-                        if (isBacktrackingStep) setOf(StepType.INPUT_STOP) else step.stepTypes,
+                    stepTypes = step.stepTypes,
                     inputStepIndex = currentInputStepIndex,
                 )
             var newStep =
@@ -136,6 +138,12 @@ private constructor(
             res.add(newStep)
         }
 
+        if (isBacktrackingAtEnd) {
+            assert(
+                res.filter { res.last().location == it.location }.find { it.isBacktracking } !=
+                    null,
+            )
+        }
         seenSteps.addAll(res)
         currentPathOffset = blockRange.pathEnd
         return res
@@ -172,12 +180,22 @@ private constructor(
         return seenSteps.iterateBackwards()
     }
 
-    /** Get the index of the current seen input step */
+    /**
+     * Get the index of the current seen input step or 0 when seenSteps is empty
+     *
+     * TODO: This behavior is suspicious, it seems we initialize StepTracker at start locations with
+     *   an empty list of seenSteps which should not happen The following issue has been created and
+     *   we should look into it : https://github.com/OpenRailAssociation/osrd/issues/19636
+     */
     fun getCurrentSeenInputStepIndex(): Int {
         return seenSteps.lastOrNull()?.inputStepIndex ?: 0
     }
 
-    /** Get the index of the current reached input step */
+    /**
+     * Get the index of the current reached input step or 0 when reached steps is empty
+     *
+     * TODO: check this behavior same as above
+     */
     fun getCurrentReachedInputStepIndex(): Int {
         return iterateReachedStepsBackwards().firstOrNull()?.inputStepIndex ?: 0
     }
@@ -217,8 +235,8 @@ private constructor(
                         }
                     }
                     .groupBy(
-                        keySelector = { (block, _step) -> block },
-                        valueTransform = { (_block, step) -> step },
+                        keySelector = { (block, _blockSteps) -> block },
+                        valueTransform = { (_block, blockSteps) -> blockSteps },
                     )
                     .mapValues { (_, blockSteps) ->
                         blockSteps.sortedBy { it.locations.single().offset }
@@ -237,9 +255,7 @@ data class LocatedStep(
     val isBacktracking: Boolean = false,
 ) {
 
-    fun mergeLocatedStep(locatedStep: LocatedStep?): LocatedStep {
-        if (locatedStep == null) return this
-
+    fun mergeLocatedStep(locatedStep: LocatedStep): LocatedStep {
         assert(travelledPathOffset == locatedStep.travelledPathOffset)
         assert(location == locatedStep.location)
 

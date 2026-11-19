@@ -142,9 +142,11 @@ enum class StepType(
 ) {
     INPUT_WAYPOINT(3), // via requested by the user
     INPUT_STOP(0), // stop requested by the user
-    // The 2 following forced-stops behave the same (but tracking use-cases helps debug at least)
+    // The 2 following infra-stops behave the same (but tracking use-cases helps debug at least)
     INFRA_FORCED_STOP(1), // infra location where stop is forced when passing-by
-    OVERTAKE_STOP(2), // used for overtake only, so stop is forced when passing-by
+    INFRA_OVERTAKE_STOP(
+        2,
+    ), // infra location used for overtake only, so stop is forced when passing-by
 }
 
 /** Converts a DistanceRangeMap into an API compatible RangeValues. */

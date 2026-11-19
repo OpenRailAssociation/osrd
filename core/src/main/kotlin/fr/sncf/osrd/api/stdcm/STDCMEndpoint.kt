@@ -712,7 +712,8 @@ fun parseForcedOpStops(
                                     when (forcedOpStop.stop_type) {
                                         ForcedStopType.GENERAL_STOP ->
                                             setOf(StepType.INFRA_FORCED_STOP)
-                                        ForcedStopType.OVERTAKE -> setOf(StepType.OVERTAKE_STOP)
+                                        ForcedStopType.OVERTAKE ->
+                                            setOf(StepType.INFRA_OVERTAKE_STOP)
                                     },
                             )
                         }

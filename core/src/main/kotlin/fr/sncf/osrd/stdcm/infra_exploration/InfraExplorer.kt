@@ -214,17 +214,17 @@ data class ExplorerStep(
             stepTypes.contains(StepType.INPUT_STOP)
     }
 
-    fun mergeExplorerStep(step: ExplorerStep): ExplorerStep {
-        if (inputStepIndex != null && step.inputStepIndex != null)
-            assert(inputStepIndex == step.inputStepIndex)
+    fun mergeExplorerStep(other: ExplorerStep): ExplorerStep {
+        if (inputStepIndex != null && other.inputStepIndex != null)
+            assert(inputStepIndex == other.inputStepIndex)
         val priorityStep =
-            listOf(this, step).minBy { it.stepTypes.minBy { stepType -> stepType.priority } }
+            listOf(this, other).minBy { it.stepTypes.minBy { stepType -> stepType.priority } }
         return ExplorerStep(
             priorityStep.locations,
-            listOfNotNull(duration, step.duration).maxOrNull(),
+            listOfNotNull(duration, other.duration).maxOrNull(),
             priorityStep.canBacktrack,
             priorityStep.plannedTimingData,
-            stepTypes + step.stepTypes,
+            stepTypes + other.stepTypes,
             priorityStep.inputStepIndex,
         )
     }
@@ -246,14 +246,10 @@ fun initInfraExplorers(
 ): Collection<InfraExplorer> {
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
     require(
-        targets
-            .flatMap { it.stepTypes }
-            .all { it in listOf(StepType.INPUT_WAYPOINT, StepType.INPUT_STOP) },
+        targets.all { it.isInput() },
     )
     require(
-        forcedOpStops
-            .flatMap { it.stepTypes }
-            .all { it in listOf(StepType.INFRA_FORCED_STOP, StepType.OVERTAKE_STOP) },
+        forcedOpStops.all { !it.isInput() },
     )
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge

@@ -26,7 +26,6 @@ data class STDCMEdge(
     val envelopeStartOffset: Offset<Block>,
     // True if the edge end is a stop
     val endAtStop: Boolean,
-    val endStepTypes: Set<StepType>,
     // Speed at the beginning of the edge
     val beginSpeed: Double,
     // Speed at the end of the edge

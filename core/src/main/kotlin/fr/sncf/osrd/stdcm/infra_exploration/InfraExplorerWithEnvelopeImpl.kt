@@ -33,7 +33,6 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
     private val spacingRequirementAutomatons: MutableList<SpacingResourceGenerator>,
     private val consistSchedule: ConsistSchedule,
-    override val forcedOpStops: Collection<ExplorerStep> = listOf(),
     private var stopTimeData: List<StopTimeData> = listOf(),
     // Can't be a soft reference: spacingRequirementAutomaton is stateful and only generates new
     // requirements (result would be nothing on second identical call).
@@ -50,7 +49,6 @@ data class InfraExplorerWithEnvelopeImpl(
                 envelopes.shallowCopy(),
                 spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
                 consistSchedule,
-                forcedOpStops,
                 stopTimeData,
                 spacingRequirementsCache,
             )
@@ -146,8 +144,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 .getSeenInputSteps()
                 .toList()
                 .asSequence()
-                .mapIndexedNotNull { stepIndex, step ->
-                    if (!step.originalStep.isInput()) return@mapIndexedNotNull null
+                .mapIndexed { stepIndex, step ->
                     val rollingStock: PhysicsRollingStock = consistSchedule.rollingStocks[stepIndex]
                     val stepPos = step.travelledPathOffset.distance
                     val res = DistanceRangeMap.RangeMapEntry(previousStepPos, stepPos, rollingStock)
@@ -273,7 +270,6 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopes.shallowCopy(),
             spacingRequirementAutomatons.map { it.clone() }.toMutableList(),
             consistSchedule,
-            forcedOpStops,
             stopTimeData,
             spacingRequirementsCache,
         )

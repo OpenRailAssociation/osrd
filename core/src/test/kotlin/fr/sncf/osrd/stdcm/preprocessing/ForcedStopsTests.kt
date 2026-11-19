@@ -64,11 +64,11 @@ class ForcedStopsTests {
                 ),
                 createForcedOpStopExplorerStep(
                     BlockLocation(infra.blockInfra.blocks[96], Offset(2050.meters)),
-                    setOf(StepType.OVERTAKE_STOP),
+                    setOf(StepType.INFRA_OVERTAKE_STOP),
                 ),
                 createForcedOpStopExplorerStep(
                     BlockLocation(infra.blockInfra.blocks[97], Offset(2200.meters)),
-                    setOf(StepType.OVERTAKE_STOP),
+                    setOf(StepType.INFRA_OVERTAKE_STOP),
                 ),
             )
         assertEquals(expectedParseForcedOpStops, actualParseForcedOpStops)
@@ -246,7 +246,7 @@ class ForcedStopsTests {
                                 ForcedOpStopLocation(
                                     0,
                                     Offset(50.0.meters),
-                                    stepTypes = setOf(StepType.OVERTAKE_STOP),
+                                    stepTypes = setOf(StepType.INFRA_OVERTAKE_STOP),
                                 ),
                             ),
                         expectedPathStops =
@@ -282,9 +282,8 @@ class ForcedStopsTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(50.meters))),
-                        inputStopDuration,
-                        true,
+                        locations = setOf(BlockLocation(firstBlock, Offset(50.meters))),
+                        duration = inputStopDuration,
                         inputStepIndex = 1,
                     ),
                 )
@@ -337,19 +336,19 @@ class ForcedStopsTests {
             Arguments.of(
                 SHORT_STOP_DURATION.seconds,
                 FORCED_OP_STOP_DURATION.seconds,
-                StepType.OVERTAKE_STOP,
+                StepType.INFRA_OVERTAKE_STOP,
             ),
             // (overtake < input stop)
             Arguments.of(
                 LONG_STOP_DURATION.seconds,
                 LONG_STOP_DURATION.seconds,
-                StepType.OVERTAKE_STOP,
+                StepType.INFRA_OVERTAKE_STOP,
             ),
             // (overtake == input stop)
             Arguments.of(
                 FORCED_OP_STOP_DURATION.seconds,
                 FORCED_OP_STOP_DURATION.seconds,
-                StepType.OVERTAKE_STOP,
+                StepType.INFRA_OVERTAKE_STOP,
             ),
         )
 
@@ -373,17 +372,15 @@ class ForcedStopsTests {
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(80.meters))),
-                        LONG_STOP_DURATION.seconds,
-                        true,
+                        locations = setOf(BlockLocation(firstBlock, Offset(80.meters))),
+                        duration = LONG_STOP_DURATION.seconds,
                         inputStepIndex = 1,
                     ),
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(secondBlock, Offset(60.meters))),
-                        SHORT_STOP_DURATION.seconds,
-                        true,
+                        locations = setOf(BlockLocation(secondBlock, Offset(60.meters))),
+                        duration = SHORT_STOP_DURATION.seconds,
                         inputStepIndex = 2,
                     ),
                 )
@@ -438,24 +435,22 @@ class ForcedStopsTests {
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(80.meters))),
-                        LONG_STOP_DURATION.seconds,
-                        true,
+                        locations = setOf(BlockLocation(firstBlock, Offset(80.meters))),
+                        duration = LONG_STOP_DURATION.seconds,
                         inputStepIndex = 1,
                     ),
                 )
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(secondBlock, Offset(50.meters))),
-                        SHORT_STOP_DURATION.seconds,
-                        true,
+                        locations = setOf(BlockLocation(secondBlock, Offset(50.meters))),
+                        duration = SHORT_STOP_DURATION.seconds,
                         inputStepIndex = 2,
                     ),
                 )
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(secondBlock, Offset(60.meters)),
-                        setOf(StepType.OVERTAKE_STOP),
+                        setOf(StepType.INFRA_OVERTAKE_STOP),
                     ),
                 )
                 .setEndLocations(
@@ -489,7 +484,7 @@ class ForcedStopsTests {
                     160.0,
                     FORCED_OP_STOP_DURATION.seconds,
                     SHORT_SLIP_STOP,
-                    setOf(StepType.OVERTAKE_STOP),
+                    setOf(StepType.INFRA_OVERTAKE_STOP),
                 ),
             ),
         )
@@ -509,16 +504,15 @@ class ForcedStopsTests {
                 .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
                 .addStep(
                     ExplorerStep(
-                        setOf(BlockLocation(firstBlock, Offset(60.meters))),
-                        FORCED_OP_STOP_DURATION.seconds,
-                        true,
+                        locations = setOf(BlockLocation(firstBlock, Offset(60.meters))),
+                        duration = FORCED_OP_STOP_DURATION.seconds,
                         inputStepIndex = 1,
                     ),
                 )
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(60.meters)),
-                        setOf(StepType.OVERTAKE_STOP),
+                        setOf(StepType.INFRA_OVERTAKE_STOP),
                     ),
                 )
                 .addForcedOpStop(
@@ -540,7 +534,11 @@ class ForcedStopsTests {
                     60.0,
                     FORCED_OP_STOP_DURATION.seconds,
                     SHORT_SLIP_STOP,
-                    setOf(StepType.INPUT_STOP, StepType.INFRA_FORCED_STOP, StepType.OVERTAKE_STOP),
+                    setOf(
+                        StepType.INPUT_STOP,
+                        StepType.INFRA_FORCED_STOP,
+                        StepType.INFRA_OVERTAKE_STOP,
+                    ),
                 ),
             ),
         )

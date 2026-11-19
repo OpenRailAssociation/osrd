@@ -40,8 +40,6 @@ import kotlin.math.abs
  * `Offset<TravelledPath>` using the underlying incremental path.
  */
 interface InfraExplorerWithEnvelope : InfraExplorer {
-    val forcedOpStops: Collection<ExplorerStep>
-
     /** Access the full envelope from the train start. */
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
@@ -141,7 +139,6 @@ fun initInfraExplorerWithEnvelope(
                 appendOnlyLinkedListOf(),
                 mutableListOf(SpacingResourceGenerator(fullInfra, Offset(0.meters))),
                 consistSchedule,
-                forcedOpStops,
             )
         }
 }

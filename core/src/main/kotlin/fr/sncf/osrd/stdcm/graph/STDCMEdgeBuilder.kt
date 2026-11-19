@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
@@ -230,7 +229,6 @@ internal constructor(
                 prevNode,
                 startOffset,
                 endAtStop,
-                nextStop?.originalStep?.stepTypes ?: setOf(StepType.INPUT_WAYPOINT),
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),

@@ -49,32 +49,32 @@ class STDCMHeuristicTests {
         val steps =
             listOf(
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[0], Offset(50.meters))),
-                    null,
+                    locations = listOf(BlockLocation(blocks[0], Offset(50.meters))),
+                    duration = null,
                     stepTypes = setOf(StepType.INPUT_WAYPOINT),
                     inputStepIndex = 0,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[1], Offset(25.meters))),
-                    null,
+                    locations = listOf(BlockLocation(blocks[1], Offset(25.meters))),
+                    duration = null,
                     stepTypes = setOf(StepType.INPUT_WAYPOINT),
                     inputStepIndex = 1,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[1], Offset(75.meters))),
-                    null,
+                    locations = listOf(BlockLocation(blocks[1], Offset(75.meters))),
+                    duration = null,
                     stepTypes = setOf(StepType.INPUT_STOP),
                     inputStepIndex = 2,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[2], Offset(0.meters))),
-                    null,
+                    locations = listOf(BlockLocation(blocks[2], Offset(0.meters))),
+                    duration = null,
                     stepTypes = setOf(StepType.INPUT_STOP),
                     inputStepIndex = 3,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[3], Offset(100.meters))),
-                    1.0,
+                    locations = listOf(BlockLocation(blocks[3], Offset(100.meters))),
+                    duration = 1.0,
                     stepTypes = setOf(StepType.INPUT_STOP),
                     inputStepIndex = 4,
                 ),
@@ -158,15 +158,13 @@ class STDCMHeuristicTests {
         val steps =
             listOf(
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[0], Offset(0.meters))),
-                    null,
-                    false,
+                    locations = listOf(BlockLocation(blocks[0], Offset(0.meters))),
+                    duration = null,
                     inputStepIndex = 0,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[1], Offset(100.meters))),
-                    null,
-                    true,
+                    locations = listOf(BlockLocation(blocks[1], Offset(100.meters))),
+                    duration = null,
                     inputStepIndex = 1,
                 ),
             )
@@ -238,21 +236,18 @@ class STDCMHeuristicTests {
         val steps =
             listOf(
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[0], Offset(50.meters))),
-                    null,
-                    false,
+                    locations = listOf(BlockLocation(blocks[0], Offset(50.meters))),
+                    duration = null,
                     inputStepIndex = 0,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[1], Offset(50.meters))),
-                    null,
-                    false,
+                    locations = listOf(BlockLocation(blocks[1], Offset(50.meters))),
+                    duration = null,
                     inputStepIndex = 1,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(blocks[3], Offset(50.meters))),
-                    1.0,
-                    true,
+                    locations = listOf(BlockLocation(blocks[3], Offset(50.meters))),
+                    duration = 1.0,
                     inputStepIndex = 2,
                 ),
             )
@@ -338,19 +333,19 @@ class STDCMHeuristicTests {
             listOf(
                 ExplorerStep(listOf(BlockLocation(ab, Offset(30.meters))), inputStepIndex = 0),
                 ExplorerStep(
-                    listOf(
-                        BlockLocation(bc, Offset(50.meters)),
-                        BlockLocation(cb, Offset(50.meters)),
-                    ),
+                    locations =
+                        listOf(
+                            BlockLocation(bc, Offset(50.meters)),
+                            BlockLocation(cb, Offset(50.meters)),
+                        ),
                     duration = 0.0,
                     stepTypes = setOf(StepType.INPUT_STOP),
                     canBacktrack = true,
                     inputStepIndex = 1,
                 ),
                 ExplorerStep(
-                    listOf(BlockLocation(ba, Offset(20.meters))),
-                    1.0,
-                    true,
+                    locations = listOf(BlockLocation(ba, Offset(20.meters))),
+                    duration = 1.0,
                     inputStepIndex = 2,
                 ),
             )
@@ -464,7 +459,6 @@ class STDCMHeuristicTests {
                 defaultNode,
                 Offset(0.meters),
                 false,
-                setOf(StepType.INPUT_WAYPOINT),
                 0.0,
                 0.0,
                 Length(0.meters),

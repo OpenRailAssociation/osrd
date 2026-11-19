@@ -120,8 +120,7 @@ data class VisitedNodes(
                 val mapAtStepIndex = visitedAtDetector[parameters.fingerprint!!.waypointIndex]
                 val mapAtDetector = mapAtStepIndex?.get(exitDet)
 
-                val stepIndex =
-                    parameters.explorer.getStepTracker().getCurrentReachedInputStepIndex()
+                val stepIndex = parameters.explorer.getStepTracker().getCurrentSeenInputStepIndex()
                 val minTravelTime =
                     parameters.explorer.getRemainingBlocks().sumOf {
                         maxSpeedEnvBuilder!!.getBlockTime(it, stepIndex, null, null)
