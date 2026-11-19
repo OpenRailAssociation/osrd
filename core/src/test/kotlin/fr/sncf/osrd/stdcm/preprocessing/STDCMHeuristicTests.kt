@@ -75,6 +75,7 @@ class STDCMHeuristicTests {
                 ExplorerStep(
                     locations = listOf(BlockLocation(blocks[3], Offset(100.meters))),
                     duration = 1.0,
+                    canBacktrack = true,
                     stepTypes = setOf(StepType.INPUT_STOP),
                     inputStepIndex = 4,
                 ),
@@ -248,6 +249,7 @@ class STDCMHeuristicTests {
                 ExplorerStep(
                     locations = listOf(BlockLocation(blocks[3], Offset(50.meters))),
                     duration = 1.0,
+                    canBacktrack = true,
                     inputStepIndex = 2,
                 ),
             )
@@ -346,6 +348,7 @@ class STDCMHeuristicTests {
                 ExplorerStep(
                     locations = listOf(BlockLocation(ba, Offset(20.meters))),
                     duration = 1.0,
+                    canBacktrack = true,
                     inputStepIndex = 2,
                 ),
             )

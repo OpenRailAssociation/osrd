@@ -284,6 +284,7 @@ class ForcedStopsTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(firstBlock, Offset(50.meters))),
                         duration = inputStopDuration,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -374,6 +375,7 @@ class ForcedStopsTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(firstBlock, Offset(80.meters))),
                         duration = LONG_STOP_DURATION.seconds,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -381,6 +383,7 @@ class ForcedStopsTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(secondBlock, Offset(60.meters))),
                         duration = SHORT_STOP_DURATION.seconds,
+                        canBacktrack = true,
                         inputStepIndex = 2,
                     ),
                 )
@@ -437,6 +440,7 @@ class ForcedStopsTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(firstBlock, Offset(80.meters))),
                         duration = LONG_STOP_DURATION.seconds,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -444,6 +448,7 @@ class ForcedStopsTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(secondBlock, Offset(50.meters))),
                         duration = SHORT_STOP_DURATION.seconds,
+                        canBacktrack = true,
                         inputStepIndex = 2,
                     ),
                 )
@@ -506,6 +511,7 @@ class ForcedStopsTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(firstBlock, Offset(60.meters))),
                         duration = FORCED_OP_STOP_DURATION.seconds,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )

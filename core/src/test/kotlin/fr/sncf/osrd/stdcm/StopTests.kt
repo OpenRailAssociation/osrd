@@ -50,6 +50,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(secondBlock, Offset(50.meters))),
                         duration = 10000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -119,6 +120,7 @@ class StopTests {
             ExplorerStep(
                 locations = setOf(BlockLocation(secondBlock, offset)),
                 duration = 1.0,
+                canBacktrack = true,
                 inputStepIndex = inputStepIndex++,
             ),
         )
@@ -155,6 +157,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(secondBlock, Offset(0.meters))),
                         duration = 10000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -187,6 +190,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(firstBlock, Offset(100.meters))),
                         duration = 10000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -234,6 +238,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(detour[1], Offset(1000.meters))),
                         duration = 0.0,
+                        canBacktrack = stop,
                         stepTypes =
                             if (stop) setOf(StepType.INPUT_STOP)
                             else setOf(StepType.INPUT_WAYPOINT),
@@ -278,6 +283,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(firstBlock, Offset(10.meters))),
                         duration = 100000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -317,6 +323,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[0], Offset(50.meters))),
                         duration = 10000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -380,6 +387,7 @@ class StopTests {
                         ExplorerStep(
                             locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                             duration = 1000.0,
+                            canBacktrack = true,
                             inputStepIndex = 1,
                         ),
                     )
@@ -457,6 +465,7 @@ class StopTests {
                         ExplorerStep(
                             locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                             duration = 1000.0,
+                            canBacktrack = true,
                             inputStepIndex = 1,
                         ),
                     )
@@ -519,6 +528,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                         duration = 10_000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -568,6 +578,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                         duration = 1.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -746,6 +757,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                         duration = 5_000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -815,6 +827,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                         duration = 5_000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -822,6 +835,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[2], Offset(1.meters))),
                         duration = 0.0,
+                        canBacktrack = true,
                         plannedTimingData =
                             PlannedTimingData(15_000.seconds, 15_000.seconds, 15_000.seconds),
                         inputStepIndex = 2,
@@ -886,6 +900,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                         duration = 1.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -964,6 +979,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[1], Offset(50.meters))),
                         duration = 1.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
@@ -971,6 +987,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[3], Offset(50.meters))),
                         duration = 1.0,
+                        canBacktrack = true,
                         inputStepIndex = 2,
                     ),
                 )
@@ -1029,6 +1046,7 @@ class StopTests {
                                 BlockLocation(botPath[1], Offset(100.meters)),
                             ),
                         duration = 100_000.0,
+                        canBacktrack = true,
                         inputStepIndex = 1,
                     ),
                 )
