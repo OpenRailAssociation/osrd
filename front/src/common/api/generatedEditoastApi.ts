@@ -5206,7 +5206,10 @@ export type SubCategoryPage = PaginationStats & {
   results: SubCategory[];
 };
 export type TimetableResult = {
+  catalog_entry_id?: number | null;
+  description: string;
   is_train_schedule_set: boolean;
+  published: boolean;
   timetable_id: number;
   timetable_name?: string | null;
   timetable_type: TimetableType;

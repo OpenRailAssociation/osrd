@@ -136,7 +136,7 @@ enum TimetableError {
     },
 }
 
-/// Creation result for a Timetable
+/// A timetable with its data
 #[derive(Debug, Default, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
 pub(in crate::views) struct TimetableResult {
@@ -144,6 +144,9 @@ pub(in crate::views) struct TimetableResult {
     pub timetable_type: TimetableType,
     pub is_train_schedule_set: bool,
     pub timetable_name: Option<String>,
+    pub catalog_entry_id: Option<i64>,
+    pub description: String,
+    pub published: bool,
 }
 
 impl From<Timetable> for TimetableResult {
@@ -153,6 +156,9 @@ impl From<Timetable> for TimetableResult {
             timetable_type: timetable.timetable_type.0,
             is_train_schedule_set: timetable.is_train_schedule_set,
             timetable_name: timetable.name,
+            catalog_entry_id: timetable.catalog_entry_id,
+            description: timetable.description,
+            published: timetable.published,
         }
     }
 }
