@@ -494,33 +494,47 @@ const TimesStopsTable = ({
     [t, registerTimeCellRef]
   );
 
-  const returnStepStatusCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow>) => {
-    if (info.table.options.meta!.isComputedDataPending) {
-      return <span data-testid="step-status">&nbsp;</span>;
-    }
+  const returnStepStatusCell = useCallback(
+    (info: CellContext<TimesStopsTableFeatures, TimesStopsRow>) => {
+      if (info.table.options.meta!.isComputedDataPending) {
+        return <span data-testid="step-status">&nbsp;</span>;
+      }
 
-    const { stepStatus, computedArrival, requestedArrival, pathStepKey } = info.row.original;
-    const isPathStep = Boolean(pathStepKey);
+      const { stepStatus, computedArrival, requestedArrival, pathStepKey } = info.row.original;
+      const isPathStep = Boolean(pathStepKey);
 
-    const isSuccessSchedule =
-      requestedArrival &&
-      computedArrival &&
-      !(stepStatus === 'marginNotHonored') &&
-      !(stepStatus === 'scheduleNotHonored');
+      const isSuccessSchedule =
+        requestedArrival &&
+        computedArrival &&
+        !(stepStatus === 'marginNotHonored') &&
+        !(stepStatus === 'scheduleNotHonored');
 
-    const className = cx({
-      'success-schedule': isPathStep && isSuccessSchedule,
-      'warning-schedule': isPathStep && stepStatus === 'scheduleNotHonored',
-      'warning-margin': isPathStep && stepStatus === 'marginNotHonored',
-      'invalid-path-step': stepStatus === 'invalidPathStep',
-    });
+      const className = cx({
+        'success-schedule': isPathStep && isSuccessSchedule,
+        'warning-schedule': isPathStep && stepStatus === 'scheduleNotHonored',
+        'warning-margin': isPathStep && stepStatus === 'marginNotHonored',
+        'invalid-path-step': stepStatus === 'invalidPathStep',
+      });
 
-    return (
-      <span data-testid="step-status" className={className}>
-        &nbsp;
-      </span>
-    );
-  };
+      let titleText: string;
+      if (isPathStep && isSuccessSchedule) {
+        titleText = t('statusMessage.timeConstraintMet');
+      } else if (isPathStep && stepStatus === 'scheduleNotHonored') {
+        titleText = t('statusMessage.scheduleNotMet');
+      } else if (isPathStep && stepStatus === 'marginNotHonored') {
+        titleText = t('statusMessage.marginNotMet');
+      } else {
+        titleText = '';
+      }
+
+      return (
+        <span data-testid="step-status" title={titleText} className={className}>
+          &nbsp;
+        </span>
+      );
+    },
+    [t]
+  );
 
   const returnOPCell = (info: CellContext<TimesStopsTableFeatures, TimesStopsRow, string>) => {
     const { name, secondaryCode, secondaryName, pathStepKey } = info.row.original;
@@ -874,6 +888,7 @@ const TimesStopsTable = ({
       returnArrivalTimeCell,
       returnRequestTheoreticalMarginCell,
       returnBaseArrivalCell,
+      returnStepStatusCell,
       isValid,
       t,
     ]

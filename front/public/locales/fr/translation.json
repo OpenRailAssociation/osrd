@@ -932,6 +932,11 @@
     "requestedDeparture": "départ demandé",
     "requestedTheoreticalMargin": "marge théorique demandée",
     "shortSlipDistance": "faible glissement",
+    "statusMessage": {
+      "marginNotMet": "Marge non respectée",
+      "scheduleNotMet": "Horaire demandé non respecté",
+      "timeConstraintMet": "Contrainte horaire respectée"
+    },
     "stopTime": "temps d'arrêt",
     "timeFromPreviousOp": "temps depuis le point précédent",
     "totalTravelTime": "temps total du trajet",

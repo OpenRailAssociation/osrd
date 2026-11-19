@@ -826,6 +826,11 @@
     "receptionOnClosedSignalFull": "Einfahrt auf Halt zeigendes Signal",
     "requestedTheoreticalMargin": "angeforderte theoretische Marge",
     "shortSlipDistance": "Kurzer Durchrutschweg",
+    "statusMessage": {
+      "marginNotMet": "Nicht eingehaltene Rand",
+      "scheduleNotMet": "Nicht eingehaltene Wunschtermint",
+      "timeConstraintMet": "Zeitliche Vorgaben eingehalten"
+    },
     "stopTime": "Haltezeit",
     "theoreticalMargin": "theoretische Marge",
     "theoreticalMarginPlaceholder": "% oder min/100km",
