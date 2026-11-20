@@ -72,11 +72,13 @@ const useScenario = () => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [scenario]);
 
+  const currentTimetableId = currentTimetable?.id;
   useEffect(() => {
-    if (currentTimetable) {
-      setParamsInUrlAndStorage('timetable', currentTimetable.id.toString());
+    if (currentTimetableId !== undefined) {
+      setParamsInUrlAndStorage('timetable', currentTimetableId.toString());
     }
-  }, [currentTimetable, setParamsInUrlAndStorage]);
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [currentTimetableId]);
 
   useEffect(() => {
     if (isScenarioError && errorScenario) throw errorScenario;
