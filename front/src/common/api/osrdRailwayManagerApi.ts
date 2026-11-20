@@ -14,6 +14,10 @@ const injectedRtkApi = api
           url: `/transform_timetable`,
           method: 'POST',
           body: queryArg.body,
+          params: {
+            timetable_type: queryArg.timetable_type,
+            hourly_timetable_duration: queryArg.hourly_timetable_duration,
+          },
           headers: {
             'content-encoding': queryArg['content-encoding'],
           },
@@ -67,6 +71,8 @@ export type PostTransformTimetableApiArg = {
   'content-encoding'?: 'gzip' | 'zip';
   /** Arbitrary file to transform into a standard OSRD timetable json file */
   body: Blob;
+  timetable_type?: 'CALENDAR' | 'HOURLY';
+  hourly_timetable_duration?: string;
 };
 export type GetSendLastMinuteRequestAuthorizedApiResponse = /** status 200 Authorization result */ {
   /** Whether the user is authenticated and authorized to send last-minute requests */
