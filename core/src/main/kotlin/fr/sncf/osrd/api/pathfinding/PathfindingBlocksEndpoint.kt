@@ -125,7 +125,16 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                 }
             }
         }
-        targets.add(ExplorerStep(allStarts, canBacktrack = step.canBacktrack))
+        val canBacktrack =
+            step.canBacktrack && stepIndex != 0 && stepIndex != request.pathItems.size - 1
+        targets.add(
+            ExplorerStep(
+                allStarts,
+                duration = if (canBacktrack) 0.0 else null,
+                canBacktrack = canBacktrack,
+                inputStepIndex = stepIndex,
+            ),
+        )
     }
     if (targets.size < 2) throw NoPathFoundException(NotEnoughPathItems())
     val allowedTrackSectionIds = parseTrackSectionIds(infra, request.allowedTrackSections)

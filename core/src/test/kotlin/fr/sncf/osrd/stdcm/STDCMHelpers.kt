@@ -134,7 +134,9 @@ fun stepsFromLocations(
     stops: Boolean = false,
 ): List<ExplorerStep> {
     val duration = if (stops) 0.0 else null
-    return locations.map { ExplorerStep(listOf(it), duration, stops) }
+    return locations.mapIndexed { index, location ->
+        ExplorerStep(listOf(location), duration, stops, inputStepIndex = index)
+    }
 }
 
 /**
