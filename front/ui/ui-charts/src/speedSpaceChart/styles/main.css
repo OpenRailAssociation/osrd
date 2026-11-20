@@ -50,6 +50,7 @@
 
   .reset-button svg {
     transform: rotate(180deg);
+    transform-origin: center;
   }
 
   .reset-button-disabled {
