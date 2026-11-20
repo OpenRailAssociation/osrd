@@ -3,6 +3,7 @@ import type {
   GeoJsonPoint,
   GeoJsonLineString,
   Conflict,
+  ForcedStopType,
   LightRollingStock,
   LightRollingStockWithLiveries,
   TowedRollingStock,
@@ -70,6 +71,7 @@ export type StdcmResultsOperationalPoint = {
   stopEndTime: Date;
   trackName?: string;
   stopType?: StdcmStopTypes;
+  forcedStopType?: ForcedStopType;
   stopRequested: boolean;
   weight: number | null;
 };
@@ -231,7 +233,6 @@ export enum StdcmStopTypes {
   PASSAGE_TIME = 'passageTime',
   DRIVER_SWITCH = 'driverSwitch',
   SERVICE_STOP = 'serviceStop',
-  OVERTAKE = 'overtake',
   CONSIST_CHANGE = 'consistChange',
   BACKTRACK = 'backtrack',
 }

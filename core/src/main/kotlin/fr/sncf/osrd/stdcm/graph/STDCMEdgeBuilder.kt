@@ -104,9 +104,9 @@ internal constructor(
                     BlockSimulationParameters(
                         infraExplorer.getCurrentBlock(),
                         prevNode.speed,
-                        infraExplorer.getStepTracker().getCurrentReachedPlannedStepIndex(),
+                        infraExplorer.getStepTracker().getCurrentReachedInputStepIndex(),
                         startOffset,
-                        getNextStopOnCurrentBlock(infraExplorer),
+                        getNextStopOffsetOnCurrentBlock(infraExplorer),
                     ),
                 )
         return envelope
@@ -121,7 +121,7 @@ internal constructor(
             val envelope = getEnvelope() ?: return null
             val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
             val scaledEnvelope =
-                if (envelope.endPos == 0.0) envelope
+                if (envelope.endPos == 0.0 || speedRatio == 1.0) envelope
                 else LinearAllowance.scaleEnvelope(envelope, speedRatio)
             val stopDuration = getEndOfEdgeStopDuration()
             explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(scaledEnvelope)
@@ -160,11 +160,7 @@ internal constructor(
      * new edge goes up to the first encountered stop on the block that hasn't been simulated yet.
      */
     private fun getEndOfEdgeStopDuration(): Double? {
-        return prevNode.infraExplorer
-            .getStepTracker()
-            .iterateStepsInLookaheadBackwards()
-            .filter { it.location.edge == infraExplorer.getCurrentBlock() }
-            .lastOrNull { it.originalStep.stop }
+        return getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
             ?.originalStep
             ?.duration
     }
@@ -201,7 +197,9 @@ internal constructor(
                     ),
                 )
         }
-        val endStopDuration = getEndOfEdgeStopDuration()
+        val nextStop =
+            getNextStopOnCurrentBlock(prevNode.infraExplorer, infraExplorer.getCurrentBlock())
+        val endStopDuration = nextStop?.originalStep?.duration
         val endAtStop = endStopDuration != null
         if (endAtStop) {
             // We don't use the result, just making sure that there's enough lookahead to compute it

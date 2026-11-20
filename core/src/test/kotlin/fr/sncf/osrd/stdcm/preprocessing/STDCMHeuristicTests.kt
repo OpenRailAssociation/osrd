@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.api.ConsistSchedule
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
@@ -47,11 +48,37 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(25.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, true),
-                ExplorerStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, true),
-                ExplorerStep(listOf(BlockLocation(blocks[3], Offset(100.meters))), 1.0, true),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[0], Offset(50.meters))),
+                    duration = null,
+                    stepTypes = setOf(StepType.INPUT_WAYPOINT),
+                    inputStepIndex = 0,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[1], Offset(25.meters))),
+                    duration = null,
+                    stepTypes = setOf(StepType.INPUT_WAYPOINT),
+                    inputStepIndex = 1,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[1], Offset(75.meters))),
+                    duration = null,
+                    stepTypes = setOf(StepType.INPUT_STOP),
+                    inputStepIndex = 2,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[2], Offset(0.meters))),
+                    duration = null,
+                    stepTypes = setOf(StepType.INPUT_STOP),
+                    inputStepIndex = 3,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[3], Offset(100.meters))),
+                    duration = 1.0,
+                    canBacktrack = true,
+                    stepTypes = setOf(StepType.INPUT_STOP),
+                    inputStepIndex = 4,
+                ),
             )
 
         val consistSchedule = ConsistSchedule(List(5) { STANDARD_TRAIN }, null)
@@ -131,8 +158,17 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(0.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(100.meters))), null, true),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[0], Offset(0.meters))),
+                    duration = null,
+                    inputStepIndex = 0,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[1], Offset(100.meters))),
+                    duration = null,
+                    inputStepIndex = 1,
+                    stepTypes = setOf(StepType.INPUT_STOP),
+                ),
             )
 
         val consistSchedule = ConsistSchedule(listOf(STANDARD_TRAIN, STANDARD_TRAIN), null)
@@ -201,9 +237,22 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                ExplorerStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[1], Offset(50.meters))), null, false),
-                ExplorerStep(listOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[0], Offset(50.meters))),
+                    duration = null,
+                    inputStepIndex = 0,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[1], Offset(50.meters))),
+                    duration = null,
+                    inputStepIndex = 1,
+                ),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(blocks[3], Offset(50.meters))),
+                    duration = 1.0,
+                    canBacktrack = true,
+                    inputStepIndex = 2,
+                ),
             )
 
         val consistSchedule = ConsistSchedule(List(3) { STANDARD_TRAIN }, null)
@@ -285,17 +334,24 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                ExplorerStep(listOf(BlockLocation(ab, Offset(30.meters)))),
+                ExplorerStep(listOf(BlockLocation(ab, Offset(30.meters))), inputStepIndex = 0),
                 ExplorerStep(
-                    listOf(
-                        BlockLocation(bc, Offset(50.meters)),
-                        BlockLocation(cb, Offset(50.meters)),
-                    ),
+                    locations =
+                        listOf(
+                            BlockLocation(bc, Offset(50.meters)),
+                            BlockLocation(cb, Offset(50.meters)),
+                        ),
                     duration = 0.0,
-                    stop = true,
+                    stepTypes = setOf(StepType.INPUT_STOP),
                     canBacktrack = true,
+                    inputStepIndex = 1,
                 ),
-                ExplorerStep(listOf(BlockLocation(ba, Offset(20.meters))), 1.0, true),
+                ExplorerStep(
+                    locations = listOf(BlockLocation(ba, Offset(20.meters))),
+                    duration = 1.0,
+                    canBacktrack = true,
+                    inputStepIndex = 2,
+                ),
             )
 
         val consistSchedule = ConsistSchedule(List(3) { VERY_SHORT_FAST_TRAIN }, null)
@@ -393,6 +449,7 @@ class STDCMHeuristicTests {
                 null,
                 Offset(0.meters),
                 null,
+                setOf(StepType.INPUT_WAYPOINT),
                 null,
                 null,
                 0.0,

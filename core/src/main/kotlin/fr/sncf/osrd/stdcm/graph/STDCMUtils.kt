@@ -2,15 +2,23 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.utils.units.Offset
 
+/**
+ * Returns the LocatedStep of the next stop (if any) on the current block, starting at startOffset
+ */
+fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: BlockId): LocatedStep? {
+    return infraExplorer.getStepTracker().iterateStepsInLookaheadBackwards().lastOrNull {
+        it.location.edge == currentBlockId && it.originalStep.stop
+    }
+}
+
 /** Returns the offset of the next stop (if any) on the current block, starting at startOffset */
-fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
-    return infraExplorer
-        .getStepTracker()
-        .iterateStepsInLookaheadBackwards()
-        .filter { it.originalStep.stop && it.location.edge == infraExplorer.getCurrentBlock() }
-        .minOfOrNull { it.location.offset }
+fun getNextStopOffsetOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
+    return getNextStopOnCurrentBlock(infraExplorer, infraExplorer.getCurrentBlock())
+        ?.location
+        ?.offset
 }
 
 /**

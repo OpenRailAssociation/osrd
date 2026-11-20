@@ -240,7 +240,8 @@
               font-weight: 400;
               color: var(--grey80);
               line-height: 20px;
-              vertical-align: middle;
+              padding-top: 5px;
+              padding-bottom: 7px;
             }
 
             .index {
@@ -260,6 +261,8 @@
               font-style: 'semibold';
               font-weight: 600;
               color: var(--grey80);
+              line-height: 20px;
+              margin-top: 5px;
             }
 
             .consist-change-label {
@@ -298,6 +301,11 @@
               padding: 1px 9px;
             }
 
+            .forced-stop-icon {
+              color: var(--info60);
+              padding-bottom: 3px;
+            }
+
             .backtrack-icon {
               display: flex;
               justify-content: flex-end;
@@ -309,6 +317,12 @@
               display: flex;
               justify-content: center;
               align-items: center;
+            }
+
+            .forced-stop-label {
+              color: var(--info60);
+              font-weight: 400;
+              padding-bottom: 4px;
             }
 
             .backtrack-label {

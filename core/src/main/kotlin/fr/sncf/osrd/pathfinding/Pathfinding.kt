@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.api.pathfinding.pathfindingLogger
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.PathfindingConstraint
@@ -84,12 +85,16 @@ class Pathfinding(
     val rollingStockLength: Distance,
 ) {
     private val targets = inputTargets.mapIndexed { index, it ->
+        val canBacktrack =
+            if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false
         ExplorerStep(
             it.locations,
             it.duration,
-            it.stop,
-            if (index > 0 && index < inputTargets.size - 1) it.canBacktrack else false,
+            canBacktrack,
             it.plannedTimingData,
+            inputStepIndex = index,
+            stepTypes =
+                if (canBacktrack) setOf(StepType.INPUT_STOP) else setOf(StepType.INPUT_WAYPOINT),
         )
     }
 
@@ -153,9 +158,9 @@ class Pathfinding(
     private fun remainingCostEstimation(infraExplorer: InfraExplorer): Double {
         if (infraExplorer.getStepTracker().hasSeenDestination()) return 0.0
 
-        val nbSeenSteps = infraExplorer.getStepTracker().getSeenSteps().size
+        val stepIndex = infraExplorer.getStepTracker().getCurrentSeenInputStepIndex()
         val currentRange = infraExplorer.getCurrentBlockRange()
-        return remainingCostEstimators[nbSeenSteps - 1].apply(
+        return remainingCostEstimators[stepIndex].apply(
             BlockLocation(currentRange.value, currentRange.objectEnd),
         ) / rollingStockMaxSpeed
     }
@@ -219,7 +224,7 @@ class Pathfinding(
                 return step.infraExplorer
             }
 
-            val nbSeenTargets = step.infraExplorer.getStepTracker().getSeenSteps().size
+            val nbSeenTargets = step.infraExplorer.getStepTracker().nSeenInputSteps
             maxSeenTarget = max(nbSeenTargets, maxSeenTarget)
 
             val currentBlock = step.infraExplorer.getCurrentBlock()
@@ -263,7 +268,7 @@ class Pathfinding(
                     rollingStockLength,
                     location,
                     targets,
-                    constraints?.let { MutableList(targets.size) { _ -> it } },
+                    constraints = constraints?.let { MutableList(targets.size) { _ -> it } },
                 )
             res.addAll(infraExplorers)
         }

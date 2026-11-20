@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.pathfinding
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraProvider
+import fr.sncf.osrd.api.StepType
 import fr.sncf.osrd.api.parseRJSTrackLocation
 import fr.sncf.osrd.api.stdcm.parseTrackSectionIds
 import fr.sncf.osrd.cli.Request
@@ -125,7 +126,16 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
                 }
             }
         }
-        targets.add(ExplorerStep(allStarts, canBacktrack = step.canBacktrack))
+        targets.add(
+            ExplorerStep(
+                allStarts,
+                canBacktrack = step.canBacktrack,
+                inputStepIndex = stepIndex,
+                stepTypes =
+                    if (step.canBacktrack) setOf(StepType.INPUT_STOP)
+                    else setOf(StepType.INPUT_WAYPOINT),
+            ),
+        )
     }
     if (targets.size < 2) throw NoPathFoundException(NotEnoughPathItems())
     val allowedTrackSectionIds = parseTrackSectionIds(infra, request.allowedTrackSections)

@@ -5,10 +5,17 @@ import { Image, Link, Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import iconBacktrack from 'assets/simulationReportSheet/backtrack-16@4x.png';
+import generalStopIcon from 'assets/simulationReportSheet/general-stop-16@4x.png';
+import overtakeIcon from 'assets/simulationReportSheet/overtake-16@4x.png';
 import { mmToKm } from 'utils/physics';
 
 import styles from './styles/SimulationReportStyleSheet';
 import type { SimulationTableRow } from './types';
+
+const forcedStopTypeIcons = {
+  GENERAL_STOP: generalStopIcon,
+  OVERTAKE: overtakeIcon,
+};
 
 type SimulationTableProps = {
   rows: SimulationTableRow[];
@@ -103,7 +110,15 @@ const SimulationTable = ({
               >
                 <TD style={row.stylesByColumn.index}>{index + 1}</TD>
                 <View style={styles.simulation.opWidth}>
-                  <TD style={row.stylesByColumn.name}>{row.name}</TD>
+                  <TD style={row.stylesByColumn.name}>
+                    {row.name}
+                    {row.forcedStopType && (
+                      <Image
+                        src={forcedStopTypeIcons[row.forcedStopType]}
+                        style={styles.simulation.forcedStopTypeIcon}
+                      />
+                    )}
+                  </TD>
                 </View>
                 <View style={styles.simulation.chWidth}>
                   <TD style={row.stylesByColumn.secondaryCode}>{row.secondaryCodeLabel}</TD>
