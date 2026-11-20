@@ -91,14 +91,13 @@ type PathStepProps = {
   customTracks: { trackId: string; trackName: string }[];
   onAddCustomTrack: (track: { trackId: string; trackName: string }) => void;
   onTrackNameChange: (trackName: string) => void;
-  onAddCustomOp: (name: string) => void;
+  onAddCustomOp: () => void;
   onCustomOpCreation: OnCustomOpCreation;
   doesOpExist: isOpDuplicate;
   onSubFormHasErrors: OnSubFormHasErrors;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
-  isEditing: boolean;
   opSuggestions: Array<OperationalPointSuggestion | string>;
   onSelectOpSuggestion: (
     suggestion: OperationalPointSuggestion,
@@ -139,7 +138,6 @@ const PathStepItem = ({
   onOpFocus,
   onOpBlur,
   inputValue,
-  isEditing,
   opSuggestions,
   onSelectOpSuggestion,
   resetOpSuggestions,
@@ -169,6 +167,9 @@ const PathStepItem = ({
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
   const [subFormName, setSubFormName] = useState('');
+
+  const [hasTypedOpName, setHasTypedOpName] = useState(false);
+  const canAddCustomOp = unrecognizedWaypointsActivated && hasTypedOpName;
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -388,6 +389,7 @@ const PathStepItem = ({
         firstSuggestion.secondaryCodeList[0]?.code;
 
       setSubFormName(firstSuggestion.name);
+      setHasTypedOpName(false);
       onSelectOpSuggestion(firstSuggestion, defaultSecondaryCode);
       resetOpSuggestions();
       blurActiveElement();
@@ -545,6 +547,7 @@ const PathStepItem = ({
                   }
 
                   setSubFormName(op.name);
+                  setHasTypedOpName(false);
                   onSelectOpSuggestion(op);
                   resetOpSuggestions();
                   blurActiveElement();
@@ -566,6 +569,7 @@ const PathStepItem = ({
                       isSelected={isSelected}
                       onSelect={(op, secondaryCode) => {
                         setSubFormName(op.name);
+                        setHasTypedOpName(false);
                         onSelectOpSuggestion(op, secondaryCode);
                         resetOpSuggestions();
                         blurActiveElement();
@@ -595,17 +599,27 @@ const PathStepItem = ({
                       )
                     : undefined
                 }
-                allowCustomValue={unrecognizedWaypointsActivated && !isOpValid && isEditing}
+                allowCustomValue={canAddCustomOp}
                 addCustomValueLabel={t('addCustomOp')}
-                onAddCustomValue={(value) => {
-                  setSubFormName(value);
-                  onAddCustomOp(value);
-                }}
+                onAddCustomValue={
+                  canAddCustomOp
+                    ? (value) => {
+                        setSubFormName(value);
+                        onAddCustomOp();
+                      }
+                    : undefined
+                }
                 small
                 narrow
-                onFocusCapture={onOpFocus}
+                onFocusCapture={() => {
+                  setHasTypedOpName(false);
+                  onOpFocus();
+                }}
                 onBlurCapture={onOpBlur}
-                onChange={onOpInputChange}
+                onChange={(value) => {
+                  setHasTypedOpName(value !== '');
+                  onOpInputChange(value);
+                }}
               />
             </div>
             {isTrackOffset ? (

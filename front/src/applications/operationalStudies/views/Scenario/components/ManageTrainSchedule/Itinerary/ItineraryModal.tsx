@@ -333,7 +333,6 @@ const ItineraryModal = ({
     activeStepKey,
     setActiveStepKey,
     getInputForStep,
-    isEditingStep,
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
@@ -1038,6 +1037,11 @@ const ItineraryModal = ({
                     }}
                     onAddCustomOp={() => {
                       confirmedStepKeyRef.current = pathStep.key;
+                      setPathSteps((prev) =>
+                        prev.map((step) =>
+                          step.key === pathStep.key ? { ...step, location: null } : step
+                        )
+                      );
                       if (!expandedStepKeys.includes(pathStep.key)) {
                         setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
                       }
@@ -1086,7 +1090,6 @@ const ItineraryModal = ({
                       unmarkEditing(pathStep.key);
                     }}
                     inputValue={getInputForStep(pathStep.key)}
-                    isEditing={isEditingStep(pathStep.key)}
                     opSuggestions={activeStepKey === pathStep.key ? opSuggestions : []}
                     onSelectOpSuggestion={(suggestion, chCode) => {
                       applyOperationalPointToStep(pathStep.key, suggestion, chCode);

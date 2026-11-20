@@ -65,8 +65,6 @@ export const useOperationalPointSearch = ({
     setDraftByStepKey((prev) => ({ ...prev, [stepKey]: value }));
   }, []);
 
-  const isEditingStep = (stepKey: string) => isEditingByStepKey[stepKey] ?? true;
-
   const getInputForStep = useCallback(
     (stepKey: string) => {
       const isEditing = isEditingByStepKey[stepKey] ?? true;
@@ -313,7 +311,6 @@ export const useOperationalPointSearch = ({
     activeStepKey,
     setActiveStepKey,
     getInputForStep,
-    isEditingStep,
     setInputForStep,
     opSuggestions: [...matchingCustomOps, ...opSuggestions],
     resetOpSuggestions,
