@@ -228,7 +228,7 @@ export type ScheduleConstraint = {
 };
 
 export enum StdcmStopTypes {
-  PASSAGE_TIME = 'passageTime',
+  WAYPOINT = 'waypoint',
   DRIVER_SWITCH = 'driverSwitch',
   SERVICE_STOP = 'serviceStop',
   OVERTAKE = 'overtake',

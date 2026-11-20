@@ -19,7 +19,7 @@ import { capitalizeFirstLetter } from 'utils/strings';
 
 export const MAX_TOLERANCE = new Duration({ minutes: 240 });
 const STOP_TYPE_MAPPING: Record<StdcmStopTypes, StepType> = {
-  [StdcmStopTypes.PASSAGE_TIME]: 'VIA',
+  [StdcmStopTypes.WAYPOINT]: 'VIA',
   [StdcmStopTypes.DRIVER_SWITCH]: 'DRIVER_SWITCH',
   [StdcmStopTypes.SERVICE_STOP]: 'STOP',
   [StdcmStopTypes.OVERTAKE]: 'VIA',
@@ -350,15 +350,15 @@ function consolidateBacktrackSteps(
   });
 }
 
-/** Ensure stops with no durations do not report a consist change or a stop type other than PASSAGE_TIME. */
+/** Ensure stops with no durations do not report a consist change or a stop type other than WAYPOINT. */
 function normalizeStopsWithoutDuration(ops: StdcmResultsOperationalPoint[]) {
   return ops.map((op, index) => ({
     ...op,
     stopType:
-      // stops without a duration but with a stop type and not at an extremity should be made PASSAGE_TIME
+      // stops without a duration but with a stop type and not at an extremity should be made WAYPOINT
       op.stopDuration || !op.stopType || index === 0 || index === ops.length - 1
         ? op.stopType
-        : StdcmStopTypes.PASSAGE_TIME,
+        : StdcmStopTypes.WAYPOINT,
     consistChange: op.stopDuration ? op.consistChange : undefined,
   }));
 }
