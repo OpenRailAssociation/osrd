@@ -8,10 +8,7 @@ import { useSelector } from 'react-redux';
 
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import useAuthz from 'common/authorization/hooks/useAuthz';
-import { setFailure } from 'reducers/main';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
-import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -46,7 +43,6 @@ const StdcmHeader = ({
   const { t } = useTranslation(['stdcm', 'translation']);
   const { isSuperUser } = useAuthz();
   const { impersonatedUser, impersonate } = useAuth();
-  const dispatch = useAppDispatch();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const [showRequestsSentModal, setShowRequestsSentModal] = useState(false);
 
@@ -54,36 +50,6 @@ const StdcmHeader = ({
     osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestAuthorized.useQuery(
       railwayManagerUrl ? undefined : skipToken
     );
-
-  const requestsFolderUrl =
-    osrdRailwayManagerApi.endpoints.getSendLastMinuteRequestFolderUrl.useQuery(
-      sendLMRAuthorizedResponse?.authorized ? undefined : skipToken
-    );
-
-  const openRequestsFolder = async () => {
-    try {
-      window.open(requestsFolderUrl.data!.url, '_blank', 'noopener,noreferrer');
-    } catch (err) {
-      dispatch(
-        setFailure(
-          castErrorToFailure(err, {
-            name: t('translation:common.error'),
-            message: t('header.errorRequestsFolder'),
-          })
-        )
-      );
-    }
-  };
-
-  const handleRequestsButton = async () => {
-    // TODO: remove openRequestsFolder() and related code
-    // when requests sent modal is fully done
-    if (isDebugMode) {
-      setShowRequestsSentModal(true);
-    } else {
-      await openRequestsFolder();
-    }
-  };
 
   return (
     <div className={cx('stdcm-header', impersonatedUser ? 'stdcm-header__impersonated' : 'd-flex')}>
@@ -101,21 +67,19 @@ const StdcmHeader = ({
             <Bug />
           </button>
         )}
-        {railwayManagerUrl &&
-          sendLMRAuthorizedResponse?.authorized &&
-          requestsFolderUrl.isSuccess && (
-            <button
-              data-testid="stdcm-requests-folder-button"
-              type="button"
-              aria-label={t('header.requests')}
-              className={cx('ml-4 px-3', {
-                'impersonated-bg': impersonatedUser,
-              })}
-              onClick={handleRequestsButton}
-            >
-              {t('header.requests')}
-            </button>
-          )}
+        {railwayManagerUrl && sendLMRAuthorizedResponse?.authorized && (
+          <button
+            data-testid="stdcm-requests-folder-button"
+            type="button"
+            aria-label={t('header.requests')}
+            className={cx('ml-4 px-3', {
+              'impersonated-bg': impersonatedUser,
+            })}
+            onClick={() => setShowRequestsSentModal(true)}
+          >
+            {t('header.requests')}
+          </button>
+        )}
         <button
           data-testid="stdcm-help-button"
           type="button"
