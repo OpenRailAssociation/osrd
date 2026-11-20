@@ -2239,6 +2239,22 @@ class EditoastTemporarySpeedLimitErrorNameAlreadyUsed(BaseModel):
     )
 
 
+class EditoastTimetableErrorBatchNotFoundContext(BaseModel):
+    timetable_ids: dict[str, Any]
+
+
+class EditoastTimetableErrorBatchNotFound(BaseModel):
+    context: Annotated[
+        EditoastTimetableErrorBatchNotFoundContext | None,
+        Field(title="EditoastTimetableErrorBatchNotFoundContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[404] = 404
+    type: Literal["editoast:timetable:BatchNotFound"] = (
+        "editoast:timetable:BatchNotFound"
+    )
+
+
 class EditoastTimetableErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastTimetableErrorDatabaseContext")
@@ -2262,6 +2278,37 @@ class EditoastTimetableErrorInfraNotFound(BaseModel):
     type: Literal["editoast:timetable:InfraNotFound"] = (
         "editoast:timetable:InfraNotFound"
     )
+
+
+class EditoastTimetableErrorInvalidInnersContext(BaseModel):
+    inner_ids: dict[str, Any]
+    outer_id: StrictInt
+
+
+class EditoastTimetableErrorInvalidInners(BaseModel):
+    context: Annotated[
+        EditoastTimetableErrorInvalidInnersContext | None,
+        Field(title="EditoastTimetableErrorInvalidInnersContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:InvalidInners"] = (
+        "editoast:timetable:InvalidInners"
+    )
+
+
+class EditoastTimetableErrorInvalidOuterContext(BaseModel):
+    timetable_id: StrictInt
+
+
+class EditoastTimetableErrorInvalidOuter(BaseModel):
+    context: Annotated[
+        EditoastTimetableErrorInvalidOuterContext | None,
+        Field(title="EditoastTimetableErrorInvalidOuterContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:InvalidOuter"] = "editoast:timetable:InvalidOuter"
 
 
 class EditoastTimetableErrorInvalidPeriodContext(BaseModel):
@@ -5182,8 +5229,11 @@ class EditoastError(
         | EditoastSubCategoryErrorNotFound
         | EditoastTemporarySpeedLimitErrorDatabase
         | EditoastTemporarySpeedLimitErrorNameAlreadyUsed
+        | EditoastTimetableErrorBatchNotFound
         | EditoastTimetableErrorDatabase
         | EditoastTimetableErrorInfraNotFound
+        | EditoastTimetableErrorInvalidInners
+        | EditoastTimetableErrorInvalidOuter
         | EditoastTimetableErrorInvalidPeriod
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
@@ -5352,8 +5402,11 @@ class EditoastError(
         | EditoastSubCategoryErrorNotFound
         | EditoastTemporarySpeedLimitErrorDatabase
         | EditoastTemporarySpeedLimitErrorNameAlreadyUsed
+        | EditoastTimetableErrorBatchNotFound
         | EditoastTimetableErrorDatabase
         | EditoastTimetableErrorInfraNotFound
+        | EditoastTimetableErrorInvalidInners
+        | EditoastTimetableErrorInvalidOuter
         | EditoastTimetableErrorInvalidPeriod
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError

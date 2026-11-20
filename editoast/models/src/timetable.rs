@@ -32,7 +32,7 @@ use crate::timetable_type::TimetableType;
 #[derive(Debug, Default, Clone, Model, Queryable, Selectable)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[model(table = database::tables::timetable)]
-#[model(gen(ops = crud, list))]
+#[model(gen(ops = crud, batch_ops = r, list))]
 #[diesel(table_name = database::tables::timetable)]
 pub struct Timetable {
     pub id: i64,

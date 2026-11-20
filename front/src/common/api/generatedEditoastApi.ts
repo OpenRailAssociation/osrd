@@ -1233,6 +1233,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
+      putTimetableByIdInners: build.mutation<
+        PutTimetableByIdInnersApiResponse,
+        PutTimetableByIdInnersApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/inners`,
+          method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['timetable'],
+      }),
       postTimetableByIdPathStepsLocalTrackNames: build.query<
         PostTimetableByIdPathStepsLocalTrackNamesApiResponse,
         PostTimetableByIdPathStepsLocalTrackNamesApiArg
@@ -2711,6 +2722,14 @@ export type GetTimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
+};
+export type PutTimetableByIdInnersApiResponse = unknown;
+export type PutTimetableByIdInnersApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: {
+    inner_timetable_ids: number[];
+  };
 };
 export type PostTimetableByIdPathStepsLocalTrackNamesApiResponse =
   /** status 200 For each requested operational point reference, returns under its client-provided key the set of local track names found in the timetable's train schedules path step inputs */ {
