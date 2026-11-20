@@ -164,6 +164,40 @@ describe('useScenario', () => {
     });
   });
 
+  it('should only sync the timetable in the URL when the active timetable id changes', () => {
+    mocks.useGetScenario.mockReturnValue({
+      data: mockScenario,
+      isError: false,
+      error: undefined,
+    });
+
+    const { rerender } = renderHook(() => useScenario());
+
+    expect(mocks.setParamsInUrlAndStorage).toHaveBeenCalledOnce();
+    expect(mocks.setParamsInUrlAndStorage).toHaveBeenCalledWith('timetable', '100');
+
+    // Refetched scenario: same timetable, but a new object
+    mocks.useGetScenario.mockReturnValue({
+      data: { ...mockScenario, timetable_summaries: [{ id: 100, type: 'CALENDAR' }] },
+      isError: false,
+      error: undefined,
+    });
+    rerender();
+
+    expect(mocks.setParamsInUrlAndStorage).toHaveBeenCalledOnce();
+
+    // Another timetable becomes the active one
+    mocks.useGetScenario.mockReturnValue({
+      data: { ...mockScenario, timetable_summaries: [{ id: 200, type: 'HOURLY' }] },
+      isError: false,
+      error: undefined,
+    });
+    rerender();
+
+    expect(mocks.setParamsInUrlAndStorage).toHaveBeenCalledTimes(2);
+    expect(mocks.setParamsInUrlAndStorage).toHaveBeenLastCalledWith('timetable', '200');
+  });
+
   it('should reset infraID and trainIdUsedForProjection when no scenario is loaded', () => {
     mocks.useGetScenario.mockReturnValue({
       data: undefined,
