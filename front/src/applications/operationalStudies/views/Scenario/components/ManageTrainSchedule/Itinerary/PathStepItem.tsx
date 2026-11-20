@@ -336,7 +336,7 @@ const PathStepItem = ({
   const isOpValid = pathStepMetadata?.validity === 'valid';
 
   const comboBoxValue = useMemo(() => {
-    if (isTrackOffset) return trackOffsetLabel;
+    if (isTrackOffset) return (unrecognizedWaypointsActivated && subFormName) || trackOffsetLabel;
     if (shouldShowInvalidMessage && !unrecognizedWaypointsActivated) {
       return '';
     }
@@ -347,7 +347,7 @@ const PathStepItem = ({
       return formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode);
     }
 
-    if (shouldShowInvalidMessage) return getUnrecognizedOpLabel(pathStep.location);
+    if (shouldShowInvalidMessage) return subFormName || getUnrecognizedOpLabel(pathStep.location);
 
     return undefined;
   }, [
@@ -358,6 +358,7 @@ const PathStepItem = ({
     shouldShowInvalidMessage,
     unrecognizedWaypointsActivated,
     pathStep.location,
+    subFormName,
   ]);
 
   const maxVisibleSuggestions = 8;
