@@ -15,8 +15,12 @@
     grid-template-columns: auto;
   }
 
-  &.editable:not(.empty, .editing) {
-    color: var(--primary60);
+  &.editable {
+    cursor: pointer;
+
+    &:not(.empty, .editing) {
+      color: var(--primary60);
+    }
   }
 
   .input {
