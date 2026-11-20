@@ -621,6 +621,10 @@ const PathStepItem = ({
                 onBlurCapture={onOpBlur}
                 onChange={(value) => {
                   setHasTypedOpName(value !== '');
+                  if (value === '') {
+                    setSubFormName('');
+                    onOpClear();
+                  }
                   onOpInputChange(value);
                 }}
               />
