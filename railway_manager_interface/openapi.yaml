@@ -25,25 +25,19 @@ paths:
             enum:
               - gzip
               - zip
+        - name: infra_id
+          in: query
+          schema:
+            type: integer
+          description: The id of the infrastructure used by the timetable in which to import the file
       requestBody:
         description: Arbitrary file to transform into a standard OSRD timetable json file
         required: true
         content:
-          multipart/form-data:
+          application/octet-stream:
             schema:
-              type: object
-              properties:
-                infra_id:
-                  type: number
-                timetable_file:
-                  type: string
-                  format: binary
-              required:
-                - infra_id
-                - timetable_file
-            encoding:
-              timetable_file:
-                contentType: application/octet-stream
+              type: string
+              format: binary
       responses:
         '200':
           description: Timetable successfully transformed

@@ -40,7 +40,8 @@ const useImportTrainSchedules = () => {
     }
     try {
       const { paced_trains: train_schedules, ...rest } = await postTransformTimetable({
-        body: { infra_id: infraId, timetable_file: file },
+        infraId,
+        body: file,
         // TODO: pass the proper compression header or drop compression support
       }).unwrap();
       return { ...rest, train_schedules };

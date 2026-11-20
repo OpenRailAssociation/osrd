@@ -17,6 +17,9 @@ const injectedRtkApi = api
           headers: {
             'content-encoding': queryArg['content-encoding'],
           },
+          params: {
+            infra_id: queryArg.infraId,
+          },
         }),
         invalidatesTags: ['timetable'],
       }),
@@ -65,11 +68,10 @@ export type PostTransformTimetableApiResponse =
 export type PostTransformTimetableApiArg = {
   /** Compression method used for the request body */
   'content-encoding'?: 'gzip' | 'zip';
+  /** The id of the infrastructure used by the timetable in which to import the file */
+  infraId?: number;
   /** Arbitrary file to transform into a standard OSRD timetable json file */
-  body: {
-    infra_id: number;
-    timetable_file: Blob;
-  };
+  body: Blob;
 };
 export type GetSendLastMinuteRequestAuthorizedApiResponse = /** status 200 Authorization result */ {
   /** Whether the user is authenticated and authorized to send last-minute requests */
