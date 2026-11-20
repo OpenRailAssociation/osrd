@@ -828,7 +828,7 @@
     "shortSlipDistance": "Kurzer Durchrutschweg",
     "statusMessage": {
       "marginNotMet": "Nicht eingehaltene Rand",
-      "scheduleNotMet": "Nicht eingehaltene Wunschtermint",
+      "scheduleNotMet": "Nicht eingehaltene Wunschtermin",
       "timeConstraintMet": "Zeitliche Vorgaben eingehalten"
     },
     "stopTime": "Haltezeit",
