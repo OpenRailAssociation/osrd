@@ -11,7 +11,6 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -35,7 +34,7 @@ import { formatOpLabel } from '../views/Scenario/components/ManageTrainSchedule/
 
 type Params = {
   scenarioId: number;
-  pathSteps: PathStep[];
+  extraSuggestions: OperationalPointSuggestion[];
   pageSize?: number;
   minChars?: number;
   debounceMs?: number;
@@ -43,7 +42,7 @@ type Params = {
 
 export const useOperationalPointSearch = ({
   scenarioId,
-  pathSteps,
+  extraSuggestions,
   pageSize = 1000,
   minChars = 2,
   debounceMs = 300,
@@ -74,18 +73,11 @@ export const useOperationalPointSearch = ({
   );
 
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
-  const [customOps, setCustomOps] = useState<OperationalPointSuggestion[]>([]);
 
-  const addCustomOp = useCallback((customOp: OperationalPointSuggestion) => {
-    setCustomOps((prev) => [...prev.filter((op) => op.id !== customOp.id), customOp]);
-  }, []);
-
-  const customOpQuery = rawActiveInput.trim().toLowerCase();
-  const matchingCustomOps = customOpQuery
-    ? customOps.filter(
-        (op) =>
-          op.name.toLowerCase().includes(customOpQuery) ||
-          op.mainCode.toLowerCase().includes(customOpQuery)
+  const query = rawActiveInput.trim().toLowerCase();
+  const matchingExtraSuggestions = query
+    ? extraSuggestions.filter(
+        (op) => op.name.toLowerCase().includes(query) || op.mainCode.toLowerCase().includes(query)
       )
     : [];
 
@@ -312,9 +304,8 @@ export const useOperationalPointSearch = ({
     setActiveStepKey,
     getInputForStep,
     setInputForStep,
-    opSuggestions: [...matchingCustomOps, ...opSuggestions],
+    opSuggestions: [...matchingExtraSuggestions, ...opSuggestions],
     resetOpSuggestions,
-    addCustomOp,
     doesOpExist,
     formatChosenValue,
     commitSelectionForStep,

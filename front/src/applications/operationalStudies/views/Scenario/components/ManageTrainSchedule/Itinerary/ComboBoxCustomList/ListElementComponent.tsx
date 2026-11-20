@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
-import { NoEntry } from '@osrd-project/ui-icons';
+import { InfrastructureInvalid, NoEntry, TrackOffset } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+
+import type { PathItemLocation } from 'common/api/osrdEditoastApi';
 
 import './ListElementComponent.scss';
 
@@ -10,6 +12,7 @@ export type OpSecondaryCode = {
   name: string | null;
   isCandidate?: boolean;
   isBestSuggestion?: boolean;
+  isPending?: boolean;
 };
 
 export type OperationalPointSuggestion = {
@@ -19,7 +22,8 @@ export type OperationalPointSuggestion = {
   name: string;
   countryCode: string;
   secondaryCodeList: OpSecondaryCode[];
-  source: 'infra' | 'custom' | 'macroNode';
+  source: 'infra' | 'pending' | 'macroNode';
+  location?: PathItemLocation;
 };
 
 export type ListElementComponentProps = {
@@ -37,6 +41,8 @@ export const ListElementComponent = ({
   onSelect,
 }: ListElementComponentProps) => {
   const [isNameHovered, setIsNameHovered] = useState(false);
+  const isCustom = suggestion.source === 'pending';
+  const isTrackOffset = suggestion.location?.type === 'track_offset';
 
   return (
     <div
@@ -55,7 +61,19 @@ export const ListElementComponent = ({
         onSelect?.(suggestion, defaultSecondaryCode);
       }}
     >
-      <span className="op-suggestion-main-code">{suggestion.mainCode}</span>
+      {isCustom && !isTrackOffset && (
+        <span className="op-suggestion-custom-icon">
+          <InfrastructureInvalid size="lg" />
+        </span>
+      )}
+
+      <span
+        className={cx('op-suggestion-main-code', {
+          'op-suggestion-main-code--custom': isCustom,
+        })}
+      >
+        {isTrackOffset ? <TrackOffset size="lg" /> : suggestion.mainCode}
+      </span>
 
       <span
         className="op-suggestion-name"
@@ -72,6 +90,7 @@ export const ListElementComponent = ({
             type="button"
             className={cx('op-suggestion-secondary-code', {
               'op-suggestion-secondary-code--best': secondaryCode.isBestSuggestion,
+              'op-suggestion-secondary-code--pending': secondaryCode.isPending,
               'op-suggestion-secondary-code--inactive': secondaryCode.isCandidate === false,
             })}
             disabled={secondaryCode.isCandidate === false}

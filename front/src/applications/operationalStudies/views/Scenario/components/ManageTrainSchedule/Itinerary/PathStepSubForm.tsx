@@ -306,7 +306,7 @@ const PathStepSubForm = ({
         <Input
           id={`path-step-subform-name-${pathStep.key}`}
           label={t('name')}
-          readOnly={isOpValid}
+          readOnly={isOpValid && pathStep.location?.type !== 'track_offset'}
           small
           value={subFormName}
           onChange={(e) => onNameChange(e.target.value)}

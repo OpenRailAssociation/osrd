@@ -95,6 +95,7 @@ type PathStepProps = {
   onCustomOpCreation: OnCustomOpCreation;
   doesOpExist: isOpDuplicate;
   onSubFormHasErrors: OnSubFormHasErrors;
+  onSubFormNameChange: (name: string) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
@@ -135,6 +136,7 @@ const PathStepItem = ({
   onCustomOpCreation,
   doesOpExist,
   onSubFormHasErrors,
+  onSubFormNameChange,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -723,7 +725,10 @@ const PathStepItem = ({
         isSubFormExpanded={isSubFormExpanded}
         isOpValid={isOpValid}
         name={subFormName}
-        onNameChange={setSubFormName}
+        onNameChange={(name) => {
+          setSubFormName(name);
+          onSubFormNameChange(name);
+        }}
         onCustomOpCreation={onCustomOpCreation}
         doesOpExist={doesOpExist}
         onSubFormHasErrors={onSubFormHasErrors}

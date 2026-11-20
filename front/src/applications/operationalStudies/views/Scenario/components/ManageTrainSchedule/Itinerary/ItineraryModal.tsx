@@ -18,6 +18,7 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useCustomOps } from 'applications/operationalStudies/hooks/useCustomOps';
 import {
   useItineraryModalContext,
   type TrainScheduleToEditData,
@@ -329,6 +330,17 @@ const ItineraryModal = ({
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 
+  const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
+    pathSteps,
+    pendingStepKeyRef
+  );
+
+  const { customOpSuggestions, addCustomOp, setUnknownOpName, findExistingOp } = useCustomOps({
+    scenarioId: scenario.id,
+    pathSteps,
+    pathStepsMetadataByKey,
+  });
+
   const {
     activeStepKey,
     setActiveStepKey,
@@ -336,18 +348,12 @@ const ItineraryModal = ({
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
-    addCustomOp,
     doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
-  } = useOperationalPointSearch({ scenarioId: scenario.id, pathSteps });
-
-  const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
-    pathSteps,
-    pendingStepKeyRef
-  );
+  } = useOperationalPointSearch({ scenarioId: scenario.id, extraSuggestions: customOpSuggestions });
   const { launchPathfinding, pathProperties, pathfindingError } = usePathfinding();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
@@ -390,7 +396,7 @@ const ItineraryModal = ({
       secondary_code: chosenSecondaryCode,
       country_code: suggestion.countryCode,
     };
-    const newLocation: PathItemLocation = {
+    const newLocation: PathItemLocation = suggestion.location ?? {
       type: 'operational_point_part_reference',
       operational_point: opRef,
     };
@@ -409,9 +415,14 @@ const ItineraryModal = ({
   const handleCustomOpCreation = (
     stepKey: string,
     name: string,
-    opRef: DomesticOperationalPointReference
+    opRef: DomesticOperationalPointReference,
+    existingOp: OperationalPointSuggestion | null
   ) => {
-    const customOp = buildCustomOpSuggestion(name, opRef);
+    const customOp = buildCustomOpSuggestion(
+      name,
+      { type: 'operational_point_part_reference', operational_point: opRef },
+      existingOp
+    );
     addCustomOp(customOp);
     applyOperationalPointToStep(stepKey, customOp, opRef.secondary_code ?? null);
   };
@@ -1046,10 +1057,11 @@ const ItineraryModal = ({
                         setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
                       }
                     }}
-                    onCustomOpCreation={(name, opRef) =>
-                      handleCustomOpCreation(pathStep.key, name, opRef)
+                    onCustomOpCreation={(name, opRef, existingOp) =>
+                      handleCustomOpCreation(pathStep.key, name, opRef, existingOp)
                     }
                     doesOpExist={doesOpExist}
+                    onSubFormNameChange={(name) => setUnknownOpName(pathStep.key, name)}
                     onSubFormHasErrors={(hasErrors) => {
                       subFormHasErrorsByStepKey.current[pathStep.key] = hasErrors;
                     }}
