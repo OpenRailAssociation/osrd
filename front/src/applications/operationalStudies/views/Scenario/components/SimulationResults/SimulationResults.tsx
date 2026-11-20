@@ -233,7 +233,13 @@ const SimulationResults = ({
     prevSddDataRef.current = sddData;
   }, [sddData]);
 
-  if (!simulationResults && !projectionData) {
+  const onlyTableBoardActive =
+    activeBoards.has('table') &&
+    !activeBoards.has('map') &&
+    !activeBoards.has('std') &&
+    !activeBoards.has('sdd');
+
+  if (!simulationResults && (!projectionData || onlyTableBoardActive)) {
     return null;
   }
 
