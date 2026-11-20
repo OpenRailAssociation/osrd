@@ -149,16 +149,17 @@ data class TrainState(
         this.position <= other.position && this.time <= other.time
 
     /**
-     * Merge two states such that the result is the least constrained while still being more
-     * constrained than both arguments.
+     * Given the [previous] state of the train, merge `this` and [mostConstrained] such that the
+     * result is the least constrained while still being more constrained than both.
      *
-     * TODO document/define this better
+     * a train state is more "constrained" than the other when:
+     * - it accelerates less
+     * - its pantograph is at a lower position
+     *
+     * Both the acceleration and the pantograph can be adjusted independently, so this function
+     * takes the minimum between `this` and [mostConstrained] for both.
      */
-    fun merge(previous: TrainState, mostConstrained: TrainState?): TrainState {
-        if (mostConstrained == null) {
-            return this
-        }
-
+    fun merge(previous: TrainState, mostConstrained: TrainState): TrainState {
         val timeDelta = time - previous.time
         val constrainedTimeDelta = mostConstrained.time - previous.time
 
