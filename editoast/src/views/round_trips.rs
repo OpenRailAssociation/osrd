@@ -28,7 +28,7 @@ use utoipa::openapi::Schema;
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum RoundTripsError {
     #[error("The payload contains duplicate train IDs which is not allowed")]
-    #[view_error(status = BAD_REQUEST, context)]
+    #[view_error(status = BAD_REQUEST)]
     DuplicateTrainIds,
 
     #[error(transparent)]
