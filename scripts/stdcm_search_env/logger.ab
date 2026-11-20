@@ -1,0 +1,23 @@
+import { date_now, date_format_posix } from "std/date"
+import { echo_colored } from "std/env"
+
+const BLUE = 34
+const YELLOW = 33
+const RED = 31
+
+fun log_message(level: Text, message: Text, color: Int): Null {
+    const timestamp = trust date_format_posix(date_now(), "%F %T")
+    echo_colored("{timestamp} [{level}] {message}", color)
+}
+
+pub fun log_info(message: Text): Null {
+    log_message("INFO", message, BLUE)
+}
+
+pub fun log_warning(message: Text): Null {
+    log_message("WARNING", message, YELLOW)
+}
+
+pub fun log_error(message: Text): Null {
+    log_message("ERROR", message, RED)
+}
