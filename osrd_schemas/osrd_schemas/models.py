@@ -4820,13 +4820,6 @@ class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
     """
 
 
-class SendLastMinuteRequestFolderUrlGetResponse(BaseModel):
-    url: StrictStr
-    """
-    The url of the folder
-    """
-
-
 class SendLastMinuteRequestStatusesPostRequest(RootModel[list[StrictStr]]):
     root: list[StrictStr]
 
