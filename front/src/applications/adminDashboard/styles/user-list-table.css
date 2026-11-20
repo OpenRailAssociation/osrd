@@ -39,11 +39,11 @@
     border-bottom: 1px solid var(--black25);
   }
 
-  &:nth-child(even) {
+  &:nth-child(odd of .user-row) {
     background-color: var(--white100);
   }
 
-  &:nth-child(odd) {
+  &:nth-child(even of .user-row) {
     background-color: var(--grey5);
   }
 
