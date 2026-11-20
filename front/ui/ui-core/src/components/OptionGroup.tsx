@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
 import useOutsideClick from '../hooks/useOutsideClick';
@@ -68,6 +69,7 @@ const OptionGroup = <T,>({
       >
         {!isOpen && selectedSection?.icon}
         <span className="option-group-trigger-label">{selectedItem?.label}</span>
+        {isOpen ? <ChevronUp size="sm" /> : <ChevronDown size="sm" />}
       </button>
       {isOpen && (
         <div
