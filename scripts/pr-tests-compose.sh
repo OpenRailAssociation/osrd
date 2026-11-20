@@ -69,20 +69,23 @@ if [ "$1" = "down" ]; then
 elif [ "$1" = "down-and-clean" ]; then
 
     # Shutdown and clean the docker instance (remove "osrd" images too)
+    # `images` prints `null` when none of these containers exist (e.g. after a failed `up`)
     osrd_images=$(docker compose \
         -p "osrd-pr-tests" \
         -f "docker/docker-compose.pr-tests.yml" \
         images --format json \
         core editoast osrdyne gateway front \
-        | jq --raw-output '.[].ID')
+        | jq --raw-output '.[]?.ID')
 
     docker compose \
         -p "osrd-pr-tests" \
         -f "docker/docker-compose.pr-tests.yml" \
         down -v
 
-    # shellcheck disable=SC2086
-    docker rmi ${osrd_images}
+    if [ -n "${osrd_images}" ]; then
+        # shellcheck disable=SC2086
+        docker rmi ${osrd_images}
+    fi
 
 elif [ "$1" = "rmi" ]; then
 
