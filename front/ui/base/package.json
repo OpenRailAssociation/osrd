@@ -13,7 +13,7 @@
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.6.2",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-storybook": "^10.6.6",
+    "eslint-plugin-storybook": "^10.6.7",
     "oxfmt": "^0.77.0",
     "postcss": "^8.5.28",
     "postcss-assets": "^6.0.0",
