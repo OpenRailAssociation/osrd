@@ -9,41 +9,48 @@ import type { PathStepMetadata, PathStep } from 'reducers/osrdconf/types';
 import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { toUpper } from 'utils/strings';
 
-import type { DomesticOperationalPointReference } from '../types';
+import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { isOpRefMetadata } from './utils';
-
-export type OnCustomOpCreation = (name: string, opRef: DomesticOperationalPointReference) => void;
-export type isOpDuplicate = (
-  stepKey: string,
-  countryCode: string,
-  mainCode: string
-) => Promise<boolean>;
-export type OnSubFormHasErrors = (hasErrors: boolean) => void;
 
 type PathStepSubFormFieldsProps = {
   pathStep: PathStep;
   isOpValid: boolean;
-  name: string;
-  onCustomOpCreation: OnCustomOpCreation;
-  doesOpExist: isOpDuplicate;
-  onSubFormHasErrors: OnSubFormHasErrors;
-  subFormRef: RefObject<HTMLDivElement | null>;
 };
 
+export type OnCustomOpCreation = (
+  name: string,
+  opRef: DomesticOperationalPointReference,
+  existingOp: OperationalPointSuggestion | null
+) => void;
+export type FindExistingOp = (
+  countryCode: string,
+  mainCode: string
+) => Promise<OperationalPointSuggestion | null>;
+export type OnSubFormHasErrors = (hasErrors: boolean) => void;
+
+export type DomesticOperationalPointReference = Extract<
+  OperationalPointReference,
+  { type: 'domestic' }
+>;
 type UicOperationalPointReference = Extract<OperationalPointReference, { type: 'uic' }>;
 type IdOperationalPointReference = Extract<OperationalPointReference, { type: 'id' }>;
 
 const DomesticFields = ({
   pathStep,
   isOpValid,
+  operationalPoint,
   name,
   onCustomOpCreation,
-  doesOpExist,
+  findExistingOp,
   onSubFormHasErrors,
   subFormRef,
-  operationalPoint,
 }: PathStepSubFormFieldsProps & {
   operationalPoint: DomesticOperationalPointReference | undefined;
+  name: string;
+  onCustomOpCreation: OnCustomOpCreation;
+  findExistingOp: FindExistingOp;
+  onSubFormHasErrors: OnSubFormHasErrors;
+  subFormRef: RefObject<HTMLDivElement | null>;
 }) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
@@ -57,6 +64,26 @@ const DomesticFields = ({
   const [subFormSecondaryCode, setSubFormSecondaryCode] = useState<string>(defaultSecondaryCode);
   const [countryCodeError, setCountryCodeError] = useState<string>();
   const [mainCodeError, setMainCodeError] = useState<string>();
+  const [isExistingMainCode, setIsExistingMainCode] = useState(false);
+
+  // this is to check if the user has changed the codes of the current step, if not, we don't want to show an error message (when the step is re used in the itinerary)
+  const isStepCurrentOp =
+    toUpper(subFormCountryCode) === defaultCountryCode &&
+    toUpper(subFormMainCode) === defaultMainCode &&
+    toUpper(subFormSecondaryCode) === defaultSecondaryCode;
+
+  const [prevOperationalPoint, setPrevOperationalPoint] = useState(operationalPoint);
+  if (operationalPoint !== prevOperationalPoint) {
+    setPrevOperationalPoint(operationalPoint);
+    if (!isStepCurrentOp) {
+      setSubFormCountryCode(defaultCountryCode);
+      setSubFormMainCode(defaultMainCode);
+      setSubFormSecondaryCode(defaultSecondaryCode);
+      setCountryCodeError(undefined);
+      setMainCodeError(undefined);
+      setIsExistingMainCode(false);
+    }
+  }
 
   const validateCustomOp = async () => {
     const countryCode = toUpper(subFormCountryCode);
@@ -64,11 +91,6 @@ const DomesticFields = ({
     const secondaryCode = toUpper(subFormSecondaryCode);
     if (isOpValid) return;
 
-    // this is to check if the user has changed the codes of the current step, if not, we don't want to show an error message (when the step is re used in the itinerary)
-    const isStepCurrentOp =
-      subFormCountryCode === defaultCountryCode &&
-      subFormMainCode === defaultMainCode &&
-      subFormSecondaryCode === defaultSecondaryCode;
     if (isStepCurrentOp) {
       setCountryCodeError(undefined);
       setMainCodeError(undefined);
@@ -77,21 +99,30 @@ const DomesticFields = ({
     }
 
     const hasMissingCode = !countryCode || !mainCode;
-    const isDuplicate = !hasMissingCode && (await doesOpExist(pathStep.key, countryCode, mainCode));
+    const existingOp = hasMissingCode ? null : await findExistingOp(countryCode, mainCode);
+    const existingOpSameSecondaryCode = !!existingOp?.secondaryCodeList.some(
+      (sc) => (sc.code ?? '') === secondaryCode
+    );
 
     setCountryCodeError(countryCode ? undefined : t('missingCountryCode'));
     setMainCodeError(
-      isDuplicate ? t('existingOp') : mainCode ? undefined : t('missingPrimaryCode')
+      existingOpSameSecondaryCode ? t('existingOp') : mainCode ? undefined : t('missingPrimaryCode')
     );
-    onSubFormHasErrors(hasMissingCode || isDuplicate);
-    if (hasMissingCode || isDuplicate) return;
+    onSubFormHasErrors(hasMissingCode || existingOpSameSecondaryCode);
+    if (hasMissingCode || existingOpSameSecondaryCode) return;
 
-    onCustomOpCreation(name || mainCode, {
-      type: 'domestic',
-      country_code: countryCode,
-      main_code: mainCode,
-      secondary_code: secondaryCode || undefined,
-    });
+    setIsExistingMainCode(!!existingOp && existingOp.name !== name);
+
+    onCustomOpCreation(
+      existingOp?.name || name,
+      {
+        type: 'domestic',
+        country_code: countryCode,
+        main_code: mainCode,
+        secondary_code: secondaryCode || undefined,
+      },
+      existingOp
+    );
   };
 
   useOutsideClick(subFormRef, validateCustomOp);
@@ -144,6 +175,11 @@ const DomesticFields = ({
             <p className="path-step-subform-error-message">{countryCodeError}</p>
           )}
           {mainCodeError && <p className="path-step-subform-error-message">{mainCodeError}</p>}
+        </div>
+      )}
+      {isExistingMainCode && (
+        <div className="path-step-subform-warning-box" data-testid="path-step-subform-warning-box">
+          <p className="path-step-subform-error-message">{t('existingMainCode')}</p>
         </div>
       )}
     </div>
@@ -256,7 +292,7 @@ type PathStepSubFormProps = {
   name: string;
   onNameChange: (name: string) => void;
   onCustomOpCreation: OnCustomOpCreation;
-  doesOpExist: isOpDuplicate;
+  findExistingOp: FindExistingOp;
   onSubFormHasErrors: OnSubFormHasErrors;
 };
 
@@ -268,7 +304,7 @@ const PathStepSubForm = ({
   name,
   onNameChange,
   onCustomOpCreation,
-  doesOpExist,
+  findExistingOp,
   onSubFormHasErrors,
 }: PathStepSubFormProps) => {
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
@@ -282,22 +318,26 @@ const PathStepSubForm = ({
   if (!unrecognizedWaypointsActivated || !isSubFormExpanded) return;
 
   const specificFields = () => {
-    const commonProps = {
-      pathStep,
-      isOpValid,
-      name: subFormName,
-      onCustomOpCreation,
-      doesOpExist,
-      onSubFormHasErrors,
-      subFormRef,
-    };
     const loc = pathStep.location;
     if (loc?.type === 'track_offset')
-      return <TrackOffsetFields {...commonProps} trackOffset={loc} />;
+      return <TrackOffsetFields pathStep={pathStep} isOpValid={isOpValid} trackOffset={loc} />;
     const op = loc?.operational_point;
-    if (op?.type === 'uic') return <UicFields {...commonProps} operationalPoint={op} />;
-    if (op?.type === 'id') return <OpIdFields {...commonProps} operationalPoint={op} />;
-    return <DomesticFields {...commonProps} operationalPoint={op} />;
+    if (op?.type === 'uic')
+      return <UicFields pathStep={pathStep} isOpValid={isOpValid} operationalPoint={op} />;
+    if (op?.type === 'id')
+      return <OpIdFields pathStep={pathStep} isOpValid={isOpValid} operationalPoint={op} />;
+    return (
+      <DomesticFields
+        pathStep={pathStep}
+        isOpValid={isOpValid}
+        operationalPoint={op}
+        name={subFormName}
+        onCustomOpCreation={onCustomOpCreation}
+        findExistingOp={findExistingOp}
+        onSubFormHasErrors={onSubFormHasErrors}
+        subFormRef={subFormRef}
+      />
+    );
   };
 
   return (

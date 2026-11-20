@@ -451,6 +451,7 @@
       "collapseSubForm": "Collapse details",
       "countryCode": "Country code",
       "destination": "Destination",
+      "existingMainCode": "This primary code already exists in this country,\nits name has been deducted",
       "existingOp": "This operational point already exists",
       "expandSubForm": "Expand details",
       "focusLocationOnMap": "Focus the map on this operational point",

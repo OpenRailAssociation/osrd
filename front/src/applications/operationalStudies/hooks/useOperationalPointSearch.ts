@@ -161,36 +161,6 @@ export const useOperationalPointSearch = ({
   );
 
   const searchMacroNodesToBuildSuggestions = useSearchMacroNodes(scenarioId, pageSize);
-  const doesOpExist = useCallback(
-    async (stepKey: string, countryCode: string, mainCode: string) => {
-      const isUsedByAnotherStep = pathSteps.some(
-        ({ key, location }) =>
-          key !== stepKey &&
-          location?.type === 'operational_point_part_reference' &&
-          location.operational_point.type === 'domestic' &&
-          location.operational_point.country_code === countryCode &&
-          location.operational_point.main_code === mainCode
-      );
-      if (isUsedByAnotherStep) return true;
-
-      const [infraOps, macroNodeSuggestions] = await Promise.all([
-        postSearch(
-          { searchPayload: exactTrigramPayload(infraId, mainCode), pageSize },
-          true
-        ).unwrap() as Promise<SearchResultItemOperationalPoint[]>,
-        searchMacroNodesToBuildSuggestions(mainCode),
-      ]);
-      return (
-        infraOps.some((op) => op.country_code === countryCode) ||
-        macroNodeSuggestions.some(
-          (macroNodeSuggestion) =>
-            macroNodeSuggestion.countryCode === countryCode &&
-            macroNodeSuggestion.mainCode === mainCode
-        )
-      );
-    },
-    [pathSteps, postSearch, infraId, pageSize, searchMacroNodesToBuildSuggestions]
-  );
 
   useEffect(() => {
     if (!activeStepKey) return;
@@ -307,7 +277,6 @@ export const useOperationalPointSearch = ({
     setInputForStep,
     opSuggestions: [...matchingExtraSuggestions, ...opSuggestions],
     resetOpSuggestions,
-    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     startEditingForStep,

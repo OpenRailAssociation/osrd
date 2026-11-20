@@ -34,7 +34,7 @@ import {
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
 import PathStepSubForm, {
-  type isOpDuplicate,
+  type FindExistingOp,
   type OnCustomOpCreation,
   type OnSubFormHasErrors,
 } from './PathStepSubForm';
@@ -93,7 +93,7 @@ type PathStepProps = {
   onTrackNameChange: (trackName: string) => void;
   onAddCustomOp: () => void;
   onCustomOpCreation: OnCustomOpCreation;
-  doesOpExist: isOpDuplicate;
+  findExistingOp: FindExistingOp;
   onSubFormHasErrors: OnSubFormHasErrors;
   onSubFormNameChange: (name: string) => void;
   onOpFocus: () => void;
@@ -134,7 +134,7 @@ const PathStepItem = ({
   onTrackNameChange,
   onAddCustomOp,
   onCustomOpCreation,
-  doesOpExist,
+  findExistingOp,
   onSubFormHasErrors,
   onSubFormNameChange,
   onOpFocus,
@@ -729,8 +729,11 @@ const PathStepItem = ({
           setSubFormName(name);
           onSubFormNameChange(name);
         }}
-        onCustomOpCreation={onCustomOpCreation}
-        doesOpExist={doesOpExist}
+        onCustomOpCreation={(name, opRef, existingOp) => {
+          setSubFormName(name);
+          onCustomOpCreation(name, opRef, existingOp);
+        }}
+        findExistingOp={findExistingOp}
         onSubFormHasErrors={onSubFormHasErrors}
       />
     </div>

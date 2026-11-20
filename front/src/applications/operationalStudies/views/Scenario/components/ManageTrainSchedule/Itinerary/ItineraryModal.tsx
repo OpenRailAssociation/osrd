@@ -75,7 +75,7 @@ import {
 import { useCreateTrainSchedule } from '../hooks/useCreateTrainSchedule';
 import useMapTrackSelection from '../hooks/useMapTrackSelection';
 import useUpdateTrainSchedule from '../hooks/useUpdateTrainSchedule';
-import type { DomesticOperationalPointReference, FeatureInfoClick } from '../types';
+import type { FeatureInfoClick } from '../types';
 import type { OperationalPointSuggestion } from './ComboBoxCustomList/ListElementComponent';
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import IntermediateWaypointsPanel from './IntermediateWaypointsPanel/IntermediateWaypointsPanel';
@@ -83,6 +83,7 @@ import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
+import type { DomesticOperationalPointReference } from './PathStepSubForm';
 import { computePathStepCoordinates, formatOpLabel, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
@@ -292,12 +293,14 @@ const ItineraryModal = ({
   // Make a custom setter for pathSteps so that we remember to also set submitAttempted to false.
   const [pathSteps, setPathStepsRaw] = useState<PathStep[]>([]);
   const [submitAttempted, setSubmitAttempted] = useState(false);
-
-  const subFormHasErrorsByStepKey = useRef<Record<string, boolean>>({});
   const setPathSteps = useCallback((newPathSteps: SetStateAction<PathStep[]>) => {
     setPathStepsRaw(newPathSteps);
     setSubmitAttempted(false);
   }, []);
+
+  const [subFormHasErrorsByStepKey, setSubFormHasErrorsByStepKey] = useState<
+    Record<string, boolean>
+  >({});
 
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
   const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
@@ -348,7 +351,6 @@ const ItineraryModal = ({
     setInputForStep,
     opSuggestions,
     resetOpSuggestions,
-    doesOpExist,
     formatChosenValue,
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
@@ -387,6 +389,7 @@ const ItineraryModal = ({
     forcedCh?: string | null
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
+    setSubFormHasErrorsByStepKey((prev) => ({ ...prev, [stepKey]: false }));
     pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
@@ -766,7 +769,7 @@ const ItineraryModal = ({
 
   const submitItinerary = async (trainType?: EditingTrainType) => {
     const hasSubFormErrors = pathSteps.some(
-      ({ key }) => expandedStepKeys.includes(key) && subFormHasErrorsByStepKey.current[key]
+      ({ key }) => expandedStepKeys.includes(key) && subFormHasErrorsByStepKey[key]
     );
     if (hasSubFormErrors) return;
 
@@ -1060,10 +1063,13 @@ const ItineraryModal = ({
                     onCustomOpCreation={(name, opRef, existingOp) =>
                       handleCustomOpCreation(pathStep.key, name, opRef, existingOp)
                     }
-                    doesOpExist={doesOpExist}
+                    findExistingOp={findExistingOp}
                     onSubFormNameChange={(name) => setUnknownOpName(pathStep.key, name)}
                     onSubFormHasErrors={(hasErrors) => {
-                      subFormHasErrorsByStepKey.current[pathStep.key] = hasErrors;
+                      setSubFormHasErrorsByStepKey((prev) => ({
+                        ...prev,
+                        [pathStep.key]: hasErrors,
+                      }));
                     }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
@@ -1119,8 +1125,7 @@ const ItineraryModal = ({
                       i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
                     }
                     onSubFormToggled={() => {
-                      if (isSubFormExpanded && subFormHasErrorsByStepKey.current[pathStep.key])
-                        return;
+                      if (isSubFormExpanded && subFormHasErrorsByStepKey[pathStep.key]) return;
                       setExpandedStepKeys(
                         isSubFormExpanded
                           ? expandedStepKeys.filter((key) => key !== pathStep.key)

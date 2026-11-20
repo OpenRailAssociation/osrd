@@ -451,6 +451,7 @@
       "collapseSubForm": "Réduire les détails",
       "countryCode": "Code du pays",
       "destination": "Destination",
+      "existingMainCode": "Ce code principal existe déjà dans ce pays,\nle nom a été déduit",
       "existingOp": "Ce point remarquable existe déjà",
       "expandSubForm": "Afficher les détails",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",

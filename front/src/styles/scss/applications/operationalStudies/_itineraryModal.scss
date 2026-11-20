@@ -634,7 +634,8 @@
               grid-template-columns: 1fr 2fr;
             }
 
-            .path-step-subform-error-box {
+            .path-step-subform-error-box,
+            .path-step-subform-warning-box {
               width: calc(100% + 16px);
               border-radius: 8px;
               box-shadow:
@@ -659,11 +660,17 @@
               }
             }
 
+            .path-step-subform-warning-box {
+              background-color: var(--warning5);
+              color: var(--warning60);
+            }
+
             .path-step-subform-domestic-fields {
               display: grid;
               grid-template-columns: repeat(3, 1fr);
 
-              .path-step-subform-error-box {
+              .path-step-subform-error-box,
+              .path-step-subform-warning-box {
                 grid-column: 1 / -1;
               }
 
