@@ -51,6 +51,7 @@ use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike as _;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::rust::double_option;
 use simulation::train_simulation_ordered_batch;
 use thiserror::Error;
 use tokio::time::timeout;
@@ -136,7 +137,7 @@ enum TimetableError {
     },
 }
 
-/// Creation result for a Timetable
+/// A timetable with its data
 #[derive(Debug, Default, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
 pub(in crate::views) struct TimetableResult {
@@ -144,6 +145,9 @@ pub(in crate::views) struct TimetableResult {
     pub timetable_type: TimetableType,
     pub is_train_schedule_set: bool,
     pub timetable_name: Option<String>,
+    pub catalog_entry_id: Option<i64>,
+    pub description: String,
+    pub published: bool,
 }
 
 impl From<Timetable> for TimetableResult {
@@ -153,6 +157,9 @@ impl From<Timetable> for TimetableResult {
             timetable_type: timetable.timetable_type.0,
             is_train_schedule_set: timetable.is_train_schedule_set,
             timetable_name: timetable.name,
+            catalog_entry_id: timetable.catalog_entry_id,
+            description: timetable.description,
+            published: timetable.published,
         }
     }
 }
@@ -202,14 +209,23 @@ pub(in crate::views) async fn post(
 /// This structure is used by the patch endpoint to patch a timetable
 ///
 /// The type of a timetable cannot be changed after its creation
-#[derive(Serialize, Deserialize, Default, ToSchema)]
+#[derive(Serialize, Deserialize, Default, ToSchema, PartialEq)]
 pub(in crate::views) struct TimetablePatchForm {
-    pub name: Option<String>,
+    #[serde(default, with = "double_option")]
+    name: Option<Option<String>>,
+    #[serde(default, with = "double_option")]
+    catalog_entry_id: Option<Option<i64>>,
+    description: Option<String>,
+    published: Option<bool>,
 }
 
 impl TimetablePatchForm {
     pub fn into_changeset(self) -> Changeset<Timetable> {
-        Timetable::changeset().name(self.name)
+        Timetable::changeset()
+            .flat_name(self.name)
+            .flat_catalog_entry_id(self.catalog_entry_id)
+            .flat_description(self.description)
+            .flat_published(self.published)
     }
 }
 
@@ -221,7 +237,7 @@ impl TimetablePatchForm {
     params(TimetableIdParam),
     request_body = TimetablePatchForm,
     responses(
-        (status = 201, description = "Timetable with train schedule ids", body = TimetableResult),
+        (status = 200, description = "The updated timetable", body = TimetableResult),
     ),
 )]
 pub(in crate::views) async fn patch(
@@ -229,12 +245,20 @@ pub(in crate::views) async fn patch(
     Path(TimetableIdParam { id }): Path<TimetableIdParam>,
     Json(timetable_form): Json<TimetablePatchForm>,
 ) -> Result<impl IntoResponse> {
-    let timetable = timetable_form
-        .into_changeset()
-        .update_or_fail(&mut db_pool.get().await?, id, || TimetableError::NotFound {
+    let conn = &mut db_pool.get().await?;
+
+    // Don't update if the changeset is empty
+    let timetable = if timetable_form == TimetablePatchForm::default() {
+        Timetable::retrieve_or_fail(conn.clone(), id, || TimetableError::NotFound {
             timetable_id: id,
         })
-        .await?;
+        .await?
+    } else {
+        timetable_form
+            .into_changeset()
+            .update_or_fail(conn, id, || TimetableError::NotFound { timetable_id: id })
+            .await?
+    };
     let response: TimetableResult = timetable.into();
 
     Ok(Json(response))
@@ -1246,6 +1270,7 @@ mod tests {
 
     use super::*;
     use crate::error::InternalError;
+    use crate::fixtures::create_catalog_entry_with_name;
     use crate::fixtures::create_hourly_timetable;
     use crate::fixtures::create_hourly_train_schedule_set;
     use crate::fixtures::create_simple_paced_train;
@@ -1293,25 +1318,75 @@ mod tests {
         assert_eq!(created_timetable.timetable_name, Some("Name".into()));
     }
 
+    #[rstest]
+    #[case::empty(
+        json!({}),
+        false,
+        Some("Name"), "Description", true)]
+    #[case::nullable_fields_null(
+        json!({ "name": null, "catalog_entry_id": null }),
+        false,
+        None, "Description", true)]
+    #[case::all_fields(
+        json!({ "name": "Updated name", "description": "Updated description", "published": false }),
+        true,
+        Some("Updated name"), "Updated description", false)]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn timetable_update() {
+    async fn patch_timetable(
+        #[case] mut patch: serde_json::Value,
+        #[case] set_other_catalog_entry: bool,
+        #[case] expected_name: Option<&str>,
+        #[case] expected_description: &str,
+        #[case] expected_published: bool,
+    ) {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let initial_catalog_entry =
+            create_catalog_entry_with_name(&mut pool.get_ok(), "initial").await;
+        let timetable = Timetable::changeset()
+            .name(Some("Name".to_owned()))
+            .description("Description".to_owned())
+            .published(true)
+            .catalog_entry_id(Some(initial_catalog_entry.id))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
 
-        let _ = app
+        let other_catalog_entry = create_catalog_entry_with_name(&mut pool.get_ok(), "other").await;
+        if set_other_catalog_entry {
+            patch["catalog_entry_id"] = json!(other_catalog_entry.id);
+        }
+        let expected_catalog_entry_id = match patch.get("catalog_entry_id") {
+            None => Some(initial_catalog_entry.id),
+            Some(_) if set_other_catalog_entry => Some(other_catalog_entry.id),
+            // Sent as `null`
+            Some(_) => None,
+        };
+
+        let response: TimetableResult = app
             .patch(format!("/timetable/{}", timetable.id).as_str())
-            .json(&json!({
-                "name": "updated name",
-            }))
+            .json(&patch)
             .await
-            .assert_status(StatusCode::OK);
+            .assert_status(StatusCode::OK)
+            .json();
 
-        let timetable = Timetable::retrieve(pool.get_ok(), timetable.id)
+        let expected = TimetableResult {
+            timetable_id: timetable.id,
+            timetable_type: timetable.timetable_type.0,
+            is_train_schedule_set: timetable.is_train_schedule_set,
+            timetable_name: expected_name.map(str::to_owned),
+            catalog_entry_id: expected_catalog_entry_id,
+            description: expected_description.to_owned(),
+            published: expected_published,
+        };
+        assert_eq!(response, expected);
+
+        let updated_timetable = Timetable::retrieve(pool.get_ok(), timetable.id)
             .await
-            .unwrap();
-        assert_eq!(timetable.unwrap().name, Some("updated name".to_owned()));
+            .expect("Failed to retrieve timetable")
+            .expect("Timetable not found");
+        assert_eq!(TimetableResult::from(updated_timetable), expected);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

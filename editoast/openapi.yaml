@@ -5611,8 +5611,8 @@ paths:
               $ref: '#/components/schemas/TimetablePatchForm'
         required: true
       responses:
-        '201':
-          description: Timetable with train schedule ids
+        '200':
+          description: The updated timetable
           content:
             application/json:
               schema:
@@ -19039,19 +19039,43 @@ components:
 
         The type of a timetable cannot be changed after its creation
       properties:
+        catalog_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type:
+          - string
+          - 'null'
         name:
           type:
           - string
           - 'null'
+        published:
+          type:
+          - boolean
+          - 'null'
     TimetableResult:
       type: object
-      description: Creation result for a Timetable
+      description: A timetable with its data
       required:
       - timetable_id
       - timetable_type
       - is_train_schedule_set
+      - description
+      - published
       properties:
+        catalog_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
         is_train_schedule_set:
+          type: boolean
+        published:
           type: boolean
         timetable_id:
           type: integer

@@ -4485,7 +4485,10 @@ class TimetablePatchForm(BaseModel):
     The type of a timetable cannot be changed after its creation
     """
 
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr | None = None
     name: StrictStr | None = None
+    published: StrictBool | None = None
 
 
 class TimetableType(Enum):
@@ -6457,10 +6460,13 @@ class TimetableForm(BaseModel):
 
 class TimetableResult(BaseModel):
     """
-    Creation result for a Timetable
+    A timetable with its data
     """
 
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr
     is_train_schedule_set: StrictBool
+    published: StrictBool
     timetable_id: StrictInt
     timetable_name: StrictStr | None = None
     timetable_type: TimetableType

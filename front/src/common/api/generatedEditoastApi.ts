@@ -2710,8 +2710,7 @@ export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
 };
-export type PatchTimetableByIdApiResponse =
-  /** status 201 Timetable with train schedule ids */ TimetableResult;
+export type PatchTimetableByIdApiResponse = /** status 200 The updated timetable */ TimetableResult;
 export type PatchTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
@@ -5206,7 +5205,10 @@ export type SubCategoryPage = PaginationStats & {
   results: SubCategory[];
 };
 export type TimetableResult = {
+  catalog_entry_id?: number | null;
+  description: string;
   is_train_schedule_set: boolean;
+  published: boolean;
   timetable_id: number;
   timetable_name?: string | null;
   timetable_type: TimetableType;
@@ -5216,7 +5218,10 @@ export type TimetableForm = {
   timetable_type: TimetableType;
 };
 export type TimetablePatchForm = {
+  catalog_entry_id?: number | null;
+  description?: string | null;
   name?: string | null;
+  published?: boolean | null;
 };
 export type CoreConflictType = 'Spacing' | 'Routing';
 export type CoreConflictRequirement = {
