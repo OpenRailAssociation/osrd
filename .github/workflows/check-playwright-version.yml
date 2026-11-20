@@ -1,0 +1,23 @@
+name: Check  Playwright Version
+
+on:
+  pull_request:
+    paths:
+      - 'flake.nix'
+  workflow_dispatch:
+
+  check_playwright_version:
+    runs-on: ubuntu-latest
+    name: Check Playwright version for nix
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v23
+        with:
+          summarize: false # Suppress the Nix build job summary
+      - name: Check versions of playwright
+        run: .github/scripts/check-playwright-version.sh
+
