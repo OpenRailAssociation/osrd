@@ -1344,7 +1344,6 @@ checksum = "ebe9f7eaef33febd60290c5a9f3b0571d03c4c04a24739cd64808ce30e65a5d3"
 dependencies = [
  "bitflags",
  "byteorder",
- "chrono",
  "diesel_derives",
  "downcast-rs",
  "itoa",
@@ -1491,7 +1490,6 @@ dependencies = [
  "axum-tracing-opentelemetry",
  "buildid",
  "cache",
- "chrono",
  "clap",
  "colored",
  "common",
@@ -3162,7 +3160,6 @@ name = "models"
 version = "0.1.0"
 dependencies = [
  "base64 0.23.1",
- "chrono",
  "common",
  "database",
  "derive_more",

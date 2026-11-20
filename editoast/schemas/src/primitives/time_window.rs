@@ -9,6 +9,5 @@ pub struct TimeWindow {
     #[serde(with = "unit_system::units::millisecond::i64")]
     #[schema(value_type = i64)]
     pub time_begin: Offset,
-    #[schema(value_type = std::time::Duration, example = "PT5M")]
     pub duration: PositiveDuration,
 }
