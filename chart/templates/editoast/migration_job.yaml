@@ -1,5 +1,6 @@
 {{- if .Values.services.editoast.init.enabled -}}
 {{- $mergedLabels := merge (dict "name" (printf "%s-editoast-init" (include "osrd.fullname" .))) (default (dict) $.Values.services.editoast.init.labels) -}}
+{{- $mergedAnnotations := merge (.Values.annotations | default dict) (.Values.services.editoast.annotations | default dict) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -15,6 +16,8 @@ spec:
     metadata:
       labels:
         {{- toYaml ($.Values.services.editoast.init.labels | default dict) | nindent 8 }}
+      annotations:
+        {{- toYaml $mergedAnnotations | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
