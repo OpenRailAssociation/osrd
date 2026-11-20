@@ -24,6 +24,7 @@ import {
   addDurationToStartTime,
   subtractStartTime,
 } from 'utils/duration';
+import { mmToKm } from 'utils/physics';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR, marginsUndefined } from '../consts';
 import { computeMargins, getTheoreticalMargins } from '../helpers/computeMargins';
@@ -79,6 +80,7 @@ type BuildTableRowParams = {
   schedule?: ScheduleItem;
   computedArrival?: Duration;
   computedBaseArrival?: Duration;
+  computedPosition?: number;
   invalidPathStep?: boolean;
   scheduleNotHonored?: boolean;
   marginNotHonored?: boolean;
@@ -103,6 +105,7 @@ const buildTableRow = ({
   schedule,
   computedArrival,
   computedBaseArrival,
+  computedPosition,
   invalidPathStep,
   scheduleNotHonored,
   marginNotHonored,
@@ -156,6 +159,12 @@ const buildTableRow = ({
 
   const baseArrival = hasSimulation ? computedBaseArrivalValue : referenceBaseArrival;
 
+  const referencePosition = schedule?.reference_position ?? null;
+  const computedPositionValue = computedPosition !== undefined ? computedPosition : null;
+
+  const positionValue = computedPositionValue ?? referencePosition;
+  const position = positionValue !== null ? mmToKm(positionValue) : null;
+
   const {
     theoreticalMargin,
     isTheoreticalMarginBoundary,
@@ -201,6 +210,7 @@ const buildTableRow = ({
     timeFromPreviousOp: null, // TODO : Idem
     totalTravelTime: null, // TODO : Idem
     baseArrival,
+    position,
   };
 };
 
@@ -304,6 +314,11 @@ const useTimesStopsTableData = (
             ? stableOPs.find((op) => op.pathItemKey === pathStep.key)
             : undefined);
 
+        const matchingPosition =
+          pathStep.location.type === 'operational_point_part_reference' && operationalPointsOnPath
+            ? operationalPointsOnPath.find((op) => op.pathItemKey === pathStep.key)?.position
+            : undefined;
+
         const name = getOperationalPointName(
           matchingOp,
           pathStep.location,
@@ -380,6 +395,7 @@ const useTimesStopsTableData = (
           schedule,
           computedArrival,
           computedBaseArrival,
+          computedPosition: matchingPosition,
           invalidPathStep:
             (!matchingOp && pathStepLocation.type === 'operational_point_part_reference') ||
             isRequestedTrackUnknown,
@@ -413,6 +429,7 @@ const useTimesStopsTableData = (
             ...matchingPathStepRow,
             track: trackName ?? matchingPathStepRow.track,
             opOnPathIndex: opIndex,
+            position: mmToKm(op.position),
           });
         } else {
           const computedArrival = stableTrain
@@ -441,6 +458,7 @@ const useTimesStopsTableData = (
               startDate,
               computedArrival,
               computedBaseArrival,
+              computedPosition: op.position,
               shortSlipDistance,
               closedSignal,
               hasSimulation: stableIsValid,
@@ -470,6 +488,7 @@ const useTimesStopsTableData = (
 
     return formattedRows;
   }, [
+    operationalPointsOnPath,
     timetableType,
     selectedTrain,
     stableIsValid,

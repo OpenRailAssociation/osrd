@@ -1,0 +1,42 @@
+.distance-cell {
+  display: grid;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  font-family: inherit, monospace;
+  border-radius: 4px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  grid-template-columns: auto auto;
+
+  &.empty:not(.editing),
+  &:has(.no-value) {
+    grid-template-columns: auto;
+  }
+
+  &.editable {
+    cursor: pointer;
+
+    &:not(.empty, .editing) {
+      color: var(--primary60);
+    }
+  }
+
+  .input {
+    min-width: 2ch;
+    field-sizing: content;
+    text-align: right;
+    outline: none;
+    padding-left: 1ch;
+    margin-left: -1ch;
+  }
+
+  &.editing {
+    cursor: text;
+
+    .unit {
+      pointer-events: none;
+    }
+  }
+}

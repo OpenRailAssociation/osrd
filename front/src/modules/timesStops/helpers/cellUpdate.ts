@@ -184,18 +184,19 @@ export const upsertScheduleItem = (
   const index = schedule.findIndex((i) => i.at === item.at);
   const newItem = item.at === path[0].key ? { ...item, arrival: null } : item;
 
+  if (index < 0) return insertScheduleItemInOrder(schedule, newItem, path);
+
+  const editedItem = { ...schedule[index], ...newItem };
   // Nothing left to schedule: remove the item entirely
   if (
-    !newItem.arrival &&
-    !newItem.stop_for &&
-    !newItem.reference_base_arrival &&
-    (newItem.reference_position === undefined || newItem.reference_position === null)
+    !editedItem.arrival &&
+    !editedItem.stop_for &&
+    !editedItem.reference_base_arrival &&
+    (editedItem.reference_position === undefined || editedItem.reference_position === null)
   )
     return index < 0 ? undefined : removeElementAtIndex(schedule, index);
 
-  return index >= 0
-    ? replaceElementAtIndex(schedule, index, { ...schedule[index], ...newItem })
-    : insertScheduleItemInOrder(schedule, newItem, path);
+  return replaceElementAtIndex(schedule, index, editedItem);
 };
 
 /**
@@ -217,6 +218,7 @@ export const computeOptimisticRow = (
     | 'requestedTheoreticalMargin'
     | 'powerRestriction'
     | 'baseArrival'
+    | 'position'
   >
 > => {
   if (edit.field === 'powerRestriction') return { powerRestriction: edit.value };
@@ -230,6 +232,10 @@ export const computeOptimisticRow = (
 
   if (edit.field === 'referenceBaseArrival') {
     return { baseArrival: edit.value };
+  }
+
+  if (edit.field === 'referencePosition') {
+    return { position: edit.value };
   }
 
   const { arrival, stop, departure } = applyScheduleEdit(
