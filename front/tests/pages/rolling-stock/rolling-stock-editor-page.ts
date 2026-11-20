@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { ROLLING_STOCK_EDITOR_URL } from '../../assets/constants/homepage-const';
 import { fillAndCheckInputById } from '../../utils';
 import { readJsonFile } from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
@@ -71,8 +72,14 @@ class RollingstockEditorPage extends RollingStockSelector {
   }
 
   async navigateToRollingStockPage() {
-    await this.page.goto('/rolling-stock-editor/');
+    await this.page.goto(ROLLING_STOCK_EDITOR_URL);
     await this.waitForLoaderToDisappear();
+  }
+
+  async openRollingStockEditorAndCheckListIsDisplayed() {
+    await this.page.goto(ROLLING_STOCK_EDITOR_URL);
+    await expect(this.page).toHaveURL(ROLLING_STOCK_EDITOR_URL);
+    await expect(this.rollingstockEditorList).toBeVisible();
   }
 
   async openNewRollingStockForm() {

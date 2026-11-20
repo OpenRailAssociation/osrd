@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 
 import type {
   Infra,
+  LightRollingStock,
   TrainSchedule,
   PostInfraRailjsonApiResponse,
   Project,
@@ -10,6 +11,7 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
+import { E2E_USER_IDENTITIES } from '../assets/constants/permission-const';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -28,6 +30,8 @@ import { STUDY_DATA } from '../assets/operation-studies/study-const';
 import {
   getApiRequest,
   getInfra,
+  grantInfraAndRollingStocksToUser,
+  listApiRequest,
   retrieveLatestStdcmEnvironment,
   postApiRequest,
   createStdcmEnvironment,
@@ -223,6 +227,14 @@ export async function createDataForTests(): Promise<void> {
     expect(await retrieveLatestStdcmEnvironment()).toMatchObject({
       infra_id: mediumInfra.id,
     });
+
+    // Step 8: Grant the STDCM infrastructure and the rolling stocks to the STDCM only e2e user
+    const allRollingStocks: LightRollingStock[] = await listApiRequest('/api/light_rolling_stock');
+    await grantInfraAndRollingStocksToUser(
+      E2E_USER_IDENTITIES.stdcmOnly,
+      mediumInfra.id,
+      allRollingStocks.map(({ id }) => id)
+    );
   } catch (error) {
     throw new Error('Error during test data setup', { cause: error });
   }

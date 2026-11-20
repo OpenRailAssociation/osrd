@@ -22,6 +22,9 @@ import type {
   StdcmSearchEnvironmentCreateForm,
   GetStudiesApiResponse,
   GetScenariosApiResponse,
+  GrantBody,
+  PostAuthzUserInfoApiResponse,
+  StandardGrant,
 } from 'common/api/osrdEditoastApi';
 
 import {
@@ -328,6 +331,48 @@ export async function deleteStdcmEnvironment(stdcmSearchEnvId: number): Promise<
   await deleteApiRequest(
     `/api/stdcm/search_environment/${stdcmSearchEnvId}`,
     `Failed to delete the STDCM search environment with id ${stdcmSearchEnvId}`
+  );
+}
+
+/**
+ * Grant an infrastructure and a list of rolling stocks to a user, in a single request.
+ * Grants can't be given to a role, only to a user or a group.
+ *
+ * @param userIdentity - The identity of the user to grant the resources to (e.g. `e2e/stdcm-only`).
+ * @param infraId - The ID of the infrastructure to grant.
+ * @param rollingStockIds - The IDs of the rolling stocks to grant.
+ * @param infraGrant - The grant given on the infrastructure.
+ * @param rollingStockGrant - The grant given on the rolling stocks.
+ */
+export async function grantInfraAndRollingStocksToUser(
+  userIdentity: string,
+  infraId: number,
+  rollingStockIds: number[],
+  infraGrant: StandardGrant = 'RESTRICTED_READER',
+  rollingStockGrant: StandardGrant = 'READER'
+): Promise<void> {
+  const [user]: PostAuthzUserInfoApiResponse = await postApiRequest(
+    '/api/authz/user/info',
+    { ids: [], identities: [userIdentity] },
+    undefined,
+    `User "${userIdentity}" not found, run scripts/load-e2e-users.sh`
+  );
+
+  const userGrants: GrantBody[] = [
+    { resource_type: 'infra', resource_id: infraId, subject_id: user.id, grant: infraGrant },
+    ...rollingStockIds.map((rollingStockId): GrantBody => ({
+      resource_type: 'rolling_stock',
+      resource_id: rollingStockId,
+      subject_id: user.id,
+      grant: rollingStockGrant,
+    })),
+  ];
+  await postApiRequest(
+    '/api/authz/grants',
+    { grant: userGrants },
+    undefined,
+    `Failed to grant the infrastructure and the rolling stocks to "${userIdentity}"`,
+    false
   );
 }
 
