@@ -43,6 +43,11 @@ const useImportTrainSchedules = () => {
         infraId,
         body: file,
         // TODO: pass the proper compression header or drop compression support
+        timetableType,
+        hourlyTimetableDuration:
+          timetableType === 'HOURLY'
+            ? computeHourlyTimetableDuration([...trainSchedules.values()]).toISOString()
+            : undefined,
       }).unwrap();
       return { ...rest, train_schedules };
     } catch (error: unknown) {

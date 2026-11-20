@@ -30,6 +30,19 @@ paths:
           schema:
             type: integer
           description: The id of the infrastructure used by the timetable in which to import the file
+        - name: timetable_type
+          in: query
+          required: false
+          description: Type of the target timetable. With HOURLY, the returned trains are adapted to hourly timetables.
+          schema:
+            $ref: '#/components/schemas/TimetableType'
+        - name: hourly_timetable_duration
+          in: query
+          required: false
+          description: Duration of the hourly timetable (ISO 8601). Only used when timetable_type is HOURLY.
+          schema:
+            type: string
+            format: duration
       requestBody:
         description: Arbitrary file to transform into a standard OSRD timetable json file
         required: true
@@ -125,12 +138,19 @@ components:
   schemas:
     OperationalPointReference:
       $ref: "../editoast/openapi.yaml#/components/schemas/OperationalPointReference"
+    TimetableType:
+      $ref: "../editoast/openapi.yaml#/components/schemas/TimetableType"
     TransformTimetableResponse:
       type: object
       description: Standard OSRD timetable format
       required:
       - paced_trains
       properties:
+        timetable_type:
+          description: Type of timetable the returned trains are adapted to
+          default: CALENDAR
+          allOf:
+            - $ref: '#/components/schemas/TimetableType'
         paced_trains:
           type: array
           description: List of paced trains

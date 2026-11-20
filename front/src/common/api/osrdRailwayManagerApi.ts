@@ -19,6 +19,8 @@ const injectedRtkApi = api
           },
           params: {
             infra_id: queryArg.infraId,
+            timetable_type: queryArg.timetableType,
+            hourly_timetable_duration: queryArg.hourlyTimetableDuration,
           },
         }),
         invalidatesTags: ['timetable'],
@@ -63,6 +65,10 @@ export type PostTransformTimetableApiArg = {
   'content-encoding'?: 'gzip' | 'zip';
   /** The id of the infrastructure used by the timetable in which to import the file */
   infraId?: number;
+  /** Type of the target timetable. With HOURLY, the returned trains are adapted to hourly timetables. */
+  timetableType?: TimetableType;
+  /** Duration of the hourly timetable (ISO 8601). Only used when timetable_type is HOURLY. */
+  hourlyTimetableDuration?: string;
   /** Arbitrary file to transform into a standard OSRD timetable json file */
   body: Blob;
 };
@@ -85,6 +91,7 @@ export type PostSendLastMinuteRequestStatusesApiResponse = /** status 200 undefi
 export type PostSendLastMinuteRequestStatusesApiArg = {
   body: string[];
 };
+export type TimetableType = 'CALENDAR' | 'HOURLY';
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1 =
   string;
 export type OperationalPointReference =
@@ -175,6 +182,8 @@ export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItem
     };
 export type Interval = string;
 export type TransformTimetableResponse = {
+  /** Type of timetable the returned trains are adapted to */
+  timetable_type?: TimetableType;
   /** List of paced trains */
   paced_trains: ({
     category?:

@@ -7860,6 +7860,10 @@ class TransformTimetableResponse(BaseModel):
     Standard OSRD timetable format
     """
 
+    timetable_type: TimetableType | None = TimetableType.CALENDAR
+    """
+    Type of timetable the returned trains are adapted to
+    """
     paced_trains: list[TrainSchedule]
     """
     List of paced trains
