@@ -5,6 +5,7 @@ import { noop } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
 import { osrdEditoastApi, type TimetableType } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -21,8 +22,10 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
   const { t } = useTranslation(['operational-studies', 'translation']);
   const dispatch = useAppDispatch();
   const { scenario } = useScenarioContextWithOptionalTimetable();
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
   const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation();
   const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation();
+  const [getScenario] = osrdEditoastApi.endpoints.getScenariosByScenarioId.useLazyQuery();
   const [name, setName] = useState('');
   const [displayError, setDisplayError] = useState(false);
 
@@ -43,7 +46,7 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
       const timetable = await postTimetable({
         timetableForm: { timetable_type: timetableType, timetable_name: name.trim() },
       }).unwrap();
-      // No need to create the sandbox here, useScenario creates it once the scenario is refetched
+      // No need to create the sandbox here, useScenario creates it once the timetable is selected
       // The patch replaces all the timetables of the scenario, so we keep the existing ones
       await patchScenario({
         scenarioId: scenario.id,
@@ -54,6 +57,10 @@ const AddOrEditTimetableModal = ({ timetableType, onCancel }: AddOrEditTimetable
           ],
         },
       }).unwrap();
+      // Wait for the scenario with the new timetable, otherwise useScenario doesn't know it yet
+      // and falls back on the first timetable when we select it
+      await getScenario({ scenarioId: scenario.id }).unwrap();
+      setParamsInUrlAndStorage('timetable', String(timetable.timetable_id));
       onCancel();
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
