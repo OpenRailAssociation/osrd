@@ -31,7 +31,7 @@ export function mmToKm(length: number) {
   return length / 1000000;
 }
 
-/** Convert millimeters to kilometers */
+/** Convert kilometers to millimeters */
 export function kmToMm(length: number) {
   return length * 1000000;
 }
