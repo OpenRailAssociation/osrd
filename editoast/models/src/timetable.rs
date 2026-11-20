@@ -59,11 +59,13 @@ impl Timetable {
 
         train_schedule::dsl::train_schedule
             .filter(
-                train_schedule::timetable_id.eq_any(
-                    timetable_inheritance::table
-                        .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
-                        .select(timetable_inheritance::inner_timetable_id),
-                ),
+                train_schedule::timetable_id
+                    .eq(timetable_id)
+                    .or(train_schedule::timetable_id.eq_any(
+                        timetable_inheritance::table
+                            .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
+                            .select(timetable_inheritance::inner_timetable_id),
+                    )),
             )
             .count()
             .get_result(conn.write().await.deref_mut())

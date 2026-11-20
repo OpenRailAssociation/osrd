@@ -307,6 +307,7 @@
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "InvalidInners": "Les grilles horaires '{{inner_ids}}' ne peuvent pas être incluses dans la grille horaire '{{outer_id}}' : une grille horaire ne peut inclure que des paquets de circulation de même type",
       "InvalidOuter": "La grille horaire '{{timetable_id}}' est un paquet de circulation : elle ne peut pas inclure d'autres grilles horaires",
+      "InvalidPaceInHourlyTimetable": "Les circulations aux indices '{{indices}}' ne peuvent être ajoutées à la trame '{{timetable_id}}' : elles doivent être cadencées, avec une heure de départ dans [0, intervalle) et un intervalle dans (0, durée]",
       "InvalidPeriod": "La période d'une trame doit être inférieure à 24h",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",

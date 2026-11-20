@@ -6227,6 +6227,36 @@ paths:
                         $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Timetable not found
+    post:
+      tags:
+      - timetable
+      - train_schedule
+      summary: Create train schedules by batch
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TrainSchedule'
+        required: true
+      responses:
+        '201':
+          description: The created train schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrainScheduleResponseV2'
   /timetable/{id}/train_schedules/{train_schedule_id}:
     get:
       tags:
@@ -9711,6 +9741,7 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidInners'
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidOuter'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInvalidPaceInHourlyTimetable'
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidPeriod'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
@@ -12146,6 +12177,34 @@ components:
           type: string
           enum:
           - editoast:timetable:InvalidOuter
+    EditoastTimetableErrorInvalidPaceInHourlyTimetable:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorInvalidPaceInHourlyTimetableContext
+          required:
+          - indices
+          - timetable_id
+          properties:
+            indices:
+              type: array
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:InvalidPaceInHourlyTimetable
     EditoastTimetableErrorInvalidPeriod:
       type: object
       required:
@@ -19511,6 +19570,20 @@ components:
             type: integer
             format: int64
           train_schedule_set_id:
+            type: integer
+            format: int64
+    TrainScheduleResponseV2:
+      allOf:
+      - $ref: '#/components/schemas/TrainSchedule'
+      - type: object
+        required:
+        - id
+        - timetable_id
+        properties:
+          id:
+            type: integer
+            format: int64
+          timetable_id:
             type: integer
             format: int64
     TrainScheduleSet:

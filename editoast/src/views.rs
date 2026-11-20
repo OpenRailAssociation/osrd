@@ -222,6 +222,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             .nests("/train_schedules", |path| {
                                 path
                                     .route("/", get!(timetable::get_train_schedules))
+                                    .route("/", post!(timetable::create_train_schedules))
                                     .route("/{train_schedule_id}", get!(timetable::get_train_schedule_by_id))
                             })
                             .nests("/path_steps", |path| {
