@@ -32,6 +32,30 @@ import {
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 import { formatOpLabel } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/utils';
 
+export const useSearchMacroNodes = (scenarioId: number, pageSize: number) => {
+  const dispatch = useAppDispatch();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
+
+  return useCallback(
+    async (searchQuery: string) => {
+      try {
+        const results = (await postSearch(
+          {
+            searchPayload: macroNodePayload(scenarioId, searchQuery),
+            pageSize,
+          },
+          true
+        ).unwrap()) as SearchResultItemMacroNode[];
+        return results.map(buildMacroNodeSuggestion).filter((suggestion) => suggestion !== null);
+      } catch (error) {
+        dispatch(setFailure(castErrorToFailure(error)));
+        return [];
+      }
+    },
+    [scenarioId, postSearch, pageSize, dispatch]
+  );
+};
+
 type Params = {
   scenarioId: number;
   extraSuggestions: OperationalPointSuggestion[];
@@ -47,7 +71,6 @@ export const useOperationalPointSearch = ({
   minChars = 2,
   debounceMs = 300,
 }: Params) => {
-  const dispatch = useAppDispatch();
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [activeStepKey, setActiveStepKey] = useState<string | null>(null);
@@ -137,25 +160,7 @@ export const useOperationalPointSearch = ({
     []
   );
 
-  const searchMacroNodesToBuildSuggestions = useCallback(
-    async (searchQuery: string) => {
-      try {
-        const results = (await postSearch(
-          {
-            searchPayload: macroNodePayload(scenarioId, searchQuery),
-            pageSize,
-          },
-          true
-        ).unwrap()) as SearchResultItemMacroNode[];
-        return results.map(buildMacroNodeSuggestion).filter((suggestion) => suggestion !== null);
-      } catch (error) {
-        dispatch(setFailure(castErrorToFailure(error)));
-        return [];
-      }
-    },
-    [scenarioId, postSearch, pageSize, dispatch]
-  );
-
+  const searchMacroNodesToBuildSuggestions = useSearchMacroNodes(scenarioId, pageSize);
   const doesOpExist = useCallback(
     async (stepKey: string, countryCode: string, mainCode: string) => {
       const isUsedByAnotherStep = pathSteps.some(
@@ -272,11 +277,7 @@ export const useOperationalPointSearch = ({
       ]);
       if (cancelled) return;
 
-      const opKeys = new Set(infraOpSuggestions.map((s) => `${s.countryCode}-${s.mainCode}`));
-      apply([
-        ...infraOpSuggestions,
-        ...macroNodeSuggestions.filter((s) => !opKeys.has(`${s.countryCode}-${s.mainCode}`)),
-      ]);
+      apply(uniqBy([...infraOpSuggestions, ...macroNodeSuggestions], 'id'));
     };
 
     void searchAll();

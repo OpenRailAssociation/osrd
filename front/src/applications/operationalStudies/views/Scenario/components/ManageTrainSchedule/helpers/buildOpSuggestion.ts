@@ -105,12 +105,13 @@ export const buildOpSuggestion = (
 export const buildMacroNodeSuggestion = (
   node: SearchResultItemMacroNode
 ): OperationalPointSuggestion | null => {
+  // TODO: also suggest macro nodes with a non-domestic or a track offset location
   if (node.node_location.type !== 'operational_point_reference') return null;
   const opRef = node.node_location.operational_point;
   if (opRef.type !== 'domestic') return null;
 
   return {
-    id: `macroNode:${node.id}`,
+    id: buildOperationalPointSuggestionId(opRef.country_code, opRef.main_code),
     name: node.full_name ?? node.short_name ?? '',
     mainCode: opRef.main_code,
     countryCode: opRef.country_code,
