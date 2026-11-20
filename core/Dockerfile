@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle \
     rm  -rf /root/.kotlin/daemon/kotlin-daemon.* /tmp/hsperfdata_root/ /tmp/kotlin-daemon.*
 
 #### Running stage
-FROM eclipse-temurin:25 AS running_env
+FROM eclipse-temurin:25.0.5_8-jdk AS running_env
 
 COPY --from=build_env /opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
 COPY --from=build_env /osrd-all.jar /app/osrd_core.jar
