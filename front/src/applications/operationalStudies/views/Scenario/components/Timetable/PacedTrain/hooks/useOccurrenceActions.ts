@@ -58,7 +58,7 @@ const useOccurrenceActions = ({
         {
           ...formattedPacedTrain,
           id: pacedTrain.id,
-          train_schedule_set_id: pacedTrain.train_schedule_set_id,
+          timetable_id: pacedTrain.timetable_id,
           paced: formattedPacedTrain.paced
             ? { ...formattedPacedTrain.paced, exceptions: newExceptions }
             : undefined,

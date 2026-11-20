@@ -696,14 +696,11 @@ export const handleUpdateTrainSchedule = async ({
   } else {
     // otherwise create return
 
-    // Remove train_schedule_set_id before creating train schedule as we don't want to pass it in the payload
-    const {
-      train_schedule_set_id: _trainScheduleSetId,
-      ...trainScheduleWithoutTrainScheduleSetId
-    } = newForwardTrainBase;
+    // Remove timetable_id before creating train schedule as we don't want to pass it in the payload
+    const { timetable_id: _timetableId, ...trainScheduleWithoutTimetableId } = newForwardTrainBase;
 
     const returnTrainSchedule: TrainSchedule = {
-      ...trainScheduleWithoutTrainScheduleSetId,
+      ...trainScheduleWithoutTimetableId,
       ...returnPathAndSchedule,
       paced: returnPaced,
     };
