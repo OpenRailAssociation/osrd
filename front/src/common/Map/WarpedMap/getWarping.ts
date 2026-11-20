@@ -1,7 +1,7 @@
 import bbox from '@turf/bbox';
 import { lineString } from '@turf/helpers';
 import simplify from '@turf/simplify';
-import type { Feature, FeatureCollection, Geometry, LineString, Position } from 'geojson';
+import type { Feature, FeatureCollection, Geometry, MultiLineString, Position } from 'geojson';
 
 import {
   featureToPointsGrid,
@@ -16,13 +16,14 @@ import { getQuadTree } from 'common/Map/WarpedMap/core/quadtree';
 
 export type WarpingFunction = ReturnType<typeof getWarping>['transform'];
 
-export default function getWarping(warpPath: Feature<LineString>) {
+export default function getWarping(warpPath: Feature<MultiLineString>) {
   // Simplify the input path to get something "straighter", so that we can see
   // in the final warped map the small curves of the initial path.
   // (Indeed, if we don't simplify the path, then in the final map the path will
   // appear as perfectly straight line, which makes it less identifiable)
   // TODO: Detect loops and remove them from the simplifiedPath
-  const simplifiedPath = simplify(warpPath, { tolerance: 0.01 });
+  const flattenedPath = lineString(warpPath.geometry.coordinates.flat());
+  const simplifiedPath = simplify(flattenedPath, { tolerance: 0.01 });
 
   // Cut the simplified path as N equal length segments
   const sample = getSamples(simplifiedPath, 15);
