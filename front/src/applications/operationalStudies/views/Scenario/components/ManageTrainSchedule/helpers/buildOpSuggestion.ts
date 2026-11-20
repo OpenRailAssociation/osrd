@@ -24,6 +24,9 @@ const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
   });
 };
 
+export const buildOperationalPointSuggestionId = (countryCode: string, mainCode: string) =>
+  `${countryCode}-${mainCode}`;
+
 export const buildCustomOpSuggestion = (
   name: string,
   opRef: DomesticOperationalPointReference
@@ -42,7 +45,7 @@ export const buildOpSuggestion = (
   const map = new Map<string, OperationalPointSuggestion>();
 
   for (const r of results) {
-    const key = `${r.main_code}||${r.name}`;
+    const key = buildOperationalPointSuggestionId(r.country_code, r.main_code);
     const existing = map.get(key);
     const secondaryCode = r.secondary_code ?? null;
     const secondaryEntry: OpSecondaryCode = { code: secondaryCode, name: r.secondary_name ?? null };
