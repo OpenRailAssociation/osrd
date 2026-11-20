@@ -3026,7 +3026,6 @@ export type PostTrainSchedulesProjectPathOpApiArg = {
           uic: number;
         }
     )[];
-    timetable_id: number;
     train_ids: number[];
     use_simulation: boolean;
   };
@@ -3040,7 +3039,6 @@ export type PostTrainSchedulesSimulationSummaryApiArg = {
     electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
-    timetable_id: number;
   };
 };
 export type PostTrainSchedulesTrackOccupancyApiResponse =
@@ -3076,7 +3074,6 @@ export type PostTrainSchedulesTrackOccupancyApiArg = {
     electrical_profile_set_id?: number | null;
     infra_id: number;
     operational_point_reference: OperationalPointReference;
-    timetable_id: number;
     train_schedule_ids: number[];
     use_simulation: boolean;
   };
@@ -5611,7 +5608,6 @@ export type OccupancyBlockForm = {
   ids: number[];
   infra_id: number;
   path: CoreTrainPath;
-  timetable_id: number;
 };
 export type SpaceTimeCurve = {
   /** List of positions of a train in mm
@@ -5632,7 +5628,6 @@ export type ProjectPathForm = {
   electrical_profile_set_id?: number | null;
   ids: number[];
   infra_id: number;
-  timetable_id: number;
   track_section_ranges: {
     /** The beginning of the range in mm. */
     begin: number;

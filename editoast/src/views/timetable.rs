@@ -309,7 +309,6 @@ pub(in crate::views) async fn get_train_schedule_by_id(
         .await?;
 
     let exceptions_settings = SelectionSettings::new()
-        .filter(move || models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
         .filter(move || models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq(train_schedule.id));
 
     let exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
@@ -375,11 +374,9 @@ pub(in crate::views) async fn get_train_schedules(
     let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
 
     let paced_trains_ids = paced_trains.iter().map(|t| t.id).collect::<Vec<_>>();
-    let exceptions_settings = SelectionSettings::new()
-        .filter(move || models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
-        .filter(move || {
-            models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(paced_trains_ids.clone())
-        });
+    let exceptions_settings = SelectionSettings::new().filter(move || {
+        models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(paced_trains_ids.clone())
+    });
 
     let mut exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
         .await?
@@ -472,7 +469,6 @@ pub(in crate::views) async fn requirements(
 
     let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
-        timetable_id,
         &paced_trains.iter().map(|pt| pt.id).collect_vec(),
     )
     .await?
@@ -648,18 +644,15 @@ pub(in crate::views) async fn get_local_track_names(
 
         let train_ids = train_schedules.iter().map(|ts| ts.id).collect_vec();
 
-        let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            conn,
-            timetable_id,
-            &train_ids,
-        )
-        .await?
-        .into_iter()
-        // Only consider exceptions that have path and schedule changes,
-        // as other types of changes don't impact local track names
-        .filter(|e| e.change_groups.path_and_schedule.is_some())
-        .map_into::<schemas::TrainScheduleException>()
-        .into_group_map_by(|e| e.train_schedule_id);
+        let mut exceptions =
+            TrainScheduleException::retrieve_exceptions_by_train_schedules(conn, &train_ids)
+                .await?
+                .into_iter()
+                // Only consider exceptions that have path and schedule changes,
+                // as other types of changes don't impact local track names
+                .filter(|e| e.change_groups.path_and_schedule.is_some())
+                .map_into::<schemas::TrainScheduleException>()
+                .into_group_map_by(|e| e.train_schedule_id);
 
         let train_occurrences: Vec<_> =
             train_schedules

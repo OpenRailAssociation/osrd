@@ -42,7 +42,7 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
   const { t } = useTranslation(['operational-studies']);
 
   const dispatch = useAppDispatch();
-  const { timetableId } = useScenarioContext();
+  const { timetableId, sandbox } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
   const occurrenceId = isOccurrenceId(train.id) ? train.id : undefined;
   const trainScheduleId = extractEditoastIdFromTrainId(train.id);
@@ -63,6 +63,7 @@ const TrainHeader = ({ train, path, trainSchedulesWithDetails }: TrainHeaderProp
   ) => {
     const result = await updateTrainSchedule({
       upsertTrainSchedules,
+      sandbox,
       trainScheduleId,
       originalTrainSchedule,
       occurrenceId,

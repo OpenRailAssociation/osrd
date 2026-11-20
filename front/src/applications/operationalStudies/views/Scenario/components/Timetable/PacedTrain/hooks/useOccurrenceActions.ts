@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import type { Sandbox } from 'applications/operationalStudies/types';
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/buildPacedTrainException';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import type { PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
@@ -37,6 +38,7 @@ type OccurrenceActionsParams = {
     occurrenceId?: OccurrenceId
   ) => void;
   timetableId: number;
+  sandbox: Sandbox;
 };
 
 const useOccurrenceActions = ({
@@ -44,6 +46,7 @@ const useOccurrenceActions = ({
   occurrences,
   selectPacedTrainToEdit,
   timetableId,
+  sandbox,
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
 
@@ -164,11 +167,16 @@ const useOccurrenceActions = ({
           key,
           disabled: true,
         };
+
+        // The exceptions of a train scedule set are going to set timetable,
+        // the exceptions of a sandbox go to scenario timetable
+        const exceptionsTimetableId =
+          pacedTrain.timetable_id === sandbox.timetableId ? timetableId : pacedTrain.timetable_id;
         const [createdException] = await createExceptions(
           dispatch,
           [exceptionToCreate],
           pacedTrain.id,
-          timetableId
+          exceptionsTimetableId
         );
         exceptionsToUpdate = { ...exceptionToCreate, id: createdException.id };
       }
@@ -196,7 +204,15 @@ const useOccurrenceActions = ({
         // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
       }
     },
-    [pacedTrain, occurrences, selectedTrainId, timetableId, upsertWithNewExceptions, dispatch]
+    [
+      pacedTrain,
+      occurrences,
+      selectedTrainId,
+      timetableId,
+      sandbox,
+      upsertWithNewExceptions,
+      dispatch,
+    ]
   );
 
   /**

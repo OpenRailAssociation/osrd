@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
@@ -150,12 +151,14 @@ const PacedTrainItem = ({
 
   const { summary } = pacedTrain;
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStocks);
+  const { sandbox } = useScenarioContext();
 
   const occurrenceActions = useOccurrenceActions({
     pacedTrain,
     occurrences,
     selectPacedTrainToEdit,
     timetableId,
+    sandbox,
   });
 
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
@@ -220,6 +223,7 @@ const PacedTrainItem = ({
 
     let pacedTrainDetail: TrainScheduleResponse;
     let trainScheduleSetId: number;
+    let exceptionsTimetableId: number;
     try {
       const pacedTrainDetailPromise = getTrainScheduleById({
         id: pacedTrain.id,
@@ -237,6 +241,9 @@ const PacedTrainItem = ({
         throw new Error('Train schedule set of the paced train not found');
       }
       trainScheduleSetId = trainScheduleSet.id;
+      // The exceptions of a train scedule set are going to set timetable,
+      // the exceptions of a sandbox go to scenario timetable
+      exceptionsTimetableId = trainScheduleSet.name ? trainScheduleSet.timetable_id : timetableId;
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
       return;
@@ -276,7 +283,7 @@ const PacedTrainItem = ({
             dispatch,
             payloadExceptions,
             formattedPacedTrainResponse.id,
-            timetableId
+            exceptionsTimetableId
           )
         : [];
 
