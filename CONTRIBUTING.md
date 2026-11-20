@@ -118,8 +118,29 @@ https://osrd.fr/en/docs/guides/contribute/contribute-code/#share-your-changes
 
 https://osrd.fr/en/docs/guides/contribute/bug-reports
 
-# About generative AI and agentic coding
+# Generative AI use policy
 
-Project policy about AI contributions is currently under discussion. AI-heavy contributions may or may not be accepted in the meantime with no consistency guarantees.
+This policy is a first version. It is meant to evolve as our opinion on the subject will be refined.
 
-AI-first pull requests closing issues tagged with `good-first-issue` are not accepted.
+> [!WARNING]
+> Any contribution not complying with the policy will be rejected.
+> If you don't know if your contribution respects the policy, feel free to ask us.
+
+### Allowed uses
+* Not using generative AI: we do not impose the use of AI for any task, you are free not to use it;
+* "read-only" uses, where the generative AI does not create content in your contribution, such as:
+  * understanding the codebase;
+  * skill development;
+  * self-review;
+  * translation (but be careful with technical / railway-specific terms).
+
+### Forbidden uses
+* Design-related uses (such as writing implementation plans or defining acceptance criteria); this ensures control over the application's design and helps avoid anchoring and framing biases.
+* Issues with the tag "good-first-issues" must be resolved by humans only; this allows junior developers to develop their skills.
+
+### Conditionally permitted uses
+Generative AI can be used to produce any content in your contribution (code, review, communication...) under the following conditions:
+* a human author must claim ownership of the content (through understanding and correcting it if needed): as the author, you are responsible for your contribution to meet the quality standards of the codebase;
+* the use of generative AI must be declared and explained on the commit message: to provide context for the reviewer and to enrich our future discussions on the subject.
+
+
