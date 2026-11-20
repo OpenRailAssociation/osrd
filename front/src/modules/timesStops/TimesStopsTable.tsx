@@ -523,6 +523,8 @@ const TimesStopsTable = ({
         titleText = t('statusMessage.scheduleNotMet');
       } else if (isPathStep && stepStatus === 'marginNotHonored') {
         titleText = t('statusMessage.marginNotMet');
+      } else if (stepStatus === 'invalidPathStep') {
+        titleText = t('statusMessage.unknown');
       } else {
         titleText = '';
       }

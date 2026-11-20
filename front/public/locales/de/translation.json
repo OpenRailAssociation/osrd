@@ -829,7 +829,8 @@
     "statusMessage": {
       "marginNotMet": "Nicht eingehaltene Rand",
       "scheduleNotMet": "Nicht eingehaltene Wunschtermin",
-      "timeConstraintMet": "Zeitliche Vorgaben eingehalten"
+      "timeConstraintMet": "Zeitliche Vorgaben eingehalten",
+      "unknown": "Unbekannter Wegpunkt"
     },
     "stopTime": "Haltezeit",
     "theoreticalMargin": "theoretische Marge",

@@ -935,7 +935,8 @@
     "statusMessage": {
       "marginNotMet": "Marge non respectée",
       "scheduleNotMet": "Horaire demandé non respecté",
-      "timeConstraintMet": "Contrainte horaire respectée"
+      "timeConstraintMet": "Contrainte horaire respectée",
+      "unknown": "Point de passage non reconnu"
     },
     "stopTime": "temps d'arrêt",
     "timeFromPreviousOp": "temps depuis le point précédent",

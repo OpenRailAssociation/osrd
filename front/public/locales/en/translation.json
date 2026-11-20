@@ -935,7 +935,8 @@
     "statusMessage": {
       "marginNotMet": "Margin not met",
       "scheduleNotMet": "Requested schedule not met",
-      "timeConstraintMet": "Time constraint met"
+      "timeConstraintMet": "Time constraint met",
+      "unknown": "Unknown path step"
     },
     "stopTime": "stopping time",
     "timeFromPreviousOp": "time from above waypoint",
