@@ -195,9 +195,6 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                 onSelect={(id) => setParamsInUrlAndStorage('timetable', String(id))}
                 getItemKey={(id) => String(id)}
               />
-              <button className="chevron-btn" type="button" onClick={toggleScenarioDetails}>
-                {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
-              </button>
             </>
           )}
 
