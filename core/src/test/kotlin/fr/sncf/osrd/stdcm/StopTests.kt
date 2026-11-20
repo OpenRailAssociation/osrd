@@ -237,7 +237,7 @@ class StopTests {
                 .addStep(
                     ExplorerStep(
                         locations = setOf(BlockLocation(detour[1], Offset(1000.meters))),
-                        duration = 0.0,
+                        duration = if (stop) 0.0 else null,
                         canBacktrack = stop,
                         stepTypes =
                             if (stop) setOf(StepType.INPUT_STOP)
@@ -835,7 +835,7 @@ class StopTests {
                     ExplorerStep(
                         locations = setOf(BlockLocation(blocks[2], Offset(1.meters))),
                         duration = 0.0,
-                        canBacktrack = true,
+                        canBacktrack = false,
                         plannedTimingData =
                             PlannedTimingData(15_000.seconds, 15_000.seconds, 15_000.seconds),
                         inputStepIndex = 2,

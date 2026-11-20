@@ -235,7 +235,7 @@ class STDCMHeuristicBuilder(
             maxSpeedEnvBuilder,
             bestTravelTime,
             allowance,
-            steps.filter { it.stop }.map { it.duration ?: 0.0 },
+            steps.filter { it.isStop }.map { it.duration ?: 0.0 },
         )
     }
 

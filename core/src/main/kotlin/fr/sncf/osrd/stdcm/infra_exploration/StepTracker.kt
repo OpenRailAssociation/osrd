@@ -52,7 +52,7 @@ private constructor(
 
     /** Returns all the input steps that have been passed on the path. */
     fun getSeenInputSteps(): List<LocatedStep> {
-        return seenSteps.toList().filter { it.originalStep.isInput() }
+        return seenSteps.toList().filter { it.originalStep.isInput }
     }
 
     /** Returns all the steps (input and forced stop) that have been passed on the path. */
@@ -96,14 +96,14 @@ private constructor(
             val isDuplicateLocation = res.lastOrNull()?.location == location
 
             // When we are on the start of the path, ignore any non-input steps
-            if (currentInputStepIndex == 0 && isDuplicateLocation && !step.isInput()) continue
+            if (currentInputStepIndex == 0 && isDuplicateLocation && !step.isInput) continue
             // Register input steps in the correct order
-            if (step.isInput() && step.inputStepIndex != currentInputStepIndex + 1) continue
+            if (step.isInput && step.inputStepIndex != currentInputStepIndex + 1) continue
             // Break if we're at a backtracking step AND the current step is not at the same
             // location as the last one.
             if (isBacktrackingStep && !isDuplicateLocation) break
 
-            if (step.isInput()) currentInputStepIndex++
+            if (step.isInput) currentInputStepIndex++
             isBacktrackingStep =
                 isBacktrackingAtEnd && location.offset == blockRange.objectEnd && step.canBacktrack
             if (isBacktrackingStep) assert(step.stepTypes.contains(StepType.INPUT_STOP))
@@ -132,7 +132,7 @@ private constructor(
             // the current and previous steps should be merged together.
             if (
                 isDuplicateLocation &&
-                    !(newStep.originalStep.isInput() && res.last().originalStep.isInput())
+                    !(newStep.originalStep.isInput && res.last().originalStep.isInput)
             ) {
                 val stepDuplicate = res.removeLast()
                 newStep = newStep.mergeLocatedStep(stepDuplicate)
@@ -143,12 +143,10 @@ private constructor(
             if (currentInputStepIndex == nInputSteps - 1) break
         }
 
-        if (isBacktrackingAtEnd) {
-            assert(
-                res.filter { res.last().location == it.location }.find { it.isBacktracking } !=
-                    null,
-            )
-        }
+        assert(
+            !isBacktrackingAtEnd xor
+                res.any { it.isBacktracking && it.location == res.last().location },
+        )
         seenSteps.addAll(res)
         currentPathOffset = blockRange.pathEnd
         return res
@@ -277,6 +275,6 @@ data class LocatedStep(
     init {
         assert(originalStep.locations.single() == location)
         // If the step is a backtracking location, it has to mark a stop.
-        assert(!isBacktracking || (originalStep.stop && originalStep.duration != null))
+        assert(!isBacktracking || (originalStep.isStop && originalStep.duration != null))
     }
 }

@@ -7,6 +7,7 @@ import fr.sncf.osrd.envelope_sim.Comfort
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding.Companion.checkPathfindingSteps
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
@@ -136,7 +137,7 @@ class STDCMPathfinding(
     fun findPath(): STDCMResult? {
         runInputSanityChecks()
 
-        assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
+        assert(steps.last().isStop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, consistSchedule, forcedOpStops)
 
         // If we are in a dead end, and the destination is not reached, the pathfinding should fail
@@ -186,9 +187,7 @@ class STDCMPathfinding(
      * to a valid solution.
      */
     private fun runInputSanityChecks() {
-        if (steps.size < 2)
-            throw OSRDError(ErrorType.InvalidSTDCMInputs)
-                .withContext("cause", "Not enough steps have been set to find a path")
+        checkPathfindingSteps(steps)
         // Check consist changes
         if (consistSchedule.rollingStocks.size != steps.size) {
             throw OSRDError(ErrorType.InvalidSTDCMInputs)
@@ -294,7 +293,7 @@ class STDCMPathfinding(
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
-        assert(!firstStep.stop)
+        assert(!firstStep.isStop)
         for (location in firstStep.locations) {
             val infraExplorers =
                 initInfraExplorerWithEnvelope(

@@ -283,7 +283,7 @@ private fun makeConsistChanges(
                     .toList()
                     .reversed()
                     .filter { it.travelledPathOffset.distance != 0.meters }
-                    .filter { it.originalStep.isInput() }
+                    .filter { it.originalStep.isInput }
                     .elementAt(index)
                     .travelledPathOffset,
             )

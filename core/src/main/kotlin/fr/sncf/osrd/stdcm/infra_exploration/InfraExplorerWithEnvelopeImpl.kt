@@ -69,7 +69,7 @@ data class InfraExplorerWithEnvelopeImpl(
         val stops =
             seenSteps
                 .iterateBackwards()
-                .filter { it.originalStep.stop }
+                .filter { it.originalStep.isStop }
                 .toList()
                 .sortedBy {
                     it.travelledPathOffset
@@ -155,7 +155,7 @@ data class InfraExplorerWithEnvelopeImpl(
                     run {
                         val lastStep =
                             getStepTracker().iterateSeenStepsBackwards().firstOrNull {
-                                it.originalStep.isInput()
+                                it.originalStep.isInput
                             }
                         val rollingStock = getCurrentRollingStock()
                         val lookaheadEndOffset = getAllBlocks().last().pathEnd.distance
@@ -279,7 +279,7 @@ data class InfraExplorerWithEnvelopeImpl(
         val seenSteps = getStepTracker().getSeenSteps()
         return seenSteps
             .iterateBackwards()
-            .filter { it.originalStep.stop }
+            .filter { it.originalStep.isStop }
             .any { it.travelledPathOffset == getSimulatedLength() }
     }
 

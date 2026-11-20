@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.units.Offset
  */
 fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer, currentBlockId: BlockId): LocatedStep? {
     return infraExplorer.getStepTracker().iterateStepsInLookaheadBackwards().lastOrNull {
-        it.location.edge == currentBlockId && it.originalStep.stop
+        it.location.edge == currentBlockId && it.originalStep.isStop
     }
 }
 

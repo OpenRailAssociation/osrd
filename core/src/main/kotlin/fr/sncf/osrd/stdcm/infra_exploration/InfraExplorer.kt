@@ -202,15 +202,16 @@ data class ExplorerStep(
         } else setOf(StepType.INPUT_WAYPOINT),
     val inputStepIndex: Int? = null,
 ) {
-    val stop: Boolean = stepTypes.any { it.isStop }
+    val isStop: Boolean
+        get() = stepTypes.any { it.isStop }
+
+    val isInput: Boolean
+        get() = stepTypes.any { it.isInput }
 
     init {
-        if (isInput()) assert(inputStepIndex != null)
-    }
-
-    fun isInput(): Boolean {
-        return stepTypes.contains(StepType.INPUT_WAYPOINT) ||
-            stepTypes.contains(StepType.INPUT_STOP)
+        if (isInput) assert(inputStepIndex != null)
+        if (isStop) assert(duration != null)
+        if (canBacktrack) assert(isStop && isInput)
     }
 
     fun mergeExplorerStep(other: ExplorerStep): ExplorerStep {
@@ -245,10 +246,10 @@ fun initInfraExplorers(
 ): Collection<InfraExplorer> {
     require(constraints == null || targets.isEmpty() || constraints.size == targets.size)
     require(
-        targets.all { it.isInput() },
+        targets.all { it.isInput },
     )
     require(
-        forcedOpStops.all { !it.isInput() },
+        forcedOpStops.all { !it.isInput },
     )
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
@@ -522,7 +523,7 @@ private class InfraExplorerImpl(
             .iterateSeenStepsBackwards()
             .takeWhile { it.travelledPathOffset >= from }
             .mapNotNull {
-                if (it.originalStep.stop && it.travelledPathOffset <= to)
+                if (it.originalStep.isStop && it.travelledPathOffset <= to)
                     PathStop(
                         it.travelledPathOffset,
                         RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP,

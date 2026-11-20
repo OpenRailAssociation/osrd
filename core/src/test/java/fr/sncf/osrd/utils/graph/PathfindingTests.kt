@@ -272,6 +272,8 @@ class PathfindingTests {
                 // Right now, this is allowed as an input (2 steps on the same location with
                 // different values of canBacktrack), and the output will have an isBacktracking
                 // step followed by a !isBacktracking step at the same location.
+                // Just monitoring possible behavior changes: this is not a functional requirement,
+                // only a technical choice.
                 ExplorerStep(
                     listOf(BlockLocation(block12, Offset(10.meters))),
                     canBacktrack = false,
@@ -1242,7 +1244,7 @@ class PathfindingTests {
         val h1Plus500 =
             ExplorerStep(
                 listOf(BlockLocation(f2K1Blocks[2], Offset(500.meters))),
-                inputStepIndex = 2,
+                inputStepIndex = 1,
             )
         val res3routes = runPathFinding(listOf(aPlus20, h1Plus500), dummyInfra)
 
@@ -1346,7 +1348,7 @@ class PathfindingTests {
         val c3Plus0 =
             ExplorerStep(
                 listOf(BlockLocation(aF3Blocks[1], Offset(500.meters))),
-                inputStepIndex = 3,
+                inputStepIndex = 0,
             )
         val resNoPath = runPathFinding(listOf(c3Plus0, d2Plus70), dummyInfra)
         Assertions.assertNull(resNoPath)
@@ -1354,14 +1356,22 @@ class PathfindingTests {
         // ---------- ----------- ----------
 
         val c2Plus10 =
-            ExplorerStep(listOf(BlockLocation(bF2Blocks[1], Offset(10.meters))), inputStepIndex = 4)
+            ExplorerStep(listOf(BlockLocation(bF2Blocks[1], Offset(10.meters))), inputStepIndex = 0)
         val j1Plus400 =
             ExplorerStep(
                 listOf(BlockLocation(f2K1Blocks[4], Offset(400.meters))),
-                inputStepIndex = 5,
+                inputStepIndex = 3,
             )
         val multipleStepInBlockGroups =
-            runPathFinding(listOf(c2Plus10, d2Plus70, h1Plus500, j1Plus400), dummyInfra)
+            runPathFinding(
+                listOf(
+                    c2Plus10,
+                    d2Plus70.copy(inputStepIndex = 1),
+                    h1Plus500.copy(inputStepIndex = 2),
+                    j1Plus400,
+                ),
+                dummyInfra,
+            )
 
         Assertions.assertEquals(
             arrayListOf(

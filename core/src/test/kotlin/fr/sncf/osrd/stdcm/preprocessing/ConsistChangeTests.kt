@@ -193,7 +193,7 @@ class ConsistChangeTests {
                         middle.blockLocations,
                         duration = 20.0,
                         stepTypes = setOf(StepType.INPUT_STOP),
-                        inputStepIndex = 0,
+                        inputStepIndex = 1,
                     ),
                 )
                 .setEndLocations(end.blockLocations)

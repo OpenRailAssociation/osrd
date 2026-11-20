@@ -63,7 +63,7 @@ data class CachedBlockMaxSpeedEnvBuilder(
     private data class CachedMrsp(val mrsp: Envelope, val context: EnvelopeSimContext)
 
     init {
-        for (stop in steps.filter { it.stop }) {
+        for (stop in steps.filter { it.isStop }) {
             val blockToLocationMap = mutableMapOf<BlockId, Offset<Block>>()
             for (location in stop.locations) {
                 val currentOffset = blockToLocationMap.getOrPut(location.edge) { location.offset }

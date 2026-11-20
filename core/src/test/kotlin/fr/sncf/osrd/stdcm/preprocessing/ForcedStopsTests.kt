@@ -12,8 +12,6 @@ import fr.sncf.osrd.stdcm.STDCMPathfindingBuilder
 import fr.sncf.osrd.stdcm.StopTests.Companion.checkStop
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_DURATION
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorers
-import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.train.TestTrains.VERY_SHORT_FAST_TRAIN
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DummyInfra
@@ -270,7 +268,7 @@ class ForcedStopsTests {
     fun emptyTimetableWithForcedOpStopAndInputStopAtSameOffset(
         inputStopDuration: Double,
         expectedStopDuration: Double,
-        forcedOpStopType: StepType,
+        expectedStepTypes: StepType,
     ) {
         /*
         a --(forced op stop / input stop)--> b --> c
@@ -293,7 +291,7 @@ class ForcedStopsTests {
                 .addForcedOpStop(
                     createForcedOpStopExplorerStep(
                         BlockLocation(firstBlock, Offset(50.meters)),
-                        setOf(forcedOpStopType),
+                        setOf(expectedStepTypes),
                     ),
                 )
                 .setEndLocations(
@@ -309,7 +307,7 @@ class ForcedStopsTests {
                     50.0,
                     expectedStopDuration,
                     SHORT_SLIP_STOP,
-                    setOf(StepType.INPUT_STOP, forcedOpStopType),
+                    setOf(StepType.INPUT_STOP, expectedStepTypes),
                 ),
             ),
         )
