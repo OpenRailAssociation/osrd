@@ -66,6 +66,7 @@ class WorkerCommand : CliCommand {
     val VALKEY_URL: String?
     val OSRD_GIT_DESCRIBE: String
     val TELEMETRY_TRACER: Tracer
+    val STANDALONE_SIM_V3: String?
 
     lateinit var endpoints: Map<String, Take>
 
@@ -101,6 +102,7 @@ class WorkerCommand : CliCommand {
             }
         OSRD_GIT_DESCRIBE = System.getenv("OSRD_GIT_DESCRIBE") ?: "development"
         TELEMETRY_TRACER = GlobalOpenTelemetry.getTracerProvider().get("WorkerCommand")
+        STANDALONE_SIM_V3 = System.getenv("STANDALONE_SIM_V3")
     }
 
     private fun getBooleanEnvvar(name: String): Boolean {
@@ -167,7 +169,11 @@ class WorkerCommand : CliCommand {
                 "/pathfinding/blocks" to PathfindingBlocksEndpoint(infraManager),
                 "/path_properties" to PathPropEndpoint(infraManager),
                 "/standalone_simulation" to
-                    SimulationEndpoint(infraManager, electricalProfileSetManager),
+                    SimulationEndpoint(
+                        infraManager,
+                        electricalProfileSetManager,
+                        STANDALONE_SIM_V3,
+                    ),
                 "/signal_projection" to SignalProjectionEndpoint(infraManager),
                 "/conflict_detection" to ConflictDetectionEndpoint(infraManager),
                 "/etcs_braking_curves" to
