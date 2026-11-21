@@ -41,6 +41,10 @@ const useImportTrainSchedules = () => {
     try {
       const { paced_trains: train_schedules, ...rest } = await postTransformTimetable({
         body: file,
+        timetable_type: timetableType,
+        hourly_timetable_duration: computeHourlyTimetableDuration([
+          ...trainSchedules.values(),
+        ]).toISOString(),
       }).unwrap();
       return { ...rest, train_schedules };
     } catch (error: unknown) {
