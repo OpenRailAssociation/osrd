@@ -30,6 +30,7 @@ use core_client::simulation::RoutingRequirement;
 use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use itertools::Itertools as _;
 use itertools::izip;
 use models::Infra;
@@ -78,6 +79,13 @@ use crate::error::Result;
 use crate::views::AuthorizationError;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
+
+#[derive(Debug, Error, ViewError)]
+#[error("Timetable '{timetable_id}' not found")]
+#[view_error(status = NOT_FOUND, context, path = timetable::not_found)]
+pub(in crate::views) struct TimetableNotFound {
+    pub timetable_id: i64,
+}
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
