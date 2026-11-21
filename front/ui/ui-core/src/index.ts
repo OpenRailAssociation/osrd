@@ -39,6 +39,12 @@ export { default as Table } from './components/Table/Table';
 export { colors as AMBIENT_COLORS } from './components/Table/tableAmbientThemes';
 export { default as Dialog } from './components/Dialog';
 export {
+  default as OptionGroup,
+  type OptionGroupProps,
+  type OptionGroupSection,
+  type OptionGroupItem,
+} from './components/OptionGroup';
+export {
   default as SegmentedControl,
   type SegmentedControlProps,
 } from './components/SegmentedControl';

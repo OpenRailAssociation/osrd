@@ -1,6 +1,17 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { X, ChevronDown, ChevronUp, Hubot, Person, SignOut } from '@osrd-project/ui-icons';
+import { OptionGroup } from '@osrd-project/ui-core';
+import {
+  X,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Hubot,
+  Person,
+  PatternHourly,
+  SignOut,
+  TimetableCalendar,
+} from '@osrd-project/ui-icons';
 import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -8,8 +19,13 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { useScenarioContextWithOptionalTimetable } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useUrlOrStorageParam from 'applications/operationalStudies/hooks/useUrlOrStorageParam';
 import type { Board } from 'applications/operationalStudies/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TimetableSummary,
+  type TimetableType,
+} from 'common/api/osrdEditoastApi';
 import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal, {
   type ScenarioField,
@@ -31,6 +47,8 @@ const BOARDS: Board[] = [
   'conflicts',
 ];
 
+const TIMETABLE_TYPES: TimetableType[] = ['HOURLY', 'CALENDAR'];
+
 type ScenarioHeaderProps = {
   activeBoards: Set<Board>;
   toggleBoard: (board: Board) => void;
@@ -43,6 +61,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
     useScenarioContextWithOptionalTimetable();
   const { t } = useTranslation('operational-studies');
   const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
+  const { setParamsInUrlAndStorage } = useUrlOrStorageParam('timetable');
 
   // The chronogram is not supported by hourly timetables yet.
   const boards = useMemo(
@@ -65,6 +84,21 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const headerRef = useRef<HTMLElement>(null);
   const scenarioNameRef = useRef<HTMLSpanElement>(null);
   const usernameRef = useRef<HTMLSpanElement>(null);
+
+  // The timetable name is optional, so we use its type as a fallback label
+  const getTimetableLabel = ({ name, type }: TimetableSummary) =>
+    name ??
+    (type === 'HOURLY'
+      ? t('main.scenarioTimetableTypeHourly')
+      : t('main.scenarioTimetableTypeCalendar'));
+  const isTimetableSelectorVisible = multipleTimetablesEnabled && timetableId !== undefined;
+  const timetableSections = TIMETABLE_TYPES.map((type) => ({
+    title: t(`main.scenarioTimetableSections.${type}.title`),
+    icon: type === 'HOURLY' ? <PatternHourly size="lg" /> : <TimetableCalendar size="lg" />,
+    items: scenario.timetable_summaries
+      .filter((timetable) => timetable.type === type)
+      .map((timetable) => ({ value: timetable.id, label: getTimetableLabel(timetable) })),
+  })).filter(({ items }) => items.length > 0);
 
   const { electricalProfileSet } = osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(
     undefined,
@@ -147,10 +181,24 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
               {scenario.name}
             </span>
 
-            <button className="chevron-btn" type="button">
-              {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
-            </button>
+            {!isTimetableSelectorVisible && (
+              <button className="chevron-btn" type="button">
+                {areScenarioDetailsVisible ? <ChevronUp /> : <ChevronDown />}
+              </button>
+            )}
           </div>
+
+          {isTimetableSelectorVisible && (
+            <>
+              <ChevronRight className="breadcrumb-separator" />
+              <OptionGroup
+                sections={timetableSections}
+                selectedValue={timetableId}
+                onSelect={(id) => setParamsInUrlAndStorage('timetable', String(id))}
+                getItemKey={(id) => String(id)}
+              />
+            </>
+          )}
 
           <div className="spacer" />
         </div>
