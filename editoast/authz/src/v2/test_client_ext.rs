@@ -17,6 +17,7 @@ use crate::User;
 use crate::model::GrantType;
 use crate::model::RollingStockPrivilege;
 use crate::v2::ResourcesList;
+use crate::v2::add_groups;
 use crate::v2::add_members;
 use crate::v2::add_roles;
 use crate::v2::infra_direct_grant;
@@ -32,6 +33,7 @@ use crate::v2::project_list;
 use crate::v2::project_privileges;
 use crate::v2::project_revoke_grant;
 use crate::v2::project_set_grant;
+use crate::v2::remove_groups;
 use crate::v2::remove_members;
 use crate::v2::remove_roles;
 use crate::v2::rolling_stock_direct_grant;
@@ -54,6 +56,8 @@ pub trait TestClientExt {
     async fn user_direct_roles(&self, user: User) -> HashSet<Role>;
     async fn add_members(&self, group: Group, members: HashSet<User>);
     async fn remove_members(&self, group: Group, members: HashSet<User>);
+    async fn add_groups(&self, user: User, groups: HashSet<Group>);
+    async fn remove_groups(&self, user: User, groups: HashSet<Group>);
 
     async fn infra_effective_grant(&self, subject: Subject, infra: Infra) -> Option<InfraGrant>;
     async fn infra_direct_grant(
@@ -191,6 +195,22 @@ impl TestClientExt for fga::Client {
         let authorize = special_authorizers::Authorize(self);
         authorize
             .access_value(remove_members(group, members))
+            .await
+            .unwrap()
+    }
+
+    async fn add_groups(&self, user: User, groups: HashSet<Group>) {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(add_groups(user, groups))
+            .await
+            .unwrap()
+    }
+
+    async fn remove_groups(&self, user: User, groups: HashSet<Group>) {
+        let authorize = special_authorizers::Authorize(self);
+        authorize
+            .access_value(remove_groups(user, groups))
             .await
             .unwrap()
     }

@@ -964,6 +964,88 @@ paths:
                       type: string
                       enum:
                       - editoast:database:unavailable
+    patch:
+      tags:
+      - authz
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: The new values for the user to update
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - identities
+              - groups
+              - roles
+              properties:
+                groups:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                identities:
+                  type: array
+                  items:
+                    type: string
+                name:
+                  type: string
+                roles:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Role'
+                  uniqueItems: true
+        required: true
+      responses:
+        '200':
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - name
+                - identities
+                - roles
+                - groups
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - name
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                        name:
+                          type: string
+                    uniqueItems: true
+                  id:
+                    type: integer
+                    format: int64
+                  identities:
+                    type: array
+                    items:
+                      type: string
+                  name:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+                    uniqueItems: true
   /authz/{resource_type}/{resource_id}:
     get:
       tags:
