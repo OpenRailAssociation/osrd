@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 
 import { v4 as uuidV4 } from 'uuid';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { updateTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/hooks/useUpdateTrainSchedule';
 import type {
@@ -112,6 +113,7 @@ export default function useOccupancyZoneDrop({
   timetableId: number;
 }) {
   const dispatch = useAppDispatch();
+  const { sandbox } = useScenarioContext();
   const { trainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   return useCallback(
@@ -167,6 +169,7 @@ export default function useOccupancyZoneDrop({
         };
         const result = await updateTrainSchedule({
           timetableId,
+          sandbox,
           trainScheduleId: rawTrainSchedule.id,
           originalTrainSchedule: trainSchedule,
           updatedTrainSchedule: updatedOccurrence,
@@ -186,6 +189,7 @@ export default function useOccupancyZoneDrop({
         if (!isPacedTrain(rawTrainSchedule)) {
           const result = await updateTrainSchedule({
             timetableId,
+            sandbox,
             trainScheduleId: trainSchedule.id,
             originalTrainSchedule: trainSchedule,
             updatedTrainSchedule: updatedModelTrainSchedule,
@@ -239,6 +243,7 @@ export default function useOccupancyZoneDrop({
 
         const result = await updateTrainSchedule({
           timetableId,
+          sandbox,
           trainScheduleId: rawTrainSchedule.id,
           originalTrainSchedule: trainSchedule,
           updatedTrainSchedule: updatedModelTrainSchedule,
@@ -258,6 +263,7 @@ export default function useOccupancyZoneDrop({
       pathOperationalPoints,
       deployedWaypoints,
       timetableId,
+      sandbox,
       dispatch,
       upsertTrainSchedules,
     ]

@@ -82,13 +82,11 @@ function getTrackOccupancyOperationalPointReference(
  */
 const useTrackOccupancy = ({
   infraId,
-  timetableId,
   trainScheduleProjections,
   pathOperationalPoints,
   hourlyTimetableDuration,
 }: {
   infraId: number;
-  timetableId: number;
   trainScheduleProjections: TrainSpaceTimeData[];
   pathOperationalPoints: ProjectionWaypoint[];
   hourlyTimetableDuration?: Duration;
@@ -178,7 +176,6 @@ const useTrackOccupancy = ({
           ? {
               operational_point_reference: opRef,
               infra_id: infraId,
-              timetable_id: timetableId,
               train_schedule_ids: trainScheduleIds,
               use_simulation: isSimulationEnabled,
             }
@@ -297,7 +294,7 @@ const useTrackOccupancy = ({
 
       return zones;
     },
-    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled, timetableId]
+    [infraId, postTrainSchedulesTrackOccupancy, isSimulationEnabled]
   );
 
   const deployedWaypoints = useMemo(() => {

@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { useItineraryModalContext } from 'applications/operationalStudies/hooks/useItineraryModalContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
+import type { Sandbox } from 'applications/operationalStudies/types';
 import {
   checkChangeGroups,
   updatePacedTrainExceptionsList,
@@ -51,6 +52,7 @@ import type { ItineraryModalTrainState } from '../Itinerary/ItineraryModal';
 
 type UpdateTrainScheduleParams = {
   timetableId: number;
+  sandbox: Sandbox;
   trainScheduleId: number;
   originalTrainSchedule: TrainScheduleWithDetails;
   updatedTrainSchedule: TrainSchedule;
@@ -78,6 +80,7 @@ type UpdateTrainScheduleResult =
 
 export async function updateTrainSchedule({
   timetableId,
+  sandbox,
   trainScheduleId,
   originalTrainSchedule,
   updatedTrainSchedule,
@@ -93,6 +96,13 @@ export async function updateTrainSchedule({
   if (validationErrors.length) {
     return { success: false, errorCodes: validationErrors };
   }
+
+  // The exceptions of a train scedule set are going to set timetable,
+  // the exceptions of a sandbox go to scenario timetable
+  const exceptionsTimetableId =
+    originalTrainSchedule.timetable_id === sandbox.timetableId
+      ? timetableId
+      : originalTrainSchedule.timetable_id;
 
   // ========== user is editing an occurrence ==========
   if (occurrenceId) {
@@ -116,7 +126,7 @@ export async function updateTrainSchedule({
       existingException,
       occurrenceIndex,
       trainScheduleId,
-      timetableId
+      exceptionsTimetableId
     );
 
     const updatedExceptions = updatePacedTrainExceptionsList(
@@ -131,7 +141,7 @@ export async function updateTrainSchedule({
       {
         ...formattedPacedTrain,
         id: trainScheduleId,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
         paced: formattedPacedTrain.paced
           ? { ...formattedPacedTrain.paced, exceptions: updatedExceptions }
           : undefined,
@@ -162,7 +172,7 @@ export async function updateTrainSchedule({
       trainScheduleId,
       {
         ...updatedTrainSchedule,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
       },
       dispatch
     );
@@ -175,7 +185,7 @@ export async function updateTrainSchedule({
       dispatch,
       newAddedExceptions,
       trainScheduleId,
-      timetableId
+      exceptionsTimetableId
     );
 
     // TODO: remove this part when the back will be done inserting the new exception format in TrainSchedule
@@ -196,7 +206,7 @@ export async function updateTrainSchedule({
       {
         ...updatedTrainSchedule,
         id: trainScheduleId,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
         ...(updatedTrainSchedule.paced && {
           paced: { ...updatedTrainSchedule.paced, exceptions: createdExceptions },
         }),
@@ -217,7 +227,7 @@ export async function updateTrainSchedule({
       trainScheduleId,
       {
         ...updatedTrainSchedule,
-        train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+        timetable_id: originalTrainSchedule.timetable_id,
       },
       dispatch,
       upsertTrainSchedules
@@ -271,7 +281,7 @@ export async function updateTrainSchedule({
     trainScheduleId,
     {
       ...updatedTrainSchedule,
-      train_schedule_set_id: originalTrainSchedule.train_schedule_set_id,
+      timetable_id: originalTrainSchedule.timetable_id,
       ...(updatedTrainSchedule.paced && {
         paced: { ...updatedTrainSchedule.paced, exceptions: finalExceptions },
       }),
@@ -290,7 +300,7 @@ const useUpdateTrainSchedule = (setIsWorking: (isWorking: boolean) => void) => {
   const dispatch = useAppDispatch();
   const dateTimeLocale = useDateTimeLocale();
 
-  const { timetableId, scenario } = useScenarioContext();
+  const { timetableId, sandbox, scenario } = useScenarioContext();
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -336,6 +346,7 @@ const useUpdateTrainSchedule = (setIsWorking: (isWorking: boolean) => void) => {
     try {
       const result = await updateTrainSchedule({
         upsertTrainSchedules,
+        sandbox,
         trainScheduleId: trainScheduleToEditData.trainSchedule.id,
         originalTrainSchedule:
           trainScheduleToEditData.parentPacedTrain ?? trainScheduleToEditData.trainSchedule,

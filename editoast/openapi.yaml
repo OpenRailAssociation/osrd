@@ -6876,7 +6876,6 @@ paths:
               type: object
               required:
               - infra_id
-              - timetable_id
               - train_ids
               - operational_points_refs
               - operational_points_distances
@@ -6963,9 +6962,6 @@ paths:
                           format: int32
                           description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
                           minimum: 0
-                timetable_id:
-                  type: integer
-                  format: int64
                 train_ids:
                   type: array
                   items:
@@ -7001,7 +6997,6 @@ paths:
               type: object
               required:
               - infra_id
-              - timetable_id
               - ids
               properties:
                 electrical_profile_set_id:
@@ -7016,9 +7011,6 @@ paths:
                     format: int64
                   uniqueItems: true
                 infra_id:
-                  type: integer
-                  format: int64
-                timetable_id:
                   type: integer
                   format: int64
         required: true
@@ -7047,7 +7039,6 @@ paths:
               - train_schedule_ids
               - operational_point_reference
               - infra_id
-              - timetable_id
               - use_simulation
               properties:
                 electrical_profile_set_id:
@@ -7060,9 +7051,6 @@ paths:
                   format: int64
                 operational_point_reference:
                   $ref: '#/components/schemas/OperationalPointReference'
-                timetable_id:
-                  type: integer
-                  format: int64
                 train_schedule_ids:
                   type: array
                   items:
@@ -14601,7 +14589,6 @@ components:
       type: object
       required:
       - infra_id
-      - timetable_id
       - ids
       - path
       properties:
@@ -14621,9 +14608,6 @@ components:
           format: int64
         path:
           $ref: '#/components/schemas/CoreTrainPath'
-        timetable_id:
-          type: integer
-          format: int64
     OccupancyBlocksTrainScheduleResult:
       type: object
       description: Occupancy blocks output is described by blocks (signal updates)
@@ -15701,7 +15685,6 @@ components:
       type: object
       required:
       - infra_id
-      - timetable_id
       - ids
       - track_section_ranges
       properties:
@@ -15717,9 +15700,6 @@ components:
             format: int64
           uniqueItems: true
         infra_id:
-          type: integer
-          format: int64
-        timetable_id:
           type: integer
           format: int64
         track_section_ranges:
@@ -19495,12 +19475,12 @@ components:
       - type: object
         required:
         - id
-        - train_schedule_set_id
+        - timetable_id
         properties:
           id:
             type: integer
             format: int64
-          train_schedule_set_id:
+          timetable_id:
             type: integer
             format: int64
     TrainScheduleSet:

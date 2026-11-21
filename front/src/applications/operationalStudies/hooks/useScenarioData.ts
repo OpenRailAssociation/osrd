@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
-import { keyBy, sortBy } from 'lodash';
+import { keyBy, partition, sortBy } from 'lodash';
 
 import {
   buildOccurrenceExceptionData,
@@ -129,7 +129,8 @@ function computeMovedTrainSchedule(
 const useScenarioData = () => {
   const dispatch = useAppDispatch();
 
-  const { scenario, infraId, timetableId, workerStatus, timetableType } = useScenarioContext();
+  const { scenario, infraId, timetableId, sandbox, workerStatus, timetableType } =
+    useScenarioContext();
   const isHourlyTimetable = timetableType === 'HOURLY';
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
@@ -253,6 +254,12 @@ const useScenarioData = () => {
   }, [trainSchedules, workerStatus, simulatedTrainsById, simulateTrainSchedules]);
 
   const broadcastChannel = useRef<BroadcastChannel>(null);
+
+  // The broadcast channel is shared by every scenario: keep the timetables of this scenario sets to ignore other trains
+  const { currentData: trainScheduleSets } =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery({ id: timetableId });
+  const displayedTimetableIdsRef = useRef(new Set<number>());
+  displayedTimetableIdsRef.current = new Set(trainScheduleSets?.map((tss) => tss.timetable_id));
 
   const broadcastScenarioMessage = (msg: ScenarioBroadcastMessage) => {
     broadcastChannel.current?.postMessage(msg);
@@ -382,13 +389,21 @@ const useScenarioData = () => {
           existingException: exceptionToSync,
           occurrenceIndex,
         } = buildOccurrenceExceptionData(trainSchedule, updatedOccurrence, draggedTrainId);
+
+        // The exceptions of a train scedule set are going to set timetable,
+        // the exceptions of a sandbox go to scenario timetable
+        const exceptionsTimetableId =
+          trainSchedule.timetable_id === sandbox.timetableId
+            ? timetableId
+            : trainSchedule.timetable_id;
+
         const finalException = await syncOccurrenceException(
           dispatch,
           generatedException,
           exceptionToSync,
           occurrenceIndex,
           editoastId,
-          timetableId
+          exceptionsTimetableId
         );
         const updatedExceptions = updatePacedTrainExceptionsList(
           trainSchedule.paced.exceptions,
@@ -428,6 +443,7 @@ const useScenarioData = () => {
       trainSchedules,
       dispatch,
       timetableId,
+      sandbox,
       upsertTrainScheduleExceptions,
       setTrainScheduleDepartureTime,
       updateTrainSchedule,
@@ -485,16 +501,25 @@ const useScenarioData = () => {
   );
 
   useEffect(() => {
-    const channel = new BroadcastChannel(`osrd-scenario-${scenario.id}`);
+    // Use one global broadcast, two differents scenario can use the same Set with it exceptions and would like to see the changes
+    const channel = new BroadcastChannel('osrd-train-schedules');
     broadcastChannel.current = channel;
 
     channel.addEventListener('message', (event) => {
       const msg: ScenarioBroadcastMessage = event.data;
 
       switch (msg.type) {
-        case 'upsertTrainSchedules':
-          upsertTrainSchedules(msg.trainSchedules);
+        case 'upsertTrainSchedules': {
+          const [displayed, notDisplayed] = partition(msg.trainSchedules, (trainSchedule) =>
+            displayedTimetableIdsRef.current.has(trainSchedule.timetable_id)
+          );
+          if (displayed.length > 0) upsertTrainSchedules(displayed);
+          // Remove trains that was moved out from a shared set
+          if (notDisplayed.length > 0) {
+            removeTrainSchedules(notDisplayed.map((trainSchedule) => trainSchedule.id));
+          }
           break;
+        }
         case 'removeTrainSchedules':
           removeTrainSchedules(msg.trainScheduleIds);
           break;

@@ -143,7 +143,7 @@ const useUpdateTimesStopsTable = (
   trainSchedulesWithDetails: TrainScheduleWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
-  const { timetableId, timetableType } = useScenarioContext();
+  const { timetableId, sandbox, timetableType } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putTrainSchedulesById.useMutation();
 
@@ -470,13 +470,20 @@ const useUpdateTimesStopsTable = (
       const { generatedException, existingException, occurrenceIndex } =
         buildOccurrenceExceptionData(originalPacedTrain, updatedOccurrence, occurrenceId);
 
+      // The exceptions of a train scedule set are going to set timetable,
+      // the exceptions of a sandbox go to scenario timetable
+      const exceptionsTimetableId =
+        originalPacedTrainWithDetails.timetable_id === sandbox.timetableId
+          ? timetableId
+          : originalPacedTrainWithDetails.timetable_id;
+
       const finalException = await syncOccurrenceException(
         dispatch,
         generatedException,
         existingException,
         occurrenceIndex,
         trainScheduleId,
-        timetableId
+        exceptionsTimetableId
       );
 
       const updatedExceptions = updatePacedTrainExceptionsList(
@@ -488,11 +495,11 @@ const useUpdateTimesStopsTable = (
       return persistTrain({
         ...originalPacedTrain,
         id: trainScheduleId,
-        train_schedule_set_id: originalPacedTrainWithDetails.train_schedule_set_id,
+        timetable_id: originalPacedTrainWithDetails.timetable_id,
         paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       });
     },
-    [selectedTrain, trainSchedulesWithDetails, timetableId, dispatch, persistTrain]
+    [selectedTrain, trainSchedulesWithDetails, timetableId, sandbox, dispatch, persistTrain]
   );
 
   /**
@@ -520,6 +527,7 @@ const useUpdateTimesStopsTable = (
 
       const updateResult = await updatePacedTrainSchedule({
         timetableId,
+        sandbox,
         trainScheduleId: editoastId,
         originalTrainSchedule: originalPacedTrainWithDetails,
         updatedTrainSchedule: updatedTrain,
@@ -530,7 +538,7 @@ const useUpdateTimesStopsTable = (
 
       return updateResult.success ? 'updated' : 'skipped';
     },
-    [selectedTrain, dispatch, timetableId, upsertTrainSchedules, trainSchedulesWithDetails]
+    [selectedTrain, dispatch, timetableId, sandbox, upsertTrainSchedules, trainSchedulesWithDetails]
   );
 
   /**

@@ -35,6 +35,7 @@ const buildOccurrenceActionsArgs = (
   occurrences,
   selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
   timetableId: 1,
+  sandbox: { id: 1, timetableId: 1 },
 });
 
 const timetableContextWrapper = ({ children }: { children: ReactNode }) =>
@@ -192,7 +193,7 @@ describe('useOccurrenceActions', () => {
       {
         ...formattedPacedTrain,
         id: pacedTrainSchedule.id,
-        train_schedule_set_id: pacedTrainSchedule.train_schedule_set_id,
+        timetable_id: pacedTrainSchedule.timetable_id,
         paced: {
           ...formattedPacedTrain.paced,
           exceptions: [
@@ -251,7 +252,7 @@ describe('useOccurrenceActions', () => {
       {
         ...formattedPacedTrain,
         id: pacedTrainWithExceptions.id,
-        train_schedule_set_id: pacedTrainWithExceptions.train_schedule_set_id,
+        timetable_id: pacedTrainWithExceptions.timetable_id,
         paced: {
           ...formattedPacedTrain.paced,
           exceptions: [
@@ -312,7 +313,7 @@ describe('useOccurrenceActions', () => {
       {
         ...formattedPacedTrain,
         id: pacedTrainSchedule.id,
-        train_schedule_set_id: pacedTrainSchedule.train_schedule_set_id,
+        timetable_id: pacedTrainSchedule.timetable_id,
         paced: {
           ...formattedPacedTrain.paced,
           exceptions: [
@@ -350,6 +351,7 @@ describe('useOccurrenceActions', () => {
           occurrences: [{ ...occurrence1 }, { ...occurrence2 }],
           selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
           timetableId: 1,
+          sandbox: { id: 1, timetableId: 1 },
         }),
       { wrapper: timetableContextWrapper }
     );
@@ -411,7 +413,7 @@ describe('useOccurrenceActions', () => {
       {
         ...formattedPacedTrain,
         id: pacedTrainWithExceptions.id,
-        train_schedule_set_id: pacedTrainWithExceptions.train_schedule_set_id,
+        timetable_id: pacedTrainWithExceptions.timetable_id,
         paced: {
           ...formattedPacedTrain.paced,
           exceptions: [],
@@ -458,7 +460,7 @@ describe('useOccurrenceActions', () => {
       {
         ...formattedPacedTrain,
         id: pacedTrainWithAddedException.id,
-        train_schedule_set_id: pacedTrainWithAddedException.train_schedule_set_id,
+        timetable_id: pacedTrainWithAddedException.timetable_id,
         paced: {
           ...formattedPacedTrain.paced,
           exceptions: [
@@ -515,7 +517,7 @@ describe('useOccurrenceActions', () => {
       {
         ...formattedPacedTrain,
         id: pacedTrainWithAddedException.id,
-        train_schedule_set_id: pacedTrainWithAddedException.train_schedule_set_id,
+        timetable_id: pacedTrainWithAddedException.timetable_id,
         paced: {
           ...formattedPacedTrain.paced,
           exceptions: [],

@@ -28,6 +28,15 @@ import type { SuggestedOP } from 'modules/trainSchedule/types';
 import type { Train, TrainScheduleWithPathOps } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
+export type Sandbox = {
+  // TODO SHARING_EXCEPTIONS: Remove it once train_scedule_set is droped
+  /** The train_scedule_set id */
+  id: number;
+  // Train_scedule_set sandbox is replaced by scenario timetable
+  /** Scenario tilmetable id */
+  timetableId: number;
+};
+
 export type Board =
   | 'trains'
   | 'map'

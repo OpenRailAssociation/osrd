@@ -15,10 +15,12 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use itertools::Itertools as _;
 use models::Timetable;
 use models::TrainScheduleSet;
 use models::TrainScheduleSetWithTimetable;
 use models::train_schedule::TrainScheduleChangeset;
+use models::train_schedule::train_schedule_schema_from_model;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -305,7 +307,7 @@ pub(in crate::views) async fn post_train_schedule(
     let train_schedules: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
     let response: Vec<TrainScheduleResponse> = train_schedules
         .into_iter()
-        .map(|train_schedule| TrainScheduleResponse::new(train_schedule, train_schedule_set_id))
+        .map(TrainScheduleResponse::from)
         .collect();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -341,10 +343,35 @@ pub(in crate::views) async fn get_train_schedules(
         .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
 
     let train_schedules = models::TrainSchedule::list(conn, settings).await?;
+
+    // The exceptions are shared with every timetable including the train schedule set
+    let train_schedule_ids = train_schedules.iter().map(|t| t.id).collect_vec();
+    let exceptions_settings = SelectionSettings::new().filter(move || {
+        models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(train_schedule_ids.clone())
+    });
+    let mut exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
+        .await?
+        .into_iter()
+        .into_group_map_by(|e| e.train_schedule_id);
+
     Ok(Json(
         train_schedules
             .into_iter()
-            .map(|train_schedule| TrainScheduleResponse::new(train_schedule, train_schedule_set_id))
+            .map(|train_schedule| {
+                let id = train_schedule.id;
+                let timetable_id = train_schedule.timetable_id;
+                let exceptions = exceptions
+                    .remove(&id)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map_into()
+                    .collect();
+                TrainScheduleResponse {
+                    id,
+                    timetable_id,
+                    train_schedule: train_schedule_schema_from_model(train_schedule, exceptions),
+                }
+            })
             .collect(),
     ))
 }
@@ -355,6 +382,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::fixtures::create_catalog_entry;
     use crate::fixtures::create_simple_paced_train;
+    use crate::fixtures::create_train_schedule_exception;
     use crate::fixtures::create_train_schedule_set;
     use crate::fixtures::simple_paced_train_base;
     use crate::views::test_app;
@@ -602,10 +630,50 @@ mod tests {
 
         assert_eq!(response.len(), 2);
         assert!(
-            response
-                .iter()
-                .all(|train_schedule| train_schedule.train_schedule_set_id == train_schedule_set.id)
+            response.iter().all(
+                |train_schedule| train_schedule.timetable_id == train_schedule_set.timetable_id
+            )
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_train_schedules_for_train_schedule_set_returns_exceptions() {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+        let train_schedule_set = create_train_schedule_set(&mut pool.get_ok()).await;
+        let train_schedule =
+            create_simple_paced_train(&mut pool.get_ok(), train_schedule_set.timetable_id).await;
+        let exception = create_train_schedule_exception(
+            &mut pool.get_ok(),
+            train_schedule_set.timetable_id,
+            train_schedule.id,
+            Some(1),
+            None,
+            None,
+        )
+        .await;
+
+        let response: Vec<TrainScheduleResponse> = app
+            .get(
+                format!(
+                    "/train_schedule_sets/{}/train_schedules",
+                    train_schedule_set.id
+                )
+                .as_str(),
+            )
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(response.len(), 1);
+        let exceptions = &response[0]
+            .train_schedule
+            .paced
+            .as_ref()
+            .expect("Should be a paced train")
+            .exceptions;
+        assert_eq!(exceptions.len(), 1);
+        assert_eq!(exceptions[0].id, Some(exception.id));
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

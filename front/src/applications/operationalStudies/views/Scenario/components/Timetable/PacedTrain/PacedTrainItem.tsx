@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useTimetableContext } from 'applications/operationalStudies/hooks/useTimetableContext';
 import { formatTrainScheduleWithDetailsToTrainSchedule } from 'applications/operationalStudies/views/Scenario/components/ManageTrainSchedule/helpers/formatTrainSchedulePayload';
 import {
@@ -150,15 +151,19 @@ const PacedTrainItem = ({
 
   const { summary } = pacedTrain;
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStocks);
+  const { sandbox } = useScenarioContext();
 
   const occurrenceActions = useOccurrenceActions({
     pacedTrain,
     occurrences,
     selectPacedTrainToEdit,
     timetableId,
+    sandbox,
   });
 
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainSchedulesById.useLazyQuery();
+  const [getTrainScheduleSets] =
+    osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useLazyQuery();
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(formattedTrainScheduleId));
@@ -206,7 +211,7 @@ const PacedTrainItem = ({
     upsertTrainSchedules([
       {
         ...updatedPacedTrainPayload,
-        train_schedule_set_id: pacedTrain.train_schedule_set_id,
+        timetable_id: pacedTrain.timetable_id,
         id: pacedTrain.id,
       },
     ]);
@@ -217,12 +222,28 @@ const PacedTrainItem = ({
     const pacedTrainName = `${pacedTrain.name} (${t('timetable.copy')})`;
 
     let pacedTrainDetail: TrainScheduleResponse;
+    let trainScheduleSetId: number;
+    let exceptionsTimetableId: number;
     try {
       const pacedTrainDetailPromise = getTrainScheduleById({
         id: pacedTrain.id,
       });
       pacedTrainDetail = await pacedTrainDetailPromise.unwrap();
       pacedTrainDetailPromise.unsubscribe();
+
+      const { timetable_id: pacedTrainTimetableId } = pacedTrainDetail;
+      // TODO: SHARING_EXCEPTIONS - train_schedule do not have the train_schedule_set_id anymore
+      // we need to find it from getTrainScheduleSets (cached)
+      const trainScheduleSet = (
+        await getTrainScheduleSets({ id: timetableId }, true).unwrap()
+      ).find((tss) => tss.timetable_id === pacedTrainTimetableId);
+      if (!trainScheduleSet) {
+        throw new Error('Train schedule set of the paced train not found');
+      }
+      trainScheduleSetId = trainScheduleSet.id;
+      // The exceptions of a train scedule set are going to set timetable,
+      // the exceptions of a sandbox go to scenario timetable
+      exceptionsTimetableId = trainScheduleSet.name ? trainScheduleSet.timetable_id : timetableId;
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
       return;
@@ -233,7 +254,7 @@ const PacedTrainItem = ({
       new Duration({ minutes: TRAIN_SCHEDULE_DELTA })
     );
     const newPacedTrain: TrainSchedule = {
-      ...omit(pacedTrainDetail, ['id', 'train_schedule_set_id']),
+      ...omit(pacedTrainDetail, ['id', 'timetable_id']),
       start_time: startTime.getTime(),
       train_name: pacedTrainName,
     };
@@ -244,8 +265,9 @@ const PacedTrainItem = ({
       return changeGroups;
     });
 
+    // TODO: SHARING_EXCEPTIONS - This endpoint is not yet migrated and require a train_schedule_set_id
     const formattedPacedTrainResponse: TrainScheduleResponse = (
-      await createTrainSchedules(dispatch, pacedTrainDetail.train_schedule_set_id, [newPacedTrain])
+      await createTrainSchedules(dispatch, trainScheduleSetId, [newPacedTrain])
     )[0];
     dispatch(
       updateSelectedTrain({
@@ -261,7 +283,7 @@ const PacedTrainItem = ({
             dispatch,
             payloadExceptions,
             formattedPacedTrainResponse.id,
-            timetableId
+            exceptionsTimetableId
           )
         : [];
 

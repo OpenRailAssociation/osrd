@@ -309,7 +309,6 @@ pub(in crate::views) async fn get_train_schedule_by_id(
         .await?;
 
     let exceptions_settings = SelectionSettings::new()
-        .filter(move || models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
         .filter(move || models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq(train_schedule.id));
 
     let exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
@@ -318,16 +317,9 @@ pub(in crate::views) async fn get_train_schedule_by_id(
         .map_into()
         .collect();
 
-    let train_schedule_set_id = Timetable::retrieve(conn.clone(), train_schedule.timetable_id)
-        .await?
-        .and_then(|timetable| timetable.train_schedule_set_id)
-        .ok_or(TimetableError::NotFound {
-            timetable_id: train_schedule.timetable_id,
-        })?;
-
     Ok(Json(TrainScheduleResponse {
         id: train_schedule.id,
-        train_schedule_set_id,
+        timetable_id: train_schedule.timetable_id,
         train_schedule: train_schedule_schema_from_model(train_schedule, exceptions),
     }))
 }
@@ -367,17 +359,12 @@ pub(in crate::views) async fn get_train_schedules(
     let train_schedule_set_ids =
         Timetable::get_train_schedule_set_ids_from_timetable(timetable_id, conn).await?;
 
-    let train_schedule_set_ids_by_timetable: HashMap<i64, i64> =
+    let inner_timetable_ids =
         TrainScheduleSetWithTimetable::retrieve_batch(conn, train_schedule_set_ids)
             .await?
             .into_iter()
-            .map(|train_schedule_set| (train_schedule_set.timetable_id, train_schedule_set.id))
-            .collect();
-
-    let inner_timetable_ids = train_schedule_set_ids_by_timetable
-        .keys()
-        .copied()
-        .collect_vec();
+            .map(|train_schedule_set| train_schedule_set.timetable_id)
+            .collect_vec();
 
     let settings = pagination_params
         .into_selection_settings()
@@ -387,11 +374,9 @@ pub(in crate::views) async fn get_train_schedules(
     let (paced_trains, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
 
     let paced_trains_ids = paced_trains.iter().map(|t| t.id).collect::<Vec<_>>();
-    let exceptions_settings = SelectionSettings::new()
-        .filter(move || models::TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
-        .filter(move || {
-            models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(paced_trains_ids.clone())
-        });
+    let exceptions_settings = SelectionSettings::new().filter(move || {
+        models::TrainScheduleException::TRAIN_SCHEDULE_ID.eq_any(paced_trains_ids.clone())
+    });
 
     let mut exceptions = models::TrainScheduleException::list(conn, exceptions_settings)
         .await?
@@ -402,7 +387,7 @@ pub(in crate::views) async fn get_train_schedules(
         .into_iter()
         .map(|ts| {
             let id = ts.id;
-            let train_schedule_set_id = train_schedule_set_ids_by_timetable[&ts.timetable_id];
+            let timetable_id = ts.timetable_id;
             let exceptions = exceptions
                 .remove(&id)
                 .unwrap_or_default()
@@ -412,7 +397,7 @@ pub(in crate::views) async fn get_train_schedules(
             let train_schedule = train_schedule_schema_from_model(ts, exceptions);
             TrainScheduleResponse {
                 id,
-                train_schedule_set_id,
+                timetable_id,
                 train_schedule,
             }
         })
@@ -484,7 +469,6 @@ pub(in crate::views) async fn requirements(
 
     let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
-        timetable_id,
         &paced_trains.iter().map(|pt| pt.id).collect_vec(),
     )
     .await?
@@ -660,18 +644,15 @@ pub(in crate::views) async fn get_local_track_names(
 
         let train_ids = train_schedules.iter().map(|ts| ts.id).collect_vec();
 
-        let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
-            conn,
-            timetable_id,
-            &train_ids,
-        )
-        .await?
-        .into_iter()
-        // Only consider exceptions that have path and schedule changes,
-        // as other types of changes don't impact local track names
-        .filter(|e| e.change_groups.path_and_schedule.is_some())
-        .map_into::<schemas::TrainScheduleException>()
-        .into_group_map_by(|e| e.train_schedule_id);
+        let mut exceptions =
+            TrainScheduleException::retrieve_exceptions_by_train_schedules(conn, &train_ids)
+                .await?
+                .into_iter()
+                // Only consider exceptions that have path and schedule changes,
+                // as other types of changes don't impact local track names
+                .filter(|e| e.change_groups.path_and_schedule.is_some())
+                .map_into::<schemas::TrainScheduleException>()
+                .into_group_map_by(|e| e.train_schedule_id);
 
         let train_occurrences: Vec<_> =
             train_schedules
@@ -1277,12 +1258,12 @@ mod tests {
             .assert_status_ok()
             .json();
 
-        // Check if the timetable has the two train schedules, with their train schedule set
+        // Check if the timetable has the two train schedules, with the timetable of their train schedule set
         assert_eq!(list.results.len(), 2);
         assert!(
             list.results
                 .iter()
-                .all(|result| result.train_schedule_set_id == train_schedule_set1.id)
+                .all(|result| result.timetable_id == train_schedule_set1.timetable_id)
         );
 
         // Check if the first train schedule contains only his own exception
@@ -1322,7 +1303,7 @@ mod tests {
             .json();
 
         assert_eq!(response.id, train_schedule.id);
-        assert_eq!(response.train_schedule_set_id, train_schedule_set.id);
+        assert_eq!(response.timetable_id, train_schedule_set.timetable_id);
         app.get(&format!(
             "/timetable/{}/train_schedules/{}",
             timetable.id, 0

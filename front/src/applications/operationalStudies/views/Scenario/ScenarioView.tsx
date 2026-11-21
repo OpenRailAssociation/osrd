@@ -12,7 +12,7 @@ import ScenarioHeader from './components/ScenarioHeader';
 const DEFAULT_BOARDS: Board[] = ['trains', 'std', 'table', 'sdd', 'map'];
 
 const Scenario = () => {
-  const { scenario, timetable, sandboxId } = useScenario();
+  const { scenario, timetable, sandbox } = useScenario();
 
   const { activeBoards, toggleBoard } = usePersistScenarioHeader(scenario?.id, DEFAULT_BOARDS);
 
@@ -22,11 +22,11 @@ const Scenario = () => {
 
   return (
     <div id="scenario">
-      <ScenarioContextProvider scenario={scenario} timetable={timetable} sandboxId={sandboxId}>
+      <ScenarioContextProvider scenario={scenario} timetable={timetable} sandbox={sandbox}>
         <ScenarioHeader activeBoards={activeBoards} toggleBoard={toggleBoard} />
         {hasNoTimetable && <ScenarioNoTimetable />}
         {/* The sandbox is linked to the timetable: wait for it without hiding the header */}
-        {!hasNoTimetable && sandboxId !== undefined && (
+        {!hasNoTimetable && sandbox !== undefined && (
           <RollingStockContextProvider>
             <SubCategoryContextProvider>
               <ScenarioContent

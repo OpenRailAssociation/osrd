@@ -44,7 +44,7 @@ describe('processJsonFile', () => {
       expect(importPayload).toEqual(
         expect.objectContaining({
           train_schedules: payloadTrains.map(
-            ({ id: _id, train_schedule_set_id: _train_schedule_set_id, ...rest }) => rest
+            ({ id: _id, timetable_id: _timetable_id, ...rest }) => rest
           ),
           round_trips: [[0, 1]],
           timetable_type: 'HOURLY',

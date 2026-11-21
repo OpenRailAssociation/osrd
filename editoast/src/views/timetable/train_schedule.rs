@@ -35,6 +35,7 @@ use futures::StreamExt as _;
 use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
+use models::TimetableInheritance;
 use models::TrainScheduleException;
 use models::TrainScheduleLinking;
 use models::prelude::*;
@@ -144,16 +145,16 @@ enum TrainScheduleError {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleResponse {
     pub id: i64,
-    pub train_schedule_set_id: i64,
+    pub timetable_id: i64,
     #[serde(flatten)]
     pub train_schedule: TrainSchedule,
 }
 
-impl TrainScheduleResponse {
-    pub fn new(train_schedule: models::TrainSchedule, train_schedule_set_id: i64) -> Self {
+impl From<models::TrainSchedule> for TrainScheduleResponse {
+    fn from(train_schedule: models::TrainSchedule) -> Self {
         Self {
             id: train_schedule.id,
-            train_schedule_set_id,
+            timetable_id: train_schedule.timetable_id,
             train_schedule: train_schedule_schema_from_model(train_schedule, vec![]),
         }
     }
@@ -188,16 +189,7 @@ pub(in crate::views) async fn get_by_id(
         })
         .await?;
 
-    let train_schedule_set_id =
-        models::Timetable::retrieve(conn.clone(), train_schedule.timetable_id)
-            .await?
-            .and_then(|timetable| timetable.train_schedule_set_id)
-            .ok_or(TrainScheduleError::NotFound { train_schedule_id })?;
-
-    Ok(Json(TrainScheduleResponse::new(
-        train_schedule,
-        train_schedule_set_id,
-    )))
+    Ok(Json(TrainScheduleResponse::from(train_schedule)))
 }
 
 /// Update a paced train
@@ -285,7 +277,6 @@ pub(in crate::views) async fn delete(
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub(in crate::views) struct SimulationBatchForm {
     infra_id: i64,
-    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
 }
@@ -354,7 +345,6 @@ pub(in crate::views) async fn simulation_summary(
     Extension(authn_state): Extension<authentication::State>,
     Json(SimulationBatchForm {
         infra_id,
-        timetable_id,
         electrical_profile_set_id,
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
@@ -404,7 +394,6 @@ pub(in crate::views) async fn simulation_summary(
 
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
-        timetable_id,
         &train_schedule_ids.into_iter().collect_vec(),
     )
     .await?
@@ -1147,7 +1136,6 @@ pub(in crate::views) async fn project_path(
     Extension(authn_state): Extension<authentication::State>,
     Json(ProjectPathForm {
         infra_id,
-        timetable_id,
         ids: train_schedule_ids,
         track_section_ranges,
         electrical_profile_set_id,
@@ -1176,15 +1164,12 @@ pub(in crate::views) async fn project_path(
         .await?;
 
     let train_schedule_ids = train_schedules.iter().map(|t| t.id).collect::<Vec<_>>();
-    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
-        conn,
-        timetable_id,
-        &train_schedule_ids,
-    )
-    .await?
-    .into_iter()
-    .map_into::<schemas::TrainScheduleException>()
-    .into_group_map_by(|e| e.train_schedule_id);
+    let mut exceptions =
+        TrainScheduleException::retrieve_exceptions_by_train_schedules(conn, &train_schedule_ids)
+            .await?
+            .into_iter()
+            .map_into::<schemas::TrainScheduleException>()
+            .into_group_map_by(|e| e.train_schedule_id);
 
     let simulation_contexts: Vec<SimulationContext> = train_schedules
         .iter()
@@ -1333,7 +1318,6 @@ pub(in crate::views) async fn project_path_op(
     Json(ProjectPathOperationalPointForm {
         infra_id,
         train_ids,
-        timetable_id,
         electrical_profile_set_id,
         operational_points_refs,
         operational_points_distances,
@@ -1364,7 +1348,6 @@ pub(in crate::views) async fn project_path_op(
 
     let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
-        timetable_id,
         &train_ids.into_iter().collect_vec(),
     )
     .await?
@@ -1571,7 +1554,6 @@ pub(in crate::views) async fn occupancy_blocks(
     Extension(authn_state): Extension<authentication::State>,
     Json(OccupancyBlockForm {
         infra_id,
-        timetable_id,
         ids: train_schedule_ids,
         path,
         electrical_profile_set_id,
@@ -1601,7 +1583,6 @@ pub(in crate::views) async fn occupancy_blocks(
 
     let exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
         conn,
-        timetable_id,
         &train_schedules.iter().map(|t| t.id).collect::<Vec<_>>(),
     )
     .await?
@@ -1789,7 +1770,6 @@ pub(in crate::views) struct TrackOccupancyForm {
     train_schedule_ids: Vec<i64>,
     operational_point_reference: OperationalPointReference,
     infra_id: i64,
-    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
     use_simulation: bool,
 }
@@ -1840,7 +1820,6 @@ pub(in crate::views) async fn track_occupancy(
         train_schedule_ids,
         operational_point_reference,
         infra_id,
-        timetable_id,
         electrical_profile_set_id,
         use_simulation,
     }): Json<TrackOccupancyForm>,
@@ -1870,15 +1849,12 @@ pub(in crate::views) async fn track_occupancy(
         )
         .await?;
 
-    let mut exceptions = TrainScheduleException::retrieve_exceptions_by_train_schedules(
-        conn,
-        timetable_id,
-        &train_schedule_ids,
-    )
-    .await?
-    .into_iter()
-    .map_into::<schemas::TrainScheduleException>()
-    .into_group_map_by(|e| e.train_schedule_id);
+    let mut exceptions =
+        TrainScheduleException::retrieve_exceptions_by_train_schedules(conn, &train_schedule_ids)
+            .await?
+            .into_iter()
+            .map_into::<schemas::TrainScheduleException>()
+            .into_group_map_by(|e| e.train_schedule_id);
 
     let (train_ids, trains): (Vec<_>, Vec<_>) = train_schedules
         .iter()
@@ -2252,10 +2228,41 @@ pub(in crate::views) async fn move_train_schedules_to_another_train_schedule_set
 
     TrainScheduleRoundTrips::delete_batch(&mut db_pool.get().await?, to_break).await?;
 
-    // Move the train schedules to the timetable of the train schedule set
-    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
-        .timetable_id(train_schedule_set.timetable_id)
-        .update_batch(&mut db_pool.get().await?, train_schedule_ids)
+    let exception_timetable_id = if train_schedule_set.name.is_some() {
+        train_schedule_set.timetable_id
+    } else {
+        TimetableInheritance::list(
+            &mut db_pool.get().await?,
+            SelectionSettings::new().filter(move || {
+                TimetableInheritance::INNER_TIMETABLE_ID.eq(train_schedule_set.timetable_id)
+            }),
+        )
+        .await?
+        .first()
+        .map(|inheritance| inheritance.outer_timetable_id)
+        .unwrap_or(train_schedule_set.timetable_id)
+    };
+
+    db_pool
+        .get()
+        .await?
+        .transaction(async move |tx| {
+            // Move the train schedules to the timetable of the train schedule set
+            let _: (Vec<_>, _) = models::TrainSchedule::changeset()
+                .timetable_id(train_schedule_set.timetable_id)
+                .update_batch(&mut tx.clone(), train_schedule_ids.clone())
+                .await?;
+
+            // Move their exceptions along
+            TrainScheduleException::move_exceptions_to_timetable(
+                &mut tx.clone(),
+                &train_schedule_ids,
+                exception_timetable_id,
+            )
+            .await?;
+
+            Ok::<_, crate::error::InternalError>(())
+        })
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -2283,6 +2290,7 @@ mod tests {
     use jiff::SignedDuration;
     use models::TrainScheduleException;
 
+    use models::TrainScheduleSet;
     use models::rolling_stock::TrainMainCategory;
     use models::timetable::Timetable;
     use models::train_schedule_linking::TrainScheduleLinkingChangeset;
@@ -2480,7 +2488,6 @@ mod tests {
 
         let exceptions_before = TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut pool.get_ok(),
-            timetable.id,
             &[train_schedule.id],
         )
         .await
@@ -2501,7 +2508,6 @@ mod tests {
 
         let exceptions_after = TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut pool.get_ok(),
-            timetable.id,
             &[train_schedule.id],
         )
         .await
@@ -2646,7 +2652,7 @@ mod tests {
             .assert_status_ok()
             .json::<TrainScheduleResponse>();
 
-        assert_eq!(response.train_schedule_set_id, train_schedule_set.id);
+        assert_eq!(response.timetable_id, train_schedule_set.timetable_id);
         assert_eq!(
             response.train_schedule,
             train_schedule_schema_from_model(paced_train, vec![])
@@ -4724,7 +4730,6 @@ mod tests {
                 train_schedule_ids: vec![train_schedule.id],
                 operational_point_reference,
                 infra_id: small_infra.id,
-                timetable_id: timetable.id,
                 electrical_profile_set_id: None,
                 use_simulation,
             })
@@ -4921,9 +4926,66 @@ mod tests {
             .assert_status_ok()
             .json::<TrainScheduleResponse>();
         assert_eq!(
-            response.train_schedule_set_id,
-            train_schedule_set_to_move.id
+            response.timetable_id,
+            train_schedule_set_to_move.timetable_id
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn move_train_schedules_moves_their_exceptions() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+
+        // A scenario timetable including a sandbox
+        let (timetable, sandbox) =
+            create_timetable_with_train_schedule_set(&mut db_pool.get_ok()).await;
+
+        let train_schedule_set = TrainScheduleSet::create_with_timetable(
+            &mut db_pool.get_ok(),
+            Timetable::changeset().name(Some("train_schedule_set_1".into())),
+        )
+        .await
+        .expect("Failed to create train_schedule_set");
+
+        let train_schedule =
+            create_simple_paced_train(&mut db_pool.get_ok(), sandbox.timetable_id).await;
+        let exception = create_train_schedule_exception(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            train_schedule.id,
+            Some(1),
+            None,
+            None,
+        )
+        .await;
+
+        // Sandbox -> ts_set: the exception goes to the timetable "set"
+        app.patch("/train_schedules/move")
+            .json(&MoveTrainSchedulesForm {
+                train_schedule_ids: vec![train_schedule.id],
+                train_schedule_set_id: train_schedule_set.id,
+            })
+            .await
+            .assert_status_no_content();
+        let moved = TrainScheduleException::retrieve(db_pool.get_ok(), exception.id)
+            .await
+            .expect("Failed to retrieve exception")
+            .expect("The exception should still exist");
+        assert_eq!(moved.timetable_id, train_schedule_set.timetable_id);
+
+        // ts_set -> sandbox: the exception goes back to the scenario timetable
+        app.patch("/train_schedules/move")
+            .json(&MoveTrainSchedulesForm {
+                train_schedule_ids: vec![train_schedule.id],
+                train_schedule_set_id: sandbox.id,
+            })
+            .await
+            .assert_status_no_content();
+        let moved = TrainScheduleException::retrieve(db_pool.get_ok(), exception.id)
+            .await
+            .expect("Failed to retrieve exception")
+            .expect("The exception should still exist");
+        assert_eq!(moved.timetable_id, timetable.id);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
