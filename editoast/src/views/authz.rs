@@ -4159,7 +4159,7 @@ mod tests {
         let group_2 = app.group("group_2").with_members([&user_2]).create().await;
 
         let mut users_info = app
-            .post("/authz/user/info")
+            .post("/authz/users/info")
             .by_user(admin.as_ref())
             .json(&json!({
                 "ids": [user_1.id],
@@ -4203,7 +4203,7 @@ mod tests {
             ]
         );
 
-        app.post("/authz/user/info")
+        app.post("/authz/users/info")
             .by_user(admin.as_ref())
             .json(&json!({ "ids": [i64::MAX] }))
             .await
