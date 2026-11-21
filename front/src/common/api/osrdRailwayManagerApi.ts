@@ -17,6 +17,9 @@ const injectedRtkApi = api
           headers: {
             'content-encoding': queryArg['content-encoding'],
           },
+          params: {
+            infra_id: queryArg.infraId,
+          },
         }),
         invalidatesTags: ['timetable'],
       }),
@@ -65,6 +68,8 @@ export type PostTransformTimetableApiResponse =
 export type PostTransformTimetableApiArg = {
   /** Compression method used for the request body */
   'content-encoding'?: 'gzip' | 'zip';
+  /** The id of the infrastructure used by the timetable in which to import the file */
+  infraId?: number;
   /** Arbitrary file to transform into a standard OSRD timetable json file */
   body: Blob;
 };
