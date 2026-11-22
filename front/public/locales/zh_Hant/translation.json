@@ -1,18 +1,451 @@
 {
+  "Editor": {
+    "directions": {
+      "BOTH": "雙向",
+      "START_TO_STOP": "從出發地前往目的地",
+      "STOP_TO_START": "從目的地返回出發地"
+    },
+    "entities": {
+      "errors-linked": "關聯問題"
+    },
+    "infra-errors": {
+      "corrector-modal": {
+        "create-actions": "已建立 {{creation_count}} 個物件",
+        "delete-actions": "已刪除 {{deletion_count}} 個物件",
+        "loading-loader": "正在計算可行的修正方案",
+        "no-fixes-found": "找不到任何修正方案。",
+        "saving-loader": "正在將修正套用至基礎設施",
+        "text": "將套用以下動作以修正部分基礎設施異常：",
+        "title": "自動異常修正工具",
+        "update-actions": "已修改 {{update_count}} 個現有物件"
+      },
+      "error-level": {
+        "all": "全部",
+        "errors": "錯誤",
+        "warnings": "警告"
+      },
+      "error-type": {
+        "all": "全部",
+        "duplicated_group": {
+          "description": "道岔類型「{{obj_id}}」包含重複的設定「{{original_group_path}}」",
+          "name": "道岔設定重複"
+        },
+        "empty_object": {
+          "description": "物件「{{obj_id}}」的「{{field}}」欄位為空",
+          "name": "空物件"
+        },
+        "invalid_group": {
+          "description": "進路「{{group}}」的道岔「{{obj_id}}」使用了不存在的設定「{{switch_type}}」",
+          "name": "Position de l'aiguille invalide"
+        },
+        "invalid_reference": {
+          "description": "物件「{{obj_id}}」參照了不存在的物件「{{reference.obj_id}}」",
+          "name": "參照無效"
+        },
+        "invalid_route": {
+          "description": "進路「{{obj_id}}」無效，所請求的路徑不一致",
+          "name": "進路無效"
+        },
+        "invalid_switch_ports": {
+          "description": "道岔／節點「{{obj_id}}」的分支與其道岔／節點類型不相容（該分支不存在於其道岔／節點類型中）",
+          "name": "道岔或節點分支無效"
+        },
+        "missing_buffer_stop": {
+          "description": "軌道「{{obj_id}}」的端點「{{endpoint}}」沒有止衝擋",
+          "name": "缺少止衝擋"
+        },
+        "missing_route": {
+          "description": "股道「{{obj_id}}」沒有任何關聯的進路",
+          "name": "缺少進路"
+        },
+        "node_endpoints_not_unique": {
+          "description": "同一個軌道端點被節點「{{obj_id}}」的多個連接埠使用。",
+          "name": "節點軌道端點重複"
+        },
+        "object_out_of_path": {
+          "description": "進路「{{reference.obj_id}}」中的道岔／節點或偵測器「{{obj_id}}」未包含在對應的路徑中"
+        }
+      }
+    }
+  },
   "applications": {
     "rolling-stocks-editor": "車輛編輯器"
   },
+  "common": {
+    "units": {
+      "minute": "分鐘"
+    },
+    "validate": "儲存",
+    "yes": "是",
+    "zoom-in": "放大",
+    "zoom-out": "縮小",
+    "zoom-reset": "重設縮放"
+  },
   "home": {
+    "about": "關於",
     "applications": {
+      "infrastructures-editor": "基礎設施",
       "operational-studies": "專案",
-      "rolling-stocks-editor": "車輛"
+      "rolling-stocks-editor": "車輛",
+      "stdcm": "臨時排點"
+    },
+    "not-authorized-warning": "您的存取權限未涵蓋此部分。"
+  },
+  "infraManagement": {
+    "actions": {
+      "cancel": "取消",
+      "check": "驗證",
+      "copy": "複製",
+      "delete": "刪除",
+      "export": "匯出至 RailJSON",
+      "lock": "鎖定",
+      "rename": "更名",
+      "unlock": "解鎖",
+      "waiting": "請稍候"
+    },
+    "addInfra": "建立基礎設施",
+    "addInfraJSON": "從 RailJSON 檔案建立基礎設施",
+    "addInfraJSONFile": "新增 RailJSON 檔案",
+    "addInfraJSONFileRemove": "取消 RailJSON 匯入",
+    "createInfra": "創建",
+    "deleteConfirm": "您想刪除基礎設施嗎？",
+    "errorMessages": {
+      "noEmptyName": "請填寫名稱",
+      "unableToRetrieveInfraList": "無法載入基礎設施清單"
+    },
+    "goToEditionMode": "編輯",
+    "goToStandardMode": "返回選擇",
+    "infraChoice": "基礎設施",
+    "infraDeleted": "{{name}} 基礎設施已被刪除。",
+    "infraManagement": "基礎設施管理",
+    "infraName": "基礎設施名稱",
+    "infrasFound_one": "發現{{count}}個基礎設施",
+    "infrasFound_other": "已發現{{count}}個基礎設施",
+    "infrasFound_zero": "未發現任何基礎設施",
+    "locked": "已鎖定",
+    "no": "不",
+    "noInfraSelected": "未選取基礎設施",
+    "yes": "是"
+  },
+  "infrastructure": "基礎設施",
+  "jsonUpload": {
+    "badJSON": "內容無效。僅支援 RailJSON 檔案（通常為 .json 或 .railjson 副檔名）",
+    "emptyFile": "檔案為空",
+    "uploadError": "上傳檔案時發生錯誤"
+  },
+  "map": {
+    "cooperativeGestures": {
+      "cmd": "使用 ⌘ 鍵 + 捲動 來縮放地圖",
+      "ctrl": "使用 Ctrl + 捲動 縮放地圖"
+    },
+    "layers-modal": {
+      "data-layers": "資料圖層",
+      "disabled-layer": "目前工具所需",
+      "layer-selected-items_one": "已選取一項項目",
+      "layer-selected-items_other": "已選取 {{count}} 個項目",
+      "selection-warning_one": "已取消選取 1 個元素。",
+      "selection-warning_other": "已取消選取 {{count}} 個元素。",
+      "speed-limits": "依列車編組代碼劃分的速度限制",
+      "toggle-layers": "選擇要顯示的元素類型"
     }
+  },
+  "mapKey": {
+    "alternatingCurrent": "交流電",
+    "directCurrent": "直流電",
+    "electrifications": "電氣化",
+    "keyTitle": "圖例",
+    "lower_pantograph": "降弓區間",
+    "neutral_sections": "中性區間",
+    "speedlimit": "速度",
+    "switch_off": "切斷電力"
+  },
+  "mapSearch": {
+    "all": "所有",
+    "aspects": "顯示狀態",
+    "line": "路線",
+    "line-code": "路線代碼",
+    "main-operational-points-only": "僅限主要",
+    "name": "名稱",
+    "operational-point": "營運點",
+    "placeholder-ch-code": "CH 代碼",
+    "placeholder-line": "路線名稱或編號",
+    "placeholder-name": "名稱、標籤或 CI 代碼",
+    "placeholder-signal": "號誌機名稱",
+    "results-count_one": "1 筆結果",
+    "results-count_other": "{{ count }} 筆結果",
+    "results-count_zero": "無結果",
+    "signal": "號誌機",
+    "signal-settings": {
+      "Nf": "不可越過",
+      "distant": "遠距號誌",
+      "is_430": "430"
+    },
+    "signal-system": "號誌系統",
+    "too-many-results": "搜尋結果超過 100 筆，請縮小搜尋範圍。",
+    "type": "類型",
+    "unable-to-search-signal": "無法搜尋號誌機"
+  },
+  "mapSettings": {
+    "layers": {
+      "buffer_stops": "止衝擋",
+      "detectors": "偵測器",
+      "electrifications": "電氣化",
+      "errors": "錯誤",
+      "level_crossings": "平交道",
+      "neutral_sections": "中性區間",
+      "operational_points": "營運點",
+      "platforms": "月台",
+      "routes": "進路",
+      "showIGNBDORTHO": "BD Ortho 正射影像 ©IGN",
+      "showIGNCadastre": "地籍圖 ©IGN",
+      "showIGNSCAN25": "SCAN PLAN/25/100 ©IGN",
+      "showOSM": "地圖背景 OSM",
+      "showOSM3dBuildings": "3D 建築物",
+      "showOSMtracksections": "OSM 軌道",
+      "signals": "號誌機",
+      "sncf_psl": "永久速限",
+      "speed_limits": "速限",
+      "speedlimittag": "編組代碼",
+      "switches": "道岔",
+      "track_sections": "軌道區段"
+    },
+    "mapstyles": {
+      "darkmode": "黑暗",
+      "minimal": "極簡",
+      "normal": "正常"
+    },
+    "noSpeedLimitByTag": "無編組代碼",
+    "terrain3DExaggeration": "3D 地形起伏比例",
+    "zone": "區域"
+  },
+  "nav-bar": {
+    "adminDashboard": "管理員儀表板",
+    "disconnect": "登出",
+    "featureFlags": {
+      "hourlyTimetables": "啟用整點時刻表",
+      "linkings": "啟用列車關聯",
+      "multipleTimetables": "啟用單一情境多時刻表",
+      "unrecognizedWaypoints": "啟用路徑規劃視窗中的未識別途經點"
+    },
+    "help": "幫助",
+    "impersonation": "模擬使用者身分",
+    "information": {
+      "application": "應用程式",
+      "collaborations": "合作夥伴",
+      "dataSources": "資料來源",
+      "libraries": "函式庫與授權條款",
+      "version": "版本"
+    },
+    "languages": "語言",
+    "userSettings": "使用者設定",
+    "yourSafeWord": "輸入您的安全詞"
   },
   "rollingStock": {
     "add": "新增",
-    "cancelUpdateRollingStock": "您確定要取消所做的變更嗎?"
+    "addNewRollingStock": "新增車輛",
+    "addNewTractionMode": "新增牽引模式",
+    "basePowerClass": "功率等級",
+    "cancelUpdateRollingStock": "您確定要取消所做的變更嗎?",
+    "categoriesOptions": {
+      "COMMUTER_TRAIN": "通勤列車",
+      "FAST_FREIGHT_TRAIN": "快速貨運列車",
+      "FREIGHT_TRAIN": "貨運列車",
+      "HIGH_SPEED_TRAIN": "高速列車",
+      "INTERCITY_TRAIN": "城際列車",
+      "NIGHT_TRAIN": "夜行列車",
+      "REGIONAL_TRAIN": "區域列車",
+      "TOURISTIC_TRAIN": "觀光列車",
+      "TRAM_TRAIN": "輕軌-火車系統",
+      "WORK_TRAIN": "工程列車",
+      "choose": "選擇類別",
+      "noCategory": "無類別",
+      "none": "無"
+    },
+    "chooseRollingStock": "請選擇車輛以顯示資訊",
+    "comfortAcceleration": "舒適加速度",
+    "comfortLevels": "舒適度等級",
+    "comfortTypes": {
+      "AIR_CONDITIONING": "冷氣",
+      "HEATING": "暖氣",
+      "STANDARD": "標準"
+    },
+    "confirmAddRollingStock": "您確定要新增此車輛嗎？",
+    "confirmUpdateRollingStock": "請確認您的變更",
+    "constGamma": "排點減速度",
+    "curves": {
+      "all": "所有曲線",
+      "default": "預設曲線"
+    },
+    "delete": {
+      "comfort": "您確定要刪除此舒適度等級嗎？與之關聯的所有曲線都將遺失。",
+      "electrical_profile_level": "您確定要刪除此供電設定檔嗎？與之關聯的所有曲線都將遺失。",
+      "power_restriction_code": "您確定要刪除此功率限制關聯的曲線嗎？",
+      "tractionMode": "您確定要刪除此牽引模式嗎？與之關聯的所有曲線都將遺失。"
+    },
+    "deleteRollingStock": "您確定要刪除此車輛嗎？",
+    "effort": "牽引力 (kN)",
+    "electric": "電力",
+    "electricalPowerStartupTime": "電力恢復時間",
+    "electricalProfiles": "供電設定檔",
+    "errorMessages": {
+      "invalidConversion": "無效的轉換",
+      "minMaxRangeError": "該值必須介於 {{min}} 與 {{max}} 之間",
+      "minRangeError": "該值必須大於 {{min}}",
+      "missingConversion": "結構定義中不存在此轉換。數值未變更。",
+      "missingInformation": "缺少資訊",
+      "resourcesNotFound": "找不到資源",
+      "rollingStockUsed": "此車輛用於以下情境：",
+      "unableToRetrieveRollingStock": "無法取得車輛資料",
+      "unableToRetrieveRollingStockMessage": "發生錯誤"
+    },
+    "export": "匯出",
+    "exportRollingStock": "匯出車輛",
+    "importRollingStock": "匯出車輛",
+    "inertiaCoefficient": "慣性係數",
+    "length": "長度",
+    "listDisabled": "請先離開編輯模式以存取清單",
+    "loadingGauge": "車輛界限",
+    "locked": "已鎖定",
+    "mass": "質量",
+    "maxSpeed": "最高速度",
+    "messages": {
+      "failure": "操作失敗",
+      "invalidEffortCurves": "無效的曲線：{{invalidEffortCurves}}。每條曲線至少須包含 2 組速度／牽引力數值組合（且速度值不可重複）。包含至少一個空白欄位的組合將被忽略。速度不可超過 600 km/h，且牽引力不可超過 1000 kN。",
+      "invalidForm": "表格不完整",
+      "missingEffortCurves": "請輸入速度-牽引力曲線",
+      "missingInformationAutomaticallyFilled_one": "以下欄位預設已初始化：{{invalidFields}}。",
+      "missingInformationAutomaticallyFilled_other": "以下欄位預設已初始化：{{invalidFields}}。",
+      "missingName": "請填寫名稱",
+      "missingPrimaryCategory": "請填寫主要分類",
+      "rollingStockAdded": "已新增車輛",
+      "rollingStockDeleted": "已刪除車輛",
+      "rollingStockDuplicateName": "同名車輛已存在。",
+      "rollingStockNotAdded": "未新增車輛",
+      "rollingStockNotDeleted": "車輛未被刪除",
+      "rollingStockNotUpdated": "車輛未更新",
+      "rollingStockUpdated": "車輛已更新",
+      "success": "操作成功"
+    },
+    "metadata": {
+      "detail": "詳細資訊",
+      "family": "車系",
+      "grouping": "重聯編組",
+      "name": "名稱",
+      "number": "編號",
+      "reference": "參考型號",
+      "series": "車型系列",
+      "subseries": "子系列",
+      "type": "類型",
+      "unit": "編組單位"
+    },
+    "missingPowerClass_one": "缺少功率等級",
+    "missingPowerClass_other": "缺少功率等級",
+    "notLocked": "未鎖定",
+    "otherCategories": "其他類別",
+    "powerRestrictions": "功率限制與功率等級",
+    "powerRestrictionsInfos": "功率限制",
+    "primaryCategory": "主要類別",
+    "project": "專案 {{projectName}}：",
+    "raisePantographTime": "升弓時間",
+    "resultFound_one": "找到 1 筆結果",
+    "resultFound_other": "找到 {{count}} 筆結果",
+    "resultFound_zero": "未找到任何結果",
+    "rollingResistance": "行駛阻力",
+    "rollingResistanceA": "固體摩擦阻力 (a)",
+    "rollingResistanceB": "黏滯摩擦阻力 (b)",
+    "rollingResistanceC": "空氣動力阻力 (c)",
+    "rollingResistanceFormula": "R(v) = a + bv + cv²",
+    "selectRollingStock": "選擇",
+    "shortCategoriesOptions": {
+      "COMMUTER_TRAIN": "通勤",
+      "FAST_FREIGHT_TRAIN": "快速貨運",
+      "FREIGHT_TRAIN": "貨運",
+      "HIGH_SPEED_TRAIN": "高速",
+      "INTERCITY_TRAIN": "城際",
+      "NIGHT_TRAIN": "夜行",
+      "REGIONAL_TRAIN": "區域",
+      "TOURISTIC_TRAIN": "觀光",
+      "TRAM_TRAIN": "輕軌火車",
+      "WORK_TRAIN": "工程"
+    },
+    "speed": "速度（km/h）",
+    "startupAcceleration": "啟動加速度",
+    "startupTime": "啟動時間",
+    "supportedSignalingSystems": "支援的號誌系統",
+    "tabs": {
+      "rollingStockCurves": "速度－牽引力曲線",
+      "rollingStockDetails": "一般規格"
+    },
+    "thermal": "內燃引擎",
+    "tractionModes": "牽引模式",
+    "unspecified": "未指定",
+    "waitingLoader": "請稍候，車輛資料庫載入中…"
+  },
+  "subCategory": {
+    "errorMessages": {
+      "unableToRetrieveSubCategory": "無法取得子類別資料",
+      "unableToRetrieveSubCategoryMessage": "發生錯誤"
+    }
   },
   "timeStopTable": {
+    "calculatedArrivalTime": "計算到達時間",
+    "calculatedBaseArrival": "計算基準到達時間",
+    "calculatedDepartureTime": "計算開車時間",
+    "clearRequestedArrivalTime": "清除要求的到達時間",
+    "clearRequestedBaseArrival": "清除要求的基準到達時間",
+    "clearRequestedDepartureTime": "清除要求的開車時間",
+    "clearStopDuration": "清除停站時間",
+    "columnHeader": {
+      "overwriteAllConfirm": {
+        "body_one": "這將以計算出的時間覆蓋 {{count}} 個途經點的要求時間。是否繼續？",
+        "body_other": "這將以計算出的時間覆蓋 {{count}} 個途經點的要求時間。是否繼續？",
+        "cancel": "取消",
+        "confirm": "確認",
+        "title": "覆蓋要求時間"
+      },
+      "requestedArrival": {
+        "fillEmpty_one": "將計算出的到達時間套用至 {{count}} 個未排程的途經點",
+        "fillEmpty_other": "將計算出的到達時間套用至 {{count}} 個未排程的途經點",
+        "overwriteAll_one": "將計算出的到達時間套用至 {{count}} 個途經點",
+        "overwriteAll_other": "將計算出的到達時間套用至 {{count}} 個途經點"
+      },
+      "requestedDeparture": {
+        "fillEmpty_one": "將計算出的開車時間套用至 {{count}} 個未排程的途經點",
+        "fillEmpty_other": "將計算出的開車時間套用至 {{count}} 個未排程的途經點",
+        "overwriteAll_one": "將計算出的開車時間套用至 {{count}} 個途經點",
+        "overwriteAll_other": "將計算出的開車時間套用至 {{count}} 個途經點"
+      }
+    },
+    "computedTheoreticalMargin": "計算理論餘裕時間",
+    "dayCounter": "D+{{count}}",
+    "diffMargins": "餘裕時間差",
+    "noPathLoaded": "尚未載入路徑",
+    "operational_point": "營運點",
+    "powerRestriction": "功率限制",
+    "powerRestrictionDisabled": "無法在最後一個步驟新增功率限制。",
+    "powerRestrictionIncompatibility_one": "{{count}} 個功率限制代碼與電氣化或車輛不相容。",
+    "powerRestrictionIncompatibility_other": "{{count}} 個功率限制代碼與電氣化或車輛不相容。",
+    "propagationMenu": {
+      "atThisTime": "在此時間",
+      "atThisWaypoint": "在此途經點",
+      "fromDeparture": "從開車時間起",
+      "shiftAllWaypoints": "平移所有途經點",
+      "stopDurationAtThisWaypoint": "僅此點",
+      "stopDurationFromThisPointOn": "從此點起",
+      "stopDurationUpToThisPoint": "至此點",
+      "toDestination": "至終點站"
+    },
+    "realMargin": "實際餘裕時間",
+    "receptionOnClosedSignal": "閉鎖號誌",
+    "receptionOnClosedSignalFull": "閉鎖號誌接車",
+    "requestedArrival": "要求到達時間",
+    "requestedBaseArrival": "要求基準到達時間",
+    "requestedDeparture": "要求開車時間",
+    "requestedTheoreticalMargin": "要求理論餘裕時間",
+    "shortSlipDistance": "短安全防護距離",
+    "stopTime": "停站時間",
+    "timeFromPreviousOp": "距上一途經點時間",
+    "totalTravelTime": "總行車時間",
     "trackName": "軌道"
   }
 }
