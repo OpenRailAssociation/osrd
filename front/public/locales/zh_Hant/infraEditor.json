@@ -1,1 +1,1032 @@
-{}
+{
+  "ApplicableDirections": {
+    "description": "用於判斷特定物件的適用方向",
+    "title": "適用方向"
+  },
+  "ApplicableDirectionsTrackRange": {
+    "description": "適用方向軌道範圍是指帶有對應方向的軌道範圍。",
+    "properties": {
+      "applicable_directions": {
+        "description": "對應物件所適用的方向"
+      },
+      "begin": {
+        "description": "對應軌道區段的起點偏移量（公尺）",
+        "title": "起點"
+      },
+      "end": {
+        "description": "對應軌道區段的終點偏移量（公尺）",
+        "title": "終點"
+      },
+      "track": {
+        "description": "軌道區段的識別碼",
+        "title": "軌道"
+      }
+    },
+    "title": "適用方向軌道範圍"
+  },
+  "BalSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "特定進路的 BAL 號誌參數",
+        "title": "條件參數"
+      },
+      "default_parameters": {
+        "description": "BAL 號誌參數"
+      },
+      "next_signaling_systems": {
+        "description": "允許的後續輸入號誌系統清單",
+        "title": "後續號誌系統"
+      },
+      "settings": {
+        "description": "BAL 號誌設定"
+      },
+      "signaling_system": {
+        "title": "號誌系統"
+      }
+    },
+    "title": "BAL 系統"
+  },
+  "BaprSystem": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "特定進路的 BAPR 號誌參數",
+        "title": "條件參數"
+      },
+      "next_signaling_systems": {
+        "description": "允許的後續輸入號誌系統清單",
+        "title": "後續號誌系統"
+      },
+      "parameters": {
+        "description": "BAPR 號誌參數"
+      },
+      "settings": {
+        "description": "BAPR 號誌設定"
+      },
+      "signaling_system": {
+        "title": "號誌系統"
+      }
+    },
+    "title": "BAPR 系統"
+  },
+  "BufferStop": {
+    "description": "此類別定義了止衝擋物件。\n止衝擋是設置在盡頭線末端、用以防止溜逸列車繼續衝出線路的裝置。\n止衝擋以編號與對應的軌道為特徵。",
+    "properties": {
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "position": {
+        "description": "該點位距離軌道區段起端的偏移量（公尺）",
+        "title": "位置"
+      },
+      "track": {
+        "description": "物件所在軌道區段的參考",
+        "title": "軌道"
+      }
+    },
+    "title": "止衝擋"
+  },
+  "BufferStopExtensions": {
+    "title": "止衝擋延伸項目"
+  },
+  "BufferStopReference": {
+    "properties": {
+      "id": {
+        "description": "止衝擋的識別碼",
+        "title": "編號"
+      },
+      "type": {
+        "title": "類型"
+      }
+    },
+    "title": "止衝擋參考"
+  },
+  "BufferStopSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "止衝擋的里程標",
+        "title": "里程標"
+      }
+    },
+    "title": "止衝擋 SNCF 擴充功能"
+  },
+  "ConditionalParameter": {
+    "properties": {
+      "on_route": {
+        "description": "套用這些參數的進路",
+        "title": "套用進路"
+      },
+      "parameters": {
+        "description": "依各號誌系統定義的鍵值參數清單",
+        "title": "參數"
+      }
+    },
+    "title": "條件參數"
+  },
+  "Curve": {
+    "description": "此類別用於定義曲線物件。\n曲線對應於相應軌道區段某部分的曲率半徑。",
+    "properties": {
+      "begin": {
+        "description": "軌道區段中對應半徑起點的偏移量（公尺） ",
+        "title": "起點"
+      },
+      "end": {
+        "description": "軌道區段中對應半徑終點的偏移量（公尺）",
+        "title": "終點"
+      },
+      "radius": {
+        "description": "對應的曲率半徑（以公尺為單位）",
+        "title": "半徑"
+      }
+    },
+    "title": "曲線"
+  },
+  "Detector": {
+    "description": "此類別定義了偵測器物件。\n偵測器以編號與對應的軌道為特徵。\n偵測器用於定位列車，\n以便在有列車時將該區段視為占用狀態。",
+    "properties": {
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "position": {
+        "description": "該點位距離軌道區段起端的偏移量（公尺）",
+        "title": "位置"
+      },
+      "track": {
+        "description": "物件所在軌道區段的參考",
+        "title": "軌道"
+      }
+    },
+    "title": "偵測器"
+  },
+  "DetectorExtensions": {
+    "title": "偵測器延伸項目"
+  },
+  "DetectorReference": {
+    "properties": {
+      "id": {
+        "description": "偵測器的識別碼",
+        "title": "編號"
+      },
+      "type": {
+        "title": "類型"
+      }
+    },
+    "title": "偵測器參考"
+  },
+  "DetectorSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "偵測器的里程標",
+        "title": "里程標"
+      }
+    },
+    "title": "偵測器 SNCF 擴充功能"
+  },
+  "Direction": {
+    "description": "此為方向說明（遞增或遞減里程剖面）。",
+    "title": "方向"
+  },
+  "DirectionalTrackRange": {
+    "description": "方向性軌道範圍是指帶有對應方向的軌道範圍。",
+    "properties": {
+      "begin": {
+        "description": "對應軌道區段的起點偏移量（公尺）",
+        "title": "起點"
+      },
+      "direction": {
+        "description": "方向說明"
+      },
+      "end": {
+        "description": "對應軌道區段的終點偏移量（公尺）",
+        "title": "終點"
+      },
+      "track": {
+        "description": "軌道區段的識別碼",
+        "title": "軌道"
+      }
+    },
+    "title": "方向性軌道範圍"
+  },
+  "Electrification": {
+    "description": "電氣化對應於一組供電纜線，\n透過集電弓取電來為電聯車（或「電力列車」）提供動力。\n電氣化由其識別碼識別。",
+    "properties": {
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "track_ranges": {
+        "description": "施加電壓的位置清單",
+        "title": "軌道範圍"
+      },
+      "voltage": {
+        "description": "電氣化所使用的供電類型（以伏特為單位）",
+        "title": "電壓"
+      }
+    },
+    "title": "電氣化"
+  },
+  "Endpoint": {
+    "title": "端點"
+  },
+  "EtcsLevel2System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "特定進路的 ETCS_LEVEL2 號誌參數",
+        "title": "條件參數"
+      },
+      "default_parameters": {
+        "description": "ETCS_LEVEL2 號誌參數"
+      },
+      "next_signaling_systems": {
+        "description": "允許的後續輸入號誌系統清單",
+        "title": "後續號誌系統"
+      },
+      "settings": {
+        "description": "ETCS_LEVEL2 號誌設定"
+      },
+      "signaling_system": {
+        "title": "號誌系統"
+      }
+    },
+    "title": "ETCS Level 2 系統"
+  },
+  "FlagSignalParameter": {
+    "title": "旗號號誌參數"
+  },
+  "LevelCrossing": {
+    "description": "此類別說明對應基礎設施的平交道。",
+    "properties": {
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "name": {
+        "description": "平交道名稱",
+        "title": "名稱"
+      },
+      "parts": {
+        "title": "組件"
+      },
+      "short_zone_length": {
+        "description": "短區間長度（公釐）",
+        "title": "短區間長度"
+      }
+    },
+    "title": "平交道"
+  },
+  "LevelCrossingPart": {
+    "description": "平交道組件是基礎設施上的單一位置點，\n記錄相對於此位置點的踏板偏移量資訊，\n並與平交道相關聯。",
+    "properties": {
+      "pedal_downstream": {
+        "description": "下游踏板相對於主位置的偏移量（公釐）",
+        "title": "下游踏板"
+      },
+      "pedal_upstream": {
+        "description": "上游踏板相對於主位置的偏移量（公釐）",
+        "title": "上游踏板"
+      },
+      "position": {
+        "description": "該點位距離軌道區段起端的偏移量（公尺）",
+        "title": "位置"
+      },
+      "track": {
+        "description": "物件所在軌道區段的參考",
+        "title": "軌道"
+      }
+    },
+    "title": "平交道組件"
+  },
+  "LimitedLogicalSignal": {
+    "description": "受限的邏輯號誌清單，用於為前端編輯器產生可用的結構描述（Schema）",
+    "title": "受限邏輯號誌"
+  },
+  "LineString": {
+    "description": "LineString 模型",
+    "properties": {
+      "bbox": {
+        "title": "邊界框"
+      },
+      "coordinates": {
+        "title": "座標"
+      },
+      "type": {
+        "title": "類型"
+      }
+    },
+    "title": "線段"
+  },
+  "LoadingGaugeLimit": {
+    "description": "此類別用於定義車輛限界（或「裝載限界」），\n代表依車輛限界類別與對應車輛類型對列車施加的限制。",
+    "properties": {
+      "begin": {
+        "description": "對應車輛限界起點的偏移量（公尺）",
+        "title": "起點"
+      },
+      "category": {
+        "description": "對應車輛的車輛限界類別"
+      },
+      "end": {
+        "description": "對應車輛限界終點的偏移量（公尺）",
+        "title": "終點"
+      }
+    },
+    "title": "車輛限界"
+  },
+  "LoadingGaugeType": {
+    "description": "此類別可用於判別車輛限界類別。",
+    "title": "車輛限界類型"
+  },
+  "LogicalSignal": {
+    "description": "邏輯號誌負責顯示號誌狀態，實體號誌則由一組邏輯號誌組成",
+    "properties": {
+      "conditional_parameters": {
+        "description": "依各號誌系統定義的條件參數清單",
+        "title": "條件參數"
+      },
+      "default_parameters": {
+        "description": "依各號誌系統定義的預設參數清單（針對進路）",
+        "title": "預設參數"
+      },
+      "next_signaling_systems": {
+        "description": "允許的後續輸入號誌系統清單",
+        "title": "後續號誌系統"
+      },
+      "settings": {
+        "description": "依各號誌系統定義的鍵值參數清單",
+        "title": "設定"
+      },
+      "signaling_system": {
+        "description": "號誌的輸出號誌系統",
+        "title": "號誌系統"
+      }
+    },
+    "title": "邏輯號誌"
+  },
+  "NeutralSection": {
+    "description": "無電區間是指列車不得從電氣化設備取電的軌道區段，必須依靠慣性滑行通過此類區段。\n\n在實務上，無電區間由號誌標誌界定；\n在 OSRD 中，無電區間具有方向性，以便依行進方向考量不同的標誌設置位置。\n\n更多詳細資訊請參閱[說明文件](https://osrd.fr/en/docs/explanation/neutral_sections/)。",
+    "properties": {
+      "announcement_track_ranges": {
+        "description": "前方即將進入但尚未通過無電區間的預告位置清單",
+        "title": "預告軌道範圍"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "lower_pantograph": {
+        "description": "列車在該區段內是否需要降弓",
+        "title": "降弓"
+      },
+      "track_ranges": {
+        "description": "列車無法從電氣化設備取電的位置清單",
+        "title": "軌道範圍"
+      }
+    },
+    "title": "無電區間"
+  },
+  "NeutralSectionExtensions": {
+    "title": "無電區間延伸項目"
+  },
+  "NeutralSectionNeutralSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "指明此處設有分相／分區無電區間",
+        "title": "預告"
+      },
+      "end": {
+        "description": "bp/cc無電區間的終點",
+        "title": "終點"
+      },
+      "exe": {
+        "description": "bp/cc 無電區間的起點"
+      },
+      "rev": {
+        "description": "bp/cc無電區間的 REV 標誌（指列車尾部集電弓通過後的復電確認標誌）",
+        "title": "復電確認"
+      }
+    },
+    "title": "無電區間 SNCF 擴充功能"
+  },
+  "OperationalPoint": {
+    "description": "此類別說明對應基礎設施的營運點。",
+    "properties": {
+      "country_code": {
+        "description": "營運點的國碼（例如法國為 FR）",
+        "title": "國碼"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "is_passenger_station": {
+        "description": "該營運點是否為客運車站",
+        "title": "是否為客運車站"
+      },
+      "main_code": {
+        "description": "識別營運點所在位置的代碼（例如 SNCF 的三字母代碼）",
+        "title": "主代碼"
+      },
+      "name": {
+        "description": "營運點的名稱",
+        "title": "名稱"
+      },
+      "parts": {
+        "title": "組件"
+      },
+      "plc": {
+        "description": "主要位置代碼（Primary Location Code）：https://rne.eu/it/products/ccs/crd/",
+        "title": "PLC"
+      },
+      "secondary_code": {
+        "description": "用於識別更精確位置的選用附加代碼（例如 SNCF 的工區代碼）",
+        "title": "次要代碼"
+      },
+      "secondary_name": {
+        "description": "描述次要代碼的可讀名稱",
+        "title": "次要名稱"
+      },
+      "uic": {
+        "description": "營運點的國際鐵路聯盟（UIC）代碼",
+        "title": "國際鐵路聯盟（UIC）"
+      },
+      "weight": {
+        "description": "代表營運點（PR）的重要程度",
+        "title": "權重"
+      }
+    },
+    "title": "營運點"
+  },
+  "OperationalPointPart": {
+    "description": "營運點組件是基礎設施上的單一位置點，並與營運點相連結。",
+    "properties": {
+      "local_track_name": {
+        "description": "此營運點組件的站內／區域軌道名稱",
+        "title": "站內／區域軌道名稱"
+      },
+      "position": {
+        "description": "該點位距離軌道區段起端的偏移量（公尺）",
+        "title": "位置"
+      },
+      "track": {
+        "description": "物件所在軌道區段的參考",
+        "title": "軌道"
+      }
+    },
+    "title": "營運點組件"
+  },
+  "OperationalPointPartExtensions": {
+    "title": "營運點組件延伸項目"
+  },
+  "OperationalPointPartSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "營運點組件的里程標",
+        "title": "里程標"
+      }
+    },
+    "title": "營運點組件 SNCF 擴充功能"
+  },
+  "Route": {
+    "description": "此類別用於說明基礎設施上的進路。",
+    "properties": {
+      "entry_point": {
+        "title": "進入點"
+      },
+      "entry_point_direction": {
+        "description": "進路在進入點的方向"
+      },
+      "exit_point": {
+        "title": "離開點"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "release_detectors": {
+        "description": "允許解除從進路起點到此偵測器為止所預留資源的偵測器",
+        "title": "解除占用偵測器"
+      },
+      "switches_directions": {
+        "description": "進路中所包含的道岔位置設定",
+        "title": "道岔方向"
+      }
+    },
+    "title": "進路"
+  },
+  "Side": {
+    "description": "此類別說明號誌所在軌道側邊。",
+    "title": "側邊"
+  },
+  "Sign": {
+    "description": "此類別用於定義標誌。\n這是一種實體的、點位的、僅供顯示／外觀呈現的物件。",
+    "properties": {
+      "direction": {
+        "description": "標誌在軌道上的方向"
+      },
+      "kp": {
+        "description": "標誌的里程標",
+        "title": "里程標"
+      },
+      "position": {
+        "description": "該點位距離軌道區段起端的偏移量（公尺）",
+        "title": "位置"
+      },
+      "side": {
+        "description": "標誌在軌道上的側邊"
+      },
+      "track": {
+        "description": "物件所在軌道區段的參考",
+        "title": "軌道"
+      },
+      "type": {
+        "description": "指定標誌類型",
+        "title": "類型"
+      },
+      "value": {
+        "description": "若標誌為預告標誌，請指定數值",
+        "title": "數值"
+      }
+    },
+    "title": "標誌"
+  },
+  "Signal": {
+    "description": "此類別用於說明號誌。\n號誌以編號與對應的軌道為特徵；\n預設情況下，號誌位於軌道中心。",
+    "properties": {
+      "direction": {
+        "description": "號誌的使用方向"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "logical_signals": {
+        "description": "整合至此實體號誌中的邏輯號誌",
+        "title": "邏輯號誌"
+      },
+      "position": {
+        "description": "該點位距離軌道區段起端的偏移量（公尺）",
+        "title": "位置"
+      },
+      "sight_distance": {
+        "description": "號誌的視距（公尺）",
+        "title": "視距"
+      },
+      "track": {
+        "description": "物件所在軌道區段的參考",
+        "title": "軌道"
+      }
+    },
+    "title": "號誌"
+  },
+  "SignalExtensions": {
+    "title": "號誌延伸項目"
+  },
+  "SignalSncfExtension": {
+    "properties": {
+      "kp": {
+        "description": "號誌的里程標",
+        "title": "里程標"
+      },
+      "label": {
+        "title": "標籤"
+      },
+      "side": {
+        "description": "號誌在軌道上的側邊"
+      }
+    },
+    "title": "號誌 SNCF 擴充功能"
+  },
+  "SignalingSystem": {
+    "title": "號誌系統"
+  },
+  "Slope": {
+    "description": "此類別用於定義坡度物件。\n坡度對應於相應軌道區段某部分的縱坡梯度／坡度；\n梯度可為正值（上坡／斜坡情況）或負值（下坡情況）。",
+    "properties": {
+      "begin": {
+        "description": "軌道區段中對應坡度起點的偏移量（公尺）",
+        "title": "起點"
+      },
+      "end": {
+        "description": "軌道區段中對應坡度終點的偏移量（公尺）",
+        "title": "終點"
+      },
+      "gradient": {
+        "description": "對應的坡度（以每公里公尺數／千分率為單位）",
+        "title": "坡度"
+      }
+    },
+    "title": "坡度"
+  },
+  "SpeedSection": {
+    "description": "速限區段以識別碼辨識，速率單位為公尺／秒（m/s）。",
+    "properties": {
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "on_routes": {
+        "description": "套用此速限的進路清單。\n當為空值或 None 時，無論行駛哪條進路皆會套用此速限。",
+        "title": "套用進路"
+      },
+      "speed_limit": {
+        "description": "預設套用於不屬於任何指定類別之列車的速限（公尺／秒）",
+        "title": "速限"
+      },
+      "speed_limit_by_tag": {
+        "description": "套用於帶有指定標籤之列車的速限（公尺／秒）",
+        "title": "依標籤設定的速限"
+      },
+      "track_ranges": {
+        "description": "套用速限區段的位置清單",
+        "title": "軌道範圍"
+      }
+    },
+    "title": "速限區段"
+  },
+  "SpeedSectionExtensions": {
+    "title": "速限區段延伸項目"
+  },
+  "SpeedSectionPslSncfExtension": {
+    "properties": {
+      "announcement": {
+        "description": "指定速率數值",
+        "title": "預告"
+      },
+      "r": {
+        "description": "解除永久速限",
+        "title": "R"
+      },
+      "z": {
+        "description": "永久速限起點"
+      }
+    },
+    "title": "SNCF 專屬擴充功能"
+  },
+  "Switch": {
+    "description": "道岔是用於切換軌道的裝置。",
+    "properties": {
+      "group_change_delay": {
+        "description": "切換道岔啟用群組所需的時間",
+        "title": "群組切換延遲"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "ports": {
+        "description": "依軌道區段分布的各個埠位置",
+        "title": "埠"
+      },
+      "switch_type": {
+        "description": "道岔類型的識別碼與類型",
+        "title": "道岔類型"
+      }
+    },
+    "title": "道岔"
+  },
+  "SwitchExtensions": {
+    "title": "道岔延伸項目"
+  },
+  "SwitchPortConnection": {
+    "description": "此類別可用於了解道岔類型中各個埠之間的連線關係，且連線一律為雙向。",
+    "properties": {
+      "dst": {
+        "description": "連線目的端的埠名稱",
+        "title": "目的端"
+      },
+      "src": {
+        "description": "連線來源端的埠名稱",
+        "title": "來源端"
+      }
+    },
+    "title": "道岔埠連線"
+  },
+  "SwitchSncfExtension": {
+    "properties": {
+      "label": {
+        "description": "道岔的識別碼",
+        "title": "標籤"
+      }
+    },
+    "title": "SNCF專屬道岔擴充功能"
+  },
+  "SwitchType": {
+    "description": "道岔類型用於定義基礎設施中所使用的道岔種類；\n道岔類型由埠清單與群組定義，群組代表道岔可能採用的切換組態。",
+    "properties": {
+      "groups": {
+        "description": "對應各埠之間的連線關係",
+        "title": "群組"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "ports": {
+        "description": "埠的清單；各埠對應至道岔的各個端點",
+        "title": "埠"
+      }
+    },
+    "title": "類型"
+  },
+  "TrackEndpoint": {
+    "description": "此類別用於定義基礎設施上所考量軌道的端點（起點或終點）。",
+    "properties": {
+      "endpoint": {
+        "description": "所考量端點的相對位置"
+      },
+      "track": {
+        "description": "軌道的識別碼與類型",
+        "title": "軌道"
+      }
+    },
+    "title": "軌道端點"
+  },
+  "TrackSection": {
+    "description": "軌道區段是一段軌道，也是 OSRD 用於定位點位的追蹤系統；\n軌道區段由其唯一編號與座標（地理座標）識別。",
+    "properties": {
+      "curves": {
+        "description": "對應軌道區段的曲線清單",
+        "title": "曲線"
+      },
+      "geo": {
+        "description": "對應物件的地理座標"
+      },
+      "id": {
+        "description": "物件的唯一識別碼",
+        "title": "編號"
+      },
+      "length": {
+        "description": "軌道區段長度的數值（公尺）",
+        "title": "長度"
+      },
+      "loading_gauge_limits": {
+        "description": "對應軌道區段的車輛限界清單",
+        "title": "車輛限界"
+      },
+      "slopes": {
+        "description": "對應軌道區段的坡度清單",
+        "title": "坡度"
+      }
+    },
+    "title": "軌道區段"
+  },
+  "TrackSectionExtensions": {
+    "title": "軌道區段延伸項目"
+  },
+  "TrackSectionSncfExtension": {
+    "properties": {
+      "line_code": {
+        "description": "對應軌道區段所屬路線的代碼",
+        "title": "路線代碼"
+      },
+      "line_name": {
+        "description": "對應軌道區段所屬路線的名稱",
+        "title": "路線名稱"
+      },
+      "track_name": {
+        "description": "所用軌道的對應名稱",
+        "title": "軌道名稱"
+      },
+      "track_number": {
+        "description": "所用軌道的對應編號",
+        "title": "軌道編號"
+      }
+    },
+    "title": "軌道區段 SNCF 擴充功能"
+  },
+  "TrackSectionSourceExtension": {
+    "properties": {
+      "id": {
+        "description": "來源資料中用於該路線的識別碼",
+        "title": "編號"
+      },
+      "name": {
+        "description": "來源名稱",
+        "title": "名稱"
+      }
+    },
+    "title": "軌道區段起點延伸"
+  },
+  "Tvm300System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "特定進路的 TVM 號誌參數",
+        "title": "條件參數"
+      },
+      "default_parameters": {
+        "description": "TVM 號誌參數"
+      },
+      "next_signaling_systems": {
+        "description": "允許的後續輸入號誌系統清單",
+        "title": "後續號誌系統"
+      },
+      "settings": {
+        "description": "TVM 號誌設定"
+      },
+      "signaling_system": {
+        "title": "號誌系統"
+      }
+    },
+    "title": "TVM300 系統"
+  },
+  "Tvm430System": {
+    "properties": {
+      "conditional_parameters": {
+        "description": "特定進路的 TVM 號誌參數",
+        "title": "條件參數"
+      },
+      "default_parameters": {
+        "description": "TVM 號誌參數"
+      },
+      "next_signaling_systems": {
+        "description": "允許的後續輸入號誌系統清單",
+        "title": "後續號誌系統"
+      },
+      "settings": {
+        "description": "TVM 號誌設定"
+      },
+      "signaling_system": {
+        "title": "號誌系統"
+      }
+    },
+    "title": "TVM430 系統"
+  },
+  "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "這些參數生效的進路",
+        "title": "套用進路"
+      },
+      "parameters": {
+        "description": "BAL 號誌參數"
+      }
+    },
+    "title": "條件參數"
+  },
+  "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": "號誌是否為黃燈閃爍"
+      }
+    },
+    "title": "參數"
+  },
+  "__main____BalSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "號誌是否為不可通過號誌（非允許通過號誌，SNCF Nf / Non franchissable）"
+      }
+    },
+    "title": "設定"
+  },
+  "__main____BaprSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "這些參數生效的進路",
+        "title": "套用進路"
+      },
+      "parameters": {
+        "description": "BAPR 號誌參數"
+      }
+    },
+    "title": "條件參數"
+  },
+  "__main____BaprSystem__Parameters": {
+    "title": "參數"
+  },
+  "__main____BaprSystem__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "號誌是否為不可通過號誌（非允許通過號誌，SNCF Nf / Non franchissable）"
+      },
+      "distant": {
+        "description": "是否為預告號誌"
+      }
+    },
+    "title": "設定"
+  },
+  "__main____EtcsLevel2System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "這些參數生效的進路",
+        "title": "套用進路"
+      },
+      "parameters": {
+        "description": "ETCS_LEVEL2 號誌參數"
+      }
+    },
+    "title": "條件參數"
+  },
+  "__main____EtcsLevel2System__Parameters": {
+    "title": "參數"
+  },
+  "__main____EtcsLevel2System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "號誌是否為不可通過號誌"
+      }
+    },
+    "title": "設定"
+  },
+  "__main____Tvm300System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "這些參數生效的進路",
+        "title": "套用進路"
+      },
+      "parameters": {
+        "description": "TVM300 號誌參數"
+      }
+    },
+    "title": "條件參數"
+  },
+  "__main____Tvm300System__Parameters": {
+    "title": "參數"
+  },
+  "__main____Tvm300System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "號誌是否為不可通過號誌"
+      }
+    },
+    "title": "設定"
+  },
+  "__main____Tvm430System__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "這些參數生效的進路",
+        "title": "套用進路"
+      },
+      "parameters": {
+        "description": "TVM430 號誌參數"
+      }
+    },
+    "title": "條件參數"
+  },
+  "__main____Tvm430System__Parameters": {
+    "title": "參數"
+  },
+  "__main____Tvm430System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "號誌是否為不可通過號誌"
+      }
+    },
+    "title": "設定"
+  },
+  "properties": {
+    "buffer_stops": {
+      "description": "基礎設施的止衝擋",
+      "title": "止衝擋"
+    },
+    "detectors": {
+      "description": "基礎設施的偵測器",
+      "title": "偵測器"
+    },
+    "electrifications": {
+      "description": "基礎設施的電氣化設備",
+      "title": "電氣化"
+    },
+    "extended_switch_types": {
+      "description": "可由使用者新增的基礎設施道岔類型",
+      "title": "擴充道岔類型"
+    },
+    "level_crossings": {
+      "description": "對應基礎設施的平交道清單",
+      "title": "平交道"
+    },
+    "neutral_sections": {
+      "description": "基礎設施的無電區間",
+      "title": "無電區間"
+    },
+    "operational_points": {
+      "description": "對應基礎設施的營運點清單",
+      "title": "營運點"
+    },
+    "routes": {
+      "description": "基礎設施的進路",
+      "title": "進路"
+    },
+    "signals": {
+      "description": "基礎設施的號誌",
+      "title": "號誌"
+    },
+    "speed_sections": {
+      "description": "基礎設施的速限區段",
+      "title": "速限區段"
+    },
+    "switches": {
+      "description": "基礎設施的道岔",
+      "title": "道岔"
+    },
+    "track_sections": {
+      "description": "基礎設施的軌道區段",
+      "title": "軌道區段"
+    },
+    "version": {
+      "description": "結構描述（Schema）版本",
+      "title": "版本"
+    }
+  }
+}
