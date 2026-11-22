@@ -32,38 +32,348 @@
       "DbError": "資料庫存取嚴重錯誤",
       "Forbidden": "拒絕存取",
       "ForbiddenImpersonation": "拒絕模擬使用者身分",
-      "ForbiddenRevokeLastOwner": "拒絕模擬使用者身分"
+      "ForbiddenRevokeLastOwner": "拒絕模擬使用者身分",
+      "ImpersonatedUserNotFound": "找不到模擬的使用者",
+      "OpenFga": "身分驗證／授權內部錯誤，請再試一次或聯繫支援人員",
+      "Unauthenticated": "尚未通過身分驗證的使用者"
     },
     "authz": {
       "Authorizer": "內部錯誤",
+      "Authz": "身分驗證／授權內部錯誤，請再試一次或聯繫支援人員",
       "Database": "內部錯誤(資料庫)",
+      "Driver": "身分驗證／授權內部錯誤，請再試一次或聯繫支援人員",
+      "GrantsApiMisuse": "API 使用方式不當",
+      "IncompatibleGrant": "權限與所提供的資源類型不相容",
       "NoSuchUser": "未知使用者",
-      "UnknownResource": "未知的資源"
+      "UnknownIdentities": "未知的身分識別「{{identities}}」",
+      "UnknownResource": "未知的資源",
+      "UnknownResourceType": "未知的資源類型",
+      "UnknownSubject": "未知的對象",
+      "UnknownUser": "未知的使用者「{{id}}」",
+      "identity_already_exists": "使用者身分「{{identity}}」已存在",
+      "no_identity_provided": "使用者必須至少擁有一個身分"
     },
     "authz_legacy": {
+      "Openfga": "內部錯誤",
+      "Storage": "內部錯誤",
+      "UnknownResource": "未知的資源",
+      "UnknownSubject": "未知的對象",
       "UnknownUser": "未知使用者'{{id}}'"
+    },
+    "auto_fixes": {
+      "ConflictingFixesOnSameObject": "同一次修復疊代中，相同物件出現衝突的修復項目",
+      "FixTrialFailure": "嘗試套用修復時失敗",
+      "MaximumIterationReached": "已達修復基礎設施的迭代次數上限，但尚未提供所有可能的修復項目",
+      "MissingErrorObject": "找不到發生錯誤的物件"
+    },
+    "cache_operation": {
+      "DuplicateIdsProvided": "{{obj_type}} {{obj_id}}：已存在重複項目",
+      "ObjectNotFound": "在基礎設施快取的所有位置中皆找不到 {{obj_type}} {{obj_id}}"
+    },
+    "catalog_entry": {
+      "not_found": "找不到目錄項目「{{catalog_entry_id}}」"
+    },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "路徑長度不得為空值。"
+      }
+    },
+    "coreclient": {
+      "BrokenPipe": "Core 連線管線中斷，建議重試。",
+      "CannotExtractResponseBody": "無法擷取 Core 回應主體：{{msg}}",
+      "CoreResponseFormatError": "無法剖析 Core 回應：{{msg}}",
+      "MqClientError": "Core：MQ 用戶端錯誤",
+      "UnparsableErrorOutput": "Core 傳回未知格式的錯誤"
+    },
+    "database": {
+      "internal": "內部錯誤（資料庫）"
+    },
+    "delimited_area": {
+      "InvalidLocations": "部分位置無效"
     },
     "document": {
       "not_found": "找不到文件 '{{document_key}}'"
     },
+    "electrical_profiles": {
+      "not_found": "找不到電氣化特性組合「{{electrical_profile_set_id}}」"
+    },
+    "file_not_found": "找不到檔案「{{file}}」",
+    "geometry": {
+      "UnexpectedGeometry": "預期幾何圖形為 {{expected}}，但取得 {{actual}}"
+    },
     "infra": {
-      "NotFound": "未找到設施'{{infra_id}}'",
+      "Database": "內部錯誤",
+      "NotFound": "找不到基礎設施「{{infra_id}}」",
       "edition": {
-        "SplitTrackSectionBadOffset": "設施'{{infra_id}}'中的軌道區段 '{{tracksection_id}}'分割長度無效。需介於0至{{tracksection_length}}公尺之間。"
+        "InfraIsLocked": "基礎設施已鎖定",
+        "SplitTrackSectionBadOffset": "基礎設施「{{infra_id}}」中軌道區段「{{tracksection_id}}」的分割距離無效，必須介於 0 至 {{tracksection_length}} 公尺之間。"
+      },
+      "errors": {
+        "WrongErrorTypeProvided": "提供的錯誤類型不正確"
+      },
+      "lines": {
+        "LineNotFound": "找不到代碼為 {{line_code}} 的路線"
+      },
+      "objects": {
+        "DuplicateIdsProvided": "提供了重複的物件編號"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "找不到結束軌道位置",
+        "InvalidNumberOfPaths": "路徑搜尋無法傳回 5 條路徑（預期範圍：[1-5]）",
         "StartingTrackLocationNotFound": "找不到起始軌道位置"
       }
     },
+    "infra_cache": {
+      "ObjectNotFound": "在基礎設施快取的所有位置中皆找不到 {{obj_type}}「{{obj_id}}」"
+    },
+    "infra_state": {
+      "FetchError": "擷取基礎設施載入狀態時發生錯誤"
+    },
+    "layers": {
+      "LayerNotFound": "找不到圖層 {{layer_name}}。",
+      "ViewNotFound": "找不到檢視 {{view_name}}。"
+    },
+    "level_crossing": {
+      "Database": "內部錯誤（資料庫）",
+      "InfraNotFound": "找不到基礎設施「{{infra_id}}」。",
+      "LevelCrossingBatchNotFound": "找不到「{{count}}」個平交道。",
+      "TimetableNotFound": "找不到時刻表「{{timetable_id}}」。",
+      "TrainBatchNotFound": "找不到「{{count}}」班週期列車。",
+      "UnsupportedTimetableType": "不支援整點時刻表。"
+    },
+    "macro_node": {
+      "Database": "內部錯誤",
+      "NotFound": "找不到節點 {{node_id}}。",
+      "ScenarioNotFound": "找不到情境「{{scenario_id}}」"
+    },
+    "macro_note": {
+      "Database": "內部錯誤（資料庫）",
+      "NotFound": "找不到註記「{{note_id}}」。",
+      "ScenarioNotFound": "找不到情境「{{scenario_id}}」",
+      "WrongScenario": "註記「{note_id}」不屬於情境「{scenario_id}」"
+    },
+    "match_macro_nodes": {
+      "scenario_not_found": "找不到情境「{{scenario_id}}」"
+    },
+    "model": {
+      "ModelError": "內部錯誤（資料庫查詢）"
+    },
+    "operation": {
+      "EmptyId": "禁止使用空字串編號",
+      "InvalidPatch": "發生 JSON Patch 錯誤",
+      "ModifyId": "更新操作嘗試修改物件編號，此行為已被禁止",
+      "ObjectNotFound": "在基礎設施「{{infra_id}}」中找不到物件「{{obj_id}}」"
+    },
+    "operationalPointProjection": {
+      "InvalidNumberOfDistances": "預期取得 {{expected}} 個距離，但實際取得 {{found}} 個",
+      "InvalidNumberOfRefs": "至少需要兩個營運點參考"
+    },
     "pathfinding": {
-      "TrackSectionsNotFound": "軌道區段{{track_sections}}不存在"
+      "Database": "內部錯誤（資料庫）",
+      "ElectricalProfilesOverlap": "電氣化特性與其他設定重疊",
+      "ElectrificationOverlap": "電氣化區段「{{electrification_id}}」與其他電氣化區段重疊",
+      "InfraNotFound": "基礎設施「{{infra_id}}」不存在",
+      "NotFound": "路徑搜尋 {{pathfinding_id}} 不存在",
+      "OperationalPointsNotFound": "營運點 {{operational_points}} 不存在",
+      "RollingStockNotFound": "編號為「{{rolling_stock_id}}」的車輛不存在",
+      "TrackSectionsNotFound": "軌道區段 {{track_sections}} 不存在"
+    },
+    "postgres": {
+      "Host": "無效的主機「{{hostname}}」",
+      "Password": "無效的密碼",
+      "Port": "無效的連接埠「{{port}}」",
+      "Username": "無效的使用者名稱"
     },
     "project": {
-      "NotFound": "找不到專案 '{{project_id}}'"
+      "Database": "內部錯誤",
+      "ImageError": "提供的圖片無效",
+      "ImageNotFound": "找不到圖片文件「{{document_key}}」",
+      "NotFound": "找不到專案「{{project_id}}」"
+    },
+    "railjson": {
+      "UnsupportedVersion": "不支援的 railjson 版本"
+    },
+    "rollingstocks": {
+      "BasePowerClassEmpty": "基準動力等級不得為空字串（或「基準動力等級為空字串」）",
+      "CannotCreateCompoundImage": "無法將分離的圖片複製到合成圖片上",
+      "CannotReadImage": "無法讀取分離的圖片",
+      "Database": "內部錯誤（資料庫）",
+      "IsLocked": "車輛「{{rolling_stock_id}}」已鎖定",
+      "IsUsed": "車輛「{{rolling_stock_id}}」正在使用中",
+      "KeyNotFound": "找不到車輛「{{rolling_stock_key.key}}」",
+      "LiveryMultipartError": "上傳塗裝時發生無效的多部分（multipart）請求",
+      "NameAlreadyUsed": "名稱「{{name}}」已被使用"
+    },
+    "round_trips": {
+      "Database": "內部錯誤（資料庫）",
+      "DuplicateTrainIds": "酬載中包含不允許的重複列車編號",
+      "TimetableNotFound": "找不到時刻表「{{timetable_id}}」"
+    },
+    "scenario": {
+      "Database": "內部錯誤（資料庫）",
+      "InfraNotFound": "找不到基礎設施「{{infra_id}}」",
+      "NotFound": "找不到情境",
+      "StudyNotFound": "找不到研究「{{study_id}}」"
+    },
+    "search": {
+      "ArgMissing": "位置 {{arg_pos}} 缺少預期的 {{expected}} 類型引數",
+      "ArgTypeMismatch": "位置 {{arg_pos}} 預期為 {{expected}} 類型引數，但取得 {{actual}}",
+      "EmptyArray": "空陣列屬於無效語法",
+      "IntegerConversion": "無法轉換為 64 位元整數（i64）",
+      "InvalidColumnName": "無效的欄位名稱",
+      "InvalidFunctionIdentifier": "函式識別碼必須為字串",
+      "InvalidSyntax": "無效的語法",
+      "ObjectType": "物件類型無效",
+      "QueryAst": "預期為查詢布林類型",
+      "RuntimeTypeCheckFail": "預期類型為 {{expected}}，但實際取得值為「{{value}}」的 {{actual}} 類型",
+      "SearchEngineError": "搜尋引擎內部錯誤",
+      "UndefinedFunction": "未定義的函式",
+      "UndefinedOverload": "找不到合適的多載",
+      "UnexpectedArg": "找到非預期的引數類型",
+      "UnexpectedColumn": "非預期的欄位",
+      "UnexpectedErsatz": "預期類型為 {{expected}} 的值，但取得替代值「{{value}}」",
+      "VariadicArgTypeMismatch": "預期為 {{expected}} 類型的可變引數，但取得 {{actual}} 類型"
+    },
+    "search_journeys": {
+      "Database": "資料庫錯誤",
+      "InfraNotFound": "基礎設施「{{infra_id}}」不存在",
+      "InvalidInput": "無效的輸入：{{message}}"
+    },
+    "single_simulation": {
+      "ElectricalProfileSetNotFound": "找不到電氣化特性組合「{{electrical_profile_set_id}}」",
+      "PathNotFound": "找不到路徑「{{path_id}}」",
+      "RollingStockNotFound": "找不到車輛「{{rolling_stock_id}}」",
+      "WrongCoreResponseFormat": "收到來自 Core 的錯誤回應格式"
+    },
+    "sprites": {
+      "FileNotFound": "找不到檔案",
+      "UnknownSignalingSystem": "未知的號誌系統"
+    },
+    "stdcm": {
+      "BatchRollingStockNotFound": "找不到車輛「{{ids}}」",
+      "Database": "內部錯誤（資料庫）",
+      "InfraNotFound": "基礎設施「{{infra_id}}」不存在",
+      "InvalidConsistLength": "編組長度 {{provided_consist_length}} 無效：必須大於「{{expected_min}}」",
+      "InvalidConsistMass": "編組質量 {{provided_consist_mass}} 無效：必須大於「{{expected_min}}」",
+      "InvalidConsistMaxSpeed": "編組最高速限 {{provided_consist_max_speed}} 無效：必須為正值且小於「{{expected_max}}」",
+      "InvalidPathItems": "無效的路徑點 {{items}}",
+      "TimetableNotFound": "時刻表「{{timetable_id}}」不存在",
+      "TowedRollingStockNotFound": "被牽引車輛 {towed_rolling_stock_id} 不存在",
+      "TrainSimulationFail": "列車模擬失敗"
+    },
+    "stdcm_debug": {
+      "json_parse": "剖析 JSON 檔案時發生錯誤",
+      "s3": "取得 S3 資料時發生錯誤",
+      "s3_not_configured": "Editoast 尚未設定存取 S3"
+    },
+    "stdcm_request": {
+      "Database": "內部錯誤（資料庫）",
+      "Forbidden": "拒絕存取",
+      "MalformedParameters": "查詢參數中的分頁游標無效",
+      "NotUser": "by=group 與 by=user 查詢參數需要已通過身分驗證的使用者"
+    },
+    "stdcm_request_delete": {
+      "Database": "內部錯誤（資料庫）",
+      "NotFound": "找不到 stdcm 請求「{{id}}」"
+    },
+    "stdcm_request_post": {
+      "Database": "內部錯誤（資料庫）",
+      "NotUser": "建立請求需要已通過身分驗證的使用者"
+    },
+    "stdcm_search_env": {
+      "not_found": "找不到 stdcm 搜尋環境「{{env_id}}」"
     },
     "study": {
-      "ProjectNotFound": "找不到專案'{{project_id}}'"
+      "Database": "內部錯誤（資料庫）",
+      "NotFound": "找不到研究「{{study_id}}」",
+      "ProjectNotFound": "找不到專案「{{project_id}}」",
+      "StartDateAfterEndDate": "研究開始日期必須早於結束日期"
+    },
+    "sub_categories": {
+      "CodeAlreadyUsed": "子類別代碼「{{code}}」已被使用",
+      "Database": "內部錯誤（資料庫）",
+      "NotFound": "找不到子類別「{{code}}」"
+    },
+    "temporary_speed_limit": {
+      "Database": "內部錯誤（資料庫）",
+      "NameAlreadyUsed": "已存在名稱為「{{name}}」的臨時速限群組"
+    },
+    "timetable": {
+      "BatchTrainScheduleSetNotFound": "找不到「{{count}}」組列車時刻表集合",
+      "Database": "內部錯誤（資料庫）",
+      "InfraNotFound": "基礎設施「{{infra_id}}」不存在",
+      "InfraNotLoaded": "基礎設施「{{infra_id}}」尚未載入",
+      "InvalidPeriod": "整點時刻表週期應小於 24 小時",
+      "NotFound": "找不到時刻表「{{timetable_id}}」",
+      "ParseError": "無法剖析列車編號（train_id）：「{{train_id}}」",
+      "Timeout": "請求逾時",
+      "TrainScheduleNotFound": "找不到列車時刻表「{{id}}」",
+      "TrainScheduleSetsNotFound": "找不到列車時刻表集合「{{ids}}」",
+      "similar_trains": {
+        "Database": "內部錯誤（資料庫）",
+        "EmptyTrainsTraffic": "列車行車資料為空",
+        "InvalidPath": "時刻表中的路徑無效",
+        "RollingStockNotFound": "車輛「{{rolling_stock_name}}」不存在",
+        "SpeedLimitNotFound": "速限標籤「{{speed_limit_tag}}」不存在"
+      }
+    },
+    "towedrollingstocks": {
+      "Database": "內部錯誤",
+      "IdNotFound": "找不到被牽引車輛「{{towed_rolling_stock_id}}」",
+      "IsLocked": "被牽引車輛「{{towed_rolling_stock_id}}」已鎖定"
+    },
+    "train_schedule": {
+      "BatchNotFound": "找不到「{{count}}」筆列車時刻表",
+      "Database": "內部錯誤（資料庫）",
+      "ExceptionNotFound": "找不到例外「{{exception_id}}」",
+      "InfraNotFound": "找不到基礎設施「{{infra_id}}」",
+      "InvalidPathPortion": "路徑區段無效：起始索引「{{begin}}」與結束索引「{{end}}」和路徑項目數量（「{{path_items_count}}」）不一致",
+      "NotFound": "找不到列車時刻表「{{train_schedule_id}}」",
+      "PathfindingFailed": "列車時刻表「{{train_schedule_id}}」的路徑搜尋失敗",
+      "RollingStockNotFound": "找不到車輛「{{rolling_stock_name}}」",
+      "SimulationFailed": "列車時刻表「{{train_schedule_id}}」的模擬失敗",
+      "TrainScheduleSetNotFound": "找不到列車時刻表集合「{{train_schedule_set_id}}」"
+    },
+    "train_schedule_exception": {
+      "BatchNotFound": "找不到「{{count}}」筆列車時刻表例外",
+      "Database": "內部錯誤（資料庫）",
+      "InvalidOccurrenceIndex": "針對時間區間為「{{time_window}}」、間隔為「{{interval}}」的列車時刻表「{{train_schedule_id}}」，班次索引「{{occurrence_index}}」無效",
+      "NotFound": "找不到列車時刻表例外「{{exception_id}}」",
+      "NotPacedTrain": "列車時刻表「{{train_schedule_id}}」不是週期列車",
+      "OccurrenceIndexAlreadyUsed": "班次索引「{{occurrence_index}}」已被同一份列車時刻表的其他例外使用",
+      "TimetableNotFound": "找不到時刻表「{{timetable_id}}」",
+      "TrainScheduleNotFound": "找不到列車時刻表「{{train_schedule_id}}」"
+    },
+    "train_schedule_linking": {
+      "BatchNotFound": "找不到 {{count}} 筆列車關聯",
+      "Database": "內部錯誤（資料庫）",
+      "RequestIncompatibleWithTimetableType": "時刻表 {{timetable_id}} 的類型為 {{timetable_type}}，因此無法包含帶有 train_schedule_instance_index 的班次。",
+      "SourceAlreadyUsed": "班次 {{occurrence}} 已用作來源。",
+      "TargetAlreadyUsed": "班次 {{occurrence}} 已用作目標。",
+      "TimetableNotFound": "找不到時刻表「{{timetable_id}}」"
+    },
+    "train_schedule_set": {
+      "CatalogEntryNotFound": "找不到目錄項目「{{catalog_entry_id}}」",
+      "Database": "內部錯誤（資料庫）",
+      "NotFound": "找不到列車時刻表集合「{{train_schedule_set_id}}」"
+    },
+    "url": {
+      "InvalidUrl": "無效的網址「{{url}}」"
+    },
+    "valkey": {
+      "Url": "無效的網址「{{url}}」"
+    },
+    "work_schedule": {
+      "Database": "內部錯誤（資料庫）",
+      "NameAlreadyUsed": "已存在名稱為「{{name}}」的施工排程群組",
+      "WorkScheduleGroupNotFound": "找不到編號為「{{id}}」的施工排程群組"
+    },
+    "worker_load": {
+      "Database": "內部錯誤（資料庫）",
+      "FetchStatusError": "內部錯誤（osrdyne）",
+      "InfraNotFound": "找不到基礎設施「{{infra_id}}」",
+      "TimetableNotFound": "找不到時刻表「{{timetable_id}}」"
     }
-  }
+  },
+  "pageNotFound": "您所尋找的頁面不存在。"
 }
