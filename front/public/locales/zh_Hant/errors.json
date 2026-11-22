@@ -7,20 +7,32 @@
   "503": "伺服器錯誤",
   "504": "伺服器沒有回應。",
   "core": {
-    "assert_error": "斷言錯誤位於{{file_location}}: {{assert_message}}"
+    "assert_error": "斷言錯誤位於{{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "目前不支援未以停靠點結尾的短期路徑規劃（STDCM）請求"
   },
   "default": "發生錯誤。",
   "editoast": {
     "DatabaseAccessError": "資料庫存取嚴重錯誤",
+    "JoinError": {
+      "cancelled": "工作已終止",
+      "panic": "程式異常終止（Panic）",
+      "unhandled_add_case_here": "未預期的 JoinError 異常狀況"
+    },
     "app_health": {
+      "Core": "Core 服務發生錯誤",
       "Database": "資料庫錯誤",
-      "Timeout": "服務逾時"
+      "Openfga": "OpenFGA 服務發生錯誤",
+      "Timeout": "服務逾時",
+      "Valkey": "Valkey 服務發生錯誤"
     },
     "attached": {
       "TrackNotFound": "未找到軌道 {{track_id}}"
     },
     "authorization": {
-      "Forbidden": "拒絕存取"
+      "DbError": "資料庫存取嚴重錯誤",
+      "Forbidden": "拒絕存取",
+      "ForbiddenImpersonation": "拒絕模擬使用者身分",
+      "ForbiddenRevokeLastOwner": "拒絕模擬使用者身分"
     },
     "authz": {
       "Authorizer": "內部錯誤",
