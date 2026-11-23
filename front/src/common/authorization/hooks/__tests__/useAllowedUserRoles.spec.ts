@@ -35,7 +35,7 @@ describe('useAllowedUserRoles', () => {
         stdcmAllowed: true,
         infraEditorAllowed: false,
         rollingStockEditorAllowed: false,
-        mapAllowed: true,
+        mapAllowed: false,
       },
     },
     {

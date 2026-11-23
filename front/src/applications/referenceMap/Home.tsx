@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 
 import { Lock } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBar from 'common/NavBar';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
@@ -35,6 +36,9 @@ const HomeReferenceMap = () => {
       });
     }
   }, [infraID, getInfraByInfraId, dispatch, updateInfraID]);
+
+  const { mapAllowed } = useAllowedUserRoles();
+  if (!mapAllowed) return <Navigate to="/403" replace />;
 
   return (
     <ModalProvider>

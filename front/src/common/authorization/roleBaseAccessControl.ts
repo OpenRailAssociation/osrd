@@ -24,7 +24,7 @@ export const REQUIRED_USER_ROLES_FOR: RequiredUserRolesFor = {
     STDCM: ['Stdcm'],
     OPERATIONAL_STUDIES: ['OperationalStudies'],
     INFRA_EDITOR: ['OperationalStudies'],
-    MAP: ['OperationalStudies', 'Stdcm'],
+    MAP: ['OperationalStudies'],
     ROLLING_STOCK_EDITOR: ['OperationalStudies'],
     ADMIN_DASHBOARD: ['Admin'],
   },
