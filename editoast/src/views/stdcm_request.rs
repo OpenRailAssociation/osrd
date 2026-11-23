@@ -9,7 +9,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use editoast_derive::EditoastError;
 use editoast_derive::ViewError;
 use models::StdcmRequest;
 use models::prelude::Changeset;
@@ -24,7 +23,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::error::Result;
 use crate::views::DatabaseError;
 use crate::views::OpenFgaError;
 
@@ -174,16 +172,15 @@ pub(in crate::views) async fn list(
     Ok(Json(requests))
 }
 
-#[derive(Debug, Error, EditoastError, derive_more::From)]
-#[editoast_error(base_id = "stdcm_request_post")]
-pub enum StdcmRequestPostError {
+#[derive(Debug, Error, ViewError, derive_more::From)]
+pub(in crate::views) enum StdcmRequestPostError {
     #[error("Creating a request requires an authenticated user")]
-    #[editoast_error(status = 401)]
+    #[view_error(status = UNAUTHORIZED)]
     NotUser,
 
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(models::Error),
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Deserialize, ToSchema, Debug)]
@@ -201,15 +198,16 @@ pub struct StdcmRequestForm {
     request_body = StdcmRequestForm,
     responses(
         (status = 201, body = StdcmRequest, description = "Stdcm request"),
+        StdcmRequestPostError,
     ),
 )]
 pub(in crate::views) async fn post(
     State(AppState { db_pool, .. }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(stdcm_request_create_form): Json<StdcmRequestForm>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, StdcmRequestPostError> {
     match authn_state.user() {
-        None => Err(StdcmRequestPostError::NotUser.into()),
+        None => Err(StdcmRequestPostError::NotUser),
         Some(user) => {
             let stdcm_request = Changeset::<StdcmRequest>::default()
                 .rmi_id(stdcm_request_create_form.rmi_id)
@@ -222,16 +220,14 @@ pub(in crate::views) async fn post(
     }
 }
 
-#[derive(Debug, Error, EditoastError, derive_more::From)]
-#[editoast_error(base_id = "stdcm_request_delete")]
-pub enum StdcmRequestDeleteError {
-    #[error("Not found")]
-    #[editoast_error(status = 404)]
+#[derive(Debug, Error, ViewError, derive_more::From)]
+pub(in crate::views) enum StdcmRequestDeleteError {
+    #[error("Stdcm request {id} not found")]
+    #[view_error(status = NOT_FOUND, context)]
     NotFound { id: i64 },
-
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(models::Error),
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -247,12 +243,13 @@ pub(in crate::views) struct StdcmRequestIdParam {
     params(StdcmRequestIdParam),
     responses(
         (status = 204, description = "The stdcm request was deleted successfully"),
+        StdcmRequestDeleteError
     )
 )]
 pub(in crate::views) async fn delete(
     State(AppState { db_pool, .. }): State<AppState>,
     Path(StdcmRequestIdParam { id }): Path<StdcmRequestIdParam>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, StdcmRequestDeleteError> {
     StdcmRequest::delete_static_or_fail(&mut db_pool.get().await?, id, || {
         StdcmRequestDeleteError::NotFound { id }
     })

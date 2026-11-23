@@ -268,18 +268,15 @@
       "s3_not_configured": "Editoast n'est pas configuré pour accéder au s3"
     },
     "stdcm_request": {
-      "Database": "Erreur interne (base de données)",
-      "Forbidden": "Accès refusé",
-      "MalformedParameters": "Curseur de pagination invalide dans les paramètres de requête",
-      "NotUser": "Les paramètres de requête by=group et by=user nécessitent un utilisateur authentifié"
+      "forbidden": "Accès refusé",
+      "malformed_parameters": "Curseur de pagination invalide dans les paramètres de requête",
+      "not_user": "Les paramètres de requête by=group et by=user nécessitent un utilisateur authentifié"
     },
     "stdcm_request_delete": {
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Requête stdcm '{{id}}' non trouvée"
+      "not_found": "Requête stdcm '{{id}}' non trouvée"
     },
     "stdcm_request_post": {
-      "Database": "Erreur interne (base de données)",
-      "NotUser": "La création d'une requête nécessite un utilisateur authentifié"
+      "not_user": "La création d'une requête nécessite un utilisateur authentifié"
     },
     "stdcm_search_env": {
       "not_found": "Environnement de recherche stdcm '{{env_id}}' non trouvé"

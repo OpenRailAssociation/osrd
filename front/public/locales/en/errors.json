@@ -267,18 +267,15 @@
       "s3_not_configured": "Editoast isn't configured to access s3"
     },
     "stdcm_request": {
-      "Database": "Internal error (database)",
-      "Forbidden": "Access denied",
-      "MalformedParameters": "Invalid pagination cursor in query parameters",
-      "NotUser": "by=group and by=user query parameters require an authenticated user"
+      "forbidden": "Access denied",
+      "malformed_parameters": "Invalid pagination cursor in query parameters",
+      "not_user": "by=group and by=user query parameters require an authenticated user"
     },
     "stdcm_request_delete": {
-      "Database": "Internal error (database)",
-      "NotFound": "Stdcm request '{{id}}' not found"
+      "not_found": "Stdcm request '{{id}}' not found"
     },
     "stdcm_request_post": {
-      "Database": "Internal error (database)",
-      "NotUser": "Creating a request requires an authenticated user"
+      "not_user": "Creating a request requires an authenticated user"
     },
     "stdcm_search_env": {
       "not_found": "Stdcm search environment '{{env_id}}' could not be found"
