@@ -96,7 +96,7 @@ fn service_router() -> server::router::DocumentedRouter {
                         path.route("/", get!(authz::user::whoami))
                             .route("/groups", get!(authz::user::user_groups))
                             .route("/grants", post!(authz::user_grants))
-                            .route("/privileges", post!(authz::user_privileges))
+                            .route("/privileges", post!(authz::user::user_privileges))
                     })
                     .nests("/user", |path| {
                         path.route("/info", post!(authz::user::users_info))
