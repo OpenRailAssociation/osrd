@@ -1,13 +1,20 @@
+use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use authz::Role;
+use authz::authorizers::SystemAuthorizer;
 use authz::v2;
+use authz::v2::Authorizer as _;
 use axum::Extension;
 use axum::extract::State;
 use axum::response::Json;
 use database::DbConnection;
+use futures::TryStreamExt as _;
+use itertools::Itertools as _;
 use models::Group;
-use models::prelude::RetrieveBatch as _;
+use models::authn::user::UserWithIdentities;
+use models::prelude::*;
 #[cfg(test)]
 use serde::Deserialize;
 use serde::Serialize;
@@ -16,6 +23,9 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::AppState;
 use crate::views::AuthorizationError;
+use crate::views::authz::AuthzError;
+use crate::views::authz::UserInfo;
+use crate::views::authz::UsersInfoRequest;
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
@@ -105,8 +115,132 @@ pub(in crate::views) async fn retrieve_user_groups(
     Ok(groups)
 }
 
+#[editoast_derive::route(Role::Admin)]
+#[utoipa::path(
+    post,
+    path = "",
+    tag = "authz",
+    request_body(
+        content = inline(UsersInfoRequest),
+        description = "A list of user IDs and identities to get information on",
+    ),
+    responses((
+        status = 200,
+        description = "Get information on a list of users",
+        body = inline(Vec<UserInfo>),
+    ))
+)]
+pub(in crate::views) async fn users_info(
+    State(AppState {
+        openfga, db_pool, ..
+    }): State<AppState>,
+    Json(UsersInfoRequest { ids, identities }): Json<UsersInfoRequest>,
+) -> Result<Json<Vec<UserInfo>>> {
+    let conn = db_pool.get().await?;
+    let users = {
+        let (mut u1, u2) = tokio::try_join!(
+            UserWithIdentities::stream_by_id(conn.clone(), &ids)
+                .await?
+                .try_collect::<Vec<_>>(),
+            UserWithIdentities::stream_by_identity(conn.clone(), &identities)
+                .await?
+                .try_collect::<Vec<_>>(),
+        )?;
+        u1.extend(u2);
+        u1
+    };
+
+    {
+        let found_ids = users
+            .iter()
+            .map(|user| user.user.id)
+            .collect::<HashSet<_>>();
+        if let Some(id) = ids.into_iter().find(|id| !found_ids.contains(id)) {
+            return Err(AuthzError::UnknownUser { id }.into());
+        }
+    }
+
+    // Check for missing requested identities
+    {
+        let identities = HashSet::from_iter(identities.iter());
+        let found_identities = users
+            .iter()
+            .flat_map(|u| u.identities.iter())
+            .collect::<HashSet<_>>();
+        let missing_identities = identities
+            .difference(&found_identities)
+            .map(std::ops::Deref::deref)
+            .cloned() // &&String
+            .collect::<HashSet<_>>();
+        if !missing_identities.is_empty() {
+            return Err(AuthzError::UnknownIdentities {
+                identities: missing_identities,
+            }
+            .into());
+        }
+    }
+
+    // Fetch groups for each user
+    let groups_prots = v2::Protected::from_iter(users.into_iter().map(|user| {
+        let user_groups = v2::user_groups(authz::User(user.user.id));
+        v2::Protected::value(user).zip(user_groups)
+    }));
+    let system = SystemAuthorizer::new_infallible(&openfga);
+    let Ok(user_groups) = system.authorize(groups_prots).await?.access().await?;
+
+    // Find groups that really exist (OpenFGA can be out of sync sometimes)
+    let group_by_id = {
+        let group_ids = user_groups
+            .iter()
+            .flat_map(|(_, groups)| groups.iter().map(|g| **g))
+            .collect_vec();
+        let settings = SelectionSettings::new().filter(move || Group::ID.eq_any(group_ids.clone()));
+        let groups = Group::list(&mut db_pool.get().await?, settings).await?;
+        Arc::new(
+            groups
+                .into_iter()
+                .map(|g| (g.id, g))
+                .collect::<HashMap<_, _>>(),
+        )
+    };
+
+    // Fetch roles and build the response
+    let Ok(results) = v2::Protected::from_iter(user_groups.into_iter().map(
+        |(
+            UserWithIdentities {
+                user: models::User { id, name },
+                identities,
+            },
+            groups,
+        )| {
+            let group_by_id = group_by_id.clone();
+            v2::subject_roles(authz::Subject::user(id)).map(async move |roles| {
+                UserInfo {
+                    id,
+                    name,
+                    identities,
+                    roles: HashSet::from_iter(roles),
+                    groups: groups
+                        .into_iter()
+                        // Skip group if it does not exist
+                        .filter_map(|g| group_by_id.get(&*g).cloned())
+                        .collect(),
+                }
+            })
+        },
+    ))
+    .authorize(&system)
+    .await?
+    .access()
+    .await?;
+
+    Ok(Json(results))
+}
+
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
@@ -253,5 +387,82 @@ mod tests {
             .skip_authz()
             .await
             .assert_status_unauthorized();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn users_info() {
+        let app = test_app!().build();
+        let admin = app
+            .user("admin", "Admin")
+            .with_roles([Role::Admin])
+            .create()
+            .await;
+        let user_1 = app
+            .user("user_1", "User 1")
+            .with_roles([Role::OperationalStudies])
+            .create()
+            .await;
+        let user_2 = app
+            .user("user_2", "User 2")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
+        let group_1 = app
+            .group("group_1")
+            .with_members([&user_1, &user_2])
+            .create()
+            .await;
+        let group_2 = app.group("group_2").with_members([&user_2]).create().await;
+
+        let mut users_info = app
+            .post("/authz/user/info")
+            .by_user(admin.as_ref())
+            .json(&json!({
+                "ids": [user_1.id],
+                "identities": [user_2.info.identities[0].clone()],
+            }))
+            .await
+            .assert_status_ok()
+            .json::<Vec<UserInfo>>();
+
+        users_info.sort_by_key(|user| user.id);
+
+        assert_eq!(
+            users_info,
+            vec![
+                UserInfo {
+                    id: user_1.id,
+                    name: user_1.info.name,
+                    identities: user_1.info.identities,
+                    roles: HashSet::from([Role::OperationalStudies]),
+                    groups: HashSet::from([Group {
+                        id: group_1.id,
+                        name: group_1.info.name.clone(),
+                    }]),
+                },
+                UserInfo {
+                    id: user_2.id,
+                    name: user_2.info.name,
+                    identities: user_2.info.identities,
+                    roles: HashSet::from([Role::Stdcm]),
+                    groups: HashSet::from([
+                        Group {
+                            id: group_1.id,
+                            name: group_1.info.name,
+                        },
+                        Group {
+                            id: group_2.id,
+                            name: group_2.info.name,
+                        },
+                    ]),
+                },
+            ]
+        );
+
+        app.post("/authz/user/info")
+            .by_user(admin.as_ref())
+            .json(&json!({ "ids": [i64::MAX] }))
+            .await
+            .assert_status_not_found();
     }
 }

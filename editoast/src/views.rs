@@ -99,7 +99,7 @@ fn service_router() -> server::router::DocumentedRouter {
                             .route("/privileges", post!(authz::user_privileges))
                     })
                     .nests("/user", |path| {
-                        path.route("/info", post!(authz::users_info))
+                        path.route("/info", post!(authz::user::users_info))
                     })
                     .nests("/users", |path| {
                         path.route("/", post!(authz::create_user))
