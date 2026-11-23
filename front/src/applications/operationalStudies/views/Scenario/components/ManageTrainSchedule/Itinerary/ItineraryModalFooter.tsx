@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import { TrainService, TrainServiceOccurrence, TrainSingle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -46,8 +47,9 @@ export default function ItineraryModalFooter({
           {timetableType !== 'HOURLY' && (
             <Button
               label={t('submit.addSingleTrain')}
-              variant="Normal"
-              size="medium"
+              leadingIcon={<TrainSingle size="lg" />}
+              variant="Primary"
+              size="large"
               onClick={() => handleSubmit('uniqueTrain')}
               dataTestID="itinerary-modal-add-single-train-button"
               isLoading={submittingType === 'uniqueTrain' && isWorking}
@@ -55,8 +57,9 @@ export default function ItineraryModalFooter({
           )}
           <Button
             label={t('submit.addService')}
+            leadingIcon={<TrainService size="lg" />}
             variant="Primary"
-            size="medium"
+            size="large"
             onClick={() => handleSubmit('pacedTrain')}
             dataTestID="itinerary-modal-add-service-train-button"
             isLoading={submittingType === 'pacedTrain' && isWorking}
@@ -71,8 +74,17 @@ export default function ItineraryModalFooter({
                 ? t('submit.editService')
                 : t('submit.editOccurrence')
           }
+          leadingIcon={
+            trainType === 'uniqueTrain' ? (
+              <TrainSingle size="lg" />
+            ) : trainType === 'pacedTrain' ? (
+              <TrainService size="lg" />
+            ) : (
+              <TrainServiceOccurrence size="lg" />
+            )
+          }
           variant="Primary"
-          size="medium"
+          size="large"
           onClick={onSubmit}
           dataTestID="itinerary-modal-edit-train-button"
           isLoading={isWorking}
