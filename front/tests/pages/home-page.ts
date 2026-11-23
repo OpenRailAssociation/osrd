@@ -9,6 +9,13 @@ class HomePage extends CommonPage {
   private readonly backHomeLogo: Locator;
   private readonly dropDown: Locator;
   private readonly OSRDLanguage: Locator;
+  private readonly userSettingsButton: Locator;
+  private readonly impersonationInput: Locator;
+  private readonly impersonationSuggestions: Locator;
+  private readonly stopImpersonationButton: Locator;
+  private readonly notAuthorizedWarning: Locator;
+  private readonly mapInfrasButton: Locator;
+  private readonly infraList: Locator;
   readonly operationalStudiesTile: Locator;
   readonly infraEditorTile: Locator;
   readonly rollingStockEditorTile: Locator;
@@ -26,6 +33,13 @@ class HomePage extends CommonPage {
     this.backHomeLogo = page.getByTestId('osrd-logo');
     this.dropDown = page.getByTestId('dropdown-sncf');
     this.OSRDLanguage = page.getByTestId('language-info');
+    this.userSettingsButton = page.getByTestId('user-settings-btn');
+    this.impersonationInput = page.getByTestId('impersonation-input');
+    this.impersonationSuggestions = page.getByTestId('impersonation-item');
+    this.stopImpersonationButton = page.getByTestId('stop-impersonation-btn');
+    this.notAuthorizedWarning = page.getByTestId('not-authorized-warning');
+    this.mapInfrasButton = page.getByTestId('map-infras-button');
+    this.infraList = page.getByTestId('infra-list');
   }
 
   get appTiles(): Locator[] {
@@ -36,6 +50,31 @@ class HomePage extends CommonPage {
       this.referenceMapTile,
       this.stdcmTile,
     ];
+  }
+
+  async impersonateUser(name: string): Promise<void> {
+    await this.goToHomePage();
+    await this.dropDown.click();
+    await this.userSettingsButton.click();
+    await this.impersonationInput.fill(name);
+    await this.impersonationSuggestions.filter({ hasText: name }).click();
+    await expect(this.stopImpersonationButton).toBeVisible();
+  }
+
+  async expectTileDisabled(tile: Locator): Promise<void> {
+    await expect(tile).toHaveAttribute('aria-disabled', 'true');
+    await expect(tile.locator(this.notAuthorizedWarning)).toBeAttached();
+  }
+
+  async expectTileEnabled(tile: Locator): Promise<void> {
+    await expect(tile).not.toHaveAttribute('aria-disabled');
+    await expect(tile.locator(this.notAuthorizedWarning)).toHaveCount(0);
+  }
+
+  async openAppAndCheckInfraIsListed(url: string, infraName: string): Promise<void> {
+    await this.page.goto(url);
+    await this.mapInfrasButton.click();
+    await expect(this.infraList.getByText(infraName, { exact: true })).toBeVisible();
   }
 
   async goToHomePage(): Promise<void> {

@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import { HOME_URLS } from '../assets/constants/homepage-const';
 import { logger } from '../logging-fixture';
 
 class CommonPage {
@@ -12,6 +13,7 @@ class CommonPage {
   private readonly navigationBackButton: Locator;
   private readonly loader: Locator;
   private readonly spinner: Locator;
+  private readonly error403: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,6 +25,7 @@ class CommonPage {
     this.navigationBackButton = page.getByTestId('navigation-back-button');
     this.loader = page.getByTestId('loader');
     this.spinner = page.getByTestId('spinner');
+    this.error403 = page.getByTestId('error-403');
   }
 
   // Set the tag of project, study or scenario
@@ -70,6 +73,11 @@ class CommonPage {
   async expectResourceNotFoundPage() {
     await expect(this.navigationToHomeButton).toBeVisible();
     await expect(this.navigationBackButton).toBeVisible();
+  }
+
+  async expectAccessDeniedPage() {
+    await expect(this.page).toHaveURL(HOME_URLS.error403);
+    await expect(this.error403).toBeVisible();
   }
 
   async waitForLoaderToDisappear({ timeout }: { timeout?: number } = {}): Promise<void> {

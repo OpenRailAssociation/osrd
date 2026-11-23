@@ -74,6 +74,13 @@ class STDCMPage {
     await expect(this.debugButton).toHaveClass(/selected/);
   }
 
+  async expectStdcmPageLoaded(): Promise<void> {
+    await expect(this.helpButton).toBeVisible();
+    await expect(this.launchSimulationButton).toBeVisible();
+    await expect(this.consistCard).toBeVisible();
+    await expect(this.originCard).toBeVisible();
+  }
+
   async verifyStdcmElementsVisibility(): Promise<void> {
     const elements = [
       this.debugButton,
