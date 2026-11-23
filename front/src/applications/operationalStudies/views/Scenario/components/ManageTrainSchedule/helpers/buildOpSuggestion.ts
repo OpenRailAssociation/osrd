@@ -1,4 +1,7 @@
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type {
+  SearchResultItemMacroNode,
+  SearchResultItemOperationalPoint,
+} from 'common/api/osrdEditoastApi';
 
 import type {
   OpSecondaryCode,
@@ -42,6 +45,7 @@ export const buildOpSuggestion = (
         name: r.name,
         countryCode: r.country_code,
         secondaryCodeList: [secondaryEntry],
+        source: 'infra',
       });
     } else if (!existing.secondaryCodeList.some((c) => c.code === secondaryCode)) {
       existing.secondaryCodeList.push(secondaryEntry);
@@ -53,4 +57,22 @@ export const buildOpSuggestion = (
   }
 
   return [...map.values()];
+};
+
+export const buildMacroNodeSuggestion = (
+  node: SearchResultItemMacroNode
+): OperationalPointSuggestion | null => {
+  // TODO: also suggest macro nodes with a non-domestic or a track offset location
+  if (node.node_location.type !== 'operational_point_reference') return null;
+  const opRef = node.node_location.operational_point;
+  if (opRef.type !== 'domestic') return null;
+
+  return {
+    id: buildOperationalPointSuggestionId(opRef.country_code, opRef.main_code),
+    name: node.full_name ?? node.short_name ?? '',
+    mainCode: opRef.main_code,
+    countryCode: opRef.country_code,
+    secondaryCodeList: [{ code: opRef.secondary_code ?? null, name: null }],
+    source: 'macroNode',
+  };
 };
