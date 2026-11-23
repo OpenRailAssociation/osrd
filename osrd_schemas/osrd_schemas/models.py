@@ -2079,58 +2079,6 @@ class EditoastStdcmErrorTrainSimulationFail(BaseModel):
     )
 
 
-class EditoastStdcmRequestDeleteErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastStdcmRequestDeleteErrorDatabaseContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_request_delete:Database"] = (
-        "editoast:stdcm_request_delete:Database"
-    )
-
-
-class EditoastStdcmRequestDeleteErrorNotFoundContext(BaseModel):
-    id: StrictInt
-
-
-class EditoastStdcmRequestDeleteErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastStdcmRequestDeleteErrorNotFoundContext | None,
-        Field(title="EditoastStdcmRequestDeleteErrorNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:stdcm_request_delete:NotFound"] = (
-        "editoast:stdcm_request_delete:NotFound"
-    )
-
-
-class EditoastStdcmRequestPostErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastStdcmRequestPostErrorDatabaseContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:stdcm_request_post:Database"] = (
-        "editoast:stdcm_request_post:Database"
-    )
-
-
-class EditoastStdcmRequestPostErrorNotUser(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastStdcmRequestPostErrorNotUserContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[401] = 401
-    type: Literal["editoast:stdcm_request_post:NotUser"] = (
-        "editoast:stdcm_request_post:NotUser"
-    )
-
-
 class EditoastStudyErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastStudyErrorDatabaseContext")
@@ -5170,10 +5118,6 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
-        | EditoastStdcmRequestDeleteErrorDatabase
-        | EditoastStdcmRequestDeleteErrorNotFound
-        | EditoastStdcmRequestPostErrorDatabase
-        | EditoastStdcmRequestPostErrorNotUser
         | EditoastStudyErrorDatabase
         | EditoastStudyErrorNotFound
         | EditoastStudyErrorProjectNotFound
@@ -5340,10 +5284,6 @@ class EditoastError(
         | EditoastStdcmErrorTimetableNotFound
         | EditoastStdcmErrorTowedRollingStockNotFound
         | EditoastStdcmErrorTrainSimulationFail
-        | EditoastStdcmRequestDeleteErrorDatabase
-        | EditoastStdcmRequestDeleteErrorNotFound
-        | EditoastStdcmRequestPostErrorDatabase
-        | EditoastStdcmRequestPostErrorNotUser
         | EditoastStudyErrorDatabase
         | EditoastStudyErrorNotFound
         | EditoastStudyErrorProjectNotFound
