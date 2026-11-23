@@ -7,7 +7,12 @@ import ROLLING_STOCK_NAMES, {
   trainScheduleProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import { deleteApiRequest, deleteStdcmEnvironment, listStdcmEnvironment } from './utils/api-utils';
+import {
+  deleteApiRequest,
+  deleteE2eUsers,
+  deleteStdcmEnvironment,
+  listStdcmEnvironment,
+} from './utils/api-utils';
 import { deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
@@ -34,6 +39,8 @@ teardown('teardown', async ({ browser }) => {
     for (const env of testStdcmEnvs) {
       await deleteStdcmEnvironment(env.id);
     }
+
+    await deleteE2eUsers();
 
     // Delete infra
     await deleteApiRequest(`/api/infra/${process.env.TEST_INFRA_ID}`);
