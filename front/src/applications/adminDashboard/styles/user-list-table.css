@@ -3,7 +3,10 @@
 
   caption {
     caption-side: top;
+    position: sticky;
+    top: 0;
     color: var(--black100);
+    border-bottom: 1px solid var(--black25);
   }
 
   .user-list-header {
@@ -33,7 +36,9 @@
 }
 
 .user-row {
-  border-top: 1px solid var(--black25);
+  & + & {
+    border-top: 1px solid var(--black25);
+  }
 
   &:last-child {
     border-bottom: 1px solid var(--black25);
