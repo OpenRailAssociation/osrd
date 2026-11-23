@@ -104,6 +104,7 @@ const InfraSelectorModalBodyStandard = ({
         {infrasList.map((infra) => (
           <div
             key={`${infra.id}`}
+            data-testid="infra-list-item"
             className={cx('infraslist-item-choice', {
               locked: infra.locked,
               unlocked: !infra.locked,

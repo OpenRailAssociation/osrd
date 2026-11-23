@@ -76,6 +76,7 @@ const GrantManagerAddSubjectForm = ({
         <span className="subject-search-combobox">
           <ComboBox
             id="add-subject-combobox"
+            testIdPrefix="add-subject-search"
             value={addSubjectForm.subject}
             suggestions={searchedSubjects}
             renderListElementComponent={({ suggestion }) => (
@@ -96,6 +97,7 @@ const GrantManagerAddSubjectForm = ({
         <span className="subject-grant">
           <Select
             id="add-subject-grant-selector"
+            dataTestId="add-subject-grant-select"
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value || ''}
             onChange={(option) => {
@@ -112,6 +114,7 @@ const GrantManagerAddSubjectForm = ({
         <button
           type="submit"
           className="subject-search-add-button"
+          data-testid="add-subject-submit-button"
           disabled={addUserStatus.type === 'loading' || !isAddUserFormValid}
         >
           {addUserStatus.type === 'loading' ? <ThreeDots /> : t('common.add')}
