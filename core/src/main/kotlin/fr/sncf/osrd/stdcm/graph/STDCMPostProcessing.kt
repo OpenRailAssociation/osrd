@@ -47,7 +47,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val edges = path.edges
         val lastExplorer = edges.last().infraExplorer
         val routes = lastExplorer.getExploredRoutes()
-        val seenSteps = lastExplorer.getStepTracker().getSeenSteps().toList()
         val trainPath = lastExplorer.buildFullPath(infra.rawInfra, infra.blockInfra)
 
         val updatedTimeData = computeTimeData(edges)
@@ -70,11 +69,13 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 stops,
                 updatedTimeData,
             )
+
+        val seenInputSteps = lastExplorer.getStepTracker().getSeenSteps().toList()
         val res =
             STDCMCompleteResult(
                 trainPath,
-                seenSteps.map { it.travelledPathOffset },
-                seenSteps.mapIndexedNotNull { index, step ->
+                seenInputSteps.map { it.travelledPathOffset },
+                seenInputSteps.mapIndexedNotNull { index, step ->
                     if (step.isBacktracking) index else null
                 },
                 withAllowance.envelope,

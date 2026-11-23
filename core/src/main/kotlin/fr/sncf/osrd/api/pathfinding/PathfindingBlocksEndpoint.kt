@@ -236,7 +236,7 @@ private fun buildNoPathFoundException(
 
 data class ProcessedPathfindingResponse(
     override val trainPath: TrainPath,
-    override val waypointOffsets: List<Offset<PhysicsPath>>,
+    override val pathItemOffsets: List<Offset<PhysicsPath>>,
     override val backtrackIndexes: List<Int>,
 ) : PathfindingResult
 

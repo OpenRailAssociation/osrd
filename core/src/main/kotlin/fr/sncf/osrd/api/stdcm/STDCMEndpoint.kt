@@ -228,7 +228,7 @@ class STDCMEndpoint(
                     runPathfindingBlockPostProcessing(
                         infra,
                         path.trainPath,
-                        path.waypointOffsets,
+                        path.pathItemOffsets,
                         path.backtrackIndexes,
                     )
 
@@ -274,7 +274,7 @@ class STDCMEndpoint(
                     runPathfindingBlockPostProcessing(
                         infra,
                         path.trainPath,
-                        path.waypointOffsets,
+                        path.pathItemOffsets,
                         path.backtrackIndexes,
                     )
                 val id =

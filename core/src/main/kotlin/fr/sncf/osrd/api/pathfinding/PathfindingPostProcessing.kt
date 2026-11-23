@@ -17,7 +17,7 @@ fun runPathfindingPostProcessing(
         runPathfindingBlockPostProcessing(
             infra,
             rawPath.trainPath,
-            rawPath.waypointOffsets,
+            rawPath.pathItemOffsets,
             rawPath.backtrackIndexes,
         )
     validatePathfindingResponse(infra, initialRequest, res)
