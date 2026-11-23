@@ -22,4 +22,4 @@ for f in ui/*/package.json; do
 done
 
 npm version "$version" --workspaces --git-tag-version=false
-npm publish --workspaces
+npm publish --workspaces --no-ignore-scripts
