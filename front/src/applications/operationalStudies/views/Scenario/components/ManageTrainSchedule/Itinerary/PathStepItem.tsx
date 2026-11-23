@@ -33,8 +33,17 @@ import {
   ListElementComponent,
   type OperationalPointSuggestion,
 } from './ComboBoxCustomList/ListElementComponent';
-import PathStepSubForm from './PathStepSubForm';
-import { computePathStepCoordinates, formatOpLabel, isOpRefMetadata } from './utils';
+import PathStepSubForm, {
+  type FindExistingOp,
+  type OnCustomOpCreation,
+  type OnSubFormHasErrors,
+} from './PathStepSubForm';
+import {
+  computePathStepCoordinates,
+  formatOpLabel,
+  getUnrecognizedOpLabel,
+  isOpRefMetadata,
+} from './utils';
 
 type SegmentedControlOption = { value: string; label: string; icon: React.ReactNode };
 
@@ -82,6 +91,11 @@ type PathStepProps = {
   customTracks: { trackId: string; trackName: string }[];
   onAddCustomTrack: (track: { trackId: string; trackName: string }) => void;
   onTrackNameChange: (trackName: string) => void;
+  onAddCustomOp: () => void;
+  onCustomOpCreation: OnCustomOpCreation;
+  findExistingOp: FindExistingOp;
+  onSubFormHasErrors: OnSubFormHasErrors;
+  onSubFormNameChange: (name: string) => void;
   onOpFocus: () => void;
   onOpBlur: () => void;
   inputValue: string | undefined;
@@ -118,6 +132,11 @@ const PathStepItem = ({
   customTracks,
   onAddCustomTrack,
   onTrackNameChange,
+  onAddCustomOp,
+  onCustomOpCreation,
+  findExistingOp,
+  onSubFormHasErrors,
+  onSubFormNameChange,
   onOpFocus,
   onOpBlur,
   inputValue,
@@ -149,6 +168,10 @@ const PathStepItem = ({
   const unrecognizedWaypointsActivated = useSelector(getFeatureFlag('unrecognizedWaypoints'));
 
   const [trackNameQuery, setTrackNameQuery] = useState('');
+  const [subFormName, setSubFormName] = useState('');
+
+  const [hasTypedOpName, setHasTypedOpName] = useState(false);
+  const canAddCustomOp = unrecognizedWaypointsActivated && hasTypedOpName;
 
   const blurActiveElement = () => {
     requestAnimationFrame(() => {
@@ -313,9 +336,8 @@ const PathStepItem = ({
   const isOpValid = pathStepMetadata?.validity === 'valid';
 
   const comboBoxValue = useMemo(() => {
-    if (isTrackOffset) return trackOffsetLabel;
-    // Don't show invalid points in the combobox - they'll be shown in the error message instead
-    if (shouldShowInvalidMessage) {
+    if (isTrackOffset) return (unrecognizedWaypointsActivated && subFormName) || trackOffsetLabel;
+    if (shouldShowInvalidMessage && !unrecognizedWaypointsActivated) {
       return '';
     }
 
@@ -325,8 +347,20 @@ const PathStepItem = ({
       return formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode);
     }
 
+    if (shouldShowInvalidMessage && pathStep.location?.type === 'operational_point_part_reference')
+      return subFormName || getUnrecognizedOpLabel(pathStep.location.operational_point);
+
     return undefined;
-  }, [inputValue, pathStepMetadata, isTrackOffset, trackOffsetLabel, shouldShowInvalidMessage]);
+  }, [
+    inputValue,
+    pathStepMetadata,
+    isTrackOffset,
+    trackOffsetLabel,
+    shouldShowInvalidMessage,
+    unrecognizedWaypointsActivated,
+    pathStep.location,
+    subFormName,
+  ]);
 
   const maxVisibleSuggestions = 8;
   const visibleSuggestions = opSuggestions.slice(0, maxVisibleSuggestions);
@@ -358,6 +392,8 @@ const PathStepItem = ({
         firstSuggestion.secondaryCodeList.find((sc) => sc.isBestSuggestion)?.code ??
         firstSuggestion.secondaryCodeList[0]?.code;
 
+      setSubFormName(firstSuggestion.name);
+      setHasTypedOpName(false);
       onSelectOpSuggestion(firstSuggestion, defaultSecondaryCode);
       resetOpSuggestions();
       blurActiveElement();
@@ -514,6 +550,8 @@ const PathStepItem = ({
                     return;
                   }
 
+                  setSubFormName(op.name);
+                  setHasTypedOpName(false);
                   onSelectOpSuggestion(op);
                   resetOpSuggestions();
                   blurActiveElement();
@@ -534,6 +572,8 @@ const PathStepItem = ({
                       isActive={isActive}
                       isSelected={isSelected}
                       onSelect={(op, secondaryCode) => {
+                        setSubFormName(op.name);
+                        setHasTypedOpName(false);
                         onSelectOpSuggestion(op, secondaryCode);
                         resetOpSuggestions();
                         blurActiveElement();
@@ -563,11 +603,31 @@ const PathStepItem = ({
                       )
                     : undefined
                 }
+                allowCustomValue={canAddCustomOp}
+                addCustomValueLabel={t('addCustomOp')}
+                onAddCustomValue={
+                  canAddCustomOp
+                    ? (value) => {
+                        setSubFormName(value);
+                        onAddCustomOp();
+                      }
+                    : undefined
+                }
                 small
                 narrow
-                onFocusCapture={onOpFocus}
+                onFocusCapture={() => {
+                  setHasTypedOpName(false);
+                  onOpFocus();
+                }}
                 onBlurCapture={onOpBlur}
-                onChange={onOpInputChange}
+                onChange={(value) => {
+                  setHasTypedOpName(value !== '');
+                  if (value === '') {
+                    setSubFormName('');
+                    onOpClear();
+                  }
+                  onOpInputChange(value);
+                }}
               />
             </div>
             {isTrackOffset ? (
@@ -658,7 +718,7 @@ const PathStepItem = ({
             />
           </button>
         </div>
-        {shouldShowInvalidMessage && (
+        {shouldShowInvalidMessage && !unrecognizedWaypointsActivated && (
           <div className="invalid-step-message" data-testid="invalid-step-message">
             {getInvalidMessage()}
           </div>
@@ -670,6 +730,17 @@ const PathStepItem = ({
         pathStepMetadata={pathStepMetadata}
         isSubFormExpanded={isSubFormExpanded}
         isOpValid={isOpValid}
+        name={subFormName}
+        onNameChange={(name) => {
+          setSubFormName(name);
+          onSubFormNameChange(name);
+        }}
+        onCustomOpCreation={(name, opRef, existingOp) => {
+          setSubFormName(name);
+          onCustomOpCreation(name, opRef, existingOp);
+        }}
+        findExistingOp={findExistingOp}
+        onSubFormHasErrors={onSubFormHasErrors}
       />
     </div>
   );

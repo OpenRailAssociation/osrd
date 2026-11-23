@@ -22,6 +22,21 @@
     font-weight: 600;
     letter-spacing: 0.6px;
     line-height: 16px;
+
+    &--custom {
+      background-color: var(--black50);
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  &-custom-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--black50);
   }
 
   &-name {
@@ -63,6 +78,11 @@
     padding-top: 10px;
     opacity: 0.7;
     background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &-secondary-code--pending {
+    background-color: var(--black50);
+    color: rgba(255, 255, 255, 1);
   }
 
   &-secondary-code--best {
@@ -147,7 +167,8 @@
         &:has(.op-suggestion-secondary-code:hover)
           .op-suggestion-secondary-code:first-child:not(
             :hover,
-            .op-suggestion-secondary-code--best
+            .op-suggestion-secondary-code--best,
+            .op-suggestion-secondary-code--pending
           ) {
           background-color: rgba(227, 237, 252, 1);
           color: rgba(24, 68, 239, 1);

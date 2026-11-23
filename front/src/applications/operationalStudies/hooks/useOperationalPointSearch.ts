@@ -58,6 +58,7 @@ export const useSearchMacroNodes = (scenarioId: number, pageSize: number) => {
 
 type Params = {
   scenarioId: number;
+  extraSuggestions: OperationalPointSuggestion[];
   pageSize?: number;
   minChars?: number;
   debounceMs?: number;
@@ -65,6 +66,7 @@ type Params = {
 
 export const useOperationalPointSearch = ({
   scenarioId,
+  extraSuggestions,
   pageSize = 1000,
   minChars = 2,
   debounceMs = 300,
@@ -94,6 +96,13 @@ export const useOperationalPointSearch = ({
   );
 
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
+
+  const query = rawActiveInput.trim().toLowerCase();
+  const matchingExtraSuggestions = query
+    ? extraSuggestions.filter(
+        (op) => op.name.toLowerCase().includes(query) || op.mainCode.toLowerCase().includes(query)
+      )
+    : [];
 
   const [searchTrigger, setSearchTrigger] = useState(0);
 
@@ -266,7 +275,7 @@ export const useOperationalPointSearch = ({
     setActiveStepKey,
     getInputForStep,
     setInputForStep,
-    opSuggestions,
+    opSuggestions: uniqBy([...matchingExtraSuggestions, ...opSuggestions], 'id'),
     resetOpSuggestions,
     formatChosenValue,
     commitSelectionForStep,
