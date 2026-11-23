@@ -31,7 +31,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
-use database::DbConnection;
 use database::DbConnectionPool;
 use editoast_derive::EditoastError;
 use editoast_derive::ViewError;
@@ -100,56 +99,6 @@ enum AuthzError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] models::Error),
-}
-
-#[editoast_derive::route]
-#[utoipa::path(
-    get,
-    path = "",
-    tag = "authz",
-    responses((
-        status = 200,
-        description = "Get the groups of the current user",
-        body = inline(Vec<Group>),
-    ))
-)]
-pub(in crate::views) async fn user_groups(
-    Extension(authn_state): Extension<crate::authentication::State>,
-    State(AppState {
-        openfga, db_pool, ..
-    }): State<AppState>,
-) -> Result<Json<Vec<Group>>> {
-    let user = authn_state
-        .user()
-        .ok_or(AuthorizationError::Unauthenticated)?;
-    let groups =
-        retrieve_user_groups(user, &authn_state, &openfga, &mut db_pool.get().await?).await?;
-    Ok(Json(groups))
-}
-
-/// Returns the groups the user belongs to
-pub(in crate::views) async fn retrieve_user_groups(
-    user: authz::User,
-    authn_state: &crate::authentication::State,
-    openfga: &fga::Client,
-    conn: &mut DbConnection,
-) -> Result<Vec<Group>> {
-    let group_ids = v2::user_groups(user)
-        .run::<AuthorizationError, _>(&authn_state.authorizer(openfga))
-        .await?
-        .into_iter()
-        .map(|authz::Group(id)| id);
-    let (groups, missing_ids) = Group::retrieve_batch(conn, group_ids).await?;
-
-    if !missing_ids.is_empty() {
-        tracing::warn!(
-            missing_count = missing_ids.len(),
-            missing_groups_id = ?missing_ids,
-            "Groups not found in database"
-        );
-    }
-
-    Ok(groups)
 }
 
 #[derive(Deserialize, Clone, ToSchema)]
@@ -4087,66 +4036,6 @@ mod tests {
             .json(&json!({ "ids": [i64::MAX] }))
             .await
             .assert_status_not_found();
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn user_groups_test() {
-        let app = test_app!().build();
-        let user_1 = app.user("test1", "test1").create().await;
-        let user_2 = app.user("test2", "test2").create().await;
-        let group_1 = app
-            .group("group_1")
-            .with_members([&user_1, &user_2])
-            .create()
-            .await;
-        let group_2 = app.group("group_2").with_members([&user_1]).create().await;
-
-        let mut groups_user_1 = app
-            .get("/authz/me/groups")
-            .by_user(user_1.as_ref())
-            .await
-            .assert_status_ok()
-            .json::<Vec<Group>>();
-        let groups_user_2 = app
-            .get("/authz/me/groups")
-            .by_user(user_2.as_ref())
-            .await
-            .assert_status_ok()
-            .json::<Vec<Group>>();
-
-        groups_user_1.sort_by_key(|g| g.id);
-
-        assert_eq!(
-            groups_user_1,
-            vec![
-                Group {
-                    id: group_1.id,
-                    name: "group_1".to_string(),
-                },
-                Group {
-                    id: group_2.id,
-                    name: "group_2".to_string(),
-                }
-            ]
-        );
-        assert_eq!(
-            groups_user_2,
-            vec![Group {
-                id: group_1.id,
-                name: "group_1".to_string(),
-            }]
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn user_groups_skip_authz() {
-        let app = test_app!().build();
-
-        // Without a user in the request
-        app.get("/authz/me/groups")
-            .skip_authz()
-            .await
-            .assert_status_unauthorized();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
