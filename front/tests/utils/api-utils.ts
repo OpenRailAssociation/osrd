@@ -22,8 +22,19 @@ import type {
   StdcmSearchEnvironmentCreateForm,
   GetStudiesApiResponse,
   GetScenariosApiResponse,
+  GetAuthzUsersApiResponse,
+  GrantBody,
+  PostAuthzUsersInfoApiResponse,
+  PostAuthzUsersApiArg,
+  PostAuthzUsersApiResponse,
+  StandardGrant,
 } from 'common/api/osrdEditoastApi';
 
+import {
+  E2E_USER_IDENTITIES,
+  E2E_USER_ROLES,
+  E2E_USERS,
+} from '../assets/constants/permission-const';
 import {
   BASE_URL,
   globalProjectName,
@@ -44,19 +55,35 @@ export const getApiContext = async (): Promise<APIRequestContext> =>
   });
 
 /**
+ * Handle API error responses by checking the status and throwing an error if the request failed.
+ *
+ * @param response - The response object from the API request.
+ * @param errorMessage - Optional. The error message to throw if the request fails.
+ * @throws {Error} - Throws an error if the response status is not OK.
+ */
+export function handleErrorResponse(response: APIResponse, errorMessage = 'API Request Failed') {
+  if (response.ok()) return;
+
+  throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
+}
+
+/**
  * Send a GET request to the specified API endpoint with optional query parameters.
  *
  * @template T - Type of the response object.
  * @param url - The API endpoint URL.
  * @param params - Optional query parameters to include in the request.
+ * @param errorMessage - Optional. Custom error message thrown if the request failed.
  */
 export const getApiRequest = async <T>(
   url: string,
-  params?: { [key: string]: string | number | boolean }
+  params?: { [key: string]: string | number | boolean },
+  errorMessage = `GET ${url} failed`
 ): Promise<T> => {
   const apiContext = await getApiContext();
   try {
     const response = await apiContext.get(url, { params });
+    handleErrorResponse(response, errorMessage);
     return response.json() as T;
   } finally {
     await apiContext.dispose();
@@ -95,19 +122,6 @@ export const listApiRequest = async <T>(
     await apiContext.dispose();
   }
 };
-
-/**
- * Handle API error responses by checking the status and throwing an error if the request failed.
- *
- * @param response - The response object from the API request.
- * @param errorMessage - Optional. The error message to throw if the request fails.
- * @throws {Error} - Throws an error if the response status is not OK.
- */
-export function handleErrorResponse(response: APIResponse, errorMessage = 'API Request Failed') {
-  if (response.ok()) return;
-
-  throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
-}
 
 /**
  * Send a POST request to the specified API endpoint with optional data and query parameters.
@@ -328,6 +342,95 @@ export async function deleteStdcmEnvironment(stdcmSearchEnvId: number): Promise<
   await deleteApiRequest(
     `/api/stdcm/search_environment/${stdcmSearchEnvId}`,
     `Failed to delete the STDCM search environment with id ${stdcmSearchEnvId}`
+  );
+}
+
+/**
+ * Delete the e2e test users using the editoast API.
+ * Users are matched by name as well as by identity.
+ */
+export async function deleteE2eUsers(): Promise<void> {
+  const e2eNames = new Set<string>(Object.values(E2E_USERS));
+  const e2eIdentities = new Set<string>(Object.values(E2E_USER_IDENTITIES));
+  const users: GetAuthzUsersApiResponse = await getApiRequest(
+    '/api/authz/users',
+    undefined,
+    'Failed to list the users'
+  );
+  const e2eUsers = users.filter(
+    ({ name, identities }) =>
+      e2eNames.has(name) || identities.some((identity) => e2eIdentities.has(identity))
+  );
+  await Promise.all(
+    e2eUsers.map(({ id, name }) =>
+      deleteApiRequest(`/api/authz/users/${id}`, `Failed to delete the e2e user "${name}"`)
+    )
+  );
+  if (e2eUsers.length) logger.info(`Deleted ${e2eUsers.length} e2e user(s)`);
+}
+
+export async function createE2eUsers(): Promise<void> {
+  const userKeys = Object.keys(E2E_USERS) as (keyof typeof E2E_USERS)[];
+  await Promise.all(
+    userKeys.map((key) =>
+      postApiRequest<PostAuthzUsersApiArg['body'], PostAuthzUsersApiResponse>(
+        '/api/authz/users',
+        {
+          name: E2E_USERS[key],
+          identities: [E2E_USER_IDENTITIES[key]],
+          roles: E2E_USER_ROLES[key],
+          groups: [],
+        },
+        undefined,
+        `Failed to create the e2e user "${E2E_USERS[key]}"`
+      )
+    )
+  );
+}
+
+/**
+ * Grant an infrastructure and a list of rolling stocks to a user, in a single request.
+ *
+ * @param userIdentity - The identity of the user to grant the resources to.
+ * @param infraId - The ID of the infrastructure to grant.
+ * @param rollingStockIds - The IDs of the rolling stocks to grant.
+ * @param infraGrant - The grant given on the infrastructure.
+ * @param rollingStockGrant - The grant given on the rolling stocks.
+ */
+export async function grantInfraAndRollingStocksToUser(
+  userIdentity: string,
+  infraId: number,
+  rollingStockIds: number[],
+  infraGrant: StandardGrant = 'RESTRICTED_READER',
+  rollingStockGrant: StandardGrant = 'READER'
+): Promise<void> {
+  const [user]: PostAuthzUsersInfoApiResponse = await postApiRequest(
+    '/api/authz/users/info',
+    { ids: [], identities: [userIdentity] },
+    undefined,
+    `User "${userIdentity}" not found, it should have been created by the global setup`
+  );
+
+  const userGrants: GrantBody[] = [
+    {
+      resource_type: 'infra',
+      resource_id: infraId,
+      subject_id: user.id,
+      grant: infraGrant,
+    },
+    ...rollingStockIds.map((rollingStockId): GrantBody => ({
+      resource_type: 'rolling_stock',
+      resource_id: rollingStockId,
+      subject_id: user.id,
+      grant: rollingStockGrant,
+    })),
+  ];
+  await postApiRequest(
+    '/api/authz/grants',
+    { grant: userGrants },
+    undefined,
+    `Failed to grant the infrastructure and the rolling stocks to "${userIdentity}"`,
+    false
   );
 }
 
