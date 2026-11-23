@@ -36,6 +36,13 @@
   --map-interactions-width: 58px;
   --map-interactions-margin-left: 7px;
 
+  // In the grid, the first column should include the left padding introduced in every path step ...
+  // ... in order to not shift the first few columns between the path step list header and the path steps
+  --path-step-counter-column-size: 24px;
+  --path-step-first-column-size: calc(
+    var(--path-step-wrapper-padding-left) + var(--path-step-counter-column-size)
+  );
+
   margin: 16px;
   width: 100%;
   height: calc(100vh - 16px);
@@ -177,11 +184,25 @@
           border: 8px solid var(--black10);
         }
 
+        display: grid;
+        column-gap: var(--path-step-row-gap);
+        grid-template-columns: var(--path-step-first-column-size) minmax(184px, 1fr) var(
+            --path-step-track-name-width
+          ) var(--path-step-type-width) auto auto [last-col];
+
+        &:has(.unrecognized-waypoints-activated) {
+          grid-template-columns: var(--path-step-first-column-size) 24px [name-col] minmax(
+              184px,
+              1fr
+            ) var(--path-step-track-name-width) var(--path-step-type-width) auto auto [last-col];
+        }
+
         .path-step-gap {
           position: relative;
           height: 28px;
           margin-top: -28px;
           pointer-events: none;
+          grid-column: 1 / last-col;
         }
 
         .path-step-gap-line {
@@ -238,6 +259,7 @@
           justify-content: space-between;
           align-items: center;
           padding-inline: 8px 16px;
+          grid-column: 1 / last-col;
 
           .reverse-itinerary-button {
             padding: 8px;
@@ -302,22 +324,19 @@
 
         .path-step-list-header {
           display: grid;
-          grid-template-columns: minmax(184px, 1fr) var(--path-step-track-name-width) var(
-              --path-step-type-width
-            );
-          gap: 8px;
+          grid-template-columns: subgrid;
+          grid-column: name-col / last-col;
+          padding-block: 9px 1px;
           font-size: 0.875rem;
           color: var(--grey30);
-          padding-block: 9px 1px;
-          padding-inline: 49px
-            calc(
-              var(--map-interactions-width) + var(--map-interactions-margin-left) +
-                var(--path-step-row-gap) + var(--path-step-wrapper-padding-right)
-            );
 
           span {
             margin-left: 1px;
           }
+        }
+
+        .path-step-list-header :first-child {
+          padding-left: 32px;
         }
 
         .path-step-wrapper.is-placeholder {
@@ -330,17 +349,9 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
-          grid-template-columns:
-            24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
-            auto auto [last-col];
           display: grid;
-          column-gap: var(--path-step-row-gap);
-
-          &:has(.unrecognized-waypoints-activated) {
-            grid-template-columns: 24px 24px [name-col] minmax(184px, 1fr) var(
-                --path-step-track-name-width
-              ) var(--path-step-type-width) auto auto [last-col];
-          }
+          grid-template-columns: subgrid;
+          grid-column: 1 / last-col;
 
           &.unknown-track {
             background-color: var(--black10);
@@ -492,8 +503,6 @@
             }
 
             .path-step-op-name {
-              margin-left: 4px;
-
               &.invalid {
                 border-radius: 3px;
               }
