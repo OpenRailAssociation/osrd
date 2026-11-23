@@ -2,9 +2,14 @@ package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.api.ForcedStopType
 import fr.sncf.osrd.api.OperationalPointStop
+import fr.sncf.osrd.api.PathItem
+import fr.sncf.osrd.api.RJSTrackLocation
 import fr.sncf.osrd.api.StepType
+import fr.sncf.osrd.api.stdcm.STDCMPathItem
 import fr.sncf.osrd.api.stdcm.parseForcedOpStops
+import fr.sncf.osrd.api.stdcm.parseSteps
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockLocation
 import fr.sncf.osrd.stdcm.STDCMCompleteResult
@@ -12,13 +17,16 @@ import fr.sncf.osrd.stdcm.STDCMPathfindingBuilder
 import fr.sncf.osrd.stdcm.StopTests.Companion.checkStop
 import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStep
 import fr.sncf.osrd.stdcm.infra_exploration.FORCED_OP_STOP_DURATION
+import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.train.TestTrains.VERY_SHORT_FAST_TRAIN
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
+import java.time.ZonedDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
@@ -72,6 +80,106 @@ class ForcedStopsTests {
                 ),
             )
         assertEquals(expectedParseForcedOpStops, actualParseForcedOpStops)
+    }
+
+    /**
+     * An input stop on a forced-stop OP should be merged with the forced stop. Steps go through
+     * parseSteps, which moves intermediate stops by one train length, unlike parseForcedOpStops.
+     */
+    @Test
+    fun inputStopOnForcedOpStopSmallInfra() {
+        val res =
+            runTB0WithSouthWestForcedStop(
+                listOf(pathItem(0.0), pathItem(500.0, 100.seconds), pathItem(2500.0)),
+            )
+        assertEquals(
+            listOf(setOf(StepType.INPUT_STOP, StepType.INFRA_FORCED_STOP)),
+            res.stopResults.map { it.stepTypes },
+        )
+    }
+
+    /** Standalone forced stops must not add entries to the path item offsets. */
+    @Test
+    fun forcedOpStopNotInPathItemOffsetsSmallInfra() {
+        val pathItems = listOf(pathItem(0.0), pathItem(2500.0))
+        val res = runTB0WithSouthWestForcedStop(pathItems)
+        assertEquals(1, res.stopResults.size) // Sanity check: the forced stop is there
+        assertEquals(pathItems.size, res.pathItemOffsets.size)
+    }
+
+    /**
+     * Reversal on a forced-stop OP, coming from TA7 towards the TB0 buffer stop. The stop is moved
+     * by one train length, so the tail is on the OP. After reversal, the head restarts there, on
+     * the forced stop of the other direction. It shouldn't stop again there, at the same path
+     * offset. Without the forced stop, a path is found.
+     */
+    @Test
+    fun reversalOnForcedOpStopSmallInfra() {
+        val res =
+            runTB0WithSouthWestForcedStop(
+                listOf(
+                    pathItem(5000.0, track = "TA7"),
+                    pathItem(500.0, 100.seconds, canBacktrack = true),
+                    pathItem(9000.0, track = "TA7"),
+                ),
+            )
+        val stopPositions = res.stopResults.map { it.position }
+        assertEquals(stopPositions.distinct(), stopPositions)
+    }
+
+    /**
+     * Invalid user input should be an OSRDError, not an AssertionError (asserts are on in prod).
+     */
+    @Test
+    fun waypointWithCanBacktrackIsInvalidInput() {
+        val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
+        val pathItems =
+            listOf(
+                pathItem(0.0),
+                pathItem(500.0, canBacktrack = true),
+                pathItem(2500.0, 0.seconds),
+            )
+        Assertions.assertThrows(OSRDError::class.java) {
+            parseSteps(infra, pathItems, ZonedDateTime.now(), List(3) { 400.0 })
+        }
+    }
+
+    private fun pathItem(
+        offset: Double,
+        stopDuration: Duration? = null,
+        canBacktrack: Boolean = false,
+        track: String = "TB0",
+    ) =
+        STDCMPathItem(
+            PathItem(listOf(RJSTrackLocation(track, Offset(offset.meters))), canBacktrack),
+            stopDuration,
+            null,
+        )
+
+    /** Runs STDCM on small_infra with a forced stop at South_West_station (TB0 500m). */
+    private fun runTB0WithSouthWestForcedStop(
+        pathItems: List<STDCMPathItem>,
+    ): STDCMCompleteResult {
+        pathItems.last().stopDuration = 0.seconds
+        val infra = Helpers.fullInfraFromFile("small_infra/infra.json")
+        val forcedOpStops =
+            parseForcedOpStops(
+                infra,
+                setOf(OperationalPointStop("South_West_station", ForcedStopType.GENERAL_STOP)),
+            )
+        val steps =
+            parseSteps(
+                infra,
+                pathItems,
+                ZonedDateTime.now(),
+                List(pathItems.size) { REALISTIC_FAST_TRAIN.length },
+            )
+        val builder = STDCMPathfindingBuilder().setInfra(infra)
+        steps.forEach { builder.addStep(it) }
+        forcedOpStops.forEach { builder.addForcedOpStop(it) }
+        val res = builder.run()!!
+        Assertions.assertTrue(res is STDCMCompleteResult)
+        return res as STDCMCompleteResult
     }
 
     @ParameterizedTest
