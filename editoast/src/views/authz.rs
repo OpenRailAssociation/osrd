@@ -12,15 +12,11 @@ use crate::views::authz::resources::StandardPrivilege;
 use ::authz;
 use ::authz::GrantType;
 use ::authz::InfraGrant;
-use ::authz::InfraPrivilege;
 use ::authz::Role;
 use authz::ProjectGrant;
-use authz::ProjectPrivilege;
 use authz::RollingStockGrant;
-use authz::RollingStockPrivilege;
 use authz::authorizers::SystemAuthorizer;
 use authz::v2;
-use authz::v2::Actor;
 use authz::v2::Authorizer as _;
 use authz::v2::Check;
 use axum::Extension;
@@ -182,106 +178,6 @@ async fn retrieve_missing_resource_ids(
 pub(in crate::views) struct UserResourceGrant {
     id: i64,
     grant: StandardGrant,
-}
-
-#[editoast_derive::route]
-#[utoipa::path(
-    post,
-    path = "",
-    tag = "authz",
-    request_body(
-        content = inline(HashMap<ResourceType, Vec<i64>>),
-        description = "HashMap of resource type with a list of resource id to get the grants for. If a resource doesn't exist, it will be omitted.",
-    ),
-    responses((
-        status = 200,
-        description = "Get grants info of the current user for the given resources in body",
-        body = inline(HashMap<ResourceType, Vec<UserResourceGrant>>)
-    )),
-)]
-pub(in crate::views) async fn user_grants(
-    State(AppState {
-        db_pool, openfga, ..
-    }): State<AppState>,
-    Extension(authn_state): Extension<crate::authentication::State>,
-    Json(body): Json<HashMap<ResourceType, Vec<i64>>>,
-) -> Result<Json<HashMap<ResourceType, Vec<UserResourceGrant>>>> {
-    let user = authn_state
-        .user()
-        .ok_or(AuthorizationError::Unauthenticated)?;
-    let authorizer = authn_state.authorizer(&openfga);
-    let mut response = HashMap::<_, Vec<UserResourceGrant>>::new();
-    let missing_resources = retrieve_missing_resource_ids(
-        db_pool.get().await?,
-        body.iter().flat_map(|(resource_type, ids)| {
-            std::iter::repeat(*resource_type).zip(ids.iter().copied())
-        }),
-    )
-    .await?;
-    // Missing resources are not an error under this API: omit them before authorization.
-    // TODO build all protected at once, zip them and batch send them with `authorize_all`
-    for (resource_type, ids) in &body {
-        for id in ids {
-            if missing_resources[resource_type].contains(id) {
-                continue;
-            }
-            let grant_access = match resource_type {
-                ResourceType::Infra => {
-                    authz::v2::infra_effective_grant(authz::Subject::user(user), authz::Infra(*id))
-                        .map_some_into::<StandardGrant>()
-                }
-                ResourceType::RollingStock => authz::v2::rolling_stock_effective_grant(
-                    authz::Subject::user(user),
-                    authz::RollingStock(*id),
-                )
-                .map_some_into::<StandardGrant>(),
-                ResourceType::Project => authz::v2::project_effective_grant(
-                    authz::Subject::user(user),
-                    authz::Project(*id),
-                )
-                .map_some_into::<StandardGrant>(),
-            }
-            .authorize(&authorizer)
-            .await?
-            .access()
-            .await?;
-            let grant = match grant_access {
-                Ok(Some(grant)) => grant,
-                Ok(None) => continue,
-                Err(Check::HasInfraPrivilege(
-                    Actor::Issuer,
-                    InfraPrivilege::CanRestrictedRead,
-                    infra,
-                )) => {
-                    tracing::warn!(%infra, "user cannot read infra — skipping");
-                    continue;
-                }
-                Err(Check::HasRollingStockPrivilege(
-                    Actor::Issuer,
-                    RollingStockPrivilege::CanRestrictedRead,
-                    rolling_stock,
-                )) => {
-                    tracing::warn!(%rolling_stock, "user cannot read rolling stock — skipping");
-                    continue;
-                }
-                Err(Check::HasProjectPrivilege(
-                    Actor::Issuer,
-                    ProjectPrivilege::HasAccess,
-                    project,
-                )) => {
-                    tracing::warn!(%project, "user does not have access to project — skipping");
-                    continue;
-                }
-                Err(_) => return Err(AuthorizationError::Forbidden.into()),
-            };
-            response
-                .entry(*resource_type)
-                .or_default()
-                .push(UserResourceGrant { id: *id, grant });
-        }
-    }
-
-    Ok(Json(response))
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -1094,134 +990,6 @@ mod tests {
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestRequestExt as _;
     use crate::views::test_app::test_app;
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn user_me_grants() {
-        let app = test_app!().build();
-        let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let rs_with_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_with_grant").await;
-        let rs_no_grant = create_fast_rolling_stock(&mut db_pool.get_ok(), "rs_no_grant").await;
-        let infra_no_grant = create_small_infra(&mut db_pool.get_ok()).await;
-        let project = create_project(&mut db_pool.get_ok(), "project_with_grant").await;
-        let project_no_grant = create_project(&mut db_pool.get_ok(), "project_no_grant").await;
-
-        let user = app
-            .user("test", "Test")
-            .with_roles([Role::OperationalStudies])
-            .with_infra_grant(infra.id, InfraGrant::Reader)
-            .with_rolling_stock_grant(rs_with_grant.id, RollingStockGrant::Reader)
-            .with_project_grant(project.id, ProjectGrant::Owner)
-            .create()
-            .await;
-
-        // Ask the grant of the user for the resources
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
-            .post("/authz/me/grants")
-            .by_user(user.as_ref())
-            .json(&json!({
-                "infra": [infra.id],
-                "rolling_stock": [rs_with_grant.id],
-                "project": [project.id]
-            }))
-            .await
-            .assert_status_ok()
-            .json();
-
-        // Check the direct grants are there
-        assert_eq!(
-            &response[&ResourceType::Infra],
-            &[UserResourceGrant {
-                id: infra.id,
-                grant: StandardGrant::Reader
-            }]
-        );
-        assert_eq!(
-            &response[&ResourceType::RollingStock],
-            &[UserResourceGrant {
-                id: rs_with_grant.id,
-                grant: StandardGrant::Reader
-            }]
-        );
-        assert_eq!(
-            &response[&ResourceType::Project],
-            &[UserResourceGrant {
-                id: project.id,
-                grant: StandardGrant::Owner
-            }]
-        );
-
-        app.group("Group")
-            .with_members([&user])
-            .with_infra_grant(infra.id, InfraGrant::Writer)
-            .with_rolling_stock_grant(rs_with_grant.id, RollingStockGrant::Writer)
-            .with_project_grant(project.id, ProjectGrant::Owner)
-            .create()
-            .await;
-
-        // Ask the grant of the user for the resources again
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
-            .post("/authz/me/grants")
-            .by_user(user.as_ref())
-            .json(&json!({
-                "infra": [infra.id, infra_no_grant.id, infra_no_grant.id + 1000],
-                "rolling_stock": [rs_with_grant.id, rs_no_grant.id, rs_no_grant.id + 1000],
-                "project": [project.id, project_no_grant.id, project_no_grant.id + 1000]
-            }))
-            .await
-            .assert_status_ok()
-            .json();
-
-        // Check the inherited grant from the group has overridden by the user's direct grant
-        // Unreadable and non-existent resources are filtered out
-        assert_eq!(
-            &response[&ResourceType::Infra],
-            &[UserResourceGrant {
-                id: infra.id,
-                grant: StandardGrant::Writer
-            }]
-        );
-        assert_eq!(
-            &response[&ResourceType::RollingStock],
-            &[UserResourceGrant {
-                id: rs_with_grant.id,
-                grant: StandardGrant::Writer
-            }]
-        );
-        assert_eq!(
-            &response[&ResourceType::Project],
-            &[UserResourceGrant {
-                id: project.id,
-                grant: StandardGrant::Owner
-            }]
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn authz_me_grants_user_without_grants() {
-        let app = test_app!().build();
-        let db_pool = app.db_pool();
-        let infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "rolling_stock").await;
-        let project = create_project(&mut db_pool.get_ok(), "project").await;
-        let user_no_grants = app
-            .user("user", "User")
-            .with_roles([Role::OperationalStudies])
-            .create()
-            .await;
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
-            .post("/authz/me/grants")
-            .by_user(user_no_grants.as_ref())
-            .json(&json!({
-                "infra": [infra.id],
-                "rolling_stock": [rolling_stock.id],
-                "project": [project.id]
-            }))
-            .await
-            .assert_status_ok()
-            .json();
-        assert_eq!(response, HashMap::new());
-    }
 
     // TODO rewrite the test and check which users have grants on which resources.
     // Currently the test only checks the number of users with a grant on the resources, which is a
