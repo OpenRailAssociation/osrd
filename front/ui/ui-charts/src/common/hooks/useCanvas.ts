@@ -26,12 +26,32 @@ const RENDERING = 'rendering';
 
 /**
  * This hook handles the internal canvas drawing logic of a chart component.
+ *
+ * It initializes and manages a multi-layer canvas rendering system for a chart, including:
+ *
+ * - Creating and maintaining both visible rendering canvases and hidden picking canvases per layer.
+ * - Registering/unregistering drawing callbacks per layer for rendering and picking passes.
+ * - Scheduling redraws with `requestAnimationFrame` and redrawing only dirty layers when possible.
+ * - Handling resize and pixel ratio updates (device pixel ratio for rendering, dedicated scaling for picking).
+ * - Building and storing picking metadata so hovered elements can be resolved from pixel color reads.
+ * - Exposing a canvas API (`register`, `unregister`, `captureCanvases`) and current `hoveredItem`.
+ *
+ * @template T - Chart context type extending `BaseChartContextType`.
+ * @param dom - Root DOM element that receives the layered canvases.
+ * @param chartContext - Current chart context consumed by drawing callbacks.
+ * @param position - Optional pointer position used to resolve hovered picking elements.
+ * @returns An object containing:
+ * - `canvasContext`: registration/capture helpers for child hooks/components.
+ * - `hoveredItem`: currently hovered picking result, or `null` when nothing is hovered.
  */
 export function useCanvas<T extends BaseChartContextType>(
   dom: HTMLElement | null,
   chartContext: T,
   position?: Point
-) {
+): {
+    canvasContext: CanvasContextType<T>;
+    hoveredItem: HoveredItem | null;
+} {
   // Most things are handled through refs here so that we have a very precise control on when to
   // render anything:
   const canvasesRef = useRef<Record<string, HTMLCanvasElement>>({});
