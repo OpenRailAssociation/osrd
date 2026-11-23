@@ -135,8 +135,8 @@ This policy is a first version. It is meant to evolve as our opinion on the subj
   * translation (but be careful with technical / railway-specific terms).
 
 ### Forbidden uses
-* Design-related uses (such as writing implementation plans or defining acceptance criteria); this ensures control over the application's design and helps avoid anchoring and framing biases.
-* Issues with the tag "good-first-issues" must be resolved by humans only; this allows junior developers to develop their skills.
+* Software design uses (such as writing implementation plans or defining acceptance criteria); this ensures control over the application's design and helps avoid anchoring and framing biases.
+* Issues with the tag "good-first-issue" must be resolved without AI assistance only; this allows junior developers to develop their skills.
 
 ### Conditionally permitted uses
 Generative AI can be used to produce any content in your contribution (code, review, communication...) under the following conditions:
