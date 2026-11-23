@@ -21,6 +21,7 @@ const ButtonMapInfras = ({ isInEditor }: { isInEditor?: boolean }) => {
       title={t('Editor.nav.choose-infra')}
       className={cx('btn-rounded', 'btn-rounded-white', { 'btn-map-infras-blinking': !infraID })}
       onClick={openInfraSelectorModal}
+      data-testid="map-infras-button"
     >
       <span className="sr-only">Infrastructures</span>
       <GiRailway />

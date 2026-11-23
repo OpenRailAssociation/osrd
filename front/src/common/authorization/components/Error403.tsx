@@ -10,7 +10,7 @@ const Error403 = () => {
     <>
       <NavBar appName="OSRD" />
 
-      <main className="error403">
+      <main className="error403" data-testid="error-403">
         <h1>{t('403')}</h1>
         <button
           className="btn btn-primary btn-sm px-2 ml-2"

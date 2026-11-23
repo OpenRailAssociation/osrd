@@ -93,6 +93,7 @@ const NavBar = ({ appName }: NavBarProps) => {
           {impersonatedUser && (
             <button
               className="impersonated-user"
+              data-testid="stop-impersonation-btn"
               type="button"
               onClick={() => impersonate(undefined)}
             >

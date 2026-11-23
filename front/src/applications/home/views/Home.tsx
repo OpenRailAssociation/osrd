@@ -48,7 +48,11 @@ function AppLink({ allowed, children, cardImage, ...linkProps }: AppLinkProps) {
     >
       <div className="app-card">
         <img src={cardImage} alt="" />
-        {!allowed && <div className="not-authorized-warning">{t('not-authorized-warning')}</div>}
+        {!allowed && (
+          <div className="not-authorized-warning" data-testid="not-authorized-warning">
+            {t('not-authorized-warning')}
+          </div>
+        )}
       </div>
       <div className="app-label" data-testid="page-title">
         {children}
@@ -76,7 +80,7 @@ export default function Home() {
           <AppLink
             to="/operational-studies/projects"
             className="app-link app-link-opstd"
-            data-testid="operationalStudies"
+            data-testid="home-app-operational-studies"
             cardImage={operationalStudiesImg}
             allowed={operationalStudiesAllowed}
           >
@@ -85,6 +89,7 @@ export default function Home() {
 
           <AppLink
             to="/editor"
+            data-testid="home-app-infra-editor"
             className="app-link app-link-editor"
             cardImage={editorImg}
             allowed={infraEditorAllowed}
@@ -94,6 +99,7 @@ export default function Home() {
 
           <AppLink
             to="/rolling-stock-editor"
+            data-testid="home-app-rolling-stock-editor"
             className="app-link app-link-rolling-stocks-editor"
             allowed={rollingStockEditorAllowed}
             cardImage={rollingStockEditorImg}
@@ -103,6 +109,7 @@ export default function Home() {
 
           <AppLink
             to="/map"
+            data-testid="home-app-reference-map"
             className="app-link app-link-reference-map"
             allowed={mapAllowed}
             cardImage={mapImg}
@@ -112,6 +119,7 @@ export default function Home() {
 
           <AppLink
             to="/stdcm"
+            data-testid="home-app-stdcm"
             className="app-link app-link-stdcm"
             target="_blank"
             allowed={stdcmAllowed}
