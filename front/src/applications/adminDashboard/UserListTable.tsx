@@ -54,6 +54,7 @@ export function UserListTable() {
   'use memo';
   const { t } = useTranslation('admin-dashboard');
   const { data: users } = osrdEditoastApi.endpoints.getAuthzUsers.useQuery();
+  const sortedUsers = users?.toSorted((a, b) => b.id - a.id);
   return (
     <table className="user-list-table">
       <caption>
@@ -69,7 +70,7 @@ export function UserListTable() {
           />
         </div>
       </caption>
-      {users?.map((user) => (
+      {sortedUsers?.map((user) => (
         <Row key={user.id} {...user} />
       ))}
     </table>
