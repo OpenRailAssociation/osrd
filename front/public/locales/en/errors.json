@@ -251,10 +251,6 @@
       "RollingStockNotFound": "Rolling Stock '{{rolling_stock_id}}' could not be found",
       "WrongCoreResponseFormat": "Received wrong response format from core"
     },
-    "sprites": {
-      "FileNotFound": "File not found",
-      "UnknownSignalingSystem": "Unknown signaling system"
-    },
     "stdcm": {
       "BatchRollingStockNotFound": "'{{ids}}' rolling stock(s) could not be found",
       "Database": "Internal error (database)",

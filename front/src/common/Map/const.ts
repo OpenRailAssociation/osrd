@@ -3,8 +3,8 @@ import { absoluteUrl } from 'utils/strings';
 
 // Map constants
 export const MAP_URL = `${config.proxy_editoast}/layers`;
-export const SPRITES_URL = absoluteUrl(`${config.proxy_editoast}/sprites`);
-export const FONTS_URL = `${config.proxy_editoast}/fonts`;
+export const SPRITES_URL = absoluteUrl(`${config.proxy_editoast}/assets/sprites`);
+export const FONTS_URL = `${config.proxy_editoast}/assets/fonts/glyphs`;
 
 export const OSM_URL = 'pmtiles://https://tuiles.enliberte.fr/planet.pmtiles';
 export const TERRAIN_URL = 'pmtiles://https://tuiles.enliberte.fr/terrain-europe.pmtiles';

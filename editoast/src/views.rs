@@ -19,6 +19,7 @@ pub mod search;
 pub mod search_journey_environment;
 mod search_journeys;
 mod server;
+mod signaling_systems;
 pub mod stdcm_debug;
 pub mod stdcm_request;
 pub mod stdcm_search_environment;
@@ -117,7 +118,7 @@ fn service_router() -> server::router::DocumentedRouter {
             //
             // infra & map
             //
-            .route("/fonts/{font}/{glyph}", get!(files::fonts::fonts))
+            .route("/assets/{*file_path}", get!(files::assets::get))
             .nests("/layers", |path| {
                 path.route(
                     "/layer/{layer_slug}/mvt/{view_slug}",
@@ -128,11 +129,7 @@ fn service_router() -> server::router::DocumentedRouter {
                     get!(layers::cache_and_get_mvt_tile),
                 )
             })
-            .nests("/sprites", |path| {
-                path.route("/signaling_systems", get!(files::sprites::signaling_systems))
-                    .route("/{signaling_system}/{file_name}", get!(files::sprites::sprites))
-            })
-            .route("/icons/{signaling_system}/{file_name}", get!(files::icons::icons))
+            .route("/sprites/signaling_systems", get!(signaling_systems::get))
             .route("/search", post!(search::search))
             .route(
                 "/stdcm/debug_data/{trace_id}",

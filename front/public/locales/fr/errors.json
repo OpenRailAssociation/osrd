@@ -252,10 +252,6 @@
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "WrongCoreResponseFormat": "Mauvais format de réponse reçu de Core"
     },
-    "sprites": {
-      "FileNotFound": "Fichier non trouvé",
-      "UnknownSignalingSystem": "Système de signalisation inconnu"
-    },
     "stdcm": {
       "BatchRollingStockNotFound": "'{{ids}}' matériel roulant(s) non trouvé(s)",
       "Database": "Erreur interne (base de données)",

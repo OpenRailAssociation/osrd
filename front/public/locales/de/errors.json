@@ -237,10 +237,6 @@
       "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_id}}' nicht gefunden",
       "WrongCoreResponseFormat": "Falsches Antwortformat von Core erhalten"
     },
-    "sprites": {
-      "FileNotFound": "Datei nicht gefunden",
-      "UnknownSignalingSystem": "Unbekanntes Zugsicherungssystem"
-    },
     "stdcm": {
       "Database": "Interner Fehler (Datenbank)",
       "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
