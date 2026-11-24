@@ -1,10 +1,10 @@
 use osm4routing::osmpbfreader::Node;
-use schemas::infra::Direction;
-use schemas::infra::LogicalSignal;
-use schemas::infra::Side;
-use schemas::infra::Signal;
-use schemas::infra::SignalExtensions;
-use schemas::infra::SignalSncfExtension;
+use railjson::Direction;
+use railjson::LogicalSignal;
+use railjson::Side;
+use railjson::Signal;
+use railjson::SignalExtensions;
+use railjson::SignalSncfExtension;
 use std::collections::HashMap;
 
 use crate::adjacency::NodeAdjacencies;

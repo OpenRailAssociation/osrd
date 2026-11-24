@@ -1,8 +1,8 @@
 use osm4routing::Edge;
 use osm4routing::NodeId;
-use schemas::infra::BufferStop;
-use schemas::infra::Switch;
-use schemas::infra::TrackEndpoint;
+use railjson::BufferStop;
+use railjson::Switch;
+use railjson::TrackEndpoint;
 use std::collections::HashMap;
 
 use tracing::debug;

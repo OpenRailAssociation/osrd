@@ -2,8 +2,8 @@ use geo_types::Coord;
 use osm4routing::Distance as _;
 use osm4routing::Edge;
 use osm4routing::NodeId;
-use schemas::infra::Endpoint;
-use schemas::infra::TrackEndpoint;
+use railjson::Endpoint;
+use railjson::TrackEndpoint;
 use std::collections::HashMap;
 
 /// A branch is a pair of two edges that share a node

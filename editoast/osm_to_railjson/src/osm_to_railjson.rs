@@ -11,7 +11,7 @@ use crate::generate_signals;
 use crate::operational_point::operational_points;
 use crate::signal::signals;
 use crate::switch_and_buffer_stop::switches_and_buffer_stops;
-use schemas::infra::RailJson;
+use railjson::RailJson;
 
 use itertools::Itertools as _;
 
@@ -134,10 +134,10 @@ pub fn parse_osm(
 
 #[cfg(test)]
 mod tests {
-    use schemas::infra::ApplicableDirections;
-    use schemas::infra::RailJson;
-    use schemas::infra::TrackEndpoint;
-    use schemas::primitives::Identifier;
+    use identifier::Identifier;
+    use railjson::ApplicableDirections;
+    use railjson::RailJson;
+    use railjson::TrackEndpoint;
     use std::collections::HashMap;
 
     use super::*;

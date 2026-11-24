@@ -15,20 +15,20 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use schemas::infra::Direction;
-use schemas::infra::Endpoint;
-use schemas::infra::LogicalSignal;
-use schemas::infra::Side;
-use schemas::infra::Signal;
-use schemas::infra::SignalExtensions;
-use schemas::infra::SignalSncfExtension;
-use schemas::infra::Speed;
-use schemas::infra::SpeedSection;
-use schemas::infra::Switch;
-use schemas::infra::TrackEndpoint;
-use schemas::infra::TrackSection;
-use schemas::primitives::Identifier;
-use schemas::primitives::NonBlankString;
+use identifier::Identifier;
+use non_blank_string::NonBlankString;
+use railjson::Direction;
+use railjson::Endpoint;
+use railjson::LogicalSignal;
+use railjson::Side;
+use railjson::Signal;
+use railjson::SignalExtensions;
+use railjson::SignalSncfExtension;
+use railjson::Speed;
+use railjson::SpeedSection;
+use railjson::Switch;
+use railjson::TrackEndpoint;
+use railjson::TrackSection;
 
 use itertools::Itertools as _;
 use uuid::Uuid;
@@ -467,7 +467,7 @@ mod tests {
 
     use rstest::rstest;
 
-    use schemas::infra::Direction;
+    use railjson::Direction;
     use schemas::primitives::Identifier;
     use schemas::primitives::NonBlankString;
 
@@ -482,7 +482,7 @@ mod tests {
     }
 
     fn signal_exists(
-        railjson: &schemas::infra::RailJson,
+        railjson: &railjson::RailJson,
         track: &Identifier,
         position: f64,
         direction: Direction,
