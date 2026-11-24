@@ -3,9 +3,14 @@ use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
 use std::iter::FromIterator;
+use thiserror::Error;
 use utoipa::ToSchema;
 
-use crate::errors::GeometryError;
+#[derive(Debug, Error)]
+pub enum GeometryError {
+    #[error("expected geometry {expected} but got {actual}")]
+    UnexpectedGeometry { expected: String, actual: String },
+}
 
 /// A bounding box
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]

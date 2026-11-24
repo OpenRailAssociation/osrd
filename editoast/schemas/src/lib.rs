@@ -1,4 +1,3 @@
-pub mod errors;
 pub mod infra;
 pub mod paced_train;
 pub mod primitives;
