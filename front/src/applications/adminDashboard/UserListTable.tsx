@@ -9,6 +9,8 @@ import {
 
 import './styles/user-list-table.css';
 
+const ROLE_ORDER: Record<Role, number> = { Admin: 0, Stdcm: 1, OperationalStudies: 2 };
+
 function RoleTag({ userRole }: { userRole: Role }) {
   'use memo';
   const { t } = useTranslation('admin-dashboard');
@@ -22,6 +24,7 @@ function RoleTag({ userRole }: { userRole: Role }) {
 
 function Row({ name, identities, groups, effective_roles }: GetAuthzUsersApiResponse[number]) {
   'use memo';
+  const sortedRoles = effective_roles.toSorted((a, b) => ROLE_ORDER[a] - ROLE_ORDER[b]);
   return (
     <tr className="user-row">
       <td>{name}</td>
@@ -41,7 +44,7 @@ function Row({ name, identities, groups, effective_roles }: GetAuthzUsersApiResp
       </td>
       <td>
         <ul className="roles-list">
-          {effective_roles.map((role) => (
+          {sortedRoles.map((role) => (
             <RoleTag key={role} userRole={role} />
           ))}
         </ul>
