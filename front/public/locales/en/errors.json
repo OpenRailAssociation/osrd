@@ -166,6 +166,7 @@
     "model": {
       "ModelError": "Internal error (database query)"
     },
+    "name_already_used": "Name '{{name}}' already used",
     "operation": {
       "EmptyId": "Empty string id is forbidden",
       "InvalidPatch": "A Json Patch error occurred",
@@ -296,10 +297,6 @@
       "CodeAlreadyUsed": "The code of the sub-category '{{code}}' is already used",
       "Database": "Internal error (database)",
       "NotFound": "Sub-category '{{code}}' could not be found"
-    },
-    "temporary_speed_limit": {
-      "Database": "Internal error (database)",
-      "NameAlreadyUsed": "A group of temporary speed limits with '{{name}}' already exists"
     },
     "timetable": {
       "BatchNotFound": "Timetables '{{timetable_ids}}' could not be found",
