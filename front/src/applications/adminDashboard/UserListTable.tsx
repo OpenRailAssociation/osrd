@@ -9,8 +9,11 @@ import {
   type GetAuthzUsersApiResponse,
   type Role,
 } from 'common/api/osrdEditoastApi';
+import { setFailure, setSuccess } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
-import UserEditForm from './UserEditForm';
+import UserEditForm, { type UserEditFormState } from './UserEditForm';
 
 import './styles/user-list-table.css';
 
@@ -62,9 +65,33 @@ export function UserListTable() {
   'use memo';
 
   const { t } = useTranslation('admin-dashboard');
+  const dispatch = useAppDispatch();
+  const [createUser, { isLoading }] = osrdEditoastApi.endpoints.postAuthzUsers.useMutation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { data: users } = osrdEditoastApi.endpoints.getAuthzUsers.useQuery();
   const sortedUsers = users?.toSorted((a, b) => b.id - a.id);
+
+  const saveUser = async ({ name, groups, roles, identities }: UserEditFormState) => {
+    try {
+      await createUser({
+        body: {
+          name,
+          groups,
+          roles,
+          identities: identities.map(({ provider, identifier }) => `${provider}/${identifier}`),
+        },
+      }).unwrap();
+      dispatch(
+        setSuccess({
+          title: t('userCreated'),
+          text: t('userCreatedMessage', { name }),
+        })
+      );
+      setIsFormOpen(false);
+    } catch (error) {
+      dispatch(setFailure(castErrorToFailure(error)));
+    }
+  };
 
   return (
     <table className="user-list-table">
@@ -97,8 +124,8 @@ export function UserListTable() {
               roles: [],
               groups: [],
             }}
-            onSubmit={() => {}}
-            isLoading={false}
+            onSubmit={saveUser}
+            isLoading={isLoading}
             onCancel={() => setIsFormOpen(false)}
           />
         )}

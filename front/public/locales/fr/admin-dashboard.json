@@ -6,6 +6,8 @@
     "OperationalStudies": "Études d'exploitation",
     "Stdcm": "ST DCM"
   },
+  "userCreated": "Utilisateur créé",
+  "userCreatedMessage": "{{name}} a été ajouté à la liste des utilisateurs.",
   "userForm": {
     "addIdentity": "Ajouter une identité",
     "addUser": "Ajouter un utilisateur",
