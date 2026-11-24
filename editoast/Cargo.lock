@@ -832,7 +832,6 @@ dependencies = [
  "itertools 0.15.0",
  "opentelemetry",
  "opentelemetry_sdk",
- "rangemap",
  "serde",
  "serde_json",
  "tracing",
