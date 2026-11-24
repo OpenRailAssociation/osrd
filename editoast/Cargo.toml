@@ -17,6 +17,7 @@ members = [
   "fga",
   "fga_derive",
   "fga_migrations",
+  "identifier",
   "models",
   "non-blank-string",
   "osm_to_railjson",
@@ -117,6 +118,7 @@ futures-util = "0.3.30"
 geos = { version = "11.1.1", features = ["json"] }
 hostname = "0.4.2"
 http = "1.4"
+identifier = { path = "./identifier" }
 indexmap = "2.13"
 itertools = "0.15.0"
 jiff = { version = "0.2.37", default-features = false, features = ["serde"] }
