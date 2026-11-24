@@ -6,6 +6,8 @@
     "OperationalStudies": "Operational Studies",
     "Stdcm": "ST DCM"
   },
+  "userCreated": "User created",
+  "userCreatedMessage": "{{name}} was added to the user list.",
   "userForm": {
     "addIdentity": "Add an identity",
     "addUser": "Add user",
