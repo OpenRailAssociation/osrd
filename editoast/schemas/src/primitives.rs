@@ -1,4 +1,3 @@
-mod bounding_box;
 pub mod duration;
 mod object_ref;
 mod object_type;

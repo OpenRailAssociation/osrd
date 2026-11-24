@@ -601,6 +601,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bounding-box"
+version = "0.1.0"
+dependencies = [
+ "geos",
+ "serde",
+ "thiserror 2.0.21",
+ "utoipa",
+]
+
+[[package]]
 name = "brotli"
 version = "8.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4701,6 +4711,7 @@ dependencies = [
 name = "schemas"
 version = "0.1.0"
 dependencies = [
+ "bounding-box",
  "common",
  "diesel",
  "editoast_derive",

@@ -8,6 +8,7 @@ edition.workspace = true
 members = [
   ".",
   "authz",
+  "bounding-box",
   "cache",
   "common",
   "core_client",
@@ -71,6 +72,7 @@ approx = "0.5.1"
 authz = { path = "./authz" }
 aws-lc-rs = { version = "1.17.1", default-features = false }
 base64 = "0.23.1"
+bounding-box = { path = "./bounding-box" }
 cache = { path = "./cache" }
 clap = { version = "4.6", features = ["derive", "env"] }
 common = { path = "./common" }

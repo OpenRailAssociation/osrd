@@ -8,6 +8,7 @@ edition.workspace = true
 testing = []
 
 [dependencies]
+bounding-box.workspace = true
 common.workspace = true
 diesel.workspace = true
 editoast_derive.workspace = true
