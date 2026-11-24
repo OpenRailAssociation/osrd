@@ -999,23 +999,6 @@ class EditoastErrorInvalidInput(BaseModel):
     )
 
 
-class EditoastGeometryErrorUnexpectedGeometryContext(BaseModel):
-    actual: StrictStr
-    expected: StrictStr
-
-
-class EditoastGeometryErrorUnexpectedGeometry(BaseModel):
-    context: Annotated[
-        EditoastGeometryErrorUnexpectedGeometryContext | None,
-        Field(title="EditoastGeometryErrorUnexpectedGeometryContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:geometry:UnexpectedGeometry"] = (
-        "editoast:geometry:UnexpectedGeometry"
-    )
-
-
 class EditoastGetObjectsErrorsDuplicateIdsProvided(BaseModel):
     context: Annotated[
         dict[str, Any] | None,
@@ -4970,7 +4953,6 @@ class EditoastError(
         | EditoastErrorDatabase
         | EditoastErrorInfraNotFound
         | EditoastErrorInvalidInput
-        | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
         | EditoastInfraApiErrorDatabase
         | EditoastInfraApiErrorNotFound
@@ -5131,7 +5113,6 @@ class EditoastError(
         | EditoastErrorDatabase
         | EditoastErrorInfraNotFound
         | EditoastErrorInvalidInput
-        | EditoastGeometryErrorUnexpectedGeometry
         | EditoastGetObjectsErrorsDuplicateIdsProvided
         | EditoastInfraApiErrorDatabase
         | EditoastInfraApiErrorNotFound
