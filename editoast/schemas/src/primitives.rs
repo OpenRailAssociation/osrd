@@ -1,7 +1,6 @@
 mod bounding_box;
 pub mod duration;
 mod identifier;
-mod non_blank_string;
 mod object_ref;
 mod object_type;
 mod time_window;

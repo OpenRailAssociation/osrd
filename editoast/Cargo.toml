@@ -18,6 +18,7 @@ members = [
   "fga_derive",
   "fga_migrations",
   "models",
+  "non-blank-string",
   "osm_to_railjson",
   "profile_connection_scan",
   "schemas",
@@ -124,6 +125,7 @@ lapin = { version = "4.7.4", default-features = false, features = ["tokio"] }
 linkme = "0.3.36"
 models = { path = "./models" }
 mvt = "0.15.0"
+non-blank-string = { path = "./non-blank-string" }
 object_store = { version = "0.14.0", features = ["aws"] }
 opentelemetry = { version = "0.33.1", default-features = false, features = [
   "trace",

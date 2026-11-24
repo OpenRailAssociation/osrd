@@ -3280,6 +3280,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "non-blank-string"
+version = "0.1.0"
+dependencies = [
+ "rand 0.10.4",
+ "serde",
+ "serde_json",
+ "utoipa",
+]
+
+[[package]]
 name = "nu-ansi-term"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4689,6 +4699,7 @@ dependencies = [
  "iso8601",
  "itertools 0.15.0",
  "jiff",
+ "non-blank-string",
  "proptest",
  "rand 0.10.4",
  "regex",
