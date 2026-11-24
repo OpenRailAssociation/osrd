@@ -1,4 +1,3 @@
-use common::rangemap_utils::Direction as RangeMapDirection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -8,15 +7,6 @@ use utoipa::ToSchema;
 pub enum Direction {
     StartToStop,
     StopToStart,
-}
-
-impl From<Direction> for RangeMapDirection {
-    fn from(val: Direction) -> RangeMapDirection {
-        match val {
-            Direction::StartToStop => RangeMapDirection::StartToEnd,
-            Direction::StopToStart => RangeMapDirection::EndToStart,
-        }
-    }
 }
 
 impl Direction {

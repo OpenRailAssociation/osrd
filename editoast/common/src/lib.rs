@@ -1,6 +1,5 @@
 pub mod geometry;
 mod hash_rounded_float;
-pub mod rangemap_utils;
 pub mod tracing;
 
 use std::collections::HashSet;
