@@ -2,7 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::rolling_stock::LoadingGaugeType;
+use crate::LoadingGaugeType;
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]

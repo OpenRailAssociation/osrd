@@ -5,7 +5,7 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-testing = []
+testing = ["railjson/testing"]
 
 [dependencies]
 bounding-box.workspace = true
@@ -20,6 +20,7 @@ iso8601 = "0.6.3"
 itertools.workspace = true
 jiff.workspace = true
 non-blank-string.workspace = true
+railjson.workspace = true
 rand.workspace = true
 regex.workspace = true
 serde.workspace = true

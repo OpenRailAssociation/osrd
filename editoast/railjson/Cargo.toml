@@ -1,0 +1,25 @@
+[package]
+name = "railjson"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+testing = []
+
+[dependencies]
+bounding-box.workspace = true
+common.workspace = true
+editoast_derive.workspace = true
+educe.workspace = true
+enum-map.workspace = true
+geos.workspace = true
+identifier.workspace = true
+non-blank-string.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+strum.workspace = true
+utoipa.workspace = true
+
+[lints]
+workspace = true

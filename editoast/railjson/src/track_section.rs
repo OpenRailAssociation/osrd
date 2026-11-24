@@ -1,3 +1,4 @@
+use bounding_box::BoundingBox;
 use educe::Educe;
 use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
@@ -9,7 +10,6 @@ use super::Curve;
 use super::LoadingGaugeLimit;
 use super::Slope;
 use super::TrackSectionExtensions;
-use crate::primitives::BoundingBox;
 use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
@@ -60,11 +60,11 @@ impl TrackSection {
 
 #[cfg(test)]
 mod tests {
+    use bounding_box::BoundingBox;
     use geos::geojson;
     use serde_json::from_str;
 
     use super::TrackSectionExtensions;
-    use crate::primitives::BoundingBox;
 
     /// Test bounding box from linestring
     #[test]

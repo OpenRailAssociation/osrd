@@ -23,6 +23,7 @@ members = [
   "non-blank-string",
   "osm_to_railjson",
   "profile_connection_scan",
+  "railjson",
   "schemas",
   "search",
 ]
@@ -153,6 +154,7 @@ pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
 proptest = "1.11.0"
 quote = "1.0"
+railjson = { path = "./railjson" }
 rand = "0.10.1"
 rangemap = "1.7.1"
 regex = "1.12"
