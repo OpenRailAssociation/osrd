@@ -3,12 +3,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { ApiError } from 'common/api/baseGeneratedApis';
 import type { Role } from 'common/api/osrdEditoastApi';
 
-export const FEATURE_FLAGS = [
-  'linkings',
-  'hourlyTimetables',
-  'multipleTimetables',
-  'unrecognizedWaypoints',
-] as const;
+export const FEATURE_FLAGS = ['linkings', 'multipleTimetables', 'unrecognizedWaypoints'] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];
 
 export type UserPreferences = {
@@ -18,7 +13,6 @@ export type UserPreferences = {
 
 const defaultFeatureFlags: Record<FeatureFlag, boolean> = {
   linkings: false,
-  hourlyTimetables: false,
   multipleTimetables: false,
   unrecognizedWaypoints: false,
 };

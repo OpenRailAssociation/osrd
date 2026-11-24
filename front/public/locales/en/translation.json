@@ -709,7 +709,6 @@
     "adminDashboard": "Admin dashboard",
     "disconnect": "Sign out",
     "featureFlags": {
-      "hourlyTimetables": "Enable hourly timetables",
       "linkings": "Enable linkings",
       "multipleTimetables": "Enable multiple timetables per scenario",
       "unrecognizedWaypoints": "Enable unrecognized waypoints in itinerary modal"

@@ -77,7 +77,6 @@ const AddOrEditScenarioModal = ({
   const { closeModal, openModal } = useContext(ModalContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const hourlyTimetableActivated = useSelector(getFeatureFlag('hourlyTimetables'));
   const multipleTimetablesEnabled = useSelector(getFeatureFlag('multipleTimetables'));
 
   const { data: infrasList } = osrdEditoastApi.endpoints.getInfra.useQuery({ pageSize: 1000 });
@@ -399,7 +398,7 @@ const AddOrEditScenarioModal = ({
           />
         </div>
 
-        {hourlyTimetableActivated && !multipleTimetablesEnabled && !editionMode ? (
+        {!multipleTimetablesEnabled && !editionMode ? (
           <div className="scenario-add-or-edit-modal-system-hour-section">
             <RadioGroup
               value={currentScenario.timetable_type}
