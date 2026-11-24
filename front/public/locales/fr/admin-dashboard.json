@@ -18,7 +18,8 @@
     "identifier": "Identifiant",
     "name": "Nom",
     "provider": "Fournisseur",
-    "rolesLabel": "Rôles"
+    "rolesLabel": "Rôles",
+    "saveUser": "Enregistrer"
   },
   "users_one": "{{count}} utilisateur",
   "users_other": "{{count}} utilisateurs"
