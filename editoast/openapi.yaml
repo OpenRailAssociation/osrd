@@ -12,6 +12,52 @@ servers:
 - url: http://localhost:4000/api/
   description: Local development
 paths:
+  /assets/{*file_path}:
+    get:
+      tags:
+      - assets
+      parameters:
+      - name: '*file_path'
+        in: path
+        description: File path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: The requested asset
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: File '{file}' not found
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - file
+                      properties:
+                        file:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:file_not_found
   /authz/grants:
     post:
       tags:
@@ -2355,59 +2401,6 @@ paths:
                       type: string
                       enum:
                       - editoast:database:unavailable
-  /fonts/{font}/{glyph}:
-    get:
-      tags:
-      - fonts
-      summary: This endpoint is used by map libre to retrieve the fonts. They are separated by font and unicode block
-      parameters:
-      - name: font
-        in: path
-        description: Requested font
-        required: true
-        schema:
-          type: string
-      - name: glyph
-        in: path
-        description: Requested unicode block
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Glyphs in PBF format of the font at the requested unicode block
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - type: object
-                  description: File '{file}' not found
-                  required:
-                  - type
-                  - status
-                  - message
-                  - context
-                  properties:
-                    context:
-                      type: object
-                      required:
-                      - file
-                      properties:
-                        file:
-                          type: string
-                    message:
-                      type: string
-                    status:
-                      type: integer
-                      format: int32
-                      enum:
-                      - '404'
-                    type:
-                      type: string
-                      enum:
-                      - editoast:file_not_found
   /health:
     get:
       responses:
@@ -2417,58 +2410,6 @@ paths:
             text/plain:
               schema:
                 type: string
-  /icons/{signaling_system}/{file_name}:
-    get:
-      tags:
-      - icons
-      parameters:
-      - name: signaling_system
-        in: path
-        description: Signaling system name
-        required: true
-        schema:
-          type: string
-      - name: file_name
-        in: path
-        description: File name (svg)
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: The requested icon
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                oneOf:
-                - type: object
-                  description: File '{file}' not found
-                  required:
-                  - type
-                  - status
-                  - message
-                  - context
-                  properties:
-                    context:
-                      type: object
-                      required:
-                      - file
-                      properties:
-                        file:
-                          type: string
-                    message:
-                      type: string
-                    status:
-                      type: integer
-                      format: int32
-                      enum:
-                      - '404'
-                    type:
-                      type: string
-                      enum:
-                      - editoast:file_not_found
   /infra:
     get:
       tags:
@@ -5294,29 +5235,6 @@ paths:
               example:
               - BAL
               - TVM300
-  /sprites/{signaling_system}/{file_name}:
-    get:
-      tags:
-      - sprites
-      summary: This endpoint is used by map libre to retrieve the atlas of each signaling system
-      parameters:
-      - name: signaling_system
-        in: path
-        description: Signaling system name
-        required: true
-        schema:
-          type: string
-      - name: file_name
-        in: path
-        description: File name (json, png or svg)
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Atlas image of config
-        '404':
-          description: Signaling system not found
   /stdcm/debug_data/{trace_id}:
     get:
       tags:
@@ -11061,8 +10979,6 @@ components:
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorInvalidPath'
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
-      - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
-      - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorBatchRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
@@ -12513,56 +12429,6 @@ components:
           type: string
           enum:
           - editoast:timetable:similar_trains:SpeedLimitNotFound
-    EditoastSpriteErrorsFileNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastSpriteErrorsFileNotFoundContext
-          required:
-          - file
-          properties:
-            file:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:sprites:FileNotFound
-    EditoastSpriteErrorsUnknownSignalingSystem:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastSpriteErrorsUnknownSignalingSystemContext
-          required:
-          - signaling_system
-          properties:
-            signaling_system:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:sprites:UnknownSignalingSystem
     EditoastStdcmErrorBatchRollingStockNotFound:
       type: object
       required:

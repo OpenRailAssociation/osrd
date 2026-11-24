@@ -96,14 +96,9 @@
       "Database": "Errore interno (database)",
       "NotFound": "Set Profilo Elettrico '{{electrical_profile_set_id}}' non trovato"
     },
-    "fonts": {
-      "file_not_found": "File per il font richiesto non trovato"
-    },
+    "file_not_found": "File '{{file}}' non trovato",
     "geometry": {
       "UnexpectedGeometry": "Geometria {{expected}} attesa, ma ottenuto {{actual}}"
-    },
-    "icons": {
-      "FileNotFound": "File non trovato"
     },
     "infra": {
       "Database": "Errore interno",

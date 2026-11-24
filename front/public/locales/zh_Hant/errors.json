@@ -246,10 +246,6 @@
       "RollingStockNotFound": "找不到車輛「{{rolling_stock_id}}」",
       "WrongCoreResponseFormat": "收到來自 Core 的錯誤回應格式"
     },
-    "sprites": {
-      "FileNotFound": "找不到檔案",
-      "UnknownSignalingSystem": "未知的號誌系統"
-    },
     "stdcm": {
       "BatchRollingStockNotFound": "找不到車輛「{{ids}}」",
       "Database": "內部錯誤（資料庫）",

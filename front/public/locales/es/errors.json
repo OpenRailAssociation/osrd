@@ -103,9 +103,6 @@
     "single_simulation": {
       "PathNotFound": "No se pudo encontrar la ruta «{{path_id}}»"
     },
-    "sprites": {
-      "FileNotFound": "Archivo no encontrado"
-    },
     "stdcm_search_env": {
       "Database": "Error interno (base de datos)"
     },

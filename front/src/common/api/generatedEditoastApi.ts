@@ -1,11 +1,10 @@
 import { baseEditoastApi as api } from './baseGeneratedApis';
 export const addTagTypes = [
+  'assets',
   'authz',
   'catalog_entry',
   'documents',
   'electrical_profiles',
-  'fonts',
-  'icons',
   'infra',
   'rolling_stock',
   'delimited_area',
@@ -43,6 +42,10 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      getAssetsByFilePath: build.query<GetAssetsByFilePathApiResponse, GetAssetsByFilePathApiArg>({
+        query: (queryArg) => ({ url: `/assets/${queryArg['*file_path']}` }),
+        providesTags: ['assets'],
+      }),
       postAuthzGrants: build.mutation<PostAuthzGrantsApiResponse, PostAuthzGrantsApiArg>({
         query: (queryArg) => ({
           url: `/authz/grants`,
@@ -269,27 +272,9 @@ const injectedRtkApi = api
         }),
         providesTags: ['electrical_profiles'],
       }),
-      getFontsByFontAndGlyph: build.query<
-        GetFontsByFontAndGlyphApiResponse,
-        GetFontsByFontAndGlyphApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/fonts/${queryArg.font}/${queryArg.glyph}`,
-        }),
-        providesTags: ['fonts'],
-      }),
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
         query: () => ({ url: `/health` }),
         providesTags: [],
-      }),
-      getIconsBySignalingSystemAndFileName: build.query<
-        GetIconsBySignalingSystemAndFileNameApiResponse,
-        GetIconsBySignalingSystemAndFileNameApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/icons/${queryArg.signalingSystem}/${queryArg.fileName}`,
-        }),
-        providesTags: ['icons'],
       }),
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
         query: (queryArg) => ({
@@ -1029,15 +1014,6 @@ const injectedRtkApi = api
         GetSpritesSignalingSystemsApiArg
       >({
         query: () => ({ url: `/sprites/signaling_systems` }),
-        providesTags: ['sprites'],
-      }),
-      getSpritesBySignalingSystemAndFileName: build.query<
-        GetSpritesBySignalingSystemAndFileNameApiResponse,
-        GetSpritesBySignalingSystemAndFileNameApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}`,
-        }),
         providesTags: ['sprites'],
       }),
       getStdcmDebugDataByTraceId: build.query<
@@ -1786,6 +1762,11 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as generatedEditoastApi };
+export type GetAssetsByFilePathApiResponse = unknown;
+export type GetAssetsByFilePathApiArg = {
+  /** File path */
+  '*file_path': string;
+};
 export type PostAuthzGrantsApiResponse = unknown;
 export type PostAuthzGrantsApiArg = {
   /** List of new authorization to add or to remove (i.e. grants a resource to a person) */
@@ -2004,22 +1985,8 @@ export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse
 export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg = {
   electricalProfileSetId: number;
 };
-export type GetFontsByFontAndGlyphApiResponse = unknown;
-export type GetFontsByFontAndGlyphApiArg = {
-  /** Requested font */
-  font: string;
-  /** Requested unicode block */
-  glyph: string;
-};
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
-export type GetIconsBySignalingSystemAndFileNameApiResponse = unknown;
-export type GetIconsBySignalingSystemAndFileNameApiArg = {
-  /** Signaling system name */
-  signalingSystem: string;
-  /** File name (svg) */
-  fileName: string;
-};
 export type GetInfraApiResponse = /** status 200 All infras, paginated */ PaginationStats & {
   results: Infra[];
 };
@@ -2621,13 +2588,6 @@ export type PostSimilarTrainsApiArg = {
 export type GetSpritesSignalingSystemsApiResponse =
   /** status 200 List of supported signaling systems */ string[];
 export type GetSpritesSignalingSystemsApiArg = void;
-export type GetSpritesBySignalingSystemAndFileNameApiResponse = unknown;
-export type GetSpritesBySignalingSystemAndFileNameApiArg = {
-  /** Signaling system name */
-  signalingSystem: string;
-  /** File name (json, png or svg) */
-  fileName: string;
-};
 export type GetStdcmDebugDataByTraceIdApiResponse = /** status 200  */ {
   failure?: null | SimDebugFailureReport;
   simulation_data?: null | SimDebugData;
