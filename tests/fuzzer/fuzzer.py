@@ -128,7 +128,7 @@ def create_scenario(editoast_url: str, infra_id: int, session: Session) -> Scena
     r = _post_with_timeout(
         session, editoast_url + "/timetable/", json={"timetable_type": "CALENDAR"}
     )
-    timetable_id = r.json()["timetable_id"]
+    timetable_id = r.json()["id"]
     r = _post_with_timeout(
         session,
         editoast_url + "/train_schedule_sets/",
@@ -550,7 +550,7 @@ def _reset_timetable(
 
     # Create a timetable
     r = _post_with_timeout(session, editoast_url + "/timetable/", json={})
-    timetable_id = r.json()["timetable_id"]
+    timetable_id = r.json()["id"]
     r = _post_with_timeout(
         session,
         editoast_url + "/train_schedule_sets/",

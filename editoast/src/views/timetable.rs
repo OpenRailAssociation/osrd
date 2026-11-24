@@ -159,10 +159,10 @@ pub(in crate::views) struct TimetableNotFound {
 #[derive(Debug, Default, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
 pub(in crate::views) struct TimetableResult {
-    pub timetable_id: i64,
+    pub id: i64,
     pub timetable_type: TimetableType,
     pub is_train_schedule_set: bool,
-    pub timetable_name: Option<String>,
+    pub name: Option<String>,
     pub catalog_entry_id: Option<i64>,
     pub description: String,
     pub published: bool,
@@ -171,10 +171,10 @@ pub(in crate::views) struct TimetableResult {
 impl From<Timetable> for TimetableResult {
     fn from(timetable: Timetable) -> Self {
         Self {
-            timetable_id: timetable.id,
+            id: timetable.id,
             timetable_type: timetable.timetable_type.0,
             is_train_schedule_set: timetable.is_train_schedule_set,
-            timetable_name: timetable.name,
+            name: timetable.name,
             catalog_entry_id: timetable.catalog_entry_id,
             description: timetable.description,
             published: timetable.published,
@@ -193,7 +193,7 @@ pub(in crate::views) struct TimetableForm {
     timetable_type: schemas::timetable_type::TimetableType,
     #[serde(default)]
     is_train_schedule_set: bool,
-    timetable_name: Option<String>,
+    name: Option<String>,
     catalog_entry_id: Option<i64>,
     #[serde(default)]
     description: String,
@@ -206,7 +206,7 @@ impl TimetableForm {
         Timetable::changeset()
             .timetable_type(models::timetable_type::TimetableType(self.timetable_type))
             .is_train_schedule_set(self.is_train_schedule_set)
-            .name(self.timetable_name)
+            .name(self.name)
             .catalog_entry_id(self.catalog_entry_id)
             .description(self.description)
             .published(self.published)
@@ -235,7 +235,7 @@ pub(in crate::views) async fn post(
         } => return Err(TimetableError::InvalidType.into()),
         TimetableForm {
             catalog_entry_id: Some(_),
-            timetable_name: None,
+            name: None,
             ..
         } => return Err(TimetableError::MissingName.into()),
         TimetableForm {
@@ -1477,7 +1477,7 @@ mod tests {
             .json(&TimetableForm {
                 timetable_type: schemas::timetable_type::TimetableType::Hourly,
                 is_train_schedule_set: true,
-                timetable_name: Some("Name".into()),
+                name: Some("Name".into()),
                 catalog_entry_id: Some(catalog_entry.id),
                 description: "Description".into(),
                 published: true,
@@ -1487,21 +1487,20 @@ mod tests {
             .json();
 
         let expected = TimetableResult {
-            timetable_id: created_timetable.timetable_id,
+            id: created_timetable.id,
             timetable_type: schemas::timetable_type::TimetableType::Hourly,
             is_train_schedule_set: true,
-            timetable_name: Some("Name".into()),
+            name: Some("Name".into()),
             catalog_entry_id: Some(catalog_entry.id),
             description: "Description".into(),
             published: true,
         };
         assert_eq!(created_timetable, expected);
 
-        let retrieved_timetable =
-            Timetable::retrieve(pool.get_ok(), created_timetable.timetable_id)
-                .await
-                .expect("Failed to retrieve timetable")
-                .expect("Timetable not found");
+        let retrieved_timetable = Timetable::retrieve(pool.get_ok(), created_timetable.id)
+            .await
+            .expect("Failed to retrieve timetable")
+            .expect("Timetable not found");
         assert_eq!(TimetableResult::from(retrieved_timetable), expected);
     }
 
@@ -1581,10 +1580,10 @@ mod tests {
             .json();
 
         let expected = TimetableResult {
-            timetable_id: timetable.id,
+            id: timetable.id,
             timetable_type: timetable.timetable_type.0,
             is_train_schedule_set: timetable.is_train_schedule_set,
-            timetable_name: expected_name.map(str::to_owned),
+            name: expected_name.map(str::to_owned),
             catalog_entry_id: Some(initial_catalog_entry.id),
             description: expected_description.to_owned(),
             published: expected_published,

@@ -20020,12 +20020,12 @@ components:
           type: string
         is_train_schedule_set:
           type: boolean
-        published:
-          type: boolean
-        timetable_name:
+        name:
           type:
           - string
           - 'null'
+        published:
+          type: boolean
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
     TimetablePatchForm:
@@ -20083,7 +20083,7 @@ components:
       type: object
       description: A timetable with its data
       required:
-      - timetable_id
+      - id
       - timetable_type
       - is_train_schedule_set
       - description
@@ -20096,17 +20096,17 @@ components:
           format: int64
         description:
           type: string
-        is_train_schedule_set:
-          type: boolean
-        published:
-          type: boolean
-        timetable_id:
+        id:
           type: integer
           format: int64
-        timetable_name:
+        is_train_schedule_set:
+          type: boolean
+        name:
           type:
           - string
           - 'null'
+        published:
+          type: boolean
         timetable_type:
           $ref: '#/components/schemas/TimetableType'
     TimetableSummary:

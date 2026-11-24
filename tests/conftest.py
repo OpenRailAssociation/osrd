@@ -531,7 +531,7 @@ def timetable_id(session: Session) -> int:
     r = session.post(f"{EDITOAST_URL}timetable/", json={"timetable_type": "CALENDAR"})
     if not r.ok:
         raise RuntimeError(f"Error creating timetable {r.status_code}: {r.content}")
-    return r.json()["timetable_id"]
+    return r.json()["id"]
 
 
 @pytest.fixture

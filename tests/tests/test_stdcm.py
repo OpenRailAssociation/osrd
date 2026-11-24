@@ -72,7 +72,6 @@ def test_empty_timetable(
     op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
     _, timetable, _ = create_scenario(EDITOAST_URL, small_infra.id, op_study, session)
     payload = {
-        "timetable_id": timetable,
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [

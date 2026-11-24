@@ -6196,8 +6196,8 @@ class TimetableForm(BaseModel):
     catalog_entry_id: StrictInt | None = None
     description: StrictStr | None = None
     is_train_schedule_set: StrictBool | None = None
+    name: StrictStr | None = None
     published: StrictBool | None = None
-    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 
@@ -6208,10 +6208,10 @@ class TimetableResult(BaseModel):
 
     catalog_entry_id: StrictInt | None = None
     description: StrictStr
+    id: StrictInt
     is_train_schedule_set: StrictBool
+    name: StrictStr | None = None
     published: StrictBool
-    timetable_id: StrictInt
-    timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 
 
