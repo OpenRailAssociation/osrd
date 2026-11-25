@@ -1,9 +1,15 @@
-import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { PathStep } from 'reducers/osrdconf/types';
+import type { NonNullableObject } from 'utils/types';
+
+export type WaypointGroupOp = NonNullableObject<
+  PathWaypoint,
+  'opId' | 'country_code' | 'main_code'
+>;
 
 export type WaypointGroup = {
   requestedStep: PathStep;
-  requestedOp: CoreOperationalPointOnPath | undefined;
-  intermediates: CoreOperationalPointOnPath[];
+  requestedOp: WaypointGroupOp | undefined;
+  intermediates: WaypointGroupOp[];
   duplicatesCount: number;
 };

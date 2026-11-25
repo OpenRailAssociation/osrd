@@ -1,11 +1,8 @@
-import { matchOpRefAndWaypoint } from 'applications/operationalStudies/utils';
-import type {
-  CoreOperationalPointOnPath,
-  OperationalPointReference,
-} from 'common/api/osrdEditoastApi';
+import type { OperationalPointReference } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { LocatedPathStep, PathStep } from 'reducers/osrdconf/types';
 
-import type { WaypointGroup } from './types';
+import type { WaypointGroup, WaypointGroupOp } from './types';
 
 // Canonical key for an OP reference, so two references to the same OP compare equal.
 const opRefKey = (ref: OperationalPointReference) => {
@@ -42,7 +39,7 @@ const isSameWaypoint = (a: LocatedPathStep, b: LocatedPathStep) => {
  * stands for.
  */
 export function groupOperationalPoints(
-  operationalPoints: CoreOperationalPointOnPath[],
+  waypoints: PathWaypoint[],
   pathSteps: PathStep[],
   positionByStepKey?: Map<string, number>
 ): WaypointGroup[] {
@@ -71,10 +68,14 @@ export function groupOperationalPoints(
     duplicatesCount,
   }));
 
-  const isStepBeforeOp = (step: LocatedPathStep, op: CoreOperationalPointOnPath) => {
+  const isStepBeforeOp = (step: LocatedPathStep, op: PathWaypoint) => {
     const position = positionByStepKey?.get(step.key);
     return position !== undefined && position < op.position;
   };
+
+  const operationalPoints = waypoints.filter((waypoint): waypoint is WaypointGroupOp =>
+    Boolean(waypoint.opId)
+  );
 
   // Walk the OPs in path order, moving a cursor onto the latest requested step
   // each op has reached, then filing the op under that step's group.
@@ -90,7 +91,7 @@ export function groupOperationalPoints(
 
     // Reach a step by key:
     const matchedIndex = collapsedSteps.findIndex(({ step }, index) => {
-      if (index <= currentGroupIndex || !matchOpRefAndWaypoint(step.location, op)) return false;
+      if (index <= currentGroupIndex || step.key !== op.pathItemKey) return false;
       // An OP crossed twice matches both steps by key. Pick the right
       // crossing: by position if known, else by pinned track.
       const position = positionByStepKey?.get(step.key);

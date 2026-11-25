@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { CoreOperationalPointOnPath } from 'common/api/osrdEditoastApi';
+import type { PathWaypoint } from 'modules/simulationResult/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 import { groupOperationalPoints } from '../utils';
@@ -33,13 +33,15 @@ const makeTrackOffsetStep = (key: string): PathStep => ({
 
 const makeOp = (
   id: string,
+  pathItemKey: string | null,
   uic: number,
   secondaryCode = 'BV',
   position = 0
-): CoreOperationalPointOnPath => ({
-  id,
+): PathWaypoint => ({
+  waypointId: `op-${id}`,
+  opId: id,
+  pathItemKey,
   name: `op-${id}`,
-  uic,
   secondary_code: secondaryCode,
   main_code: '',
   country_code: 'FR',
@@ -47,24 +49,28 @@ const makeOp = (
   position,
   weight: null,
   part: { track: 'track-1', position: 0, local_track_name: 'V1' },
+  location: {
+    type: 'operational_point_part_reference',
+    operational_point: { type: 'uic', uic, secondary_code: secondaryCode },
+  },
 });
 
 // Flatten a grouping result into ids, so a whole result reads as one shape
 const summarize = (groups: ReturnType<typeof groupOperationalPoints>) =>
   groups.map((group) => ({
     step: group.requestedStep.key,
-    requestedOp: group.requestedOp?.id,
-    intermediates: group.intermediates.map((op) => op.id),
+    requestedOp: group.requestedOp?.opId,
+    intermediates: group.intermediates.map((op) => op.opId),
   }));
 
 describe('groupOperationalPoints', () => {
   it('puts intermediate OPs between two requested steps in the first group', () => {
     const steps = [makeStep('s1', 1), makeStep('s2', 2)];
     const ops = [
-      makeOp('o1', 1, 'BV', 0),
-      makeOp('o2', 99, 'BV', 100),
-      makeOp('o3', 98, 'BV', 200),
-      makeOp('o4', 2, 'BV', 300),
+      makeOp('o1', 's1', 1, 'BV', 0),
+      makeOp('o2', null, 99, 'BV', 100),
+      makeOp('o3', null, 98, 'BV', 200),
+      makeOp('o4', 's2', 2, 'BV', 300),
     ];
 
     expect(summarize(groupOperationalPoints(ops, steps))).toEqual([
@@ -76,10 +82,10 @@ describe('groupOperationalPoints', () => {
   it('handles two adjacent requested steps with no intermediates between them', () => {
     const steps = [makeStep('s1', 1), makeStep('s2', 2), makeStep('s3', 3)];
     const ops = [
-      makeOp('o1', 1, 'BV', 0),
-      makeOp('o2', 2, 'BV', 100),
-      makeOp('oMid', 99, 'BV', 150),
-      makeOp('o3', 3, 'BV', 200),
+      makeOp('o1', 's1', 1, 'BV', 0),
+      makeOp('o2', 's2', 2, 'BV', 100),
+      makeOp('oMid', null, 99, 'BV', 150),
+      makeOp('o3', 's3', 3, 'BV', 200),
     ];
 
     expect(summarize(groupOperationalPoints(ops, steps))).toEqual([
@@ -91,15 +97,15 @@ describe('groupOperationalPoints', () => {
 
   it('returns an empty array when there are no valid/located steps', () => {
     const emptyStep = { ...makeStep('s1', 1), location: null };
-    expect(groupOperationalPoints([makeOp('o1', 1)], [emptyStep])).toEqual([]);
+    expect(groupOperationalPoints([makeOp('o1', 's1', 1)], [emptyStep])).toEqual([]);
   });
 
   describe('with a middle step that matches no OP', () => {
     const steps = [makeStep('s1', 1), makeTrackOffsetStep('s2'), makeStep('s3', 3)];
     const ops = [
-      makeOp('o1', 1, 'BV', 0),
-      makeOp('oMid', 99, 'BV', 100),
-      makeOp('o3', 3, 'BV', 200),
+      makeOp('o1', 's1', 1, 'BV', 0),
+      makeOp('oMid', null, 99, 'BV', 100),
+      makeOp('o3', 's3', 3, 'BV', 200),
     ];
 
     it('without positions, falls oMid back under the previous matched step (s1)', () => {
@@ -128,10 +134,10 @@ describe('groupOperationalPoints', () => {
     // The step targets the OP's second crossing (dupSecond, position 300)
     const steps = [makeStep('s1', 1), makeStep('sDup', 2), makeStep('s3', 3)];
     const ops = [
-      makeOp('o1', 1, 'BV', 0),
-      makeOp('dupFirst', 2, 'BV', 100),
-      makeOp('dupSecond', 2, 'BV', 300),
-      makeOp('o3', 3, 'BV', 400),
+      makeOp('o1', 's1', 1, 'BV', 0),
+      makeOp('dupFirst', 'sDup', 2, 'BV', 100),
+      makeOp('dupSecond', 'sDup', 2, 'BV', 300),
+      makeOp('o3', 's3', 3, 'BV', 400),
     ];
 
     it('without positions, falls back to the first crossing claiming the step', () => {
@@ -164,15 +170,15 @@ describe('groupOperationalPoints', () => {
           local_track_name: 'V2',
         },
       };
-      const onTrack = (op: CoreOperationalPointOnPath, localTrackName: string) => ({
+      const onTrack = (op: PathWaypoint, localTrackName: string) => ({
         ...op,
         part: { ...op.part, local_track_name: localTrackName },
       });
       const trackedOps = [
-        makeOp('o1', 1, 'BV', 0),
-        onTrack(makeOp('dupFirst', 2, 'BV', 100), 'V1'),
-        onTrack(makeOp('dupSecond', 2, 'BV', 300), 'V2'),
-        makeOp('o3', 3, 'BV', 400),
+        makeOp('o1', 's1', 1, 'BV', 0),
+        onTrack(makeOp('dupFirst', 'sDup', 2, 'BV', 100), 'V1'),
+        onTrack(makeOp('dupSecond', 'sDup', 2, 'BV', 300), 'V2'),
+        makeOp('o3', 's3', 3, 'BV', 400),
       ];
 
       expect(
@@ -193,14 +199,18 @@ describe('groupOperationalPoints', () => {
       makeStep('sDupB', 2),
       makeStep('s3', 3),
     ];
-    const ops = [makeOp('o1', 1, 'BV', 0), makeOp('o2', 2, 'BV', 100), makeOp('o3', 3, 'BV', 200)];
+    const ops = [
+      makeOp('o1', 's1', 1, 'BV', 0),
+      makeOp('o2', 'sDupB', 2, 'BV', 100),
+      makeOp('o3', 's3', 3, 'BV', 200),
+    ];
 
     it('collapses them into one group carrying a count', () => {
       const groups = groupOperationalPoints(ops, steps);
       expect(
         groups.map((group) => ({
           step: group.requestedStep.key,
-          requestedOp: group.requestedOp?.id,
+          requestedOp: group.requestedOp?.opId,
           count: group.duplicatesCount,
         }))
       ).toEqual([
