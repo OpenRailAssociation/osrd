@@ -362,9 +362,7 @@
       "train_schedules_not_found": "Circulation(s) non trouvée(s)"
     },
     "train_schedule_set": {
-      "CatalogEntryNotFound": "Catalogue '{{catalog_entry_id}}' non trouvé",
-      "Database": "Erreur interne (base de données)",
-      "NotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
+      "not_found": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"

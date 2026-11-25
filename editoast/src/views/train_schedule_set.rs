@@ -1,14 +1,15 @@
 use axum::extract::Query;
 use database::DbConnection;
 use database::DbConnectionPool;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use models::prelude::*;
 use schemas::paced_train::TrainSchedule;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::Result;
+use crate::views::DatabaseError;
 use crate::views::timetable::train_schedule::TrainScheduleResponse;
 use axum::extract::Json;
 use axum::extract::Path;
@@ -23,16 +24,14 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "train_schedule_set")]
+#[derive(Debug, Error, ViewError, From)]
 pub enum TrainScheduleSetError {
     #[error("Train schedule set '{train_schedule_set_id}' could not be found")]
-    #[editoast_error(status = 404)]
+    #[view_error(status = NOT_FOUND, context)]
     NotFound { train_schedule_set_id: i64 },
-
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] models::Error),
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, PartialEq)]
@@ -46,7 +45,7 @@ impl TrainScheduleSetResponse {
     pub async fn try_fetch(
         conn: &mut DbConnection,
         train_schedule_set: TrainScheduleSetWithTimetable,
-    ) -> Result<Self> {
+    ) -> Result<Self, DatabaseError> {
         let train_schedule_count =
             TrainScheduleSet::train_schedule_count(train_schedule_set.id, conn).await? as u64;
         Ok(Self {
@@ -88,12 +87,13 @@ pub(in crate::views) struct TrainScheduleSetIdParam {
     request_body = TrainScheduleSetForm,
     responses(
         (status = 201, description = "Train schedule set", body = TrainScheduleSetResponse),
+        DatabaseError,
     ),
 )]
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(train_schedule_set_form): Json<TrainScheduleSetForm>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DatabaseError> {
     let conn = &mut db_pool.get().await?;
     let changeset = train_schedule_set_form.into_changeset();
     let train_schedule_set = TrainScheduleSet::create_with_timetable(conn, changeset).await?;
@@ -122,7 +122,7 @@ pub(in crate::views) struct TrainScheduleSetQueryParams {
     params(TrainScheduleSetIdParam),
     responses(
         (status = 200, description = "Train schedule set", body = TrainScheduleSetResponse),
-        (status = 404, description = "Train schedule set not found"),
+        TrainScheduleSetError,
     ),
 )]
 pub(in crate::views) async fn get_by_id(
@@ -130,7 +130,7 @@ pub(in crate::views) async fn get_by_id(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-) -> Result<Json<TrainScheduleSetResponse>> {
+) -> Result<Json<TrainScheduleSetResponse>, TrainScheduleSetError> {
     let train_schedule_set =
         TrainScheduleSetWithTimetable::retrieve(&mut db_pool.get().await?, train_schedule_set_id)
             .await?
@@ -159,7 +159,7 @@ pub(in crate::views) async fn get(
         published,
         timetable_type,
     }): Query<TrainScheduleSetQueryParams>,
-) -> Result<Json<Vec<TrainScheduleSetResponse>>> {
+) -> Result<Json<Vec<TrainScheduleSetResponse>>, DatabaseError> {
     let conn = &mut db_pool.get().await?;
 
     let mut settings = SelectionSettings::new();
@@ -216,7 +216,7 @@ impl TrainScheduleSetUpdateForm {
     request_body = TrainScheduleSetUpdateForm,
     responses(
         (status = 200, description = "Train schedule set", body = TrainScheduleSetResponse),
-        (status = 404, description = "Train schedule set not found"),
+        TrainScheduleSetError,
     ),
 )]
 pub(in crate::views) async fn put(
@@ -225,7 +225,7 @@ pub(in crate::views) async fn put(
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
     Json(train_schedule_set_form): Json<TrainScheduleSetUpdateForm>,
-) -> Result<Json<TrainScheduleSetResponse>> {
+) -> Result<Json<TrainScheduleSetResponse>, TrainScheduleSetError> {
     let conn = &mut db_pool.get().await?;
     let changeset = train_schedule_set_form.into_changeset();
     let train_schedule_set =
@@ -248,7 +248,7 @@ pub(in crate::views) async fn put(
     params(TrainScheduleSetIdParam),
     responses(
         (status = 204, description = "the train schedule set is deleted"),
-        (status = 404, description = "Train schedule set not found"),
+        TrainScheduleSetError,
     ),
 )]
 pub(in crate::views) async fn delete(
@@ -256,7 +256,7 @@ pub(in crate::views) async fn delete(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, TrainScheduleSetError> {
     TrainScheduleSet::delete_static_or_fail(
         &mut db_pool.get().await?,
         train_schedule_set_id,
@@ -277,7 +277,8 @@ pub(in crate::views) async fn delete(
     params(TrainScheduleSetIdParam),
     request_body = Vec<TrainSchedule>,
     responses(
-        (status = 201, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
+        (status = 201, description = "The created train schedules", body = Vec<TrainScheduleResponse>),
+        TrainScheduleSetError,
     )
 )]
 pub(in crate::views) async fn post_train_schedule(
@@ -286,7 +287,7 @@ pub(in crate::views) async fn post_train_schedule(
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
     Json(train_schedules): Json<Vec<TrainSchedule>>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, TrainScheduleSetError> {
     let conn = &mut db_pool.get().await?;
 
     let train_schedule_set = TrainScheduleSetWithTimetable::retrieve(conn, train_schedule_set_id)
@@ -319,7 +320,7 @@ pub(in crate::views) async fn post_train_schedule(
     params(TrainScheduleSetIdParam),
     responses(
         (status = 200, description = "The train schedules", body = Vec<TrainScheduleResponse>),
-        (status = 404, description = "Train schedule set not found"),
+        TrainScheduleSetError,
     )
 )]
 pub(in crate::views) async fn get_train_schedules(
@@ -327,7 +328,7 @@ pub(in crate::views) async fn get_train_schedules(
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
     }): Path<TrainScheduleSetIdParam>,
-) -> Result<Json<Vec<TrainScheduleResponse>>> {
+) -> Result<Json<Vec<TrainScheduleResponse>>, TrainScheduleSetError> {
     let conn = &mut db_pool.get().await?;
 
     let train_schedule_set = TrainScheduleSetWithTimetable::retrieve(conn, train_schedule_set_id)
@@ -352,7 +353,6 @@ pub(in crate::views) async fn get_train_schedules(
 #[cfg(test)]
 mod tests {
 
-    use crate::error::InternalError;
     use crate::fixtures::create_catalog_entry;
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_train_schedule_set;
@@ -503,20 +503,16 @@ mod tests {
 
         let train_schedules = vec![train_schedule_1, train_schedule_2.clone()];
 
-        let response: InternalError = app
-            .post(
-                format!(
-                    "/train_schedule_sets/{}/train_schedules",
-                    train_schedule_set.id
-                )
-                .as_str(),
+        app.post(
+            format!(
+                "/train_schedule_sets/{}/train_schedules",
+                train_schedule_set.id
             )
-            .json(&train_schedules)
-            .await
-            .assert_status_internal_server_error()
-            .json();
-
-        assert_eq!(&response.error_type, "editoast:ModelError")
+            .as_str(),
+        )
+        .json(&train_schedules)
+        .await
+        .assert_status_internal_server_error();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -543,20 +539,16 @@ mod tests {
 
         let train_schedules = vec![train_schedule_1.clone()];
 
-        let response: InternalError = app
-            .post(
-                format!(
-                    "/train_schedule_sets/{}/train_schedules",
-                    train_schedule_set.id
-                )
-                .as_str(),
+        app.post(
+            format!(
+                "/train_schedule_sets/{}/train_schedules",
+                train_schedule_set.id
             )
-            .json(&train_schedules)
-            .await
-            .assert_status_internal_server_error()
-            .json();
-
-        assert_eq!(&response.error_type, "editoast:ModelError")
+            .as_str(),
+        )
+        .json(&train_schedules)
+        .await
+        .assert_status_internal_server_error();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

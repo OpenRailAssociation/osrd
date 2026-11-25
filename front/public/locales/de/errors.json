@@ -318,9 +318,7 @@
       "timetable_not_found": "Fahrplan '{{timetable_id}}' nicht gefunden"
     },
     "train_schedule_set": {
-      "CatalogEntryNotFound": "Katalogeintrag '{{catalog_entry_id}}' nicht gefunden",
-      "Database": "Interner Fehler (Datenbank)",
-      "NotFound": "Zugpaket '{{train_schedule_set_id}}' nicht gefunden"
+      "not_found": "Zugpaket '{{train_schedule_set_id}}' nicht gefunden"
     },
     "url": {
       "InvalidUrl": "Ungültige URL '{{url}}'"

@@ -2545,34 +2545,6 @@ class EditoastTrainScheduleExceptionErrorTrainScheduleNotFound(BaseModel):
     )
 
 
-class EditoastTrainScheduleSetErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None,
-        Field(title="EditoastTrainScheduleSetErrorDatabaseContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:train_schedule_set:Database"] = (
-        "editoast:train_schedule_set:Database"
-    )
-
-
-class EditoastTrainScheduleSetErrorNotFoundContext(BaseModel):
-    train_schedule_set_id: StrictInt
-
-
-class EditoastTrainScheduleSetErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastTrainScheduleSetErrorNotFoundContext | None,
-        Field(title="EditoastTrainScheduleSetErrorNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:train_schedule_set:NotFound"] = (
-        "editoast:train_schedule_set:NotFound"
-    )
-
-
 class EditoastUnexpectedJoinError(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastUnexpectedJoinErrorContext")
@@ -5063,8 +5035,6 @@ class EditoastError(
         | EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed
         | EditoastTrainScheduleExceptionErrorTimetableNotFound
         | EditoastTrainScheduleExceptionErrorTrainScheduleNotFound
-        | EditoastTrainScheduleSetErrorDatabase
-        | EditoastTrainScheduleSetErrorNotFound
         | EditoastUnexpectedJoinError
         | EditoastWorkScheduleErrorDatabase
         | EditoastWorkScheduleErrorNameAlreadyUsed
@@ -5223,8 +5193,6 @@ class EditoastError(
         | EditoastTrainScheduleExceptionErrorOccurrenceIndexAlreadyUsed
         | EditoastTrainScheduleExceptionErrorTimetableNotFound
         | EditoastTrainScheduleExceptionErrorTrainScheduleNotFound
-        | EditoastTrainScheduleSetErrorDatabase
-        | EditoastTrainScheduleSetErrorNotFound
         | EditoastUnexpectedJoinError
         | EditoastWorkScheduleErrorDatabase
         | EditoastWorkScheduleErrorNameAlreadyUsed
