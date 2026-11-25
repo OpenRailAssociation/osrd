@@ -105,11 +105,13 @@ const AddOrEditTimetableModal = ({
           <Button
             variant="Normal"
             type="reset"
+            size="medium"
             label={t('translation:common.cancel')}
             onClick={onCancel}
           />
           <Button
             type="submit"
+            size="medium"
             form="add-or-edit-timetable-form"
             label={t('translation:common.save')}
             onClick={noop}
@@ -117,7 +119,11 @@ const AddOrEditTimetableModal = ({
         </>
       }
     >
-      <form id="add-or-edit-timetable-form" onSubmit={handleSubmit}>
+      <form
+        id="add-or-edit-timetable-form"
+        className="add-or-edit-timetable-form"
+        onSubmit={handleSubmit}
+      >
         <Input
           id="timetableName"
           type="text"
