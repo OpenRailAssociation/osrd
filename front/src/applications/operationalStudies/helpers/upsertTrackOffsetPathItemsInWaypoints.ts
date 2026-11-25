@@ -44,7 +44,7 @@ export function upsertTrackOffsetPathItemsInWaypoints(
       const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
         (op) => op.position >= positionOnPath
       );
-      let stepName = t('main.requestedPoint', { count: stepIndex });
+      let stepName = t('main.requestedPoint', { count: stepIndex + 1 });
       if (stepIndex === 0) {
         stepName = t('main.requestedOrigin');
       } else if (stepIndex === path.length - 1) {

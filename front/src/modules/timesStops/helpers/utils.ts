@@ -88,7 +88,7 @@ export const getOperationalPointName = (
     } else if (stepIndex === totalStepCount - 1) {
       return t('main.requestedDestination');
     } else {
-      return t('main.requestedPoint', { count: stepIndex });
+      return t('main.requestedPoint', { count: stepIndex + 1 });
     }
   }
 

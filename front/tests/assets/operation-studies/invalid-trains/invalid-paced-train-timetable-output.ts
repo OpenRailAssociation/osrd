@@ -25,7 +25,7 @@ export const invalidPacedTrainTimetableOutput: TimesStopsTableRow[] = [
   {
     index: 2,
     status: '',
-    stationName: requestedPoint('1'),
+    stationName: requestedPoint('2'),
     stationCh: '',
     trackName: 'V1',
     requestedArrival: '',
