@@ -1,5 +1,9 @@
 {
   "addUser": "Ajouter",
+  "deleteConfirmation": {
+    "message": "Vous êtes sur le point de supprimer cet utilisateur de l’application. Cette personne ne pourra plus y accéder…",
+    "title": "Attention"
+  },
   "editGroups": "Modifier les groupes",
   "roles": {
     "Admin": "Admin",

@@ -1,5 +1,9 @@
 {
   "addUser": "Add",
+  "deleteConfirmation": {
+    "message": "You are about to remove a user from the app. It will no longer be possible for this person to access…",
+    "title": "Caution"
+  },
   "editGroups": "Edit groups",
   "roles": {
     "Admin": "Admin",

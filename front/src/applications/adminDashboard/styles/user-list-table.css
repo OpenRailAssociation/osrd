@@ -1,3 +1,7 @@
+.delete-user-dialog {
+  width: 720px;
+}
+
 .user-list-table {
   color: var(--black100);
 
