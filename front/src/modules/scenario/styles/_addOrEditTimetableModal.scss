@@ -11,9 +11,15 @@
   }
 
   .add-or-edit-timetable-body {
+    display: flex;
+    justify-content: center;
     height: 186px;
     padding: 25px 34px 35px;
     background-color: var(--ambientA5);
+
+    .add-or-edit-timetable-form {
+      width: 436px;
+    }
   }
 
   .add-or-edit-timetable-footer {
