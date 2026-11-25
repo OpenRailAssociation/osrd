@@ -911,182 +911,186 @@ const ItineraryModal = ({
                 <FrameAll title={t('frameAll')} aria-label={t('frameAll')} />
               </button>
             </div>
-            <div className="path-step-list-header">
-              <span>{t('opName')}</span>
-              <span>{t('track')}</span>
-              <span>{t('opType')}</span>
-            </div>
-            {pathSteps.map((pathStep, i) => {
-              const opKey = getOpKey(pathStep.location);
-              const pathStepMetadata = pathStepsMetadataByKey.get(pathStep.key);
-              const isInvalid = isStepInvalid(pathStep, pathStepMetadata);
-              const isMapSelecting = mapSelectionStepKey === pathStep.key;
-              const isSubFormExpanded = expandedStepKeys.includes(pathStep.key);
+            <div className="path-step-list-grid-layout">
+              <div className="path-step-list-header">
+                <span>{t('opName')}</span>
+                <span>{t('track')}</span>
+                <span>{t('opType')}</span>
+              </div>
+              {pathSteps.map((pathStep, i) => {
+                const opKey = getOpKey(pathStep.location);
+                const pathStepMetadata = pathStepsMetadataByKey.get(pathStep.key);
+                const isInvalid = isStepInvalid(pathStep, pathStepMetadata);
+                const isMapSelecting = mapSelectionStepKey === pathStep.key;
+                const isSubFormExpanded = expandedStepKeys.includes(pathStep.key);
 
-              const previousPathStepMetadata = pathStepsMetadataByKey.get(pathSteps[i - 1]?.key);
-              const isTrailingPlaceholder =
-                i === pathSteps.length - 1 && isEmptyStep(pathStep, getInputForStep(pathStep.key));
+                const previousPathStepMetadata = pathStepsMetadataByKey.get(pathSteps[i - 1]?.key);
+                const isTrailingPlaceholder =
+                  i === pathSteps.length - 1 &&
+                  isEmptyStep(pathStep, getInputForStep(pathStep.key));
 
-              return (
-                <>
-                  {!isTrailingPlaceholder && (
-                    <div className="path-step-gap">
-                      {hoveredGapIndex === i && <div className="path-step-gap-line" />}
+                return (
+                  <>
+                    {!isTrailingPlaceholder && (
+                      <div className="path-step-gap">
+                        {hoveredGapIndex === i && <div className="path-step-gap-line" />}
 
-                      <div
-                        className="path-step-gap-hitbox"
-                        data-testId="path-step-gap"
-                        onPointerEnter={() => setHoveredGapIndex(i)}
-                        onPointerLeave={() => setHoveredGapIndex(null)}
-                      >
-                        {hoveredGapIndex === i && (
-                          <button
-                            type="button"
-                            className="add-pathitem"
-                            data-testId="add-path-step-button"
-                            onClick={() => handleAddIntermediateStep(i)}
-                          >
-                            <Plus iconColor="var(--white100)" />
-                          </button>
-                        )}
+                        <div
+                          className="path-step-gap-hitbox"
+                          data-testId="path-step-gap"
+                          onPointerEnter={() => setHoveredGapIndex(i)}
+                          onPointerLeave={() => setHoveredGapIndex(null)}
+                        >
+                          {hoveredGapIndex === i && (
+                            <button
+                              type="button"
+                              className="add-pathitem"
+                              data-testId="add-path-step-button"
+                              onClick={() => handleAddIntermediateStep(i)}
+                            >
+                              <Plus iconColor="var(--white100)" />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <PathStepItem
-                    key={pathStep.key}
-                    pathStep={pathStep}
-                    setPathSteps={setPathSteps}
-                    pathStepMetadata={pathStepMetadata}
-                    index={i + 1}
-                    categoryColors={categoryColors}
-                    hidePathfindingLine={
-                      i > 0 &&
-                      !isTrailingPlaceholder &&
-                      (isInvalid || previousPathStepMetadata?.validity === 'invalid')
-                    }
-                    onDelete={() => {
-                      handleDeletePathStep(pathStep.key);
-                    }}
-                    onOpClear={() => {
-                      clearStep(pathStep.key);
-                    }}
-                    onOpFocus={() => {
-                      markEditing(pathStep.key);
-                      if (!pathStep.location) {
+                    )}
+                    <PathStepItem
+                      key={pathStep.key}
+                      pathStep={pathStep}
+                      setPathSteps={setPathSteps}
+                      pathStepMetadata={pathStepMetadata}
+                      index={i + 1}
+                      categoryColors={categoryColors}
+                      hidePathfindingLine={
+                        i > 0 &&
+                        !isTrailingPlaceholder &&
+                        (isInvalid || previousPathStepMetadata?.validity === 'invalid')
+                      }
+                      onDelete={() => {
+                        handleDeletePathStep(pathStep.key);
+                      }}
+                      onOpClear={() => {
                         clearStep(pathStep.key);
-                      }
-                      focusValueRef.current[pathStep.key] =
-                        getInputForStep(pathStep.key) ??
-                        (pathStepMetadata &&
-                        pathStepMetadata.validity === 'valid' &&
-                        pathStepMetadata.type === 'opRef'
-                          ? formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode)
-                          : '');
-                    }}
-                    onOpInputChange={(value) => {
-                      markEditing(pathStep.key);
-                      if (
-                        value === '' &&
-                        pathStep.location &&
-                        getInputForStep(pathStep.key) === undefined
-                      ) {
-                        return;
-                      }
-                      setInputForStep(pathStep.key, value);
-                    }}
-                    customTracks={customTracksByOpKey.get(opKey ?? '') ?? []}
-                    onAddCustomTrack={(track) => {
-                      if (!opKey) return;
-                      setCustomTracksByOpKey((prev) => {
-                        const next = new Map(prev);
-                        const existing = next.get(opKey) ?? [];
-                        next.set(opKey, [...existing, track]);
-                        return next;
-                      });
-                    }}
-                    onTrackNameChange={(trackName) => {
-                      setPathSteps((prev) =>
-                        prev.map((step) => {
-                          if (step.key !== pathStep.key) return step;
-                          if (!step.location || step.location.type === 'track_offset') return step;
-                          return {
-                            ...step,
-                            location: {
-                              ...step.location,
-                              local_track_name: trackName || undefined,
-                            },
-                          };
-                        })
-                      );
-                    }}
-                    onOpBlur={() => {
-                      // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
-                      const valueOnFocus = focusValueRef.current[pathStep.key];
-                      const valueOnBlur = getInputForStep(pathStep.key);
+                      }}
+                      onOpFocus={() => {
+                        markEditing(pathStep.key);
+                        if (!pathStep.location) {
+                          clearStep(pathStep.key);
+                        }
+                        focusValueRef.current[pathStep.key] =
+                          getInputForStep(pathStep.key) ??
+                          (pathStepMetadata &&
+                          pathStepMetadata.validity === 'valid' &&
+                          pathStepMetadata.type === 'opRef'
+                            ? formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode)
+                            : '');
+                      }}
+                      onOpInputChange={(value) => {
+                        markEditing(pathStep.key);
+                        if (
+                          value === '' &&
+                          pathStep.location &&
+                          getInputForStep(pathStep.key) === undefined
+                        ) {
+                          return;
+                        }
+                        setInputForStep(pathStep.key, value);
+                      }}
+                      customTracks={customTracksByOpKey.get(opKey ?? '') ?? []}
+                      onAddCustomTrack={(track) => {
+                        if (!opKey) return;
+                        setCustomTracksByOpKey((prev) => {
+                          const next = new Map(prev);
+                          const existing = next.get(opKey) ?? [];
+                          next.set(opKey, [...existing, track]);
+                          return next;
+                        });
+                      }}
+                      onTrackNameChange={(trackName) => {
+                        setPathSteps((prev) =>
+                          prev.map((step) => {
+                            if (step.key !== pathStep.key) return step;
+                            if (!step.location || step.location.type === 'track_offset')
+                              return step;
+                            return {
+                              ...step,
+                              location: {
+                                ...step.location,
+                                local_track_name: trackName || undefined,
+                              },
+                            };
+                          })
+                        );
+                      }}
+                      onOpBlur={() => {
+                        // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
+                        const valueOnFocus = focusValueRef.current[pathStep.key];
+                        const valueOnBlur = getInputForStep(pathStep.key);
 
-                      if (
-                        pendingStepKeyRef.current === pathStep.key ||
-                        confirmedStepKeyRef.current === pathStep.key
-                      ) {
-                        pendingStepKeyRef.current = '';
-                        confirmedStepKeyRef.current = '';
+                        if (
+                          pendingStepKeyRef.current === pathStep.key ||
+                          confirmedStepKeyRef.current === pathStep.key
+                        ) {
+                          pendingStepKeyRef.current = '';
+                          confirmedStepKeyRef.current = '';
+                          unmarkEditing(pathStep.key);
+                          return;
+                        }
+
+                        if (valueOnBlur === undefined) {
+                          unmarkEditing(pathStep.key);
+                          return;
+                        }
+
+                        const normalizedOnFocus = valueOnFocus ?? '';
+                        const normalizedOnBlur = valueOnBlur;
+
+                        if (normalizedOnBlur === '' && normalizedOnFocus === '') {
+                          unmarkEditing(pathStep.key);
+                          return;
+                        }
+
+                        if (normalizedOnBlur === '') {
+                          clearStep(pathStep.key);
+                        } else if (normalizedOnBlur !== normalizedOnFocus) {
+                          setInputForStep(pathStep.key, normalizedOnFocus);
+                        }
+
                         unmarkEditing(pathStep.key);
-                        return;
+                      }}
+                      inputValue={getInputForStep(pathStep.key)}
+                      opSuggestions={activeStepKey === pathStep.key ? opSuggestions : []}
+                      onSelectOpSuggestion={(suggestion, chCode) => {
+                        applyOperationalPointToStep(pathStep.key, suggestion, chCode);
+                      }}
+                      onChevronClick={(queryValue) => {
+                        reopenSuggestionsForStep(pathStep.key, queryValue);
+                      }}
+                      resetOpSuggestions={resetOpSuggestions}
+                      connectorLong={hoveredGapIndex === i}
+                      isTrailingPlaceHolder={isTrailingPlaceholder}
+                      isOnlyStep={isOnlyStep}
+                      isInvalid={isInvalid}
+                      isSubFormExpanded={isSubFormExpanded}
+                      isPreviousSubFormExpanded={
+                        i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
                       }
-
-                      if (valueOnBlur === undefined) {
-                        unmarkEditing(pathStep.key);
-                        return;
-                      }
-
-                      const normalizedOnFocus = valueOnFocus ?? '';
-                      const normalizedOnBlur = valueOnBlur;
-
-                      if (normalizedOnBlur === '' && normalizedOnFocus === '') {
-                        unmarkEditing(pathStep.key);
-                        return;
-                      }
-
-                      if (normalizedOnBlur === '') {
-                        clearStep(pathStep.key);
-                      } else if (normalizedOnBlur !== normalizedOnFocus) {
-                        setInputForStep(pathStep.key, normalizedOnFocus);
-                      }
-
-                      unmarkEditing(pathStep.key);
-                    }}
-                    inputValue={getInputForStep(pathStep.key)}
-                    opSuggestions={activeStepKey === pathStep.key ? opSuggestions : []}
-                    onSelectOpSuggestion={(suggestion, chCode) => {
-                      applyOperationalPointToStep(pathStep.key, suggestion, chCode);
-                    }}
-                    onChevronClick={(queryValue) => {
-                      reopenSuggestionsForStep(pathStep.key, queryValue);
-                    }}
-                    resetOpSuggestions={resetOpSuggestions}
-                    connectorLong={hoveredGapIndex === i}
-                    isTrailingPlaceHolder={isTrailingPlaceholder}
-                    isOnlyStep={isOnlyStep}
-                    isInvalid={isInvalid}
-                    isSubFormExpanded={isSubFormExpanded}
-                    isPreviousSubFormExpanded={
-                      i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
-                    }
-                    onSubFormToggled={() => {
-                      setExpandedStepKeys(
-                        isSubFormExpanded
-                          ? expandedStepKeys.filter((key) => key !== pathStep.key)
-                          : [...expandedStepKeys, pathStep.key]
-                      );
-                    }}
-                    isMapSelectionMode={isMapSelecting}
-                    isDestination={i === pathSteps.length - 2}
-                    onStartMapSelection={() => handleStartMapSelection(pathStep.key)}
-                    onCancelMapSelection={handleCancelMapSelection}
-                  />
-                </>
-              );
-            })}
+                      onSubFormToggled={() => {
+                        setExpandedStepKeys(
+                          isSubFormExpanded
+                            ? expandedStepKeys.filter((key) => key !== pathStep.key)
+                            : [...expandedStepKeys, pathStep.key]
+                        );
+                      }}
+                      isMapSelectionMode={isMapSelecting}
+                      isDestination={i === pathSteps.length - 2}
+                      onStartMapSelection={() => handleStartMapSelection(pathStep.key)}
+                      onCancelMapSelection={handleCancelMapSelection}
+                    />
+                  </>
+                );
+              })}
+            </div>
             <button
               data-testid="show-intermediate-waypoints-button"
               className="show-intermediate-waypoints-button"

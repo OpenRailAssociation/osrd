@@ -184,17 +184,20 @@
           border: 8px solid var(--black10);
         }
 
-        display: grid;
-        column-gap: var(--path-step-row-gap);
-        grid-template-columns: var(--path-step-first-column-size) minmax(184px, 1fr) var(
-            --path-step-track-name-width
-          ) var(--path-step-type-width) auto auto [last-col];
-
-        &:has(.unrecognized-waypoints-activated) {
-          grid-template-columns: var(--path-step-first-column-size) 24px [name-col] minmax(
+        .path-step-list-grid-layout {
+          display: grid;
+          column-gap: var(--path-step-row-gap);
+          grid-template-columns: var(--path-step-first-column-size) [name-col] minmax(
               184px,
               1fr
-            ) var(--path-step-track-name-width) var(--path-step-type-width) auto auto [last-col];
+            ) var(--path-step-track-name-width) var(--path-step-type-width) auto auto;
+
+          &:has(.unrecognized-waypoints-activated) {
+            grid-template-columns: var(--path-step-first-column-size) 24px [name-col] minmax(
+                184px,
+                1fr
+              ) var(--path-step-track-name-width) var(--path-step-type-width) auto auto;
+          }
         }
 
         .path-step-gap {
@@ -202,7 +205,7 @@
           height: 28px;
           margin-top: -28px;
           pointer-events: none;
-          grid-column: 1 / last-col;
+          grid-column: 1 / -1;
         }
 
         .path-step-gap-line {
@@ -259,7 +262,6 @@
           justify-content: space-between;
           align-items: center;
           padding-inline: 8px 16px;
-          grid-column: 1 / last-col;
 
           .reverse-itinerary-button {
             padding: 8px;
@@ -325,18 +327,20 @@
         .path-step-list-header {
           display: grid;
           grid-template-columns: subgrid;
-          grid-column: name-col / last-col;
+          grid-column: name-col / -1;
           padding-block: 9px 1px;
           font-size: 0.875rem;
           color: var(--grey30);
-
-          span {
-            margin-left: 1px;
-          }
         }
 
-        .path-step-list-header :first-child {
+        &:has(.path-step-op-status-icon) .path-step-list-header :first-child {
+          // TODO : change this when removing feature flag unrecognized_waypoints_activated
           padding-left: 32px;
+        }
+
+        &:not(:has(.path-step-op-status-icon)) .path-step-list-header :first-child {
+          // TODO : change this when removing feature flag unrecognized_waypoints_activated
+          padding-left: 4px;
         }
 
         .path-step-wrapper.is-placeholder {
@@ -351,7 +355,7 @@
             var(--path-step-wrapper-padding-right);
           display: grid;
           grid-template-columns: subgrid;
-          grid-column: 1 / last-col;
+          grid-column: 1 / -1;
 
           &.unknown-track {
             background-color: var(--black10);
@@ -394,7 +398,7 @@
           .path-step {
             display: grid;
             grid-template-columns: subgrid;
-            grid-column: 1 / last-col;
+            grid-column: 1 / -1;
             align-items: center;
             padding-block: 8px;
 
@@ -503,6 +507,11 @@
             }
 
             .path-step-op-name {
+              &:not(:has(.path-step-op-status-icon)) {
+                // TODO : change this when removing feature flag unrecognized_waypoints_activated
+                margin-left: 4px;
+              }
+
               &.invalid {
                 border-radius: 3px;
               }
@@ -611,7 +620,7 @@
           background-color: var(--ambientB5);
           display: grid;
           grid-template-columns: subgrid;
-          grid-column: 1 / last-col;
+          grid-column: 1 / -1;
           margin-inline: -12px -10px;
 
           .path-step-subform-content {
