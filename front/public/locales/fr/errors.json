@@ -177,16 +177,6 @@
       "InvalidNumberOfDistances": "{{expected}} distances attendues, mais {{found}} reçues",
       "InvalidNumberOfRefs": "Au moins 2 références de points opérationnels attendues"
     },
-    "pathfinding": {
-      "Database": "Erreur interne (base de données)",
-      "ElectricalProfilesOverlap": "Des profils électriques se chevauchent",
-      "ElectrificationOverlap": "Electrification {{electrification_id}} se supperpose avec d'autres",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "NotFound": "Itinéraire '{{pathfinding_id}}' non trouvé",
-      "OperationalPointsNotFound": "Points opérationnels {{operational_points}} non trouvés",
-      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
-      "TrackSectionsNotFound": "Section de voie {{track_sections}} non trouvée"
-    },
     "postgres": {
       "Host": "Url de base de données '{{hostname}} est invalide",
       "Password": "Mot-de-passe erroné",

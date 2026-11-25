@@ -169,16 +169,6 @@
       "InvalidNumberOfDistances": "預期取得 {{expected}} 個距離，但實際取得 {{found}} 個",
       "InvalidNumberOfRefs": "至少需要兩個營運點參考"
     },
-    "pathfinding": {
-      "Database": "內部錯誤（資料庫）",
-      "ElectricalProfilesOverlap": "電氣化特性與其他設定重疊",
-      "ElectrificationOverlap": "電氣化區段「{{electrification_id}}」與其他電氣化區段重疊",
-      "InfraNotFound": "基礎設施「{{infra_id}}」不存在",
-      "NotFound": "路徑搜尋 {{pathfinding_id}} 不存在",
-      "OperationalPointsNotFound": "營運點 {{operational_points}} 不存在",
-      "RollingStockNotFound": "編號為「{{rolling_stock_id}}」的車輛不存在",
-      "TrackSectionsNotFound": "軌道區段 {{track_sections}} 不存在"
-    },
     "postgres": {
       "Host": "無效的主機「{{hostname}}」",
       "Password": "無效的密碼",

@@ -171,16 +171,6 @@
       "InvalidNumberOfDistances": "Attese {{expected}} distanze, ma ottenute {{found}}",
       "InvalidNumberOfRefs": "Attesi almeno due punti di riferimento operativi"
     },
-    "pathfinding": {
-      "Database": "Errore interno (database)",
-      "ElectricalProfilesOverlap": "Il Profilo Elettrico si sovrappone con altri",
-      "ElectrificationOverlap": "Elettrificazione '{{electrification_id}}' si sovrappone con altre elettrificazioni",
-      "InfraNotFound": "Infrastruttura '{{infra_id}}' non esiste",
-      "NotFound": "Percorso {{pathfinding_id}} non esiste",
-      "OperationalPointsNotFound": "Punti operazionali non esistono: {{operational_points}}",
-      "RollingStockNotFound": "Materiale rotabile con id '{{rolling_stock_id}}' non esiste",
-      "TrackSectionsNotFound": "Sezioni di rotaia non esistono: {{track_sections}}"
-    },
     "postgres": {
       "Host": "Host invalido '{{hostname}}'",
       "Password": "Password invalida",
