@@ -16,9 +16,13 @@ use models::prelude::Create as _;
 use models::prelude::DeleteStatic as _;
 use models::stdcm_request::PaginatedList;
 use models::stdcm_request::SelectionSettings;
+use object_store::ObjectStoreExt as _;
+use object_store::aws::AmazonS3;
+use object_store::path::Path as ObjectStorePath;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use tracing::Instrument as _;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -190,6 +194,26 @@ pub struct StdcmRequestForm {
     trace_id: Option<String>,
 }
 
+/// JSON structure saved into the s3 to match RMI ID with our trace ID.
+/// Saved in the directory with the rest of the files for this stdcm request.
+#[derive(Debug, Serialize)]
+struct RmiMetadata {
+    rmi_id: String,
+    stdcm_trace_id: String,
+}
+
+impl RmiMetadata {
+    async fn save(&self, s3: &AmazonS3) {
+        let path = ObjectStorePath::from("stdcm/requests/")
+            .join(self.stdcm_trace_id.as_str())
+            .join("rmi_metadata.json");
+        let payload = serde_json::to_vec(self).expect("failed to serialize rmi metadata");
+        if let Err(error) = s3.put(&path, payload.into()).await {
+            tracing::error!(?error, %path, stdcm_trace_id = %self.stdcm_trace_id, "failed to write rmi metadata");
+        }
+    }
+}
+
 /// Create an stdcm request
 #[editoast_derive::route(authz::Role::Stdcm)]
 #[utoipa::path(
@@ -202,13 +226,24 @@ pub struct StdcmRequestForm {
     ),
 )]
 pub(in crate::views) async fn post(
-    State(AppState { db_pool, .. }): State<AppState>,
+    State(AppState {
+        db_pool, s3_client, ..
+    }): State<AppState>,
     Extension(authn_state): Extension<crate::authentication::State>,
     Json(stdcm_request_create_form): Json<StdcmRequestForm>,
 ) -> Result<impl IntoResponse, StdcmRequestPostError> {
     match authn_state.user() {
         None => Err(StdcmRequestPostError::NotUser),
         Some(user) => {
+            if let (Some(s3), Some(stdcm_trace_id)) =
+                (s3_client, &stdcm_request_create_form.trace_id)
+            {
+                let metadata = RmiMetadata {
+                    rmi_id: stdcm_request_create_form.rmi_id.clone(),
+                    stdcm_trace_id: stdcm_trace_id.clone(),
+                };
+                tokio::spawn(async move { metadata.save(&s3).await }.in_current_span());
+            }
             let stdcm_request = Changeset::<StdcmRequest>::default()
                 .rmi_id(stdcm_request_create_form.rmi_id)
                 .trace_id(stdcm_request_create_form.trace_id)
