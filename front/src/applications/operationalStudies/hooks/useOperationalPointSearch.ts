@@ -46,7 +46,16 @@ export const useSearchMacroNodes = (scenarioId: number, pageSize: number) => {
           },
           true
         ).unwrap()) as SearchResultItemMacroNode[];
-        return results.map(buildMacroNodeSuggestion).filter((suggestion) => suggestion !== null);
+        const suggestions = results
+          .map(buildMacroNodeSuggestion)
+          .filter((suggestion) => suggestion !== null);
+        const suggestionById = new Map<string, OperationalPointSuggestion>();
+        for (const suggestion of suggestions) {
+          const existing = suggestionById.get(suggestion.id);
+          if (existing) existing.secondaryCodeList.push(...suggestion.secondaryCodeList);
+          else suggestionById.set(suggestion.id, suggestion);
+        }
+        return [...suggestionById.values()];
       } catch (error) {
         dispatch(setFailure(castErrorToFailure(error)));
         return [];
