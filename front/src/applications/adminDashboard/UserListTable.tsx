@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -35,14 +36,19 @@ function Row({
   identities,
   groups,
   effective_roles,
+  clickable,
   onClick,
 }: GetAuthzUsersApiResponse[number] & {
+  clickable: boolean;
   onClick: () => void;
 }) {
   'use memo';
   const sortedRoles = effective_roles.toSorted((a, b) => ROLE_ORDER[a] - ROLE_ORDER[b]);
   return (
-    <tr className="user-row" onClick={onClick}>
+    <tr
+      className={cx('user-row', clickable && 'user-row-selectable')}
+      onClick={() => clickable && onClick()}
+    >
       <td>{name}</td>
       <td>
         <ul className="identities-list">
@@ -146,21 +152,20 @@ export function UserListTable() {
           <Row
             key={user.id}
             {...user}
+            clickable={!isFormOpen}
             onClick={() => {
-              if (!isFormOpen) {
-                setIsFormOpen(true);
-                setInitialFormState({
-                  mode: UserEditFormMode.Edit,
-                  name: user.name,
-                  identities: user.identities.map((identity) => ({
-                    key: uuidv4(),
-                    provider: identity.split('/', 2)[0],
-                    identifier: identity.split('/', 2)[1],
-                  })),
-                  roles: user.effective_roles,
-                  groups: user.groups.map(({ id }) => id),
-                });
-              }
+              setIsFormOpen(true);
+              setInitialFormState({
+                mode: UserEditFormMode.Edit,
+                name: user.name,
+                identities: user.identities.map((identity) => ({
+                  key: uuidv4(),
+                  provider: identity.split('/', 2)[0],
+                  identifier: identity.split('/', 2)[1],
+                })),
+                roles: user.effective_roles,
+                groups: user.groups.map(({ id }) => id),
+              });
             }}
           />
         ))}
