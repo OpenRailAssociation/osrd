@@ -520,6 +520,21 @@ class TimesStopsTablePage extends OpSimulationResultPage {
     await this.fillRequestedMargin(row, value);
   }
 
+  /**
+   * Run a table edit that saves the train, and wait until it is re-simulated.
+   *
+   * `waitForSimulation` alone can pass before the edit is committed, so this method ensures that the train schedule PUT request is completed before waiting for the simulation to finish.
+   */
+  async runAndWaitForTrainUpdate(action: () => Promise<void>): Promise<void> {
+    const saveResponse = this.page.waitForResponse(
+      (response) =>
+        response.request().method() === 'PUT' && /\/api\/train_schedules\/\d+$/.test(response.url())
+    );
+    await action();
+    await saveResponse;
+    await this.waitForSimulation();
+  }
+
   // Wait for simulation triggered by a previous edit to complete.
   async waitForSimulation(): Promise<void> {
     await expect(this.newTimesStopsTable).not.toHaveClass(/computed-data-pending/, {

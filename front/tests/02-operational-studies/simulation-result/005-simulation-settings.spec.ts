@@ -70,12 +70,14 @@ test.describe('Simulation settings tab', { tag: ['@op', '@simulation-settings-ta
         await timesStopsTablePage.verifyDataRowCount(4);
         // The arrival time of day is set here, from the table, rather than through the header.
         const originRow = timesStopsTablePage.getRow(0);
-        await timesStopsTablePage.editRequestedArrival(originRow, TRAIN_START_TIME);
-        await timesStopsTablePage.waitForSimulation();
+        await timesStopsTablePage.runAndWaitForTrainUpdate(() =>
+          timesStopsTablePage.editRequestedArrival(originRow, TRAIN_START_TIME)
+        );
         const midEastStationRow = timesStopsTablePage.getRow(2);
         // Duration cell fills MM then SS (4 digits): "0204" -> 2min 4s.
-        await timesStopsTablePage.editStopDuration(midEastStationRow, '0204');
-        await timesStopsTablePage.waitForSimulation();
+        await timesStopsTablePage.runAndWaitForTrainUpdate(() =>
+          timesStopsTablePage.editStopDuration(midEastStationRow, '0204')
+        );
       });
 
       await test.step('Select the train and expand the header', async () => {
