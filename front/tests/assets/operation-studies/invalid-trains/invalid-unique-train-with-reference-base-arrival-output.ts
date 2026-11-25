@@ -29,7 +29,7 @@ export const invalidUniqueTrainWithReferenceBaseArrivalOutput: TimesStopsTableRo
   {
     index: 2,
     status: '',
-    stationName: requestedPoint('1'),
+    stationName: requestedPoint('2'),
     stationCh: '',
     trackName: 'V1',
     requestedArrival: '11:46:00',
@@ -67,7 +67,7 @@ export const invalidUniqueTrainWithReferenceBaseArrivalOutput: TimesStopsTableRo
   {
     index: 4,
     status: '',
-    stationName: requestedPoint('3'),
+    stationName: requestedPoint('4'),
     stationCh: '',
     trackName: 'V1',
     requestedArrival: '',
@@ -105,7 +105,7 @@ export const invalidUniqueTrainWithReferenceBaseArrivalOutput: TimesStopsTableRo
   {
     index: 6,
     status: '',
-    stationName: requestedPoint('5'),
+    stationName: requestedPoint('6'),
     stationCh: '',
     trackName: 'V1',
     requestedArrival: '',
