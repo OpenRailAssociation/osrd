@@ -396,6 +396,7 @@ const PathStepItem = ({
       >
         <button
           type="button"
+          tabIndex={-1}
           className={cx('path-step-counter', {
             invalid: isInvalid || isUnknownTrack,
             'is-only-step': isOnlyStep,
@@ -467,7 +468,7 @@ const PathStepItem = ({
             )}
             <div
               role="button"
-              tabIndex={0}
+              tabIndex={-1}
               className={cx('path-step-op-name', {
                 invalid: isInvalid,
               })}
@@ -617,6 +618,7 @@ const PathStepItem = ({
         <div className="map-interactions">
           <button
             type="button"
+            tabIndex={-1}
             className={cx('select-location-button', { active: isMapSelectionMode })}
             disabled={!pathStep}
             onClick={(e) => {
@@ -647,6 +649,8 @@ const PathStepItem = ({
             )}
           </button>
           <button
+            type="button"
+            tabIndex={-1}
             className={cx('focus-map-icon', { empty: !canFocusOnMap })}
             disabled={!canFocusOnMap}
             onClick={handleFocusClick}
