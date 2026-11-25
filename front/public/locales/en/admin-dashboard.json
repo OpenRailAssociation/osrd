@@ -8,6 +8,8 @@
   },
   "userCreated": "User created",
   "userCreatedMessage": "{{name}} was added to the user list.",
+  "userUpdated": "User updated",
+  "userUpdatedMessage": "{{name}} was updated.",
   "userForm": {
     "addIdentity": "Add an identity",
     "addUser": "Add user",
