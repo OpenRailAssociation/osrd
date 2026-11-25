@@ -6,6 +6,8 @@ This repository contains the OpenAPI specification that defines an interface whi
 
 The `railway-manager-interface` is a service that handles user-specific operations and transformations. **You are responsible for implementing your own service** that adheres to the interface.
 
+The interface is designed to be generic instead of hardcoding a particular railway manager. The API must not contain any railway manager specific bits (e.g. fixed lists, untranslated names/abbreviations, data structures copied over from an internal API, etc).
+
 ## OpenAPI Specification
 
 The `openapi.yaml` file in this repository describes all the HTTP endpoints that the OSRD frontend expects from a Railway manager interface service. This specification serves as a reference to understand:
