@@ -99,6 +99,7 @@ services:
       RABBITMQ_DEFAULT_USER: osrd
       RABBITMQ_DEFAULT_PASS: password
       RABBITMQ_DIST_PORT: 25673
+      RABBITMQ_HEARTBEAT: 60
       RABBITMQ_CONFIG_FILE: "/etc/rabbitmq/rabbitmq.conf"
     volumes:
       - "../docker/rabbitmq.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
