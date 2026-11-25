@@ -1,6 +1,5 @@
 {
   "addUser": "Ajouter",
-  "editGroups": "Modifier les groupes",
   "roles": {
     "Admin": "Admin",
     "OperationalStudies": "Études d'exploitation",
