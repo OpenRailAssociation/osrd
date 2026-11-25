@@ -12,6 +12,8 @@
   },
   "userCreated": "Utilisateur créé",
   "userCreatedMessage": "{{name}} a été ajouté à la liste des utilisateurs.",
+  "userDeleted": "Utilisateur supprimé",
+  "userDeletedMessage": "Utilisateur supprimé de la liste des utilisateurs.",
   "userUpdated": "Utilisateur mis à jour",
   "userUpdatedMessage": "{{name}} a été mis à jour.",
   "userForm": {
