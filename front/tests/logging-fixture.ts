@@ -8,6 +8,20 @@ export const logger = {
   warn: (message: string) => console.warn(`[WARN] ${message}`),
 };
 
+/**
+ * Ignore unhandled rejections once the
+ * page is unloading; any other one still fails the test.
+ */
+const ignoreRejectionsOnUnload = () => {
+  let isUnloading = false;
+  window.addEventListener('beforeunload', () => {
+    isUnloading = true;
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    if (isUnloading) event.preventDefault();
+  });
+};
+
 // Extend baseTest with logging inside the test hooks
 const testWithLogging = baseTest.extend<{ page: Page; ignorePageErrors: boolean }>({
   ignorePageErrors: [false, { option: true }],
@@ -27,6 +41,7 @@ const testWithLogging = baseTest.extend<{ page: Page; ignorePageErrors: boolean 
 
     // Handle uncaught exceptions
     if (!ignorePageErrors) {
+      await page.addInitScript(ignoreRejectionsOnUnload);
       page.on('pageerror', (exception) => {
         logger.error('🚨Uncaught page error:', exception);
         throw new Error(
