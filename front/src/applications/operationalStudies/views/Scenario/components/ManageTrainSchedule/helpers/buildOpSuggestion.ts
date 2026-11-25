@@ -1,5 +1,4 @@
 import type {
-  PathItemLocation,
   SearchResultItemMacroNode,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
@@ -8,7 +7,7 @@ import type {
   OpSecondaryCode,
   OperationalPointSuggestion,
 } from '../Itinerary/ComboBoxCustomList/ListElementComponent';
-import { getOpKey } from '../Itinerary/utils';
+import type { DomesticOperationalPointReference } from '../Itinerary/PathStepSubForm';
 
 const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
   const priority: Record<string, number> = { BV: 0, '00': 1 };
@@ -30,42 +29,27 @@ export const buildOperationalPointSuggestionId = (countryCode: string, mainCode:
 
 type OpCodes = Pick<OperationalPointSuggestion, 'countryCode' | 'mainCode'>;
 
-export const hasSameCodes = (a: OpCodes, b: OpCodes) =>
+export const hasSameCountryAndMainCodes = (a: OpCodes, b: OpCodes) =>
   a.countryCode === b.countryCode && a.mainCode === b.mainCode;
 
 export const buildCustomOpSuggestion = (
   name: string,
-  location: PathItemLocation,
+  opRef: DomesticOperationalPointReference,
   existingOp: OperationalPointSuggestion | null = null
 ): OperationalPointSuggestion => {
-  const opRef = location.type === 'track_offset' ? null : location.operational_point;
-
-  let mainCode = location.type === 'track_offset' ? location.track : '';
-
-  if (opRef?.type === 'domestic') mainCode = opRef.main_code;
-  if (opRef?.type === 'uic') mainCode = opRef.uic.toString();
-  if (opRef?.type === 'id') mainCode = opRef.operational_point;
-
-  const secondaryCode = opRef && opRef.type !== 'id' ? (opRef.secondary_code ?? null) : null;
+  const secondaryCode = opRef.secondary_code ?? null;
   const secondaryCodeList = existingOp?.secondaryCodeList ?? [];
-  const key =
-    location.type === 'track_offset' ? `${location.track}-${location.offset}` : getOpKey(location);
-  const id =
-    opRef?.type === 'domestic'
-      ? buildOperationalPointSuggestionId(opRef.country_code, opRef.main_code)
-      : `custom-${key}`;
 
   return {
-    id: existingOp?.id ?? id,
-    name: name || mainCode,
-    mainCode,
-    countryCode: opRef?.type === 'domestic' ? opRef.country_code : '',
+    id: buildOperationalPointSuggestionId(opRef.country_code, opRef.main_code),
+    name: name || opRef.main_code,
+    mainCode: opRef.main_code,
+    countryCode: opRef.country_code,
     secondaryCodeList:
       existingOp && secondaryCode === null
         ? secondaryCodeList
         : [...secondaryCodeList, { code: secondaryCode, name: null, isPending: true }],
     source: existingOp?.source ?? 'pending',
-    location: opRef?.type === 'domestic' ? undefined : location,
   };
 };
 

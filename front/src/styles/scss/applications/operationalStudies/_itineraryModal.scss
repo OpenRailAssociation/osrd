@@ -330,9 +330,9 @@
         .path-step-wrapper {
           padding-inline: var(--path-step-wrapper-padding-left)
             var(--path-step-wrapper-padding-right);
-          grid-template-columns: 24px minmax(184px, 1fr) var(--path-step-track-name-width) var(
-              --path-step-type-width
-            ) auto auto [last-col];
+          grid-template-columns:
+            24px minmax(184px, 1fr) var(--path-step-track-name-width) var(--path-step-type-width)
+            auto auto [last-col];
           display: grid;
           column-gap: var(--path-step-row-gap);
 

@@ -1,9 +1,7 @@
 import { useState } from 'react';
 
-import { InfrastructureInvalid, NoEntry, TrackOffset } from '@osrd-project/ui-icons';
+import { InfrastructureInvalid, NoEntry } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-
-import type { PathItemLocation } from 'common/api/osrdEditoastApi';
 
 import './ListElementComponent.scss';
 
@@ -23,7 +21,6 @@ export type OperationalPointSuggestion = {
   countryCode: string;
   secondaryCodeList: OpSecondaryCode[];
   source: 'infra' | 'pending' | 'macroNode';
-  location?: PathItemLocation;
 };
 
 export type ListElementComponentProps = {
@@ -42,7 +39,6 @@ export const ListElementComponent = ({
 }: ListElementComponentProps) => {
   const [isNameHovered, setIsNameHovered] = useState(false);
   const isCustom = suggestion.source === 'pending';
-  const isTrackOffset = suggestion.location?.type === 'track_offset';
 
   return (
     <div
@@ -61,7 +57,7 @@ export const ListElementComponent = ({
         onSelect?.(suggestion, defaultSecondaryCode);
       }}
     >
-      {isCustom && !isTrackOffset && (
+      {isCustom && (
         <span className="op-suggestion-custom-icon">
           <InfrastructureInvalid size="lg" />
         </span>
@@ -72,7 +68,7 @@ export const ListElementComponent = ({
           'op-suggestion-main-code--custom': isCustom,
         })}
       >
-        {isTrackOffset ? <TrackOffset size="lg" /> : suggestion.mainCode}
+        {suggestion.mainCode}
       </span>
 
       <span

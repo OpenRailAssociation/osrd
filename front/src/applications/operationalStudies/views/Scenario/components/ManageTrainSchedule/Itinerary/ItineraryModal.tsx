@@ -338,7 +338,7 @@ const ItineraryModal = ({
     pendingStepKeyRef
   );
 
-  const { customOpSuggestions, addCustomOp, setUnknownOpName, findExistingOp } = useCustomOps({
+  const { customOpSuggestions, upsertCustomOp, setUnknownOpName, findExistingOp } = useCustomOps({
     scenarioId: scenario.id,
     pathSteps,
     pathStepsMetadataByKey,
@@ -399,7 +399,7 @@ const ItineraryModal = ({
       secondary_code: chosenSecondaryCode,
       country_code: suggestion.countryCode,
     };
-    const newLocation: PathItemLocation = suggestion.location ?? {
+    const newLocation: PathItemLocation = {
       type: 'operational_point_part_reference',
       operational_point: opRef,
     };
@@ -421,12 +421,8 @@ const ItineraryModal = ({
     opRef: DomesticOperationalPointReference,
     existingOp: OperationalPointSuggestion | null
   ) => {
-    const customOp = buildCustomOpSuggestion(
-      name,
-      { type: 'operational_point_part_reference', operational_point: opRef },
-      existingOp
-    );
-    addCustomOp(customOp);
+    const customOp = buildCustomOpSuggestion(name, opRef, existingOp);
+    upsertCustomOp(customOp);
     applyOperationalPointToStep(stepKey, customOp, opRef.secondary_code ?? null);
   };
 

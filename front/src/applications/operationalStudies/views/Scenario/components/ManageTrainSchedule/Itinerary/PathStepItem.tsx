@@ -340,15 +340,14 @@ const PathStepItem = ({
     if (shouldShowInvalidMessage && !unrecognizedWaypointsActivated) {
       return '';
     }
+    if (shouldShowInvalidMessage && pathStep.location?.type === 'operational_point_part_reference')
+      return getUnrecognizedOpLabel(pathStep.location.operational_point, subFormName);
 
     if (inputValue !== undefined) return inputValue;
 
     if (isOpRefMetadata(pathStepMetadata)) {
       return formatOpLabel(pathStepMetadata.name, pathStepMetadata.secondaryCode);
     }
-
-    if (shouldShowInvalidMessage && pathStep.location?.type === 'operational_point_part_reference')
-      return subFormName || getUnrecognizedOpLabel(pathStep.location.operational_point);
 
     return undefined;
   }, [

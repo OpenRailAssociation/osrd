@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { osrdEditoastApi, type SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import type { PathStep, PathStepMetadata } from 'reducers/osrdconf/types';
 
-import { mainAndCountryCodesPayload } from '../helpers/searchPayload';
+import { countryAndMainCodesPayload } from '../helpers/searchPayload';
 import {
   buildCustomOpSuggestion,
   buildOpSuggestion,
-  hasSameCodes,
+  hasSameCountryAndMainCodes,
 } from '../views/Scenario/components/ManageTrainSchedule/helpers/buildOpSuggestion';
 import type { OperationalPointSuggestion } from '../views/Scenario/components/ManageTrainSchedule/Itinerary/ComboBoxCustomList/ListElementComponent';
 import { useSearchMacroNodes } from './useOperationalPointSearch';
@@ -32,60 +32,54 @@ export const useCustomOps = ({
 
   const [customOps, setCustomOps] = useState<OperationalPointSuggestion[]>([]);
 
-  const addCustomOp = (customOp: OperationalPointSuggestion) => {
+  const upsertCustomOp = (customOp: OperationalPointSuggestion) => {
     setCustomOps((prev) => [...prev.filter((op) => op.id !== customOp.id), customOp]);
   };
 
-  const [unknownOpNameByStepKey, setUnknownOpNameByStepKey] = useState<Record<string, string>>({});
   const setUnknownOpName = (stepKey: string, name: string) => {
-    setUnknownOpNameByStepKey((prev) => ({ ...prev, [stepKey]: name }));
-
     const location = pathSteps.find(({ key }) => key === stepKey)?.location;
     if (location?.type !== 'operational_point_part_reference') return;
-    const pathStepsLocation = location.operational_point;
-    if (pathStepsLocation.type !== 'domestic') return;
-    const pathStepCodes = {
-      countryCode: pathStepsLocation.country_code,
-      mainCode: pathStepsLocation.main_code,
-    };
-    setCustomOps((ops) =>
-      ops.map((customOp) =>
-        hasSameCodes(customOp, pathStepCodes) ? { ...customOp, name } : customOp
-      )
+    const opRef = location.operational_point;
+    if (opRef.type !== 'domestic') return;
+
+    const existingOp = customOps.find(
+      (op) => op.countryCode === opRef.country_code && op.mainCode === opRef.main_code
     );
+    upsertCustomOp(existingOp ? { ...existingOp, name } : buildCustomOpSuggestion(name, opRef));
   };
 
-  const unknownOps = pathSteps
-    .map(({ key, location }) => {
-      const name = unknownOpNameByStepKey[key];
-      const isInvalid = pathStepsMetadataByKey.get(key)?.validity === 'invalid';
-      const isNamedTrackOffset = location?.type === 'track_offset' && !!name;
-      if (location && (isInvalid || isNamedTrackOffset)) {
-        return buildCustomOpSuggestion(name ?? '', location);
-      }
-      return null;
-    })
-    .filter((op) => op !== null)
-    .filter((op) => !customOps.some((customOp) => hasSameCodes(customOp, op)));
+  const customOpSuggestions = useMemo(() => {
+    const unknownOps = pathSteps
+      .map(({ key, location }) => {
+        const isInvalid = pathStepsMetadataByKey.get(key)?.validity === 'invalid';
+        if (!isInvalid || location?.type !== 'operational_point_part_reference') return null;
+        const opRef = location.operational_point;
+        if (opRef.type !== 'domestic') return null;
+        return buildCustomOpSuggestion('', opRef);
+      })
+      .filter((op) => op !== null)
+      .filter((op) => !customOps.some((customOp) => hasSameCountryAndMainCodes(customOp, op)));
 
-  const customOpSuggestions = [...customOps, ...unknownOps];
+    return [...customOps, ...unknownOps];
+  }, [pathSteps, pathStepsMetadataByKey, customOps]);
 
   const findExistingOp = async (countryCode: string, mainCode: string) => {
     const isSameOp = (op: OperationalPointSuggestion) =>
-      hasSameCodes(op, { countryCode, mainCode });
+      hasSameCountryAndMainCodes(op, { countryCode, mainCode });
 
     const customOp = customOpSuggestions.find(isSameOp);
     if (customOp) return customOp;
 
     const [infraOps, macroNodeSuggestions] = await Promise.all([
       postSearch(
-        { searchPayload: mainAndCountryCodesPayload(infraId, countryCode, mainCode), pageSize },
+        { searchPayload: countryAndMainCodesPayload(infraId, countryCode, mainCode), pageSize },
         true
       ).unwrap() as Promise<SearchResultItemOperationalPoint[]>,
+      // TODO: search macro nodes by location once editoast supports it
       searchMacroNodes(mainCode),
     ]);
-    return buildOpSuggestion(infraOps)[0] ?? macroNodeSuggestions.find(isSameOp) ?? null;
+    return buildOpSuggestion(infraOps).at(0) ?? macroNodeSuggestions.find(isSameOp) ?? null;
   };
 
-  return { customOpSuggestions, addCustomOp, setUnknownOpName, findExistingOp };
+  return { customOpSuggestions, upsertCustomOp, setUnknownOpName, findExistingOp };
 };

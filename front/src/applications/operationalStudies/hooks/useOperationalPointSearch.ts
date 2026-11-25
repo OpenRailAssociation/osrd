@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { uniqBy } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -107,11 +107,14 @@ export const useOperationalPointSearch = ({
   const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
 
   const query = rawActiveInput.trim().toLowerCase();
-  const matchingExtraSuggestions = query
-    ? extraSuggestions.filter(
-        (op) => op.name.toLowerCase().includes(query) || op.mainCode.toLowerCase().includes(query)
-      )
-    : [];
+  const mergedOpSuggestions = useMemo(() => {
+    const matchingExtraSuggestions = query
+      ? extraSuggestions.filter(
+          (op) => op.name.toLowerCase().includes(query) || op.mainCode.toLowerCase().includes(query)
+        )
+      : [];
+    return uniqBy([...matchingExtraSuggestions, ...opSuggestions], 'id');
+  }, [query, extraSuggestions, opSuggestions]);
 
   const [searchTrigger, setSearchTrigger] = useState(0);
 
@@ -284,7 +287,7 @@ export const useOperationalPointSearch = ({
     setActiveStepKey,
     getInputForStep,
     setInputForStep,
-    opSuggestions: uniqBy([...matchingExtraSuggestions, ...opSuggestions], 'id'),
+    opSuggestions: mergedOpSuggestions,
     resetOpSuggestions,
     formatChosenValue,
     commitSelectionForStep,

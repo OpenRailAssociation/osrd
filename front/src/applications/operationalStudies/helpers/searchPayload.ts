@@ -42,7 +42,7 @@ export const exactTrigramPayload = (
   ],
 });
 
-export const mainAndCountryCodesPayload = (
+export const countryAndMainCodesPayload = (
   infraId: number | undefined,
   countryCode: string,
   mainCode: string
