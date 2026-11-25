@@ -291,9 +291,8 @@
       "StartDateAfterEndDate": "研究開始日期必須早於結束日期"
     },
     "sub_categories": {
-      "CodeAlreadyUsed": "子類別代碼「{{code}}」已被使用",
-      "Database": "內部錯誤（資料庫）",
-      "NotFound": "找不到子類別「{{code}}」"
+      "code_already_used": "子類別代碼「{{code}}」已被使用",
+      "not_found": "找不到子類別「{{code}}」"
     },
     "temporary_speed_limit": {
       "Database": "內部錯誤（資料庫）",

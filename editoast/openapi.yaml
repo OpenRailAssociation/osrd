@@ -5882,6 +5882,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SubCategoryPage'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
     post:
       tags:
       - sub_categories
@@ -5902,6 +5956,92 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SubCategory'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Sub category '{code}', is already used
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - code
+                      properties:
+                        code:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '400'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:sub_categories:code_already_used
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /sub_category/{code}:
     delete:
       tags:
@@ -5915,6 +6055,92 @@ paths:
       responses:
         '204':
           description: Delete a sub category
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Sub category '{code}', could not be found
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - code
+                      properties:
+                        code:
+                          type: string
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:sub_categories:not_found
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database error: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:internal
+        '503':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: 'database unavailable: {0}'
+                  required:
+                  - type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '503'
+                    type:
+                      type: string
+                      enum:
+                      - editoast:database:unavailable
   /temporary_speed_limit_group:
     post:
       tags:
@@ -10470,9 +10696,6 @@ components:
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorProjectNotFound'
-      - $ref: '#/components/schemas/EditoastSubCategoryErrorCodeAlreadyUsed'
-      - $ref: '#/components/schemas/EditoastSubCategoryErrorDatabase'
-      - $ref: '#/components/schemas/EditoastSubCategoryErrorNotFound'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorDatabase'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorBatchNotFound'
@@ -12368,76 +12591,6 @@ components:
           type: string
           enum:
           - editoast:study:ProjectNotFound
-    EditoastSubCategoryErrorCodeAlreadyUsed:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastSubCategoryErrorCodeAlreadyUsedContext
-          required:
-          - code
-          properties:
-            code:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:sub_categories:CodeAlreadyUsed
-    EditoastSubCategoryErrorDatabase:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastSubCategoryErrorDatabaseContext
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:sub_categories:Database
-    EditoastSubCategoryErrorNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          title: EditoastSubCategoryErrorNotFoundContext
-          required:
-          - code
-          properties:
-            code:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:sub_categories:NotFound
     EditoastTemporarySpeedLimitErrorDatabase:
       type: object
       required:

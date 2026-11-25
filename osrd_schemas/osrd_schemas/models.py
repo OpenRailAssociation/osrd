@@ -2024,49 +2024,6 @@ class EditoastStudyErrorProjectNotFound(BaseModel):
     type: Literal["editoast:study:ProjectNotFound"] = "editoast:study:ProjectNotFound"
 
 
-class EditoastSubCategoryErrorCodeAlreadyUsedContext(BaseModel):
-    code: StrictStr
-
-
-class EditoastSubCategoryErrorCodeAlreadyUsed(BaseModel):
-    context: Annotated[
-        EditoastSubCategoryErrorCodeAlreadyUsedContext | None,
-        Field(title="EditoastSubCategoryErrorCodeAlreadyUsedContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[400] = 400
-    type: Literal["editoast:sub_categories:CodeAlreadyUsed"] = (
-        "editoast:sub_categories:CodeAlreadyUsed"
-    )
-
-
-class EditoastSubCategoryErrorDatabase(BaseModel):
-    context: Annotated[
-        dict[str, Any] | None, Field(title="EditoastSubCategoryErrorDatabaseContext")
-    ] = None
-    message: StrictStr
-    status: Literal[500] = 500
-    type: Literal["editoast:sub_categories:Database"] = (
-        "editoast:sub_categories:Database"
-    )
-
-
-class EditoastSubCategoryErrorNotFoundContext(BaseModel):
-    code: StrictStr
-
-
-class EditoastSubCategoryErrorNotFound(BaseModel):
-    context: Annotated[
-        EditoastSubCategoryErrorNotFoundContext | None,
-        Field(title="EditoastSubCategoryErrorNotFoundContext"),
-    ] = None
-    message: StrictStr
-    status: Literal[404] = 404
-    type: Literal["editoast:sub_categories:NotFound"] = (
-        "editoast:sub_categories:NotFound"
-    )
-
-
 class EditoastTemporarySpeedLimitErrorDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None,
@@ -5066,9 +5023,6 @@ class EditoastError(
         | EditoastStudyErrorDatabase
         | EditoastStudyErrorNotFound
         | EditoastStudyErrorProjectNotFound
-        | EditoastSubCategoryErrorCodeAlreadyUsed
-        | EditoastSubCategoryErrorDatabase
-        | EditoastSubCategoryErrorNotFound
         | EditoastTemporarySpeedLimitErrorDatabase
         | EditoastTemporarySpeedLimitErrorNameAlreadyUsed
         | EditoastTimetableErrorBatchNotFound
@@ -5229,9 +5183,6 @@ class EditoastError(
         | EditoastStudyErrorDatabase
         | EditoastStudyErrorNotFound
         | EditoastStudyErrorProjectNotFound
-        | EditoastSubCategoryErrorCodeAlreadyUsed
-        | EditoastSubCategoryErrorDatabase
-        | EditoastSubCategoryErrorNotFound
         | EditoastTemporarySpeedLimitErrorDatabase
         | EditoastTemporarySpeedLimitErrorNameAlreadyUsed
         | EditoastTimetableErrorBatchNotFound

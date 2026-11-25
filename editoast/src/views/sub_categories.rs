@@ -6,7 +6,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPool;
-use editoast_derive::EditoastError;
+use editoast_derive::ViewError;
 use itertools::Itertools as _;
 use schemas::rolling_stock::SubCategory;
 use serde::Serialize;
@@ -15,34 +15,41 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::Result;
+use crate::views::DatabaseError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use models::prelude::*;
 
-#[derive(Debug, Error, EditoastError, derive_more::From)]
-#[editoast_error(base_id = "sub_categories")]
-enum SubCategoryError {
-    #[error("Sub category '{code}', could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { code: String },
+#[derive(Debug, Error, ViewError, derive_more::From)]
+#[view_error(path = sub_categories)]
+pub(in crate::views) enum CreateSubCategoryError {
     #[error("Sub category '{code}', is already used")]
-    #[editoast_error(status = 400)]
+    #[view_error(status = BAD_REQUEST, context)]
     CodeAlreadyUsed { code: String },
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    #[from(models::Error)]
-    Database(models::sub_category::Error),
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
-impl From<models::sub_category::Error> for SubCategoryError {
+impl From<models::sub_category::Error> for CreateSubCategoryError {
     fn from(e: models::sub_category::Error) -> Self {
         match e {
             models::sub_category::Error::CodeAlreadyUsed { code } => Self::CodeAlreadyUsed { code },
             models::sub_category::Error::Database(error) => Self::from(error),
         }
     }
+}
+
+#[derive(Debug, Error, ViewError, derive_more::From)]
+#[view_error(path = sub_categories)]
+pub(in crate::views) enum DeleteSubCategoryError {
+    #[error("Sub category '{code}', could not be found")]
+    #[view_error(status = NOT_FOUND, context)]
+    NotFound { code: String },
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -60,12 +67,13 @@ pub(in crate::views) struct SubCategoryPage {
     params(PaginationQueryParams<1000>),
     responses(
         (status = 200, description = "The list of sub categories", body = SubCategoryPage),
+        DatabaseError,
     ),
 )]
 pub(in crate::views) async fn get_sub_categories(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Query(pagination): Query<PaginationQueryParams<1000>>,
-) -> Result<Json<SubCategoryPage>> {
+) -> Result<Json<SubCategoryPage>, DatabaseError> {
     let mut conn = db_pool.get().await?;
 
     let (sub_categories, stats) = models::SubCategory::list_paginated(
@@ -89,19 +97,20 @@ pub(in crate::views) async fn get_sub_categories(
     request_body = Vec<SubCategory>,
     responses(
         (status = 200, description = "Create sub categories", body = Vec<SubCategory>),
+        CreateSubCategoryError
     ),
 )]
 pub(in crate::views) async fn create_sub_categories(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(data): Json<Vec<SubCategory>>,
-) -> Result<Json<Vec<SubCategory>>> {
+) -> Result<Json<Vec<SubCategory>>, CreateSubCategoryError> {
     let conn = &mut db_pool.get().await?;
 
     let sub_categories: Vec<Changeset<models::SubCategory>> = data.into_iter().map_into().collect();
 
     let sub_categories: Vec<_> = models::SubCategory::create_batch(conn, sub_categories)
         .await
-        .map_err(SubCategoryError::from)?;
+        .map_err(CreateSubCategoryError::from)?;
 
     let sub_categories = sub_categories.into_iter().map_into().collect();
 
@@ -121,12 +130,13 @@ struct SubCategoryCodeParam {
     params(SubCategoryCodeParam),
     responses(
         (status = 204, description = "Delete a sub category"),
+        DeleteSubCategoryError
     ),
 )]
 pub(in crate::views) async fn delete_sub_category(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Path(code): Path<String>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, DeleteSubCategoryError> {
     let conn = db_pool.get().await?;
 
     conn.transaction(|mut tx| {
@@ -141,9 +151,9 @@ pub(in crate::views) async fn delete_sub_category(
 async fn delete_sub_category_and_fallback_to_main(
     conn: &mut DbConnection,
     code: String,
-) -> Result<()> {
+) -> Result<(), DeleteSubCategoryError> {
     let sub_category = models::SubCategory::retrieve_or_fail(conn.clone(), code.clone(), || {
-        SubCategoryError::NotFound { code: code.clone() }
+        DeleteSubCategoryError::NotFound { code: code.clone() }
     })
     .await?;
 
