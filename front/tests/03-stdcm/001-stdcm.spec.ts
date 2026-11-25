@@ -76,7 +76,7 @@ test.describe('STDCM simulation with all stops and towed rolling stock', { tag: 
       });
 
       await test.step('Add/delete default via and linked path', async () => {
-        await viaSection.addAndDeletedDefaultVia(StdcmStopTypes.PASSAGE_TIME);
+        await viaSection.addAndDeletedDefaultVia(StdcmStopTypes.WAYPOINT);
         await linkedTrainSection.addAndDeleteDefaultLinkedPath({
           defaultDate: DEFAULT_DETAILS.arrivalDate,
         });

@@ -105,7 +105,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     },
     key: '1',
     isVia: true,
-    stopType: StdcmStopTypes.PASSAGE_TIME,
+    stopType: StdcmStopTypes.WAYPOINT,
     consistChange: undefined,
   },
   {
@@ -120,7 +120,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     },
     key: '2',
     isVia: true,
-    stopType: StdcmStopTypes.PASSAGE_TIME,
+    stopType: StdcmStopTypes.WAYPOINT,
     consistChange: undefined,
   },
   {
@@ -135,7 +135,7 @@ const stdcmPathSteps: StdcmPathStep[] = [
     },
     key: '3',
     isVia: true,
-    stopType: StdcmStopTypes.PASSAGE_TIME,
+    stopType: StdcmStopTypes.WAYPOINT,
     consistChange: undefined,
   },
   {
