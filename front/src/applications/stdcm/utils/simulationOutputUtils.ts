@@ -1,14 +1,16 @@
 import type { TFunction } from 'i18next';
 
-import type {
-  StdcmSimulationOutputs,
-  StdcmSuccessResponse,
-  StdcmPathProperties,
-  StdcmResultsOperationalPoint,
+import {
+  StdcmStopTypes,
+  type StdcmSimulationOutputs,
+  type StdcmSuccessResponse,
+  type StdcmPathProperties,
+  type StdcmResultsOperationalPoint,
 } from 'applications/stdcm/types';
 import type { SimulationTableRow } from 'modules/SimulationReportSheet/types';
 import {
   dateToHHMM,
+  getForcedStopTypeLabel,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { getRowStyle } from 'modules/SimulationReportSheet/utils/formatSimulationTable';
@@ -52,11 +54,15 @@ export const formatStdcmDataForSimulationTable = (
 
     const startTime = isFirst || isStop ? dateToHHMM(op.stopEndTime) : '';
     const endTime = isLast || isStop ? dateToHHMM(op.time) : '';
-    const { stopType, trackName } = op;
+    const { stopType, trackName, forcedStopType } = op;
+    const isStopHighlighted = !forcedStopType || isPathStep;
 
-    const stopTypeLabel = stopType
-      ? capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`))
-      : t('reportSheet.serviceStop');
+    const stopTypeLabel =
+      forcedStopType && (!stopType || stopType === StdcmStopTypes.PASSAGE_TIME)
+        ? getForcedStopTypeLabel(forcedStopType, t)
+        : stopType
+          ? capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`))
+          : t('reportSheet.serviceStop');
 
     let passageStop = '';
     if (!isFirst && !isLast) {
@@ -85,6 +91,7 @@ export const formatStdcmDataForSimulationTable = (
       name: !isPathStep && op.name === previousOp.name ? '=' : op.name || t('reportSheet.unknown'),
       secondaryCode: op.secondaryCode,
       secondaryCodeLabel: op.secondaryCodeLabel,
+      forcedStopType,
       trackName,
       endTime,
       passageStop,
@@ -100,7 +107,7 @@ export const formatStdcmDataForSimulationTable = (
       stopType,
       isBackTrack: op.isBackTrack,
       consistChanges,
-      ...getRowStyle(op.stopDuration, isPathStep, isFirst, isLast),
+      ...getRowStyle(op.stopDuration, isPathStep, isFirst, isLast, isStopHighlighted),
     };
   });
 };

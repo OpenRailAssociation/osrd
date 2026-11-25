@@ -1,7 +1,14 @@
 import { Fragment, useState, type JSX } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { ArrowRight, CheckCircle, Container, Backtrack } from '@osrd-project/ui-icons';
+import {
+  ArrowRight,
+  Backtrack,
+  CheckCircle,
+  Container,
+  GeneralStop,
+  Overtake,
+} from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -14,6 +21,7 @@ import type {
 } from 'applications/stdcm/types';
 import {
   dateToHHMM,
+  getForcedStopTypeLabel,
   getStopDurationTime,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
@@ -94,6 +102,11 @@ const StdcmResultsTable = ({
                   <Backtrack className="backtrack-svg" />
                 </div>
               )}
+              {step.forcedStopType && (
+                <div className="forced-stop-icon">
+                  {step.forcedStopType === 'GENERAL_STOP' ? <GeneralStop /> : <Overtake />}
+                </div>
+              )}
             </td>
             <td className="name" data-testid="operational-point-name">
               {isNotExtremity &&
@@ -102,6 +115,11 @@ const StdcmResultsTable = ({
               step.stopDuration === null
                 ? '='
                 : step.name || t('reportSheet.unknown')}
+              {step.forcedStopType && (
+                <div className="forced-stop-label">
+                  {getForcedStopTypeLabel(step.forcedStopType, t)}
+                </div>
+              )}
               {step.isBackTrack && (
                 <div className="backtrack-label" data-testid="backtrack-label">
                   {t('simulation.results.backtrack')}
