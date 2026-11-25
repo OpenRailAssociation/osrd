@@ -57,18 +57,14 @@ async fn setup_clients(openfga_args: OpenfgaArgs) -> Result<(Client, Client), Mi
         },
     );
     let client_authz = match Client::try_with_store(
-        &openfga_args.authorization_store,
+        &openfga_args.openfga_store,
         connection_settings.clone(),
     )
     .await
     {
         Err(fga::client::InitializationError::NotFound(_)) => {
             info!("Authorization store not found, creating it.");
-            Client::try_new_store(
-                &openfga_args.authorization_store,
-                connection_settings.clone(),
-            )
-            .await?
+            Client::try_new_store(&openfga_args.openfga_store, connection_settings.clone()).await?
         }
         result => result?,
     };
