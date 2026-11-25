@@ -6,7 +6,7 @@ use crate::authentication;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthorizationError;
-use crate::views::authz::retrieve_user_groups;
+use crate::views::authz::user::retrieve_user_groups;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::TrainScheduleWithConsist;
 use crate::views::timetable::PhysicsConsistParameters;

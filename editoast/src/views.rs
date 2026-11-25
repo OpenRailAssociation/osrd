@@ -93,13 +93,13 @@ fn service_router() -> server::router::DocumentedRouter {
                         get!(authz::resource_granted_users),
                     )
                     .nests("/me", |path| {
-                        path.route("/", get!(authz::whoami))
-                            .route("/groups", get!(authz::user_groups))
-                            .route("/grants", post!(authz::user_grants))
-                            .route("/privileges", post!(authz::user_privileges))
+                        path.route("/", get!(authz::user::whoami))
+                            .route("/groups", get!(authz::user::user_groups))
+                            .route("/grants", post!(authz::user::user_grants))
+                            .route("/privileges", post!(authz::user::user_privileges))
                     })
                     .nests("/user", |path| {
-                        path.route("/info", post!(authz::users_info))
+                        path.route("/info", post!(authz::user::users_info))
                     })
                     .nests("/users", |path| {
                         path.route("/", post!(authz::create_user))
