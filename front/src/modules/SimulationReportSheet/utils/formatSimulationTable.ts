@@ -14,7 +14,8 @@ export const getRowStyle = (
   stepDuration: Duration | null | undefined,
   isPathStep: boolean,
   isFirst: boolean,
-  isLast: boolean
+  isLast: boolean,
+  isStopHighlighted = true
 ) => {
   const isStop = !!stepDuration && !isLast;
   const isPathStepWithoutStop = isPathStep && !isFirst && !isLast && stepDuration === null;
@@ -35,7 +36,7 @@ export const getRowStyle = (
   }
 
   return {
-    rowStyle: isStop ? styles.simulation.blueRow : styles.simulation.tbody,
+    rowStyle: isStop && isStopHighlighted ? styles.simulation.blueRow : styles.simulation.tbody,
     stylesByColumn: {
       ...(isPathStepWithoutStop
         ? {

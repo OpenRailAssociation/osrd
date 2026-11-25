@@ -228,7 +228,6 @@
           "backtrack": "a backtrack",
           "consistChange": "a consist change",
           "driverSwitch": "a driver switch",
-          "overtake": "an overtake",
           "passageTime": "passage time",
           "serviceStop": "a service stop"
         },
@@ -331,6 +330,7 @@
     },
     "date": "Date",
     "destination": "Destination",
+    "generalStopInfo": "This operational point is part of a general stop station. The simulation will stop for 1min.",
     "linkedTrain": {
       "anterior": "Anterior train",
       "error": "Linked trains error",
@@ -345,6 +345,7 @@
       "backtrack": "backtrack",
       "consistChange": "consist change",
       "driverSwitch": "driver switch",
+      "generalStop": "general stop",
       "overtake": "overtake",
       "passageTime": "passage time",
       "serviceStop": "service stop"

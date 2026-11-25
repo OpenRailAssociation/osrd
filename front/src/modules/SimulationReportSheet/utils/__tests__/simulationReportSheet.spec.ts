@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
+import type { OperationalPointStop } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import {
@@ -148,6 +149,68 @@ describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
         stopEndTime: new Date(2026, 0, 1, 10, 35, 40),
       },
     ]);
+  });
+
+  describe('with forced stops', () => {
+    const trainLength = 0.05; // the train length is in meters, whereas the positions are in mm
+    const forcedOpStops: OperationalPointStop[] = [{ id: 'B', stop_type: 'GENERAL_STOP' }];
+
+    it('should edit stop duration of forced stop ops when the stop occurs within the train length after them', () => {
+      const stopPositions = [90];
+      const train = {
+        positions: [0, 50, 90, 90, 150],
+        times: [0, 600000, 900000, 960000, 1800000],
+        speeds: [0, 2, 0, 2, 0],
+        departureTime: new Date(2026, 0, 1, 10),
+      };
+      const result = insertMissingStopsInOperationalPointsWithTimes(
+        [opA, opB, opC],
+        stopPositions,
+        train,
+        forcedOpStops,
+        trainLength
+      );
+      expect(result).toEqual([
+        opA,
+        {
+          ...opB,
+          stopDuration: new Duration({ seconds: 60 }),
+          stopEndTime: new Date(2026, 0, 1, 10, 16),
+        },
+        opC,
+      ]);
+    });
+
+    it('should create a new op when the stop of a forced stop op occurs further than the train length', () => {
+      const stopPositions = [120];
+      const train = {
+        positions: [0, 50, 120, 120, 150],
+        times: [0, 600000, 900000, 960000, 1800000],
+        speeds: [0, 2, 0, 2, 0],
+        departureTime: new Date(2026, 0, 1, 10),
+      };
+      const result = insertMissingStopsInOperationalPointsWithTimes(
+        [opA, opB, opD],
+        stopPositions,
+        train,
+        forcedOpStops,
+        trainLength
+      );
+      expect(result).toEqual([
+        opA,
+        opB,
+        {
+          opId: 'unplanned_stop_at_120',
+          positionOnPath: 120,
+          stopDuration: new Duration({ seconds: 60 }),
+          time: new Date(2026, 0, 1, 10, 15),
+          stopEndTime: new Date(2026, 0, 1, 10, 16),
+          stopRequested: false,
+          weight: null,
+        },
+        opD,
+      ]);
+    });
   });
 
   it('should create and insert unplanned stops as new ops', () => {
