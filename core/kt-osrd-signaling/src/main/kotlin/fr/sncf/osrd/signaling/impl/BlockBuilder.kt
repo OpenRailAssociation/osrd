@@ -7,7 +7,7 @@ import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.units.*
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -19,8 +19,8 @@ internal fun internalBuildBlocks(
     // Step 1) associate DirDetectorIds to a list of delimiting logical signals
     val signalDelimiters = findSignalDelimiters(rawSignalingInfra, loadedSignalInfra)
     val detectorEntrySignals = makeDetectorEntrySignals(loadedSignalInfra, signalDelimiters)
-    val missingSignalLogAggregator = LogAggregator({ logger.debug(it) })
-    val nonRouteDelimitingSignalLogAggregator = LogAggregator({ logger.debug(it) })
+    val missingSignalLogAggregator = LogAggregator({ logger.debug { it } })
+    val nonRouteDelimitingSignalLogAggregator = LogAggregator({ logger.debug { it } })
     val result =
         blockInfraBuilder(loadedSignalInfra, rawSignalingInfra) {
             // Step 2) iterate on zone paths along the route path.

@@ -23,6 +23,7 @@ import fr.sncf.osrd.utils.Direction.DECREASING
 import fr.sncf.osrd.utils.Direction.INCREASING
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.util.*
 import kotlin.collections.set
@@ -32,7 +33,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import mu.KotlinLogging
 
 val logger = KotlinLogging.logger {}
 private const val SPEED_LIMIT_TAGS_RESOURCE_PATH = "speed_limit_tags.yml"
@@ -189,9 +189,9 @@ private fun getBlockedGauge(
             if (range.begin <= begin && range.end >= end) {
                 val compatibleTypes = compatibleGaugeTypeMap[range.category]
                 if (compatibleTypes == null) {
-                    logger.warn(
-                        "Invalid gauge type ${range.category} for track ${rjsTrackSection.id}",
-                    )
+                    logger.warn {
+                        "Invalid gauge type ${range.category} for track ${rjsTrackSection.id}"
+                    }
                     allowedTypes.addAll(allLoadingGaugeTypeSet)
                 } else {
                     allowedTypes.addAll(compatibleTypes)
@@ -442,11 +442,11 @@ fun parseNeutralRanges(
                     chunkDirNeutralSections.subMap(dirChunkLower, dirChunkUpper)
                 previousDirNeutralSections.forEachWhile { _, _, value ->
                     if (value != incomingNeutralSection) {
-                        logger.warn(
+                        logger.warn {
                             "Neutral-section conflict on track-range $track.$dir" +
                                 "[$chunkLower, $chunkUpper]: " +
-                                "$value != $incomingNeutralSection",
-                        )
+                                "$value != $incomingNeutralSection"
+                        }
                         return@forEachWhile false
                     }
                     true
@@ -778,9 +778,9 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
                 )
             if (partId == null) {
                 // TODO: link warning to specific request (through response or tracing)
-                logger.warn(
-                    "Invalid Part on track $trackSectionName for Operational Point $operationalPointId",
-                )
+                logger.warn {
+                    "Invalid Part on track $trackSectionName for Operational Point $operationalPointId"
+                }
             }
         }
     }

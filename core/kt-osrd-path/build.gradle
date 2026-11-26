@@ -25,6 +25,7 @@ dependencies {
 
     implementation libs.guava
     implementation libs.kotlin.logging
+    implementation libs.slf4j
     testImplementation libs.kotlin.test
     implementation libs.hppc
 }

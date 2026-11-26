@@ -9,7 +9,7 @@ import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.sim_infra.impl.loadedSignalInfra
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Distance
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -86,8 +86,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         loadedSignalInfra: LoadedSignalInfra,
     ): BlockInfra {
         val blockInfra = internalBuildBlocks(sigModuleManager, rawSignalingInfra, loadedSignalInfra)
-        val blockLogAggregator = LogAggregator({ logger.debug(it) })
-        val signalLogAggregator = LogAggregator({ logger.debug(it) })
+        val blockLogAggregator = LogAggregator({ logger.debug { it } })
+        val signalLogAggregator = LogAggregator({ logger.debug { it } })
         for (block in blockInfra.blocks) {
             val sigSystem = blockInfra.getBlockSignalingSystem(block)
             val path = blockInfra.getBlockZonePaths(block)

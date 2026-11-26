@@ -10,8 +10,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STO
 import fr.sncf.osrd.utils.OffsetRangeMap
 import fr.sncf.osrd.utils.offsetRangeMapOf
 import fr.sncf.osrd.utils.units.TimeDelta
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.Long.min
-import mu.KotlinLogging
 
 val simulationScheduleItemParserLogger = KotlinLogging.logger {}
 

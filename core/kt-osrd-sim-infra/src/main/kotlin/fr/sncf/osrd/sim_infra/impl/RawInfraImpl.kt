@@ -10,9 +10,9 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.set
 import kotlin.time.Duration
-import mu.KotlinLogging
 
 val logger = KotlinLogging.logger {}
 

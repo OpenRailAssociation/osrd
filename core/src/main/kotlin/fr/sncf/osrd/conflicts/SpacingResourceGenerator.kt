@@ -37,11 +37,11 @@ import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.toOffset
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.iterator
 import kotlin.comparisons.compareBy
 import kotlin.math.max
 import kotlin.math.min
-import mu.KotlinLogging
 
 val logger = KotlinLogging.logger {}
 
