@@ -5243,6 +5243,7 @@ export type InnerTimetable = {
 };
 export type TimetableResponse = Timetable & {
   inners: InnerTimetable[];
+  train_schedules_count: number;
 };
 export type TimetablePatchForm = {
   catalog_entry_id?: number | null;

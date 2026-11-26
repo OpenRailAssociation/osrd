@@ -7176,6 +7176,7 @@ class Switch(BaseModel):
 
 class TimetableResponse(Timetable):
     inners: list[InnerTimetable]
+    train_schedules_count: Annotated[StrictInt, Field(ge=0)]
 
 
 class TrackSectionModel(BaseModel):

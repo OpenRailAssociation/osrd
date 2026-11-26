@@ -85,6 +85,32 @@ pub async fn create_timetable_with_simple_paced_train(
     (timetable, train_schedule)
 }
 
+/// Returns a tuple of (outer_timetable, inner_timetable), named "outer" and "inner":
+/// the outer timetable has one train and includes the inner one, which has two trains
+pub async fn create_timetable_with_inner_and_trains(
+    conn: &mut DbConnection,
+) -> (Timetable, Timetable) {
+    let (outer_timetable, train_schedule_set) =
+        create_timetable_with_train_schedule_set(conn).await;
+    let outer_timetable = Timetable::changeset()
+        .name(Some("outer".into()))
+        .update(conn, outer_timetable.id)
+        .await
+        .expect("Failed to name outer timetable")
+        .expect("The outer timetable should exist");
+    let inner_timetable = Timetable::changeset()
+        .name(Some("inner".into()))
+        .update(conn, train_schedule_set.timetable_id)
+        .await
+        .expect("Failed to name inner timetable")
+        .expect("The inner timetable should exist");
+    create_simple_paced_train(conn, outer_timetable.id).await;
+    create_simple_paced_train(conn, inner_timetable.id).await;
+    create_simple_paced_train(conn, inner_timetable.id).await;
+
+    (outer_timetable, inner_timetable)
+}
+
 pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
     Timetable::changeset()
         .create(conn)
