@@ -135,7 +135,7 @@
           "type": "string"
         },
         "openfga": {
-          "default": "openfga/openfga:v1.8.6",
+          "default": "openfga/openfga:v1.23.0",
           "title": "openfga",
           "type": "string"
         },

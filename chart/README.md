@@ -58,7 +58,7 @@ The CI will fail if the committed schema doesn't match the generated output.
 | images.core | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-core:IMAGES_VERSION_REPLACE_ME"` |  |
 | images.editoast | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-editoast:IMAGES_VERSION_REPLACE_ME"` |  |
 | images.gateway | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-gateway:IMAGES_VERSION_REPLACE_ME-front"` |  |
-| images.openfga | string | `"openfga/openfga:v1.8.6"` |  |
+| images.openfga | string | `"openfga/openfga:v1.23.0"` |  |
 | images.osrdyne | string | `"ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-osrdyne:IMAGES_VERSION_REPLACE_ME"` |  |
 | labels | object | `{}` |  |
 | nameOverride | string | `""` |  |
