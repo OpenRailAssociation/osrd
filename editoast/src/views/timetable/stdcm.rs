@@ -432,6 +432,11 @@ pub(in crate::views) async fn stdcm(
             earliest_departure_time,
             maximum_departure_delay,
             maximum_run_time,
+            consist_schedule: request.consist_schedule.clone(),
+            rolling_stock_names: physics_consists_parameters
+                .iter()
+                .map(|consist| consist.traction_engine.name.clone())
+                .collect(),
         };
         tokio::spawn(async move { metadata.save(&s3).await }.in_current_span());
     }
