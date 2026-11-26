@@ -103,27 +103,38 @@ impl From<Timetable> for schemas::timetable::Timetable {
 }
 
 impl Timetable {
-    pub async fn train_schedules_count(
-        timetable_id: i64,
+    pub async fn train_schedules_count_batch(
         conn: &mut DbConnection,
-    ) -> Result<i64, database::DatabaseError> {
+        timetable_ids: &[i64],
+    ) -> Result<HashMap<i64, u64>, database::DatabaseError> {
         use database::tables::timetable_inheritance;
         use database::tables::train_schedule;
+        use diesel::dsl::count_star;
 
-        train_schedule::dsl::train_schedule
-            .filter(
-                train_schedule::timetable_id
-                    .eq(timetable_id)
-                    .or(train_schedule::timetable_id.eq_any(
-                        timetable_inheritance::table
-                            .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
-                            .select(timetable_inheritance::inner_timetable_id),
-                    )),
+        let own_train_counts = train_schedule::table
+            .filter(train_schedule::timetable_id.eq_any(timetable_ids))
+            .group_by(train_schedule::timetable_id)
+            .select((train_schedule::timetable_id, count_star()))
+            .load(conn.write().await.deref_mut())
+            .await?;
+
+        let inherited_train_counts = timetable_inheritance::table
+            .filter(timetable_inheritance::outer_timetable_id.eq_any(timetable_ids))
+            .inner_join(
+                train_schedule::table
+                    .on(train_schedule::timetable_id.eq(timetable_inheritance::inner_timetable_id)),
             )
-            .count()
-            .get_result(conn.write().await.deref_mut())
-            .await
-            .map_err(Into::into)
+            .group_by(timetable_inheritance::outer_timetable_id)
+            .select((timetable_inheritance::outer_timetable_id, count_star()))
+            .load(conn.write().await.deref_mut())
+            .await?;
+
+        Ok(own_train_counts
+            .into_iter()
+            .chain(inherited_train_counts)
+            .map(|(timetable_id, count): (i64, i64)| (timetable_id, count as u64))
+            .into_grouping_map()
+            .sum())
     }
 
     pub async fn get_train_schedule_set_ids_from_timetable(
