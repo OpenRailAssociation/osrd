@@ -1177,6 +1177,20 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['temporary_speed_limits'],
       }),
+      getTimetable: build.query<GetTimetableApiResponse, GetTimetableApiArg>({
+        query: (queryArg) => ({
+          url: `/timetable`,
+          params: {
+            timetable_type: queryArg.timetableType,
+            is_train_schedule_set: queryArg.isTrainScheduleSet,
+            catalog_entry_id: queryArg.catalogEntryId,
+            published: queryArg.published,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['timetable'],
+      }),
       postTimetable: build.mutation<PostTimetableApiResponse, PostTimetableApiArg>({
         query: (queryArg) => ({
           url: `/timetable`,
@@ -2694,6 +2708,15 @@ export type PostTemporarySpeedLimitGroupApiArg = {
       track_ranges: DirectionalTrackRange[];
     }[];
   };
+};
+export type GetTimetableApiResponse = /** status 200 List of timetables */ ListTimetablesResponse;
+export type GetTimetableApiArg = {
+  timetableType?: TimetableType;
+  isTrainScheduleSet?: boolean;
+  catalogEntryId?: number;
+  published?: boolean;
+  page?: number;
+  pageSize?: number;
 };
 export type PostTimetableApiResponse = /** status 201 The created timetable */ TimetableResult;
 export type PostTimetableApiArg = {
@@ -5205,23 +5228,6 @@ export type SubCategory = {
 export type SubCategoryPage = PaginationStats & {
   results: SubCategory[];
 };
-export type TimetableResult = {
-  catalog_entry_id?: number | null;
-  description: string;
-  is_train_schedule_set: boolean;
-  published: boolean;
-  timetable_id: number;
-  timetable_name?: string | null;
-  timetable_type: TimetableType;
-};
-export type TimetableForm = {
-  catalog_entry_id?: number | null;
-  description?: string;
-  is_train_schedule_set?: boolean;
-  published?: boolean;
-  timetable_name?: string | null;
-  timetable_type: TimetableType;
-};
 export type Timetable = {
   catalog_entry_id?: number | null;
   description: string;
@@ -5244,6 +5250,26 @@ export type InnerTimetable = {
 export type TimetableResponse = Timetable & {
   inners: InnerTimetable[];
   train_schedules_count: number;
+};
+export type ListTimetablesResponse = PaginationStats & {
+  results: TimetableResponse[];
+};
+export type TimetableResult = {
+  catalog_entry_id?: number | null;
+  description: string;
+  is_train_schedule_set: boolean;
+  published: boolean;
+  timetable_id: number;
+  timetable_name?: string | null;
+  timetable_type: TimetableType;
+};
+export type TimetableForm = {
+  catalog_entry_id?: number | null;
+  description?: string;
+  is_train_schedule_set?: boolean;
+  published?: boolean;
+  timetable_name?: string | null;
+  timetable_type: TimetableType;
 };
 export type TimetablePatchForm = {
   catalog_entry_id?: number | null;

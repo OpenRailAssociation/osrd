@@ -7330,6 +7330,10 @@ class InfraObjectSwitch(BaseModel):
     railjson: Switch
 
 
+class ListTimetablesResponse(PaginationStats):
+    results: list[TimetableResponse]
+
+
 class MacroNodeBatchForm(BaseModel):
     macro_nodes: list[MacroNodeForm]
     scenario_id: StrictInt
