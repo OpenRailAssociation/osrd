@@ -137,6 +137,15 @@ enum TimetableError {
         indices: Vec<usize>,
         timetable_id: i64,
     },
+    #[error("A timetable must have a name to have a catalog entry.")]
+    #[editoast_error(status = 422)]
+    MissingName,
+    #[error("A timetable must have a catalog entry to be published.")]
+    #[editoast_error(status = 422)]
+    MissingCatalogEntry,
+    #[error("A timetable must be a train schedule set to have a catalog entry.")]
+    #[editoast_error(status = 422)]
+    InvalidType,
 }
 
 #[derive(Debug, Error, ViewError)]
@@ -182,14 +191,25 @@ pub struct TimetableIdParam {
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TimetableForm {
     timetable_type: schemas::timetable_type::TimetableType,
+    #[serde(default)]
+    is_train_schedule_set: bool,
     timetable_name: Option<String>,
+    catalog_entry_id: Option<i64>,
+    #[serde(default)]
+    description: String,
+    #[serde(default)]
+    published: bool,
 }
 
 impl TimetableForm {
     pub fn into_changeset(self) -> Changeset<Timetable> {
         Timetable::changeset()
             .timetable_type(models::timetable_type::TimetableType(self.timetable_type))
+            .is_train_schedule_set(self.is_train_schedule_set)
             .name(self.timetable_name)
+            .catalog_entry_id(self.catalog_entry_id)
+            .description(self.description)
+            .published(self.published)
     }
 }
 
@@ -207,9 +227,40 @@ pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPool>>,
     Json(timetable_form): Json<TimetableForm>,
 ) -> Result<impl IntoResponse> {
+    match &timetable_form {
+        TimetableForm {
+            catalog_entry_id: Some(_),
+            is_train_schedule_set: false,
+            ..
+        } => return Err(TimetableError::InvalidType.into()),
+        TimetableForm {
+            catalog_entry_id: Some(_),
+            timetable_name: None,
+            ..
+        } => return Err(TimetableError::MissingName.into()),
+        TimetableForm {
+            catalog_entry_id: None,
+            published: true,
+            ..
+        } => return Err(TimetableError::MissingCatalogEntry.into()),
+        _ => {}
+    }
     let conn = &mut db_pool.get().await?;
 
     let timetable = timetable_form.into_changeset().create(conn).await?;
+
+    // TODO Remove with the train_schedule_set table
+    if timetable.is_train_schedule_set {
+        let train_schedule_set = TrainScheduleSet::changeset()
+            .timetable_id(timetable.id)
+            .create(conn)
+            .await?;
+        Timetable::changeset()
+            .train_schedule_set_id(Some(train_schedule_set.id))
+            .update(conn, timetable.id)
+            .await?;
+    }
+
     let response: TimetableResult = timetable.into();
 
     Ok((StatusCode::CREATED, Json(response)))
@@ -1323,26 +1374,82 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let pool = app.db_pool();
 
+        let catalog_entry = create_catalog_entry_with_name(&mut pool.get_ok(), "catalog").await;
+
         // Insert timetable
 
         let created_timetable: TimetableResult = app
             .post("/timetable")
             .json(&TimetableForm {
                 timetable_type: schemas::timetable_type::TimetableType::Hourly,
+                is_train_schedule_set: true,
                 timetable_name: Some("Name".into()),
+                catalog_entry_id: Some(catalog_entry.id),
+                description: "Description".into(),
+                published: true,
             })
             .await
             .assert_status(StatusCode::CREATED)
             .json();
+
+        let expected = TimetableResult {
+            timetable_id: created_timetable.timetable_id,
+            timetable_type: schemas::timetable_type::TimetableType::Hourly,
+            is_train_schedule_set: true,
+            timetable_name: Some("Name".into()),
+            catalog_entry_id: Some(catalog_entry.id),
+            description: "Description".into(),
+            published: true,
+        };
+        assert_eq!(created_timetable, expected);
 
         let retrieved_timetable =
             Timetable::retrieve(pool.get_ok(), created_timetable.timetable_id)
                 .await
                 .expect("Failed to retrieve timetable")
                 .expect("Timetable not found");
+        assert_eq!(TimetableResult::from(retrieved_timetable), expected);
+    }
 
-        assert_eq!(created_timetable, retrieved_timetable.into());
-        assert_eq!(created_timetable.timetable_name, Some("Name".into()));
+    #[rstest]
+    #[case::published_without_catalog_entry(
+        json!({ "timetable_type": "CALENDAR", "is_train_schedule_set": true, "timetable_name": "Name", "published": true }),
+        None,
+        "editoast:timetable:MissingCatalogEntry")]
+    #[case::catalog_entry_without_name(
+        json!({ "timetable_type": "CALENDAR", "is_train_schedule_set": true }),
+        Some("catalog"),
+        "editoast:timetable:MissingName")]
+    #[case::catalog_entry_without_train_schedule_set(
+        json!({ "timetable_type": "CALENDAR", "is_train_schedule_set": false, "timetable_name": "Name" }),
+        Some("catalog"),
+        "editoast:timetable:InvalidType")]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn timetable_post_fails(
+        #[case] mut form: serde_json::Value,
+        #[case] catalog_entry_name: Option<&str>,
+        #[case] expected_error_type: &str,
+    ) {
+        let app = test_app!().skip_authz().build();
+        let pool = app.db_pool();
+
+        let catalog_entry_id = match catalog_entry_name {
+            Some(name) => Some(
+                create_catalog_entry_with_name(&mut pool.get_ok(), name)
+                    .await
+                    .id,
+            ),
+            None => None,
+        };
+        form["catalog_entry_id"] = json!(catalog_entry_id);
+
+        let response: InternalError = app
+            .post("/timetable")
+            .json(&form)
+            .await
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .json();
+        assert_eq!(&response.error_type, expected_error_type);
     }
 
     #[rstest]

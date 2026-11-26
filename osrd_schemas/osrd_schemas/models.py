@@ -2116,6 +2116,36 @@ class EditoastTimetableErrorInvalidPeriod(BaseModel):
     )
 
 
+class EditoastTimetableErrorInvalidType(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTimetableErrorInvalidTypeContext")
+    ] = None
+    message: StrictStr
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:InvalidType"] = "editoast:timetable:InvalidType"
+
+
+class EditoastTimetableErrorMissingCatalogEntry(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastTimetableErrorMissingCatalogEntryContext"),
+    ] = None
+    message: StrictStr
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:MissingCatalogEntry"] = (
+        "editoast:timetable:MissingCatalogEntry"
+    )
+
+
+class EditoastTimetableErrorMissingName(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastTimetableErrorMissingNameContext")
+    ] = None
+    message: StrictStr
+    status: Literal[422] = 422
+    type: Literal["editoast:timetable:MissingName"] = "editoast:timetable:MissingName"
+
+
 class EditoastTimetableErrorNotFoundContext(BaseModel):
     timetable_id: StrictInt
 
@@ -5005,6 +5035,9 @@ class EditoastError(
         | EditoastTimetableErrorInvalidOuter
         | EditoastTimetableErrorInvalidPaceInHourlyTimetable
         | EditoastTimetableErrorInvalidPeriod
+        | EditoastTimetableErrorInvalidType
+        | EditoastTimetableErrorMissingCatalogEntry
+        | EditoastTimetableErrorMissingName
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
         | EditoastTimetableErrorTimeout
@@ -5163,6 +5196,9 @@ class EditoastError(
         | EditoastTimetableErrorInvalidOuter
         | EditoastTimetableErrorInvalidPaceInHourlyTimetable
         | EditoastTimetableErrorInvalidPeriod
+        | EditoastTimetableErrorInvalidType
+        | EditoastTimetableErrorMissingCatalogEntry
+        | EditoastTimetableErrorMissingName
         | EditoastTimetableErrorNotFound
         | EditoastTimetableErrorParseError
         | EditoastTimetableErrorTimeout
@@ -6157,6 +6193,10 @@ class Timetable(BaseModel):
 
 
 class TimetableForm(BaseModel):
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr | None = None
+    is_train_schedule_set: StrictBool | None = None
+    published: StrictBool | None = None
     timetable_name: StrictStr | None = None
     timetable_type: TimetableType
 

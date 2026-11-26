@@ -11004,6 +11004,9 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidOuter'
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidPaceInHourlyTimetable'
       - $ref: '#/components/schemas/EditoastTimetableErrorInvalidPeriod'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInvalidType'
+      - $ref: '#/components/schemas/EditoastTimetableErrorMissingCatalogEntry'
+      - $ref: '#/components/schemas/EditoastTimetableErrorMissingName'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
       - $ref: '#/components/schemas/EditoastTimetableErrorTimeout'
@@ -13039,6 +13042,66 @@ components:
           type: string
           enum:
           - editoast:timetable:InvalidPeriod
+    EditoastTimetableErrorInvalidType:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorInvalidTypeContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:InvalidType
+    EditoastTimetableErrorMissingCatalogEntry:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorMissingCatalogEntryContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:MissingCatalogEntry
+    EditoastTimetableErrorMissingName:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastTimetableErrorMissingNameContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 422
+        type:
+          type: string
+          enum:
+          - editoast:timetable:MissingName
     EditoastTimetableErrorNotFound:
       type: object
       required:
@@ -19888,6 +19951,17 @@ components:
       required:
       - timetable_type
       properties:
+        catalog_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
+        is_train_schedule_set:
+          type: boolean
+        published:
+          type: boolean
         timetable_name:
           type:
           - string
