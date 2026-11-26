@@ -11,12 +11,8 @@ import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.seconds
 import kotlin.math.max
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 val FORCED_OP_STOP_DURATION = 60.seconds
-
-val stepTrackerLogger: Logger = LoggerFactory.getLogger("StepTracker")
 
 /**
  * Component of `InfraExplorer` in charge of keeping track of anything related to all the steps. It
@@ -224,13 +220,6 @@ private constructor(
                     .flatMap { step ->
                         step.locations.groupBy(BlockLocation::edge).map { (block, locationsOnBlock)
                             ->
-                            if (locationsOnBlock.size > 1) {
-                                // We do not allow steps to have multiple locations on the same
-                                // block, i.e. locations that can be reached twice in the same path.
-                                stepTrackerLogger.warn(
-                                    "Step at ${step.inputStepIndex} has ${locationsOnBlock.size} duplicate locations on block $block: keeping the location with the lowest offset.",
-                                )
-                            }
                             val location = locationsOnBlock.minBy(BlockLocation::offset)
                             block to step.copy(locations = listOf(location))
                         }
