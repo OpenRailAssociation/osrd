@@ -252,7 +252,9 @@ const ComboBox = <T,>({
     inputRef.current?.focus();
   }, [emptyValue, value, onSelectSuggestion, resetSuggestions, onChange]);
 
-  useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur);
+  useOutsideClick(showSuggestions || isInputFocused ? wrapperRef : null, onFieldBlur, {
+    blockOutsideClick: showSuggestions,
+  });
 
   const inputIcons = useMemo(() => {
     if (inputProps.readOnly || inputProps.disabled) return undefined;
