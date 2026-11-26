@@ -393,6 +393,90 @@ pub(in crate::views) async fn get_by_id(
     }))
 }
 
+#[derive(IntoParams, Deserialize)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct TimetableQueryParams {
+    timetable_type: Option<schemas::timetable_type::TimetableType>,
+    is_train_schedule_set: Option<bool>,
+    catalog_entry_id: Option<i64>,
+    published: Option<bool>,
+}
+
+#[derive(Serialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(Deserialize))]
+pub(in crate::views) struct ListTimetablesResponse {
+    results: Vec<TimetableResponse>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
+
+#[editoast_derive::route(authz::Role::OperationalStudies)]
+#[utoipa::path(
+    get, path = "",
+    tag = "timetable",
+    params(TimetableQueryParams, PaginationQueryParams<100>),
+    responses(
+        (status = 200, description = "List of timetables", body = ListTimetablesResponse),
+    ),
+)]
+pub(in crate::views) async fn list(
+    State(db_pool): State<Arc<DbConnectionPool>>,
+    Query(TimetableQueryParams {
+        catalog_entry_id,
+        published,
+        timetable_type,
+        is_train_schedule_set,
+    }): Query<TimetableQueryParams>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
+) -> Result<Json<ListTimetablesResponse>> {
+    let conn = &mut db_pool.get().await?;
+
+    let mut settings = pagination_params
+        .into_selection_settings()
+        .order_by(|| Timetable::ID.asc());
+
+    if let Some(catalog_entry_id) = catalog_entry_id {
+        settings = settings.filter(move || Timetable::CATALOG_ENTRY_ID.eq(Some(catalog_entry_id)));
+    }
+
+    if let Some(published) = published {
+        settings = settings.filter(move || Timetable::PUBLISHED.eq(published));
+    }
+
+    if let Some(timetable_type) = timetable_type {
+        settings = settings.filter(move || {
+            Timetable::TIMETABLE_TYPE.eq(models::timetable_type::TimetableType(timetable_type))
+        });
+    }
+
+    if let Some(is_train_schedule_set) = is_train_schedule_set {
+        settings =
+            settings.filter(move || Timetable::IS_TRAIN_SCHEDULE_SET.eq(is_train_schedule_set));
+    }
+
+    let (timetables, stats) = Timetable::list_paginated(conn, settings).await?;
+    let timetable_ids = timetables
+        .iter()
+        .map(|timetable| timetable.id)
+        .collect_vec();
+    let mut inners = Timetable::list_inners_timetables_batch(conn, &timetable_ids).await?;
+    let mut train_schedules_counts =
+        Timetable::train_schedules_count_batch(conn, &timetable_ids).await?;
+
+    let results = timetables
+        .into_iter()
+        .map(|timetable| TimetableResponse {
+            inners: inners.remove(&timetable.id).unwrap_or_default(),
+            train_schedules_count: train_schedules_counts
+                .remove(&timetable.id)
+                .unwrap_or_default(),
+            timetable: timetable.into(),
+        })
+        .collect();
+
+    Ok(Json(ListTimetablesResponse { results, stats }))
+}
+
 #[derive(Debug, IntoParams, Deserialize)]
 pub(in crate::views) struct TrainScheduleIdParam {
     train_schedule_id: i64,
@@ -2409,6 +2493,95 @@ mod tests {
         let app = test_app!().skip_authz().build();
 
         app.get("/timetable/0").await.assert_status_not_found();
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_timetables() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        let (outer_timetable, inner_timetable) =
+            create_timetable_with_inner_and_trains(&mut db_pool.get_ok()).await;
+
+        let response: ListTimetablesResponse =
+            app.get("/timetable").await.assert_status_ok().json();
+
+        assert_eq!(response.stats.count, 2);
+        assert_eq!(
+            response.results,
+            vec![
+                TimetableResponse {
+                    timetable: outer_timetable.into(),
+                    inners: vec![schemas::timetable::InnerTimetable {
+                        timetable: inner_timetable.clone().into(),
+                        ranges: None,
+                    }],
+                    // 1 own train + 2 inherited trains
+                    train_schedules_count: 3,
+                },
+                TimetableResponse {
+                    timetable: inner_timetable.into(),
+                    inners: vec![],
+                    train_schedules_count: 2,
+                },
+            ]
+        );
+    }
+
+    #[rstest]
+    #[case::train_schedule_sets("is_train_schedule_set=true", vec!["inner"])]
+    #[case::not_train_schedule_sets("is_train_schedule_set=false", vec!["outer"])]
+    #[case::published("published=true", vec![])]
+    #[case::other_timetable_type("timetable_type=HOURLY", vec![])]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_timetables_filtered(#[case] query: &str, #[case] expected_names: Vec<&str>) {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        create_timetable_with_inner_and_trains(&mut db_pool.get_ok()).await;
+
+        let response: ListTimetablesResponse = app
+            .get(format!("/timetable?{query}").as_str())
+            .await
+            .assert_status_ok()
+            .json();
+
+        let names = response
+            .results
+            .iter()
+            .map(|result| result.timetable.name.as_deref().unwrap_or_default())
+            .collect_vec();
+        assert_eq!(names, expected_names);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_timetables_paginated() {
+        let app = test_app!().skip_authz().build();
+        let db_pool = app.db_pool();
+        let (outer_timetable, inner_timetable) =
+            create_timetable_with_inner_and_trains(&mut db_pool.get_ok()).await;
+
+        let response: ListTimetablesResponse = app
+            .get("/timetable?page=2&page_size=1")
+            .await
+            .assert_status_ok()
+            .json();
+
+        assert_eq!(
+            response.stats,
+            PaginationStats {
+                count: 2,
+                page_size: 1,
+                page_count: 2,
+                current: 2,
+                previous: Some(1),
+                next: None,
+            }
+        );
+        assert_eq!(response.results.len(), 1);
+        // Timetables are sorted by id, so the second page holds the highest one
+        assert_eq!(
+            response.results[0].timetable.id,
+            outer_timetable.id.max(inner_timetable.id)
+        );
     }
 
     const UNKNOWN_TIMETABLE_ID: i64 = -1;
