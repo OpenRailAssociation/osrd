@@ -214,12 +214,19 @@ private constructor(
             inputSteps: List<ExplorerStep>,
             forcedOpStops: Collection<ExplorerStep>,
         ): StepTracker {
+            // For input steps, we want to keep every single possible location.
+            val inputStepsWithSingleLocation = inputSteps.flatMap { step ->
+                step.locations.map { location -> step.copy(locations = listOf(location)) }
+            }
             val stepsByBlockIdSortedByOffset =
-                inputSteps
+                inputStepsWithSingleLocation
                     .union(forcedOpStops)
                     .flatMap { step ->
                         step.locations.groupBy(BlockLocation::edge).map { (block, locationsOnBlock)
                             ->
+                            // For forced op stops which can have multiple locations here, if there
+                            // are multiple locations on the same block, we should only keep the
+                            // first one, i.e. the one with the lowest offset.
                             val location = locationsOnBlock.minBy(BlockLocation::offset)
                             block to step.copy(locations = listOf(location))
                         }
