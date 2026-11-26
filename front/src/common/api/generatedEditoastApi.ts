@@ -5215,6 +5215,10 @@ export type TimetableResult = {
   timetable_type: TimetableType;
 };
 export type TimetableForm = {
+  catalog_entry_id?: number | null;
+  description?: string;
+  is_train_schedule_set?: boolean;
+  published?: boolean;
   timetable_name?: string | null;
   timetable_type: TimetableType;
 };
