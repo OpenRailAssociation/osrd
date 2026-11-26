@@ -245,6 +245,7 @@
           gap: 8px;
           justify-content: space-between;
 
+          // TODO : This override should be removed when prop `narrow` is changed to work with `required`.
           .ui-feedback {
             padding-right: 0;
           }
@@ -257,9 +258,9 @@
         .cs-info {
           width: 48px;
           height: 40px;
-          border: 1px solid rgba(148, 145, 142, 1);
+          border: 1px solid var(--grey40);
           border-radius: 4px;
-          background-color: rgba(255, 255, 255, 1);
+          background-color: var(--white100);
           margin-top: 37px;
           margin-right: 13px;
           display: flex;
@@ -279,26 +280,29 @@
           }
         }
 
-        .cs-tooltip {
-          visibility: hidden;
+        .tooltip-content {
           width: max-content;
           background-color: var(--black85);
           color: var(--white);
           text-align: center;
           font-size: 0.875rem;
           font-weight: 400;
-          position-anchor: --cs-tooltip-anchor;
           position: absolute;
-          position-area: top center;
           z-index: 1;
           margin-bottom: 4px;
           border-radius: 4px;
           padding: 1px 8px;
+          box-shadow: 0 4px 6px -2px var(--black25);
+          display: none;
         }
 
-        .cs-info:hover + .cs-tooltip {
-          visibility: visible;
-          opacity: 1;
+        .cs-tooltip {
+          position-anchor: --cs-tooltip-anchor;
+          position-area: top center;
+        }
+
+        .cs-info:hover + .tooltip-content {
+          display: block;
         }
 
         .ui-date-picker {

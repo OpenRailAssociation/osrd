@@ -119,6 +119,20 @@ function simulatedStepsFromPathProperties(
   return result;
 }
 
+const Tooltip = ({
+  id,
+  message,
+  className,
+}: {
+  id: string;
+  message: string;
+  className?: string;
+}) => (
+  <div role="tooltip" id={id} className={`tooltip-content ${className || ''}`}>
+    {message}
+  </div>
+);
+
 const SendToRailwayManagerModal = ({
   consist,
   onSuccess,
@@ -163,7 +177,7 @@ const SendToRailwayManagerModal = ({
   );
   const [pathTypeError, setPathTypeError] = useState(false);
 
-  const [csCode, setCsCode] = useState<CsCode | undefined>();
+  const [csCode, setCsCode] = useState<CsCode>();
   const [csCodeSearchQuery, setCsCodeSearchQuery] = useState('');
   const [csCodeError, setCsCodeError] = useState(false);
   const filteredCsCodeSuggestions = useMemo(() => {
@@ -260,10 +274,6 @@ const SendToRailwayManagerModal = ({
     { value: 'A', label: 'A' },
     { value: 'B', label: 'B' },
   ];
-
-  const handleCsChange = (codeCs?: CsCode) => {
-    setCsCode(codeCs);
-  };
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const transformedValue = e.target.value
@@ -622,7 +632,7 @@ const SendToRailwayManagerModal = ({
                   suggestions={filteredCsCodeSuggestions}
                   onChange={setCsCodeSearchQuery}
                   getSuggestionLabel={(option) => option.code}
-                  onSelectSuggestion={handleCsChange}
+                  onSelectSuggestion={(codeCs) => setCsCode(codeCs)}
                   resetSuggestions={() => setCsCodeSearchQuery('')}
                   required
                   aria-describedby="cs-code-tooltip"
@@ -630,9 +640,11 @@ const SendToRailwayManagerModal = ({
                 <div className="cs-info">
                   <Info />
                 </div>
-                <div role="tooltip" id="cs-code-tooltip" className="cs-tooltip">
-                  {csCode ? csCode.label : t('modal.placeholderInfoCSCode')}
-                </div>
+                <Tooltip
+                  id="cs-code-tooltip"
+                  message={csCode?.label ?? t('modal.placeholderInfoCSCode')}
+                  className="cs-tooltip"
+                />
               </div>
               <Input
                 id="train-to-be-substituted"
