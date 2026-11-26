@@ -376,7 +376,10 @@ pub(in crate::views) async fn get_by_id(
     })
     .await?;
 
-    let inners = Timetable::list_inners_timetables(conn, timetable_id).await?;
+    let inners = Timetable::list_inners_timetables_batch(conn, &[timetable_id])
+        .await?
+        .remove(&timetable_id)
+        .unwrap_or_default();
 
     Ok(Json(TimetableResponse {
         timetable: outer_timetable.into(),

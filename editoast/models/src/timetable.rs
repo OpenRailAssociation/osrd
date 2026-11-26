@@ -16,6 +16,7 @@ use itertools::Itertools as _;
 use schemas::timetable::InnerTimetable;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ops::DerefMut as _;
 use unit_system::quantities::Offset;
@@ -47,29 +48,40 @@ pub struct Timetable {
 }
 
 impl Timetable {
-    pub async fn list_inners_timetables(
+    pub async fn list_inners_timetables_batch(
         conn: &mut DbConnection,
-        timetable_id: i64,
-    ) -> Result<Vec<InnerTimetable>, database::DatabaseError> {
+        timetable_ids: &[i64],
+    ) -> Result<HashMap<i64, Vec<InnerTimetable>>, database::DatabaseError> {
         use database::tables::timetable;
         use database::tables::timetable_inheritance;
 
-        let inners: Vec<(Timetable, Option<TimetableRanges>)> = timetable_inheritance::table
-            .inner_join(
-                timetable::table.on(timetable::id.eq(timetable_inheritance::inner_timetable_id)),
-            )
-            .filter(timetable_inheritance::outer_timetable_id.eq(timetable_id))
-            .order_by(timetable_inheritance::id.asc())
-            .select((Timetable::as_select(), timetable_inheritance::ranges))
-            .load(conn.write().await.deref_mut())
-            .await?;
-        let inners = inners
+        let raw_inners: Vec<(i64, Timetable, Option<TimetableRanges>)> =
+            timetable_inheritance::table
+                .filter(timetable_inheritance::outer_timetable_id.eq_any(timetable_ids))
+                .inner_join(
+                    timetable::table
+                        .on(timetable::id.eq(timetable_inheritance::inner_timetable_id)),
+                )
+                .order_by(timetable_inheritance::id.asc())
+                .select((
+                    timetable_inheritance::outer_timetable_id,
+                    Timetable::as_select(),
+                    timetable_inheritance::ranges,
+                ))
+                .load(conn.write().await.deref_mut())
+                .await?;
+        let inners = raw_inners
             .into_iter()
-            .map(|(timetable, ranges)| InnerTimetable {
-                timetable: timetable.into(),
-                ranges: ranges.map(|ranges| ranges.0),
+            .map(|(outer_id, timetable, ranges)| {
+                (
+                    outer_id,
+                    InnerTimetable {
+                        timetable: timetable.into(),
+                        ranges: ranges.map(|ranges| ranges.0),
+                    },
+                )
             })
-            .collect();
+            .into_group_map();
 
         Ok(inners)
     }
