@@ -20009,11 +20009,16 @@ components:
       - type: object
         required:
         - inners
+        - train_schedules_count
         properties:
           inners:
             type: array
             items:
               $ref: '#/components/schemas/InnerTimetable'
+          train_schedules_count:
+            type: integer
+            format: int64
+            minimum: 0
     TimetableResult:
       type: object
       description: A timetable with its data

@@ -353,6 +353,7 @@ pub(in crate::views) struct TimetableResponse {
     #[serde(flatten)]
     timetable: schemas::timetable::Timetable,
     inners: Vec<InnerTimetable>,
+    train_schedules_count: u64,
 }
 
 #[editoast_derive::route(authz::Role::OperationalStudies)]
@@ -380,10 +381,15 @@ pub(in crate::views) async fn get_by_id(
         .await?
         .remove(&timetable_id)
         .unwrap_or_default();
+    let train_schedules_count = Timetable::train_schedules_count_batch(conn, &[timetable_id])
+        .await?
+        .remove(&timetable_id)
+        .unwrap_or_default();
 
     Ok(Json(TimetableResponse {
         timetable: outer_timetable.into(),
         inners,
+        train_schedules_count,
     }))
 }
 
@@ -1357,6 +1363,7 @@ mod tests {
     use crate::fixtures::create_simple_paced_train;
     use crate::fixtures::create_small_infra;
     use crate::fixtures::create_timetable;
+    use crate::fixtures::create_timetable_with_inner_and_trains;
     use crate::fixtures::create_timetable_with_simple_paced_train;
     use crate::fixtures::create_timetable_with_train_schedule_set;
     use crate::fixtures::create_train_schedule_exception;
@@ -2348,29 +2355,8 @@ mod tests {
         let app = test_app!().skip_authz().build();
         let db_pool = app.db_pool();
 
-        let timetable = Timetable::changeset()
-            .name(Some("outer".into()))
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create timetable");
-        let train_schedule_set = TrainScheduleSet::create_with_timetable(
-            &mut db_pool.get_ok(),
-            Timetable::changeset().name(Some("inner".into())),
-        )
-        .await
-        .expect("Failed to create train schedule set");
-        TimetableInheritance::changeset()
-            .outer_timetable_id(timetable.id)
-            .inner_timetable_id(train_schedule_set.timetable_id)
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to include train schedule set");
-
-        let inner_timetable =
-            Timetable::retrieve(db_pool.get_ok(), train_schedule_set.timetable_id)
-                .await
-                .expect("Failed to retrieve inner timetable")
-                .expect("The train schedule set should have a timetable");
+        let (timetable, inner_timetable) =
+            create_timetable_with_inner_and_trains(&mut db_pool.get_ok()).await;
 
         let response: TimetableResponse = app
             .get(format!("/timetable/{}", timetable.id).as_str())
@@ -2386,6 +2372,8 @@ mod tests {
                     timetable: inner_timetable.into(),
                     ranges: None,
                 }],
+                // 1 own train + 2 inherited trains
+                train_schedules_count: 3,
             }
         );
     }
@@ -2396,18 +2384,9 @@ mod tests {
         let db_pool = app.db_pool();
 
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
-
-        let other_timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let train_schedule_set =
-            TrainScheduleSet::create_with_timetable(&mut db_pool.get_ok(), Timetable::changeset())
-                .await
-                .expect("Failed to create train schedule set");
-        TimetableInheritance::changeset()
-            .outer_timetable_id(other_timetable.id)
-            .inner_timetable_id(train_schedule_set.timetable_id)
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to include train schedule set");
+        create_simple_paced_train(&mut db_pool.get_ok(), timetable.id).await;
+        // Another timetable with its own inner and trains, which must not be returned nor counted
+        create_timetable_with_inner_and_trains(&mut db_pool.get_ok()).await;
 
         let response: TimetableResponse = app
             .get(format!("/timetable/{}", timetable.id).as_str())
@@ -2420,6 +2399,7 @@ mod tests {
             TimetableResponse {
                 timetable: timetable.into(),
                 inners: vec![],
+                train_schedules_count: 1,
             }
         );
     }
