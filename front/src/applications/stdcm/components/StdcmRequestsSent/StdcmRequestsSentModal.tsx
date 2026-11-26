@@ -50,7 +50,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
       return (
         <tr key={`request-${index}`}>
-          <td className={`stdcm-requests-color-${request.status}`} />
+          <td className={`stdcm-requests-color-${request.status} stdcm-status-color`} />
           <td className="stdcm-requests-id">{request.id}</td>
           <td className={`stdcm-requests-status stdcm-requests-text-color-${request.status}`}>
             {t(`requestsSentModal.statuses.${request.status}`)}
@@ -138,13 +138,15 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
         <table>
           <thead>
             <tr>
-              <th aria-label="status-color" />
-              <th>{t('requestsSentModal.requestNumber')}</th>
-              <th>{t('requestsSentModal.status')}</th>
-              <th>{t('requestsSentModal.updateDate')}</th>
+              <th className="stdcm-status-color" aria-label="status-color" />
+              <th className="stdcm-requests-id">{t('requestsSentModal.requestNumber')}</th>
+              <th className="stdcm-requests-status">{t('requestsSentModal.status')}</th>
+              <th className="stdcm-requests-update-date">{t('requestsSentModal.updateDate')}</th>
               <th>{t('requestsSentModal.origin')}</th>
               <th>{t('requestsSentModal.destination')}</th>
-              <th>{t('requestsSentModal.applicationDate')}</th>
+              <th className="stdcm-requests-application-date">
+                {t('requestsSentModal.applicationDate')}
+              </th>
             </tr>
           </thead>
           <tbody>{isFetching ? null : requestsSentRows()}</tbody>
