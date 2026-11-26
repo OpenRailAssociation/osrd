@@ -141,6 +141,6 @@ This policy is a first version. It is meant to evolve as our opinion on the subj
 ### Conditionally permitted uses
 Generative AI can be used to produce any content in your contribution (code, review, communication...) under the following conditions:
 * a human author must claim ownership of the content (through understanding and correcting it if needed): as the author, you are responsible for your contribution to meet the quality standards of the codebase;
-* the use of generative AI must be declared and explained on the commit message: to provide context for the reviewer and to enrich our future discussions on the subject.
+* the non-trivial use of generative AI must be declared and explained on the commit message: to provide context for the reviewer and to enrich our future discussions on the subject.
 
 
