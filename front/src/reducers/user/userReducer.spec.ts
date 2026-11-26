@@ -109,7 +109,6 @@ describe('userReducer', () => {
   it('should handle updateFeatureFlags', () => {
     const store = createStore(userInitialState);
     const testFeatureFlags: Record<FeatureFlag, boolean> = {
-      linkings: true,
       multipleTimetables: true,
       unrecognizedWaypoints: false,
     };

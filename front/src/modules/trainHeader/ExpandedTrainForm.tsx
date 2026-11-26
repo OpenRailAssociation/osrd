@@ -12,7 +12,6 @@ import {
 import cx from 'classnames';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
@@ -40,7 +39,6 @@ import {
 } from 'modules/trainSchedule/helpers/pacedTrain';
 import useStartTimeWrappedWarning from 'modules/trainSchedule/hooks/useStartTimeWrappedWarning';
 import type { Train } from 'reducers/osrdconf/types';
-import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { Duration, type StartTime } from 'utils/duration';
 import { usePrevious } from 'utils/hooks/state';
 import { kmhToMs } from 'utils/physics';
@@ -271,7 +269,6 @@ const ExpandedTrainForm = ({
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock();
 
-  const linkingsEnabled = useSelector(getFeatureFlag('linkings'));
   const { data: linkings } = osrdEditoastApi.endpoints.postTrainSchedulesLinkings.useQuery(
     {
       body: {
@@ -279,7 +276,7 @@ const ExpandedTrainForm = ({
         train_schedules: [extractEditoastIdFromTrainId(train.id)],
       },
     },
-    { skip: !linkingsEnabled || !train.paced, refetchOnMountOrArgChange: true }
+    { skip: !train.paced, refetchOnMountOrArgChange: true }
   );
   const linkingsCount = linkings?.length ?? 0;
 

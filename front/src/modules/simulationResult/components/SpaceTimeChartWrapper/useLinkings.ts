@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { uniqBy } from 'lodash';
-import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { getFeatureFlag } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -37,7 +35,6 @@ const useLinkings = ({
   deleteLinking: (linkingId: number) => Promise<void>;
 } => {
   const dispatch = useAppDispatch();
-  const linkingsEnabled = useSelector(getFeatureFlag('linkings'));
 
   /** The displayed trains as a value, to list the linkings again only when they really change. */
   const displayedTrains = trainScheduleIds.join();
@@ -57,7 +54,7 @@ const useLinkings = ({
   const [deleteLinkings] = osrdEditoastApi.endpoints.postTrainSchedulesLinkingsDelete.useMutation();
 
   useEffect(() => {
-    if (!linkingsEnabled || !trainScheduleIds.length) {
+    if (!trainScheduleIds.length) {
       setLinkings([]);
       return undefined;
     }
@@ -81,7 +78,7 @@ const useLinkings = ({
       }
     );
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [linkingsEnabled, timetableId, displayedTrains]);
+  }, [timetableId, displayedTrains]);
 
   const createLinking = useCallback(
     async (source: TrainId, target: TrainId) => {
