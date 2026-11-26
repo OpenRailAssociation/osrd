@@ -147,9 +147,6 @@ class StepTrackerTests {
                 ),
                 ExplorerStep(
                     listOf(
-                        // Step has 2 locations on the same block: we'll only explore the first one,
-                        // at 40meters. However, it won't be in the result because it will be
-                        // dropped as it's located before the origin.
                         BlockLocation(blocks[0], Offset(40.meters)),
                         BlockLocation(blocks[0], Offset(51.meters)),
                     ),
@@ -167,13 +164,21 @@ class StepTrackerTests {
                 objectLength = Offset(100.meters),
             )
         val firstSteps = tracker.exploreBlockRange(firstBlockRange, false)
-        val expectedFirstStep =
-            LocatedStep(
-                Offset(25.meters),
-                steps[0].locations.single(),
-                steps[0],
-                0,
+        val expectedFirstSteps =
+            listOf(
+                LocatedStep(
+                    Offset(25.meters),
+                    steps[0].locations.single(),
+                    steps[0],
+                    0,
+                ),
+                LocatedStep(
+                    Offset(26.meters),
+                    steps[1].locations.last(),
+                    steps[1].copy(locations = listOf(steps[1].locations.last())),
+                    1,
+                ),
             )
-        assertEquals(expectedFirstStep, firstSteps.single())
+        assertEquals(expectedFirstSteps, firstSteps)
     }
 }

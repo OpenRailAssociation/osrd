@@ -894,23 +894,20 @@ class PathfindingTests {
     fun severalStartsWithBlockedRange() {
         /* Some starting points are blocked, others are not
 
-        0 -> BLOCKED -> 1 -> END -> 3
-        2 ->  GOOD  -> /
+        0 -> B1 -> BLOCKED -> B2 -> E -> 1
          */
         val infra = DummyInfra()
         val block01 = infra.addBlock("0", "1", 100.meters)
-        val block21 = infra.addBlock("2", "1", 100.meters)
-        val block13 = infra.addBlock("1", "3", 100.meters)
         val waypoints =
             arrayListOf(
                 ExplorerStep(
                     listOf(
                         BlockLocation(block01, Offset(10.meters)),
-                        BlockLocation(block21, Offset(40.meters)),
+                        BlockLocation(block01, Offset(40.meters)),
                     ),
                     inputStepIndex = 0,
                 ),
-                ExplorerStep(listOf(BlockLocation(block13, Offset(50.meters))), inputStepIndex = 1),
+                ExplorerStep(listOf(BlockLocation(block01, Offset(50.meters))), inputStepIndex = 1),
             )
         val res =
             runPathFinding(
@@ -928,17 +925,10 @@ class PathfindingTests {
         Assertions.assertEquals(
             arrayListOf(
                 BlockRange(
-                    block21,
+                    block01,
                     Offset(40.meters),
                     Offset(0.meters),
-                    60.meters,
-                    Length(100.meters),
-                ),
-                BlockRange(
-                    block13,
-                    Offset(0.meters),
-                    Offset(60.meters),
-                    50.meters,
+                    10.meters,
                     Length(100.meters),
                 ),
             ),
