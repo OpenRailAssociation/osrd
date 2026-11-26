@@ -20,6 +20,7 @@ dependencies {
     implementation project(':osrd-mp')
     implementation libs.guava
     implementation libs.kotlin.logging
+    implementation libs.slf4j
 
     api project(':kt-osrd-sim-infra')
     api project(":osrd-railjson")

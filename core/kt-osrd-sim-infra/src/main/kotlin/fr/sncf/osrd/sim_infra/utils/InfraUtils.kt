@@ -57,7 +57,7 @@ fun BlockInfra.getRouteBlocks(
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
     if (blockPaths.isEmpty()) {
         // quite "common" situation
-        logger.trace("Route ${rawInfra.getRouteName(route)} has no block")
+        logger.trace { "Route ${rawInfra.getRouteName(route)} has no block" }
         return mutableStaticIdxArrayListOf()
     }
     // No signaling system for now, take the first block path possibility.

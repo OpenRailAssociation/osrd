@@ -22,6 +22,7 @@ dependencies {
     api project(":kt-osrd-utils")
     api project(":osrd-reporting")
     implementation libs.kotlin.logging
+    implementation libs.slf4j
     testImplementation libs.kotlin.test
 
     // Use JUnit Jupiter API for testing.
