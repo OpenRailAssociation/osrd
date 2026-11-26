@@ -85,6 +85,10 @@ class TimetableCacheManager(
     val s3Context: S3Context? = null,
 ) {
     private val cache = ConcurrentHashMap<String, STDCMTimetableData>()
+
+    // Mutexes are never removed: a caller may still be waiting on one, and removing it would let
+    // a new caller create another mutex and fetch the same timetable in parallel. They're small and
+    // cached entries are never removed either.
     private val mutexes = ConcurrentHashMap<String, Mutex>()
 
     private val fetchDispatcher = Dispatchers.IO
@@ -113,14 +117,10 @@ class TimetableCacheManager(
             }
             val mutex = mutexes.computeIfAbsent(cacheKey) { Mutex() }
             mutex.withLock {
-                try {
-                    cache[cacheKey]?.let {
-                        return@coroutineScope it
-                    }
-                    fetchAndCache(infra, timetableId, cacheKey)
-                } finally {
-                    mutexes.remove(cacheKey)
+                cache[cacheKey]?.let {
+                    return@coroutineScope it
                 }
+                fetchAndCache(infra, timetableId, cacheKey)
             }
         }
 
@@ -136,7 +136,6 @@ class TimetableCacheManager(
                 fetchAndCache(infra, timetableId, cacheKey)
             } finally {
                 mutex.unlock()
-                mutexes.remove(cacheKey)
             }
         }
     }
