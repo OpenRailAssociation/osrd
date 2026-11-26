@@ -417,6 +417,102 @@ class Electrification(BaseObjectTrait):
     )
 
 
+class HorizontalElementType(str, Enum):
+    STRAIGHT = "straight"
+    ARC = "arc"
+    TRANSITION = "transition"
+
+
+class TransitionType(str, Enum):
+    CLOTHOID = "clothoid"
+    BLOSS = "bloss"
+
+
+class HorizontalAlignment(BaseModel):
+    """A design element of the horizontal alignment, from begin to end of its curve.
+    OSRD does not interpret it: the curve's radius stays what the simulation uses.
+    Radii and cants are signed: a positive radius turns right in the direction of increasing offsets,
+    a positive cant raises the left rail."""
+
+    element_type: HorizontalElementType = Field(
+        description="Type of the design element"
+    )
+    transition_type: TransitionType | None = Field(
+        default=None,
+        description="Shape of a transition's curvature, only for a transition",
+    )
+    radius: float | None = Field(default=None, description="Radius of an arc in meters")
+    begin_radius: float | None = Field(
+        default=None,
+        description="Radius of a transition at its beginning in meters, empty where it joins a straight",
+    )
+    end_radius: float | None = Field(
+        default=None,
+        description="Radius of a transition at its end in meters, empty where it joins a straight",
+    )
+    cant: float | None = Field(
+        default=None,
+        description="Cant in millimeters where it is the same at both ends, instead of the cants at the beginning and end",
+    )
+    begin_cant: float | None = Field(
+        default=None,
+        description="Cant at the beginning in millimeters where the cant changes along the element",
+    )
+    end_cant: float | None = Field(
+        default=None,
+        description="Cant at the end in millimeters where the cant changes along the element",
+    )
+    begin_point: list[float] = Field(
+        description="Easting and northing of the beginning in meters, in the plane of the EPSG code",
+        min_length=2,
+        max_length=2,
+    )
+    end_point: list[float] = Field(
+        description="Easting and northing of the end in meters, in the plane of the EPSG code",
+        min_length=2,
+        max_length=2,
+    )
+    epsg: int = Field(description="EPSG code of the plane the points are stated in")
+    bearing: float | None = Field(
+        default=None,
+        description="Bearing at the beginning in degrees from grid north, clockwise",
+    )
+    end_bearing: float | None = Field(
+        default=None,
+        description="Bearing at the end in degrees, only where it differs from the one the element's shape gives",
+    )
+
+
+class HeightPoint(BaseModel):
+    """A point of the vertical tangent polygon."""
+
+    elevation: float = Field(
+        description="Elevation of the top of the rail that is not raised by the cant, in meters"
+    )
+    vertical_curve_radius: float | None = Field(
+        default=None,
+        description="Radius in meters of the vertical curve rounding the change of gradient at this point",
+    )
+    vertical_curve_length: float | None = Field(
+        default=None,
+        description="Length in meters of that vertical curve, where the length governs it rather than the radius",
+    )
+
+
+class VerticalAlignment(BaseModel):
+    """A stretch of the vertical alignment's tangent polygon, from begin to end of its slope.
+    OSRD does not interpret it: the slope's gradient stays what the simulation uses."""
+
+    begin: HeightPoint = Field(
+        description="The tangent polygon's point at the beginning"
+    )
+    end: HeightPoint = Field(description="The tangent polygon's point at the end")
+    epsg: int | None = Field(
+        default=None,
+        description="EPSG code of the vertical datum the elevations are stated in",
+    )
+
+
 class Curve(BaseModel):
     """This class is used to define the curve object.
     A curve correspond at radius of curvature in the part of corresponding track section."""
@@ -431,6 +527,10 @@ class Curve(BaseModel):
     end: float = Field(
         description="Offset in meters corresponding at the end of the corresponding radius in a track section",
         ge=0,
+    )
+    horizontal_alignment: HorizontalAlignment | None = Field(
+        default=None,
+        description="The design element of the horizontal alignment this range is",
     )
 
     @model_validator(mode="after")
@@ -456,6 +556,10 @@ class Slope(BaseModel):
     end: float = Field(
         description="Offset in meters corresponding at the end of the corresponding gradient in a track section",
         ge=0,
+    )
+    vertical_alignment: VerticalAlignment | None = Field(
+        default=None,
+        description="The stretch of the vertical tangent polygon this range is",
     )
 
     @model_validator(mode="after")

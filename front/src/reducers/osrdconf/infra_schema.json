@@ -252,6 +252,18 @@
                     "title": "End",
                     "type": "number"
                 },
+                "horizontal_alignment": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/HorizontalAlignment"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "The design element of the horizontal alignment this range is"
+                },
                 "radius": {
                     "description": "Corresponding radius of curvature measured in meters",
                     "title": "Radius",
@@ -480,6 +492,214 @@
                 "false"
             ],
             "title": "FlagSignalParameter",
+            "type": "string"
+        },
+        "HeightPoint": {
+            "description": "A point of the vertical tangent polygon.",
+            "properties": {
+                "elevation": {
+                    "description": "Elevation of the top of the rail that is not raised by the cant, in meters",
+                    "title": "Elevation",
+                    "type": "number"
+                },
+                "vertical_curve_length": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Length in meters of that vertical curve, where the length governs it rather than the radius",
+                    "title": "Vertical Curve Length"
+                },
+                "vertical_curve_radius": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Radius in meters of the vertical curve rounding the change of gradient at this point",
+                    "title": "Vertical Curve Radius"
+                }
+            },
+            "required": [
+                "elevation"
+            ],
+            "title": "HeightPoint",
+            "type": "object"
+        },
+        "HorizontalAlignment": {
+            "description": "A design element of the horizontal alignment, from begin to end of its curve.\nOSRD does not interpret it: the curve's radius stays what the simulation uses.\nRadii and cants are signed: a positive radius turns right in the direction of increasing offsets,\na positive cant raises the left rail.",
+            "properties": {
+                "bearing": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Bearing at the beginning in degrees from grid north, clockwise",
+                    "title": "Bearing"
+                },
+                "begin_cant": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Cant at the beginning in millimeters where the cant changes along the element",
+                    "title": "Begin Cant"
+                },
+                "begin_point": {
+                    "description": "Easting and northing of the beginning in meters, in the plane of the EPSG code",
+                    "items": {
+                        "type": "number"
+                    },
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "title": "Begin Point",
+                    "type": "array"
+                },
+                "begin_radius": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Radius of a transition at its beginning in meters, empty where it joins a straight",
+                    "title": "Begin Radius"
+                },
+                "cant": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Cant in millimeters where it is the same at both ends, instead of the cants at the beginning and end",
+                    "title": "Cant"
+                },
+                "element_type": {
+                    "$ref": "#/$defs/HorizontalElementType",
+                    "description": "Type of the design element"
+                },
+                "end_bearing": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Bearing at the end in degrees, only where it differs from the one the element's shape gives",
+                    "title": "End Bearing"
+                },
+                "end_cant": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Cant at the end in millimeters where the cant changes along the element",
+                    "title": "End Cant"
+                },
+                "end_point": {
+                    "description": "Easting and northing of the end in meters, in the plane of the EPSG code",
+                    "items": {
+                        "type": "number"
+                    },
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "title": "End Point",
+                    "type": "array"
+                },
+                "end_radius": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Radius of a transition at its end in meters, empty where it joins a straight",
+                    "title": "End Radius"
+                },
+                "epsg": {
+                    "description": "EPSG code of the plane the points are stated in",
+                    "title": "Epsg",
+                    "type": "integer"
+                },
+                "radius": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Radius of an arc in meters",
+                    "title": "Radius"
+                },
+                "transition_type": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/TransitionType"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Shape of a transition's curvature, only for a transition"
+                }
+            },
+            "required": [
+                "element_type",
+                "begin_point",
+                "end_point",
+                "epsg"
+            ],
+            "title": "HorizontalAlignment",
+            "type": "object"
+        },
+        "HorizontalElementType": {
+            "enum": [
+                "straight",
+                "arc",
+                "transition"
+            ],
+            "title": "HorizontalElementType",
             "type": "string"
         },
         "LevelCrossing": {
@@ -1357,6 +1577,18 @@
                     "description": "Corresponding gradient, measured in meters per kilometers",
                     "title": "Gradient",
                     "type": "number"
+                },
+                "vertical_alignment": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/VerticalAlignment"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "The stretch of the vertical tangent polygon this range is"
                 }
             },
             "required": [
@@ -1776,6 +2008,14 @@
             "title": "TrackSectionSourceExtension",
             "type": "object"
         },
+        "TransitionType": {
+            "enum": [
+                "clothoid",
+                "bloss"
+            ],
+            "title": "TransitionType",
+            "type": "string"
+        },
         "Tvm300System": {
             "properties": {
                 "conditional_parameters": {
@@ -1854,6 +2094,38 @@
                 "default_parameters"
             ],
             "title": "Tvm430System",
+            "type": "object"
+        },
+        "VerticalAlignment": {
+            "description": "A stretch of the vertical alignment's tangent polygon, from begin to end of its slope.\nOSRD does not interpret it: the slope's gradient stays what the simulation uses.",
+            "properties": {
+                "begin": {
+                    "$ref": "#/$defs/HeightPoint",
+                    "description": "The tangent polygon's point at the beginning"
+                },
+                "end": {
+                    "$ref": "#/$defs/HeightPoint",
+                    "description": "The tangent polygon's point at the end"
+                },
+                "epsg": {
+                    "anyOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "EPSG code of the vertical datum the elevations are stated in",
+                    "title": "Epsg"
+                }
+            },
+            "required": [
+                "begin",
+                "end"
+            ],
+            "title": "VerticalAlignment",
             "type": "object"
         },
         "__main____BalSystem__ConditionalParameters": {

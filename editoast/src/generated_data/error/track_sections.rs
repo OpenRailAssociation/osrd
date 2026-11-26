@@ -79,6 +79,7 @@ mod tests {
             begin: 0.,
             end: pos,
             gradient: 0.1,
+            vertical_alignment: None,
         }];
         infra_cache.add(&track).unwrap();
         let errors = check_slope_out_of_range(
@@ -107,6 +108,7 @@ mod tests {
             begin: 0.,
             end: pos,
             radius: 0.1,
+            horizontal_alignment: None,
         }];
         infra_cache.add(&track).unwrap();
         let errors = check_curve_out_of_range(

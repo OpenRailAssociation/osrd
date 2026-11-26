@@ -134,6 +134,9 @@
         "description": "Offset in meters corresponding at the end of the corresponding radius in a track section",
         "title": "End"
       },
+      "horizontal_alignment": {
+        "description": "The design element of the horizontal alignment this range is"
+      },
       "radius": {
         "description": "Corresponding radius of curvature measured in meters",
         "title": "Radius"
@@ -253,6 +256,83 @@
   },
   "FlagSignalParameter": {
     "title": "Flag signal parameter"
+  },
+  "HeightPoint": {
+    "description": "A point of the vertical tangent polygon.",
+    "properties": {
+      "elevation": {
+        "description": "Elevation of the top of the rail that is not raised by the cant, in meters",
+        "title": "Elevation"
+      },
+      "vertical_curve_length": {
+        "description": "Length in meters of that vertical curve, where the length governs it rather than the radius",
+        "title": "Vertical curve length"
+      },
+      "vertical_curve_radius": {
+        "description": "Radius in meters of the vertical curve rounding the change of gradient at this point",
+        "title": "Vertical curve radius"
+      }
+    },
+    "title": "Height point"
+  },
+  "HorizontalAlignment": {
+    "description": "A design element of the horizontal alignment, from begin to end of its curve.\nOSRD does not interpret it: the curve's radius stays what the simulation uses.\nRadii and cants are signed: a positive radius turns right in the direction of increasing offsets,\na positive cant raises the left rail.",
+    "properties": {
+      "bearing": {
+        "description": "Bearing at the beginning in degrees from grid north, clockwise",
+        "title": "Bearing"
+      },
+      "begin_cant": {
+        "description": "Cant at the beginning in millimeters where the cant changes along the element",
+        "title": "Begin cant"
+      },
+      "begin_point": {
+        "description": "Easting and northing of the beginning in meters, in the plane of the EPSG code",
+        "title": "Begin point"
+      },
+      "begin_radius": {
+        "description": "Radius of a transition at its beginning in meters, empty where it joins a straight",
+        "title": "Begin radius"
+      },
+      "cant": {
+        "description": "Cant in millimeters where it is the same at both ends, instead of the cants at the beginning and end",
+        "title": "Cant"
+      },
+      "element_type": {
+        "description": "Type of the design element"
+      },
+      "end_bearing": {
+        "description": "Bearing at the end in degrees, only where it differs from the one the element's shape gives",
+        "title": "End bearing"
+      },
+      "end_cant": {
+        "description": "Cant at the end in millimeters where the cant changes along the element",
+        "title": "End cant"
+      },
+      "end_point": {
+        "description": "Easting and northing of the end in meters, in the plane of the EPSG code",
+        "title": "End point"
+      },
+      "end_radius": {
+        "description": "Radius of a transition at its end in meters, empty where it joins a straight",
+        "title": "End radius"
+      },
+      "epsg": {
+        "description": "EPSG code of the plane the points are stated in",
+        "title": "Epsg"
+      },
+      "radius": {
+        "description": "Radius of an arc in meters",
+        "title": "Radius"
+      },
+      "transition_type": {
+        "description": "Shape of a transition's curvature, only for a transition"
+      }
+    },
+    "title": "Horizontal alignment"
+  },
+  "HorizontalElementType": {
+    "title": "Horizontal element type"
   },
   "LevelCrossing": {
     "description": "This class describes the level crossings of the corresponding infra.",
@@ -614,6 +694,9 @@
       "gradient": {
         "description": "Corresponding gradient, measured in meters per kilometers",
         "title": "Gradient"
+      },
+      "vertical_alignment": {
+        "description": "The stretch of the vertical tangent polygon this range is"
       }
     },
     "title": "Slope"
@@ -808,6 +891,9 @@
     },
     "title": "Track section source extension"
   },
+  "TransitionType": {
+    "title": "Transition type"
+  },
   "Tvm300System": {
     "properties": {
       "conditional_parameters": {
@@ -851,6 +937,22 @@
       }
     },
     "title": "Tvm430 system"
+  },
+  "VerticalAlignment": {
+    "description": "A stretch of the vertical alignment's tangent polygon, from begin to end of its slope.\nOSRD does not interpret it: the slope's gradient stays what the simulation uses.",
+    "properties": {
+      "begin": {
+        "description": "The tangent polygon's point at the beginning"
+      },
+      "end": {
+        "description": "The tangent polygon's point at the end"
+      },
+      "epsg": {
+        "description": "EPSG code of the vertical datum the elevations are stated in",
+        "title": "Epsg"
+      }
+    },
+    "title": "Vertical alignment"
   },
   "__main____BalSystem__ConditionalParameters": {
     "properties": {
