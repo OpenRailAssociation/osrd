@@ -85,6 +85,10 @@
       "MqClientError": "Core: MQ client error",
       "UnparsableErrorOutput": "Core returned an error in an unknown format"
     },
+    "create_user": {
+      "identity_already_exists": "One of the provided identities is already associated with another user.",
+      "no_identity_provided": "User must have at least one identity"
+    },
     "database": {
       "internal": "Internal error (database)"
     },
@@ -100,6 +104,9 @@
     "file_not_found": "File '{{file}}' not found",
     "geometry": {
       "UnexpectedGeometry": "Expected geometry {{expected}} but got {{actual}}"
+    },
+    "group": {
+      "not_found": "Group {{group_id}} does not exist."
     },
     "infra": {
       "Database": "Internal error",

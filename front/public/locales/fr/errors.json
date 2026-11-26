@@ -85,6 +85,10 @@
       "MqClientError": "Core : erreur du client MQ",
       "UnparsableErrorOutput": "Core : a renvoyé une erreur dans un format inconnu"
     },
+    "create_user": {
+      "identity_already_exists": "Une des identités fournies est déjà associée à un autre utilisateur.",
+      "no_identity_provided": "L'utilisateur doit avoir au moins une identité"
+    },
     "database": {
       "internal": "Erreur interne (base de données)"
     },
@@ -101,6 +105,9 @@
     "file_not_found": "Fichier '{{file}}' non trouvé",
     "geometry": {
       "UnexpectedGeometry": "Géometrie {{expected}} attendue mais {{actual}} reçue"
+    },
+    "group": {
+      "not_found": "Le groupe {{group_id}} n’existe pas."
     },
     "infra": {
       "Database": "Erreur interne",
