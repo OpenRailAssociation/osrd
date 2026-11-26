@@ -326,7 +326,10 @@ async fn show_stdcm_search_env(conn: &mut DbConnection) -> anyhow::Result<()> {
     if let Some(search_env) = search_env {
         println!("{search_env:#?}");
 
-        let n_trains = Timetable::train_schedules_count(search_env.timetable_id, conn).await?;
+        let n_trains = Timetable::train_schedules_count_batch(conn, &[search_env.timetable_id])
+            .await?
+            .remove(&search_env.timetable_id)
+            .unwrap_or_default();
         println!("🚆 Number of trains in timetable: {n_trains}");
     } else {
         println!("🔎 No STDCM search environment has been set up yet")
