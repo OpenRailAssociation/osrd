@@ -6,6 +6,7 @@ use object_store::path::Path as ObjectStorePath;
 use serde::Serialize;
 
 use super::VirtualTrainRun;
+use super::request::ConsistSchedule;
 use super::request::StdcmPathfindingItem;
 use crate::views::timetable::simulation::ResponseVariant;
 
@@ -26,6 +27,8 @@ pub(super) struct StdcmMetadata {
     pub(super) earliest_departure_time: Timestamp,
     pub(super) maximum_departure_delay: u64,
     pub(super) maximum_run_time: u64,
+    pub(super) consist_schedule: ConsistSchedule,
+    pub(super) rolling_stock_names: Vec<String>,
 }
 
 #[derive(Debug, Serialize)]
