@@ -953,7 +953,7 @@ dependencies = [
  "hostname",
  "http",
  "itertools 0.15.0",
- "jiff",
+ "jiff 1.0.3",
  "lapin",
  "opentelemetry",
  "ordered-float",
@@ -1513,7 +1513,7 @@ dependencies = [
  "image",
  "inventory",
  "itertools 0.15.0",
- "jiff",
+ "jiff 1.0.3",
  "json-patch",
  "linkme",
  "models",
@@ -2812,9 +2812,22 @@ version = "0.2.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "175dc66334db3b9ab9985bf8b61cfed50dc16d20964bb47f9e479adcae984a7f"
 dependencies = [
- "jiff-core",
- "jiff-static",
+ "jiff-core 0.1.8",
+ "jiff-static 0.2.46",
  "log",
+ "portable-atomic",
+ "portable-atomic-util",
+ "serde_core",
+]
+
+[[package]]
+name = "jiff"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "107f2e89536b6818514025f6787b0d94d819e54fe3b40365275fc753de485b3f"
+dependencies = [
+ "jiff-core 1.0.2",
+ "jiff-static 1.0.3",
  "portable-atomic",
  "portable-atomic-util",
  "serde_core",
@@ -2830,13 +2843,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "jiff-core"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d44c923edf2bf456a982253f1a9ee1f6e89e421dffd0065d9b9a581da0def58f"
+dependencies = [
+ "log",
+]
+
+[[package]]
 name = "jiff-diesel"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "450f5c44b6bc83e0e0fce91b22bd4ead6e371951e4e6e07c934d1c5d97f6661a"
 dependencies = [
  "diesel",
- "jiff",
+ "jiff 0.2.46",
 ]
 
 [[package]]
@@ -2845,10 +2867,22 @@ version = "0.2.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c7b1af7547d47354bc438d797e3854601bde8f8d185780c5ba4ab27afa54f1ba"
 dependencies = [
- "jiff-core",
+ "jiff-core 0.1.8",
  "proc-macro2",
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "jiff-static"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4996f71e569e3a3e32b925c28ef8f0027dc30bb1d594b33eeda409eea185f5c8"
+dependencies = [
+ "jiff-core 1.0.2",
+ "proc-macro2",
+ "quote",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -3171,7 +3205,7 @@ dependencies = [
  "futures-util",
  "geos",
  "itertools 0.15.0",
- "jiff",
+ "jiff 1.0.3",
  "jiff-diesel",
  "models",
  "mvt",
@@ -4688,7 +4722,7 @@ dependencies = [
  "geos",
  "iso8601",
  "itertools 0.15.0",
- "jiff",
+ "jiff 1.0.3",
  "proptest",
  "rand 0.10.4",
  "regex",
@@ -5151,7 +5185,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
  "windows-sys 0.61.2",
