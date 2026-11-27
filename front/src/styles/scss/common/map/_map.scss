@@ -6,16 +6,33 @@
   height: calc(100vh - var(--header-height));
 }
 
-.btn-map-container {
+.btn-map-container,
+.new-btn-map-container {
   position: absolute;
   z-index: 2;
   right: 25px;
   top: 80px;
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
 
   button {
-    display: block;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 1.5rem;
-    margin-bottom: 8px;
+    width: 2.5rem;
+    height: 2.5rem;
+
+    span {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
   }
 
   &.editor {
@@ -24,12 +41,8 @@
 }
 
 .new-btn-map-container {
-  position: absolute;
-  z-index: 2;
   top: 0;
   right: 0;
-  display: flex;
-  flex-direction: column;
   padding: 16px;
 
   .new-btn-map {
@@ -41,7 +54,6 @@
     outline: 3px solid rgba(152, 192, 245, 0.25);
     box-shadow: 0 0 0 1px var(--primary40) inset;
     background-color: rgba(255, 255, 255, 1);
-    margin-bottom: 8px;
 
     &:hover {
       outline-color: var(--primary30);
@@ -56,25 +68,6 @@
     &:active {
       outline: 2px solid var(--primary30);
       box-shadow: 0 0 0 1px var(--primary80) inset;
-    }
-
-    span {
-      display: flex;
-      margin: auto;
-      width: 16px;
-      height: 16px;
-    }
-  }
-
-  .new-btn-map-resetviewport {
-    position: relative;
-
-    .compass-needle,
-    .compass-cardinal {
-      position: absolute;
-      top: 12px;
-      left: 18px;
-      transform: translate(-40%, 0);
     }
   }
 }
@@ -153,17 +146,5 @@
       background-color: #333;
       color: #fff;
     }
-  }
-}
-
-.btn-map-resetviewport {
-  position: relative;
-
-  .compass-needle,
-  .compass-cardinal {
-    position: absolute;
-    top: 4px;
-    left: 18.4px;
-    transform: translate(-40%, 0);
   }
 }

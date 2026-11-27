@@ -126,7 +126,7 @@ export default function MapButtons({
   const [viewport, setViewport] = useState(viewportProps);
 
   const rotationStyle = {
-    transform: `translate(-40%, 0) rotate(${-bearing}deg)`,
+    transform: `rotate(${-bearing}deg)`,
     transformOrigin: 'center',
   };
   const toggleMapModal = useCallback((keyModal: string) => {
@@ -215,13 +215,13 @@ export default function MapButtons({
             <MapButton
               onClick={zoomInProps}
               isNewButton={isNewButtons}
-              icon={<ZoomIn />}
+              icon={<ZoomIn className="map-icon" />}
               tooltip={t('common.zoom-in')}
             />
             <MapButton
               onClick={zoomOutProps}
               isNewButton={isNewButtons}
-              icon={<ZoomOut />}
+              icon={<ZoomOut className="map-icon" />}
               tooltip={t('common.zoom-out')}
             />
           </>
@@ -232,14 +232,14 @@ export default function MapButtons({
           onClick={resetPitchBearing}
           isNewButton={isNewButtons}
           icon={
-            <>
+            <span className="map-icon">
               <span className="compass-needle" style={rotationStyle}>
                 <CompassNeedleV2 />
               </span>
               <span className="compass-cardinal">
                 <CompassCardinalV2 />
               </span>
-            </>
+            </span>
           }
           tooltip={t('common.map-actions.reset-north')}
           extraClasses={isNewButtons ? 'new-btn-map-resetviewport' : 'btn-map-resetviewport'}
@@ -248,7 +248,7 @@ export default function MapButtons({
           <MapButton
             onClick={() => toggleMapModal('SEARCH')}
             isNewButton={isNewButtons}
-            icon={<Search />}
+            icon={<Search className="map-icon" />}
             tooltip={t('common.search')}
           />
         )}
@@ -260,7 +260,7 @@ export default function MapButtons({
                 : openMapSettingsModal
             }
             isNewButton={isNewButtons}
-            icon={<Sliders />}
+            icon={<Sliders className="map-icon" />}
             tooltip={t('map.layers-modal.toggle-layers')}
           />
         )}
@@ -268,7 +268,7 @@ export default function MapButtons({
           <MapButton
             onClick={() => toggleMapModal('KEY')}
             isNewButton={isNewButtons}
-            icon={<Info />}
+            icon={<Info className="map-icon" />}
             tooltip={t('common.map-actions.help-legend')}
           />
         )}
