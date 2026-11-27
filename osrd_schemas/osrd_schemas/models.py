@@ -27,6 +27,15 @@ from typing_extensions import TypeAliasType
 from .overrides import OffsetInMs
 
 
+class StatisticalCategoryCode(BaseModel):
+    code: Annotated[StrictStr, Field(title="Code")]
+    label: Annotated[StrictStr, Field(title="Label")]
+
+
+class StatisticalCategoryCodesResponse(BaseModel):
+    results: Annotated[list[StatisticalCategoryCode], Field(title="Results")]
+
+
 class OperationalPointReferenceId(BaseModel):
     operational_point: StrictStr
     """

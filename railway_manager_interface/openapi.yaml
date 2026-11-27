@@ -5,8 +5,26 @@ info:
   license:
     name: LGPL
     url: https://www.gnu.org/licenses/lgpl-3.0.html
-  version: 0.1.0
+  version: 0.2.0
 paths:
+  /statistical_category_codes:
+    get:
+      tags:
+        - lmr
+      summary: Returns all statistical category codes available for the group to which the user belongs.
+      responses:
+        "200":
+          description: The list of statistical category codes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatisticalCategoryCodesResponse"
+        "401":
+          description: User is not authenticated.
+        "403":
+          description: User is not authorized to send last minute requests.
+        "404":
+          description: No statistical category codes found for the user.
   /transform_timetable:
     post:
       tags:
@@ -123,6 +141,30 @@ paths:
                 description: Mapping from request id to status, url and metadata
 components:
   schemas:
+    StatisticalCategoryCode:
+      title: StatisticalCategoryCode
+      type: object
+      properties:
+        code:
+          title: Code
+          type: string
+        label:
+          title: Label
+          type: string
+      required:
+        - code
+        - label
+    StatisticalCategoryCodesResponse:
+      title: StatisticalCategoryCodesResponse
+      type: object
+      properties:
+        results:
+          title: Results
+          type: array
+          items:
+            $ref: "#/components/schemas/StatisticalCategoryCode"
+      required:
+        - results
     OperationalPointReference:
       $ref: "../editoast/openapi.yaml#/components/schemas/OperationalPointReference"
     TransformTimetableResponse:
