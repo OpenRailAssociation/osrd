@@ -1,0 +1,39 @@
+{{- if .Values.services.editoast.init.enabled -}}
+{{- $mergedLabels := merge (dict "name" (printf "%s-editoast-fga-migrate" (include "osrd.fullname" .))) (default (dict) $.Values.services.editoast.init.labels) -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "osrd.fullname" . }}-editoast-fga-migrate
+  labels:
+    {{- toYaml ($mergedLabels | default dict) | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- toYaml ($.Values.services.editoast.init.labels | default dict) | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      containers:
+        - name: {{ include "osrd.name" . }}-editoast-fga-migrate
+          image: "{{ .Values.images.editoast }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          command: ["fga_migrations", "apply"]
+          env:
+            - name: FGA_API_URL
+              value: "http://{{ include "osrd.fullname" . }}-openfga:{{ .Values.services.openfga.service.port }}"
+
+            {{- with .Values.services.editoast.env | default dict }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.services.editoast.resources | nindent 12 }}
+  backoffLimit: 4
+{{- end }}

@@ -35,12 +35,8 @@ pub struct OpenfgaArgs {
     )]
     pub migrations_store: String,
     /// The store on which to apply the migrations
-    #[arg(
-        long,
-        env = "EDITOAST_AUTHORIZATION_STORE_NAME",
-        default_value = "osrd-editoast"
-    )]
-    pub authorization_store: String,
+    #[arg(long, env = "EDITOAST_OPENFGA_STORE", default_value = "osrd-editoast")]
+    pub openfga_store: String,
 }
 
 #[derive(Debug, Subcommand)]
