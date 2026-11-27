@@ -1,0 +1,45 @@
+import { file_exists } from "std/fs"
+import { log_info, log_warning, log_error } from "./logger.ab"
+
+// Makes sure the AWS profile has valid credentials; refreshes the SSO login if needed
+pub fun ensure_aws_session(profile: Text): Null? {
+    $ aws sts get-caller-identity --profile "{profile}" > /dev/null 2>&1 $ failed {
+        log_warning("Can't access AWS with profile '{profile}', refreshing SSO login...")
+        $ aws sso login --profile "{profile}" $ failed {
+            log_error("Couldn't create a working AWS session for profile '{profile}'")
+            fail 1
+        }
+    }
+}
+
+// Downloads s3://osrd-<profile>/path into the cache as `local_name`, unless already there.
+// The directory structure of `path` is kept. Returns the local path.
+pub fun download_s3_file(profile: Text, path: Text, cache_dir: Text, local_name: Text): Text? {
+    const bucket = "osrd-{profile}"
+    const parent_dir = $ dirname "{cache_dir}/{bucket}/{path}" $?
+    const local_path = "{parent_dir}/{local_name}"
+
+    if file_exists(local_path) {
+        log_info("Local cache hit for {bucket}/{path}, at {local_path}")
+        return local_path
+    }
+
+    log_info("Downloading {bucket}/{path} from s3...")
+    $ mkdir -p "{parent_dir}" $ failed {
+        log_error("Could not create directory {parent_dir}")
+        fail 1
+    }
+
+    // Temporary name next to the final file
+    const partial_path = "{local_path}.part"
+    $ aws s3 cp "s3://{bucket}/{path}" "{partial_path}" --profile "{profile}" --only-show-errors $ failed {
+        trust $ rm -f "{partial_path}" $
+        log_error("Could not download s3://{bucket}/{path}")
+        fail 1
+    }
+    $ mv "{partial_path}" "{local_path}" $ failed {
+        log_error("Could not move {partial_path} to {local_path}")
+        fail 1
+    }
+    return local_path
+}
