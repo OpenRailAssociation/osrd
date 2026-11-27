@@ -1543,11 +1543,10 @@ pub(in crate::views) async fn update_user(
             let subject = authz::Subject::user(user_id);
             let user_authz = authz::User(user_id);
 
-            let (current_roles, current_groups) = v2::subject_roles(subject)
+            let (current_roles, current_groups) = v2::user_direct_roles(user_authz)
                 .zip(v2::user_groups(user_authz))
                 .run::<OpenFgaError, _>(&system_authorizer)
                 .await?;
-            let current_roles = current_roles.into_iter().collect::<HashSet<_>>();
             let current_groups = current_groups.into_iter().collect::<HashSet<_>>();
             let roles_to_add = roles.difference(&current_roles).copied().collect();
             let roles_to_remove = current_roles.difference(&roles).copied().collect();
@@ -4945,11 +4944,13 @@ mod tests {
 
         let _group_being_removed = app
             .group("group_1")
+            .with_roles([Role::Admin])
             .with_members(vec![&user])
             .create()
             .await;
         let group_being_kept = app
             .group("group_2")
+            .with_roles([Role::OperationalStudies])
             .with_members(vec![&user])
             .create()
             .await;
@@ -4997,10 +4998,19 @@ mod tests {
         // Check that the tuples of the user groups and roles have been created in openfga:
 
         let openfga = app.openfga();
+        assert_eq!(
+            openfga
+                .user_direct_roles(authz::User(created_user.id))
+                .await,
+            HashSet::from([Role::Admin, Role::Stdcm])
+        );
         let user_roles = openfga
             .subject_roles(&authz::Subject::user(created_user.id))
             .await;
-        assert_eq!(user_roles, HashSet::from([Role::Admin, Role::Stdcm]));
+        assert_eq!(
+            user_roles,
+            HashSet::from([Role::Admin, Role::Stdcm, Role::OperationalStudies])
+        );
 
         let user_groups = openfga.user_groups(authz::User(created_user.id)).await;
         assert_eq!(

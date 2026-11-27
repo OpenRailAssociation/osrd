@@ -24,16 +24,26 @@ pub fn subject_roles(subject: Subject) -> Protected<Vec<Role>> {
     })
 }
 
-/// Returns the set of roles assigned to a subject
+/// Returns the roles assigned directly to a user.
 pub fn user_direct_roles(user: User) -> Protected<HashSet<Role>> {
+    subject_direct_roles(Subject::User(user))
+}
+
+fn subject_direct_roles(subject: Subject) -> Protected<HashSet<Role>> {
     Protected::new(move |openfga| {
         async move {
-            let UserList {
-                users,
-                public_access: _,
-            } = openfga
-                .list_direct_users(User::role().query_direct_users(&user))
-                .await?;
+            let UserList { users, .. } = match subject {
+                Subject::User(user) => {
+                    openfga
+                        .list_direct_users(User::role().query_direct_users(&user))
+                        .await?
+                }
+                Subject::Group(group) => {
+                    openfga
+                        .list_direct_users(Group::role().query_direct_users(&group))
+                        .await?
+                }
+            };
             Ok(users.into_iter().collect::<HashSet<_>>())
         }
         .boxed()
@@ -44,10 +54,9 @@ pub fn user_direct_roles(user: User) -> Protected<HashSet<Role>> {
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
-    subject_roles(subject)
+    subject_direct_roles(subject)
         .then(move |openfga, existing_roles| {
             async move {
-                let existing_roles = HashSet::from_iter(existing_roles);
                 let new_roles = roles.difference(&existing_roles);
                 let mut writes = openfga.prepare_writes();
                 match subject {
@@ -74,10 +83,9 @@ pub fn add_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
 ///
 /// Idempotent but not atomic due to the lack of transactions in OpenFGA.
 pub fn remove_roles(subject: Subject, roles: HashSet<Role>) -> Protected<()> {
-    subject_roles(subject)
+    subject_direct_roles(subject)
         .then(move |openfga, existing_roles| {
             async move {
-                let existing_roles = HashSet::from_iter(existing_roles);
                 let removed_roles = roles.intersection(&existing_roles);
                 let mut writes = openfga.prepare_deletes();
                 match subject {
