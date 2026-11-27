@@ -21,6 +21,7 @@ type ItineraryModalFormHeaderProps = {
   onModalFormStateChange: (context: ItineraryModalFormState) => void;
   onCategoryWarningChange: (categoryWarning?: string) => void;
   onRollingStockMessageChange: (message?: string) => void;
+  onResetRollingStock: () => void;
   currentSubCategory?: SubCategory;
   categoryColors: CategoryColors;
 };
@@ -30,6 +31,7 @@ const ItineraryModalFormHeader = ({
   onModalFormStateChange,
   onCategoryWarningChange,
   onRollingStockMessageChange,
+  onResetRollingStock,
   currentSubCategory,
   categoryColors,
 }: ItineraryModalFormHeaderProps) => {
@@ -78,6 +80,9 @@ const ItineraryModalFormHeader = ({
       rollingStockId: undefined,
       rollingStockName: newValue,
     });
+    if (newValue === '') {
+      onResetRollingStock();
+    }
   };
 
   // When user selects a suggestion
