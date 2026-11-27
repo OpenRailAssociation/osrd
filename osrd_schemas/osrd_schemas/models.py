@@ -3,9 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import date
-from datetime import time as time_aliased
-from datetime import timedelta
+from datetime import date, timedelta
 from enum import Enum
 from typing import Annotated, Any, Literal
 
@@ -16,7 +14,6 @@ from pydantic import (
     Field,
     RootModel,
     StrictBool,
-    StrictBytes,
     StrictFloat,
     StrictInt,
     StrictStr,
@@ -25,46 +22,6 @@ from pydantic import (
 from typing_extensions import TypeAliasType
 
 from .overrides import OffsetInMs
-
-
-class OperationalPointReferenceId(BaseModel):
-    operational_point: StrictStr
-    """
-    The object id of an operational point
-    """
-    type: Literal["id"] = "id"
-
-
-class SecondaryCode(RootModel[StrictStr]):
-    root: Annotated[StrictStr, Field(min_length=1)]
-    """
-    An optional secondary code to identify a more specific location
-    """
-
-
-class OperationalPointReferenceDomestic(BaseModel):
-    country_code: Annotated[StrictStr, Field(min_length=1)]
-    main_code: StrictStr
-    """
-    The operational point main code
-    """
-    secondary_code: SecondaryCode | None = None
-    """
-    An optional secondary code to identify a more specific location
-    """
-    type: Literal["domestic"] = "domestic"
-
-
-class OperationalPointReferenceUic(BaseModel):
-    secondary_code: SecondaryCode | None = None
-    """
-    An optional secondary code to identify a more specific location
-    """
-    type: Literal["uic"] = "uic"
-    uic: Annotated[StrictInt, Field(ge=0)]
-    """
-    The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-    """
 
 
 class AddOperation(BaseModel):
@@ -2962,20 +2919,51 @@ class LocalTrackName(RootModel[StrictStr]):
     root: Annotated[StrictStr, Field(min_length=1)]
 
 
-class OperationalPointPartReference(BaseModel):
-    local_track_name: LocalTrackName | None = None
-    operational_point: (
-        OperationalPointReferenceId
-        | OperationalPointReferenceDomestic
-        | OperationalPointReferenceUic
-    )
-
-
 class OperationalPointPartSncfExtension(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     kp: StrictStr
+
+
+class OperationalPointReferenceId(BaseModel):
+    operational_point: StrictStr
+    """
+    The object id of an operational point
+    """
+    type: Literal["id"] = "id"
+
+
+class SecondaryCode(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
+    """
+    An optional secondary code to identify a more specific location
+    """
+
+
+class OperationalPointReferenceDomestic(BaseModel):
+    country_code: Annotated[StrictStr, Field(min_length=1)]
+    main_code: StrictStr
+    """
+    The operational point main code
+    """
+    secondary_code: SecondaryCode | None = None
+    """
+    An optional secondary code to identify a more specific location
+    """
+    type: Literal["domestic"] = "domestic"
+
+
+class OperationalPointReferenceUic(BaseModel):
+    secondary_code: SecondaryCode | None = None
+    """
+    An optional secondary code to identify a more specific location
+    """
+    type: Literal["uic"] = "uic"
+    uic: Annotated[StrictInt, Field(ge=0)]
+    """
+    The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+    """
 
 
 class OperationalPointReferenceNodeOperationalPointReference(BaseModel):
@@ -3071,16 +3059,6 @@ class PatchOperationCopyOperation(CopyOperation):
     op: Literal["copy"] = "copy"
 
 
-class PathItemLocationOperationalPointPartReference(OperationalPointPartReference):
-    """
-    The location of a path waypoint
-    """
-
-    type: Literal["operational_point_part_reference"] = (
-        "operational_point_part_reference"
-    )
-
-
 class PathItemRelativeLocationExactPathItem(BaseModel):
     """
     Position of an operational point on a path, relative to the input path items.
@@ -3111,21 +3089,6 @@ class PathItemRelativeLocationBetweenPathItems(BaseModel):
     Previous path item key, when the operational point is not one of the input path items
     """
     type: Literal["between_path_items"] = "between_path_items"
-
-
-class PathItemRelativeLocation(
-    RootModel[
-        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
-    ]
-):
-    root: (
-        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
-    )
-    """
-    Position of an operational point on a path, relative to the input path items.
-    If the OP matches an input path item, it is located using this path item's key,
-    else, if the path just passes by the OP, it is located using its previous and following path items keys
-    """
 
 
 class Curves(BaseModel):
@@ -4502,160 +4465,2727 @@ class WorkerStatus(Enum):
     ERROR = "ERROR"
 
 
-class ErrorResponse(BaseModel):
-    detail: StrictStr
+class AuthzGrantsPostRequest2(BaseModel):
     """
-    Error message describing what went wrong
+    `grant` XOR `revoke` is expected
+    """
+
+    revoke: list[RevokeBody]
+
+
+class AuthzGroupsGetResponseItem(BaseModel):
+    id: StrictInt
+    name: StrictStr
+
+
+class AuthzGroupsGetResponse(RootModel[list[AuthzGroupsGetResponseItem]]):
+    root: list[AuthzGroupsGetResponseItem]
+
+
+class AuthzGroupsPutRequest(BaseModel):
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzGroupsPutResponse(BaseModel):
+    id: StrictInt
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzGroupsPutResponse2(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class AuthzGroupsPutResponse3(BaseModel):
+    """
+    openfga error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:authorization:open_fga"] = "editoast:authorization:open_fga"
+
+
+class AuthzGroupsPutResponse1(
+    RootModel[AuthzGroupsPutResponse2 | AuthzGroupsPutResponse3]
+):
+    root: AuthzGroupsPutResponse2 | AuthzGroupsPutResponse3
+
+
+class AuthzGroupsPutResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class AuthzGroupsPutResponse4(RootModel[AuthzGroupsPutResponse5]):
+    root: AuthzGroupsPutResponse5
+
+
+class Context(BaseModel):
+    group_id: StrictInt
+
+
+class AuthzGroupsGroupIdDeleteResponse1(BaseModel):
+    """
+    The group `{group_id}` does not exist
+    """
+
+    context: Context
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:group:not_found"] = "editoast:group:not_found"
+
+
+class AuthzGroupsGroupIdDeleteResponse(RootModel[AuthzGroupsGroupIdDeleteResponse1]):
+    root: AuthzGroupsGroupIdDeleteResponse1
+
+
+class AuthzGroupsGroupIdDeleteResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class AuthzGroupsGroupIdDeleteResponse2(RootModel[AuthzGroupsGroupIdDeleteResponse3]):
+    root: AuthzGroupsGroupIdDeleteResponse3
+
+
+class AuthzGroupsGroupIdDeleteResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class AuthzGroupsGroupIdDeleteResponse4(RootModel[AuthzGroupsGroupIdDeleteResponse5]):
+    root: AuthzGroupsGroupIdDeleteResponse5
+
+
+class AuthzMeGetResponse(BaseModel):
+    id: StrictInt
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzMeGrantsPostRequest(RootModel[dict[str, list[StrictInt]]]):
+    root: dict[str, list[StrictInt]]
+
+
+class AuthzMeGrantsPostResponseItem(BaseModel):
+    grant: StandardGrant
+    id: StrictInt
+
+
+class AuthzMeGrantsPostResponse(
+    RootModel[dict[str, list[AuthzMeGrantsPostResponseItem]]]
+):
+    root: dict[str, list[AuthzMeGrantsPostResponseItem]]
+
+
+class AuthzMeGroupsGetResponseItem(BaseModel):
+    id: StrictInt
+    name: StrictStr
+
+
+class AuthzMeGroupsGetResponse(RootModel[list[AuthzMeGroupsGetResponseItem]]):
+    root: list[AuthzMeGroupsGetResponseItem]
+
+
+class AuthzMePrivilegesPostRequest(RootModel[dict[str, list[StrictInt]]]):
+    root: dict[str, list[StrictInt]]
+
+
+class AuthzMePrivilegesPostResponseItem(BaseModel):
+    privileges: list[StandardPrivilege]
+    resource_id: StrictInt
+
+
+class AuthzMePrivilegesPostResponse(
+    RootModel[dict[str, list[AuthzMePrivilegesPostResponseItem]]]
+):
+    root: dict[str, list[AuthzMePrivilegesPostResponseItem]]
+
+
+class Group(BaseModel):
+    id: StrictInt
+    name: StrictStr
+
+
+class AuthzUsersGetResponseItem(BaseModel):
+    direct_roles: list[Role]
+    effective_roles: list[Role]
+    groups: list[Group]
+    id: StrictInt
+    identities: list[StrictStr]
+    name: StrictStr
+
+
+class AuthzUsersGetResponse(RootModel[list[AuthzUsersGetResponseItem]]):
+    root: list[AuthzUsersGetResponseItem]
+
+
+class AuthzUsersGetResponse2(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class AuthzUsersGetResponse3(BaseModel):
+    """
+    openfga error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:authorization:open_fga"] = "editoast:authorization:open_fga"
+
+
+class AuthzUsersGetResponse1(
+    RootModel[AuthzUsersGetResponse2 | AuthzUsersGetResponse3]
+):
+    root: AuthzUsersGetResponse2 | AuthzUsersGetResponse3
+
+
+class AuthzUsersGetResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class AuthzUsersGetResponse4(RootModel[AuthzUsersGetResponse5]):
+    root: AuthzUsersGetResponse5
+
+
+class AuthzUsersPostRequest(BaseModel):
+    groups: list[StrictInt]
+    identities: list[StrictStr]
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzUsersPostResponse(BaseModel):
+    groups: list[Group]
+    id: StrictInt
+    identities: list[StrictStr]
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzUsersPostResponse2(BaseModel):
+    """
+    The group `{group_id}` does not exist
+    """
+
+    context: Context
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:group:not_found"] = "editoast:group:not_found"
+
+
+class AuthzUsersPostResponse1(RootModel[AuthzUsersPostResponse2]):
+    root: AuthzUsersPostResponse2
+
+
+class AuthzUsersPostResponse4(BaseModel):
+    """
+    the provided identity `{identity:?}` is already associated with another user
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["409"] = "409"
+    type: Literal["editoast:create_user:identity_already_exists"] = (
+        "editoast:create_user:identity_already_exists"
+    )
+
+
+class AuthzUsersPostResponse3(RootModel[AuthzUsersPostResponse4]):
+    root: AuthzUsersPostResponse4
+
+
+class AuthzUsersPostResponse6(BaseModel):
+    """
+    no identity provided for the new user
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["422"] = "422"
+    type: Literal["editoast:create_user:no_identity_provided"] = (
+        "editoast:create_user:no_identity_provided"
+    )
+
+
+class AuthzUsersPostResponse5(RootModel[AuthzUsersPostResponse6]):
+    root: AuthzUsersPostResponse6
+
+
+class AuthzUsersPostResponse8(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class AuthzUsersPostResponse9(BaseModel):
+    """
+    openfga error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:authorization:open_fga"] = "editoast:authorization:open_fga"
+
+
+class AuthzUsersPostResponse7(
+    RootModel[AuthzUsersPostResponse8 | AuthzUsersPostResponse9]
+):
+    root: AuthzUsersPostResponse8 | AuthzUsersPostResponse9
+
+
+class AuthzUsersPostResponse11(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class AuthzUsersPostResponse10(RootModel[AuthzUsersPostResponse11]):
+    root: AuthzUsersPostResponse11
+
+
+class AuthzUsersInfoPostRequest(BaseModel):
+    identities: list[StrictStr] | None = None
+    ids: list[StrictInt] | None = None
+
+
+class AuthzUsersInfoPostResponseItem(BaseModel):
+    groups: list[Group]
+    id: StrictInt
+    identities: list[StrictStr]
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzUsersInfoPostResponse(RootModel[list[AuthzUsersInfoPostResponseItem]]):
+    root: list[AuthzUsersInfoPostResponseItem]
+
+
+class Context2(BaseModel):
+    user_id: StrictInt
+
+
+class AuthzUsersUserIdDeleteResponse1(BaseModel):
+    """
+    The user `{user_id}` does not exist
+    """
+
+    context: Context2
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:user:not_found"] = "editoast:user:not_found"
+
+
+class AuthzUsersUserIdDeleteResponse(RootModel[AuthzUsersUserIdDeleteResponse1]):
+    root: AuthzUsersUserIdDeleteResponse1
+
+
+class AuthzUsersUserIdDeleteResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class AuthzUsersUserIdDeleteResponse2(RootModel[AuthzUsersUserIdDeleteResponse3]):
+    root: AuthzUsersUserIdDeleteResponse3
+
+
+class AuthzUsersUserIdDeleteResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class AuthzUsersUserIdDeleteResponse4(RootModel[AuthzUsersUserIdDeleteResponse5]):
+    root: AuthzUsersUserIdDeleteResponse5
+
+
+class AuthzUsersUserIdPatchRequest(BaseModel):
+    groups: list[StrictInt]
+    identities: list[StrictStr]
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzUsersUserIdPatchResponse(BaseModel):
+    groups: list[Group]
+    id: StrictInt
+    identities: list[StrictStr]
+    name: StrictStr
+    roles: list[Role]
+
+
+class AuthzUsersUserIdPatchResponse2(BaseModel):
+    """
+    The user `{user_id}` does not exist
+    """
+
+    context: Context2
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:user:not_found"] = "editoast:user:not_found"
+
+
+class AuthzUsersUserIdPatchResponse1(RootModel[AuthzUsersUserIdPatchResponse2]):
+    root: AuthzUsersUserIdPatchResponse2
+
+
+class AuthzUsersUserIdPatchResponse4(BaseModel):
+    """
+    the provided identity `{identity:?}` is already associated with another user
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["409"] = "409"
+    type: Literal["editoast:update_user:identity_already_exists"] = (
+        "editoast:update_user:identity_already_exists"
+    )
+
+
+class AuthzUsersUserIdPatchResponse3(RootModel[AuthzUsersUserIdPatchResponse4]):
+    root: AuthzUsersUserIdPatchResponse4
+
+
+class AuthzUsersUserIdPatchResponse6(BaseModel):
+    """
+    no identity provided for the new user
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["422"] = "422"
+    type: Literal["editoast:update_user:no_identity_provided"] = (
+        "editoast:update_user:no_identity_provided"
+    )
+
+
+class AuthzUsersUserIdPatchResponse5(RootModel[AuthzUsersUserIdPatchResponse6]):
+    root: AuthzUsersUserIdPatchResponse6
+
+
+class AuthzUsersUserIdPatchResponse8(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class AuthzUsersUserIdPatchResponse9(BaseModel):
+    """
+    openfga error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:authorization:open_fga"] = "editoast:authorization:open_fga"
+
+
+class AuthzUsersUserIdPatchResponse7(
+    RootModel[AuthzUsersUserIdPatchResponse8 | AuthzUsersUserIdPatchResponse9]
+):
+    root: AuthzUsersUserIdPatchResponse8 | AuthzUsersUserIdPatchResponse9
+
+
+class AuthzUsersUserIdPatchResponse11(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class AuthzUsersUserIdPatchResponse10(RootModel[AuthzUsersUserIdPatchResponse11]):
+    root: AuthzUsersUserIdPatchResponse11
+
+
+class AuthzResourceTypeResourceIdGetResponseItem(BaseModel):
+    grant: StandardGrant
+    id: StrictInt
+    name: StrictStr
+    type: SubjectType
+
+
+class AuthzResourceTypeResourceIdGetResponse(
+    RootModel[list[AuthzResourceTypeResourceIdGetResponseItem]]
+):
+    root: list[AuthzResourceTypeResourceIdGetResponseItem]
+
+
+class CatalogEntriesGetResponse(PaginationStats):
+    results: list[CatalogEntry]
+
+
+class CatalogEntriesGetResponse2(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class CatalogEntriesGetResponse1(RootModel[CatalogEntriesGetResponse2]):
+    root: CatalogEntriesGetResponse2
+
+
+class CatalogEntriesGetResponse4(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class CatalogEntriesGetResponse3(RootModel[CatalogEntriesGetResponse4]):
+    root: CatalogEntriesGetResponse4
+
+
+class CatalogEntriesPostResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class CatalogEntriesPostResponse(RootModel[CatalogEntriesPostResponse1]):
+    root: CatalogEntriesPostResponse1
+
+
+class CatalogEntriesPostResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class CatalogEntriesPostResponse2(RootModel[CatalogEntriesPostResponse3]):
+    root: CatalogEntriesPostResponse3
+
+
+class Context4(BaseModel):
+    catalog_entry_id: StrictInt
+
+
+class CatalogEntriesIdPutResponse1(BaseModel):
+    """
+    Catalog entry '{catalog_entry_id}' could not be found
+    """
+
+    context: Context4
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:catalog_entry:not_found"] = (
+        "editoast:catalog_entry:not_found"
+    )
+
+
+class CatalogEntriesIdPutResponse(RootModel[CatalogEntriesIdPutResponse1]):
+    root: CatalogEntriesIdPutResponse1
+
+
+class CatalogEntriesIdPutResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class CatalogEntriesIdPutResponse2(RootModel[CatalogEntriesIdPutResponse3]):
+    root: CatalogEntriesIdPutResponse3
+
+
+class CatalogEntriesIdPutResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class CatalogEntriesIdPutResponse4(RootModel[CatalogEntriesIdPutResponse5]):
+    root: CatalogEntriesIdPutResponse5
+
+
+class CatalogEntriesIdDeleteResponse1(BaseModel):
+    """
+    Catalog entry '{catalog_entry_id}' could not be found
+    """
+
+    context: Context4
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:catalog_entry:not_found"] = (
+        "editoast:catalog_entry:not_found"
+    )
+
+
+class CatalogEntriesIdDeleteResponse(RootModel[CatalogEntriesIdDeleteResponse1]):
+    root: CatalogEntriesIdDeleteResponse1
+
+
+class CatalogEntriesIdDeleteResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class CatalogEntriesIdDeleteResponse2(RootModel[CatalogEntriesIdDeleteResponse3]):
+    root: CatalogEntriesIdDeleteResponse3
+
+
+class CatalogEntriesIdDeleteResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class CatalogEntriesIdDeleteResponse4(RootModel[CatalogEntriesIdDeleteResponse5]):
+    root: CatalogEntriesIdDeleteResponse5
+
+
+class DocumentsPostResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class DocumentsPostResponse(RootModel[DocumentsPostResponse1]):
+    root: DocumentsPostResponse1
+
+
+class DocumentsPostResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class DocumentsPostResponse2(RootModel[DocumentsPostResponse3]):
+    root: DocumentsPostResponse3
+
+
+class Context6(BaseModel):
+    document_key: StrictInt
+
+
+class DocumentsDocumentKeyGetResponse1(BaseModel):
+    """
+    Document '{document_key}' not found
+    """
+
+    context: Context6
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:document:not_found"] = "editoast:document:not_found"
+
+
+class DocumentsDocumentKeyGetResponse(RootModel[DocumentsDocumentKeyGetResponse1]):
+    root: DocumentsDocumentKeyGetResponse1
+
+
+class DocumentsDocumentKeyGetResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class DocumentsDocumentKeyGetResponse2(RootModel[DocumentsDocumentKeyGetResponse3]):
+    root: DocumentsDocumentKeyGetResponse3
+
+
+class DocumentsDocumentKeyGetResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class DocumentsDocumentKeyGetResponse4(RootModel[DocumentsDocumentKeyGetResponse5]):
+    root: DocumentsDocumentKeyGetResponse5
+
+
+class DocumentsDocumentKeyDeleteResponse1(BaseModel):
+    """
+    Document '{document_key}' not found
+    """
+
+    context: Context6
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:document:not_found"] = "editoast:document:not_found"
+
+
+class DocumentsDocumentKeyDeleteResponse(
+    RootModel[DocumentsDocumentKeyDeleteResponse1]
+):
+    root: DocumentsDocumentKeyDeleteResponse1
+
+
+class DocumentsDocumentKeyDeleteResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class DocumentsDocumentKeyDeleteResponse2(
+    RootModel[DocumentsDocumentKeyDeleteResponse3]
+):
+    root: DocumentsDocumentKeyDeleteResponse3
+
+
+class DocumentsDocumentKeyDeleteResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class DocumentsDocumentKeyDeleteResponse4(
+    RootModel[DocumentsDocumentKeyDeleteResponse5]
+):
+    root: DocumentsDocumentKeyDeleteResponse5
+
+
+class ElectricalProfileSetGetResponse(RootModel[list[LightElectricalProfileSet]]):
+    root: list[LightElectricalProfileSet]
+
+
+class ElectricalProfileSetGetResponse2(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ElectricalProfileSetGetResponse1(RootModel[ElectricalProfileSetGetResponse2]):
+    root: ElectricalProfileSetGetResponse2
+
+
+class ElectricalProfileSetGetResponse4(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ElectricalProfileSetGetResponse3(RootModel[ElectricalProfileSetGetResponse4]):
+    root: ElectricalProfileSetGetResponse4
+
+
+class ElectricalProfileSetPostResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ElectricalProfileSetPostResponse(RootModel[ElectricalProfileSetPostResponse1]):
+    root: ElectricalProfileSetPostResponse1
+
+
+class ElectricalProfileSetPostResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ElectricalProfileSetPostResponse2(RootModel[ElectricalProfileSetPostResponse3]):
+    root: ElectricalProfileSetPostResponse3
+
+
+class Context8(BaseModel):
+    electrical_profile_set_id: StrictInt
+
+
+class ElectricalProfileSetElectricalProfileSetIdGetResponse1(BaseModel):
+    """
+    Electrical Profile Set '{electrical_profile_set_id}', could not be found
+    """
+
+    context: Context8
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:electrical_profiles:not_found"] = (
+        "editoast:electrical_profiles:not_found"
+    )
+
+
+class ElectricalProfileSetElectricalProfileSetIdGetResponse(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdGetResponse1]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdGetResponse1
+
+
+class ElectricalProfileSetElectricalProfileSetIdGetResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ElectricalProfileSetElectricalProfileSetIdGetResponse2(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdGetResponse3]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdGetResponse3
+
+
+class ElectricalProfileSetElectricalProfileSetIdGetResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ElectricalProfileSetElectricalProfileSetIdGetResponse4(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdGetResponse5]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdGetResponse5
+
+
+class ElectricalProfileSetElectricalProfileSetIdDeleteResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ElectricalProfileSetElectricalProfileSetIdDeleteResponse(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdDeleteResponse1]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdDeleteResponse1
+
+
+class ElectricalProfileSetElectricalProfileSetIdDeleteResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ElectricalProfileSetElectricalProfileSetIdDeleteResponse2(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdDeleteResponse3]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdDeleteResponse3
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse(
+    RootModel[dict[str, list[StrictStr]]]
+):
+    root: dict[str, list[StrictStr]]
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse2(BaseModel):
+    """
+    Electrical Profile Set '{electrical_profile_set_id}', could not be found
+    """
+
+    context: Context8
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:electrical_profiles:not_found"] = (
+        "editoast:electrical_profiles:not_found"
+    )
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse1(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse2]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse2
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse4(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse3(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse4]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse4
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse6(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse5(
+    RootModel[ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse6]
+):
+    root: ElectricalProfileSetElectricalProfileSetIdLevelOrderGetResponse6
+
+
+class Context10(BaseModel):
+    file: StrictStr
+
+
+class FontsFontGlyphGetResponse1(BaseModel):
+    """
+    File '{file}' not found
+    """
+
+    context: Context10
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:file_not_found"] = "editoast:file_not_found"
+
+
+class FontsFontGlyphGetResponse(RootModel[FontsFontGlyphGetResponse1]):
+    root: FontsFontGlyphGetResponse1
+
+
+class IconsSignalingSystemFileNameGetResponse1(BaseModel):
+    """
+    File '{file}' not found
+    """
+
+    context: Context10
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:file_not_found"] = "editoast:file_not_found"
+
+
+class IconsSignalingSystemFileNameGetResponse(
+    RootModel[IconsSignalingSystemFileNameGetResponse1]
+):
+    root: IconsSignalingSystemFileNameGetResponse1
+
+
+class InfraGetResponse(PaginationStats):
+    results: list[Infra]
+
+
+class InfraPostRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    name: StrictStr
+    """
+    The name to give to the new infra
     """
 
 
-class ConsistChange(BaseModel):
-    """
-    New consist to use from a request step onward.
-    """
+class InfraRailjsonPostResponse(BaseModel):
+    infra: StrictInt
 
-    rolling_stock: Annotated[StrictStr, Field(title="Rolling Stock")]
-    towed_rolling_stock: Annotated[
-        StrictStr | None, Field(title="Towed Rolling Stock")
-    ] = None
-    total_mass: Annotated[StrictInt, Field(title="Total Mass")]
+
+class Infra1(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
+
+
+class InfraRefreshPostResponse(BaseModel):
+    infra_refreshed: list[StrictInt]
     """
-    Total mass of the train in kg
-    """
-    total_length: Annotated[StrictInt, Field(title="Total Length")]
-    """
-    Total length of the train in m
+    The list of infras that were refreshed successfully
     """
 
 
-class RmiLoadingGaugeType(Enum):
-    GA = "GA"
-    GB = "GB"
+class InfraVoltagesGetResponse(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
 
 
-class Location(BaseModel):
+class InfraInfraIdPutRequest(BaseModel):
+    name: StrictStr
     """
-    Information on the operational point.
-    """
-
-    uic: Annotated[StrictInt, Field(title="Uic")]
-    secondary_code: Annotated[StrictStr, Field(title="Secondary Code")]
-
-
-class TimingData(BaseModel):
-    """
-    Indicates the departure or arrival time as well as the tolerances.
+    The new name to give the infra
     """
 
-    arrival_time: Annotated[AwareDatetime, Field(title="Arrival Time")]
-    arrival_time_tolerance_before: Annotated[
-        StrictInt, Field(title="Arrival Time Tolerance Before")
+
+class InfraInfraIdAttachedTrackIdGetResponse(RootModel[dict[str, list[StrictStr]]]):
+    root: dict[str, list[StrictStr]]
+
+
+class InfraInfraIdBboxGetResponse(RootModel[BoundingBox | None]):
+    root: BoundingBox | None
+
+
+class InfraInfraIdDelimitedAreaGetRequest(BaseModel):
+    track_ranges: list[DirectionalTrackRange]
+
+
+class InfraInfraIdDelimitedAreaGetResponse(BaseModel):
+    track_ranges: list[DirectionalTrackRange]
+
+
+class Level(Enum):
+    warnings = "warnings"
+    errors = "errors"
+    all = "all"
+
+
+class ErrorType(Enum):
+    """
+    Auto-generated discriminant enum variants
+    """
+
+    duplicated_group = "duplicated_group"
+    empty_object = "empty_object"
+    invalid_group = "invalid_group"
+    invalid_reference = "invalid_reference"
+    invalid_route = "invalid_route"
+    invalid_switch_ports = "invalid_switch_ports"
+    missing_route = "missing_route"
+    missing_buffer_stop = "missing_buffer_stop"
+    node_endpoints_not_unique = "node_endpoints_not_unique"
+    object_out_of_path = "object_out_of_path"
+    odd_buffer_stop_location = "odd_buffer_stop_location"
+    out_of_range = "out_of_range"
+    overlapping_electrifications = "overlapping_electrifications"
+    overlapping_speed_sections = "overlapping_speed_sections"
+    overlapping_switches = "overlapping_switches"
+    unknown_port_name = "unknown_port_name"
+    unused_port = "unused_port"
+
+
+class InfraInfraIdMatchOperationalPointsPostRequest(BaseModel):
+    operational_point_references: list[
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
     ]
+
+
+class InfraInfraIdObjectsObjectTypePostRequest(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
+
+
+class InfraInfraIdObjectsObjectTypeIdsGetResponse(BaseModel):
+    ids: list[StrictStr]
+
+
+class InfraInfraIdPathPropertiesPostResponse1(BaseModel):
     """
-    Tolerance in ms
+    Forbidden (403) — user has insufficient privileges
     """
-    arrival_time_tolerance_after: Annotated[
-        StrictInt, Field(title="Arrival Time Tolerance After")
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["403"] = "403"
+    type: Literal["editoast:authorizer:forbidden"] = "editoast:authorizer:forbidden"
+
+
+class InfraInfraIdPathPropertiesPostResponse(
+    RootModel[InfraInfraIdPathPropertiesPostResponse1]
+):
+    root: InfraInfraIdPathPropertiesPostResponse1
+
+
+class Context12(BaseModel):
+    infra_id: StrictInt
+
+
+class InfraInfraIdPathPropertiesPostResponse3(BaseModel):
+    """
+    Infra '{infra_id}', could not be found
+    """
+
+    context: Context12
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:infra:not_found"] = "editoast:infra:not_found"
+
+
+class InfraInfraIdPathPropertiesPostResponse2(
+    RootModel[InfraInfraIdPathPropertiesPostResponse3]
+):
+    root: InfraInfraIdPathPropertiesPostResponse3
+
+
+class InfraInfraIdPathPropertiesPostResponse5(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class InfraInfraIdPathPropertiesPostResponse6(BaseModel):
+    """
+    openfga error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:authorization:open_fga"] = "editoast:authorization:open_fga"
+
+
+class InfraInfraIdPathPropertiesPostResponse7(BaseModel):
+    """
+    Core error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:core"] = "editoast:core"
+
+
+class InfraInfraIdPathPropertiesPostResponse4(
+    RootModel[
+        InfraInfraIdPathPropertiesPostResponse5
+        | InfraInfraIdPathPropertiesPostResponse6
+        | InfraInfraIdPathPropertiesPostResponse7
     ]
+):
+    root: (
+        InfraInfraIdPathPropertiesPostResponse5
+        | InfraInfraIdPathPropertiesPostResponse6
+        | InfraInfraIdPathPropertiesPostResponse7
+    )
+
+
+class InfraInfraIdPathPropertiesPostResponse9(BaseModel):
     """
-    Tolerance in ms
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class InfraInfraIdPathPropertiesPostResponse8(
+    RootModel[InfraInfraIdPathPropertiesPostResponse9]
+):
+    root: InfraInfraIdPathPropertiesPostResponse9
+
+
+class InfraInfraIdPathfindingPostResponse(RootModel[list[PathfindingOutput]]):
+    root: list[PathfindingOutput]
+
+
+class InfraInfraIdRoutesNodesPostRequest(RootModel[dict[str, StrictStr | None]]):
+    root: dict[str, StrictStr | None]
+
+
+class InfraInfraIdRoutesNodesPostResponse(BaseModel):
+    available_node_positions: dict[StrictStr, list[StrictStr]]
+    """
+    List of available positions for each node on the corresponding routes
+    """
+    routes: list[StrictStr]
+    """
+    List of route ids crossing a selection of nodes
     """
 
 
-class StepType(Enum):
+class InfraInfraIdRoutesTrackRangesGetResponse1(RoutePath):
     """
-    Describes the type of step.
+    RoutePath contains N track ranges with the N-1 switches found in-between, in the order they appear on the route
     """
 
-    VIA = "VIA"
-    DRIVER_SWITCH = "DRIVER_SWITCH"
-    STOP = "STOP"
-    BACKTRACK = "BACKTRACK"
+    type: Literal["Computed"] = "Computed"
 
 
-class RequestedStep(BaseModel):
-    consist_change: ConsistChange | None = None
-    """
-    New consist to use from this step onward. Not included for the first step.
-    """
-    duration: Annotated[StrictInt, Field(title="Duration")]
-    """
-    Duration in ms
-    """
-    location: Location
-    timing_data: TimingData | None = None
-    type: StepType | None = None
+class InfraInfraIdRoutesTrackRangesGetResponse2(BaseModel):
+    type: Literal["NotFound"] = "NotFound"
 
 
-class SimulatedStep(BaseModel):
-    path_item_time: Annotated[StrictInt, Field(title="Path Item Time")]
+class InfraInfraIdRoutesTrackRangesGetResponse3(BaseModel):
+    type: Literal["CantComputePath"] = "CantComputePath"
+
+
+class InfraInfraIdRoutesTrackRangesGetResponse(
+    RootModel[
+        list[
+            InfraInfraIdRoutesTrackRangesGetResponse1
+            | InfraInfraIdRoutesTrackRangesGetResponse2
+            | InfraInfraIdRoutesTrackRangesGetResponse3
+        ]
+    ]
+):
+    root: list[
+        InfraInfraIdRoutesTrackRangesGetResponse1
+        | InfraInfraIdRoutesTrackRangesGetResponse2
+        | InfraInfraIdRoutesTrackRangesGetResponse3
+    ]
+
+
+class InfraInfraIdRoutesWaypointTypeWaypointIdGetResponse(BaseModel):
+    ending: list[StrictStr]
+    starting: list[StrictStr]
+
+
+class InfraInfraIdSpeedLimitTagsGetResponse(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
+
+
+class InfraInfraIdSplitTrackSectionPostResponse(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
+
+
+class InfraInfraIdSwitchTypesGetResponse(RootModel[list[SwitchType]]):
+    root: list[SwitchType]
+
+
+class InfraInfraIdVoltagesGetResponse(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
+
+
+class LayersLayerLayerSlugMvtViewSlugGetResponse(BaseModel):
+    attribution: StrictStr
+    maxzoom: Annotated[StrictInt, Field(examples=[15], ge=0)]
+    minzoom: Annotated[StrictInt, Field(ge=0)]
+    name: Annotated[StrictStr, Field(examples=["track_sections"])]
+    promoteId: dict[StrictStr, StrictStr]
+    scheme: Annotated[StrictStr, Field(examples=["xyz"])]
+    tiles: Annotated[
+        list[StrictStr],
+        Field(
+            examples=[
+                ["http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1"]
+            ]
+        ),
+    ]
+    type: StrictStr
+
+
+class LevelCrossingOccupancyPostRequest(BaseModel):
+    electrical_profile_set_id: StrictInt | None = None
+    infra_id: StrictInt
+    level_crossing_ids: list[Identifier]
+    timetable_id: StrictInt
+    train_ids: list[StrictInt]
+
+
+class LevelCrossingOccupancyPostResponseItem1(BaseModel):
+    duration: Annotated[timedelta, Field(examples=["PT2H"])]
     """
-    The offset in ms from the beginning of the simulation at which the step is reached.
+    Duration in ISO 8601 format (e.g. PT2H for 2 hours)
     """
-    path_item_position: Annotated[StrictInt, Field(title="Path Item Position")]
+    time_begin: StrictInt
+    direction: Direction
+
+
+class LevelCrossingOccupancyPostResponseItem2(
+    OccurrenceIdBase, LevelCrossingOccupancyPostResponseItem1
+):
+    pass
+
+
+class LevelCrossingOccupancyPostResponseItem3(
+    OccurrenceIdModified, LevelCrossingOccupancyPostResponseItem1
+):
+    pass
+
+
+class LevelCrossingOccupancyPostResponseItem4(
+    OccurrenceIdCreated, LevelCrossingOccupancyPostResponseItem1
+):
+    pass
+
+
+class LevelCrossingOccupancyPostResponse(
+    RootModel[
+        dict[
+            str,
+            list[
+                LevelCrossingOccupancyPostResponseItem2
+                | LevelCrossingOccupancyPostResponseItem3
+                | LevelCrossingOccupancyPostResponseItem4
+            ],
+        ]
+    ]
+):
+    root: dict[
+        str,
+        list[
+            LevelCrossingOccupancyPostResponseItem2
+            | LevelCrossingOccupancyPostResponseItem3
+            | LevelCrossingOccupancyPostResponseItem4
+        ],
+    ]
+
+
+class Ordering(Enum):
+    NameAsc = "NameAsc"
+    NameDesc = "NameDesc"
+    CreationDateAsc = "CreationDateAsc"
+    CreationDateDesc = "CreationDateDesc"
+    LastModifiedDesc = "LastModifiedDesc"
+    LastModifiedAsc = "LastModifiedAsc"
+
+
+class RollingStockPowerRestrictionsGetResponse(RootModel[list[StrictStr]]):
+    root: list[StrictStr]
+
+
+class RollingStockRollingStockIdUsageGetResponse(RootModel[list[ScenarioReference]]):
+    root: list[ScenarioReference]
+
+
+class RoundTripsPostResponse1(BaseModel):
     """
-    The offset in mm from the beginning of the simulation at which the step is reached.
+    The payload contains duplicate train IDs which is not allowed
     """
-    op_id: Annotated[StrictStr, Field(title="Operational Point Identifier")]
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["400"] = "400"
+    type: Literal["editoast:round_trips:duplicate_train_ids"] = (
+        "editoast:round_trips:duplicate_train_ids"
+    )
+
+
+class RoundTripsPostResponse(RootModel[RoundTripsPostResponse1]):
+    root: RoundTripsPostResponse1
+
+
+class RoundTripsPostResponse3(BaseModel):
     """
-    The identifier of the operational point reached at this step
+    database error: {0}
     """
-    matching_requested_step_index: Annotated[
-        StrictInt | None, Field(title="Matching Requested Step Index")
-    ] = None
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class RoundTripsPostResponse2(RootModel[RoundTripsPostResponse3]):
+    root: RoundTripsPostResponse3
+
+
+class RoundTripsPostResponse5(BaseModel):
     """
-    The index of the requested step.
+    database unavailable: {0}
     """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class RoundTripsPostResponse4(RootModel[RoundTripsPostResponse5]):
+    root: RoundTripsPostResponse5
+
+
+class RoundTripsDeletePostRequest(RootModel[list[StrictInt]]):
+    root: list[StrictInt]
+
+
+class RoundTripsDeletePostResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class RoundTripsDeletePostResponse(RootModel[RoundTripsDeletePostResponse1]):
+    root: RoundTripsDeletePostResponse1
+
+
+class RoundTripsDeletePostResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class RoundTripsDeletePostResponse2(RootModel[RoundTripsDeletePostResponse3]):
+    root: RoundTripsDeletePostResponse3
+
+
+class ScenariosScenarioIdEventsGetResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ScenariosScenarioIdEventsGetResponse(
+    RootModel[ScenariosScenarioIdEventsGetResponse1]
+):
+    root: ScenariosScenarioIdEventsGetResponse1
+
+
+class ScenariosScenarioIdEventsGetResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ScenariosScenarioIdEventsGetResponse2(
+    RootModel[ScenariosScenarioIdEventsGetResponse3]
+):
+    root: ScenariosScenarioIdEventsGetResponse3
+
+
+class ScenariosScenarioIdMatchMacroNodesPostRequest(BaseModel):
+    operational_point_references: list[
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    ]
+
+
+class Context13(BaseModel):
+    scenario_id: StrictInt
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse2(BaseModel):
+    """
+    Scenario '{scenario_id}', could not be found
+    """
+
+    context: Context13
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:match_macro_nodes:scenario_not_found"] = (
+        "editoast:match_macro_nodes:scenario_not_found"
+    )
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse1(
+    RootModel[ScenariosScenarioIdMatchMacroNodesPostResponse2]
+):
+    root: ScenariosScenarioIdMatchMacroNodesPostResponse2
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse4(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse3(
+    RootModel[ScenariosScenarioIdMatchMacroNodesPostResponse4]
+):
+    root: ScenariosScenarioIdMatchMacroNodesPostResponse4
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse6(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse5(
+    RootModel[ScenariosScenarioIdMatchMacroNodesPostResponse6]
+):
+    root: ScenariosScenarioIdMatchMacroNodesPostResponse6
+
+
+class RollingStock1(BaseModel):
+    name: StrictStr | None = None
+    speed_limit_tag: StrictStr | None = None
+
+
+class SimilarTrainsPostRequest(BaseModel):
+    rolling_stock: RollingStock1
+    waypoints: list[SimilarTrainWaypoint]
+
+
+class Train(BaseModel):
+    """
+    `train` is `None` if no similar train
+    was found for the segment; otherwise, it is `Some`.
+    """
+
+    start_time: AwareDatetime
+    train_name: StrictStr
 
 
 class SimilarTrain(BaseModel):
+    begin: StrictStr
+    end: StrictStr
+    train: Train | None = None
     """
-    Similar train to duplicate.
-    """
-
-    path_date: Annotated[AwareDatetime, Field(title="Path Date")]
-    name: Annotated[StrictStr, Field(title="Name")]
-    """
-    Train name
+    `train` is `None` if no similar train
+    was found for the segment; otherwise, it is `Some`.
     """
 
 
-class SubstituteTrain(BaseModel):
-    path_date: Annotated[AwareDatetime, Field(title="Path Date")]
-    name: Annotated[StrictStr, Field(title="Name")]
-    """
-    Train name
-    """
+class SimilarTrainsPostResponse(BaseModel):
+    similar_trains: list[SimilarTrain]
 
 
-class SendLastMinuteRequestResponse(BaseModel):
-    """
-    Response model to validate and return when a last-minute request has been successfully sent.
-    """
-
-    status: Annotated[StrictStr, Field(title="Status")]
-    message: Annotated[StrictStr, Field(title="Message")]
-    request_identifier: Annotated[StrictStr, Field(title="Request Identifier")]
-    created_request_url: Annotated[StrictStr | None, Field(title="Created Request URL")]
-
-
-class RequestStatus(Enum):
-    CREATED = "CREATED"
-    PROCESSING = "PROCESSING"
-    ACCEPTED = "ACCEPTED"
-    REFUSED = "REFUSED"
-    CANCELLED = "CANCELLED"
-
-
-class SendLastMinuteRequestAuthorizedGetResponse(BaseModel):
-    authorized: StrictBool
-    """
-    Whether the user is authenticated and authorized to send last-minute requests
-    """
-
-
-class SendLastMinuteRequestStatusesPostRequest(RootModel[list[StrictStr]]):
+class SpritesSignalingSystemsGetResponse(RootModel[list[StrictStr]]):
     root: list[StrictStr]
+
+
+class Context14(BaseModel):
+    message: StrictStr
+    path: StrictStr
+
+
+class StdcmDebugDataTraceIdGetResponse2(BaseModel):
+    """
+    S3 error fetching '{path}': {message}
+    """
+
+    context: Context14
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:stdcm_debug:s3"] = "editoast:stdcm_debug:s3"
+
+
+class StdcmDebugDataTraceIdGetResponse3(BaseModel):
+    """
+    Failed to parse JSON from S3 object '{path}': {message}
+    """
+
+    context: Context14
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:stdcm_debug:json_parse"] = "editoast:stdcm_debug:json_parse"
+
+
+class StdcmDebugDataTraceIdGetResponse1(
+    RootModel[StdcmDebugDataTraceIdGetResponse2 | StdcmDebugDataTraceIdGetResponse3]
+):
+    root: StdcmDebugDataTraceIdGetResponse2 | StdcmDebugDataTraceIdGetResponse3
+
+
+class StdcmDebugDataTraceIdGetResponse5(BaseModel):
+    """
+    S3 is not configured
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:stdcm_debug:s3_not_configured"] = (
+        "editoast:stdcm_debug:s3_not_configured"
+    )
+
+
+class StdcmDebugDataTraceIdGetResponse4(RootModel[StdcmDebugDataTraceIdGetResponse5]):
+    root: StdcmDebugDataTraceIdGetResponse5
+
+
+class StdcmSearchEnvironmentGetResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmSearchEnvironmentGetResponse(RootModel[StdcmSearchEnvironmentGetResponse1]):
+    root: StdcmSearchEnvironmentGetResponse1
+
+
+class StdcmSearchEnvironmentGetResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmSearchEnvironmentGetResponse2(RootModel[StdcmSearchEnvironmentGetResponse3]):
+    root: StdcmSearchEnvironmentGetResponse3
+
+
+class StdcmSearchEnvironmentPostResponse1(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmSearchEnvironmentPostResponse(
+    RootModel[StdcmSearchEnvironmentPostResponse1]
+):
+    root: StdcmSearchEnvironmentPostResponse1
+
+
+class StdcmSearchEnvironmentPostResponse3(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmSearchEnvironmentPostResponse2(
+    RootModel[StdcmSearchEnvironmentPostResponse3]
+):
+    root: StdcmSearchEnvironmentPostResponse3
+
+
+class StdcmSearchEnvironmentListGetResponse(PaginationStats):
+    results: list[StdcmSearchEnvironmentResponse]
+
+
+class StdcmSearchEnvironmentListGetResponse2(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmSearchEnvironmentListGetResponse1(
+    RootModel[StdcmSearchEnvironmentListGetResponse2]
+):
+    root: StdcmSearchEnvironmentListGetResponse2
+
+
+class StdcmSearchEnvironmentListGetResponse4(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmSearchEnvironmentListGetResponse3(
+    RootModel[StdcmSearchEnvironmentListGetResponse4]
+):
+    root: StdcmSearchEnvironmentListGetResponse4
+
+
+class Context16(BaseModel):
+    env_id: StrictInt
+
+
+class StdcmSearchEnvironmentEnvIdDeleteResponse1(BaseModel):
+    """
+    Stdcm search environment '{env_id}', could not be found
+    """
+
+    context: Context16
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:stdcm_search_env:not_found"] = (
+        "editoast:stdcm_search_env:not_found"
+    )
+
+
+class StdcmSearchEnvironmentEnvIdDeleteResponse(
+    RootModel[StdcmSearchEnvironmentEnvIdDeleteResponse1]
+):
+    root: StdcmSearchEnvironmentEnvIdDeleteResponse1
+
+
+class StdcmSearchEnvironmentEnvIdDeleteResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmSearchEnvironmentEnvIdDeleteResponse2(
+    RootModel[StdcmSearchEnvironmentEnvIdDeleteResponse3]
+):
+    root: StdcmSearchEnvironmentEnvIdDeleteResponse3
+
+
+class StdcmSearchEnvironmentEnvIdDeleteResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmSearchEnvironmentEnvIdDeleteResponse4(
+    RootModel[StdcmSearchEnvironmentEnvIdDeleteResponse5]
+):
+    root: StdcmSearchEnvironmentEnvIdDeleteResponse5
+
+
+class By(Enum):
+    group = "group"
+    user = "user"
+
+
+class StdcmRequestsGetResponse1(BaseModel):
+    """
+    by=group and by=user query parameters require an authenticated user
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["401"] = "401"
+    type: Literal["editoast:stdcm_request:not_user"] = "editoast:stdcm_request:not_user"
+
+
+class StdcmRequestsGetResponse(RootModel[StdcmRequestsGetResponse1]):
+    root: StdcmRequestsGetResponse1
+
+
+class StdcmRequestsGetResponse3(BaseModel):
+    """
+    Forbidden
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["403"] = "403"
+    type: Literal["editoast:stdcm_request:forbidden"] = (
+        "editoast:stdcm_request:forbidden"
+    )
+
+
+class StdcmRequestsGetResponse2(RootModel[StdcmRequestsGetResponse3]):
+    root: StdcmRequestsGetResponse3
+
+
+class StdcmRequestsGetResponse5(BaseModel):
+    """
+    Invalid cursors in query parameters: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["422"] = "422"
+    type: Literal["editoast:stdcm_request:malformed_parameters"] = (
+        "editoast:stdcm_request:malformed_parameters"
+    )
+
+
+class StdcmRequestsGetResponse4(RootModel[StdcmRequestsGetResponse5]):
+    root: StdcmRequestsGetResponse5
+
+
+class StdcmRequestsGetResponse7(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmRequestsGetResponse8(BaseModel):
+    """
+    openfga error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:authorization:open_fga"] = "editoast:authorization:open_fga"
+
+
+class StdcmRequestsGetResponse6(
+    RootModel[StdcmRequestsGetResponse7 | StdcmRequestsGetResponse8]
+):
+    root: StdcmRequestsGetResponse7 | StdcmRequestsGetResponse8
+
+
+class StdcmRequestsGetResponse10(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmRequestsGetResponse9(RootModel[StdcmRequestsGetResponse10]):
+    root: StdcmRequestsGetResponse10
+
+
+class StdcmRequestsPostResponse1(BaseModel):
+    """
+    Creating a request requires an authenticated user
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["401"] = "401"
+    type: Literal["editoast:stdcm_request_post:not_user"] = (
+        "editoast:stdcm_request_post:not_user"
+    )
+
+
+class StdcmRequestsPostResponse(RootModel[StdcmRequestsPostResponse1]):
+    root: StdcmRequestsPostResponse1
+
+
+class StdcmRequestsPostResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmRequestsPostResponse2(RootModel[StdcmRequestsPostResponse3]):
+    root: StdcmRequestsPostResponse3
+
+
+class StdcmRequestsPostResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmRequestsPostResponse4(RootModel[StdcmRequestsPostResponse5]):
+    root: StdcmRequestsPostResponse5
+
+
+class Context17(BaseModel):
+    id: StrictInt
+
+
+class StdcmRequestsIdDeleteResponse1(BaseModel):
+    """
+    Stdcm request {id} not found
+    """
+
+    context: Context17
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:stdcm_request_delete:not_found"] = (
+        "editoast:stdcm_request_delete:not_found"
+    )
+
+
+class StdcmRequestsIdDeleteResponse(RootModel[StdcmRequestsIdDeleteResponse1]):
+    root: StdcmRequestsIdDeleteResponse1
+
+
+class StdcmRequestsIdDeleteResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class StdcmRequestsIdDeleteResponse2(RootModel[StdcmRequestsIdDeleteResponse3]):
+    root: StdcmRequestsIdDeleteResponse3
+
+
+class StdcmRequestsIdDeleteResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class StdcmRequestsIdDeleteResponse4(RootModel[StdcmRequestsIdDeleteResponse5]):
+    root: StdcmRequestsIdDeleteResponse5
+
+
+class SpeedLimit(BaseModel):
+    end_date_time: AwareDatetime
+    obj_id: StrictStr
+    speed_limit: StrictFloat
+    start_date_time: AwareDatetime
+    track_ranges: list[DirectionalTrackRange]
+
+
+class TemporarySpeedLimitGroupPostRequest(BaseModel):
+    speed_limit_group_name: StrictStr
+    speed_limits: list[SpeedLimit]
+
+
+class TemporarySpeedLimitGroupPostResponse(BaseModel):
+    group_id: StrictInt
+
+
+class TimetableIdInnersPutRequest(BaseModel):
+    inner_timetable_ids: list[StrictInt]
+
+
+class TimetableIdPathStepsLocalTrackNamesPostRequest(BaseModel):
+    infra_id: StrictInt
+    operational_point_references: dict[
+        Annotated[str, StringConstraints(min_length=1, strict=True)],
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic,
+    ]
+    """
+    A list of key/operational point reference pairs for which local track names should be retrieved from the timetable train schedules paths. The key is an arbitrary string chosen by the client, that will be used in the response to return the corresponding local track names set.
+    """
+
+
+class TimetableIdPathStepsLocalTrackNamesPostResponse(
+    RootModel[dict[str, list[StrictStr]]]
+):
+    root: dict[str, list[StrictStr]]
+
+
+class TimetableIdRoundTripsGetResponse(PaginationStats):
+    """
+    Paginated list of round trips / one-way
+    """
+
+    results: RoundTrips
+
+
+class Context18(BaseModel):
+    timetable_id: StrictInt
+
+
+class TimetableIdRoundTripsGetResponse2(BaseModel):
+    """
+    Timetable {timetable_id} could not be found
+    """
+
+    context: Context18
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:timetable:not_found"] = "editoast:timetable:not_found"
+
+
+class TimetableIdRoundTripsGetResponse1(RootModel[TimetableIdRoundTripsGetResponse2]):
+    root: TimetableIdRoundTripsGetResponse2
+
+
+class TimetableIdRoundTripsGetResponse4(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class TimetableIdRoundTripsGetResponse3(RootModel[TimetableIdRoundTripsGetResponse4]):
+    root: TimetableIdRoundTripsGetResponse4
+
+
+class TimetableIdRoundTripsGetResponse6(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class TimetableIdRoundTripsGetResponse5(RootModel[TimetableIdRoundTripsGetResponse6]):
+    root: TimetableIdRoundTripsGetResponse6
+
+
+class TimetableIdTrainScheduleLinkingsPostResponseItem(BaseModel):
+    id: StrictInt
+    source: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+    target: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse(
+    RootModel[list[TimetableIdTrainScheduleLinkingsPostResponseItem]]
+):
+    root: list[TimetableIdTrainScheduleLinkingsPostResponseItem]
+
+
+class Context19(BaseModel):
+    ids: list[StrictInt]
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse2(BaseModel):
+    """
+    Some train schedules could not be found
+    """
+
+    context: Context19
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:train_schedule_linking:train_schedules_not_found"] = (
+        "editoast:train_schedule_linking:train_schedules_not_found"
+    )
+
+
+class Context20(BaseModel):
+    timetable_id: StrictInt
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse3(BaseModel):
+    """
+    Timetable {timetable_id} could not be found
+    """
+
+    context: Context20
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:timetable:not_found"] = "editoast:timetable:not_found"
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse1(
+    RootModel[
+        TimetableIdTrainScheduleLinkingsPostResponse2
+        | TimetableIdTrainScheduleLinkingsPostResponse3
+    ]
+):
+    root: (
+        TimetableIdTrainScheduleLinkingsPostResponse2
+        | TimetableIdTrainScheduleLinkingsPostResponse3
+    )
+
+
+class Context21(BaseModel):
+    occurrence: StrictStr
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse5(BaseModel):
+    """
+    Occurrence {occurrence} is already used as a source.
+    """
+
+    context: Context21
+    message: StrictStr
+    status: Literal["409"] = "409"
+    type: Literal["editoast:train_schedule_linking:source_already_used"] = (
+        "editoast:train_schedule_linking:source_already_used"
+    )
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse6(BaseModel):
+    """
+    Occurrence {occurrence} is already used as a target.
+    """
+
+    context: Context21
+    message: StrictStr
+    status: Literal["409"] = "409"
+    type: Literal["editoast:train_schedule_linking:target_already_used"] = (
+        "editoast:train_schedule_linking:target_already_used"
+    )
+
+
+class Context23(BaseModel):
+    timetable_id: StrictInt
+    timetable_type: TimetableType
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse7(BaseModel):
+    """
+    Timetable {timetable_id} has type {timetable_type}, so it can't have occurrences with train_schedule_instance_index
+    """
+
+    context: Context23
+    message: StrictStr
+    status: Literal["409"] = "409"
+    type: Literal[
+        "editoast:train_schedule_linking:request_incompatible_with_timetable_type"
+    ] = "editoast:train_schedule_linking:request_incompatible_with_timetable_type"
+
+
+class Context24(BaseModel):
+    source_train_schedule_id: StrictInt
+    target_train_schedule_id: StrictInt
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse8(BaseModel):
+    """
+    Train schedules {source_train_schedule_id} and {target_train_schedule_id} have different time windows, they can't be linked in an hourly timetable.
+    """
+
+    context: Context24
+    message: StrictStr
+    status: Literal["409"] = "409"
+    type: Literal[
+        "editoast:train_schedule_linking:different_paced_train_time_windows"
+    ] = "editoast:train_schedule_linking:different_paced_train_time_windows"
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse4(
+    RootModel[
+        TimetableIdTrainScheduleLinkingsPostResponse5
+        | TimetableIdTrainScheduleLinkingsPostResponse6
+        | TimetableIdTrainScheduleLinkingsPostResponse7
+        | TimetableIdTrainScheduleLinkingsPostResponse8
+    ]
+):
+    root: (
+        TimetableIdTrainScheduleLinkingsPostResponse5
+        | TimetableIdTrainScheduleLinkingsPostResponse6
+        | TimetableIdTrainScheduleLinkingsPostResponse7
+        | TimetableIdTrainScheduleLinkingsPostResponse8
+    )
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse10(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse9(
+    RootModel[TimetableIdTrainScheduleLinkingsPostResponse10]
+):
+    root: TimetableIdTrainScheduleLinkingsPostResponse10
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse12(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class TimetableIdTrainScheduleLinkingsPostResponse11(
+    RootModel[TimetableIdTrainScheduleLinkingsPostResponse12]
+):
+    root: TimetableIdTrainScheduleLinkingsPostResponse12
+
+
+class TimetableIdTrainScheduleSetsGetResponseItem(BaseModel):
+    catalog_entry_id: StrictInt | None = None
+    description: StrictStr
+    id: StrictInt
+    name: StrictStr | None = None
+    published: StrictBool
+    timetable_id: StrictInt
+    timetable_type: TimetableType
+
+
+class TimetableIdTrainScheduleSetsGetResponse(
+    RootModel[list[TimetableIdTrainScheduleSetsGetResponseItem]]
+):
+    root: list[TimetableIdTrainScheduleSetsGetResponseItem]
+
+
+class TimetableIdTrainScheduleSetsPostRequest(BaseModel):
+    train_schedule_set_ids: list[StrictInt]
+
+
+class TowedRollingStockGetResponse(PaginationStats):
+    results: list[TowedRollingStock]
+
+
+class TrainScheduleExceptionsDeletePostRequest(BaseModel):
+    ids: list[StrictInt]
+
+
+class TrainScheduleSetsGetResponseItem(TrainScheduleSet):
+    train_schedule_count: Annotated[StrictInt, Field(ge=0)]
+
+
+class TrainScheduleSetsGetResponse(RootModel[list[TrainScheduleSetsGetResponseItem]]):
+    root: list[TrainScheduleSetsGetResponseItem]
+
+
+class TrainSchedulesDeleteRequest(BaseModel):
+    ids: list[StrictInt]
+
+
+class TrainSchedulesLinkingsPostRequest(BaseModel):
+    timetable_id: StrictInt
+    train_schedules: Annotated[list[StrictInt], Field(max_length=200)]
+
+
+class TrainSchedulesLinkingsPostResponseItem(BaseModel):
+    id: StrictInt
+    source: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+    target: (
+        LinkingOccurrenceIdUnique
+        | LinkingOccurrenceIdPacedOccurrence
+        | LinkingOccurrenceIdAddedException
+    )
+
+
+class TrainSchedulesLinkingsPostResponse(
+    RootModel[list[TrainSchedulesLinkingsPostResponseItem]]
+):
+    root: list[TrainSchedulesLinkingsPostResponseItem]
+
+
+class Context25(BaseModel):
+    timetable_id: StrictInt
+
+
+class TrainSchedulesLinkingsPostResponse2(BaseModel):
+    """
+    Timetable {timetable_id} could not be found
+    """
+
+    context: Context25
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:timetable:not_found"] = "editoast:timetable:not_found"
+
+
+class TrainSchedulesLinkingsPostResponse1(
+    RootModel[TrainSchedulesLinkingsPostResponse2]
+):
+    root: TrainSchedulesLinkingsPostResponse2
+
+
+class TrainSchedulesLinkingsPostResponse4(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class TrainSchedulesLinkingsPostResponse3(
+    RootModel[TrainSchedulesLinkingsPostResponse4]
+):
+    root: TrainSchedulesLinkingsPostResponse4
+
+
+class TrainSchedulesLinkingsPostResponse6(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class TrainSchedulesLinkingsPostResponse5(
+    RootModel[TrainSchedulesLinkingsPostResponse6]
+):
+    root: TrainSchedulesLinkingsPostResponse6
+
+
+class TrainSchedulesLinkingsDeletePostRequest(RootModel[list[StrictInt]]):
+    root: list[StrictInt]
+
+
+class Context26(BaseModel):
+    count: Annotated[StrictInt, Field(ge=0)]
+
+
+class TrainSchedulesLinkingsDeletePostResponse1(BaseModel):
+    """
+    {count} linking(s) could not be found
+    """
+
+    context: Context26
+    message: StrictStr
+    status: Literal["404"] = "404"
+    type: Literal["editoast:train_schedule_linking:not_found_in_batch"] = (
+        "editoast:train_schedule_linking:not_found_in_batch"
+    )
+
+
+class TrainSchedulesLinkingsDeletePostResponse(
+    RootModel[TrainSchedulesLinkingsDeletePostResponse1]
+):
+    root: TrainSchedulesLinkingsDeletePostResponse1
+
+
+class TrainSchedulesLinkingsDeletePostResponse3(BaseModel):
+    """
+    database error: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["500"] = "500"
+    type: Literal["editoast:database:internal"] = "editoast:database:internal"
+
+
+class TrainSchedulesLinkingsDeletePostResponse2(
+    RootModel[TrainSchedulesLinkingsDeletePostResponse3]
+):
+    root: TrainSchedulesLinkingsDeletePostResponse3
+
+
+class TrainSchedulesLinkingsDeletePostResponse5(BaseModel):
+    """
+    database unavailable: {0}
+    """
+
+    context: dict[str, Any]
+    message: StrictStr
+    status: Literal["503"] = "503"
+    type: Literal["editoast:database:unavailable"] = "editoast:database:unavailable"
+
+
+class TrainSchedulesLinkingsDeletePostResponse4(
+    RootModel[TrainSchedulesLinkingsDeletePostResponse5]
+):
+    root: TrainSchedulesLinkingsDeletePostResponse5
+
+
+class TrainSchedulesMovePatchRequest(BaseModel):
+    train_schedule_ids: list[StrictInt]
+    train_schedule_set_id: StrictInt
+
+
+class TrainSchedulesOccupancyBlocksPostResponse(
+    RootModel[dict[str, OccupancyBlocksTrainScheduleResult]]
+):
+    root: Annotated[dict[str, OccupancyBlocksTrainScheduleResult], Field(max_length=0)]
+
+
+class OperationalPointsDistance(RootModel[StrictInt]):
+    root: Annotated[StrictInt, Field(ge=0)]
+
+
+class OperationalPointReferenceId1(BaseModel):
+    operational_point: StrictStr
+    """
+    The object id of an operational point
+    """
+    type: Literal["id"] = "id"
+
+
+class OperationalPointReferenceDomestic1(BaseModel):
+    country_code: Annotated[StrictStr, Field(min_length=1)]
+    main_code: StrictStr
+    """
+    The operational point main code
+    """
+    secondary_code: SecondaryCode | None = None
+    """
+    An optional secondary code to identify a more specific location
+    """
+    type: Literal["domestic"] = "domestic"
+
+
+class OperationalPointReferenceUic1(BaseModel):
+    secondary_code: SecondaryCode | None = None
+    """
+    An optional secondary code to identify a more specific location
+    """
+    type: Literal["uic"] = "uic"
+    uic: Annotated[StrictInt, Field(ge=0)]
+    """
+    The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+    """
+
+
+class TrainSchedulesProjectPathOpPostRequest(BaseModel):
+    electrical_profile_set_id: StrictInt | None = None
+    infra_id: StrictInt
+    operational_points_distances: list[OperationalPointsDistance]
+    """
+    Distances between operational points in mm
+    """
+    operational_points_refs: list[
+        OperationalPointReferenceId1
+        | OperationalPointReferenceDomestic1
+        | OperationalPointReferenceUic1
+    ]
+    timetable_id: StrictInt
+    train_ids: list[StrictInt]
+    use_simulation: StrictBool
+
+
+class TrainSchedulesSimulationSummaryPostRequest(BaseModel):
+    electrical_profile_set_id: StrictInt | None = None
+    ids: list[StrictInt]
+    infra_id: StrictInt
+    timetable_id: StrictInt
+
+
+class TrainSchedulesTrackOccupancyPostRequest(BaseModel):
+    electrical_profile_set_id: StrictInt | None = None
+    infra_id: StrictInt
+    operational_point_reference: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    )
+    timetable_id: StrictInt
+    train_schedule_ids: list[StrictInt]
+    use_simulation: StrictBool
+
+
+class LocalTrackName1(RootModel[StrictStr]):
+    root: Annotated[StrictStr, Field(min_length=1)]
+    """
+    Local track name. Unset if trains occupy the operational point but the specific track is unknown.
+    """
+
+
+class Train11(BaseModel):
+    duration: Annotated[timedelta, Field(examples=["PT2H"])]
+    """
+    Duration in ISO 8601 format (e.g. PT2H for 2 hours)
+    """
+    time_begin: StrictInt
+    path_item_relative_location: (
+        PathItemRelativeLocationExactPathItem | PathItemRelativeLocationBetweenPathItems
+    )
+    """
+    Position of an operational point on a path, relative to the input path items.
+    If the OP matches an input path item, it is located using this path item's key,
+    else, if the path just passes by the OP, it is located using its previous and following path items keys
+    """
+
+
+class Train12(OccurrenceIdBase, Train11):
+    pass
+
+
+class Train13(OccurrenceIdModified, Train11):
+    pass
+
+
+class Train14(OccurrenceIdCreated, Train11):
+    pass
+
+
+class TrainSchedulesTrackOccupancyPostResponseItem(BaseModel):
+    local_track_name: LocalTrackName1 | None = None
+    """
+    Local track name. Unset if trains occupy the operational point but the specific track is unknown.
+    """
+    trains: list[Train12 | Train13 | Train14]
+
+
+class TrainSchedulesTrackOccupancyPostResponse(
+    RootModel[list[TrainSchedulesTrackOccupancyPostResponseItem]]
+):
+    root: list[TrainSchedulesTrackOccupancyPostResponseItem]
+
+
+class WorkSchedulesPostRequest(BaseModel):
+    """
+    This structure is used by the post endpoint to create a work schedule
+    """
+
+    work_schedule_group_name: StrictStr
+    work_schedules: list[WorkScheduleItemForm]
+
+
+class WorkSchedulesPostResponse(BaseModel):
+    work_schedule_group_id: StrictInt
+
+
+class WorkSchedulesGroupGetResponse(RootModel[list[StrictInt]]):
+    root: list[StrictInt]
+
+
+class WorkSchedulesGroupPostRequest(BaseModel):
+    work_schedule_group_name: StrictStr | None = None
+
+
+class WorkSchedulesGroupPostResponse(BaseModel):
+    work_schedule_group_id: StrictInt
+
+
+class WorkSchedulesGroupIdPutRequest(RootModel[list[WorkScheduleItemForm]]):
+    root: list[WorkScheduleItemForm]
+
+
+class Type(Enum):
+    """
+    The type of the work schedule.
+    """
+
+    CATENARY = "CATENARY"
+    TRACK = "TRACK"
+
+
+class WorkSchedulesProjectPathPostResponseItem(BaseModel):
+    """
+    Represents the projection of a work schedule on a path.
+    """
+
+    end_date_time: AwareDatetime
+    """
+    The date and time when the work schedule ends.
+    """
+    path_position_ranges: list[Intersection]
+    """
+    a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
+    - `a` is the distance from the beginning of the path to the beginning of the track range
+    - `b` is the distance from the beginning of the path to the end of the track range
+    """
+    start_date_time: AwareDatetime
+    """
+    The date and time when the work schedule takes effect.
+    """
+    type: Type
+    """
+    The type of the work schedule.
+    """
+
+
+class WorkSchedulesProjectPathPostResponse(
+    RootModel[list[WorkSchedulesProjectPathPostResponseItem]]
+):
+    root: list[WorkSchedulesProjectPathPostResponseItem]
+
+
+class WorkerLoadPostRequest(BaseModel):
+    infra_id: StrictInt
+    """
+    The infra id of the worker to load
+    """
+    timetable_id: StrictInt | None = None
+    """
+    The timetable id to load, if any
+    """
 
 
 class BufferStopExtension(BaseModel):
@@ -5365,42 +7895,6 @@ class InfraPathfindingInput(BaseModel):
     starting: PathfindingTrackLocationInput
 
 
-class JourneySearchQuery(BaseModel):
-    destination: OperationalPointPartReference
-    infra_id: StrictInt
-    origin: OperationalPointPartReference
-    search_whole_stations: StrictBool | None = None
-    """
-    If true, the search is made on the entire origin and destination stations:
-    all the op sharing the country code + main code with the given ones are considered.
-    """
-    start_ms: Annotated[StrictInt, Field(ge=0)]
-    """
-    Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
-
-    The start window is defined as the time between
-    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
-    """
-    start_tolerance: Annotated[StrictInt, Field(ge=0)]
-    """
-    Half the time of the start window in milliseconds.
-
-    The start window is defined as the time between
-    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
-    """
-    timetable_ids: list[StrictInt]
-    """
-    Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
-    """
-    transfer_ms: Annotated[StrictInt, Field(ge=0)]
-    """
-    Constant time for a transfer/footpath in the same stop in milliseconds.
-
-    The algorithm assumes that changing from one train to another in a stop
-    always take this constant time.
-    """
-
-
 class LevelCrossing(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -5533,6 +8027,15 @@ class OperationalPointPartExtension(BaseModel):
     sncf: OperationalPointPartSncfExtension | None = None
 
 
+class OperationalPointPartReference(BaseModel):
+    local_track_name: LocalTrackName | None = None
+    operational_point: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceDomestic
+        | OperationalPointReferenceUic
+    )
+
+
 class OperationalPointReferenceNodeTrackOffset(TrackOffset):
     """
     The location represented by a macro node
@@ -5575,6 +8078,16 @@ class PathItemLocationTrackOffset(TrackOffset):
     """
 
     type: Literal["track_offset"] = "track_offset"
+
+
+class PathItemLocationOperationalPointPartReference(OperationalPointPartReference):
+    """
+    The location of a path waypoint
+    """
+
+    type: Literal["operational_point_part_reference"] = (
+        "operational_point_part_reference"
+    )
 
 
 class PathItemLocation(
@@ -6253,95 +8766,132 @@ class WorkSchedule(BaseModel):
     work_schedule_type: WorkScheduleType
 
 
-class SimulationReport(BaseModel):
+class AuthzGrantsPostRequest1(BaseModel):
     """
-    Gather information from the LMR request and data input by the user.
+    `grant` XOR `revoke` is expected
     """
 
-    is_international: Annotated[
-        StrictBool, Field(title="Is the simulated train part of an international train")
-    ]
-    rolling_stock: Annotated[StrictStr, Field(title="Rolling Stock")]
-    towed_rolling_stock: Annotated[
-        StrictStr | None, Field(title="Towed Rolling Stock")
-    ] = None
-    loading_gauge_type: RmiLoadingGaugeType
-    speed_limit_tags: Annotated[StrictStr, Field(title="Speed Limit Tags")]
-    total_mass: Annotated[StrictInt, Field(title="Total Mass")]
-    """
-    Total mass of the train in kg
-    """
-    max_speed: Annotated[StrictFloat, Field(title="Max Speed")]
-    """
-    Maximum speed in m/s
-    """
-    total_length: Annotated[StrictInt, Field(title="Total Length")]
-    """
-    Total length of the train in m
-    """
-    infra_id: Annotated[StrictInt, Field(title="Infra Id")]
-    simulated_steps: Annotated[
-        list[SimulatedStep], Field(min_length=2, title="Simulated Steps")
-    ]
-    requested_steps: Annotated[
-        list[RequestedStep], Field(min_length=2, title="Requested Steps")
-    ]
-    departure_time: Annotated[AwareDatetime, Field(title="Departure Time")]
-    user_message: Annotated[StrictStr | None, Field(title="User Message")] = None
-    similar_train: SimilarTrain | None = None
-    anterior_train_name: Annotated[
-        StrictStr | None, Field(title="Anterior Train Name")
-    ] = None
-    posterior_train_name: Annotated[
-        StrictStr | None, Field(title="Posterior Train Name")
-    ] = None
-    substitute_train: SubstituteTrain | None = None
-    course_type: Annotated[StrictStr, Field(title="CourseType")]
-    statistical_category: Annotated[StrictStr, Field(title="Statistical Category")]
-    hazardous_materials: Annotated[
-        StrictBool | None, Field(title="Hazardous Materials")
-    ] = None
-    demand_category: Annotated[StrictStr | None, Field(title="Demand Category")] = None
-    track_section_ranges: Annotated[
-        list[CoreTrackRange], Field(min_length=1, title="Track Section Ranges")
-    ]
+    grant: list[GrantBody]
 
 
-class RequestStatusItem(BaseModel):
-    status: RequestStatus
-    status_message: StrictStr | None = None
-    created_request_url: StrictStr
-    begin_op: (
-        OperationalPointReferenceId
-        | OperationalPointReferenceDomestic
-        | OperationalPointReferenceUic
-    )
-    begin_time: time_aliased | None = None
-    end_op: (
-        OperationalPointReferenceId
-        | OperationalPointReferenceDomestic
-        | OperationalPointReferenceUic
-    )
-    end_time: time_aliased | None = None
-    updated_at: AwareDatetime
-    created_at: AwareDatetime
-    train_start: AwareDatetime
-    id: StrictStr
-
-
-class SendLastMinuteRequestPostRequest(BaseModel):
-    simulation_report: SimulationReport
-    simulation_report_sheet: StrictBytes
-
-
-class SendLastMinuteRequestStatusesPostResponse(
-    RootModel[dict[str, RequestStatusItem]]
+class AuthzGrantsPostRequest(
+    RootModel[AuthzGrantsPostRequest1 | AuthzGrantsPostRequest2]
 ):
+    root: AuthzGrantsPostRequest1 | AuthzGrantsPostRequest2
     """
-    Mapping from request id to status, url and metadata
+    `grant` XOR `revoke` is expected
     """
 
-    root: dict[str, RequestStatusItem]
+
+class ProjectsGetResponse(PaginationStats):
+    results: list[ProjectWithStudies]
+
+
+class StudiesGetResponse(PaginationStats):
+    results: list[StudyWithScenarios]
+
+
+class SubCategoryPostRequest(RootModel[list[SubCategory]]):
+    root: list[SubCategory]
+
+
+class SubCategoryPostResponse(RootModel[list[SubCategory]]):
+    root: list[SubCategory]
+
+
+class TimetableIdConflictsGetResponse(RootModel[list[Conflict]]):
+    root: list[Conflict]
+
+
+class TimetableIdRequirementsGetResponse(PaginationStats):
+    results: list[CoreTrainRequirementsById]
+
+
+class TimetableIdStdcmPostRequest(BaseModel):
+    """
+    An STDCM request
+    """
+
+    allowed_track_sections: list[StrictStr] | None = None
+    """
+    Set of authorized track section ids, empty means no restriction
+    """
+    comfort: Comfort
+    consist_schedule: ConsistSchedule
+    electrical_profile_set_id: StrictInt | None = None
+    forced_op_stops: list[OperationalPointStop] | None = None
+    """
+    List of operational points where stop is mandatory
+    """
+    margin: Annotated[StrictStr | None, Field(examples=[["5%", "2min/100km"]])] = None
+    """
+    Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
+    """
+    maximum_departure_delay: Annotated[StrictInt | None, Field(ge=0)] = None
+    """
+    By how long we can shift the departure time in milliseconds
+    Deprecated, first step data should be used instead
+    """
+    maximum_run_time: Annotated[StrictInt | None, Field(ge=0)] = None
+    """
+    Specifies how long the total run time can be in milliseconds
+    Deprecated, first step data should be used instead
+    """
+    start_time: AwareDatetime | None = None
+    """
+    Deprecated, first step arrival time should be used instead
+    """
+    steps: list[StdcmPathfindingItem]
+    temporary_speed_limit_group_id: StrictInt | None = None
+    time_gap_after: Annotated[StrictInt | None, Field(ge=0)] = None
+    """
+    Margin after the train passage in milliseconds
+
+    Enforces that the path used by the train should be free and
+    available at least that many milliseconds after its passage.
+    """
+    time_gap_before: Annotated[StrictInt | None, Field(ge=0)] = None
+    """
+    Margin before the train passage in seconds
+
+    Enforces that the path used by the train should be free and
+    available at least that many milliseconds before its passage.
+    """
+    work_schedule_group_id: StrictInt | None = None
+
+
+class TimetableIdStdcmPostResponse1(BaseModel):
+    data: StdcmProgressionEvent
+    event: Literal["ongoing"] = "ongoing"
+
+
+class TimetableIdTrainScheduleLinkingsPostRequest(RootModel[list[LinkingCreateForm]]):
+    root: list[LinkingCreateForm]
+
+
+class TrainSchedulesProjectPathPostResponse(
+    RootModel[dict[str, ProjectPathTrainScheduleResult]]
+):
+    root: Annotated[dict[str, ProjectPathTrainScheduleResult], Field(max_length=0)]
+
+
+class TrainSchedulesProjectPathOpPostResponse(
+    RootModel[dict[str, ProjectPathTrainScheduleResult]]
+):
+    root: Annotated[dict[str, ProjectPathTrainScheduleResult], Field(max_length=0)]
+
+
+class WorkSchedulesGroupIdGetResponse(PaginationStats):
+    results: list[WorkSchedule]
+
+
+class WorkSchedulesGroupIdPutResponse(RootModel[list[WorkSchedule]]):
+    root: list[WorkSchedule]
+
+
+class WorkSchedulesProjectPathPostRequest(BaseModel):
+    path_track_ranges: list[CoreTrackRange]
+    work_schedule_group_id: StrictInt
 
 
 class BufferStop(BaseModel):
@@ -6569,6 +9119,42 @@ class JourneyProposals(BaseModel):
     journeys: list[list[TrainSchedulePart]]
     """
     Each journey is a list of train schedule parts.
+    """
+
+
+class JourneySearchQuery(BaseModel):
+    destination: OperationalPointPartReference
+    infra_id: StrictInt
+    origin: OperationalPointPartReference
+    search_whole_stations: StrictBool | None = None
+    """
+    If true, the search is made on the entire origin and destination stations:
+    all the op sharing the country code + main code with the given ones are considered.
+    """
+    start_ms: Annotated[StrictInt, Field(ge=0)]
+    """
+    Amount of milliseconds from 1970-01-01 00:00:00 UTC to the center of the start window.
+
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
+    """
+    start_tolerance: Annotated[StrictInt, Field(ge=0)]
+    """
+    Half the time of the start window in milliseconds.
+
+    The start window is defined as the time between
+    `start_sec - start_tolerance` and `start_sec + start_tolerance`.
+    """
+    timetable_ids: list[StrictInt]
+    """
+    Until daily patterns are supported, timetables must be calendar anchored on 1970-01-01 UTC.
+    """
+    transfer_ms: Annotated[StrictInt, Field(ge=0)]
+    """
+    Constant time for a transfer/footpath in the same stop in milliseconds.
+
+    The algorithm assumes that changing from one train to another in a stop
+    always take this constant time.
     """
 
 
@@ -7218,6 +9804,26 @@ class TrainScheduleSimulationSummaryResult(BaseModel):
     )
 
 
+class LightRollingStockGetResponse(PaginationStats):
+    results: list[LightRollingStockWithLiveries]
+
+
+class ScenariosGetResponse(PaginationStats):
+    results: list[ScenarioWithDetails]
+
+
+class ScenariosScenarioIdMatchMacroNodesPostResponse(BaseModel):
+    related_operational_points: list[MacroNodeResponse | None]
+
+
+class TrainSchedulesSimulationSummaryPostResponse(
+    RootModel[dict[str, TrainScheduleSimulationSummaryResult]]
+):
+    root: Annotated[
+        dict[str, TrainScheduleSimulationSummaryResult], Field(max_length=0)
+    ]
+
+
 class CoreOperationalPointOnPath(BaseModel):
     """
     Operational point along a path.
@@ -7380,7 +9986,7 @@ class OperationCreate6(InfraObjectSwitch, OperationCreate1):
     pass
 
 
-class OperationalPointModel(BaseModel):
+class OperationalPoint(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -7474,7 +10080,7 @@ class RailJson(BaseModel):
     """
     `NeutralSections` are designated areas of rail infrastructure where train drivers are instructed to cut the power supply to the train, primarily for safety reasons.
     """
-    operational_points: list[OperationalPointModel]
+    operational_points: list[OperationalPoint]
     """
     Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest.
     """
@@ -7531,37 +10137,6 @@ class SearchResultItemSearchResultItemTrainSchedule(
     """
 
 
-class SearchResultItem(
-    RootModel[
-        SearchResultItemSearchResultItemTrack
-        | SearchResultItemSearchResultItemOperationalPoint
-        | SearchResultItemSearchResultItemSignal
-        | SearchResultItemSearchResultItemProject
-        | SearchResultItemSearchResultItemStudy
-        | SearchResultItemSearchResultItemScenario
-        | SearchResultItemSearchResultItemTrainSchedule
-        | SearchResultItemSearchResultItemUser
-        | SearchResultItemSearchResultItemGroup
-        | SearchResultItemSearchResultItemMacroNode
-    ]
-):
-    root: (
-        SearchResultItemSearchResultItemTrack
-        | SearchResultItemSearchResultItemOperationalPoint
-        | SearchResultItemSearchResultItemSignal
-        | SearchResultItemSearchResultItemProject
-        | SearchResultItemSearchResultItemStudy
-        | SearchResultItemSearchResultItemScenario
-        | SearchResultItemSearchResultItemTrainSchedule
-        | SearchResultItemSearchResultItemUser
-        | SearchResultItemSearchResultItemGroup
-        | SearchResultItemSearchResultItemMacroNode
-    )
-    """
-    A search result item that depends on the query's `object`
-    """
-
-
 class SimDebugData(BaseModel):
     departure_time: AwareDatetime
     engineering_allowances_ranges: list[SimDebugEngineeringAllowanceRange]
@@ -7579,7 +10154,7 @@ class StdcmConflictingWorkSchedule(BaseModel):
     """
 
     end_date_time: AwareDatetime
-    last_op: OperationalPointModel
+    last_op: OperationalPoint
     start_date_time: AwareDatetime
 
 
@@ -7590,7 +10165,7 @@ class StdcmLastReachedOperationalPoint(BaseModel):
 
     arrival_time: AwareDatetime
     geographic: GeoJsonPoint
-    operational_point: OperationalPointModel
+    operational_point: OperationalPoint
 
 
 class StdcmResponsePathNotFound(BaseModel):
@@ -7599,22 +10174,6 @@ class StdcmResponsePathNotFound(BaseModel):
     nearest_to_destination_work_schedules: list[StdcmConflictingWorkSchedule]
     partial_pathfinding_result: CorePathfindingResultSuccess | None = None
     status: Literal["path_not_found"] = "path_not_found"
-
-
-class StdcmResponse(
-    RootModel[
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    ]
-):
-    root: (
-        StdcmResponseSuccess
-        | StdcmResponsePathNotFound
-        | StdcmResponsePreprocessingSimulationError
-        | StdcmResponseInternalError
-    )
 
 
 class TrainScheduleExceptionChangeGroups(BaseModel):
@@ -7630,41 +10189,86 @@ class TrainScheduleExceptionChangeGroups(BaseModel):
     train_name: TrainNameChangeGroup | None = None
 
 
-class InfraObjectOperationalPoint(BaseModel):
-    obj_type: Literal["OperationalPoint"] = "OperationalPoint"
-    railjson: OperationalPointModel
+class Result(BaseModel):
+    information: InfraError
 
 
-class InfraObject(
+class InfraInfraIdErrorsGetResponse(PaginationStats):
+    results: list[Result]
+
+
+class InfraInfraIdMatchOperationalPointsPostResponse(BaseModel):
+    related_operational_points: list[RelatedOperationalPoint | None]
+
+
+class SearchPostResponse(
     RootModel[
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
+        list[
+            SearchResultItemSearchResultItemTrack
+            | SearchResultItemSearchResultItemOperationalPoint
+            | SearchResultItemSearchResultItemSignal
+            | SearchResultItemSearchResultItemProject
+            | SearchResultItemSearchResultItemStudy
+            | SearchResultItemSearchResultItemScenario
+            | SearchResultItemSearchResultItemTrainSchedule
+            | SearchResultItemSearchResultItemUser
+            | SearchResultItemSearchResultItemGroup
+            | SearchResultItemSearchResultItemMacroNode
+        ]
     ]
 ):
-    root: (
-        InfraObjectTrackSection
-        | InfraObjectSignal
-        | InfraObjectNeutralSection
-        | InfraObjectSpeedSection
-        | InfraObjectSwitch
-        | InfraObjectSwitchType
-        | InfraObjectDetector
-        | InfraObjectBufferStop
-        | InfraObjectRoute
-        | InfraObjectOperationalPoint
-        | InfraObjectElectrification
-        | InfraObjectLevelCrossing
+    root: list[
+        SearchResultItemSearchResultItemTrack
+        | SearchResultItemSearchResultItemOperationalPoint
+        | SearchResultItemSearchResultItemSignal
+        | SearchResultItemSearchResultItemProject
+        | SearchResultItemSearchResultItemStudy
+        | SearchResultItemSearchResultItemScenario
+        | SearchResultItemSearchResultItemTrainSchedule
+        | SearchResultItemSearchResultItemUser
+        | SearchResultItemSearchResultItemGroup
+        | SearchResultItemSearchResultItemMacroNode
+    ]
+
+
+class StdcmDebugDataTraceIdGetResponse(BaseModel):
+    failure: SimDebugFailureReport | None = None
+    simulation_data: SimDebugData | None = None
+
+
+class TimetableIdStdcmPostResponse2(BaseModel):
+    data: (
+        StdcmResponseSuccess
+        | StdcmResponsePathNotFound
+        | StdcmResponsePreprocessingSimulationError
+        | StdcmResponseInternalError
     )
+    event: Literal["completed"] = "completed"
+
+
+class TimetableIdStdcmPostResponse(
+    RootModel[TimetableIdStdcmPostResponse1 | TimetableIdStdcmPostResponse2]
+):
+    root: TimetableIdStdcmPostResponse1 | TimetableIdStdcmPostResponse2
+
+
+class TimetableIdTrainScheduleExceptionPostRequest(BaseModel):
+    change_groups: TrainScheduleExceptionChangeGroups
+    disabled: StrictBool
+    occurrence_index: StrictInt | None = None
+    train_schedule_id: StrictInt
+
+
+class TrainScheduleExceptionIdPutRequest(BaseModel):
+    change_groups: TrainScheduleExceptionChangeGroups
+    disabled: StrictBool
+    occurrence_index: StrictInt | None = None
+    train_schedule_id: StrictInt
+
+
+class InfraObjectOperationalPoint(BaseModel):
+    obj_type: Literal["OperationalPoint"] = "OperationalPoint"
+    railjson: OperationalPoint
 
 
 class InfraObjectWithGeometry(BaseModel):
@@ -7683,48 +10287,8 @@ class InfraObjectWithGeometry(BaseModel):
     railjson: dict[str, Any]
 
 
-class NullableInfraObject(RootModel[InfraObjectWithGeometry | None]):
-    root: InfraObjectWithGeometry | None
-
-
 class OperationCreate11(InfraObjectOperationalPoint, OperationCreate1):
     pass
-
-
-class Operation(
-    RootModel[
-        OperationUpdate
-        | OperationDelete
-        | OperationCreate2
-        | OperationCreate3
-        | OperationCreate4
-        | OperationCreate5
-        | OperationCreate6
-        | OperationCreate7
-        | OperationCreate8
-        | OperationCreate9
-        | OperationCreate10
-        | OperationCreate11
-        | OperationCreate12
-        | OperationCreate13
-    ]
-):
-    root: (
-        OperationUpdate
-        | OperationDelete
-        | OperationCreate2
-        | OperationCreate3
-        | OperationCreate4
-        | OperationCreate5
-        | OperationCreate6
-        | OperationCreate7
-        | OperationCreate8
-        | OperationCreate9
-        | OperationCreate10
-        | OperationCreate11
-        | OperationCreate12
-        | OperationCreate13
-    )
 
 
 class PacedTrainException(BaseModel):
@@ -7812,12 +10376,145 @@ class TrainScheduleResponse(TrainSchedule):
     timetable_id: StrictInt
 
 
-class TransformTimetableResponse(BaseModel):
-    """
-    Standard OSRD timetable format
-    """
+class InfraInfraIdPostRequest(
+    RootModel[
+        list[
+            OperationUpdate
+            | OperationDelete
+            | OperationCreate2
+            | OperationCreate3
+            | OperationCreate4
+            | OperationCreate5
+            | OperationCreate6
+            | OperationCreate7
+            | OperationCreate8
+            | OperationCreate9
+            | OperationCreate10
+            | OperationCreate11
+            | OperationCreate12
+            | OperationCreate13
+        ]
+    ]
+):
+    root: list[
+        OperationUpdate
+        | OperationDelete
+        | OperationCreate2
+        | OperationCreate3
+        | OperationCreate4
+        | OperationCreate5
+        | OperationCreate6
+        | OperationCreate7
+        | OperationCreate8
+        | OperationCreate9
+        | OperationCreate10
+        | OperationCreate11
+        | OperationCreate12
+        | OperationCreate13
+    ]
 
-    paced_trains: list[TrainSchedule]
-    """
-    List of paced trains
-    """
+
+class InfraInfraIdPostResponse(
+    RootModel[
+        list[
+            InfraObjectTrackSection
+            | InfraObjectSignal
+            | InfraObjectNeutralSection
+            | InfraObjectSpeedSection
+            | InfraObjectSwitch
+            | InfraObjectSwitchType
+            | InfraObjectDetector
+            | InfraObjectBufferStop
+            | InfraObjectRoute
+            | InfraObjectOperationalPoint
+            | InfraObjectElectrification
+            | InfraObjectLevelCrossing
+        ]
+    ]
+):
+    root: list[
+        InfraObjectTrackSection
+        | InfraObjectSignal
+        | InfraObjectNeutralSection
+        | InfraObjectSpeedSection
+        | InfraObjectSwitch
+        | InfraObjectSwitchType
+        | InfraObjectDetector
+        | InfraObjectBufferStop
+        | InfraObjectRoute
+        | InfraObjectOperationalPoint
+        | InfraObjectElectrification
+        | InfraObjectLevelCrossing
+    ]
+
+
+class InfraInfraIdAutoFixesGetResponse(
+    RootModel[
+        list[
+            OperationUpdate
+            | OperationDelete
+            | OperationCreate2
+            | OperationCreate3
+            | OperationCreate4
+            | OperationCreate5
+            | OperationCreate6
+            | OperationCreate7
+            | OperationCreate8
+            | OperationCreate9
+            | OperationCreate10
+            | OperationCreate11
+            | OperationCreate12
+            | OperationCreate13
+        ]
+    ]
+):
+    root: list[
+        OperationUpdate
+        | OperationDelete
+        | OperationCreate2
+        | OperationCreate3
+        | OperationCreate4
+        | OperationCreate5
+        | OperationCreate6
+        | OperationCreate7
+        | OperationCreate8
+        | OperationCreate9
+        | OperationCreate10
+        | OperationCreate11
+        | OperationCreate12
+        | OperationCreate13
+    ]
+
+
+class InfraInfraIdObjectsObjectTypePostResponse(
+    RootModel[dict[str, InfraObjectWithGeometry | None]]
+):
+    root: dict[str, InfraObjectWithGeometry | None]
+
+
+class TimetableIdTrainSchedulesGetResponse(PaginationStats):
+    results: list[TrainScheduleResponse]
+
+
+class TimetableIdTrainSchedulesPostRequest(RootModel[list[TrainSchedule]]):
+    root: list[TrainSchedule]
+
+
+class TimetableIdTrainSchedulesPostResponse(RootModel[list[TrainScheduleResponse]]):
+    root: list[TrainScheduleResponse]
+
+
+class TrainScheduleSetsIdTrainSchedulesGetResponse(
+    RootModel[list[TrainScheduleResponse]]
+):
+    root: list[TrainScheduleResponse]
+
+
+class TrainScheduleSetsIdTrainSchedulesPostRequest(RootModel[list[TrainSchedule]]):
+    root: list[TrainSchedule]
+
+
+class TrainScheduleSetsIdTrainSchedulesPostResponse(
+    RootModel[list[TrainScheduleResponse]]
+):
+    root: list[TrainScheduleResponse]

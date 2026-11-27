@@ -6,6 +6,7 @@ set -o pipefail
 
 uv run datamodel-codegen \
     --input ../railway_manager_interface/openapi.yaml \
+    --input ../editoast/openapi.yaml \
     --input-file-type openapi \
     --openapi-scopes schemas paths \
     --use-standard-collections \
