@@ -150,6 +150,7 @@ pub(in crate::views) async fn get_by_id(
     params(TrainScheduleSetQueryParams),
     responses(
         (status = 200, description = "list of train schedule sets", body = inline(Vec<TrainScheduleSetResponse>)),
+        DatabaseError,
     ),
 )]
 pub(in crate::views) async fn get(
