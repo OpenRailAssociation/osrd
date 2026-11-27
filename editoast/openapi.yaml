@@ -20328,7 +20328,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Slope'
-      additionalProperties: false
+      additionalProperties: {}
     TrackSectionExtensions:
       type: object
       properties:

@@ -3608,6 +3608,7 @@ export type TrackSection = {
   length: number;
   loading_gauge_limits?: LoadingGaugeLimit[];
   slopes: Slope[];
+  [key: string]: unknown;
 };
 export type RailJson = {
   /** `BufferStops` are obstacles designed to prevent trains from sliding off dead ends. */
