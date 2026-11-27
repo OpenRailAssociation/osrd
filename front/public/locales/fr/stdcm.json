@@ -217,6 +217,7 @@
         "other": "Autres parcours",
         "pathType": "Type de parcours",
         "pdf": "PDF",
+        "placeholderInfoCSCode": "Vous trouverez la description du code CS sélectionné",
         "posteriorTrain": "Sillon suivant",
         "referenceEngine": "engin de référence",
         "requestedRoute": "PARCOURS DEMANDÉ",

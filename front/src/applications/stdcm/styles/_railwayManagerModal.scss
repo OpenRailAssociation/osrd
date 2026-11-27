@@ -240,6 +240,71 @@
 
       .cs-code {
         input:not(#train-to-be-substituted-date),
+        .cs-code-combobox {
+          display: flex;
+          gap: 8px;
+          justify-content: space-between;
+
+          // TODO : This override should be removed when prop `narrow` is changed to work with `required`.
+          .ui-feedback {
+            padding-right: 0;
+          }
+        }
+
+        .cs-code-combobox .ui-combo-box {
+          width: 143px;
+        }
+
+        .cs-info {
+          width: 48px;
+          height: 40px;
+          border: 1px solid var(--grey40);
+          border-radius: 4px;
+          background-color: var(--white100);
+          margin-top: 37px;
+          margin-right: 13px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          anchor-name: --cs-tooltip-anchor;
+
+          span {
+            display: flex;
+            color: var(--primary60);
+          }
+
+          &:hover {
+            span {
+              color: var(--primary90);
+            }
+          }
+        }
+
+        .tooltip-content {
+          width: max-content;
+          background-color: var(--black85);
+          color: var(--white);
+          text-align: center;
+          font-size: 0.875rem;
+          font-weight: 400;
+          position: absolute;
+          z-index: 1;
+          margin-bottom: 4px;
+          border-radius: 4px;
+          padding: 1px 8px;
+          box-shadow: 0 4px 6px -2px var(--black25);
+          display: none;
+        }
+
+        .cs-tooltip {
+          position-anchor: --cs-tooltip-anchor;
+          position-area: top center;
+        }
+
+        .cs-info:hover + .tooltip-content {
+          display: block;
+        }
+
         .ui-date-picker {
           width: 183px;
         }
