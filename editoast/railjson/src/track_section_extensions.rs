@@ -2,8 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::infra::TrackSectionSncfExtension;
-use crate::infra::TrackSectionSourceExtension;
+use crate::TrackSectionSncfExtension;
+use crate::TrackSectionSourceExtension;
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]

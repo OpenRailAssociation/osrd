@@ -601,6 +601,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bounding-box"
+version = "0.1.0"
+dependencies = [
+ "geos",
+ "serde",
+ "thiserror 2.0.21",
+ "utoipa",
+]
+
+[[package]]
 name = "brotli"
 version = "8.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2654,6 +2664,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
+name = "identifier"
+version = "0.1.0"
+dependencies = [
+ "rand 0.10.4",
+ "serde",
+ "serde_json",
+ "utoipa",
+ "uuid",
+]
+
+[[package]]
 name = "idna"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3280,6 +3301,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "non-blank-string"
+version = "0.1.0"
+dependencies = [
+ "rand 0.10.4",
+ "serde",
+ "serde_json",
+ "utoipa",
+]
+
+[[package]]
 name = "nu-ansi-term"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3560,10 +3591,12 @@ dependencies = [
  "clap",
  "geo-types",
  "geos",
+ "identifier",
  "itertools 0.15.0",
+ "non-blank-string",
  "osm4routing",
+ "railjson",
  "rstest",
- "schemas",
  "serde_json",
  "tempfile",
  "tracing",
@@ -4163,6 +4196,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
+name = "railjson"
+version = "0.1.0"
+dependencies = [
+ "bounding-box",
+ "common",
+ "editoast_derive",
+ "educe 0.8.2",
+ "enum-map",
+ "geos",
+ "identifier",
+ "non-blank-string",
+ "serde",
+ "serde_json",
+ "strum",
+ "utoipa",
+]
+
+[[package]]
 name = "rand"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4680,16 +4731,20 @@ dependencies = [
 name = "schemas"
 version = "0.1.0"
 dependencies = [
+ "bounding-box",
  "common",
  "diesel",
  "editoast_derive",
  "educe 0.8.2",
  "enum-map",
  "geos",
+ "identifier",
  "iso8601",
  "itertools 0.15.0",
  "jiff",
+ "non-blank-string",
  "proptest",
+ "railjson",
  "rand 0.10.4",
  "regex",
  "rstest",

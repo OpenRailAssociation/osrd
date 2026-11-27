@@ -8,6 +8,7 @@ edition.workspace = true
 members = [
   ".",
   "authz",
+  "bounding-box",
   "cache",
   "common",
   "core_client",
@@ -17,9 +18,12 @@ members = [
   "fga",
   "fga_derive",
   "fga_migrations",
+  "identifier",
   "models",
+  "non-blank-string",
   "osm_to_railjson",
   "profile_connection_scan",
+  "railjson",
   "schemas",
   "search",
 ]
@@ -69,6 +73,7 @@ approx = "0.5.1"
 authz = { path = "./authz" }
 aws-lc-rs = { version = "1.17.1", default-features = false }
 base64 = "0.23.1"
+bounding-box = { path = "./bounding-box" }
 cache = { path = "./cache" }
 clap = { version = "4.6", features = ["derive", "env"] }
 common = { path = "./common" }
@@ -116,6 +121,7 @@ futures-util = "0.3.30"
 geos = { version = "11.1.1", features = ["json"] }
 hostname = "0.4.2"
 http = "1.4"
+identifier = { path = "./identifier" }
 indexmap = "2.13"
 itertools = "0.15.0"
 jiff = { version = "0.2.37", default-features = false, features = ["serde"] }
@@ -124,6 +130,7 @@ lapin = { version = "4.7.4", default-features = false, features = ["tokio"] }
 linkme = "0.3.36"
 models = { path = "./models" }
 mvt = "0.15.0"
+non-blank-string = { path = "./non-blank-string" }
 object_store = { version = "0.14.0", features = ["aws"] }
 opentelemetry = { version = "0.33.1", default-features = false, features = [
   "trace",
@@ -147,6 +154,7 @@ pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
 proptest = "1.11.0"
 quote = "1.0"
+railjson = { path = "./railjson" }
 rand = "0.10.1"
 rangemap = "1.7.1"
 regex = "1.12"

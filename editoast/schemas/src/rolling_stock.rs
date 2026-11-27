@@ -28,8 +28,7 @@ pub use supported_signaling_system::hashing_supported_signaling_systems_variant;
 mod rolling_stock_metadata;
 pub use rolling_stock_metadata::RollingStockMetadata;
 
-mod loading_gauge_type;
-pub use loading_gauge_type::LoadingGaugeType;
+pub use railjson::LoadingGaugeType;
 
 mod rolling_stock_livery;
 pub use rolling_stock_livery::RollingStockLivery;

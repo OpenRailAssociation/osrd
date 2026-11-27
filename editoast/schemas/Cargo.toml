@@ -5,18 +5,22 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-testing = []
+testing = ["railjson/testing"]
 
 [dependencies]
+bounding-box.workspace = true
 common.workspace = true
 diesel.workspace = true
 editoast_derive.workspace = true
 educe.workspace = true
 enum-map.workspace = true
 geos.workspace = true
+identifier.workspace = true
 iso8601 = "0.6.3"
 itertools.workspace = true
 jiff.workspace = true
+non-blank-string.workspace = true
+railjson.workspace = true
 rand.workspace = true
 regex.workspace = true
 serde.workspace = true

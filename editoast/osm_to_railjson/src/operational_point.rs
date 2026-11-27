@@ -1,12 +1,12 @@
+use identifier::Identifier;
 use itertools::Itertools as _;
+use non_blank_string::NonBlankString;
 use osm4routing::NodeId;
 use osm4routing::osmpbfreader::OsmPbfReader;
 use osm4routing::osmpbfreader::Relation;
-use schemas::infra::OperationalPoint;
-use schemas::infra::OperationalPointPart;
-use schemas::infra::TrackSection;
-use schemas::primitives::Identifier;
-use schemas::primitives::NonBlankString;
+use railjson::OperationalPoint;
+use railjson::OperationalPointPart;
+use railjson::TrackSection;
 
 use std::collections::HashMap;
 use std::collections::HashSet;

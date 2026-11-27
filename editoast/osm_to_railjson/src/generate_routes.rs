@@ -4,19 +4,19 @@
 //! - part 2: build the graph
 //! - part 3: compute the routes
 
+use identifier::Identifier;
 use itertools::Itertools as _;
-use schemas::infra::BufferStop;
-use schemas::infra::Detector;
-use schemas::infra::Direction;
-use schemas::infra::Endpoint;
-use schemas::infra::Route;
-use schemas::infra::Switch;
-use schemas::infra::TrackEndpoint;
-use schemas::infra::TrackSection;
-use schemas::infra::Waypoint;
-use schemas::infra::builtin_node_types_list;
-use schemas::primitives::Identifier;
-use schemas::primitives::OSRDIdentified as _;
+use railjson::BufferStop;
+use railjson::Detector;
+use railjson::Direction;
+use railjson::Endpoint;
+use railjson::OSRDIdentified as _;
+use railjson::Route;
+use railjson::Switch;
+use railjson::TrackEndpoint;
+use railjson::TrackSection;
+use railjson::Waypoint;
+use railjson::builtin_node_types_list;
 use std::collections::HashMap;
 
 /* Part 1: type definitions */
@@ -428,10 +428,10 @@ pub fn routes(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use schemas::infra::BufferStop;
-    use schemas::infra::Detector;
-    use schemas::infra::RailJson;
-    use schemas::infra::TrackSection;
+    use railjson::BufferStop;
+    use railjson::Detector;
+    use railjson::RailJson;
+    use railjson::TrackSection;
 
     fn detector_directions(infra: &RailJson) -> HashMap<Identifier, Direction> {
         infra
