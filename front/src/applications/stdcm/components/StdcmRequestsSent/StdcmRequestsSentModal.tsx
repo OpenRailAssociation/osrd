@@ -1,12 +1,15 @@
-import { Dialog } from '@osrd-project/ui-core';
+import { useRef } from 'react';
+
+import { Dialog, useOutsideClick } from '@osrd-project/ui-core';
 import { LinkExternal, Sync, X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
+import dayjs from 'dayjs';
 import calendar from 'dayjs/plugin/calendar';
 import { useTranslation } from 'react-i18next';
 
 import useStdcmRequestsSent from 'applications/stdcm/hooks/useStdcmRequestsSent';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 dayjs.extend(calendar);
 
@@ -29,6 +32,10 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
   };
 
   const { requestsSentData, isFetching, refetchData, lastRefresh } = useStdcmRequestsSent();
+
+  const modalRef = useRef<HTMLDialogElement>(null);
+  useModalFocusTrap(modalRef, onClose);
+  useOutsideClick(modalRef, onClose);
 
   const requestsSentRows = () =>
     requestsSentData.map((request, index) => {
@@ -93,6 +100,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
   return (
     <Dialog
+      ref={modalRef}
       headerClassname="stdcm-requests-sent-modal-header"
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
