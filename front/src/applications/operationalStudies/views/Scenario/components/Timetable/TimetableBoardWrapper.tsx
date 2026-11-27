@@ -44,7 +44,7 @@ const TimetableBoardWrapper = ({
 }: TimetableBoardWrapperProps) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const { scenario, sandboxId, timetableId, timetableType } = useScenarioContext();
+  const { scenario, sandbox, timetableId, timetableType } = useScenarioContext();
   const { trainSchedules, removeTrainSchedules, upsertTrainSchedules } = useTimetableContext();
 
   const [getTimetableRoundTrips] =
@@ -220,7 +220,7 @@ const TimetableBoardWrapper = ({
             ]);
 
       const newTrainSchedules = await postFullImportPayload(
-        sandboxId,
+        sandbox.id,
         timetableId,
         scenario.id,
         importedPayload,
@@ -243,7 +243,7 @@ const TimetableBoardWrapper = ({
       }
     }
   }, [
-    sandboxId,
+    sandbox,
     subCategories,
     trainSchedules,
     upsertTrainSchedules,

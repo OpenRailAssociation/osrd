@@ -129,7 +129,8 @@ function computeMovedTrainSchedule(
 const useScenarioData = () => {
   const dispatch = useAppDispatch();
 
-  const { scenario, infraId, timetableId, workerStatus, timetableType } = useScenarioContext();
+  const { scenario, infraId, timetableId, sandbox, workerStatus, timetableType } =
+    useScenarioContext();
   const isHourlyTimetable = timetableType === 'HOURLY';
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResponse[]>();
@@ -382,13 +383,21 @@ const useScenarioData = () => {
           existingException: exceptionToSync,
           occurrenceIndex,
         } = buildOccurrenceExceptionData(trainSchedule, updatedOccurrence, draggedTrainId);
+
+        // The exceptions of a train schedule set are going to set timetable,
+        // the exceptions of a sandbox go to scenario timetable
+        const exceptionsTimetableId =
+          trainSchedule.timetable_id === sandbox.timetableId
+            ? timetableId
+            : trainSchedule.timetable_id;
+
         const finalException = await syncOccurrenceException(
           dispatch,
           generatedException,
           exceptionToSync,
           occurrenceIndex,
           editoastId,
-          timetableId
+          exceptionsTimetableId
         );
         const updatedExceptions = updatePacedTrainExceptionsList(
           trainSchedule.paced.exceptions,
@@ -428,6 +437,7 @@ const useScenarioData = () => {
       trainSchedules,
       dispatch,
       timetableId,
+      sandbox,
       upsertTrainScheduleExceptions,
       setTrainScheduleDepartureTime,
       updateTrainSchedule,

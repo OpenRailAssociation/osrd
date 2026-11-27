@@ -95,7 +95,6 @@ describe.skip('useLazySimulateTrains', () => {
           electrical_profile_set_id: 1,
           ids: [mockTrain.id],
           infra_id: 1,
-          timetable_id: 1,
         },
       });
     });

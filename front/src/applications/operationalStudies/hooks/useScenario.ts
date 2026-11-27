@@ -9,6 +9,7 @@ import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
+import type { Sandbox } from '../types';
 import useUrlOrStorageParam from './useUrlOrStorageParam';
 
 type SimulationParams = {
@@ -23,8 +24,8 @@ const useScenario = () => {
 
   // The sandbox is stored per timetable, so that we never use the sandbox of another timetable
   // while the one of the active timetable is loading
-  const [sandboxIdByTimetableId, setSandboxIdByTimetableId] = useState<
-    Partial<Record<number, number>>
+  const [sandboxByTimetableId, setSandboxByTimetableId] = useState<
+    Partial<Record<number, Sandbox>>
   >({});
 
   const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
@@ -48,7 +49,7 @@ const useScenario = () => {
   const currentTimetable =
     scenario?.timetable_summaries.find(({ id }) => id.toString() === savedTimetableId) ??
     scenario?.timetable_summaries.at(0);
-  const sandboxId = currentTimetable ? sandboxIdByTimetableId[currentTimetable.id] : undefined;
+  const currentSandbox = currentTimetable ? sandboxByTimetableId[currentTimetable.id] : undefined;
 
   const { currentData: trainScheduleSets } =
     osrdEditoastApi.endpoints.getTimetableByIdTrainScheduleSets.useQuery(
@@ -92,11 +93,15 @@ const useScenario = () => {
 
   // Ensure a sandbox train schedule set exists and is linked to the timetable
   useEffect(() => {
-    const saveSandboxId = (timetableId: number, id: number) =>
-      setSandboxIdByTimetableId((prev) => ({ ...prev, [timetableId]: id }));
+    const saveSandbox = (timetableId: number, sandbox: Sandbox) =>
+      setSandboxByTimetableId((prev) => {
+        const saved = prev[timetableId];
+        if (saved?.id === sandbox.id && saved.timetableId === sandbox.timetableId) return prev;
+        return { ...prev, [timetableId]: sandbox };
+      });
 
     const checkAndCreateSandbox = async (timetableId: number, timetableType: TimetableType) => {
-      const sandbox = await postTrainScheduleSets({
+      const sandboxSet = await postTrainScheduleSets({
         trainScheduleSetForm: {
           name: null, // sandbox never has a name
           description: '',
@@ -105,20 +110,23 @@ const useScenario = () => {
         },
       }).unwrap();
 
-      saveSandboxId(timetableId, sandbox.id);
+      saveSandbox(timetableId, { id: sandboxSet.id, timetableId: sandboxSet.timetable_id });
 
       await linkTrainscheduleSetToTimetable({
         id: timetableId,
-        body: { train_schedule_set_ids: [sandbox.id] },
+        body: { train_schedule_set_ids: [sandboxSet.id] },
       }).unwrap();
     };
 
     if (!trainScheduleSets || !currentTimetable) return;
 
-    const sandbox = trainScheduleSets.find((tss) => !tss.name);
+    const existingSandbox = trainScheduleSets.find((tss) => !tss.name);
 
-    if (sandbox) {
-      saveSandboxId(currentTimetable.id, sandbox.id);
+    if (existingSandbox) {
+      saveSandbox(currentTimetable.id, {
+        id: existingSandbox.id,
+        timetableId: existingSandbox.timetable_id,
+      });
       return;
     }
 
@@ -126,7 +134,11 @@ const useScenario = () => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [trainScheduleSets, currentTimetable?.id, currentTimetable?.type]);
 
-  return { scenario, timetable: currentTimetable, sandboxId };
+  return {
+    scenario,
+    timetable: currentTimetable,
+    sandbox: currentSandbox,
+  };
 };
 
 export default useScenario;
