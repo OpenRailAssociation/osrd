@@ -3,7 +3,8 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPool;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use models::prelude::*;
 use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
@@ -14,7 +15,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use crate::error::Result;
+use crate::views::DatabaseError;
 use authz::Role;
 use models::TemporarySpeedLimit;
 use models::TemporarySpeedLimitGroup;
@@ -85,15 +86,14 @@ impl Serialize for TemporarySpeedLimitItemForm {
     }
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "temporary_speed_limit")]
-enum TemporarySpeedLimitError {
-    #[error("Name '{name}' already used")]
-    #[editoast_error(status = 400)]
+#[derive(Debug, Error, ViewError, From)]
+pub(in crate::views) enum TemporarySpeedLimitError {
+    #[error("A group of temporary speed limits with '{{name}}' already exists")]
+    #[view_error(status = BAD_REQUEST, context)]
     NameAlreadyUsed { name: String },
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] models::Error),
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
 }
 
 impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
@@ -102,7 +102,8 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
             temporary_speed_limits::TslGroupError::NameAlreadyUsed { name } => {
                 Self::NameAlreadyUsed { name }
             }
-            temporary_speed_limits::TslGroupError::Database(err) => Self::Database(err),
+
+            temporary_speed_limits::TslGroupError::Database(err) => Self::from(err),
         }
     }
 }
@@ -114,6 +115,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
     request_body = inline(TemporarySpeedLimitCreateForm),
     responses(
         (status = 201, body = inline(TemporarySpeedLimitCreateResponse), description = "The id of the created temporary speed limit group." ),
+        TemporarySpeedLimitError
     )
 )]
 pub(in crate::views) async fn create_temporary_speed_limit_group(
@@ -122,7 +124,7 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
         speed_limit_group_name,
         speed_limits,
     }): Json<TemporarySpeedLimitCreateForm>,
-) -> Result<impl IntoResponse> {
+) -> Result<impl IntoResponse, TemporarySpeedLimitError> {
     let conn = &mut db_pool.get().await?;
 
     // Create the speed limits group

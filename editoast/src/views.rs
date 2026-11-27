@@ -571,6 +571,16 @@ impl From<::authz::v2::OpenFgaError> for OpenFgaError {
     }
 }
 
+/// Convert an Infallible error into an OpenFgaError.
+/// Useful since the SystemAuthorizer uses Infallible as
+/// its rejection type, and using run() forces to handle
+/// the rejection type.
+impl From<std::convert::Infallible> for OpenFgaError {
+    fn from(_: std::convert::Infallible) -> Self {
+        unreachable!()
+    }
+}
+
 #[derive(Debug, thiserror::Error, ViewError, derive_more::From)]
 enum AuthorizerError {
     #[error(transparent)]
@@ -580,16 +590,6 @@ enum AuthorizerError {
     #[view_error(status = FORBIDDEN)]
     #[from(::authz::v2::Check)]
     Forbidden,
-}
-
-/// Convert an Infallible error into an OpenFgaError.
-/// Useful since the SystemAuthorizer uses Infallible as
-/// its rejection type, and using run() forces to handle
-/// the rejection type.
-impl From<std::convert::Infallible> for OpenFgaError {
-    fn from(_: std::convert::Infallible) -> Self {
-        unreachable!()
-    }
 }
 
 #[cfg(test)]

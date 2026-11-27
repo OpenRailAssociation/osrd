@@ -114,8 +114,7 @@
       "NotFound": "No se pudo encontrar el estudio «{{study_id}}»"
     },
     "temporary_speed_limit": {
-      "Database": "Error interno (base de datos)",
-      "NameAlreadyUsed": "Ya existe un grupo de límites de velocidad temporales con el nombre «{{name}}»"
+      "name_already_used": "Ya existe un grupo de límites de velocidad temporales con el nombre «{{name}}»"
     },
     "timetable": {
       "Database": "Error interno (base de datos)"

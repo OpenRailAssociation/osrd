@@ -299,8 +299,7 @@
       "NotFound": "Sous catégorie '{{code}}' non trouvée"
     },
     "temporary_speed_limit": {
-      "Database": "Erreur interne (base de données)",
-      "NameAlreadyUsed": "Un groupe de limites temporaires de vitesse avec le nom '{{name}} existe déjà"
+      "name_already_used": "Un groupe de limites temporaires de vitesse avec le nom '{{name}} existe déjà"
     },
     "timetable": {
       "BatchNotFound": "Grilles horaires '{{timetable_ids}}' non trouvées",
