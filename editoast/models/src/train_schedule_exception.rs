@@ -68,16 +68,13 @@ impl From<TrainScheduleException> for schemas::TrainScheduleException {
 impl TrainScheduleException {
     pub async fn retrieve_exceptions_by_train_schedules(
         conn: &mut DbConnection,
-        timetable_id: i64,
         train_schedules_ids: &[i64],
     ) -> Result<Vec<TrainScheduleException>, crate::Error> {
         let train_schedules_ids_for_settings = train_schedules_ids.to_vec();
-        let exceptions_settings = SelectionSettings::new()
-            .filter(move || TrainScheduleException::TIMETABLE_ID.eq(timetable_id))
-            .filter(move || {
-                TrainScheduleException::TRAIN_SCHEDULE_ID
-                    .eq_any(train_schedules_ids_for_settings.clone())
-            });
+        let exceptions_settings = SelectionSettings::new().filter(move || {
+            TrainScheduleException::TRAIN_SCHEDULE_ID
+                .eq_any(train_schedules_ids_for_settings.clone())
+        });
 
         let mut exceptions_map: HashMap<i64, Vec<TrainScheduleException>> =
             Self::list(conn, exceptions_settings)
@@ -112,6 +109,26 @@ impl TrainScheduleException {
         .await?;
 
         Ok(deleted)
+    }
+
+    pub async fn move_exceptions_to_timetable(
+        conn: &mut DbConnection,
+        train_schedule_ids: &[i64],
+        timetable_id: i64,
+    ) -> Result<usize, crate::Error> {
+        use database::tables::train_schedule_exception::dsl;
+        use diesel::ExpressionMethods as _;
+        use diesel::QueryDsl as _;
+        use diesel_async::RunQueryDsl as _;
+
+        let moved = diesel::update(
+            dsl::train_schedule_exception.filter(dsl::train_schedule_id.eq_any(train_schedule_ids)),
+        )
+        .set(dsl::timetable_id.eq(timetable_id))
+        .execute(conn.write().await.deref_mut())
+        .await?;
+
+        Ok(moved)
     }
 }
 

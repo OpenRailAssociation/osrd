@@ -357,7 +357,6 @@ pub(in crate::views) async fn conflicts(
 
     let mut exceptions = models::TrainScheduleException::retrieve_exceptions_by_train_schedules(
         &mut conn.clone(),
-        timetable_id,
         &train_schedules_ids,
     )
     .await?
