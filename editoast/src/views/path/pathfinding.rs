@@ -21,7 +21,8 @@ use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
-use editoast_derive::EditoastError;
+use derive_more::From;
+use editoast_derive::ViewError;
 use educe::Educe;
 use itertools::Itertools as _;
 use ordered_float::OrderedFloat;
@@ -43,23 +44,36 @@ use utoipa::ToSchema;
 use crate::AppState;
 use crate::authentication;
 use crate::error::Result;
-use crate::views::AuthorizationError;
+use crate::views::AuthorizerError;
+use crate::views::CoreError;
+use crate::views::DatabaseError;
+use crate::views::infra::InfraNotFound;
 use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::timetable::PhysicsConsistParameters;
 use models::Infra;
 use models::prelude::*;
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "pathfinding")]
-pub enum PathfindingError {
-    #[error("Infra '{infra_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    InfraNotFound { infra_id: i64 },
+#[derive(Debug, Error, ViewError, From)]
+pub(in crate::views) enum PathfindingError {
     #[error(transparent)]
-    #[editoast_error(status = 500)]
-    Database(#[from] models::Error),
+    InfraNotFound(
+        #[from]
+        #[view_error]
+        InfraNotFound,
+    ),
+    #[error(transparent)]
+    #[from(forward)]
+    Database(#[view_error] DatabaseError),
+    #[error(transparent)]
+    Authorizer(
+        #[from]
+        #[view_error]
+        AuthorizerError,
+    ),
+    #[error(transparent)]
+    #[from(core_client::Error)]
+    Core(#[view_error] CoreError),
 }
-
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, educe::Educe, ToSchema)]
@@ -280,6 +294,7 @@ pub enum PathfindingFailure {
     request_body = PathfindingInput,
     responses(
         (status = 200, description = "Pathfinding Result", body = PathfindingResult),
+        PathfindingError
     ),
 )]
 pub(in crate::views) async fn post(
@@ -293,10 +308,10 @@ pub(in crate::views) async fn post(
     Extension(core_client): Extension<CoreClient>,
     Path(infra_id): Path<i64>,
     Json(path_input): Json<PathfindingInput>,
-) -> Result<Json<PathfindingResult>> {
+) -> Result<Json<PathfindingResult>, PathfindingError> {
     let conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
-        PathfindingError::InfraNotFound { infra_id }
+        PathfindingError::from(InfraNotFound { infra_id })
     })
     .await?;
 
@@ -304,7 +319,7 @@ pub(in crate::views) async fn post(
         authz::Infra(infra_id),
         authz::InfraPrivilege::CanRestrictedRead,
     )
-    .run::<AuthorizationError, _>(&authn_state.authorizer(&openfga))
+    .run::<AuthorizerError, _>(&authn_state.authorizer(&openfga))
     .await?;
 
     let op_cache =

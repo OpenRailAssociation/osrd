@@ -167,16 +167,6 @@
       "SimulationFailed": "Simulation für Zugfahrplan '{{train_schedule_id}}' fehlgeschlagen",
       "TrainScheduleSetNotFound": "Zugpaket '{{train_schedule_set_id}}' nicht gefunden"
     },
-    "pathfinding": {
-      "Database": "Interner Fehler (Datenbank)",
-      "ElectricalProfilesOverlap": "Bahnstromprofile überlappen sich",
-      "ElectrificationOverlap": "Elektrifizierung '{{electrification_id}}' überlappt sich mit anderen",
-      "InfraNotFound": "Infrastruktur '{{infra_id}}' nicht gefunden",
-      "NotFound": "Wegefindung '{{pathfinding_id}}' existiert nicht",
-      "OperationalPointsNotFound": "Betriebsstellen {{operational_points}} nicht gefunden",
-      "RollingStockNotFound": "Schienenfahrzeug '{{rolling_stock_id}}' existiert nicht",
-      "TrackSectionsNotFound": "Gleisabschnitt {{track_sections}} nicht gefunden"
-    },
     "postgres": {
       "Host": "Ungültige Datenbank-URL '{{hostname}}'",
       "Password": "Ungültiges Passwort",
