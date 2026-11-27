@@ -354,9 +354,7 @@
       "TimetableNotFound": "找不到時刻表「{{timetable_id}}」"
     },
     "train_schedule_set": {
-      "CatalogEntryNotFound": "找不到目錄項目「{{catalog_entry_id}}」",
-      "Database": "內部錯誤（資料庫）",
-      "NotFound": "找不到列車時刻表集合「{{train_schedule_set_id}}」"
+      "not_found": "找不到列車時刻表集合「{{train_schedule_set_id}}」"
     },
     "url": {
       "InvalidUrl": "無效的網址「{{url}}」"
