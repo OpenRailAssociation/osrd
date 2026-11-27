@@ -7173,9 +7173,6 @@ class TimetableResponse(Timetable):
 
 
 class TrackSectionModel(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
     curves: list[Curve]
     extensions: TrackSectionExtensions | None = None
     geo: GeoJsonLineString

@@ -3600,7 +3600,7 @@ export type Slope = {
   end: number;
   gradient: number;
 };
-export type TrackSection = {
+export type TrackSection = unknown & {
   curves: Curve[];
   extensions?: TrackSectionExtensions;
   geo: GeoJsonLineString;

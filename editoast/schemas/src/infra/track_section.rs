@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use educe::Educe;
 use geos::geojson::Geometry;
+use geos::geojson::JsonValue;
 use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
@@ -17,7 +20,6 @@ use crate::primitives::ObjectType;
 use common::geometry::GeoJsonLineString;
 
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
-#[serde(deny_unknown_fields)]
 #[educe(Default)]
 pub struct TrackSection {
     #[schema(inline)]
@@ -33,6 +35,9 @@ pub struct TrackSection {
     pub geo: Geometry,
     #[serde(default)]
     pub extensions: TrackSectionExtensions,
+    #[serde(flatten)]
+    #[schema(value_type = Value)]
+    pub extras: HashMap<String, JsonValue>,
 }
 
 impl OSRDTyped for TrackSection {
