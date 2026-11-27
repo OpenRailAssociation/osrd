@@ -143,7 +143,7 @@ test.describe('Itinerary modal validation ', { tag: ['@op', '@itinerary-modal'] 
       await test.step('Type an unknown PR on a valid itinerary and check the field is cleared', async () => {
         await itineraryModalPage.fillFirstPathStep(NORTH_STATION_BV, 2);
         await itineraryModalPage.fillLastPathStep(SOUTH_STATION_BV, 3, SOUTH_STATION_SUGGESTION);
-        await itineraryModalPage.clearAndReplacePathStepValue(1, UNKNOWN_PR_VALUE);
+        await itineraryModalPage.replacePathStepValueWithoutSuggestion(1, UNKNOWN_PR_VALUE);
         await itineraryModalPage.checkPathStepValue(1, '');
         await itineraryModalPage.checkNoInvalidPathStepMessage();
         await itineraryModalPage.checkNoInvalidOpBanner();

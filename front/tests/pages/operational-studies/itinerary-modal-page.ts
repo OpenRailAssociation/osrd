@@ -478,17 +478,6 @@ class ItineraryModalPage {
     await this.comboBox.nth(index).press('Enter');
   }
 
-  async clearAndReplacePathStepValue(index: number, value: string) {
-    await this.comboBox.nth(index).click();
-    await this.comboBox.nth(index).fill('');
-    const searchResponse = this.page.waitForResponse(
-      (response) => response.url().includes('/api/search') && response.request().method() === 'POST'
-    );
-    await this.comboBox.nth(index).fill(value);
-    await searchResponse;
-    await this.comboBox.nth(index).press('Enter');
-  }
-
   async replacePathStepValueWithoutSuggestion(index: number, value: string) {
     await this.comboBox.nth(index).click();
     const searchResponse = this.page.waitForResponse(
@@ -496,6 +485,7 @@ class ItineraryModalPage {
     );
     await this.comboBox.nth(index).fill(value);
     await searchResponse;
+    await expect(this.opSuggestion).toHaveCount(0);
     await this.comboBox.nth(index).press('Enter');
   }
 

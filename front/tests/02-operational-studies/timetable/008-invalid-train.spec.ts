@@ -67,8 +67,12 @@ test.describe(
 
         await test.step('Edit reference base arrival and verify margins get computed', async () => {
           const previousValue = await timesStopsTablePage.getReferenceBaseArrivalInputValue(viaRow);
-          await timesStopsTablePage.editReferenceBaseArrival(viaRow, '11:47:00');
-          await timesStopsTablePage.editRequestedArrival(viaRow, '11:46:00');
+          await timesStopsTablePage.runAndWaitForTrainUpdate(() =>
+            timesStopsTablePage.editReferenceBaseArrival(viaRow, '11:47:00')
+          );
+          await timesStopsTablePage.runAndWaitForTrainUpdate(() =>
+            timesStopsTablePage.editRequestedArrival(viaRow, '11:46:00')
+          );
           await timesStopsTablePage.verifyReferenceBaseArrivalChanged(viaRow, previousValue);
           await timesStopsTablePage.verifyTimesStopsTableContent(
             invalidUniqueTrainWithReferenceBaseArrivalOutput
