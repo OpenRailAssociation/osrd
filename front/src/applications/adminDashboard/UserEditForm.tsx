@@ -253,6 +253,7 @@ function InfoInput({ name, identities, providerList, conflicts, onChange }: Info
 type UserEditFormProps = {
   initialState: UserEditFormState;
   onSubmit: (form: UserEditFormState) => void;
+  onDelete: () => void;
   isLoading: boolean;
   onCancel: () => void;
 };
@@ -260,6 +261,7 @@ type UserEditFormProps = {
 export default function UserEditForm({
   initialState,
   onSubmit,
+  onDelete,
   isLoading,
   onCancel,
 }: UserEditFormProps) {
@@ -290,6 +292,15 @@ export default function UserEditForm({
             onChange={(groups) => setState({ ...state, groups })}
           />
           <div className="user-edit-form-actions">
+            {state.mode === UserEditFormMode.Edit && (
+              <Button
+                label={t('deleteUser')}
+                variant="Destructive"
+                type="button"
+                isDisabled={isLoading}
+                onClick={onDelete}
+              />
+            )}
             <Button
               label={t('cancel')}
               variant="Cancel"

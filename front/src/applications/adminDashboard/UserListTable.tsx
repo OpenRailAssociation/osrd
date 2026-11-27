@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
-import { Button } from '@osrd-project/ui-core';
+import { Button, Dialog } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,12 +13,54 @@ import {
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import UserEditForm, { type UserEditFormState, UserEditFormMode } from './UserEditForm';
 
 import './styles/user-list-table.css';
 
 const ROLE_ORDER: Record<Role, number> = { Admin: 0, Stdcm: 1, OperationalStudies: 2 };
+
+function DeleteUserDialog({
+  onClose,
+  onDelete,
+  isDeleting,
+}: {
+  onClose: () => void;
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  const { t } = useTranslation('admin-dashboard');
+  const title = t('deleteConfirmation.title');
+  const buttonsRef = useRef<HTMLDivElement>(null);
+  useModalFocusTrap(buttonsRef, onClose, { focusOnFirstElement: true });
+
+  return (
+    <Dialog
+      className="delete-user-dialog"
+      aria-modal="true"
+      header={<h5>{title}</h5>}
+      footer={
+        <div className="buttons" ref={buttonsRef}>
+          <Button
+            variant="Cancel"
+            label={t('userForm.cancel')}
+            onClick={onClose}
+            isDisabled={isDeleting}
+          />
+          <Button
+            variant="Destructive"
+            label={t('userForm.deleteUser')}
+            onClick={onDelete}
+            isLoading={isDeleting}
+          />
+        </div>
+      }
+    >
+      {t('deleteConfirmation.message')}
+    </Dialog>
+  );
+}
 
 function RoleTag({ userRole }: { userRole: Role }) {
   'use memo';
@@ -84,11 +126,31 @@ export function UserListTable() {
     osrdEditoastApi.endpoints.postAuthzUsers.useMutation();
   const [updateUser, { isLoading: isUpdating }] =
     osrdEditoastApi.endpoints.patchAuthzUsersByUserId.useMutation();
+  const [deleteUser, { isLoading: isDeleting }] =
+    osrdEditoastApi.endpoints.deleteAuthzUsersByUserId.useMutation();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [initialFormState, setInitialFormState] = useState<UserEditFormState | null>(null);
   const { data: users } = osrdEditoastApi.endpoints.getAuthzUsers.useQuery();
   const sortedUsers = users?.toSorted((a, b) => b.id - a.id);
+
+  const handleDeleteUser = async () => {
+    if (editingUserId === null) return;
+    try {
+      await deleteUser({ userId: editingUserId }).unwrap();
+      dispatch(
+        setSuccess({
+          title: t('userDeleted'),
+          text: t('userDeletedMessage'),
+        })
+      );
+      setIsDeleteDialogOpen(false);
+      setIsFormOpen(false);
+    } catch (error) {
+      dispatch(setFailure(castErrorToFailure(error)));
+    }
+  };
 
   const saveUser = async ({ name, groups, roles, identities }: UserEditFormState) => {
     const body = {
@@ -122,70 +184,82 @@ export function UserListTable() {
   };
 
   return (
-    <table className="user-list-table">
-      <caption>
-        <div className="user-list-header">
-          <p className="user-count">{t('users', { count: users?.length ?? 0 })}</p>
-          {!isFormOpen && (
+    <>
+      <table className="user-list-table">
+        <caption>
+          <div className="user-list-header">
+            <p className="user-count">{t('users', { count: users?.length ?? 0 })}</p>
+            {!isFormOpen && (
+              <Button
+                label={t('addUser')}
+                size="small"
+                variant="Quiet"
+                onClick={() => {
+                  setEditingUserId(null);
+                  setIsFormOpen(true);
+                  setInitialFormState({
+                    mode: UserEditFormMode.Add,
+                    name: '',
+                    identities: [{ key: uuidv4(), provider: '', identifier: '' }],
+                    roles: [],
+                    groups: [],
+                  });
+                }}
+              />
+            )}
             <Button
-              label={t('addUser')}
+              className="user-edit-groups-button"
+              label={t('editGroups')}
               size="small"
               variant="Quiet"
+              onClick={() => {}}
+            />
+          </div>
+        </caption>
+        <tbody>
+          {isFormOpen && (
+            <UserEditForm
+              initialState={initialFormState!}
+              onSubmit={saveUser}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              isLoading={isCreating || isUpdating}
+              onCancel={() => setIsFormOpen(false)}
+            />
+          )}
+          {sortedUsers?.map((user) => (
+            <Row
+              key={user.id}
+              {...user}
+              clickable={!isFormOpen}
               onClick={() => {
-                setEditingUserId(null);
+                setEditingUserId(user.id);
                 setIsFormOpen(true);
                 setInitialFormState({
-                  mode: UserEditFormMode.Add,
-                  name: '',
-                  identities: [{ key: uuidv4(), provider: '', identifier: '' }],
-                  roles: [],
-                  groups: [],
+                  mode: UserEditFormMode.Edit,
+                  name: user.name,
+                  identities: user.identities.map((identity) => ({
+                    key: uuidv4(),
+                    provider: identity.split('/', 2)[0],
+                    // NOTE: identifiers theoretically can contain slashes
+                    identifier: identity.split('/').slice(1).join('/'),
+                  })),
+                  roles: user.direct_roles,
+                  groups: user.groups.map(({ id }) => id),
                 });
               }}
             />
-          )}
-          <Button
-            className="user-edit-groups-button"
-            label={t('editGroups')}
-            size="small"
-            variant="Quiet"
-            onClick={() => {}}
-          />
-        </div>
-      </caption>
-      <tbody>
-        {isFormOpen && (
-          <UserEditForm
-            initialState={initialFormState!}
-            onSubmit={saveUser}
-            isLoading={isCreating || isUpdating}
-            onCancel={() => setIsFormOpen(false)}
-          />
-        )}
-        {sortedUsers?.map((user) => (
-          <Row
-            key={user.id}
-            {...user}
-            clickable={!isFormOpen}
-            onClick={() => {
-              setEditingUserId(user.id);
-              setIsFormOpen(true);
-              setInitialFormState({
-                mode: UserEditFormMode.Edit,
-                name: user.name,
-                identities: user.identities.map((identity) => ({
-                  key: uuidv4(),
-                  provider: identity.split('/', 2)[0],
-                  // NOTE: identifiers theoretically can contain slashes
-                  identifier: identity.split('/').slice(1).join('/'),
-                })),
-                roles: user.direct_roles,
-                groups: user.groups.map(({ id }) => id),
-              });
-            }}
-          />
-        ))}
-      </tbody>
-    </table>
+          ))}
+        </tbody>
+      </table>
+      {isDeleteDialogOpen && (
+        <DeleteUserDialog
+          onClose={() => {
+            if (!isDeleting) setIsDeleteDialogOpen(false);
+          }}
+          onDelete={handleDeleteUser}
+          isDeleting={isDeleting}
+        />
+      )}
+    </>
   );
 }

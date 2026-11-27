@@ -63,7 +63,9 @@
 
 .user-edit-form-actions {
   grid-column: 1 / span 2;
-  display: flex;
-  justify-content: end;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  justify-items: start;
   gap: 24px;
+  margin-left: 16px;
 }

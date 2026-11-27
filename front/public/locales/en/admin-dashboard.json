@@ -1,5 +1,9 @@
 {
   "addUser": "Add",
+  "deleteConfirmation": {
+    "message": "You are about to remove a user from the app. It will no longer be possible for this person to access…",
+    "title": "Caution"
+  },
   "editGroups": "Edit groups",
   "roles": {
     "Admin": "Admin",
@@ -8,6 +12,8 @@
   },
   "userCreated": "User created",
   "userCreatedMessage": "{{name}} was added to the user list.",
+  "userDeleted": "User removed",
+  "userDeletedMessage": "User was removed from the user list.",
   "userUpdated": "User updated",
   "userUpdatedMessage": "{{name}} was updated.",
   "userForm": {
@@ -16,6 +22,7 @@
     "cancel": "Cancel",
     "chooseProvider": "Choose",
     "deleteIdentity": "Delete identity",
+    "deleteUser": "Remove user",
     "groups": "Groups",
     "identifier": "Identifier",
     "name": "Name",
