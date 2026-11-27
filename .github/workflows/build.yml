@@ -245,7 +245,7 @@ jobs:
           done
 
       - name: Check DCO
-        uses: christophebedard/dco-check@0.5.1
+        uses: christophebedard/dco-check@0.6.0
         with:
           args: --exclude-emails '49699333+dependabot[bot]@users.noreply.github.com,github-actions[bot]@users.noreply.github.com'
         env:
