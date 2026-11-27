@@ -903,11 +903,12 @@ const ItineraryModal = ({
                 data-testid="reverse-itinerary-button"
                 className="reverse-itinerary-button"
                 type="button"
+                tabIndex={-1}
                 onClick={reverseItinerary}
               >
                 <ArrowSwitch />
               </button>
-              <button className="frame-all" onClick={frameAllPathSteps}>
+              <button className="frame-all" onClick={frameAllPathSteps} tabIndex={-1}>
                 <FrameAll title={t('frameAll')} aria-label={t('frameAll')} />
               </button>
             </div>
