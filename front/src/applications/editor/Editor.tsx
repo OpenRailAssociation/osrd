@@ -30,6 +30,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
+import useFitViewportToInfra from 'modules/infra/useFitViewportToInfra';
 import useInfra from 'modules/infra/useInfra';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
@@ -70,6 +71,8 @@ function decodeMapHash(raw: string): Pick<Viewport, 'longitude' | 'latitude' | '
   return { zoom, latitude, longitude };
 }
 
+const ZOOM_DELTA = 1.5;
+
 const Editor = () => {
   const [showPanelContainer, setShowPanelContainer] = useState(true);
   const { t } = useTranslation();
@@ -80,6 +83,8 @@ const Editor = () => {
 
   const { updateMapSettings: updateMapSettingsAction, updateViewport: updateViewportAction } =
     useMapSettingsActions();
+
+  const fitViewportToInfra = useFitViewportToInfra();
 
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
@@ -153,6 +158,13 @@ const Editor = () => {
     },
     [dispatch, updateViewportAction]
   );
+
+  // Zoom through the map instance rather than the store, so that the map fires
+  // zoomend and the #map= hash gets updated like with the mouse wheel
+  const zoomBy = useCallback((delta: number) => {
+    const map = mapRef.current;
+    if (map) map.zoomTo(map.getZoom() + delta, { duration: 0 });
+  }, []);
 
   const resetPitchBearing = () => {
     setViewport({
@@ -318,6 +330,22 @@ const Editor = () => {
         };
         void selectObjectsAndFocus(selectedEntities);
       }
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  /**
+   * When the component mounts with an infra in the url
+   * => fit the viewport to the infra bounding box (the editor state is not persisted),
+   * unless the url already focuses the map (selection param or #map= hash)
+   */
+  useEffect(() => {
+    if (
+      !isNil(urlInfra) &&
+      !searchParams.has('selection') &&
+      !window.location.hash.startsWith('#map=')
+    ) {
+      void fitViewportToInfra(toInteger(urlInfra));
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
@@ -559,6 +587,8 @@ const Editor = () => {
                     activeTool: toolAndState.tool,
                   }}
                   viewPort={viewport}
+                  zoomIn={() => zoomBy(ZOOM_DELTA)}
+                  zoomOut={() => zoomBy(-ZOOM_DELTA)}
                 />
 
                 {mapRef.current &&
