@@ -6,8 +6,11 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
-      getCsCodes: build.query<GetCsCodesApiResponse, GetCsCodesApiArg>({
-        query: () => ({ url: `/cs_codes` }),
+      getStatisticalCategoryCodes: build.query<
+        GetStatisticalCategoryCodesApiResponse,
+        GetStatisticalCategoryCodesApiArg
+      >({
+        query: () => ({ url: `/statistical_category_codes` }),
         providesTags: ['lmr'],
       }),
       postTransformTimetable: build.mutation<
@@ -60,8 +63,9 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as osrdRailwayManagerApi };
-export type GetCsCodesApiResponse = /** status 200 The list of CS codes */ CsCodesResponse;
-export type GetCsCodesApiArg = void;
+export type GetStatisticalCategoryCodesApiResponse =
+  /** status 200 The list of statistical category codes */ StatisticalCategoryCodesResponse;
+export type GetStatisticalCategoryCodesApiArg = void;
 export type PostTransformTimetableApiResponse =
   /** status 200 Timetable successfully transformed */ TransformTimetableResponse;
 export type PostTransformTimetableApiArg = {
@@ -91,12 +95,12 @@ export type PostSendLastMinuteRequestStatusesApiResponse = /** status 200 undefi
 export type PostSendLastMinuteRequestStatusesApiArg = {
   body: string[];
 };
-export type CsCode = {
+export type StatisticalCategoryCode = {
   code: string;
   label: string;
 };
-export type CsCodesResponse = {
-  results: CsCode[];
+export type StatisticalCategoryCodesResponse = {
+  results: StatisticalCategoryCode[];
 };
 export type ComponentsSchemasTransformTimetableResponsePropertiesPacedTrainsItemsAllOf0PropertiesSpeedLimitTagOneOf1 =
   string;

@@ -7,26 +7,24 @@ info:
     url: https://www.gnu.org/licenses/lgpl-3.0.html
   version: 0.2.0
 paths:
-  /cs_codes:
+  /statistical_category_codes:
     get:
       tags:
         - lmr
-      summary: Returns all CS (Catégorie Statistique) codes available for the group to which the user belongs.
+      summary: Returns all statistical category codes available for the group to which the user belongs.
       responses:
         "200":
-          description: The list of CS codes
+          description: The list of statistical category codes
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CSCodesResponse"
-        "400":
-          description: User has no UI code(s).
+                $ref: "#/components/schemas/StatisticalCategoryCodesResponse"
         "401":
           description: User is not authenticated.
         "403":
           description: User is not authorized to send last minute requests.
         "404":
-          description: No CS codes found for the user.
+          description: No statistical category codes found for the user.
   /transform_timetable:
     post:
       tags:
@@ -143,8 +141,8 @@ paths:
                 description: Mapping from request id to status, url and metadata
 components:
   schemas:
-    CSCode:
-      title: CSCode
+    StatisticalCategoryCode:
+      title: StatisticalCategoryCode
       type: object
       properties:
         code:
@@ -156,15 +154,15 @@ components:
       required:
         - code
         - label
-    CSCodesResponse:
-      title: CSCodesResponse
+    StatisticalCategoryCodesResponse:
+      title: StatisticalCategoryCodesResponse
       type: object
       properties:
         results:
           title: Results
           type: array
           items:
-            $ref: "#/components/schemas/CSCode"
+            $ref: "#/components/schemas/StatisticalCategoryCode"
       required:
         - results
     OperationalPointReference:
