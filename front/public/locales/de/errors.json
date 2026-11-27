@@ -266,6 +266,9 @@
       "Database": "Interner Fehler (Datenbank)",
       "NotFound": "Unterkategorie '{{code}}' nicht gefunden"
     },
+    "temporary_speed_limit": {
+      "name_already_used": "Eine Gruppe temporärer Geschwindigkeitsbegrenzungen mit dem Namen '{{name}}' existiert bereits"
+    },
     "timetable": {
       "BatchNotFound": "Fahrpläne '{{timetable_ids}}' nicht gefunden",
       "BatchTrainScheduleSetNotFound": "'{{count}}' Zugpaket(e) nicht gefunden",

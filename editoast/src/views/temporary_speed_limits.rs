@@ -16,7 +16,6 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::views::DatabaseError;
-use crate::views::NameAlreadyUsedError;
 use authz::Role;
 use models::TemporarySpeedLimit;
 use models::TemporarySpeedLimitGroup;
@@ -89,12 +88,9 @@ impl Serialize for TemporarySpeedLimitItemForm {
 
 #[derive(Debug, Error, ViewError, From)]
 pub(in crate::views) enum TemporarySpeedLimitError {
-    #[error(transparent)]
-    NameAlreadyUsed(
-        #[from]
-        #[view_error]
-        NameAlreadyUsedError,
-    ),
+    #[error("A group of temporary speed limits with '{{name}}' already exists")]
+    #[view_error(status = BAD_REQUEST, context)]
+    NameAlreadyUsed { name: String },
     #[error(transparent)]
     #[from(forward)]
     Database(#[view_error] DatabaseError),
@@ -104,8 +100,9 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
     fn from(e: temporary_speed_limits::TslGroupError) -> Self {
         match e {
             temporary_speed_limits::TslGroupError::NameAlreadyUsed { name } => {
-                Self::from(NameAlreadyUsedError { name })
+                Self::NameAlreadyUsed { name }
             }
+
             temporary_speed_limits::TslGroupError::Database(err) => Self::from(err),
         }
     }

@@ -592,13 +592,6 @@ enum AuthorizerError {
     Forbidden,
 }
 
-#[derive(Debug, Error, ViewError)]
-#[error("Name '{name}' already used")]
-#[view_error(status = BAD_REQUEST, context)]
-pub struct NameAlreadyUsedError {
-    name: String,
-}
-
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
