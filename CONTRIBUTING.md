@@ -135,7 +135,7 @@ This policy is a first version. It is meant to evolve as our opinion on the subj
   * translation (but be careful with technical / railway-specific terms).
 
 ### Forbidden uses
-* Software design uses (such as writing implementation plans or defining acceptance criteria); this ensures control over the application's design and helps avoid anchoring and framing biases.
+* Production of design documents (writing implementation plans or defining acceptance criteria, read-only use such as research or proof reading are allowed); this ensures control over the application's design and helps avoid anchoring and framing biases.
 * Issues with the tag "good-first-issue" must be resolved without AI assistance only; this allows junior developers to develop their skills.
 
 ### Conditionally permitted uses
