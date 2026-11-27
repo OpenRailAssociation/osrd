@@ -57,7 +57,7 @@ const now = new Date();
 const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
-  const { scenario, sandboxId } = useScenarioContext();
+  const { scenario, sandbox } = useScenarioContext();
 
   const { infraId, timetableId, timetableType, isInfraLoaded } = useScenarioContext();
 
@@ -205,7 +205,7 @@ const ScenarioContent = ({ activeBoards, toggleBoard }: ScenarioContentProps) =>
         await handleOperation({
           operation,
           netzgrafikDto,
-          trainScheduleSetId: sandboxId,
+          trainScheduleSetId: sandbox.id,
           infraId,
           state: macroEditorState.current!,
           dispatch,

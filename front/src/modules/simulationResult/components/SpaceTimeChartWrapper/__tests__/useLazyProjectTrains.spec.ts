@@ -97,7 +97,6 @@ describe.skip('useLazyProjectTrains', () => {
           infra_id: 1,
           operational_points_distances: [100, 200],
           operational_points_refs: operationalPointReferences,
-          timetable_id: 1,
           train_ids: [mockTrain.id],
           use_simulation: true,
         },

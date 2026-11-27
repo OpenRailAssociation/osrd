@@ -154,7 +154,6 @@ const SimulationResults = ({
     updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
   } = useTrackOccupancy({
     infraId,
-    timetableId,
     pathOperationalPoints: filteredOperationalPoints,
     trainScheduleProjections,
     hourlyTimetableDuration,

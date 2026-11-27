@@ -76,7 +76,6 @@ export default class TrainSimulationLazyLoader {
             {
               body: {
                 infra_id: this.options.infraId,
-                timetable_id: this.options.timetableId,
                 ids,
                 electrical_profile_set_id: this.options.electricalProfileSetId,
               },

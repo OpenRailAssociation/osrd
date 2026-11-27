@@ -114,7 +114,7 @@ describe('useScenario', () => {
 
     const { result } = renderHook(() => useScenario());
 
-    expect(result.current.sandboxId).toBe(55);
+    expect(result.current.sandbox?.id).toBe(55);
     expect(mocks.postTrainScheduleSets).not.toHaveBeenCalled();
   });
 
@@ -131,7 +131,7 @@ describe('useScenario', () => {
 
     const { result } = renderHook(() => useScenario());
 
-    await waitFor(() => expect(result.current.sandboxId).toBe(999));
+    await waitFor(() => expect(result.current.sandbox?.id).toBe(999));
     expect(mocks.postTrainScheduleSets).toHaveBeenCalledWith({
       trainScheduleSetForm: {
         name: null,
@@ -158,7 +158,7 @@ describe('useScenario', () => {
 
     const { result } = renderHook(() => useScenario());
 
-    await waitFor(() => expect(result.current.sandboxId).toBe(999));
+    await waitFor(() => expect(result.current.sandbox?.id).toBe(999));
     expect(mocks.postTrainScheduleSets).toHaveBeenCalledWith({
       trainScheduleSetForm: expect.objectContaining({ timetable_type: 'HOURLY' }),
     });

@@ -24,7 +24,7 @@ export function useCreateTrainSchedule(setIsWorking: (isWorking: boolean) => voi
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTrainSchedule' });
   const dateTimeLocale = useDateTimeLocale();
 
-  const { sandboxId, timetableId, scenario } = useScenarioContext();
+  const { sandbox, timetableId, scenario } = useScenarioContext();
   const { upsertTrainSchedules } = useTimetableContext();
 
   return async (trainState: ItineraryModalTrainState): Promise<boolean> => {
@@ -51,7 +51,7 @@ export function useCreateTrainSchedule(setIsWorking: (isWorking: boolean) => voi
       }
 
       const formattedNewTrainSchedule: TrainScheduleResponse = (
-        await createTrainSchedules(dispatch, sandboxId, [newTrainSchedulePayload])
+        await createTrainSchedules(dispatch, sandbox.id, [newTrainSchedulePayload])
       )[0];
       dispatch(
         updateSelectedTrain({

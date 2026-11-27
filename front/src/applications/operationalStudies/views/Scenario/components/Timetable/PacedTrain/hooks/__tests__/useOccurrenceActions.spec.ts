@@ -35,6 +35,7 @@ const buildOccurrenceActionsArgs = (
   occurrences,
   selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
   timetableId: 1,
+  sandbox: { id: 1, timetableId: 1 },
 });
 
 const timetableContextWrapper = ({ children }: { children: ReactNode }) =>
@@ -350,6 +351,7 @@ describe('useOccurrenceActions', () => {
           occurrences: [{ ...occurrence1 }, { ...occurrence2 }],
           selectPacedTrainToEdit: mockSelectPacedTrainToEdit,
           timetableId: 1,
+          sandbox: { id: 1, timetableId: 1 },
         }),
       { wrapper: timetableContextWrapper }
     );
