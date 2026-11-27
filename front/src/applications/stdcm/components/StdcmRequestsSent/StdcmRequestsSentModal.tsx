@@ -1,12 +1,15 @@
-import { Dialog } from '@osrd-project/ui-core';
+import { useRef } from 'react';
+
+import { Dialog, useOutsideClick } from '@osrd-project/ui-core';
 import { LinkExternal, Sync, X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
+import dayjs from 'dayjs';
 import calendar from 'dayjs/plugin/calendar';
 import { useTranslation } from 'react-i18next';
 
 import useStdcmRequestsSent from 'applications/stdcm/hooks/useStdcmRequestsSent';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 dayjs.extend(calendar);
 
@@ -30,6 +33,10 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
   const { requestsSentData, isFetching, refetchData, lastRefresh } = useStdcmRequestsSent();
 
+  const modalRef = useRef<HTMLDialogElement>(null);
+  useModalFocusTrap(modalRef, onClose);
+  useOutsideClick(modalRef, onClose);
+
   const requestsSentRows = () =>
     requestsSentData.map((request, index) => {
       const updateDate = dayjs(request.updated_at)
@@ -50,7 +57,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
       return (
         <tr key={`request-${index}`}>
-          <td className={`stdcm-requests-color-${request.status}`} />
+          <td className={`stdcm-requests-color-${request.status} stdcm-status-color`} />
           <td className="stdcm-requests-id">{request.id}</td>
           <td className={`stdcm-requests-status stdcm-requests-text-color-${request.status}`}>
             {t(`requestsSentModal.statuses.${request.status}`)}
@@ -93,6 +100,7 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
 
   return (
     <Dialog
+      ref={modalRef}
       headerClassname="stdcm-requests-sent-modal-header"
       bodyClassname="stdcm-requests-sent-modal-body"
       header={
@@ -138,13 +146,15 @@ const StdcmRequestsSentModal = ({ onClose }: StdcmRequestsSentModalProps) => {
         <table>
           <thead>
             <tr>
-              <th aria-label="status-color" />
-              <th>{t('requestsSentModal.requestNumber')}</th>
-              <th>{t('requestsSentModal.status')}</th>
-              <th>{t('requestsSentModal.updateDate')}</th>
+              <th className="stdcm-status-color" aria-label="status-color" />
+              <th className="stdcm-requests-id">{t('requestsSentModal.requestNumber')}</th>
+              <th className="stdcm-requests-status">{t('requestsSentModal.status')}</th>
+              <th className="stdcm-requests-update-date">{t('requestsSentModal.updateDate')}</th>
               <th>{t('requestsSentModal.origin')}</th>
               <th>{t('requestsSentModal.destination')}</th>
-              <th>{t('requestsSentModal.applicationDate')}</th>
+              <th className="stdcm-requests-application-date">
+                {t('requestsSentModal.applicationDate')}
+              </th>
             </tr>
           </thead>
           <tbody>{isFetching ? null : requestsSentRows()}</tbody>

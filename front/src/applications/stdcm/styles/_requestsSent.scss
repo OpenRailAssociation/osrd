@@ -9,6 +9,9 @@
   min-height: 600px;
   min-width: 906px;
   background-color: var(--ambientA10);
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 0 0.75rem 0.75rem;
 }
 
 .stdcm-requests-sent-modal-footer {
@@ -63,7 +66,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 600px;
+  flex: 1;
   color: var(--info60);
   font-size: 0.875rem;
 }
@@ -73,7 +76,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 600px;
+  flex: 1;
 
   .stdcm-requests-sent-loader {
     margin-bottom: 100px;
@@ -139,6 +142,12 @@
     background: var(--ambientA15);
   }
 
+  .stdcm-status-color {
+    width: 8px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .stdcm-requests-id {
     width: 105px;
   }
@@ -152,7 +161,7 @@
   }
 
   .stdcm-requests-application-date {
-    width: 110px;
+    width: 90px;
   }
 
   .stdcm-requests-op-name {
@@ -165,7 +174,7 @@
   }
 
   .stdcm-requests-start-time-left {
-    width: 210px;
+    width: 200px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
