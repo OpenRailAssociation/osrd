@@ -157,7 +157,12 @@ const usePathfinding = () => {
     [infraId, postPathProperties, rollingStocks, t, postPathfindingBlocks]
   );
 
-  return { launchPathfinding, pathProperties, pathfindingError };
+  const resetPathfinding = useCallback(() => {
+    setPathProperties(undefined);
+    setPathfindingError('');
+  }, []);
+
+  return { launchPathfinding, resetPathfinding, pathProperties, pathfindingError };
 };
 
 export default usePathfinding;

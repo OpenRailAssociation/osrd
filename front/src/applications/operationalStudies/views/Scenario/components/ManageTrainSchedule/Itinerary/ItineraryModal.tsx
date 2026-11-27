@@ -343,7 +343,8 @@ const ItineraryModal = ({
     pathSteps,
     pendingStepKeyRef
   );
-  const { launchPathfinding, pathProperties, pathfindingError } = usePathfinding();
+  const { launchPathfinding, resetPathfinding, pathProperties, pathfindingError } =
+    usePathfinding();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
   // Fetch local track names from timetable train schedules is now handled inside usePathStepsMetadata
@@ -832,6 +833,7 @@ const ItineraryModal = ({
             onModalFormStateChange={setModalFormState}
             onCategoryWarningChange={setCategoryWarning}
             onRollingStockMessageChange={setRollingStockMessage}
+            onResetRollingStock={resetPathfinding}
             currentSubCategory={currentSubCategory}
             categoryColors={categoryColors}
           />
