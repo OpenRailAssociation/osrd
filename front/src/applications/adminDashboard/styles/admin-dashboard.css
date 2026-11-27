@@ -13,7 +13,7 @@ body:has(.admin-dashboard) {
   font-size: 0.875rem;
 
   .osrd-brand-name {
-    margin: 6px 24px;
+    margin: 6px auto 6px 24px;
     color: var(--black25);
     font-size: 1.125rem;
     font-weight: 700;

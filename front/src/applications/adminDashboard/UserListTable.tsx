@@ -106,13 +106,6 @@ export function UserListTable() {
               onClick={() => setIsFormOpen(true)}
             />
           )}
-          <Button
-            className="user-edit-groups-button"
-            label={t('editGroups')}
-            size="small"
-            variant="Quiet"
-            onClick={() => {}}
-          />
         </div>
       </caption>
       <tbody>

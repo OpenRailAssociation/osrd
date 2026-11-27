@@ -48,22 +48,24 @@ function GroupsInput({
 
   return (
     <div className="user-edit-groups-input">
-      <CheckboxesTree
-        id="admin-dashboard-groups-input"
-        label={t('groups')}
-        items={(groups || []).map(({ id, name }) => ({
-          id,
-          props: {
-            label: name,
-            small: true,
-            checked: selectedGroups.includes(id),
-            onChange: () => {},
-          },
-        }))}
-        onChange={(checkedItems) =>
-          onChange(checkedItems.filter((item) => item.props.checked).map((item) => item.id))
-        }
-      />
+      {groups && groups.length > 0 && (
+        <CheckboxesTree
+          id="admin-dashboard-groups-input"
+          label={t('groups')}
+          items={groups.map(({ id, name }) => ({
+            id,
+            props: {
+              label: name,
+              small: true,
+              checked: selectedGroups.includes(id),
+              onChange: () => {},
+            },
+          }))}
+          onChange={(checkedItems) =>
+            onChange(checkedItems.filter((item) => item.props.checked).map((item) => item.id))
+          }
+        />
+      )}
     </div>
   );
 }

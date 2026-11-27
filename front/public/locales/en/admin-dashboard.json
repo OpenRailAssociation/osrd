@@ -1,6 +1,5 @@
 {
   "addUser": "Add",
-  "editGroups": "Edit groups",
   "roles": {
     "Admin": "Admin",
     "OperationalStudies": "Operational Studies",
