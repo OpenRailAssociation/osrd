@@ -3600,7 +3600,7 @@ export type Slope = {
   end: number;
   gradient: number;
 };
-export type TrackSection = unknown & {
+export type TrackSection = {
   curves: Curve[];
   extensions?: TrackSectionExtensions;
   geo: GeoJsonLineString;
@@ -3608,6 +3608,7 @@ export type TrackSection = unknown & {
   length: number;
   loading_gauge_limits?: LoadingGaugeLimit[];
   slopes: Slope[];
+  [key: string]: unknown;
 };
 export type RailJson = {
   /** `BufferStops` are obstacles designed to prevent trains from sliding off dead ends. */

@@ -36,7 +36,7 @@ pub struct TrackSection {
     #[serde(default)]
     pub extensions: TrackSectionExtensions,
     #[serde(flatten)]
-    #[schema(value_type = Value)]
+    #[schema(value_type = HashMap<String, serde_json::Value>)]
     pub extras: HashMap<String, JsonValue>,
 }
 

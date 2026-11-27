@@ -7,7 +7,7 @@ from datetime import date
 from datetime import time as time_aliased
 from datetime import timedelta
 from enum import Enum
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Dict, Literal
 
 from pydantic import (
     AwareDatetime,
@@ -7173,6 +7173,12 @@ class TimetableResponse(Timetable):
 
 
 class TrackSectionModel(BaseModel):
+    model_config = ConfigDict(
+        extra="allow",
+    )
+    __annotations__ = {
+        "__pydantic_extra__": Dict[str, Any],
+    }
     curves: list[Curve]
     extensions: TrackSectionExtensions | None = None
     geo: GeoJsonLineString

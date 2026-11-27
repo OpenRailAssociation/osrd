@@ -20297,39 +20297,38 @@ components:
           example: 01234567-89ab-cdef-0123-456789abcdef
       additionalProperties: false
     TrackSection:
-      allOf:
-      - {}
-      - type: object
-        required:
-        - id
-        - length
-        - slopes
-        - curves
-        - geo
-        properties:
-          curves:
-            type: array
-            items:
-              $ref: '#/components/schemas/Curve'
-          extensions:
-            $ref: '#/components/schemas/TrackSectionExtensions'
-          geo:
-            $ref: '#/components/schemas/GeoJsonLineString'
-          id:
-            type: string
-            maxLength: 255
-            minLength: 1
-          length:
-            type: number
-            format: double
-          loading_gauge_limits:
-            type: array
-            items:
-              $ref: '#/components/schemas/LoadingGaugeLimit'
-          slopes:
-            type: array
-            items:
-              $ref: '#/components/schemas/Slope'
+      type: object
+      required:
+      - id
+      - length
+      - slopes
+      - curves
+      - geo
+      properties:
+        curves:
+          type: array
+          items:
+            $ref: '#/components/schemas/Curve'
+        extensions:
+          $ref: '#/components/schemas/TrackSectionExtensions'
+        geo:
+          $ref: '#/components/schemas/GeoJsonLineString'
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        length:
+          type: number
+          format: double
+        loading_gauge_limits:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoadingGaugeLimit'
+        slopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Slope'
+      additionalProperties: {}
     TrackSectionExtensions:
       type: object
       properties:
