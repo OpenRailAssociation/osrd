@@ -35,6 +35,7 @@ use futures::StreamExt as _;
 use itertools::Either;
 use itertools::Itertools as _;
 use itertools::izip;
+use models::TimetableInheritance;
 use models::TrainScheduleException;
 use models::TrainScheduleLinking;
 use models::prelude::*;
@@ -276,7 +277,6 @@ pub(in crate::views) async fn delete(
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub(in crate::views) struct SimulationBatchForm {
     infra_id: i64,
-    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
 }
@@ -345,7 +345,6 @@ pub(in crate::views) async fn simulation_summary(
     Extension(core_client): Extension<CoreClient>,
     Json(SimulationBatchForm {
         infra_id,
-        timetable_id,
         electrical_profile_set_id,
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
@@ -1137,7 +1136,6 @@ pub(in crate::views) async fn project_path(
     Extension(core_client): Extension<CoreClient>,
     Json(ProjectPathForm {
         infra_id,
-        timetable_id,
         ids: train_schedule_ids,
         track_section_ranges,
         electrical_profile_set_id,
@@ -1320,7 +1318,6 @@ pub(in crate::views) async fn project_path_op(
     Json(ProjectPathOperationalPointForm {
         infra_id,
         train_ids,
-        timetable_id,
         electrical_profile_set_id,
         operational_points_refs,
         operational_points_distances,
@@ -1557,7 +1554,6 @@ pub(in crate::views) async fn occupancy_blocks(
     Extension(core_client): Extension<CoreClient>,
     Json(OccupancyBlockForm {
         infra_id,
-        timetable_id,
         ids: train_schedule_ids,
         path,
         electrical_profile_set_id,
@@ -1774,7 +1770,6 @@ pub(in crate::views) struct TrackOccupancyForm {
     train_schedule_ids: Vec<i64>,
     operational_point_reference: OperationalPointReference,
     infra_id: i64,
-    timetable_id: i64,
     electrical_profile_set_id: Option<i64>,
     use_simulation: bool,
 }
@@ -1825,7 +1820,6 @@ pub(in crate::views) async fn track_occupancy(
         train_schedule_ids,
         operational_point_reference,
         infra_id,
-        timetable_id,
         electrical_profile_set_id,
         use_simulation,
     }): Json<TrackOccupancyForm>,
@@ -2514,7 +2508,6 @@ mod tests {
 
         let exceptions_after = TrainScheduleException::retrieve_exceptions_by_train_schedules(
             &mut pool.get_ok(),
-            timetable.id,
             &[train_schedule.id],
         )
         .await
@@ -4737,7 +4730,6 @@ mod tests {
                 train_schedule_ids: vec![train_schedule.id],
                 operational_point_reference,
                 infra_id: small_infra.id,
-                timetable_id: timetable.id,
                 electrical_profile_set_id: None,
                 use_simulation,
             })

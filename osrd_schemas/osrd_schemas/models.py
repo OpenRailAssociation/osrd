@@ -3381,7 +3381,6 @@ class ProjectPathForm(BaseModel):
     electrical_profile_set_id: StrictInt | None = None
     ids: list[StrictInt]
     infra_id: StrictInt
-    timetable_id: StrictInt
     track_section_ranges: list[TrackSectionRange]
 
 
@@ -5529,7 +5528,6 @@ class OccupancyBlockForm(BaseModel):
     ids: list[StrictInt]
     infra_id: StrictInt
     path: CoreTrainPath
-    timetable_id: StrictInt
 
 
 class InfraObjectLevelCrossing(BaseModel):
