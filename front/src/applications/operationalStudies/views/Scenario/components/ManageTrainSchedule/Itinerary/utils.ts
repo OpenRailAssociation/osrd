@@ -43,6 +43,13 @@ export const formatOpLabel = (name: string, secondaryCode?: string | null): stri
 export const buildOpDisplayName = (op: OperationalPoint): string =>
   formatOpLabel(op.name, op.secondary_code);
 
+export const getUnrecognizedOpLabel = (op: OperationalPointReference, name?: string): string => {
+  if (op.type === 'domestic')
+    return formatOpLabel(name || `${op.country_code} ${op.main_code}`, op.secondary_code);
+  if (op.type === 'uic') return formatOpLabel(name || op.uic.toString(), op.secondary_code);
+  return name || op.operational_point;
+};
+
 export const getOpKey = (location: PathItemLocation | null): string | null => {
   if (!location || location.type === 'track_offset') return null;
   const op = location.operational_point;

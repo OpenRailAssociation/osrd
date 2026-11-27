@@ -42,6 +42,20 @@ export const exactTrigramPayload = (
   ],
 });
 
+export const countryAndMainCodesPayload = (
+  infraId: number | undefined,
+  countryCode: string,
+  mainCode: string
+): SearchPayload => ({
+  object: 'operationalpoint',
+  query: [
+    'and',
+    ['=', ['country_code'], countryCode],
+    ['=', ['main_code'], mainCode],
+    infraId !== undefined ? ['=', ['infra_id'], infraId] : true,
+  ],
+});
+
 export const multiPayloadFromTokens = (
   infraId: number | undefined,
   tokens: string[]
@@ -52,3 +66,12 @@ export const multiPayloadFromTokens = (
     query: ['and', multiQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
   };
 };
+
+export const macroNodePayload = (scenarioId: number, input: string): SearchPayload => ({
+  object: 'macronode',
+  query: [
+    'and',
+    ['or', ['search', ['full_name'], input], ['search', ['short_name'], input]],
+    ['=', ['scenario_id'], scenarioId],
+  ],
+});

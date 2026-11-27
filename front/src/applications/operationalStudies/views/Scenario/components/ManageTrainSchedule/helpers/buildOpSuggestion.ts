@@ -1,9 +1,13 @@
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type {
+  SearchResultItemMacroNode,
+  SearchResultItemOperationalPoint,
+} from 'common/api/osrdEditoastApi';
 
 import type {
   OpSecondaryCode,
   OperationalPointSuggestion,
 } from '../Itinerary/ComboBoxCustomList/ListElementComponent';
+import type { DomesticOperationalPointReference } from '../Itinerary/PathStepSubForm';
 
 const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
   const priority: Record<string, number> = { BV: 0, '00': 1 };
@@ -20,13 +24,42 @@ const sortSecondaryCodeList = (secondaryCodeList: OpSecondaryCode[]) => {
   });
 };
 
+export const buildOperationalPointSuggestionId = (countryCode: string, mainCode: string) =>
+  `${countryCode}-${mainCode}`;
+
+type OpCodes = Pick<OperationalPointSuggestion, 'countryCode' | 'mainCode'>;
+
+export const hasSameCountryAndMainCodes = (a: OpCodes, b: OpCodes) =>
+  a.countryCode === b.countryCode && a.mainCode === b.mainCode;
+
+export const buildCustomOpSuggestion = (
+  name: string,
+  opRef: DomesticOperationalPointReference,
+  existingOp: OperationalPointSuggestion | null = null
+): OperationalPointSuggestion => {
+  const secondaryCode = opRef.secondary_code ?? null;
+  const secondaryCodeList = existingOp?.secondaryCodeList ?? [];
+
+  return {
+    id: buildOperationalPointSuggestionId(opRef.country_code, opRef.main_code),
+    name: name || opRef.main_code,
+    mainCode: opRef.main_code,
+    countryCode: opRef.country_code,
+    secondaryCodeList:
+      existingOp && secondaryCode === null
+        ? secondaryCodeList
+        : [...secondaryCodeList, { code: secondaryCode, name: null, isPending: true }],
+    source: existingOp?.source ?? 'pending',
+  };
+};
+
 export const buildOpSuggestion = (
   results: SearchResultItemOperationalPoint[]
 ): OperationalPointSuggestion[] => {
   const map = new Map<string, OperationalPointSuggestion>();
 
   for (const r of results) {
-    const key = `${r.main_code}||${r.name}`;
+    const key = buildOperationalPointSuggestionId(r.country_code, r.main_code);
     const existing = map.get(key);
     const secondaryCode = r.secondary_code ?? null;
     const secondaryEntry: OpSecondaryCode = { code: secondaryCode, name: r.secondary_name ?? null };
@@ -39,6 +72,7 @@ export const buildOpSuggestion = (
         name: r.name,
         countryCode: r.country_code,
         secondaryCodeList: [secondaryEntry],
+        source: 'infra',
       });
     } else if (!existing.secondaryCodeList.some((c) => c.code === secondaryCode)) {
       existing.secondaryCodeList.push(secondaryEntry);
@@ -50,4 +84,22 @@ export const buildOpSuggestion = (
   }
 
   return [...map.values()];
+};
+
+export const buildMacroNodeSuggestion = (
+  node: SearchResultItemMacroNode
+): OperationalPointSuggestion | null => {
+  // TODO: also suggest macro nodes with a non-domestic or a track offset location
+  if (node.node_location.type !== 'operational_point_reference') return null;
+  const opRef = node.node_location.operational_point;
+  if (opRef.type !== 'domestic') return null;
+
+  return {
+    id: buildOperationalPointSuggestionId(opRef.country_code, opRef.main_code),
+    name: node.full_name ?? node.short_name ?? '',
+    mainCode: opRef.main_code,
+    countryCode: opRef.country_code,
+    secondaryCodeList: [{ code: opRef.secondary_code ?? null, name: null }],
+    source: 'macroNode',
+  };
 };

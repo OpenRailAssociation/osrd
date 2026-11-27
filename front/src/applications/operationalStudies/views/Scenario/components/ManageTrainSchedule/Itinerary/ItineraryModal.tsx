@@ -18,6 +18,7 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useCustomOps } from 'applications/operationalStudies/hooks/useCustomOps';
 import {
   useItineraryModalContext,
   type TrainScheduleToEditData,
@@ -64,6 +65,7 @@ import { Duration, type StartTime } from 'utils/duration';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { msToKmh } from 'utils/physics';
 
+import { buildCustomOpSuggestion } from '../helpers/buildOpSuggestion';
 import {
   createEmptyPathStep,
   ensureTrailingEmptyStep,
@@ -81,6 +83,7 @@ import ItineraryModalFooter from './ItineraryModalFooter';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
+import type { DomesticOperationalPointReference } from './PathStepSubForm';
 import { computePathStepCoordinates, formatOpLabel, getOpKey, isOpRefMetadata } from './utils';
 
 type ItineraryModalProps = {
@@ -217,7 +220,7 @@ const ItineraryModal = ({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTrainSchedule.itineraryModal',
   });
-  const { workerStatus, timetableType } = useScenarioContext();
+  const { workerStatus, timetableType, scenario } = useScenarioContext();
   const mapSettings = useMapSettings();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
@@ -295,6 +298,10 @@ const ItineraryModal = ({
     setSubmitAttempted(false);
   }, []);
 
+  const [subFormHasErrorsByStepKey, setSubFormHasErrorsByStepKey] = useState<
+    Record<string, boolean>
+  >({});
+
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
   const [rollingStockMessage, setRollingStockMessage] = useState<string | undefined>(undefined);
   const [bannerWiggle, setBannerWiggle] = useState(0);
@@ -326,6 +333,17 @@ const ItineraryModal = ({
 
   useModalFocusTrap(modalRef, handleEscapeOrClose);
 
+  const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
+    pathSteps,
+    pendingStepKeyRef
+  );
+
+  const { customOpSuggestions, upsertCustomOp, setUnknownOpName, findExistingOp } = useCustomOps({
+    scenarioId: scenario.id,
+    pathSteps,
+    pathStepsMetadataByKey,
+  });
+
   const {
     activeStepKey,
     setActiveStepKey,
@@ -337,12 +355,7 @@ const ItineraryModal = ({
     commitSelectionForStep,
     chooseSecondaryCodeForSuggestion,
     reopenSuggestionsForStep,
-  } = useOperationalPointSearch({});
-
-  const { pathStepsMetadataByKey, setPathStepMetadata } = usePathStepsMetadata(
-    pathSteps,
-    pendingStepKeyRef
-  );
+  } = useOperationalPointSearch({ scenarioId: scenario.id, extraSuggestions: customOpSuggestions });
   const { launchPathfinding, pathProperties, pathfindingError } = usePathfinding();
   const { convertFeatureClickToLocation } = useMapTrackSelection(infraId);
 
@@ -376,6 +389,7 @@ const ItineraryModal = ({
     forcedCh?: string | null
   ) => {
     const chosenSecondaryCode = chooseSecondaryCodeForSuggestion(stepKey, suggestion, forcedCh);
+    setSubFormHasErrorsByStepKey((prev) => ({ ...prev, [stepKey]: false }));
     pendingStepKeyRef.current = stepKey;
     confirmedStepKeyRef.current = stepKey;
 
@@ -400,6 +414,18 @@ const ItineraryModal = ({
     commitSelectionForStep(stepKey, formatChosenValue(suggestion, chosenSecondaryCode));
     resetOpSuggestions();
   };
+
+  const handleCustomOpCreation = (
+    stepKey: string,
+    name: string,
+    opRef: DomesticOperationalPointReference,
+    existingOp: OperationalPointSuggestion | null
+  ) => {
+    const customOp = buildCustomOpSuggestion(name, opRef, existingOp);
+    upsertCustomOp(customOp);
+    applyOperationalPointToStep(stepKey, customOp, opRef.secondary_code ?? null);
+  };
+
   const isOnlyStep = pathSteps.length === 1;
 
   const hasInvalidPathStep = pathSteps.some((step) => {
@@ -738,6 +764,11 @@ const ItineraryModal = ({
   };
 
   const submitItinerary = async (trainType?: EditingTrainType) => {
+    const hasSubFormErrors = pathSteps.some(
+      ({ key }) => expandedStepKeys.includes(key) && subFormHasErrorsByStepKey[key]
+    );
+    if (hasSubFormErrors) return;
+
     setSubmitAttempted(true);
     setBannerWiggle((c) => c + 1);
 
@@ -1019,6 +1050,28 @@ const ItineraryModal = ({
                         })
                       );
                     }}
+                    onAddCustomOp={() => {
+                      confirmedStepKeyRef.current = pathStep.key;
+                      setPathSteps((prev) =>
+                        prev.map((step) =>
+                          step.key === pathStep.key ? { ...step, location: null } : step
+                        )
+                      );
+                      if (!expandedStepKeys.includes(pathStep.key)) {
+                        setExpandedStepKeys([...expandedStepKeys, pathStep.key]);
+                      }
+                    }}
+                    onCustomOpCreation={(name, opRef, existingOp) =>
+                      handleCustomOpCreation(pathStep.key, name, opRef, existingOp)
+                    }
+                    findExistingOp={findExistingOp}
+                    onSubFormNameChange={(name) => setUnknownOpName(pathStep.key, name)}
+                    onSubFormHasErrors={(hasErrors) => {
+                      setSubFormHasErrorsByStepKey((prev) => ({
+                        ...prev,
+                        [pathStep.key]: hasErrors,
+                      }));
+                    }}
                     onOpBlur={() => {
                       // If the user focuses out on an input with a valid op, we display the last valid op of this input (or empty)
                       const valueOnFocus = focusValueRef.current[pathStep.key];
@@ -1073,6 +1126,7 @@ const ItineraryModal = ({
                       i === 0 ? false : expandedStepKeys.includes(pathSteps[i - 1].key)
                     }
                     onSubFormToggled={() => {
+                      if (isSubFormExpanded && subFormHasErrorsByStepKey[pathStep.key]) return;
                       setExpandedStepKeys(
                         isSubFormExpanded
                           ? expandedStepKeys.filter((key) => key !== pathStep.key)
