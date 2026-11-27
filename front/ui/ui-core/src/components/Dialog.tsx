@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, type DialogHTMLAttributes } from 'react';
+import React, { useEffect, useImperativeHandle, useRef, type DialogHTMLAttributes } from 'react';
 
 import cx from 'classnames';
 
@@ -9,6 +9,7 @@ type ModalProps = DialogHTMLAttributes<HTMLDialogElement> & {
   footerClassname?: string;
   header: React.ReactNode;
   footer: React.ReactNode;
+  ref?: React.Ref<HTMLDialogElement>;
 };
 
 /**
@@ -31,10 +32,13 @@ const Dialog = ({
   footer,
   footerClassname,
   bodyClassname,
+  ref,
   ...dialogProps
 }: ModalProps) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useImperativeHandle(ref, () => dialogRef.current as HTMLDialogElement, []);
 
   /**
    * When the dialog height change
