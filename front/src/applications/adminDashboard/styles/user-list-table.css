@@ -36,6 +36,8 @@
 }
 
 .user-row {
+  background-color: var(--row-bg);
+
   & + & {
     border-top: 1px solid var(--black25);
   }
@@ -45,11 +47,23 @@
   }
 
   &:nth-child(odd of .user-row) {
-    background-color: var(--white100);
+    --row-bg: var(--white100);
   }
 
   &:nth-child(even of .user-row) {
-    background-color: var(--grey5);
+    --row-bg: var(--grey5);
+  }
+
+  &.user-row-selectable:hover {
+    background-color: var(--grey10);
+  }
+
+  &.user-row-selectable:active {
+    background-color: var(--grey20);
+  }
+
+  &.user-row-selectable > td {
+    cursor: pointer;
   }
 
   td {

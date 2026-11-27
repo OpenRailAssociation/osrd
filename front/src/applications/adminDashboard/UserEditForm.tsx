@@ -15,7 +15,13 @@ const IDENTIFIER_LABEL_ID = 'admin-dashboard-identity-label-identifier';
 
 type GroupId = number;
 
+export enum UserEditFormMode {
+  Add = 'add',
+  Edit = 'edit',
+}
+
 export type UserEditFormState = {
+  mode: UserEditFormMode;
   name: string;
   identities: {
     key: string;
@@ -292,7 +298,7 @@ export default function UserEditForm({
               onClick={onCancel}
             />
             <Button
-              label={t('addUser')}
+              label={state.mode === UserEditFormMode.Add ? t('addUser') : t('saveUser')}
               type="button"
               isDisabled={incomplete || hasConflicts || !trimmedName}
               isLoading={isLoading}

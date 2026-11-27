@@ -8,6 +8,8 @@
   },
   "userCreated": "User created",
   "userCreatedMessage": "{{name}} was added to the user list.",
+  "userUpdated": "User updated",
+  "userUpdatedMessage": "{{name}} was updated.",
   "userForm": {
     "addIdentity": "Add an identity",
     "addUser": "Add user",
@@ -18,7 +20,8 @@
     "identifier": "Identifier",
     "name": "Name",
     "provider": "Provider",
-    "rolesLabel": "Roles"
+    "rolesLabel": "Roles",
+    "saveUser": "Save user"
   },
   "users_one": "{{count}} user",
   "users_other": "{{count}} users"

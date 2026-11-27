@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,7 +14,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import UserEditForm, { type UserEditFormState } from './UserEditForm';
+import UserEditForm, { type UserEditFormState, UserEditFormMode } from './UserEditForm';
 
 import './styles/user-list-table.css';
 
@@ -30,11 +31,24 @@ function RoleTag({ userRole }: { userRole: Role }) {
   );
 }
 
-function Row({ name, identities, groups, effective_roles }: GetAuthzUsersApiResponse[number]) {
+function Row({
+  name,
+  identities,
+  groups,
+  effective_roles,
+  clickable,
+  onClick,
+}: GetAuthzUsersApiResponse[number] & {
+  clickable: boolean;
+  onClick: () => void;
+}) {
   'use memo';
   const sortedRoles = effective_roles.toSorted((a, b) => ROLE_ORDER[a] - ROLE_ORDER[b]);
   return (
-    <tr className="user-row">
+    <tr
+      className={cx('user-row', clickable && 'user-row-selectable')}
+      onClick={() => clickable && onClick()}
+    >
       <td>{name}</td>
       <td>
         <ul className="identities-list">
@@ -66,27 +80,41 @@ export function UserListTable() {
 
   const { t } = useTranslation('admin-dashboard');
   const dispatch = useAppDispatch();
-  const [createUser, { isLoading }] = osrdEditoastApi.endpoints.postAuthzUsers.useMutation();
+  const [createUser, { isLoading: isCreating }] =
+    osrdEditoastApi.endpoints.postAuthzUsers.useMutation();
+  const [updateUser, { isLoading: isUpdating }] =
+    osrdEditoastApi.endpoints.patchAuthzUsersByUserId.useMutation();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [initialFormState, setInitialFormState] = useState<UserEditFormState | null>(null);
   const { data: users } = osrdEditoastApi.endpoints.getAuthzUsers.useQuery();
   const sortedUsers = users?.toSorted((a, b) => b.id - a.id);
 
   const saveUser = async ({ name, groups, roles, identities }: UserEditFormState) => {
+    const body = {
+      name,
+      groups,
+      roles,
+      identities: identities.map(({ provider, identifier }) => `${provider}/${identifier}`),
+    };
     try {
-      await createUser({
-        body: {
-          name,
-          groups,
-          roles,
-          identities: identities.map(({ provider, identifier }) => `${provider}/${identifier}`),
-        },
-      }).unwrap();
-      dispatch(
-        setSuccess({
-          title: t('userCreated'),
-          text: t('userCreatedMessage', { name }),
-        })
-      );
+      if (editingUserId !== null) {
+        await updateUser({ userId: editingUserId, body }).unwrap();
+        dispatch(
+          setSuccess({
+            title: t('userUpdated'),
+            text: t('userUpdatedMessage', { name }),
+          })
+        );
+      } else {
+        await createUser({ body }).unwrap();
+        dispatch(
+          setSuccess({
+            title: t('userCreated'),
+            text: t('userCreatedMessage', { name }),
+          })
+        );
+      }
       setIsFormOpen(false);
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
@@ -103,7 +131,17 @@ export function UserListTable() {
               label={t('addUser')}
               size="small"
               variant="Quiet"
-              onClick={() => setIsFormOpen(true)}
+              onClick={() => {
+                setEditingUserId(null);
+                setIsFormOpen(true);
+                setInitialFormState({
+                  mode: UserEditFormMode.Add,
+                  name: '',
+                  identities: [{ key: uuidv4(), provider: '', identifier: '' }],
+                  roles: [],
+                  groups: [],
+                });
+              }}
             />
           )}
           <Button
@@ -118,19 +156,34 @@ export function UserListTable() {
       <tbody>
         {isFormOpen && (
           <UserEditForm
-            initialState={{
-              name: '',
-              identities: [{ key: uuidv4(), identifier: '' }],
-              roles: [],
-              groups: [],
-            }}
+            initialState={initialFormState!}
             onSubmit={saveUser}
-            isLoading={isLoading}
+            isLoading={isCreating || isUpdating}
             onCancel={() => setIsFormOpen(false)}
           />
         )}
         {sortedUsers?.map((user) => (
-          <Row key={user.id} {...user} />
+          <Row
+            key={user.id}
+            {...user}
+            clickable={!isFormOpen}
+            onClick={() => {
+              setEditingUserId(user.id);
+              setIsFormOpen(true);
+              setInitialFormState({
+                mode: UserEditFormMode.Edit,
+                name: user.name,
+                identities: user.identities.map((identity) => ({
+                  key: uuidv4(),
+                  provider: identity.split('/', 2)[0],
+                  // NOTE: identifiers theoretically can contain slashes
+                  identifier: identity.split('/').slice(1).join('/'),
+                })),
+                roles: user.direct_roles,
+                groups: user.groups.map(({ id }) => id),
+              });
+            }}
+          />
         ))}
       </tbody>
     </table>
