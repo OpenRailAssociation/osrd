@@ -6410,7 +6410,7 @@ paths:
               schema:
                 oneOf:
                 - type: object
-                  description: Name '{name}' already used
+                  description: A group of temporary speed limits with '{{name}}' already exists
                   required:
                   - type
                   - status
@@ -6434,7 +6434,7 @@ paths:
                     type:
                       type: string
                       enum:
-                      - editoast:name_already_used
+                      - editoast:temporary_speed_limit:name_already_used
         '500':
           description: ''
           content:
