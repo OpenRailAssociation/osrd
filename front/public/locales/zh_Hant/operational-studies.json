@@ -1,0 +1,211 @@
+{
+  "boardFullNames": {
+    "chronogram": "平交道",
+    "sdd": "速度－距離圖",
+    "std": "時空圖"
+  },
+  "boards": {
+    "chronogram": "平交道",
+    "conflicts": "衝突",
+    "macro": "路網圖",
+    "map": "地圖",
+    "sdd": "速距圖",
+    "std": "時空圖",
+    "table": "表格",
+    "trains": "列車"
+  },
+  "importTrainScheduleSet": {
+    "cancel": "取消",
+    "cartEmpty": "尚未選取任何項目",
+    "import": "匯入",
+    "importType": {
+      "copy": "複製匯入",
+      "reference": "參照匯入"
+    },
+    "title": "Import train packages",
+    "trainScheduleSet": "套件",
+    "trainScheduleSetAlreadyImported": "此套件已以參照方式存在於您的情境中",
+    "trainScheduleSetsSelected_one": "已選取 {{count}} 個套件",
+    "trainScheduleSetsSelected_other": "已選取 {{count}} 個套件",
+    "trainSchedulesCount_one": "{{count}} 班列車",
+    "trainSchedulesCount_other": "{{count}} 班列車"
+  },
+  "importTrains": {
+    "cancel": "取消",
+    "chooseFile": "瀏覽… 尚未選取任何檔案。",
+    "download": "下載",
+    "errorMessages": {
+      "error": "發生錯誤",
+      "errorInvalidFile": "無效的檔案"
+    },
+    "failure": "操作失敗",
+    "selectedFile": "已選取的檔案：{{fileName}}",
+    "status": {
+      "invalidTrainSchedules_one": "無效的列車時刻表。",
+      "invalidTrainSchedules_other": "無效的列車時刻表。",
+      "successfulImport": "已匯入所有列車時刻表。",
+      "successfulImport_one": "已匯入一筆列車時刻表。"
+    },
+    "success": "操作成功",
+    "warningMessages": {
+      "alreadyPresentNode_one": "已有一個巨觀節點存在，未進行更新。",
+      "alreadyPresentNode_other": "已有 {{count}} 個巨觀節點存在，未進行更新。",
+      "warning": "警告"
+    }
+  },
+  "main": {
+    "Routing": "行車區間／路徑規劃",
+    "Spacing": "班距",
+    "conflicts": {
+      "conflictsCount_one": "{{count}} 項衝突",
+      "conflictsCount_other": "{{count}} 項衝突",
+      "conflictsCount_zero": "無衝突",
+      "filterWithSelectedTrain": "依選取的列車篩選清單",
+      "for": "針對",
+      "otherTrains": "+{{count}}",
+      "trainsInConflictTitle": "衝突列車"
+    },
+    "copyTimetable": {
+      "text_one": "已複製列車",
+      "text_other": "已複製列車",
+      "title": "匯出列車時刻表"
+    },
+    "cutTimetable": {
+      "text_one": "已剪下列車",
+      "text_other": "已剪下列車",
+      "title": "刪除時刻表"
+    },
+    "description": {
+      "electricalProfileWithId": "電氣化剖面：編號 {{id}}",
+      "electricalProfileWithName": "電氣化剖面：{{name}} | 編號 {{id}}"
+    },
+    "editScenario": "編輯情境",
+    "electricalProfileSet": "電氣化剖面組合",
+    "errorMessages": {
+      "error": "發生錯誤",
+      "unableToDeleteScenarioMessage": "無法刪除情境"
+    },
+    "filterPlaceholder": "篩選、標籤",
+    "infrastructure": {
+      "label": "基礎設施："
+    },
+    "lessDetails": "顯示較少詳細資訊",
+    "linearMode": "線性檢視",
+    "loadingConflicts": "正在載入衝突…",
+    "loadingMacroEditor": "正在載入巨觀編輯器……",
+    "macroEditor": {
+      "intervalXmin": "間隔 {{minutes}} 分鐘",
+      "trainCategory": {
+        "COMMUTER_TRAIN": {
+          "name": "通勤列車",
+          "shortName": "通"
+        },
+        "FAST_FREIGHT_TRAIN": {
+          "name": "快速貨運列車",
+          "shortName": "快貨"
+        },
+        "FREIGHT_TRAIN": {
+          "name": "貨運列車",
+          "shortName": "貨"
+        },
+        "HIGH_SPEED_TRAIN": {
+          "name": "高速列車",
+          "shortName": "高"
+        },
+        "INTERCITY_TRAIN": {
+          "name": "城際列車",
+          "shortName": "城"
+        },
+        "NIGHT_TRAIN": {
+          "name": "夜行列車",
+          "shortName": "夜"
+        },
+        "NO_CATEGORY": {
+          "name": "未分類",
+          "shortName": "無"
+        },
+        "REGIONAL_TRAIN": {
+          "name": "區域列車",
+          "shortName": "區"
+        },
+        "TOURISTIC_TRAIN": {
+          "name": "觀光列車",
+          "shortName": "觀"
+        },
+        "TRAM_TRAIN": {
+          "name": "輕軌—火車",
+          "shortName": "TT"
+        },
+        "WORK_TRAIN": {
+          "name": "工程列車",
+          "shortName": "工"
+        }
+      },
+      "uniqueTrain": "單一列車"
+    },
+    "moreDetails": "顯示更多詳細資訊",
+    "noElectricalProfileSet": "無電氣化剖面",
+    "occurrenceMenu": {
+      "delete": "刪除",
+      "disable": "停用",
+      "edit": "編輯",
+      "enable": "重新啟用",
+      "occurrenceMenuButton": "開啟班次選單",
+      "project": "專案",
+      "restore": "還原為範本"
+    },
+    "operationalPointReference": "營運點參考",
+    "scenarioCancel": "取消"
+  },
+  "project": {
+    "addImage": "新增圖片",
+    "confirm-delete_one": "您確定要刪除這個專案嗎?",
+    "confirm-delete_other": "您確定要刪除 {{ count }}個專案嗎?",
+    "count_one": "1個專案",
+    "count_other": "{{count}}個專案",
+    "count_zero": "尚無專案",
+    "create": "建立專案",
+    "error": {
+      "unableToCreateProjectTitle": "專案更新失敗",
+      "unableToDeleteProject": "無法刪除專案",
+      "unableToPostDocumentTitle": "圖片上傳失敗",
+      "unableToUpdateProjectTitle": "專案更新失敗",
+      "uploadImageSize": "圖像檔案大小上限為2MB",
+      "uploadImageSizeTitle": "圖像檔案太大",
+      "uploadImageType": "僅支援 jpg、jpeg及png格式",
+      "uploadImageTypeTitle": "圖像類型不支援"
+    },
+    "fundedBy": "經費",
+    "modifyProject": "更新專案",
+    "noImageInvalid": "無效的圖像",
+    "objectives": "目標",
+    "projectBudget": "預算估計",
+    "projectBudgetInvalid": "專案預算必須為不超過2147483647 €的正整數",
+    "projectCancel": "取消",
+    "projectCreateButton": "建立專案",
+    "projectCreationTitle": "建立專案",
+    "projectDeleteButton": "刪除",
+    "projectDeleted": "刪除成功!",
+    "projectDeletedDetails": "{{ name }} 專案已刪除。",
+    "projectDescription": "專案說明",
+    "projectDescriptionInvalid": "專案說明不得超過1024字元",
+    "projectDescriptionPlaceholder": "專案簡述",
+    "projectFunders": "經費細節",
+    "projectFundersInvalid": "經費細節不得超過1024字元",
+    "projectImage": "專案圖像",
+    "projectModificationTitle": "變更專案",
+    "projectModifyButton": "儲存",
+    "projectName": "專案名稱",
+    "projectNameInvalid": "您必須設定一個不超過128字元的專案名稱",
+    "projectObjectives": "專案目標",
+    "projectObjectivesInvalid": "專案目標不得超過4096字元",
+    "projectObjectivesMarkdown": "格式化專案目標",
+    "projectTags": "標籤",
+    "projects": "專案",
+    "removeImage": "移除圖像",
+    "selected_one": "已選取1個專案",
+    "selected_other": "已選取{{ count }}個專案",
+    "totalBudget": "總預算",
+    "uploadImage": "上傳圖像"
+  }
+}
