@@ -176,10 +176,10 @@ const AddOrEditScenarioModal = ({
             timetableForm: { timetable_type },
           }).unwrap();
           await linkTrainScheduleSetToTimetable({
-            id: timetable.timetable_id,
+            id: timetable.id,
             body: { train_schedule_set_ids: [sandbox.id] },
           }).unwrap();
-          timetableIds = [timetable.timetable_id];
+          timetableIds = [timetable.id];
         }
         const newScenario = await postScenario({
           scenarioCreateForm: {

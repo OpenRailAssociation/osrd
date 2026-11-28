@@ -190,7 +190,7 @@ export async function createDataForTests(): Promise<void> {
       studyWithTrainSchedules.id,
       mediumInfra.id
     );
-    const timetableId = timetableResult.timetable_id;
+    const timetableId = timetableResult.id;
     await sendTrains(trainScheduleSet.id, trains, timetableId);
 
     // Step 7: Configure STDCM search environment for the tests

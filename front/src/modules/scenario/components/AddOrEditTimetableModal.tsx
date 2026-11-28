@@ -70,23 +70,20 @@ const AddOrEditTimetableModal = ({
         return;
       }
       const newTimetable = await postTimetable({
-        timetableForm: { timetable_type: timetableType, timetable_name: name.trim() },
+        timetableForm: { timetable_type: timetableType, name: name.trim() },
       }).unwrap();
       // No need to create the sandbox here, useScenario creates it once the timetable is selected
       // The patch replaces all the timetables of the scenario, so we keep the existing ones
       await patchScenario({
         scenarioId: scenario.id,
         scenarioPatchForm: {
-          timetable_ids: [
-            ...scenario.timetable_summaries.map(({ id }) => id),
-            newTimetable.timetable_id,
-          ],
+          timetable_ids: [...scenario.timetable_summaries.map(({ id }) => id), newTimetable.id],
         },
       }).unwrap();
       // Wait for the scenario with the new timetable, otherwise useScenario doesn't know it yet
       // and falls back on the first timetable when we select it
       await getScenario({ scenarioId: scenario.id }).unwrap();
-      void setParamsInUrlAndStorage('timetable', String(newTimetable.timetable_id));
+      void setParamsInUrlAndStorage('timetable', String(newTimetable.id));
       onCancel();
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));

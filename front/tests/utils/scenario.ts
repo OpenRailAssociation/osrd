@@ -60,7 +60,7 @@ export default async function createScenario(
 
   // Link the timetable with the sandbox
   await postApiRequest(
-    `/api/timetable/${timetableResult.timetable_id}/train_schedule_sets`,
+    `/api/timetable/${timetableResult.id}/train_schedule_sets`,
     {
       train_schedule_set_ids: [trainScheduleSet.id],
     },
@@ -80,7 +80,7 @@ export default async function createScenario(
       study_id: study.id,
       name: scenarioNameFinal,
       infra_id: mediumInfra.id,
-      timetable_ids: [timetableResult.timetable_id],
+      timetable_ids: [timetableResult.id],
       electrical_profile_set_id: electricalProfileId,
     },
     undefined,

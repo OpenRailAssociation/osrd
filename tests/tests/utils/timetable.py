@@ -30,7 +30,7 @@ def create_scenario(
     if r.status_code // 100 != 2:
         err = f"Error creating timetable {r.status_code}: {r.content}"
         raise RuntimeError(err)
-    timetable_id = r.json()["timetable_id"]
+    timetable_id = r.json()["id"]
 
     r = session.post(
         editoast_url + "/train_schedule_sets/",

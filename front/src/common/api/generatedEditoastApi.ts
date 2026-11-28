@@ -5257,18 +5257,18 @@ export type ListTimetablesResponse = PaginationStats & {
 export type TimetableResult = {
   catalog_entry_id?: number | null;
   description: string;
+  id: number;
   is_train_schedule_set: boolean;
+  name?: string | null;
   published: boolean;
-  timetable_id: number;
-  timetable_name?: string | null;
   timetable_type: TimetableType;
 };
 export type TimetableForm = {
   catalog_entry_id?: number | null;
   description?: string;
   is_train_schedule_set?: boolean;
+  name?: string | null;
   published?: boolean;
-  timetable_name?: string | null;
   timetable_type: TimetableType;
 };
 export type TimetablePatchForm = {
