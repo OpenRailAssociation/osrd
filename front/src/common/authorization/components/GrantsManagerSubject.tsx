@@ -71,7 +71,7 @@ const GrantsManagerSubject = ({
   }, [status]);
 
   return (
-    <div className="subject-card">
+    <div className="subject-card" data-testid="grant-manager-subject">
       <span className="subject">
         <GrantSubjectItem subject={subject} className={cx({ self: subject.id === userId })} />
         {status.type === 'error' && <p className="text-danger">{status.message}</p>}

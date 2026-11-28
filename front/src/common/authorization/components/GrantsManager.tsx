@@ -41,7 +41,7 @@ const GrantsManager = ({
   return (
     <div className="grant-manager">
       <div className="grant-manager-header">
-        <span className="user-grant">
+        <span className="user-grant" data-testid="grant-manager-user-grant">
           {t('authorization.yourGrant', {
             grant: t(`authorization.grants.${GRANTS_LABEL[grantLabel]}`),
           })}
@@ -49,6 +49,7 @@ const GrantsManager = ({
         {canRead && (
           <button
             type="button"
+            data-testid="grant-manager-details-button"
             onClick={(e) => {
               e.stopPropagation();
               setDisplayGrantSection(!displayGrantSection);
