@@ -31,7 +31,6 @@ export default function ScenarioCard({
       to={`scenarios/${scenario.id}`}
       className={cx('scenario-card', isSelected && 'selected')}
       data-testid={`scenario-card-${scenario.name}`}
-      onClick={() => toggleSelect(scenario.id)}
     >
       <div className={cx('scenario-card-name')} data-testid={scenario.name}>
         <RiFolderChartLine />
