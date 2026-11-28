@@ -46,6 +46,10 @@
         margin: 4px 4px 4px 0;
 
         @apply text-black-25;
+
+        :active {
+          color: var(--color-error-60);
+        }
       }
 
       &:has(.token-close-btn:active) {
