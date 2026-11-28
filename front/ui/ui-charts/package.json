@@ -44,7 +44,7 @@
   "dependencies": {
     "@osrd-project/ui-core": "0.0.1-dev",
     "@osrd-project/ui-icons": "0.0.1-dev",
-    "chroma-js": "^3.2.0",
+    "chroma-js": "^3.3.0",
     "d3-selection": "^3.0.1",
     "d3-zoom": "^3.0.1",
     "lodash": "^4.18.1"
