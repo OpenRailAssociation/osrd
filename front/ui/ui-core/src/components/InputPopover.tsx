@@ -36,7 +36,7 @@ const InputPopover = ({
     }
   }, [isOpen, calculatePosition]);
 
-  useOutsideClick(popoverRef, onClose);
+  useOutsideClick(popoverRef, onClose, { blockOutsideClick: true });
 
   if (!isOpen) return null;
 

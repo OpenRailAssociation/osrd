@@ -56,7 +56,7 @@ const OptionGroup = <T,>({
     }
   }, [isOpen, calculatePosition]);
 
-  useOutsideClick(isOpen ? panelRef : null, () => setIsOpen(false));
+  useOutsideClick(isOpen ? panelRef : null, () => setIsOpen(false), { blockOutsideClick: true });
 
   return (
     <>
